@@ -26,7 +26,6 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.ExecutionFailedException;
 
 import elemental.json.Json;
@@ -90,11 +89,6 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         try (InputStream tsConfStream = getClass()
                 .getResourceAsStream(fileName)) {
             String config = IOUtils.toString(tsConfStream, UTF_8);
-            if (options.getFeatureFlags().isEnabled(FeatureFlags.WEBPACK)) {
-                // webpack 4 cannot use anything newer than es2019...
-                config = config.replaceFirst("\"target\".*",
-                        "\"target\": \"es2019\",");
-            }
             return config;
         }
     }
@@ -105,11 +99,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             super.execute();
         } else {
             overrideIfObsolete();
-            if (options.getFeatureFlags().isEnabled(FeatureFlags.WEBPACK)) {
-                ensureTarget("es2019");
-            } else {
-                ensureTarget(getDefaultEsTargetVersion());
-            }
+            ensureTarget(getDefaultEsTargetVersion());
         }
     }
 

@@ -31,13 +31,10 @@ import com.vaadin.flow.server.VaadinResponse;
  * listeners can modify before the final HTML is generated.
  * <p>
  * Index HTML request listeners are registered using the
- * {@link ServiceInitEvent} during the initialization of the application. Index
- * HTML request listener is used when the application flag
- * {@link InitParameters#SERVLET_PARAMETER_USE_V14_BOOTSTRAP} is not set.
+ * {@link ServiceInitEvent} during the initialization of the application.
  *
  * @see ServiceInitEvent#addIndexHtmlRequestListener(IndexHtmlRequestListener)
  * @see IndexHtmlRequestHandler
- * @see InitParameters#SERVLET_PARAMETER_USE_V14_BOOTSTRAP
  */
 @FunctionalInterface
 public interface IndexHtmlRequestListener extends EventListener, Serializable {

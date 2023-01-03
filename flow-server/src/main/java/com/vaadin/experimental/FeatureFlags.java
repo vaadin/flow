@@ -54,10 +54,6 @@ public class FeatureFlags implements Serializable {
             "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004",
             false,
             "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");
-    public static final Feature WEBPACK = new Feature(
-            "Use Webpack for front-end builds (Deprecated)",
-            "webpackForFrontendBuild",
-            "https://github.com/vaadin/flow/issues/13852", true, null);
     public static final Feature HILLA_PUSH = new Feature(
             "Push support in Hilla", "hillaPush",
             "https://github.com/vaadin/hilla/issues/56", true, null);
@@ -95,7 +91,6 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(HILLA_PUSH));
         features.add(new Feature(HILLA_ENGINE));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
-        features.add(new Feature(WEBPACK));
         features.add(new Feature(ENFORCE_FIELD_VALIDATION));
         features.add(new Feature(EXPRESS_BUILD));
         loadProperties();

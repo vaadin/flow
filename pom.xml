@@ -84,9 +84,9 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.version>6.0.2</spring.version>
-        <spring.boot.version>3.0.0</spring.boot.version>
-        <spring.security.version>6.0.0</spring.security.version>
+        <spring.version>6.0.3</spring.version>
+        <spring.boot.version>3.0.1</spring.boot.version>
+        <spring.security.version>6.0.1</spring.security.version>
         <spring.security.oauth2.authorization.server.version>1.0.0</spring.security.oauth2.authorization.server.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
@@ -232,7 +232,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.12.19</version>
+                <version>1.12.20</version>
             </dependency>
             <dependency>
                 <groupId>com.vaadin</groupId>
@@ -254,12 +254,12 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>4.9.0</version>
+                <version>4.11.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-inline</artifactId>
-                <version>4.9.0</version>
+                <version>4.11.0</version>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
@@ -293,7 +293,7 @@
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ssh-external</artifactId>
-                <version>3.5.2</version>
+                <version>3.5.3</version>
             </extension>
         </extensions>
 

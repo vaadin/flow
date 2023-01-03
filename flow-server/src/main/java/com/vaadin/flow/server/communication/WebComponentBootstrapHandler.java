@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server.communication;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -32,8 +36,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.ElementUtil;
@@ -51,13 +56,12 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
-import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import elemental.json.impl.JsonUtil;
 
 /**
  * Bootstrap handler for WebComponent requests.
@@ -108,44 +112,39 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         public Document getBootstrapPage(BootstrapContext context) {
             VaadinService service = context.getSession().getService();
 
-            if (!FeatureFlags.get(service.getContext())
-                    .isEnabled(FeatureFlags.WEBPACK)) {
-                try {
-                    Document document = Jsoup.parse(
-                            FrontendUtils.getWebComponentHtmlContent(service));
-                    Element head = document.head();
+            try {
+                Document document = Jsoup.parse(
+                        FrontendUtils.getWebComponentHtmlContent(service));
+                Element head = document.head();
 
-                    // Specify the application ID for scripts of the
-                    // web-component.html
-                    head.select("script[src]").attr("data-app-id",
-                            context.getUI().getInternals().getAppId());
+                // Specify the application ID for scripts of the
+                // web-component.html
+                head.select("script[src]").attr("data-app-id",
+                        context.getUI().getInternals().getAppId());
 
-                    // Add `crossorigin` to fix basic auth in Safari #6560
-                    head.select("script[src], link[href]").attr("crossorigin",
-                            "true");
+                // Add `crossorigin` to fix basic auth in Safari #6560
+                head.select("script[src], link[href]").attr("crossorigin",
+                        "true");
 
-                    JsonObject initialUIDL = getInitialUidl(context.getUI());
+                JsonObject initialUIDL = getInitialUidl(context.getUI());
 
-                    head.prependChild(createInlineJavaScriptElement(
-                            "window.JSCompiler_renameProperty = function(a) { return a; }"));
+                head.prependChild(createInlineJavaScriptElement(
+                        "window.JSCompiler_renameProperty = function(a) { return a; }"));
 
-                    head.prependChild(getBootstrapScript(initialUIDL, context));
+                head.prependChild(getBootstrapScript(initialUIDL, context));
 
-                    if (context.getPushMode().isEnabled()) {
-                        head.prependChild(createJavaScriptModuleElement(
-                                getPushScript(context), true));
-                    }
-
-                    setupCss(head, context);
-
-                    return document;
-                } catch (IOException e) {
-                    throw new BootstrapException(
-                            "Unable to read the web-component.html file.", e);
+                if (context.getPushMode().isEnabled()) {
+                    head.prependChild(createJavaScriptModuleElement(
+                            getPushScript(context), true));
                 }
-            }
 
-            return super.getBootstrapPage(context);
+                setupCss(head, context);
+
+                return document;
+            } catch (IOException e) {
+                throw new BootstrapException(
+                        "Unable to read the web-component.html file.", e);
+            }
         }
 
         @Override
@@ -250,6 +249,10 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
         BootstrapContext context = createAndInitUI(uiClass, request, response,
                 session);
+
+        if (handleWebComponentResyncRequest(context, request, response)) {
+            return true;
+        }
 
         HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
                 response::setDateHeader);
@@ -524,5 +527,47 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 // proxies
                 // which proxies to the same http:// url
                 .replaceFirst("^" + ".*://", "//");
+    }
+
+    /**
+     * Handles WebComponents resynchronization request
+     *
+     * @param context
+     *            the bootstrap context object
+     * @param request
+     *            the request object
+     * @param response
+     *            the response object
+     * @return true if request has been handled, false otherwise
+     */
+    protected boolean handleWebComponentResyncRequest(BootstrapContext context,
+            VaadinRequest request, VaadinResponse response) {
+
+        if (!HandlerHelper.isRequestType(request,
+                HandlerHelper.RequestType.WEBCOMPONENT_RESYNC)) {
+            return false;
+        }
+
+        JsonObject json = new UidlWriter().createUidl(context.getUI(), true,
+                true);
+        json.put(ApplicationConstants.UI_ID, context.getUI().getUIId());
+        json.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID,
+                context.getUI().getCsrfToken());
+        String responseString = "for(;;);[" + JsonUtil.stringify(json) + "]";
+
+        try {
+            VaadinService service = request.getService();
+            service.writeUncachedStringResponse(response,
+                    JsonConstants.JSON_CONTENT_TYPE, responseString);
+        } catch (IOException e) {
+            getLogger().error("Error writing JSON to response", e);
+        }
+
+        return true;
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory
+                .getLogger(WebComponentBootstrapHandler.class.getName());
     }
 }

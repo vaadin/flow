@@ -40,23 +40,11 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
  */
 public class NodeTasks implements FallibleCommand {
 
-    //@formatter:off
-    private static final String V14_BOOTSTRAPPING_VITE_ERROR_MESSAGE =
-            "\n\n************************************************************************************"
-            + "\n*  Vite build tool is not supported when 'useDeprecatedV14Bootstrapping' is used.  *"
-            + "\n*  Please fallback to Webpack build tool via setting the                           *"
-            + "\n*  'com.vaadin.experimental.webpackForFrontendBuild=true' feature flag             *"
-            + "\n*  in [project-root]/src/main/resources/vaadin-featureflags.properties             *"
-            + "\n*  (you may create the file if not exists) and restart the application.            *"
-            + "\n************************************************************************************\n\n";
-    //@formatter:on
-
     // @formatter:off
     // This list keeps the tasks in order so that they are executed
     // without depending on when they are added.
     private static final List<Class<? extends FallibleCommand>> commandOrder =
         Collections.unmodifiableList(Arrays.asList(
-            TaskNotifyWebpackConfExistenceWhileUsingVite.class,
             TaskGeneratePackageJson.class,
             TaskGenerateIndexHtml.class,
             TaskGenerateIndexTs.class,
@@ -77,7 +65,6 @@ public class NodeTasks implements FallibleCommand {
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
             TaskUpdateSettingsFile.class,
-            TaskUpdateWebpack.class,
             TaskUpdateVite.class,
             TaskUpdateImports.class,
             TaskUpdateThemeImport.class,
@@ -102,22 +89,26 @@ public class NodeTasks implements FallibleCommand {
 
         final FeatureFlags featureFlags = options.getFeatureFlags();
 
-        if (!options.productionMode && options.isDevBundleBuild()) {
-            if (TaskRunDevBundleBuild.needsBuild(options.getNpmFolder())) {
-                options.runNpmInstall(true);
-                options.copyTemplates(true);
-            } else {
-                // A dev bundle build is not needed after all, skip it
-                options.withDevBundleBuild(false);
-            }
-        }
-
         if (options.enablePackagesUpdate || options.enableImportsUpdate
                 || options.enableWebpackConfigUpdate) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!options.useByteCodeScanner, classFinder,
                             options.generateEmbeddableWebComponents,
-                            options.useLegacyV14Bootstrap, featureFlags);
+                            featureFlags);
+
+            // The dev bundle check needs the frontendDependencies to be able to
+            // determine if we need a rebuild as the check happens immediately
+            // and no update tasks are executed before it.
+            if (!options.productionMode && options.isDevBundleBuild()) {
+                if (TaskRunDevBundleBuild.needsBuild(options,
+                        frontendDependencies, classFinder)) {
+                    options.runNpmInstall(true);
+                    options.copyTemplates(true);
+                } else {
+                    // A dev bundle build is not needed after all, skip it
+                    options.withDevBundleBuild(false);
+                }
+            }
 
             if (options.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
@@ -139,8 +130,8 @@ public class NodeTasks implements FallibleCommand {
                 packageUpdater = new TaskUpdatePackages(classFinder,
                         frontendDependencies, options);
                 commands.add(packageUpdater);
-
             }
+
             if (packageUpdater != null && options.runNpmInstall) {
                 commands.add(new TaskRunNpmInstall(packageUpdater, options));
 
@@ -165,35 +156,27 @@ public class NodeTasks implements FallibleCommand {
             addGenerateTsConfigTask(options);
         }
 
-        if (options.useLegacyV14Bootstrap) {
-            if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
-                throw new IllegalStateException(
-                        V14_BOOTSTRAPPING_VITE_ERROR_MESSAGE);
-            }
-        } else {
-            addBootstrapTasks(options);
+        addBootstrapTasks(options);
 
-            // use the new Hilla generator if enabled, otherwise use the old
-            // generator.
-            TaskGenerateHilla hillaTask;
-            if (options.endpointGeneratedOpenAPIFile != null
-                    && featureFlags.isEnabled(FeatureFlags.HILLA_ENGINE)
-                    && (hillaTask = options.lookup
-                            .lookup(TaskGenerateHilla.class)) != null) {
-                hillaTask.configure(options.getNpmFolder(),
-                        options.getBuildDirectoryName());
-                commands.add(hillaTask);
-            } else if (options.endpointGeneratedOpenAPIFile != null
-                    && options.endpointSourceFolder != null
-                    && options.endpointSourceFolder.exists()) {
-                addEndpointServicesTasks(options);
-            }
-
-            commands.add(
-                    new TaskGenerateBootstrap(frontendDependencies, options));
-
-            commands.add(new TaskGenerateFeatureFlags(options));
+        // use the new Hilla generator if enabled, otherwise use the old
+        // generator.
+        TaskGenerateHilla hillaTask;
+        if (options.endpointGeneratedOpenAPIFile != null
+                && featureFlags.isEnabled(FeatureFlags.HILLA_ENGINE)
+                && (hillaTask = options.lookup
+                        .lookup(TaskGenerateHilla.class)) != null) {
+            hillaTask.configure(options.getNpmFolder(),
+                    options.getBuildDirectoryName());
+            commands.add(hillaTask);
+        } else if (options.endpointGeneratedOpenAPIFile != null
+                && options.endpointSourceFolder != null
+                && options.endpointSourceFolder.exists()) {
+            addEndpointServicesTasks(options);
         }
+
+        commands.add(new TaskGenerateBootstrap(frontendDependencies, options));
+
+        commands.add(new TaskGenerateFeatureFlags(options));
 
         if (options.jarFiles != null
                 && options.jarFrontendResourcesFolder != null) {
@@ -205,25 +188,18 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskCopyLocalFrontendFiles(options));
         }
 
-        if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
-            String themeName = "";
-            PwaConfiguration pwa;
-            if (frontendDependencies != null) {
-                if (frontendDependencies.getThemeDefinition() != null) {
-                    themeName = frontendDependencies.getThemeDefinition()
-                            .getName();
-                }
-                pwa = frontendDependencies.getPwaConfiguration();
-            } else {
-                pwa = new PwaConfiguration();
+        String themeName = "";
+        PwaConfiguration pwa;
+        if (frontendDependencies != null) {
+            if (frontendDependencies.getThemeDefinition() != null) {
+                themeName = frontendDependencies.getThemeDefinition().getName();
             }
-            commands.add(new TaskNotifyWebpackConfExistenceWhileUsingVite(
-                    options.getNpmFolder()));
-            commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
-            commands.add(new TaskUpdateVite(options));
-        } else if (options.enableWebpackConfigUpdate) {
-            commands.add(new TaskUpdateWebpack(frontendDependencies, options));
+            pwa = frontendDependencies.getPwaConfiguration();
+        } else {
+            pwa = new PwaConfiguration();
         }
+        commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
+        commands.add(new TaskUpdateVite(options));
 
         if (options.enableImportsUpdate) {
             commands.add(new TaskUpdateImports(classFinder,
@@ -248,8 +224,7 @@ public class NodeTasks implements FallibleCommand {
         TaskGenerateIndexTs taskGenerateIndexTs = new TaskGenerateIndexTs(
                 options);
         commands.add(taskGenerateIndexTs);
-        if (!options.getFeatureFlags().isEnabled(FeatureFlags.WEBPACK)
-                && !options.productionMode) {
+        if (!options.productionMode) {
             commands.add(new TaskGenerateViteDevMode(options));
         }
     }
@@ -296,7 +271,7 @@ public class NodeTasks implements FallibleCommand {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(true, finder,
                             options.generateEmbeddableWebComponents,
-                            options.useLegacyV14Bootstrap, featureFlags, true);
+                            featureFlags, true);
         } else {
             return null;
         }

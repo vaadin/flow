@@ -19,13 +19,17 @@ import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -35,7 +39,6 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
@@ -110,7 +113,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureHiddenElementStyles(indexDocument);
 
-        showDevServerErrors(session.getService(), indexDocument);
+        if (!config.enableDevServer()) {
+            addStylesCssLink(config, indexDocument);
+        }
+
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         VaadinContext context = session.getService().getContext();
@@ -151,6 +157,32 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Adds a link tag to the page head for the themes/my-theme/styles.css,
+     * which is served in express build mode by static file server directly from
+     * frontend/themes folder.
+     * </p>
+     * Example: <link rel="stylesheet" href="themes/hello-speed-foo/styles.css">
+     *
+     * @param config
+     *            deployment configuration
+     * @param indexDocument
+     *            the page document to add the tag to
+     * @throws IOException
+     *             if theme name cannot be extracted from file
+     */
+    private void addStylesCssLink(DeploymentConfiguration config,
+            Document indexDocument) throws IOException {
+        String themeName = FrontendUtils
+                .getThemeName(config.getProjectFolder());
+        if (themeName != null) {
+            Element element = new Element("link");
+            element.attr("rel", "stylesheet");
+            element.attr("href", "themes/" + themeName + "/styles.css");
+            indexDocument.head().appendChild(element);
+        }
     }
 
     private void catchErrorsInDevMode(Document indexDocument) {
@@ -353,9 +385,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             addBundleEntryPoints(indexHtmlDocument, config,
                     Json.parse(statsJson));
         }
-        if (!getFeatureFlags(service).isEnabled(FeatureFlags.WEBPACK)) {
-            modifyIndexHtmlForVite(indexHtmlDocument);
-        }
+        modifyIndexHtmlForVite(indexHtmlDocument);
         return indexHtmlDocument;
     }
 
@@ -369,10 +399,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             elm.attr("src", "VAADIN/dev-bundle/" + entryScript);
             indexHtmlDocument.head().appendChild(elm);
         }
-    }
-
-    private static FeatureFlags getFeatureFlags(VaadinService service) {
-        return FeatureFlags.get(service.getContext());
     }
 
     private static void modifyIndexHtmlForVite(Document indexHtmlDocument) {

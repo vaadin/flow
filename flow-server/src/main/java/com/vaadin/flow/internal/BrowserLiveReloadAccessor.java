@@ -66,10 +66,23 @@ public interface BrowserLiveReloadAccessor {
     static Optional<BrowserLiveReload> getLiveReloadFromService(
             VaadinService service) {
         VaadinContext context = service.getContext();
+        return getLiveReloadFromContext(context);
+    }
+
+    /**
+     * Create a {@link BrowserLiveReload} if factory available.
+     *
+     * @param context
+     *            a Vaadin Context
+     * @return an {@link Optional} containing a {@link BrowserLiveReload}
+     *         instance or <code>EMPTY</code> if disabled
+     */
+    static Optional<BrowserLiveReload> getLiveReloadFromContext(
+            VaadinContext context) {
         return Optional.ofNullable(context)
                 .map(ctx -> ctx.getAttribute(Lookup.class))
                 .map(lu -> lu.lookup(BrowserLiveReloadAccessor.class))
                 .flatMap(blra -> Optional
-                        .ofNullable(blra.getLiveReload(service)));
+                        .ofNullable(blra.getLiveReload(context)));
     }
 }

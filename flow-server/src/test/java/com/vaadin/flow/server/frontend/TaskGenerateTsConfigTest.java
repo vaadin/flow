@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -86,69 +87,25 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
-    public void webpackShouldUseEs2019() throws Exception {
-        Mockito.when(featureFlags.isEnabled((Feature) Mockito.any()))
-                .thenAnswer(req -> {
-                    if (req.getArgument(0) == FeatureFlags.WEBPACK) {
-                        return true;
-                    }
-                    return false;
-                });
-
-        taskGenerateTsConfig.execute();
-        Assert.assertTrue("The config file should use es2019", IOUtils
-                .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
-                        StandardCharsets.UTF_8)
-                .contains("\"target\": \"es2019\""));
-    }
-
-    @Test
     public void viteShouldUpgradeFromEs2019() throws Exception {
-        AtomicBoolean useWebpack = new AtomicBoolean(true);
-        Mockito.when(featureFlags.isEnabled((Feature) Mockito.any()))
-                .thenAnswer(req -> {
-                    if (req.getArgument(0) == FeatureFlags.WEBPACK) {
-                        return useWebpack.get();
-                    }
-                    return false;
-                });
-
-        taskGenerateTsConfig.execute(); // Write a file with es2019
+        // Write a file with es2019
+        taskGenerateTsConfig.execute();
+        String content = IOUtils.toString(
+                taskGenerateTsConfig.getGeneratedFile().toURI(),
+                StandardCharsets.UTF_8);
+        content = content.replace("es2020", "es2019");
+        try (FileWriter fw = new FileWriter(
+                taskGenerateTsConfig.getGeneratedFile(),
+                StandardCharsets.UTF_8)) {
+            fw.write(content);
+        }
         Assert.assertTrue("The config file should use es2019", IOUtils
                 .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8)
                 .contains("\"target\": \"es2019\""));
-        useWebpack.set(false);
         taskGenerateTsConfig.execute();
         Assert.assertFalse(
                 "Vite should have upgraded the config file to not use es2019",
-                IOUtils.toString(
-                        taskGenerateTsConfig.getGeneratedFile().toURI(),
-                        StandardCharsets.UTF_8)
-                        .contains("\"target\": \"es2019\""));
-
-    }
-
-    @Test
-    public void switchToWebpackShouldDowngradeToEs2019() throws Exception {
-        AtomicBoolean useWebpack = new AtomicBoolean(false);
-        Mockito.when(featureFlags.isEnabled((Feature) Mockito.any()))
-                .thenAnswer(req -> {
-                    if (req.getArgument(0) == FeatureFlags.WEBPACK) {
-                        return useWebpack.get();
-                    }
-                    return false;
-                });
-
-        taskGenerateTsConfig.execute(); // Write a file without es2019
-        Assert.assertFalse("The config file should not use es2019", IOUtils
-                .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
-                        StandardCharsets.UTF_8)
-                .contains("\"target\": \"es2019\""));
-        useWebpack.set(true);
-        taskGenerateTsConfig.execute();
-        Assert.assertTrue(
-                "Webpack should have downgraded the config file to use es2019",
                 IOUtils.toString(
                         taskGenerateTsConfig.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8)

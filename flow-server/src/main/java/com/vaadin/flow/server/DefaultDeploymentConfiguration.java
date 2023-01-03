@@ -43,9 +43,6 @@ public class DefaultDeploymentConfiguration
 
     public static final String NOT_PRODUCTION_MODE_INFO = "\nVaadin is running in DEVELOPMENT mode - do not use for production deployments.";
 
-    public static final String WARNING_V14_BOOTSTRAP = "Using deprecated Vaadin 14 bootstrap mode.\n"
-            + "Client-side views written in TypeScript are not supported.";
-
     private static final String DEPLOYMENT_WARNINGS = "Following issues were discovered with deployment configuration:";
 
     public static final String WARNING_XSRF_PROTECTION_DISABLED = "WARNING: Cross-site request forgery protection is disabled!";
@@ -85,7 +82,6 @@ public class DefaultDeploymentConfiguration
     public static final boolean DEFAULT_SEND_URLS_AS_PARAMETERS = true;
 
     private boolean productionMode;
-    private boolean useDeprecatedV14Bootstrapping;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
     private int maxMessageSuspendTimeout;
@@ -120,7 +116,6 @@ public class DefaultDeploymentConfiguration
 
         checkProductionMode(log);
         checkFeatureFlags();
-        checkV14Bootstrapping(log);
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
@@ -159,14 +154,6 @@ public class DefaultDeploymentConfiguration
     @Override
     public boolean isProductionMode() {
         return productionMode;
-    }
-
-    /**
-     * {@inheritDoc} The default is true.
-     */
-    @Override
-    public boolean useV14Bootstrap() {
-        return useDeprecatedV14Bootstrapping;
     }
 
     /**
@@ -289,24 +276,6 @@ public class DefaultDeploymentConfiguration
             });
 
             info.add("\n");
-        }
-    }
-
-    /**
-     * Log a message about the bootstrapping being used.
-     */
-    private void checkV14Bootstrapping(boolean log) {
-        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP)) {
-            useDeprecatedV14Bootstrapping = getBooleanProperty(
-                    InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
-        } else {
-            useDeprecatedV14Bootstrapping = getParentConfiguration()
-                    .useV14Bootstrap();
-        }
-        if (log) {
-            if (useDeprecatedV14Bootstrapping) {
-                warnings.add(WARNING_V14_BOOTSTRAP);
-            }
         }
     }
 

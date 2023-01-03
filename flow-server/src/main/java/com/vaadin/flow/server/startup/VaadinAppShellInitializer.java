@@ -15,11 +15,8 @@
  */
 package com.vaadin.flow.server.startup;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.annotation.HandlesTypes;
-import jakarta.servlet.annotation.WebListener;
+import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_NO_SHELL;
+import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_PWA;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -43,16 +40,16 @@ import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
-import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_NO_APP_CONFIGURATOR;
-import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_NO_SHELL;
-import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_CONFIGURATOR;
-import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_PWA;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.annotation.HandlesTypes;
+import jakarta.servlet.annotation.WebListener;
 
 /**
  * Servlet initializer visiting {@link AppShellConfigurator} configuration.
@@ -63,8 +60,8 @@ import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_PWA
  */
 @HandlesTypes({ AppShellConfigurator.class, Meta.class, Meta.Container.class,
         PWA.class, Inline.class, Inline.Container.class, Viewport.class,
-        BodySize.class, PageTitle.class, PageConfigurator.class, Push.class,
-        Theme.class, NoTheme.class })
+        BodySize.class, PageTitle.class, Push.class, Theme.class,
+        NoTheme.class })
 // @WebListener is needed so that servlet containers know that they have to run
 // it
 @WebListener
@@ -110,10 +107,6 @@ public class VaadinAppShellInitializer
     public static void init(Set<Class<?>> classes, VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
 
-        if (config.useV14Bootstrap()) {
-            return;
-        }
-
         boolean disregardOffendingAnnotations = config.getBooleanProperty(
                 Constants.ALLOW_APPSHELL_ANNOTATIONS, false);
 
@@ -158,24 +151,6 @@ public class VaadinAppShellInitializer
                 String message = String.format(ERROR_HEADER_NO_SHELL,
                         String.join("\n  ", offendingAnnotations));
                 throw new InvalidApplicationConfigurationException(message);
-            }
-        }
-
-        List<String> classesImplementingPageConfigurator = classes.stream()
-                .filter(clz -> PageConfigurator.class.isAssignableFrom(clz))
-                .map(Class::getName).collect(Collectors.toList());
-
-        if (!classesImplementingPageConfigurator.isEmpty()) {
-            String message = String.join("\n - ",
-                    classesImplementingPageConfigurator);
-            if (registry.getShell() != null) {
-                message = String.format(ERROR_HEADER_OFFENDING_CONFIGURATOR,
-                        registry.getShell().getName(), message);
-                throw new InvalidApplicationConfigurationException(message);
-            } else {
-                message = String.format(ERROR_HEADER_NO_APP_CONFIGURATOR,
-                        message);
-                getLogger().error(message);
             }
         }
     }

@@ -120,18 +120,9 @@ public class VaadinServletService extends VaadinService {
     }
 
     private void addBootstrapHandler(List<RequestHandler> handlers) {
-        if (getDeploymentConfiguration().useV14Bootstrap()) {
-            handlers.add(0, new BootstrapHandler());
-            getLogger().debug("Using '{}' in deprecated V14 bootstrapping",
-                    BootstrapHandler.class.getName());
-            UsageStatistics.markAsUsed(
-                    Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER,
-                    Version.getFullVersion());
-        } else {
-            handlers.add(0, new IndexHtmlRequestHandler());
-            getLogger().debug("Using '{}' in client mode bootstrapping",
-                    IndexHtmlRequestHandler.class.getName());
-        }
+        handlers.add(0, new IndexHtmlRequestHandler());
+        getLogger().debug("Using '{}' in client mode bootstrapping",
+                IndexHtmlRequestHandler.class.getName());
     }
 
     /**
@@ -179,7 +170,9 @@ public class VaadinServletService extends VaadinService {
         String type = request
                 .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
         return type == null
-                || ApplicationConstants.REQUEST_TYPE_INIT.equals(type);
+                || ApplicationConstants.REQUEST_TYPE_INIT.equals(type)
+                || ApplicationConstants.REQUEST_TYPE_WEBCOMPONENT_RESYNC
+                        .equals(type);
     }
 
     public static HttpServletRequest getCurrentServletRequest() {

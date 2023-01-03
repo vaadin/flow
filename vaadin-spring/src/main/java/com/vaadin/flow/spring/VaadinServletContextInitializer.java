@@ -538,7 +538,7 @@ public class VaadinServletContextInitializer
             ApplicationConfiguration config = ApplicationConfiguration
                     .get(new VaadinServletContext(event.getServletContext()));
 
-            if (config == null || config.useV14Bootstrap()) {
+            if (config == null) {
                 return;
             }
 

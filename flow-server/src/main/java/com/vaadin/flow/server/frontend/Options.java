@@ -82,11 +82,6 @@ public class Options implements Serializable {
     private File generatedFolder;
 
     /**
-     * Is in client-side bootstrapping mode.
-     */
-    boolean useLegacyV14Bootstrap;
-
-    /**
      * The node.js version to be used when node.js is installed automatically by
      * Vaadin, for example <code>"v16.0.0"</code>. Defaults to
      * {@value FrontendTools#DEFAULT_NODE_VERSION}.
@@ -337,18 +332,6 @@ public class Options implements Serializable {
      */
     public Options copyLocalResources(File localResourcesFolder) {
         this.localResourcesFolder = localResourcesFolder;
-        return this;
-    }
-
-    /**
-     * Use V14 bootstrapping that disables index.html entry point.
-     *
-     * @param useDeprecatedV14Bootstrapping
-     *            <code>true</code> to use legacy V14 bootstrapping
-     * @return the builder, for chaining
-     */
-    public Options useV14Bootstrap(boolean useDeprecatedV14Bootstrapping) {
-        this.useLegacyV14Bootstrap = useDeprecatedV14Bootstrapping;
         return this;
     }
 

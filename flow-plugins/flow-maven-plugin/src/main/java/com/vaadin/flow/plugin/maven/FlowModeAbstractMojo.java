@@ -77,8 +77,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private File frontendDirectory;
 
     /**
-     * The folder where flow will put generated files that will be used by
-     * webpack.
+     * The folder where flow will put generated files that will be used by the
+     * frontend build tool.
      */
     @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
     private File generatedFolder;
@@ -192,15 +192,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private File resourceOutputDirectory;
 
     /**
-     * Whether or not we are running in legacy V14 bootstrap mode. True if
-     * defined or if it's set to true.
-     */
-    @Parameter(defaultValue = "${vaadin.useDeprecatedV14Bootstrapping}")
-    private String useDeprecatedV14Bootstrapping;
-
-    /**
-     * The folder where webpack should output index.js and other generated
-     * files.
+     * The folder where the frontend build tool should output index.js and other
+     * generated files.
      */
     @Parameter(defaultValue = "${project.build.outputDirectory}/"
             + VAADIN_WEBAPP_RESOURCES)
@@ -290,12 +283,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(Artifact::getFile).collect(Collectors.toSet());
 
-    }
-
-    @Override
-    public String getUseDeprecatedV14Bootstrapping() {
-
-        return useDeprecatedV14Bootstrapping;
     }
 
     @Override

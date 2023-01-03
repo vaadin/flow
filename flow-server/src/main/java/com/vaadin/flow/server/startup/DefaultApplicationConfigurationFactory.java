@@ -215,13 +215,13 @@ public class DefaultApplicationConfigurationFactory
         assert !resources.isEmpty()
                 : "Possible jar resource requires resources to be available.";
 
-        URL webpackGenerated = resourceProvider
-                .getApplicationResource(FrontendUtils.WEBPACK_GENERATED);
+        URL viteGenerated = resourceProvider
+                .getApplicationResource(FrontendUtils.VITE_GENERATED_CONFIG);
 
         // If jar!/ exists 2 times for webpack.generated.json then we are
         // running from a jar
-        if (webpackGenerated != null
-                && countInstances(webpackGenerated.getPath(), "jar!/") >= 2) {
+        if (viteGenerated != null
+                && countInstances(viteGenerated.getPath(), "jar!/") >= 2) {
             for (URL resource : resources) {
                 // As we now know that we are running from a jar we can accept a
                 // build info with a single jar in the path

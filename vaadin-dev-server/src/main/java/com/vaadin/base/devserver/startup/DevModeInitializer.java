@@ -67,7 +67,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.ViteHandler;
-import com.vaadin.base.devserver.WebpackHandler;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.base.devserver.stats.StatisticsSender;
 import com.vaadin.base.devserver.stats.StatisticsStorage;
@@ -84,7 +83,6 @@ import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
-import com.vaadin.flow.server.frontend.TaskRunDevBundleBuild;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -205,11 +203,7 @@ public class DevModeInitializer implements Serializable {
 
         featureFlags.setPropertiesLocation(config.getJavaResourceFolder());
 
-        String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
-                null);
-        if (baseDir == null) {
-            baseDir = getBaseDirectoryFallback();
-        }
+        String baseDir = config.getProjectFolder().getAbsolutePath();
 
         // Initialize the usage statistics if enabled
         if (config.isUsageStatisticsEnabled()) {
@@ -250,7 +244,7 @@ public class DevModeInitializer implements Serializable {
         File generatedPackages = new File(options.getGeneratedFolder(),
                 PACKAGE_JSON);
 
-        // Regenerate webpack configuration, as it may be necessary to
+        // Regenerate Vite configuration, as it may be necessary to
         // update it
         // TODO: make sure target directories are aligned with build
         // config,
@@ -262,9 +256,7 @@ public class DevModeInitializer implements Serializable {
                 Paths.get(target.getPath(), "classes", VAADIN_SERVLET_RESOURCES)
                         .toFile());
 
-        options.useV14Bootstrap(config.useV14Bootstrap());
-
-        if (!config.useV14Bootstrap() && isEndpointServiceAvailable(lookup)) {
+        if (isEndpointServiceAvailable(lookup)) {
             String connectJavaSourceFolder = config.getStringProperty(
                     CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                     Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER)
@@ -347,8 +339,7 @@ public class DevModeInitializer implements Serializable {
 
         Runnable runnable = () -> {
             runNodeTasks(context, tokenFileData, tasks);
-            if (config.enableDevServer()
-                    && !featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
+            if (config.enableDevServer()) {
                 // For Vite, wait until a VaadinServlet is deployed so we know
                 // which frontend servlet path to use
                 if (VaadinServlet.getFrontendMapping() == null) {
@@ -372,11 +363,7 @@ public class DevModeInitializer implements Serializable {
                 .parseInt(config.getStringProperty("devServerPort", "0"));
         if (!config.enableDevServer()) {
             nodeTasksFuture.join();
-
             return null;
-        } else if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
-            return new WebpackHandler(devServerLookup, port,
-                    options.getNpmFolder(), nodeTasksFuture);
         } else {
             return new ViteHandler(devServerLookup, port,
                     options.getNpmFolder(), nodeTasksFuture);
@@ -392,30 +379,6 @@ public class DevModeInitializer implements Serializable {
 
     private static Logger log() {
         return LoggerFactory.getLogger(DevModeStartupListener.class);
-    }
-
-    /*
-     * Accept user.dir or cwd as a fallback only if the directory seems to be a
-     * Maven or Gradle project. Check to avoid cluttering server directories
-     * (see tickets #8249, #8403).
-     */
-    private static String getBaseDirectoryFallback() {
-        String baseDirCandidate = System.getProperty("user.dir", ".");
-        Path path = Paths.get(baseDirCandidate);
-        if (path.toFile().isDirectory()
-                && (path.resolve("pom.xml").toFile().exists()
-                        || path.resolve("build.gradle").toFile().exists())) {
-            return path.toString();
-        } else {
-            throw new IllegalStateException(String.format(
-                    "Failed to determine project directory for dev mode. "
-                            + "Directory '%s' does not look like a Maven or "
-                            + "Gradle project. Ensure that you have run the "
-                            + "prepare-frontend Maven goal, which generates "
-                            + "'flow-build-info.json', prior to deploying your "
-                            + "application",
-                    path.toString()));
-        }
     }
 
     /*

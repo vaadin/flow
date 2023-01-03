@@ -40,7 +40,6 @@
         <vaadin.devmode.liveReload.enabled>false</vaadin.devmode.liveReload.enabled>
         <vaadin.pnpm.enable>true</vaadin.pnpm.enable>
         <vaadin.allow.appshell.annotations>false</vaadin.allow.appshell.annotations>
-        <useDeprecatedV14Bootstrapping>false</useDeprecatedV14Bootstrapping>
         <vaadin.devmode.vite.options>--host</vaadin.devmode.vite.options>
         <vaadin.eagerServerLoad>false</vaadin.eagerServerLoad>
         <!-- make sure we do not leave webpack-dev-server running after IT -->
@@ -126,7 +125,6 @@
                     <artifactId>flow-maven-plugin</artifactId>
                     <version>${project.version}</version>
                     <configuration>
-                        <useDeprecatedV14Bootstrapping>${vaadin.useDeprecatedV14Bootstrapping}</useDeprecatedV14Bootstrapping>
                         <pnpmEnable>${vaadin.pnpm.enable}</pnpmEnable>
                     </configuration>
                     <executions>
@@ -173,7 +171,6 @@
                                 <directory>${project.basedir}</directory>
                                 <includes>
                                     <include>package*.json</include>
-                                    <include>webpack*.js</include>
                                 </includes>
                             </fileset>
                         </filesets>
@@ -248,6 +245,7 @@
         <module>test-resources</module>
         <module>test-common</module>
         <module>test-lumo</module>
+        <module>test-express-build</module>
     </modules>
 
     <profiles>
@@ -422,7 +420,6 @@
                                     <directory>${project.basedir}</directory>
                                     <includes>
                                         <include>package*.json</include>
-                                        <include>webpack.*.js</include>
                                         <include>types.d.ts</include>
                                         <include>tsconfig.json</include>
                                         <include>pnpm-lock.yaml</include>

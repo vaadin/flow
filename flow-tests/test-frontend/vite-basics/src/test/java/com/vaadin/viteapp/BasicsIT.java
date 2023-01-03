@@ -30,12 +30,6 @@ public class BasicsIT extends ViteDevModeIT {
     }
 
     @Test
-    public void applicationUsesVite() {
-        TestBenchElement viteStatus = $(ParagraphElement.class).id("status");
-        Assert.assertEquals("Vite feature is true", viteStatus.getText());
-    }
-
-    @Test
     public void debugWindowShown() {
         DevToolsElement devTools = $(DevToolsElement.class).waitForFirst();
         devTools.expand();

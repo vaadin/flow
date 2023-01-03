@@ -45,8 +45,6 @@ The following actions are performed when creating a package:
  Default value is: "${project.basedir}/" + FRONTEND
 * **productionMode** `boolean` - Whether or not we are running in productionMode.
  Default value is: ${vaadin.productionMode}
-* **useDeprecatedV14Bootstrapping** `String` - Whether or not we are running in legacy V14 bootstrap mode. True if defined or if it's set to true.
- Default value is: ${vaadin.useDeprecatedV14Bootstrapping}
 * **eagerServerLoad** `boolean` - Whether or not insert the initial Uidl object in the bootstrap index.html.
  Default value is: "${vaadin." + Constants.SERVLET_PARAMETER_INITIAL_UIDL + "}"
 * **webpackOutputDirectory** `File` - The folder where webpack should output index.js and other generated files.
@@ -65,5 +63,5 @@ The following actions are performed when creating a package:
  Default value is: true
 * **requireHomeNodeExec** `boolean` - Whether vaadin home node executable usage is forced. 
  If it's set to {@code true} then vaadin home 'node' is checked and installed if it's absent. 
- Then it will be used instead of globally 'node' or locally installed installed 'node'.
+ Then it will be used instead of globally 'node' or locally installed 'node'.
  Default value is: false

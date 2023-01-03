@@ -27,7 +27,6 @@ import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
@@ -155,7 +154,6 @@ public class BuildFrontendUtil {
                 .withGeneratedFolder(adapter.generatedFolder())
                 .withFrontendDirectory(adapter.frontendDirectory())
                 .withBuildDirectory(adapter.buildFolder())
-                .useV14Bootstrap(adapter.isUseDeprecatedV14Bootstrapping())
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder(adapter))
                 .createMissingPackageJson(true).enableImportsUpdate(false)
@@ -221,8 +219,6 @@ public class BuildFrontendUtil {
                 TOKEN_FILE);
         JsonObject buildInfo = Json.createObject();
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
-        buildInfo.put(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
-                adapter.isUseDeprecatedV14Bootstrapping());
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL,
                 adapter.eagerServerLoad());
         buildInfo.put(NPM_TOKEN, adapter.npmFolder().getAbsolutePath());
@@ -266,12 +262,10 @@ public class BuildFrontendUtil {
             if (adapter.isDebugEnabled()) {
                 adapter.logDebug(String.format(
                         "%n>>> Running prepare-frontend%nSystem"
-                                + ".properties:%n" + " webpackPort: %s%n "
+                                + ".properties:%n "
                                 + "project.basedir: %s%nGoal parameters:%n "
                                 + "npmFolder: %s%nToken file: " + "%s%n"
                                 + "Token content: %s%n",
-                        System.getProperty(
-                                "vaadin.devmode.webpack.running-port"),
                         adapter.projectBaseDirectory(), adapter.npmFolder(),
                         token.getAbsolutePath(), buildInfo.toJson()));
             }
@@ -312,7 +306,6 @@ public class BuildFrontendUtil {
                     .runNpmInstall(adapter.runNpmInstall())
                     .withWebpack(adapter.webpackOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
-                    .useV14Bootstrap(adapter.isUseDeprecatedV14Bootstrapping())
                     .enablePackagesUpdate(true)
                     .useByteCodeScanner(adapter.optimizeBundle())
                     .withJarFrontendResourcesFolder(
@@ -348,6 +341,80 @@ public class BuildFrontendUtil {
     }
 
     /**
+     * Run a dev-bundle build.
+     *
+     * @param adapter
+     *            - the PluginAdapterBase.
+     * @throws ExecutionFailedException
+     *             - a ExecutionFailedException.
+     * @throws URISyntaxException
+     *             - - Could not build an URI from nodeDownloadRoot().
+     */
+    public static void runDevBuildNodeUpdater(PluginAdapterBuild adapter)
+            throws ExecutionFailedException, URISyntaxException, IOException {
+
+        Set<File> jarFiles = adapter.getJarFiles();
+        final URI nodeDownloadRootURI;
+
+        nodeDownloadRootURI = adapter.nodeDownloadRoot();
+
+        ClassFinder classFinder = adapter.getClassFinder();
+
+        Lookup lookup = adapter.createLookup(classFinder);
+
+        try {
+            FileUtils.forceMkdir(adapter.generatedFolder());
+        } catch (IOException e) {
+            throw new IOException(
+                    "Failed to create folder '" + adapter.generatedFolder()
+                            + "'. Verify that you may write to path.",
+                    e);
+        }
+
+        try {
+            Options options = new com.vaadin.flow.server.frontend.Options(
+                    lookup, adapter.npmFolder()).withProductionMode(false)
+                    .withGeneratedFolder(adapter.generatedFolder())
+                    .withFrontendDirectory(adapter.frontendDirectory())
+                    .withBuildDirectory(adapter.buildFolder())
+                    .runNpmInstall(adapter.runNpmInstall())
+                    .withWebpack(adapter.webpackOutputDirectory(),
+                            adapter.servletResourceOutputDirectory())
+                    .enablePackagesUpdate(true).useByteCodeScanner(false)
+                    .withJarFrontendResourcesFolder(
+                            getJarFrontendResourcesFolder(adapter))
+                    .copyResources(jarFiles).copyTemplates(true)
+                    .copyLocalResources(adapter.frontendResourcesDirectory())
+                    .enableImportsUpdate(true)
+                    .withEmbeddableWebComponents(
+                            adapter.generateEmbeddableWebComponents())
+                    .withTokenFile(BuildFrontendUtil.getTokenFile(adapter))
+                    .enablePnpm(adapter.pnpmEnable())
+                    .useGlobalPnpm(adapter.useGlobalPnpm())
+                    .withApplicationProperties(adapter.applicationProperties())
+                    .withEndpointSourceFolder(adapter.javaSourceFolder())
+                    .withEndpointGeneratedOpenAPIFile(adapter.openApiJsonFile())
+                    .withFrontendGeneratedFolder(adapter.generatedTsFolder())
+                    .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                    .withNodeVersion(adapter.nodeVersion())
+                    .withNodeDownloadRoot(nodeDownloadRootURI)
+                    .setNodeAutoUpdate(adapter.nodeAutoUpdate())
+                    .setJavaResourceFolder(adapter.javaResourceFolder())
+                    .withPostinstallPackages(adapter.postinstallPackages())
+                    .withDevBundleBuild(true);
+            new NodeTasks(options).execute();
+        } catch (ExecutionFailedException exception) {
+            throw exception;
+        } catch (Throwable throwable) { // NOSONAR Intentionally throwable
+            throw new ExecutionFailedException(
+                    "Error occured during goal execution: "
+                            + throwable.getMessage()
+                            + "Please run Maven with the -e switch (or Gradle with the --stacktrace switch), to learn the full stack trace.",
+                    throwable);
+        }
+    }
+
+    /**
      * Execute the frontend build with the wanted build system.
      *
      * @param adapter
@@ -366,31 +433,7 @@ public class BuildFrontendUtil {
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
-        if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
-            BuildFrontendUtil.runWebpack(adapter, tools);
-        } else {
-            BuildFrontendUtil.runVite(adapter, tools);
-        }
-    }
-
-    /**
-     * Runs the Webpack build
-     *
-     * @param adapter
-     *            - the PluginAdapterBase.
-     * @param frontendTools
-     *            - frontend tools access object
-     * @throws TimeoutException
-     *             - while run webpack
-     * @throws URISyntaxException
-     *             - while parsing nodeDownloadRoot()) to URI
-     */
-    public static void runWebpack(PluginAdapterBase adapter,
-            FrontendTools frontendTools)
-            throws TimeoutException, URISyntaxException {
-        runFrontendBuildTool(adapter, frontendTools, "Webpack",
-                "webpack/bin/webpack.js",
-                frontendTools.getWebpackNodeEnvironment());
+        BuildFrontendUtil.runVite(adapter, tools);
     }
 
     /**
@@ -613,6 +656,21 @@ public class BuildFrontendUtil {
                     StandardCharsets.UTF_8.name());
         } catch (IOException e) {
             adapter.logWarn("Unable to read token file", e);
+        }
+    }
+
+    /**
+     * Delete the build token file. This is used with dev-bundle build as token
+     * file should never be added to the package.
+     *
+     * @param adapter
+     *            used plugin adapter implementation
+     */
+    public static void removeBuildFile(PluginAdapterBuild adapter)
+            throws IOException {
+        File tokenFile = getTokenFile(adapter);
+        if (tokenFile.exists()) {
+            FileUtils.delete(tokenFile);
         }
     }
 }

@@ -193,19 +193,26 @@ public class PushHandler {
     }
 
     /**
-     * Invokes a command with the current service set.
+     * Invokes a command with the current service and session set.
      *
      * @param resource
      *            the atmosphere resource for the current request
      * @param command
      *            the command to run
      */
-    void callWithService(final AtmosphereResource resource,
+    void callWithServiceAndSession(final AtmosphereResource resource,
             final Consumer<AtmosphereRequest> command) {
         AtmosphereRequest req = resource.getRequest();
         VaadinServletRequest vaadinRequest = new VaadinServletRequest(req,
                 service);
         service.setCurrentInstances(vaadinRequest, null);
+        VaadinSession session = null;
+        try {
+            session = service.findVaadinSession(vaadinRequest);
+            VaadinSession.setCurrent(session);
+        } catch (SessionExpiredException e) {
+            // Call without a session
+        }
         try {
             command.accept(req);
         } finally {
@@ -555,9 +562,11 @@ public class PushHandler {
                 // No debug info must ever leak out in production
                 return;
             }
-            callWithService(resource, request -> BrowserLiveReloadAccessor
-                    .getLiveReloadFromService(service)
-                    .ifPresent(liveReload -> liveReload.onConnect(resource)));
+            callWithServiceAndSession(resource,
+                    request -> BrowserLiveReloadAccessor
+                            .getLiveReloadFromService(service)
+                            .ifPresent(liveReload -> liveReload
+                                    .onConnect(resource)));
         } else {
             callWithUi(resource, establishCallback);
         }
@@ -577,7 +586,7 @@ public class PushHandler {
      */
     void onMessage(AtmosphereResource resource) {
         if (isDebugWindowConnection(resource)) {
-            callWithService(resource, this::handleDebugWindowMessage);
+            callWithServiceAndSession(resource, this::handleDebugWindowMessage);
         } else {
             callWithUi(resource, receiveCallback);
         }
