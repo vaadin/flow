@@ -35,6 +35,7 @@ import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TSX;
 
 public class TaskGenerateIndexTsTest {
     @Rule
@@ -73,6 +74,15 @@ public class TaskGenerateIndexTsTest {
     public void should_reported_routing_client_when_IndexTsExists()
             throws Exception {
         Files.createFile(new File(frontendFolder, INDEX_TS).toPath());
+        taskGenerateIndexTs.execute();
+        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+                e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName())));
+    }
+
+    @Test
+    public void should_reported_routing_client_when_IndexTsxExists()
+            throws Exception {
+        Files.createFile(new File(frontendFolder, INDEX_TSX).toPath());
         taskGenerateIndexTs.execute();
         Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName())));
