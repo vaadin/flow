@@ -1364,7 +1364,7 @@ export class VaadinDevTools extends LitElement {
     return html` <div
         class="window ${this.expanded ? 'visible' : 'hidden'}"
         tabindex="0"
-        @keydown=${(e: KeyboardEvent) => e.key === 'Escape' && this.toggleExpanded()}
+        @keydown=${(e: KeyboardEvent) => e.key === 'Escape' && this.expanded && this.toggleExpanded()}
       >
         <div class="window-toolbar">
           ${this.tabs.map(

@@ -18,10 +18,10 @@
  * This contains functions and features used to copy theme files.
  */
 
-const fs = require('fs');
-const path = require('path');
-const glob = require('glob');
-const mkdirp = require('mkdirp');
+import { readdirSync, statSync, mkdirSync, existsSync, copyFileSync } from 'fs';
+import { resolve, basename, relative, extname } from 'path';
+import { sync } from 'glob';
+import { sync as mkdirpSync } from 'mkdirp';
 
 const ignoredFileExtensions = ['.css', '.js', '.json'];
 
@@ -35,23 +35,23 @@ const ignoredFileExtensions = ['.css', '.js', '.json'];
  * @param {object} logger plugin logger
  */
 function copyThemeResources(themeFolder, projectStaticAssetsOutputFolder, logger) {
-  const staticAssetsThemeFolder = path.resolve(projectStaticAssetsOutputFolder, 'themes', path.basename(themeFolder));
+  const staticAssetsThemeFolder = resolve(projectStaticAssetsOutputFolder, 'themes', basename(themeFolder));
   const collection = collectFolders(themeFolder, logger);
 
   // Only create assets folder if there are files to copy.
   if (collection.files.length > 0) {
-    mkdirp.sync(staticAssetsThemeFolder);
+    mkdirpSync(staticAssetsThemeFolder);
     // create folders with
     collection.directories.forEach((directory) => {
-      const relativeDirectory = path.relative(themeFolder, directory);
-      const targetDirectory = path.resolve(staticAssetsThemeFolder, relativeDirectory);
+      const relativeDirectory = relative(themeFolder, directory);
+      const targetDirectory = resolve(staticAssetsThemeFolder, relativeDirectory);
 
-      mkdirp.sync(targetDirectory);
+      mkdirpSync(targetDirectory);
     });
 
     collection.files.forEach((file) => {
-      const relativeFile = path.relative(themeFolder, file);
-      const targetFile = path.resolve(staticAssetsThemeFolder, relativeFile);
+      const relativeFile = relative(themeFolder, file);
+      const targetFile = resolve(staticAssetsThemeFolder, relativeFile);
       copyFileIfAbsentOrNewer(file, targetFile, logger);
     });
   }
@@ -69,10 +69,10 @@ function copyThemeResources(themeFolder, projectStaticAssetsOutputFolder, logger
  */
 function collectFolders(folderToCopy, logger) {
   const collection = { directories: [], files: [] };
-  logger.trace('files in directory', fs.readdirSync(folderToCopy));
-  fs.readdirSync(folderToCopy).forEach((file) => {
-    const fileToCopy = path.resolve(folderToCopy, file);
-    if (fs.statSync(fileToCopy).isDirectory()) {
+  logger.trace('files in directory', readdirSync(folderToCopy));
+  readdirSync(folderToCopy).forEach((file) => {
+    const fileToCopy = resolve(folderToCopy, file);
+    if (statSync(fileToCopy).isDirectory()) {
       logger.debug('Going through directory', fileToCopy);
       const result = collectFolders(fileToCopy, logger);
       if (result.files.length > 0) {
@@ -81,7 +81,7 @@ function collectFolders(folderToCopy, logger) {
         collection.directories.push.apply(collection.directories, result.directories);
         collection.files.push.apply(collection.files, result.files);
       }
-    } else if (!ignoredFileExtensions.includes(path.extname(fileToCopy))) {
+    } else if (!ignoredFileExtensions.includes(extname(fileToCopy))) {
       logger.debug('Adding file', fileToCopy);
       collection.files.push(fileToCopy);
     }
@@ -124,7 +124,7 @@ function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputF
     return;
   }
 
-  fs.mkdirSync(projectStaticAssetsOutputFolder, {
+  mkdirSync(projectStaticAssetsOutputFolder, {
     recursive: true
   });
   const missingModules = checkModules(Object.keys(assets));
@@ -139,15 +139,15 @@ function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputF
   Object.keys(assets).forEach((module) => {
     const copyRules = assets[module];
     Object.keys(copyRules).forEach((copyRule) => {
-      const nodeSources = path.resolve('node_modules/', module, copyRule);
-      const files = glob.sync(nodeSources, { nodir: true });
-      const targetFolder = path.resolve(projectStaticAssetsOutputFolder, 'themes', themeName, copyRules[copyRule]);
+      const nodeSources = resolve('node_modules/', module, copyRule);
+      const files = sync(nodeSources, { nodir: true });
+      const targetFolder = resolve(projectStaticAssetsOutputFolder, 'themes', themeName, copyRules[copyRule]);
 
-      fs.mkdirSync(targetFolder, {
+      mkdirSync(targetFolder, {
         recursive: true
       });
       files.forEach((file) => {
-        const copyTarget = path.resolve(targetFolder, path.basename(file));
+        const copyTarget = resolve(targetFolder, basename(file));
         copyFileIfAbsentOrNewer(file, copyTarget, logger);
       });
     });
@@ -158,7 +158,7 @@ function checkModules(modules) {
   const missing = [];
 
   modules.forEach((module) => {
-    if (!fs.existsSync(path.resolve('node_modules/', module))) {
+    if (!existsSync(resolve('node_modules/', module))) {
       missing.push(module);
     }
   });
@@ -174,10 +174,10 @@ function checkModules(modules) {
  * @param {object} logger plugin logger
  */
 function copyFileIfAbsentOrNewer(fileToCopy, copyTarget, logger) {
-  if (!fs.existsSync(copyTarget) || fs.statSync(copyTarget).mtime < fs.statSync(fileToCopy).mtime) {
+  if (!existsSync(copyTarget) || statSync(copyTarget).mtime < statSync(fileToCopy).mtime) {
     logger.trace('Copying: ', fileToCopy, '=>', copyTarget);
-    fs.copyFileSync(fileToCopy, copyTarget);
+    copyFileSync(fileToCopy, copyTarget);
   }
 }
 
-module.exports = { checkModules, copyStaticAssets, copyThemeResources };
+export { checkModules, copyStaticAssets, copyThemeResources };
