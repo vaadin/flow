@@ -484,7 +484,8 @@ public class VaadinSessionTest {
         int nodeId = testComponent.getElement().getNode().getId();
         String appId = testComponent.getUI().get().getInternals().getAppId();
         VaadinSession session = testComponent.getUI().get().getSession();
-        Assert.assertSame(testComponent, session.findComponent(appId, nodeId));
+        Assert.assertSame(testComponent,
+                session.findElement(appId, nodeId).getComponent().get());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -493,7 +494,7 @@ public class VaadinSessionTest {
         int nodeId = testComponent.getElement().getNode().getId();
         String appId = testComponent.getUI().get().getInternals().getAppId();
         VaadinSession session = testComponent.getUI().get().getSession();
-        session.findComponent(appId, nodeId * 10);
+        session.findElement(appId, nodeId * 10);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -501,7 +502,7 @@ public class VaadinSessionTest {
         TestComponent testComponent = createTestComponentInSession();
         int nodeId = testComponent.getElement().getNode().getId();
         VaadinSession session = testComponent.getUI().get().getSession();
-        session.findComponent("foo", nodeId);
+        session.findElement("foo", nodeId);
     }
 
     private TestComponent createTestComponentInSession() {
