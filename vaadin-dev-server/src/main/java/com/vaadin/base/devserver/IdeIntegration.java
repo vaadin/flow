@@ -30,11 +30,11 @@ public class IdeIntegration {
     }
 
     /**
-     * Opens, in the current IDE, the location (file + line number) where the given
-     * component was created.
+     * Opens, in the current IDE, the location (file + line number) where the
+     * given component was created.
      *
      * @param component
-     *                  the component to show
+     *            the component to show
      */
     public void showComponentCreateInIde(Component component) {
         UsageStatistics.markAsUsed("flow/showComponentCreateInIde", null);
@@ -42,11 +42,11 @@ public class IdeIntegration {
     }
 
     /**
-     * Opens, in the current IDE, the location (file + line number) where the given
-     * component was attached.
+     * Opens, in the current IDE, the location (file + line number) where the
+     * given component was attached.
      *
      * @param component
-     *                  the component to show
+     *            the component to show
      */
     public void showComponentAttachInIde(Component component) {
         UsageStatistics.markAsUsed("flow/showComponentAttachInIde", null);
