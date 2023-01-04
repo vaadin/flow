@@ -209,6 +209,11 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
+    public File getJavaSourceFolder() {
+        return super.getJavaSourceFolder();
+    }
+
+    @Override
     public boolean isSyncIdCheckEnabled() {
         return getBooleanProperty(SERVLET_PARAMETER_SYNC_ID_CHECK, true);
     }
