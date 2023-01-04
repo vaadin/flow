@@ -3,8 +3,7 @@ const fs = require("fs");
 
 /****************** START CONFIG */
 // Do not run the following modules except 'flow-tests' that is handled separatelly in this script
-const globalExclusions = ['flow-tests/servlet-containers/tomcat10'];
-
+const globalExclusions = ['flow-tests/servlet-containers/tomcat10', 'flow-tests/test-multi-war/test-war1', 'flow-tests/test-multi-war/test-war2'];
 // Set modules or tests weights and fixed slice position for better distribution
 //  weight: it's time in half-minutes, default 1 = 30secs
 //  pos:    certain modules need to be allocated manually. Use position for that.
@@ -31,8 +30,6 @@ const moduleWeights = {
   'flow-tests/test-npm-only-features/test-npm-performance-regression': { pos: 1, weight: 3 },
   'flow-tests/test-v14-bootstrap': { pos: 1, weight: 3 },
   'flow-tests/test-application-theme/test-theme-live-reload': { pos: 1, weight: 2 },
-  'flow-tests/test-multi-war/test-war1': { pos: 3, weight: 2 },
-  'flow-tests/test-multi-war/test-war2': { pos: 3, weight: 2 },
   'flow-tests/test-npm-only-features/test-npm-bytecode-scanning/pom-prod-fallback.xml': { pos: 1, weight: 2 },
   'flow-tests/test-custom-route-registry': { pos: 1, weight: 2 },
   'flow-tests/test-frontend/test-npm': { pos: 1, weight: 2 },
