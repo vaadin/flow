@@ -214,6 +214,11 @@ public class FrontendUtils {
     public static final String INDEX_JS = "index.js";
 
     /**
+     * File name of the index.tsx in client side.
+     */
+    public static final String INDEX_TSX = "index.tsx";
+
+    /**
      * File name of Vite helper used in development mode.
      */
     public static final String VITE_DEVMODE_TS = "vite-devmode.ts";

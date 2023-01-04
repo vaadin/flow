@@ -205,4 +205,18 @@ public interface AbstractConfiguration extends Serializable {
         return new File(getStringProperty(Constants.JAVA_RESOURCE_FOLDER_TOKEN,
                 "src/main/resources"));
     }
+
+    /**
+     * Gets the folder where sources are stored.
+     * <p>
+     * Only available in development mode.
+     *
+     * @return the folder where source files are stored, typically
+     *         {@code src/main/java}.
+     */
+    default File getJavaSourceFolder() {
+        return new File(getStringProperty(
+                Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN, "src/main/java"))
+                .getAbsoluteFile();
+    }
 }
