@@ -5,6 +5,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -36,8 +37,9 @@ public class FindComponentView extends Div {
             String appId = "view";
             int nodeId = Integer.parseInt(nodeIdInput.getValue());
             VaadinSession session = VaadinSession.getCurrent();
+            Element element = session.findElement(appId, nodeId);
             result.setText("Found component with id "
-                    + session.findComponent(appId, nodeId).getId().get());
+                    + element.getComponent().get().getId().get());
         });
         button.setId("check");
 

@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -1166,10 +1167,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Finds the given component in the session.
+     * Finds the given element in the session.
      * <p>
-     * The ids are typically acquired in the browser where appId refers to the
-     * UI instance and nodeId to the component inside that UI.
+     * The ids are typically acquired in the browser: {@literal appId} (client
+     * side the key in {@code window.Vaadin.Flow.clients}) refers to the UI
+     * instance and {@literal nodeId} (client side fetched using
+     * {@code getNodeId} in the {@code window.Vaadin.Flow.clients} value) refers
+     * to the element inside that UI instance.
      *
      * @param appId
      *            the application id
@@ -1179,7 +1183,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @throws IllegalArgumentException
      *             if the component was not found
      */
-    public Component findComponent(String appId, int nodeId)
+    public Element findElement(String appId, int nodeId)
             throws IllegalArgumentException {
         checkHasLock();
 
@@ -1198,8 +1202,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                             + " in app " + appId);
         }
 
-        return ComponentMapping.getComponent(node).orElseThrow(
-                () -> new IllegalArgumentException("No component found"));
+        return Element.get(node);
     }
 
 }
