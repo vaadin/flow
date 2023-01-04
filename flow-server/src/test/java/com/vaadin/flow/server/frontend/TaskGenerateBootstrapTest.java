@@ -42,6 +42,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TSX;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.getClassFinder;
 
 public class TaskGenerateBootstrapTest {
@@ -101,6 +102,15 @@ public class TaskGenerateBootstrapTest {
     public void should_importFrontendIndexTS()
             throws ExecutionFailedException, IOException {
         new File(frontendFolder, INDEX_TS).createNewFile();
+        taskGenerateBootstrap.execute();
+        String content = taskGenerateBootstrap.getFileContent();
+        Assert.assertTrue(content.contains("import '../index';"));
+    }
+
+    @Test
+    public void should_importFrontendIndexTSX()
+            throws ExecutionFailedException, IOException {
+        new File(frontendFolder, INDEX_TSX).createNewFile();
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
         Assert.assertTrue(content.contains("import '../index';"));

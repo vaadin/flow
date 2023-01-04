@@ -137,7 +137,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         // Validate frontend requirements in flow-generated-imports.js
         final GenerateMainImports generateMainImports = new GenerateMainImports(
-                finder, frontendDependencies, options);
+                finder, frontendDependencies, options, statsJson);
         generateMainImports.run();
         final List<String> imports = generateMainImports.getLines().stream()
                 .filter(line -> line.startsWith("import"))

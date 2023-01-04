@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
-        <artifactId>flow-tests</artifactId>
+        <artifactId>test-express-build</artifactId>
         <version>24.0-SNAPSHOT</version>
     </parent>
     <artifactId>test-dev-bundle</artifactId>
@@ -26,6 +26,12 @@
             <artifactId>flow</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-dev-server</artifactId>
+            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
