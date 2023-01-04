@@ -15,11 +15,14 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.helpers.NOPLogger;
@@ -29,6 +32,11 @@ import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
+
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
 /**
  * Collect generated-flow-imports content for project to use to determine if
@@ -43,12 +51,15 @@ public class GenerateMainImports extends AbstractUpdateImports {
     private final ClassFinder finder;
     private List<String> lines;
     private FrontendDependenciesScanner frontendDepScanner;
+    private JsonObject statsJson;
 
     public GenerateMainImports(ClassFinder classFinder,
-            FrontendDependenciesScanner frontendDepScanner, Options options) {
+            FrontendDependenciesScanner frontendDepScanner, Options options,
+            JsonObject statsJson) {
         super(options);
         finder = classFinder;
         this.frontendDepScanner = frontendDepScanner;
+        this.statsJson = statsJson;
     }
 
     public List<String> getLines() {
@@ -84,8 +95,11 @@ public class GenerateMainImports extends AbstractUpdateImports {
         if (options.getGeneratedFolder() == null) {
             return Collections.emptySet();
         }
+        // Exclude generated-flow-imports.js as it's not a generated module.
         return NodeUpdater.getGeneratedModules(options.getGeneratedFolder(),
-                Collections.emptySet());
+                Collections.singleton(
+                        new File(options.getGeneratedFolder(), IMPORTS_NAME)
+                                .getName()));
     }
 
     @Override
@@ -117,5 +131,26 @@ public class GenerateMainImports extends AbstractUpdateImports {
     @Override
     protected String getImportsNotFoundMessage() {
         return "";
+    }
+
+    @Override
+    protected boolean importedFileExists(String importName) {
+        if (super.importedFileExists(importName)) {
+            return true;
+        }
+        // Accept import name change if import is in bundle.
+        // Basically it means theme file import path like:
+        // "@vaadin/accordion/theme/lumo/accordion.js" instead of
+        // "@vaadin/accordion/src/accordion.js"
+        JsonArray statsBundle = statsJson.hasKey("bundleImports")
+                ? statsJson.getArray("bundleImports")
+                : Json.createArray();
+
+        for (int i = 0; i < statsBundle.length(); i++) {
+            if (importName.equals(statsBundle.getString(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 }
