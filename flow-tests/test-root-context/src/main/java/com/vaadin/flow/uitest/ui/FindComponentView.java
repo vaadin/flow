@@ -1,6 +1,5 @@
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.ComponentReference;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
