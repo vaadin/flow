@@ -31,7 +31,8 @@ const moduleWeights = {
   'flow-tests/test-npm-only-features/test-npm-performance-regression': { pos: 1, weight: 3 },
   'flow-tests/test-v14-bootstrap': { pos: 1, weight: 3 },
   'flow-tests/test-application-theme/test-theme-live-reload': { pos: 1, weight: 2 },
-  'flow-tests/test-multi-war/test-war2': { pos: 1, weight: 2 },
+  'flow-tests/test-multi-war/test-war1': { pos: 3, weight: 2 },
+  'flow-tests/test-multi-war/test-war2': { pos: 3, weight: 2 },
   'flow-tests/test-npm-only-features/test-npm-bytecode-scanning/pom-prod-fallback.xml': { pos: 1, weight: 2 },
   'flow-tests/test-custom-route-registry': { pos: 1, weight: 2 },
   'flow-tests/test-frontend/test-npm': { pos: 1, weight: 2 },
@@ -105,7 +106,6 @@ const moduleWeights = {
   'flow-tests/test-npm-only-features/test-npm-bytecode-scanning/pom-production.xml': { weight: 2 },
   'flow-tests/test-embedding/test-embedding-theme-variant': { weight: 2 },
   'flow-tests/test-theme-no-polymer': { weight: 2 },
-  'flow-tests/test-multi-war/test-war1': { weight: 2 },
   'flow-tests/test-frontend/vite-pwa-production': { weight: 2 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline/pom-production.xml': { weight: 2 },
   'flow-tests/test-dev-bundle': { weight: 2 }
