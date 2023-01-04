@@ -23,9 +23,6 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component.MapToExistingElement;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -43,7 +40,6 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.Attributes;
@@ -649,41 +645,6 @@ public class ComponentUtil {
                     "Implicit router instance is not available.");
         }
         return router;
-    }
-
-    /**
-     * Finds the given component in the given session.
-     *
-     * @param componentReference
-     *            the ids referencing to the component
-     * @return the component instance
-     * @throws IllegalArgumentException
-     *             if the component was not found
-     */
-    public static Component findComponent(ComponentReference componentReference)
-            throws IllegalArgumentException {
-        assert componentReference.getSession().hasLock();
-
-        String appId = componentReference.getAppId();
-        int nodeId = componentReference.getNodeId();
-        Optional<UI> ui = componentReference.getSession().getUIs().stream()
-                .filter(u -> {
-                    return u.getInternals().getAppId().equals(appId);
-                }).findFirst();
-        if (!ui.isPresent()) {
-            throw new IllegalArgumentException(
-                    "Unable to find the UI for app id " + appId);
-        }
-        StateNode node = ui.get().getInternals().getStateTree()
-                .getNodeById(nodeId);
-        if (node == null) {
-            throw new IllegalArgumentException(
-                    "Unable to find the component for node " + nodeId
-                            + " in app " + appId);
-        }
-
-        return ComponentMapping.getComponent(node).orElseThrow(
-                () -> new IllegalArgumentException("No component found"));
     }
 
 }
