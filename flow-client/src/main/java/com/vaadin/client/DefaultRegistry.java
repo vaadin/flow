@@ -15,6 +15,8 @@
  */
 package com.vaadin.client;
 
+import java.util.function.Supplier;
+
 import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.DefaultConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
@@ -94,7 +96,7 @@ public class DefaultRegistry extends Registry {
         set(URIResolver.class, new URIResolver(this));
         set(DependencyLoader.class, new DependencyLoader(this));
         set(SystemErrorHandler.class, new SystemErrorHandler(this));
-        set(UILifecycle.class, new UILifecycle());
+        set(UILifecycle.class, (Supplier<UILifecycle>) UILifecycle::new);
         set(StateTree.class, new StateTree(this));
         set(LoadingIndicator.class, new LoadingIndicator());
         set(RequestResponseTracker.class, new RequestResponseTracker(this));
@@ -104,8 +106,9 @@ public class DefaultRegistry extends Registry {
         set(ServerConnector.class, new ServerConnector(this));
         set(ExecuteJavaScriptProcessor.class,
                 new ExecuteJavaScriptProcessor(this));
-        set(ConstantPool.class, new ConstantPool());
-        set(ExistingElementMap.class, new ExistingElementMap());
+        set(ConstantPool.class, (Supplier<ConstantPool>) ConstantPool::new);
+        set(ExistingElementMap.class,
+                (Supplier<ExistingElementMap>) ExistingElementMap::new);
         set(InitialPropertiesHandler.class, new InitialPropertiesHandler(this));
 
         // Classes with dependencies, in correct order

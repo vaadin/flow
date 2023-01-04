@@ -118,6 +118,12 @@ public class ApplicationConstants implements Serializable {
     public static final String CLIENT_TO_SERVER_ID = "clientId";
 
     /**
+     * The name of the parameter used to transmit the id of UI used in given
+     * request.
+     */
+    public static final String UI_ID = "uiId";
+
+    /**
      * Default value to use in case the security protection is disabled.
      */
     public static final String CSRF_TOKEN_DEFAULT_VALUE = "init";
@@ -168,6 +174,12 @@ public class ApplicationConstants implements Serializable {
      * Request type parameter value indicating a push request.
      */
     public static final String REQUEST_TYPE_PUSH = "push";
+
+    /**
+     * Request type parameter value indicating a WebComponent resynchronization
+     * request.
+     */
+    public static final String REQUEST_TYPE_WEBCOMPONENT_RESYNC = "webcomponent-resync";
 
     /**
      * Attribute name for marking internal router link anchors.
