@@ -22,6 +22,7 @@ import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.JAVA_RESOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
@@ -156,7 +157,7 @@ public class BuildFrontendUtil {
                 .withBuildDirectory(adapter.buildFolder())
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder(adapter))
-                .createMissingPackageJson(true).enableImportsUpdate(false)
+                .createMissingPackageJson(new File(adapter.npmFolder(), PACKAGE_JSON).exists()).enableImportsUpdate(false)
                 .enablePackagesUpdate(false).runNpmInstall(false)
                 .withFrontendGeneratedFolder(adapter.generatedTsFolder())
                 .withNodeVersion(adapter.nodeVersion())
