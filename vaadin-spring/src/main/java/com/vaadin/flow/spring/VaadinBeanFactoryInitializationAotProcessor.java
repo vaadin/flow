@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.reflections.Reflections;
 import org.springframework.aot.hint.MemberCategory;
+import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
@@ -29,7 +30,6 @@ class VaadinBeanFactoryInitializationAotProcessor
             ConfigurableListableBeanFactory beanFactory) {
         return (generationContext, beanFactoryInitializationCode) -> {
             var hints = generationContext.getRuntimeHints();
-            var reflection = hints.reflection();
             var resources = hints.resources();
             var memberCategories = MemberCategory.values();
             for (var pkg : getPackages(beanFactory)) {
@@ -48,21 +48,38 @@ class VaadinBeanFactoryInitializationAotProcessor
                 routeTypes.addAll(
                         reflections.getTypesAnnotatedWith(RouteAlias.class));
                 for (var c : routeTypes) {
-                    reflection.registerType(c, memberCategories);
+                    registerType(hints, c, memberCategories);
+
                     resources.registerType(c);
                 }
-                for (var c : reflections.getSubTypesOf(Component.class))
-                    reflection.registerType(c, memberCategories);
-                for (var c : reflections.getSubTypesOf(HasErrorParameter.class))
-                    reflection.registerType(c, memberCategories);
-                for (var c : reflections.getSubTypesOf(ComponentEvent.class))
-                    reflection.registerType(c, memberCategories);
-                for (var c : reflections.getSubTypesOf(Converter.class))
-                    reflection.registerType(c, memberCategories);
-                for (var c : reflections.getSubTypesOf(HasUrlParameter.class))
-                    reflection.registerType(c, memberCategories);
+                for (var c : reflections.getSubTypesOf(Component.class)) {
+                    registerType(hints, c, memberCategories);
+                }
+                for (var c : reflections
+                        .getSubTypesOf(HasErrorParameter.class)) {
+                    registerType(hints, c, memberCategories);
+                }
+                for (var c : reflections.getSubTypesOf(ComponentEvent.class)) {
+                    registerType(hints, c, memberCategories);
+                }
+                for (var c : reflections.getSubTypesOf(Converter.class)) {
+                    registerType(hints, c, memberCategories);
+                }
+                for (var c : reflections.getSubTypesOf(HasUrlParameter.class)) {
+                    registerType(hints, c, memberCategories);
+                }
             }
         };
+    }
+
+    private void registerType(RuntimeHints hints, Class<?> c,
+            MemberCategory[] memberCategories) {
+        if (c.getCanonicalName() == null) {
+            // See
+            // https://github.com/spring-projects/spring-framework/issues/29774
+            return;
+        }
+        hints.reflection().registerType(c, memberCategories);
     }
 
     private static List<String> getPackages(BeanFactory beanFactory) {
