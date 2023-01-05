@@ -1623,21 +1623,23 @@ public class Element extends Node<Element> {
      * Gets the underlying internal root Element of the given component. An
      * alternative to {@link Component#getElement() }.
      * <p>
-     * <b>Note!</b> If you see a direct call to this method in your application
-     * UI code, you should consider that as a sign that you are probably doing
-     * something wrong. This method is breaking the abstraction layer Component
-     * interface (and its implementations) are providing and you should only use
-     * this when creating components or when you otherwise need to break through
-     * the abstraction layer. If it is a hack or a workaround, it is also better
-     * to hide that into an extension, helper class, separate add-on module or
-     * at least into a private method documenting the usage.
+     * <b>Note!</b> Element API is designed for building components at a lower
+     * abstraction level than normal Vaadin UI development. If you see a direct
+     * call to this method in your applications UI code, you should consider
+     * that as a sign that you are probably doing something wrong. This method
+     * is breaking the abstraction layer Component interface (and its
+     * implementations) are providing and you should only use this when creating
+     * components or when you otherwise need to break through the abstraction
+     * layer. If it is a hack or a workaround, it is also better to hide that
+     * into an extension, helper class, separate add-on module or at least into
+     * a private method documenting the usage.
      *
      * @param component
      *            the component whose element should be obtained
      * @return root element of the component
      */
     @SuppressWarnings("deprecation")
-    public static Element of(Component component) {
+    public static Element unwrap(Component component) {
         return component.getElement();
     }
 }

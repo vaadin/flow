@@ -199,15 +199,16 @@ public abstract class Component
     /**
      * Gets the low level root element of this component.
      * <p>
-     * <b>Note!</b> If you see a call to this method in your applications UI
-     * code, you should consider that as a sign that you are probably doing
-     * something wrong. This method is breaking the abstraction layer Component
-     * interface and its implementations are providing. You should only call
-     * this method this when creating or extending components, or when you
-     * otherwise need to break through the abstraction layer. If it is a hack or
-     * a workaround, it is also better to hide that into an extension, helper
-     * class, separate add-on module or at least into private helper method
-     * documenting it.
+     * <b>Note!</b> Element API is designed for building components at a lower
+     * abstraction level than normal Vaadin UI development. If you see a direct
+     * call to this method in your applications UI code, you should consider
+     * that as a sign that you are probably doing something wrong. This method
+     * is breaking the abstraction layer Component interface and its
+     * implementations are providing. You should only call this method this when
+     * creating or extending components, or when you otherwise need to break
+     * through the abstraction layer. If it is a hack or a workaround, it is
+     * also better to hide that into an extension, helper class, separate add-on
+     * module or at least into private helper method documenting it.
      * <p>
      * Each component must have exactly one root element. When the component is
      * attached to a parent component, this element is attached to the parent
