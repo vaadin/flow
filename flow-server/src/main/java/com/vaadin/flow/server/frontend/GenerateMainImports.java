@@ -145,9 +145,11 @@ public class GenerateMainImports extends AbstractUpdateImports {
         JsonArray statsBundle = statsJson.hasKey("bundleImports")
                 ? statsJson.getArray("bundleImports")
                 : Json.createArray();
+        importName = importName.replace("Frontend/", "./");
 
         for (int i = 0; i < statsBundle.length(); i++) {
-            if (importName.equals(statsBundle.getString(i))) {
+            if (importName.equals(
+                    statsBundle.getString(i).replace("Frontend/", "./"))) {
                 return true;
             }
         }
