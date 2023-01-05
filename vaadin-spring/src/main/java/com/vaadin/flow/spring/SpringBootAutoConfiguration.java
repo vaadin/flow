@@ -55,6 +55,11 @@ public class SpringBootAutoConfiguration {
     @Autowired
     private WebApplicationContext context;
 
+    @Bean
+    static VaadinBeanFactoryInitializationAotProcessor flowBeanFactoryInitializationAotProcessor() {
+        return new VaadinBeanFactoryInitializationAotProcessor();
+    }
+
     /**
      * Creates a {@link ServletContextInitializer} instance.
      *
