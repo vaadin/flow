@@ -35,6 +35,7 @@ const moduleWeights = {
   'flow-tests/test-express-build/test-dev-bundle': { pos: 1, weight: 2 },
   'flow-tests/test-express-build/test-dev-bundle-no-plugin': { pos: 1, weight: 2 },
   'flow-tests/test-express-build/test-theme-dev-bundle': { pos: 1, weight: 2 },
+  'flow-tests/test-express-build/test-theme-default-dev-bundle': { pos: 1, weight: 2 },
   'flow-tests/test-custom-route-registry': { pos: 1, weight: 2 },
   'flow-tests/test-frontend/test-npm': { pos: 1, weight: 2 },
   'flow-tests/test-no-theme': { pos: 1, weight: 2 },
