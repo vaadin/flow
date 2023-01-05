@@ -24,14 +24,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -656,35 +654,5 @@ public class Page implements Serializable {
                         "Error while encoding the URL from client", e);
             }
         });
-    }
-
-    /**
-     * Retrieves {@code document.dir} of the current UI from the browser and
-     * passes it to the {@code callback} parameter. If the {@code document.dir}
-     * has not been set explicitly, then {@code Direction.LEFT_TO_RIGHT} will be
-     * the fallback value.
-     * <p>
-     * Note that direction is fetched from the browser in an asynchronous
-     * request and passed to the callback.
-     * <p>
-     * In case you need more control over the execution you can use
-     * {@link #executeJs(String, Serializable...)} by passing
-     * {@code return document.dir}.
-     *
-     * @param callback
-     *            to be notified when the direction is resolved.
-     */
-    public void fetchPageDirection(SerializableConsumer<Direction> callback) {
-        executeJs("return document.dir").then(String.class, dir -> {
-            Direction direction = getDirectionByClientName(dir);
-            callback.accept(direction);
-        });
-    }
-
-    private Direction getDirectionByClientName(String directionClientName) {
-        return Arrays.stream(Direction.values())
-                .filter(direction -> direction.getClientName()
-                        .equals(directionClientName))
-                .findFirst().orElse(Direction.LEFT_TO_RIGHT);
     }
 }
