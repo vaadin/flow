@@ -106,13 +106,20 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
         try {
             File projectFolder = config.getProjectFolder();
-            String themeName = FrontendUtils.getThemeName(projectFolder);
+            Optional<String> themeName = FrontendUtils
+                    .getThemeName(projectFolder);
+
+            if (themeName.isEmpty()) {
+                getLogger().debug("Found no custom theme in the project. "
+                        + "Skipping watching the theme files");
+                return;
+            }
 
             // TODO: frontend folder to be taken from config
             // see https://github.com/vaadin/flow/pull/15552
             File watchDirectory = new File(projectFolder,
                     Path.of(FrontendUtils.FRONTEND,
-                            Constants.APPLICATION_THEME_ROOT, themeName)
+                            Constants.APPLICATION_THEME_ROOT, themeName.get())
                             .toString());
 
             Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor

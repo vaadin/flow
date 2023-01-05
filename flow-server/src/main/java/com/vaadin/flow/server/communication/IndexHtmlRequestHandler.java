@@ -164,7 +164,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
      * which is served in express build mode by static file server directly from
      * frontend/themes folder.
      * </p>
-     * Example: <link rel="stylesheet" href="themes/hello-speed-foo/styles.css">
+     * Example: <link rel="stylesheet" href="themes/my-theme/styles.css">
      *
      * @param config
      *            deployment configuration
@@ -175,14 +175,19 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
      */
     private void addStylesCssLink(DeploymentConfiguration config,
             Document indexDocument) throws IOException {
-        String themeName = FrontendUtils
+        Optional<String> themeName = FrontendUtils
                 .getThemeName(config.getProjectFolder());
-        if (themeName != null) {
-            Element element = new Element("link");
-            element.attr("rel", "stylesheet");
-            element.attr("href", "themes/" + themeName + "/styles.css");
-            indexDocument.head().appendChild(element);
+
+        if (themeName.isEmpty()) {
+            getLogger().debug("Found no custom theme in the project. "
+                    + "Skipping adding a link tag for styles.css");
+            return;
         }
+
+        Element element = new Element("link");
+        element.attr("rel", "stylesheet");
+        element.attr("href", "themes/" + themeName.get() + "/styles.css");
+        indexDocument.head().appendChild(element);
     }
 
     private void catchErrorsInDevMode(Document indexDocument) {
