@@ -356,13 +356,14 @@ public class StaticFileServer implements StaticFileHandler {
             String assetName = assetPath.substring(
                     assetPath.indexOf(themeName) + themeName.length());
             throw new IllegalStateException(String.format(
-                    "Asset '%1$s' is not found neither in project's frontend "
-                            + "directory, nor in the default Express Build bundle, nor "
-                            + "in the application bundle in 'dev-bundle/assets/'. "
-                            + "Verify that either the asset is available in "
-                            + "'frontend/themes/%2$s/' directory, or it is added to the"
-                            + " 'assets' block in the 'theme.json', or the dependency "
-                            + "'com.vaadin:vaadin-dev-bundle' is added to your project.",
+                    "Asset '%1$s' is not found in project frontend directory"
+                            + ", default Express Build bundle or in the application "
+                            + "bundle './dev-bundle/assets/'. \n"
+                            + "Verify that the asset is available in "
+                            + "'frontend/themes/%2$s/' directory and is added into the "
+                            + "'assets' block of the 'theme.json' file. \n"
+                            + "Else verify that the dependency 'com.vaadin:vaadin-dev-bundle' "
+                            + "is added to your project.",
                     assetName, themeName));
         }
         return assetInDevBundleUrl;
