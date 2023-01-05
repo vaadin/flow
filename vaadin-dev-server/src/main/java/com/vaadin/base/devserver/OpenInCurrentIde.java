@@ -20,6 +20,9 @@ import com.vaadin.open.Open;
  */
 public class OpenInCurrentIde {
 
+    private static final String ECLIPSE_IDENTIFIER = "eclipse";
+    private static final String INTELLIJ_IDENTIFIER = "intellij";
+
     /**
      * Opens the given file at the given line number in the IDE used to launch
      * the current Java application.
@@ -86,11 +89,11 @@ public class OpenInCurrentIde {
             String cmd = p.info().command().orElse("");
             String cmdLower = cmd.toLowerCase(Locale.ENGLISH);
 
-            if (cmdLower.contains("eclipse")) {
+            if (cmdLower.contains(ECLIPSE_IDENTIFIER)) {
                 return Optional.of(cmd);
             }
 
-            if (cmdLower.contains("intellij")) {
+            if (cmdLower.contains(INTELLIJ_IDENTIFIER)) {
                 return Optional.of(cmd);
             }
             if (cmdLower.contains("vscode") || cmdLower.contains("vs code")
@@ -115,12 +118,12 @@ public class OpenInCurrentIde {
 
     private static boolean isEclipse() {
         return findIdeCommand().map(cmd -> cmd.toLowerCase(Locale.ENGLISH))
-                .filter(cmd -> cmd.contains("eclipse")).isPresent();
+                .filter(cmd -> cmd.contains(ECLIPSE_IDENTIFIER)).isPresent();
     }
 
     private static boolean isIdea() {
         return findIdeCommand().map(cmd -> cmd.toLowerCase(Locale.ENGLISH))
-                .filter(cmd -> cmd.contains("intellij")).isPresent();
+                .filter(cmd -> cmd.contains(INTELLIJ_IDENTIFIER)).isPresent();
     }
 
     private static boolean isVSCode() {
