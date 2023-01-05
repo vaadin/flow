@@ -45,6 +45,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -477,4 +478,36 @@ public class VaadinSessionTest {
         }
     }
 
+    @Test
+    public void findComponent_existingComponentFound() {
+        TestComponent testComponent = createTestComponentInSession();
+        int nodeId = testComponent.getElement().getNode().getId();
+        String appId = testComponent.getUI().get().getInternals().getAppId();
+        VaadinSession session = testComponent.getUI().get().getSession();
+        Assert.assertSame(testComponent,
+                session.findElement(appId, nodeId).getComponent().get());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void findComponent_nonExistingNodeIdThrows() {
+        TestComponent testComponent = createTestComponentInSession();
+        int nodeId = testComponent.getElement().getNode().getId();
+        String appId = testComponent.getUI().get().getInternals().getAppId();
+        VaadinSession session = testComponent.getUI().get().getSession();
+        session.findElement(appId, nodeId * 10);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void findComponent_nonExistingAppIdThrows() {
+        TestComponent testComponent = createTestComponentInSession();
+        int nodeId = testComponent.getElement().getNode().getId();
+        VaadinSession session = testComponent.getUI().get().getSession();
+        session.findElement("foo", nodeId);
+    }
+
+    private TestComponent createTestComponentInSession() {
+        TestComponent testComponent = new TestComponent();
+        ui.add(testComponent);
+        return testComponent;
+    }
 }
