@@ -15,7 +15,9 @@ import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 
@@ -54,6 +56,10 @@ class VaadinBeanFactoryInitializationAotProcessor
                 for (var c : reflections.getSubTypesOf(HasErrorParameter.class))
                     reflection.registerType(c, memberCategories);
                 for (var c : reflections.getSubTypesOf(ComponentEvent.class))
+                    reflection.registerType(c, memberCategories);
+                for (var c : reflections.getSubTypesOf(Converter.class))
+                    reflection.registerType(c, memberCategories);
+                for (var c : reflections.getSubTypesOf(HasUrlParameter.class))
                     reflection.registerType(c, memberCategories);
             }
         };
