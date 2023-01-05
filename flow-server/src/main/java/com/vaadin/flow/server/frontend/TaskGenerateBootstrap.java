@@ -28,6 +28,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_N
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TSX;
 
 /**
  * A task for generating the bootstrap file
@@ -79,7 +80,8 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     private String getIndexTsEntryPath() {
         File frontendDirectory = options.getFrontendDirectory();
         boolean hasCustomIndexFile = new File(frontendDirectory, INDEX_TS)
-                .exists() || new File(frontendDirectory, INDEX_JS).exists();
+                .exists() || new File(frontendDirectory, INDEX_JS).exists()
+                || new File(frontendDirectory, INDEX_TSX).exists();
         if (hasCustomIndexFile) {
             return "../index";
         } else {

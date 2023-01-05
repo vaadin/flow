@@ -17,11 +17,13 @@ package com.vaadin.flow.server.frontend;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TSX;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
 
@@ -30,7 +32,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Version;
 
 /**
- * Generate <code>index.js</code> if it is missing in frontend folder.
+ * Generate <code>index.ts</code> if it is missing in frontend folder.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -63,10 +65,11 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
 
     @Override
     protected boolean shouldGenerate() {
-        File indexTs = new File(frontendDirectory, INDEX_TS);
-        File indexJs = new File(frontendDirectory, INDEX_JS);
-        compareActualIndexTsOrJsWithIndexTempalate(indexTs, indexJs);
-        return !indexTs.exists() && !indexJs.exists();
+        return Arrays.asList(INDEX_TSX, INDEX_TS, INDEX_JS).stream()
+                .map(type -> new File(frontendDirectory, type))
+                .filter(File::exists)
+                .peek(this::compareActualIndexWithIndexTemplate).findAny()
+                .isEmpty();
     }
 
     @Override
@@ -108,22 +111,18 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
         return relativePath;
     }
 
-    private void compareActualIndexTsOrJsWithIndexTempalate(File indexTs,
-            File indexJs) {
-        if (indexTs.exists() || indexJs.exists()) {
-            File indexFileExist = indexTs.exists() ? indexTs : indexJs;
-            String indexContent = null;
-            String indexTemplate = null;
-            try {
-                indexContent = IOUtils.toString(indexFileExist.toURI(), UTF_8);
-                indexTemplate = getFileContent();
-            } catch (IOException e) {
-                log().warn("Failed to read file content", e);
-            }
-            if (indexContent != null && !indexContent.equals(indexTemplate)) {
-                UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT,
-                        Version.getFullVersion());
-            }
+    private void compareActualIndexWithIndexTemplate(File indexFileExist) {
+        String indexContent = null;
+        String indexTemplate = null;
+        try {
+            indexContent = IOUtils.toString(indexFileExist.toURI(), UTF_8);
+            indexTemplate = getFileContent();
+        } catch (IOException e) {
+            log().warn("Failed to read file content", e);
+        }
+        if (indexContent != null && !indexContent.equals(indexTemplate)) {
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT,
+                    Version.getFullVersion());
         }
     }
 
