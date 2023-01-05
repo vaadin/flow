@@ -207,7 +207,8 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
-    public void mavenGoal_when_packageJsonMissing_shouldNotGenerateDefault() throws Exception {
+    public void mavenGoal_when_packageJsonMissing_shouldNotGenerateDefault()
+            throws Exception {
         Assert.assertFalse(FileUtils.fileExists(packageJson));
         mojo.execute();
         Assert.assertFalse(FileUtils.fileExists(packageJson));
