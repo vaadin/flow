@@ -16,10 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpSessionBindingEvent;
-import jakarta.servlet.http.HttpSessionBindingListener;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -32,6 +28,7 @@ import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
@@ -43,13 +40,21 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
+
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionBindingEvent;
+import jakarta.servlet.http.HttpSessionBindingListener;
 
 /**
  * Contains everything that Vaadin needs to store for a specific user. This is
@@ -1160,4 +1165,44 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public long getLastUnlocked() {
         return lastUnlocked;
     }
+
+    /**
+     * Finds the given element in the session.
+     * <p>
+     * The ids are typically acquired in the browser: {@literal appId} (client
+     * side the key in {@code window.Vaadin.Flow.clients}) refers to the UI
+     * instance and {@literal nodeId} (client side fetched using
+     * {@code getNodeId} in the {@code window.Vaadin.Flow.clients} value) refers
+     * to the element inside that UI instance.
+     *
+     * @param appId
+     *            the application id
+     * @param nodeId
+     *            the node id
+     * @return the component instance
+     * @throws IllegalArgumentException
+     *             if the component was not found
+     */
+    public Element findElement(String appId, int nodeId)
+            throws IllegalArgumentException {
+        checkHasLock();
+
+        Optional<UI> ui = getUIs().stream().filter(u -> {
+            return u.getInternals().getAppId().equals(appId);
+        }).findFirst();
+        if (!ui.isPresent()) {
+            throw new IllegalArgumentException(
+                    "Unable to find the UI for app id " + appId);
+        }
+        StateNode node = ui.get().getInternals().getStateTree()
+                .getNodeById(nodeId);
+        if (node == null) {
+            throw new IllegalArgumentException(
+                    "Unable to find the component for node " + nodeId
+                            + " in app " + appId);
+        }
+
+        return Element.get(node);
+    }
+
 }
