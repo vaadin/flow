@@ -28,6 +28,7 @@
             <modules>
                 <module>test-dev-bundle-no-plugin</module>
                 <module>test-theme-dev-bundle</module>
+                <module>test-theme-default-dev-bundle</module>
             </modules>
         </profile>
     </profiles>

@@ -35,6 +35,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -76,7 +77,7 @@ public class StaticFileServer implements StaticFileHandler {
 
     // Matcher to match string starting with '/themes/[theme-name]/'
     public static final Pattern APP_THEME_PATTERN = Pattern
-            .compile("^\\/themes\\/[\\s\\S]+?\\/");
+            .compile("^\\/themes\\/([\\s\\S]+?)\\/");
 
     // Mapped uri is for the jar file
     static final Map<URI, Integer> openFileSystems = new HashMap<>();
@@ -263,6 +264,7 @@ public class StaticFileServer implements StaticFileHandler {
         } else if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
             if (!deploymentConfiguration.enableDevServer()) {
                 resourceUrl = findAssetInFrontendThemesOrDevBundle(
+                        vaadinService,
                         deploymentConfiguration.getProjectFolder(),
                         filenameWithPath);
             } else {
@@ -317,8 +319,9 @@ public class StaticFileServer implements StaticFileHandler {
         return true;
     }
 
-    private static URL findAssetInFrontendThemesOrDevBundle(File projectFolder,
-            String assetPath) throws IOException {
+    private static URL findAssetInFrontendThemesOrDevBundle(
+            VaadinService vaadinService, File projectFolder, String assetPath)
+            throws IOException {
         // First, look for the theme assets in the {project.root}/frontend/
         // themes/my-theme folder
         File frontendFolder = new File(projectFolder, FrontendUtils.FRONTEND);
@@ -326,17 +329,42 @@ public class StaticFileServer implements StaticFileHandler {
         if (assetInFrontendThemes.exists()) {
             return assetInFrontendThemes.toURI().toURL();
         }
-        // Or search in the dev-bundle (if the assets come from node_modules)
-        String assetInDevBundle = "/assets/" + assetPath;
-        URL assetInDevBundleUrl = FrontendUtils.findBundleFile(projectFolder,
-                assetInDevBundle);
+
+        // Second, look into default dev bundle
+        Matcher matcher = APP_THEME_PATTERN.matcher(assetPath);
+        if (!matcher.find()) {
+            throw new IllegalStateException(
+                    "Asset path should match the theme pattern");
+        }
+
+        final String themeName = matcher.group(1);
+        String defaultBundleAssetPath = assetPath.replaceFirst(themeName,
+                Constants.DEV_BUNDLE_NAME);
+        URL assetInDevBundleUrl = vaadinService.getClassLoader()
+                .getResource(Constants.DEV_BUNDLE_JAR_PATH + Constants.ASSETS
+                        + defaultBundleAssetPath);
+
+        // Or search in the application dev-bundle (if the assets come from
+        // node_modules)
         if (assetInDevBundleUrl == null) {
+            String assetInDevBundle = "/" + Constants.ASSETS + "/" + assetPath;
+            assetInDevBundleUrl = FrontendUtils.findBundleFile(projectFolder,
+                    assetInDevBundle);
+        }
+
+        if (assetInDevBundleUrl == null) {
+            String assetName = assetPath.substring(
+                    assetPath.indexOf(themeName) + themeName.length());
             throw new IllegalStateException(String.format(
-                    "Asset '%s' is not found neither in frontend/themes/theme-name/ "
-                            + "nor in dev-bundle/assets/. Verify that either the asset "
-                            + "is available in frontend/themes/theme-name/ folder or it is added "
-                            + "in the 'assets' block in 'theme.json'.",
-                    assetPath));
+                    "Asset '%1$s' is not found in project frontend directory"
+                            + ", default Express Build bundle or in the application "
+                            + "bundle './dev-bundle/assets/'. \n"
+                            + "Verify that the asset is available in "
+                            + "'frontend/themes/%2$s/' directory and is added into the "
+                            + "'assets' block of the 'theme.json' file. \n"
+                            + "Else verify that the dependency 'com.vaadin:vaadin-dev-bundle' "
+                            + "is added to your project.",
+                    assetName, themeName));
         }
         return assetInDevBundleUrl;
     }

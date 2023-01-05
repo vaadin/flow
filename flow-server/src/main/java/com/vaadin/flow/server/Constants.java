@@ -442,9 +442,19 @@ public final class Constants implements Serializable {
     public static final int SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT = 35729;
 
     /**
+     * The name of the default dev bundle for the Express Build mode.
+     */
+    public static final String DEV_BUNDLE_NAME = "vaadin-dev-bundle";
+
+    /**
      * The path part where dev-bundle is located inside the jar.
      */
-    public static final String DEV_BUNDLE_JAR_PATH = "vaadin-dev-bundle/";
+    public static final String DEV_BUNDLE_JAR_PATH = DEV_BUNDLE_NAME + "/";
+
+    /**
+     * The directory name inside dev bundle for the frontend assets.
+     */
+    public static final String ASSETS = "assets";
 
     private Constants() {
         // prevent instantiation constants class only
