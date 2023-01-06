@@ -1,3 +1,7 @@
+html {
+  --theme-my-theme-loaded:1;
+}
+
 @font-face {
   font-family: 'Roboto';
   font-style: normal;
