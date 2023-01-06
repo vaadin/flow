@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -50,14 +51,14 @@ public class ComponentTracker {
     /**
      * Represents a location in the source code.
      */
-    public record Location(String className, String filename, int lineNumber) {
+    public record Location(String className, String filename, int lineNumber) implements Serializable {
     }
 
     /**
      * Finds the location where the given component instance was created.
      *
      * @param component
-     *            the component to find
+     *                  the component to find
      * @return the location where the component was created
      */
     public static Location findCreate(Component component) {
@@ -70,7 +71,7 @@ public class ComponentTracker {
      * be found from the current stacktrace.
      *
      * @param component
-     *            the component to track
+     *                  the component to track
      */
     public static void trackCreate(Component component) {
         if (isProductionMode()) {
@@ -90,7 +91,7 @@ public class ComponentTracker {
      * parent.
      *
      * @param component
-     *            the component to find
+     *                  the component to find
      * @return the location where the component was attached
      */
     public static Location findAttach(Component component) {
@@ -103,7 +104,7 @@ public class ComponentTracker {
      * be found from the current stacktrace.
      *
      * @param component
-     *            the component to track
+     *                  the component to track
      */
     public static void trackAttach(Component component) {
         if (isProductionMode()) {
