@@ -58,7 +58,7 @@ public class ComponentTracker {
      * Finds the location where the given component instance was created.
      *
      * @param component
-     *                  the component to find
+     *            the component to find
      * @return the location where the component was created
      */
     public static Location findCreate(Component component) {
@@ -71,7 +71,7 @@ public class ComponentTracker {
      * be found from the current stacktrace.
      *
      * @param component
-     *                  the component to track
+     *            the component to track
      */
     public static void trackCreate(Component component) {
         if (isProductionMode()) {
@@ -91,7 +91,7 @@ public class ComponentTracker {
      * parent.
      *
      * @param component
-     *                  the component to find
+     *            the component to find
      * @return the location where the component was attached
      */
     public static Location findAttach(Component component) {
@@ -104,7 +104,7 @@ public class ComponentTracker {
      * be found from the current stacktrace.
      *
      * @param component
-     *                  the component to track
+     *            the component to track
      */
     public static void trackAttach(Component component) {
         if (isProductionMode()) {
