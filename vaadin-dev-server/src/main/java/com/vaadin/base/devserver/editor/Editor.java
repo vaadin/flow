@@ -18,12 +18,17 @@ import org.apache.commons.io.IOUtils;
 import com.github.javaparser.Position;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Modifier.Keyword;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.AssignExpr.Operator;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -39,18 +44,20 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 public class Editor {
 
     public static class Modification implements Comparable<Modification> {
 
         private enum Type {
-            INSERT_AFTER, INSERT_BEFORE, INSERT_LINE_AFTER, REPLACE
+            INSERT_AFTER, INSERT_BEFORE, INSERT_LINE_AFTER, REPLACE, INSERT_AFTER_STRING
         };
 
         private Node referenceNode;
         private Type type;
         private String code;
+        private String needle;
 
         public String apply(String source) {
             if (type == Type.INSERT_LINE_AFTER) {
@@ -75,6 +82,12 @@ public class Editor {
                         referenceNode.getRange().get().end);
                 return source.substring(0, nodeStart) + code
                         + source.substring(nodeEnd + 1);
+            } else if (type == Type.INSERT_AFTER_STRING) {
+                int nodeBegin = sourcePosition(source,
+                        referenceNode.getBegin().get().right(1));
+                int insertPoint = findNext(source, nodeBegin, needle) + 1;
+                return source.substring(0, insertPoint) + code
+                        + source.substring(insertPoint);
             }
             throw new RuntimeException("Unknown type");
         }
@@ -91,11 +104,26 @@ public class Editor {
             return sourcePos;
         }
 
+        private static int findNext(String source, int insertPoint,
+                String needle) {
+            return source.indexOf(needle, insertPoint);
+        }
+
         public static Modification insertAfter(Node node, String code) {
             Modification mod = new Modification();
             mod.referenceNode = node;
             mod.type = Type.INSERT_AFTER;
             mod.code = code;
+            return mod;
+        }
+
+        public static Modification insertAfterString(Node node, String needle,
+                String code) {
+            Modification mod = new Modification();
+            mod.referenceNode = node;
+            mod.type = Type.INSERT_AFTER_STRING;
+            mod.code = code;
+            mod.needle = needle;
             return mod;
         }
 
@@ -144,6 +172,10 @@ public class Editor {
             } else if (type == Type.INSERT_AFTER) {
                 return "Modification INSERT_AFTER at position "
                         + referenceNode.getEnd().get() + ": " + code;
+            } else if (type == Type.INSERT_AFTER_STRING) {
+                return "Modification INSERT_AFTER_STRING at position "
+                        + referenceNode.getBegin().get() + " after string "
+                        + needle + ": " + code;
             } else if (type == Type.INSERT_BEFORE) {
                 return "Modification INSERT_BEFORE at position "
                         + referenceNode.getBegin().get() + ": " + code;
@@ -257,7 +289,6 @@ public class Editor {
     private SimpleName findLocalVariableOrField(CompilationUnit cu,
             int componentInstantiationLineNumber) {
         Statement node = findNode(cu, componentInstantiationLineNumber);
-
         if (node.isExpressionStmt()) {
             ExpressionStmt expressionStmt = node.asExpressionStmt();
             Expression expression = expressionStmt.getExpression();
@@ -279,22 +310,34 @@ public class Editor {
     }
 
     private List<Modification> addComponent(CompilationUnit cu,
-            int componentInstantiationLineNumber, int componentAttachLineNumber,
-            BeforeOrAfter beforeOrAfter, ComponentType componentType,
+            int componentCreateLineNumber, int componentAttachLineNumber,
+            Where where, ComponentType componentType,
             String... constructorArguments) {
         List<Modification> mods = new ArrayList<>();
-        Statement attachNode = findNode(cu, componentAttachLineNumber);
-        Statement instantiationNode = findNode(cu,
-                componentInstantiationLineNumber);
 
-        String code = getConstructorCode(componentType, constructorArguments);
+        if (!hasImport(cu, componentType.getClassName())) {
+            mods.add(addImport(cu, componentType.getClassName()));
+        }
+
+        Statement createStatement = findNode(cu, componentCreateLineNumber);
+        if (createStatement == null && where == Where.INSIDE) {
+            // Potentially a @Route class
+            mods.addAll(addComponentToClass(cu, componentCreateLineNumber,
+                    componentType, constructorArguments));
+            return mods;
+        }
+        Statement attachStatement = findNode(cu, componentAttachLineNumber);
+
+        String code = getConstructorCode(componentType, constructorArguments)
+                .toString();
 
         SimpleName localVariableOrField = findLocalVariableOrField(cu,
-                componentInstantiationLineNumber);
-        if (localVariableOrField == null && attachNode.equals(instantiationNode)
-                && attachNode.isExpressionStmt()) {
+                componentCreateLineNumber);
+        if (localVariableOrField == null
+                && attachStatement.equals(createStatement)
+                && attachStatement.isExpressionStmt()) {
             // The reference component is created inline
-            Expression attachNodeExpression = attachNode.asExpressionStmt()
+            Expression attachNodeExpression = attachStatement.asExpressionStmt()
                     .getExpression();
             if (attachNodeExpression.isMethodCallExpr()) {
                 ObjectCreationExpr referenceComponentAdd = findConstructorCallParameter(
@@ -304,7 +347,7 @@ public class Editor {
                 NodeList<Expression> args = methodCallExpr.getArguments();
                 for (int i = 0; i < args.size(); i++) {
                     if (referenceComponentAdd.equals(args.get(i))) {
-                        if (beforeOrAfter == BeforeOrAfter.BEFORE) {
+                        if (where == Where.BEFORE) {
                             mods.add(Modification.insertBefore(args.get(i),
                                     code + ", "));
                         } else {
@@ -317,8 +360,8 @@ public class Editor {
                 return mods;
             }
         } else if (localVariableOrField != null
-                && attachNode.isExpressionStmt()) {
-            Expression expression = attachNode.asExpressionStmt()
+                && attachStatement.isExpressionStmt()) {
+            Expression expression = attachStatement.asExpressionStmt()
                     .getExpression();
             if (expression.isMethodCallExpr()) {
                 // e.g. add(foo, bar, baz)
@@ -333,7 +376,7 @@ public class Editor {
                         // new ExpressionStmt(new Expression)
                         // ClassOrInterfaceDeclaration type =
                         // cu.getClassByName(componentType.getName()).get();
-                        if (beforeOrAfter == BeforeOrAfter.BEFORE) {
+                        if (where == Where.BEFORE) {
                             mods.add(Modification.insertBefore(args.get(i),
                                     code + ", "));
                         } else {
@@ -349,16 +392,102 @@ public class Editor {
 
     }
 
-    private String getConstructorCode(ComponentType componentType,
+    private Modification addImport(CompilationUnit cu, String className) {
+        return Modification.insertAfter(cu.getImports().getLast().get(),
+                "\nimport " + className + ";");
+    }
+
+    private boolean hasImport(CompilationUnit cu, String className) {
+        for (ImportDeclaration importDecl : cu.getImports()) {
+            if (importDecl.getNameAsString().equals(className)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<Modification> addComponentToClass(CompilationUnit cu,
+            int componentCreateLineNumber, ComponentType componentType,
             String[] constructorArguments) {
-        ClassOrInterfaceType type = StaticJavaParser
-                .parseClassOrInterfaceType(componentType.getClassName());
+        List<Modification> mods = new ArrayList<>();
+
+        ClassOrInterfaceDeclaration classDefinition = findClassDefinition(cu,
+                componentCreateLineNumber);
+        if (classDefinition != null) {
+            if (!classDefinition.getConstructors().isEmpty()) {
+                // This should not happen as create location refers to the class
+                // when this is
+                // called
+                return mods;
+            }
+
+            ConstructorDeclaration defaultConstructor = classDefinition
+                    .addConstructor(Keyword.PUBLIC);
+            ObjectCreationExpr createCode = getConstructorCode(componentType,
+                    constructorArguments);
+            String variableName = getVariableName(componentType,
+                    constructorArguments);
+            VariableDeclarationExpr localVariable = new VariableDeclarationExpr(
+                    new VariableDeclarator(getType(componentType),
+                            variableName));
+            AssignExpr createComponent = new AssignExpr(localVariable,
+                    createCode, Operator.ASSIGN);
+            MethodCallExpr addComponent = new MethodCallExpr("add",
+                    new NameExpr(variableName));
+            defaultConstructor.getBody().addStatement(createComponent);
+            defaultConstructor.getBody().addStatement(addComponent);
+            // We should aim to insert after any fields but before any methods
+
+            mods.add(Modification.insertAfterString(classDefinition, "{",
+                    "\n" + defaultConstructor.toString()));
+        }
+        return mods;
+
+    }
+
+    private String getVariableName(ComponentType type,
+            String[] constructorArguments) {
+        if (constructorArguments.length == 1) {
+            return SharedUtil.firstToLower(SharedUtil.dashSeparatedToCamelCase(
+                    constructorArguments[0].replaceAll(" ", "-")));
+        }
+        String simpleName = type.getClassName();
+        simpleName = simpleName.substring(simpleName.lastIndexOf('.'));
+        return simpleName;
+    }
+
+    private List<Modification> addComponentToEmptyClass(CompilationUnit cu,
+            TypeDeclaration<?> classDefinition, ComponentType componentType,
+            String[] constructorArguments) {
+        return null;
+    }
+
+    private ClassOrInterfaceDeclaration findClassDefinition(CompilationUnit cu,
+            int lineNumber) {
+        for (TypeDeclaration<?> type : cu.getTypes()) {
+            if (contains(type.getName(), lineNumber)) {
+                return type.asClassOrInterfaceDeclaration();
+            }
+        }
+        return null;
+    }
+
+    private ObjectCreationExpr getConstructorCode(ComponentType componentType,
+            String[] constructorArguments) {
+        ClassOrInterfaceType type = getType(componentType);
         List<Expression> componentConstructorArgs = Arrays
                 .stream(constructorArguments)
                 .map(arg -> new StringLiteralExpr(arg))
                 .collect(Collectors.toList());
         return new ObjectCreationExpr(null, type,
-                new NodeList<>(componentConstructorArgs)).toString();
+                new NodeList<>(componentConstructorArgs));
+    }
+
+    private ClassOrInterfaceType getType(ComponentType componentType) {
+        ClassOrInterfaceType type = StaticJavaParser
+                .parseClassOrInterfaceType(componentType.getClassName());
+        type.setScope(null); // Remove package name
+        return type;
     }
 
     private void addOrReplaceCall(BlockStmt codeBlock, Node afterThisNode,
@@ -530,8 +659,8 @@ public class Editor {
             String... constructorArguments) {
         modifyClass(f,
                 (cu) -> addComponent(cu, componentInstantiationLineNumber,
-                        componentAttachLineNumber, BeforeOrAfter.AFTER,
-                        componentType, constructorArguments));
+                        componentAttachLineNumber, Where.AFTER, componentType,
+                        constructorArguments));
     }
 
     public void addComponentBefore(File f, int componentInstantiationLineNumber,
@@ -539,7 +668,17 @@ public class Editor {
             String... constructorArguments) {
         modifyClass(f,
                 (cu) -> addComponent(cu, componentInstantiationLineNumber,
-                        componentAttachLineNumber, BeforeOrAfter.BEFORE,
+                        componentAttachLineNumber, Where.BEFORE, componentType,
+                        constructorArguments));
+    }
+
+    public void addComponentInside(File f,
+            int parentComponentInstantiationLineNumber,
+            int parentComponentAttachLineNumber, ComponentType componentType,
+            String... constructorArguments) {
+        modifyClass(f,
+                (cu) -> addComponent(cu, parentComponentInstantiationLineNumber,
+                        parentComponentAttachLineNumber, Where.INSIDE,
                         componentType, constructorArguments));
     }
 
@@ -548,6 +687,16 @@ public class Editor {
             ComponentType componentType, String... constructorArguments) {
         addComponentAfter(getSourceFile(cls), componentInstantiationLineNumber,
                 componentAttachLineNumber, componentType, constructorArguments);
+    }
+
+    public void addComponentInside(Class<?> cls,
+            int parentComponentInstantiationLineNumber,
+            int parentComponentAttachLineNumber, ComponentType componentType,
+            String... constructorArguments) {
+        addComponentInside(getSourceFile(cls),
+                parentComponentInstantiationLineNumber,
+                parentComponentAttachLineNumber, componentType,
+                constructorArguments);
     }
 
     public void modifyClass(File f,

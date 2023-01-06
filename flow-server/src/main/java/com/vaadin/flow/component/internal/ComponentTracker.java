@@ -57,7 +57,7 @@ public class ComponentTracker {
      * Finds the location where the given component instance was created.
      *
      * @param component
-     *                  the component to find
+     *            the component to find
      * @return the location where the component was created
      */
     public static Location findCreate(Component component) {
@@ -70,15 +70,15 @@ public class ComponentTracker {
      * be found from the current stacktrace.
      *
      * @param component
-     *                  the component to track
+     *            the component to track
      */
     public static void trackCreate(Component component) {
         if (isProductionMode()) {
             return;
         }
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        Location location = findRelevantLocation(component.getClass(),
-                stack, null);
+        Location location = findRelevantLocation(component.getClass(), stack,
+                null);
         if (isNavigatorCreate(location)) {
             location = findRelevantLocation(null, stack, null);
         }
@@ -90,7 +90,7 @@ public class ComponentTracker {
      * parent.
      *
      * @param component
-     *                  the component to find
+     *            the component to find
      * @return the location where the component was attached
      */
     public static Location findAttach(Component component) {
@@ -103,7 +103,7 @@ public class ComponentTracker {
      * be found from the current stacktrace.
      *
      * @param component
-     *                  the component to track
+     *            the component to track
      */
     public static void trackAttach(Component component) {
         if (isProductionMode()) {
@@ -113,8 +113,8 @@ public class ComponentTracker {
 
         // In most cases the interesting attach call is found in the same class
         // where the component was created and not in a generic layout class
-        Location location = findRelevantLocation(component.getClass(),
-                stack, findCreate(component));
+        Location location = findRelevantLocation(component.getClass(), stack,
+                findCreate(component));
         if (isNavigatorCreate(location)) {
             // For routes, we can just show the init location as we have nothing
             // better

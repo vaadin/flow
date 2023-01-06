@@ -252,8 +252,23 @@ public class DebugWindowConnection implements BrowserLiveReload {
                     return;
                 }
 
-                EditCode.edit(element.getComponent().get(),
-                        editType, value);
+                EditCode.edit(element.getComponent().get(), editType, value);
+            });
+        } else if ("addComponent".equals(command)) {
+            int nodeId = (int) data.getNumber("nodeId");
+            String appId = data.getString("appId");
+            VaadinSession session = VaadinSession.getCurrent();
+            session.access(() -> {
+                Element element = session.findElement(appId, nodeId);
+                String editType = data.getString("editType");
+                String value = data.getString("value");
+                if (!element.getComponent().isPresent()) {
+                    getLogger().error(
+                            "Unable to find the component to edit. Did you pick an element without a component?");
+                    return;
+                }
+
+                EditCode.edit(element.getComponent().get(), editType, value);
             });
         } else {
             getLogger().info("Unknown command from the browser: " + command);

@@ -9,15 +9,19 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 
-public abstract class AbstractDemoFileTest {
+public abstract class AbstractClassBasedTest {
     Editor editor;
     File testFile;
 
     @Before
-    public void setup() throws IOException {
+    public void setup() throws Exception {
         editor = new Editor();
         testFile = File.createTempFile("test", ".java");
-        copy("DemoFile", testFile);
+    }
+
+    protected void setupTestClass(String testClassName) throws IOException {
+        copy(testClassName, testFile);
+
     }
 
     protected void assertTestFileNotContains(String search) throws IOException {
@@ -25,13 +29,17 @@ public abstract class AbstractDemoFileTest {
     }
 
     protected void assertTestFileContains(String search) throws IOException {
-        Assert.assertTrue(testFileContains(search));
+        Assert.assertTrue("Expected test file to contain:\n\n" + search
+                + "\n\nbut the file contained only\n\n" + getTestFileContents(),
+                testFileContains(search));
     }
 
     private boolean testFileContains(String search) throws IOException {
-        String content = IOUtils.toString(testFile.toURI(),
-                StandardCharsets.UTF_8);
-        return content.contains(search);
+        return getTestFileContents().contains(search);
+    }
+
+    protected String getTestFileContents() throws IOException {
+        return IOUtils.toString(testFile.toURI(), StandardCharsets.UTF_8);
     }
 
     protected int getLineNumber(File testFile, String search)

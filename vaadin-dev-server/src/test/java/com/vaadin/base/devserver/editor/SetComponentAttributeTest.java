@@ -4,10 +4,11 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-public class SetComponentAttributeTest extends AbstractDemoFileTest {
+public class SetComponentAttributeTest extends AbstractClassBasedTest {
 
     @Test
     public void edit1() throws IOException {
+        setupTestClass("DemoFile");
         String source = "name = new TextField(\"Your name\")";
         String target = "name = new TextField(\"New label\")";
 
@@ -17,6 +18,7 @@ public class SetComponentAttributeTest extends AbstractDemoFileTest {
 
     @Test
     public void edit2() throws IOException {
+        setupTestClass("DemoFile");
         String source = "sayHello = new Button(\"Say hello1\");";
         String target = "sayHello = new Button(\"New text\")";
 
@@ -26,6 +28,7 @@ public class SetComponentAttributeTest extends AbstractDemoFileTest {
 
     @Test
     public void edit3() throws IOException {
+        setupTestClass("DemoFile");
         String source = "sayHello3 = new Button(\"Say hello3\");";
         String target = "sayHello3 = new Button(\"New text\");";
 
@@ -35,6 +38,7 @@ public class SetComponentAttributeTest extends AbstractDemoFileTest {
 
     @Test
     public void edit4() throws IOException {
+        setupTestClass("DemoFile");
         String source = "Button sayHello4 = new Button();";
         String target = "sayHello4.setText(\"New text\");";
 
@@ -44,6 +48,7 @@ public class SetComponentAttributeTest extends AbstractDemoFileTest {
 
     @Test
     public void edit5() throws IOException {
+        setupTestClass("DemoFile");
         String source = "Button sayHello5 = new Button();";
         String target = "sayHello5.setText(\"New text\");";
 
@@ -53,6 +58,7 @@ public class SetComponentAttributeTest extends AbstractDemoFileTest {
 
     @Test
     public void edit6() throws IOException {
+        setupTestClass("DemoFile");
         String source = "add(sayHello5, new Button(\"Say hello6\"))";
         String target = "add(sayHello5, new Button(\"New text\"))";
 
