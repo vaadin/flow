@@ -1,6 +1,8 @@
 package com.vaadin.base.devserver.editor;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 
@@ -11,9 +13,10 @@ public class AddComponentTest extends AbstractClassBasedTest {
         setupTestClass("DemoFile");
         String source = "name = new TextField(\"Your name\")";
         String attachSource = "add(name, sayHello, sayHello2";
-        String expected = "add(new com.vaadin.flow.component.button.Button(\"Hello\"), name, sayHello, sayHello2";
+        String expected1 = "Button hello = new Button(\"Hello\");";
+        String expected2 = "add(hello, name, sayHello, sayHello2";
 
-        testAddBeforeComponent(source, attachSource, expected,
+        testAddBeforeComponent(source, attachSource, expected1, expected2,
                 ComponentType.BUTTON, "Hello");
     }
 
@@ -22,9 +25,10 @@ public class AddComponentTest extends AbstractClassBasedTest {
         setupTestClass("DemoFile");
         String source = "name = new TextField(\"Your name\")";
         String attachSource = "add(name, sayHello, sayHello2";
-        String expected = "add(name, new com.vaadin.flow.component.button.Button(\"Hello\"), sayHello, sayHello2";
 
-        testAddAfterComponent(source, attachSource, expected,
+        String expected1 = "Button hello = new Button(\"Hello\");";
+        String expected2 = "add(name, hello, sayHello, sayHello2";
+        testAddAfterComponent(source, attachSource, expected1, expected2,
                 ComponentType.BUTTON, "Hello");
     }
 
@@ -33,8 +37,9 @@ public class AddComponentTest extends AbstractClassBasedTest {
         setupTestClass("DemoFile");
         String source = "Button sayHello4 = new Button()";
         String attachSource = "add(name, sayHello, sayHello2, sayHello3, sayHello4);";
-        String expected = "add(name, sayHello, sayHello2, sayHello3, sayHello4, new com.vaadin.flow.component.button.Button(\"Hello\"));";
-        testAddAfterComponent(source, attachSource, expected,
+        String expected1 = "Button hello = new Button(\"Hello\");";
+        String expected2 = "add(name, sayHello, sayHello2, sayHello3, sayHello4, hello);";
+        testAddAfterComponent(source, attachSource, expected1, expected2,
                 ComponentType.BUTTON, "Hello");
     }
 
@@ -43,8 +48,9 @@ public class AddComponentTest extends AbstractClassBasedTest {
         setupTestClass("DemoFile");
         String source = "Button sayHello4 = new Button()";
         String attachSource = "add(name, sayHello, sayHello2, sayHello3, sayHello4);";
-        String expected = "add(name, sayHello, sayHello2, sayHello3, new com.vaadin.flow.component.button.Button(\"Hello\"), sayHello4);";
-        testAddBeforeComponent(source, attachSource, expected,
+        String expected1 = "Button hello = new Button(\"Hello\");";
+        String expected2 = "add(name, sayHello, sayHello2, sayHello3, hello, sayHello4);";
+        testAddBeforeComponent(source, attachSource, expected1, expected2,
                 ComponentType.BUTTON, "Hello");
     }
 
@@ -53,8 +59,10 @@ public class AddComponentTest extends AbstractClassBasedTest {
         setupTestClass("DemoFile");
         String source = "new Button(\"Say hello6\")";
         String attachSource = "add(sayHello5, new Button(\"Say hello6\"));";
-        String expected = "add(sayHello5, new Button(\"Say hello6\"), new com.vaadin.flow.component.button.Button(\"Hello\"));";
-        testAddAfterComponent(source, attachSource, expected,
+
+        String expected1 = "hello = new Button(\"Hello\");";
+        String expected2 = "add(sayHello5, new Button(\"Say hello6\"), hello);";
+        testAddAfterComponent(source, attachSource, expected1, expected2,
                 ComponentType.BUTTON, "Hello");
     }
 
@@ -63,8 +71,9 @@ public class AddComponentTest extends AbstractClassBasedTest {
         setupTestClass("DemoFile");
         String source = "new Button(\"Say hello6\")";
         String attachSource = "add(sayHello5, new Button(\"Say hello6\"));";
-        String expected = "add(sayHello5, new com.vaadin.flow.component.button.Button(\"Hello\"), new Button(\"Say hello6\"));";
-        testAddBeforeComponent(source, attachSource, expected,
+        String expected1 = "Button hello = new Button(\"Hello\");";
+        String expected2 = "add(sayHello5, hello, new Button(\"Say hello6\"));";
+        testAddBeforeComponent(source, attachSource, expected1, expected2,
                 ComponentType.BUTTON, "Hello");
     }
 
@@ -113,37 +122,53 @@ public class AddComponentTest extends AbstractClassBasedTest {
         System.out.println(getTestFileContents());
         assertTestFileContains(
                 "Button helloWorld = new Button(\"Hello world\");");
-        assertTestFileContains(" add(helloWorld, new TextField(\"Goodbye world\"))");
+        assertTestFileContains(
+                "TextField goodbyeWorld = new TextField(\"Goodbye world\");");
+        assertTestFileContains("add(helloWorld, goodbyeWorld)");
     }
 
     private void testAddAfterComponent(String source, String attachSource,
-            String expected, ComponentType componentType,
+            String expected1, String expected2, ComponentType componentType,
             String... constructorArguments) throws IOException {
-        String constructorString = "new " + componentType.getClassName() + "(";
+        String constructorString = "new "
+                + getSimpleName(componentType.getClassName()) + "("
+                + Stream.of(constructorArguments).map(arg -> "\"" + arg + "\"")
+                        .collect(Collectors.joining(", "));
         assertTestFileNotContains(constructorString);
-        assertTestFileNotContains(expected);
+        assertTestFileNotContains(expected1);
+        assertTestFileNotContains(expected2);
 
         int instantiationLineNumber = getLineNumber(testFile, source);
         int attachLineNumber = getLineNumber(testFile, attachSource);
         editor.addComponentAfter(testFile, instantiationLineNumber,
                 attachLineNumber, componentType, constructorArguments);
         assertTestFileContains(constructorString);
-        assertTestFileContains(expected);
+        assertTestFileContains(expected1);
+        assertTestFileContains(expected2);
     }
 
     private void testAddBeforeComponent(String source, String attachSource,
-            String expected, ComponentType componentType,
+            String expected1, String expected2, ComponentType componentType,
             String... constructorArguments) throws IOException {
-        String constructorString = "new " + componentType.getClassName() + "(";
+        String constructorString = "new "
+                + getSimpleName(componentType.getClassName()) + "("
+                + Stream.of(constructorArguments).map(arg -> "\"" + arg + "\"")
+                        .collect(Collectors.joining(", "));
         assertTestFileNotContains(constructorString);
-        assertTestFileNotContains(expected);
+        assertTestFileNotContains(expected1);
+        assertTestFileNotContains(expected2);
 
         int instantiationLineNumber = getLineNumber(testFile, source);
         int attachLineNumber = getLineNumber(testFile, attachSource);
         editor.addComponentBefore(testFile, instantiationLineNumber,
                 attachLineNumber, componentType, constructorArguments);
         assertTestFileContains(constructorString);
-        assertTestFileContains(expected);
+        assertTestFileContains(expected1);
+        assertTestFileContains(expected2);
+    }
+
+    private String getSimpleName(String className) {
+        return className.substring(className.lastIndexOf('.') + 1);
     }
 
 }

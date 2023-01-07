@@ -138,8 +138,7 @@ public class Editor {
             return mod;
         }
 
-        public static Modification insertAtEndOfBlock(Node node,
-                String code) {
+        public static Modification insertAtEndOfBlock(Node node, String code) {
             Modification mod = new Modification();
             mod.referenceNode = node;
             mod.type = Type.INSERT_AT_END_OF_BLOCK;
@@ -179,8 +178,13 @@ public class Editor {
         public int compareTo(Modification o) {
             // Sort end to start so positions do not change while replacing
 
-            int a = referenceNode.getRange().get().begin.line;
-            int b = o.referenceNode.getRange().get().begin.line;
+            Position aBegin = referenceNode.getRange().get().begin;
+            int a = aBegin.line;
+            Position bBegin = o.referenceNode.getRange().get().begin;
+            int b = bBegin.line;
+            if (a == b) {
+                return Integer.compare(bBegin.column, aBegin.column);
+            }
             return Integer.compare(b, a);
         }
 
@@ -339,21 +343,29 @@ public class Editor {
             mods.add(addImport(cu, componentType.getClassName()));
         }
 
-        Statement createStatement = findStatement(cu, componentCreateLineNumber);
+        Statement createStatement = findStatement(cu,
+                componentCreateLineNumber);
         if (createStatement == null && where == Where.INSIDE) {
             // Potentially a @Route class
             mods.addAll(addComponentToClass(cu, componentCreateLineNumber,
                     componentType, constructorArguments));
             return mods;
         }
-        Statement attachStatement = findStatement(cu, componentAttachLineNumber);
+        Statement attachStatement = findStatement(cu,
+                componentAttachLineNumber);
 
-        String code = getConstructorCode(componentType, constructorArguments)
-                .toString();
-
-        SimpleName localVariableOrField = findLocalVariableOrField(cu,
+        String localVariableName = getVariableName(componentType,
+                constructorArguments);
+        AssignExpr componentConstructCode = assignToLocalVariable(componentType,
+                localVariableName,
+                getConstructorCode(componentType, constructorArguments));
+        String componentAttachCode = new NameExpr(localVariableName).toString();
+        SimpleName referenceLocalVariableOrField = findLocalVariableOrField(cu,
                 componentCreateLineNumber);
-        if (localVariableOrField == null
+
+        mods.add(Modification.insertBefore(attachStatement,
+                componentConstructCode.toString() + ";\n"));
+        if (referenceLocalVariableOrField == null
                 && attachStatement.equals(createStatement)
                 && attachStatement.isExpressionStmt()) {
             // The reference component is created inline
@@ -369,17 +381,17 @@ public class Editor {
                     if (referenceComponentAdd.equals(args.get(i))) {
                         if (where == Where.BEFORE) {
                             mods.add(Modification.insertBefore(args.get(i),
-                                    code + ", "));
+                                    componentAttachCode + ", "));
                         } else {
                             mods.add(Modification.insertAfter(args.get(i),
-                                    ", " + code));
+                                    ", " + componentAttachCode));
                         }
                         break;
                     }
                 }
                 return mods;
             }
-        } else if (localVariableOrField != null
+        } else if (referenceLocalVariableOrField != null
                 && attachStatement.isExpressionStmt()) {
             Expression expression = attachStatement.asExpressionStmt()
                     .getExpression();
@@ -392,16 +404,16 @@ public class Editor {
                         continue;
                     }
                     SimpleName name = args.get(i).asNameExpr().getName();
-                    if (name.equals(localVariableOrField)) {
+                    if (name.equals(referenceLocalVariableOrField)) {
                         // new ExpressionStmt(new Expression)
                         // ClassOrInterfaceDeclaration type =
                         // cu.getClassByName(componentType.getName()).get();
                         if (where == Where.BEFORE) {
                             mods.add(Modification.insertBefore(args.get(i),
-                                    code + ", "));
+                                    componentAttachCode + ", "));
                         } else {
                             mods.add(Modification.insertAfter(args.get(i),
-                                    ", " + code));
+                                    ", " + componentAttachCode));
                         }
                         break;
                     }
@@ -410,6 +422,15 @@ public class Editor {
         }
         return mods;
 
+    }
+
+    private AssignExpr assignToLocalVariable(ComponentType componentType,
+            String variableName, Expression expression) {
+
+        VariableDeclarationExpr localVariable = new VariableDeclarationExpr(
+                new VariableDeclarator(getType(componentType), variableName));
+
+        return new AssignExpr(localVariable, expression, Operator.ASSIGN);
     }
 
     private Modification addImport(CompilationUnit cu, String className) {
@@ -434,23 +455,20 @@ public class Editor {
         String variableName = getVariableName(componentType,
                 constructorArguments);
 
-        ObjectCreationExpr createCode = getConstructorCode(componentType,
-                constructorArguments);
-        VariableDeclarationExpr localVariable = new VariableDeclarationExpr(
-                new VariableDeclarator(getType(componentType),
-                        variableName));
-
-        AssignExpr createComponent = new AssignExpr(localVariable,
-                createCode, Operator.ASSIGN);
-        MethodCallExpr addComponent = new MethodCallExpr("add",
-                new NameExpr(variableName));
+        AssignExpr createComponent = assignToLocalVariable(componentType,
+                variableName,
+                getConstructorCode(componentType, constructorArguments));
+        MethodCallExpr addComponent = addToLayout(variableName);
 
         ClassOrInterfaceDeclaration classDefinition = findClassDefinition(cu,
                 componentCreateLineNumber);
-        ConstructorDeclaration constructor = findConstructorDeclaration(cu, componentCreateLineNumber);
+        ConstructorDeclaration constructor = findConstructorDeclaration(cu,
+                componentCreateLineNumber);
         if (constructor != null) {
-            String code = createComponent.toString() + ";\n" + addComponent.toString() + ";\n";
-            mods.add(Modification.insertAtEndOfBlock(constructor.getBody(), code));
+            String code = createComponent.toString() + ";\n"
+                    + addComponent.toString() + ";\n";
+            mods.add(Modification.insertAtEndOfBlock(constructor.getBody(),
+                    code));
         } else if (classDefinition != null) {
             if (!classDefinition.getConstructors().isEmpty()) {
                 // This should not happen as create location refers to the class
@@ -472,6 +490,10 @@ public class Editor {
         }
         return mods;
 
+    }
+
+    private MethodCallExpr addToLayout(String variableName) {
+        return new MethodCallExpr("add", new NameExpr(variableName));
     }
 
     private String getVariableName(ComponentType type,
@@ -501,8 +523,8 @@ public class Editor {
         return null;
     }
 
-    private ConstructorDeclaration findConstructorDeclaration(CompilationUnit cu,
-            int lineNumber) {
+    private ConstructorDeclaration findConstructorDeclaration(
+            CompilationUnit cu, int lineNumber) {
         for (TypeDeclaration<?> type : cu.getTypes()) {
             if (contains(type, lineNumber)) {
                 return findConstructorDeclaration(type, lineNumber);
@@ -511,7 +533,8 @@ public class Editor {
         return null;
     }
 
-    private ConstructorDeclaration findConstructorDeclaration(TypeDeclaration<?> type, int lineNumber) {
+    private ConstructorDeclaration findConstructorDeclaration(
+            TypeDeclaration<?> type, int lineNumber) {
         for (ConstructorDeclaration constructor : type.getConstructors()) {
             if (contains(constructor, lineNumber)) {
                 return constructor;
@@ -680,14 +703,16 @@ public class Editor {
         for (BodyDeclaration<?> member : type.getMembers()) {
             if (contains(member, lineNumber)) {
                 if (member instanceof NodeWithBlockStmt) {
-                    return findStatement((NodeWithBlockStmt<?>) member, lineNumber);
+                    return findStatement((NodeWithBlockStmt<?>) member,
+                            lineNumber);
                 }
             }
         }
         return null;
     }
 
-    private Statement findStatement(NodeWithBlockStmt<?> hasBlock, int lineNumber) {
+    private Statement findStatement(NodeWithBlockStmt<?> hasBlock,
+            int lineNumber) {
         for (Statement statement : hasBlock.getBody().getStatements()) {
             if (contains(statement, lineNumber)) {
                 return statement;
