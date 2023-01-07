@@ -51,7 +51,7 @@ public class Editor {
     public static class Modification implements Comparable<Modification> {
 
         private enum Type {
-            INSERT_AFTER, INSERT_BEFORE, INSERT_LINE_AFTER, REPLACE, INSERT_AFTER_STRING
+            INSERT_AFTER, INSERT_BEFORE, INSERT_LINE_AFTER, REPLACE, INSERT_AFTER_STRING, INSERT_AT_END_OF_BLOCK
         };
 
         private Node referenceNode;
@@ -88,6 +88,12 @@ public class Editor {
                 int insertPoint = findNext(source, nodeBegin, needle) + 1;
                 return source.substring(0, insertPoint) + code
                         + source.substring(insertPoint);
+            } else if (type == Type.INSERT_AT_END_OF_BLOCK) {
+                int blockEnd = sourcePosition(source,
+                        referenceNode.getEnd().get().right(1));
+                int insertPoint = findPrevious(source, blockEnd, "}");
+                return source.substring(0, insertPoint) + code
+                        + source.substring(insertPoint);
             }
             throw new RuntimeException("Unknown type");
         }
@@ -109,6 +115,11 @@ public class Editor {
             return source.indexOf(needle, insertPoint);
         }
 
+        private static int findPrevious(String source, int from,
+                String needle) {
+            return source.lastIndexOf(needle, from);
+        }
+
         public static Modification insertAfter(Node node, String code) {
             Modification mod = new Modification();
             mod.referenceNode = node;
@@ -124,6 +135,15 @@ public class Editor {
             mod.type = Type.INSERT_AFTER_STRING;
             mod.code = code;
             mod.needle = needle;
+            return mod;
+        }
+
+        public static Modification insertAtEndOfBlock(Node node,
+                String code) {
+            Modification mod = new Modification();
+            mod.referenceNode = node;
+            mod.type = Type.INSERT_AT_END_OF_BLOCK;
+            mod.code = code;
             return mod;
         }
 
@@ -196,7 +216,7 @@ public class Editor {
 
         List<Modification> mods = new ArrayList<>();
 
-        Statement node = findNode(cu, componentInstantiationLineNumber);
+        Statement node = findStatement(cu, componentInstantiationLineNumber);
         SimpleName localVariableOrField = findLocalVariableOrField(cu,
                 componentInstantiationLineNumber);
         if (localVariableOrField == null) {
@@ -288,7 +308,7 @@ public class Editor {
 
     private SimpleName findLocalVariableOrField(CompilationUnit cu,
             int componentInstantiationLineNumber) {
-        Statement node = findNode(cu, componentInstantiationLineNumber);
+        Statement node = findStatement(cu, componentInstantiationLineNumber);
         if (node.isExpressionStmt()) {
             ExpressionStmt expressionStmt = node.asExpressionStmt();
             Expression expression = expressionStmt.getExpression();
@@ -319,14 +339,14 @@ public class Editor {
             mods.add(addImport(cu, componentType.getClassName()));
         }
 
-        Statement createStatement = findNode(cu, componentCreateLineNumber);
+        Statement createStatement = findStatement(cu, componentCreateLineNumber);
         if (createStatement == null && where == Where.INSIDE) {
             // Potentially a @Route class
             mods.addAll(addComponentToClass(cu, componentCreateLineNumber,
                     componentType, constructorArguments));
             return mods;
         }
-        Statement attachStatement = findNode(cu, componentAttachLineNumber);
+        Statement attachStatement = findStatement(cu, componentAttachLineNumber);
 
         String code = getConstructorCode(componentType, constructorArguments)
                 .toString();
@@ -411,9 +431,27 @@ public class Editor {
             String[] constructorArguments) {
         List<Modification> mods = new ArrayList<>();
 
+        String variableName = getVariableName(componentType,
+                constructorArguments);
+
+        ObjectCreationExpr createCode = getConstructorCode(componentType,
+                constructorArguments);
+        VariableDeclarationExpr localVariable = new VariableDeclarationExpr(
+                new VariableDeclarator(getType(componentType),
+                        variableName));
+
+        AssignExpr createComponent = new AssignExpr(localVariable,
+                createCode, Operator.ASSIGN);
+        MethodCallExpr addComponent = new MethodCallExpr("add",
+                new NameExpr(variableName));
+
         ClassOrInterfaceDeclaration classDefinition = findClassDefinition(cu,
                 componentCreateLineNumber);
-        if (classDefinition != null) {
+        ConstructorDeclaration constructor = findConstructorDeclaration(cu, componentCreateLineNumber);
+        if (constructor != null) {
+            String code = createComponent.toString() + ";\n" + addComponent.toString() + ";\n";
+            mods.add(Modification.insertAtEndOfBlock(constructor.getBody(), code));
+        } else if (classDefinition != null) {
             if (!classDefinition.getConstructors().isEmpty()) {
                 // This should not happen as create location refers to the class
                 // when this is
@@ -421,19 +459,10 @@ public class Editor {
                 return mods;
             }
 
+            // A class without any constructor
+
             ConstructorDeclaration defaultConstructor = classDefinition
                     .addConstructor(Keyword.PUBLIC);
-            ObjectCreationExpr createCode = getConstructorCode(componentType,
-                    constructorArguments);
-            String variableName = getVariableName(componentType,
-                    constructorArguments);
-            VariableDeclarationExpr localVariable = new VariableDeclarationExpr(
-                    new VariableDeclarator(getType(componentType),
-                            variableName));
-            AssignExpr createComponent = new AssignExpr(localVariable,
-                    createCode, Operator.ASSIGN);
-            MethodCallExpr addComponent = new MethodCallExpr("add",
-                    new NameExpr(variableName));
             defaultConstructor.getBody().addStatement(createComponent);
             defaultConstructor.getBody().addStatement(addComponent);
             // We should aim to insert after any fields but before any methods
@@ -467,6 +496,25 @@ public class Editor {
         for (TypeDeclaration<?> type : cu.getTypes()) {
             if (contains(type.getName(), lineNumber)) {
                 return type.asClassOrInterfaceDeclaration();
+            }
+        }
+        return null;
+    }
+
+    private ConstructorDeclaration findConstructorDeclaration(CompilationUnit cu,
+            int lineNumber) {
+        for (TypeDeclaration<?> type : cu.getTypes()) {
+            if (contains(type, lineNumber)) {
+                return findConstructorDeclaration(type, lineNumber);
+            }
+        }
+        return null;
+    }
+
+    private ConstructorDeclaration findConstructorDeclaration(TypeDeclaration<?> type, int lineNumber) {
+        for (ConstructorDeclaration constructor : type.getConstructors()) {
+            if (contains(constructor, lineNumber)) {
+                return constructor;
             }
         }
         return null;
@@ -611,10 +659,10 @@ public class Editor {
         return null;
     }
 
-    private Statement findNode(CompilationUnit cu, int lineNumber) {
+    private Statement findStatement(CompilationUnit cu, int lineNumber) {
         for (TypeDeclaration<?> type : cu.getTypes()) {
             if (contains(type, lineNumber)) {
-                return findNode(type, lineNumber);
+                return findStatement(type, lineNumber);
             }
         }
         return null;
@@ -628,18 +676,18 @@ public class Editor {
         return false;
     }
 
-    private Statement findNode(TypeDeclaration<?> type, int lineNumber) {
+    private Statement findStatement(TypeDeclaration<?> type, int lineNumber) {
         for (BodyDeclaration<?> member : type.getMembers()) {
             if (contains(member, lineNumber)) {
                 if (member instanceof NodeWithBlockStmt) {
-                    return findNode((NodeWithBlockStmt<?>) member, lineNumber);
+                    return findStatement((NodeWithBlockStmt<?>) member, lineNumber);
                 }
             }
         }
         return null;
     }
 
-    private Statement findNode(NodeWithBlockStmt<?> hasBlock, int lineNumber) {
+    private Statement findStatement(NodeWithBlockStmt<?> hasBlock, int lineNumber) {
         for (Statement statement : hasBlock.getBody().getStatements()) {
             if (contains(statement, lineNumber)) {
                 return statement;

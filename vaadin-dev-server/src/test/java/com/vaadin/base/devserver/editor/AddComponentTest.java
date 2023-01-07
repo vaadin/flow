@@ -82,6 +82,40 @@ public class AddComponentTest extends AbstractClassBasedTest {
         assertTestFileContains("add(helloWorld)");
     }
 
+    @Test
+    public void addToEmptyViewWithConstructor() throws Exception {
+        setupTestClass("EmptyViewWithConstructor");
+        // Create is the constructor
+        int create = getLineNumber(testFile, "public EmptyView() {");
+        int attach = create;
+        editor.addComponentInside(testFile, create, attach,
+                ComponentType.BUTTON, "Hello world");
+
+        assertTestFileContains(
+                "Button helloWorld = new Button(\"Hello world\");");
+        assertTestFileContains("add(helloWorld)");
+    }
+
+    @Test
+    public void addTwiceToEmptyView() throws Exception {
+        setupTestClass("EmptyView");
+        // Create is the class declaration when there is no constructor
+        int create = getLineNumber(testFile, "public class EmptyView");
+        int attach = create;
+        editor.addComponentInside(testFile, create, attach,
+                ComponentType.BUTTON, "Hello world");
+        int helloWorldCreate = getLineNumber(testFile, "new Button");
+        int helloWorldAttach = getLineNumber(testFile, "add(helloWorld)");
+
+        editor.addComponentAfter(testFile, helloWorldCreate, helloWorldAttach,
+                ComponentType.TEXTFIELD, "Goodbye world");
+
+        System.out.println(getTestFileContents());
+        assertTestFileContains(
+                "Button helloWorld = new Button(\"Hello world\");");
+        assertTestFileContains(" add(helloWorld, new TextField(\"Goodbye world\"))");
+    }
+
     private void testAddAfterComponent(String source, String attachSource,
             String expected, ComponentType componentType,
             String... constructorArguments) throws IOException {
