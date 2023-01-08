@@ -385,6 +385,8 @@ public class Editor {
 
         String localVariableName = getVariableName(componentType,
                 constructorArguments);
+        localVariableName = findUnusedVariableName(localVariableName,
+                (BlockStmt) createStatement.getParentNode().get());
         ExpressionStmt componentConstructCode = assignToLocalVariable(
                 componentType, localVariableName,
                 getConstructorCode(componentType, constructorArguments));
@@ -451,6 +453,49 @@ public class Editor {
         }
         return mods;
 
+    }
+
+    private String findUnusedVariableName(String localVariableName,
+            BlockStmt body) {
+        Set<String> usedLocalVariables = findLocalVariables(body);
+        Set<String> usedFieldNames = findFieldNames(body);
+
+        String varName = localVariableName;
+        int i = 2;
+        while (usedLocalVariables.contains(varName)
+                || usedFieldNames.contains(varName)) {
+            varName = localVariableName + i;
+            i++;
+        }
+        return varName;
+    }
+
+    private Set<String> findFieldNames(BlockStmt body) {
+        Set<String> names = new HashSet<>();
+        ClassOrInterfaceDeclaration classDecl = body
+                .findAncestor(ClassOrInterfaceDeclaration.class).get();
+        for (FieldDeclaration field : classDecl.getFields()) {
+            for (VariableDeclarator varDecl : field.getVariables()) {
+                names.add(varDecl.getNameAsString());
+            }
+        }
+        return names;
+    }
+
+    private Set<String> findLocalVariables(BlockStmt body) {
+        Set<String> names = new HashSet<>();
+        for (Statement statement : body.getStatements()) {
+            if (statement.isExpressionStmt() && statement.asExpressionStmt()
+                    .getExpression().isVariableDeclarationExpr()) {
+                NodeList<VariableDeclarator> vars = statement.asExpressionStmt()
+                        .getExpression().asVariableDeclarationExpr()
+                        .getVariables();
+                for (VariableDeclarator varDecl : vars) {
+                    names.add(varDecl.getNameAsString());
+                }
+            }
+        }
+        return names;
     }
 
     private ExpressionStmt assignToLocalVariable(ComponentType componentType,

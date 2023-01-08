@@ -126,6 +126,40 @@ public class AddComponentTest extends AbstractClassBasedTest {
         assertTestFileContains("add(helloWorld, goodbyeWorld)");
     }
 
+    @Test
+    public void addWithSameLocalVariableName() throws Exception {
+        setupTestClass("EmptyView");
+        // Create is the class declaration when there is no constructor
+        int create = getLineNumber(testFile, "public class EmptyView");
+        int attach = create;
+        editor.addComponent(testFile, create, attach, Where.INSIDE,
+                ComponentType.BUTTON, "Hello world");
+        int helloWorldCreate = getLineNumber(testFile, "new Button");
+        int helloWorldAttach = getLineNumber(testFile, "add(helloWorld)");
+
+        editor.addComponent(testFile, helloWorldCreate, helloWorldAttach,
+                Where.AFTER, ComponentType.BUTTON, "Hello world");
+
+        assertTestFileContains(
+                "Button helloWorld = new Button(\"Hello world\");");
+        assertTestFileContains(
+                "Button helloWorld2 = new Button(\"Hello world\");");
+        assertTestFileContains("add(helloWorld, helloWorld2)");
+    }
+
+    @Test
+    public void addWithSameFieldName() throws Exception {
+        setupTestClass("DemoFile");
+        // Create is the class declaration when there is no constructor
+        int create = getLineNumber(testFile, "sayHello = new Button");
+        int attach = getLineNumber(testFile, "add(name, sayHello");
+        editor.addComponent(testFile, create, attach, Where.AFTER,
+                ComponentType.TEXTFIELD, "Name");
+
+        assertTestFileContains("TextField name2 = new TextField(\"Name\");");
+        assertTestFileContains("add(name, sayHello, name2,");
+    }
+
     private void testAddAfterComponent(String source, String attachSource,
             String expected1, String expected2, ComponentType componentType,
             String... constructorArguments) throws IOException {
