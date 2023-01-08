@@ -119,7 +119,6 @@ public class AddComponentTest extends AbstractClassBasedTest {
         editor.addComponentAfter(testFile, helloWorldCreate, helloWorldAttach,
                 ComponentType.TEXTFIELD, "Goodbye world");
 
-        System.out.println(getTestFileContents());
         assertTestFileContains(
                 "Button helloWorld = new Button(\"Hello world\");");
         assertTestFileContains(
