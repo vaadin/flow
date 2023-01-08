@@ -83,7 +83,7 @@ public class AddComponentTest extends AbstractClassBasedTest {
         // Create is the class declaration when there is no constructor
         int create = getLineNumber(testFile, "public class EmptyView");
         int attach = create;
-        editor.addComponentInside(testFile, create, attach,
+        editor.addComponent(testFile, create, attach, Where.INSIDE,
                 ComponentType.BUTTON, "Hello world");
 
         assertTestFileContains(
@@ -97,7 +97,7 @@ public class AddComponentTest extends AbstractClassBasedTest {
         // Create is the constructor
         int create = getLineNumber(testFile, "public EmptyView() {");
         int attach = create;
-        editor.addComponentInside(testFile, create, attach,
+        editor.addComponent(testFile, create, attach, Where.INSIDE,
                 ComponentType.BUTTON, "Hello world");
 
         assertTestFileContains(
@@ -111,12 +111,12 @@ public class AddComponentTest extends AbstractClassBasedTest {
         // Create is the class declaration when there is no constructor
         int create = getLineNumber(testFile, "public class EmptyView");
         int attach = create;
-        editor.addComponentInside(testFile, create, attach,
+        editor.addComponent(testFile, create, attach, Where.INSIDE,
                 ComponentType.BUTTON, "Hello world");
         int helloWorldCreate = getLineNumber(testFile, "new Button");
         int helloWorldAttach = getLineNumber(testFile, "add(helloWorld)");
 
-        editor.addComponentAfter(testFile, helloWorldCreate, helloWorldAttach,
+        editor.addComponent(testFile, helloWorldCreate, helloWorldAttach, Where.AFTER,
                 ComponentType.TEXTFIELD, "Goodbye world");
 
         assertTestFileContains(
@@ -139,8 +139,8 @@ public class AddComponentTest extends AbstractClassBasedTest {
 
         int instantiationLineNumber = getLineNumber(testFile, source);
         int attachLineNumber = getLineNumber(testFile, attachSource);
-        editor.addComponentAfter(testFile, instantiationLineNumber,
-                attachLineNumber, componentType, constructorArguments);
+        editor.addComponent(testFile, instantiationLineNumber,
+                attachLineNumber, Where.AFTER, componentType, constructorArguments);
         assertTestFileContains(constructorString);
         assertTestFileContains(expected1);
         assertTestFileContains(expected2);
@@ -159,8 +159,8 @@ public class AddComponentTest extends AbstractClassBasedTest {
 
         int instantiationLineNumber = getLineNumber(testFile, source);
         int attachLineNumber = getLineNumber(testFile, attachSource);
-        editor.addComponentBefore(testFile, instantiationLineNumber,
-                attachLineNumber, componentType, constructorArguments);
+        editor.addComponent(testFile, instantiationLineNumber,
+                attachLineNumber, Where.BEFORE, componentType, constructorArguments);
         assertTestFileContains(constructorString);
         assertTestFileContains(expected1);
         assertTestFileContains(expected2);

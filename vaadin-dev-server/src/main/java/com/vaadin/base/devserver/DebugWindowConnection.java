@@ -30,6 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.base.devserver.editor.ComponentType;
+import com.vaadin.base.devserver.editor.Where;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
@@ -260,15 +262,16 @@ public class DebugWindowConnection implements BrowserLiveReload {
             VaadinSession session = VaadinSession.getCurrent();
             session.access(() -> {
                 Element element = session.findElement(appId, nodeId);
-                String editType = data.getString("editType");
-                String value = data.getString("value");
                 if (!element.getComponent().isPresent()) {
                     getLogger().error(
                             "Unable to find the component to edit. Did you pick an element without a component?");
                     return;
                 }
 
-                EditCode.edit(element.getComponent().get(), editType, value);
+                Where where;
+                ComponentType componentType;
+                String constructorArgs;
+                EditCode.add(element.getComponent().get(), where, componentType, constructorArgs);
             });
         } else {
             getLogger().info("Unknown command from the browser: " + command);

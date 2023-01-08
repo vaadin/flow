@@ -53,7 +53,8 @@ public class Editor {
     public static class Modification implements Comparable<Modification> {
 
         private enum Type {
-            INSERT_AFTER, INSERT_BEFORE, INSERT_LINE_AFTER, INSERT_LINE_BEFORE, REPLACE, INSERT_AFTER_STRING, INSERT_AT_END_OF_BLOCK
+            INSERT_AFTER, INSERT_BEFORE, INSERT_LINE_AFTER, INSERT_LINE_BEFORE, REPLACE, INSERT_AFTER_STRING,
+            INSERT_AT_END_OF_BLOCK
         };
 
         private Node referenceNode;
@@ -821,48 +822,30 @@ public class Editor {
         }
     }
 
-    public void addComponentAfter(File f, int componentCreateLineNumber,
-            int componentAttachLineNumber, ComponentType componentType,
+    public void addComponent(File f, int referenceComponentCreateLineNumber,
+            int referenceComponentAttachLineNumber, Where where, ComponentType componentType,
             String... constructorArguments) {
         modifyClass(f,
-                (cu) -> addComponent(cu, componentCreateLineNumber,
-                        componentAttachLineNumber, Where.AFTER, componentType,
-                        constructorArguments));
-    }
-
-    public void addComponentBefore(File f, int componentCreateLineNumber,
-            int componentAttachLineNumber, ComponentType componentType,
-            String... constructorArguments) {
-        modifyClass(f,
-                (cu) -> addComponent(cu, componentCreateLineNumber,
-                        componentAttachLineNumber, Where.BEFORE, componentType,
-                        constructorArguments));
-    }
-
-    public void addComponentInside(File f, int parentcomponentCreateLineNumber,
-            int parentComponentAttachLineNumber, ComponentType componentType,
-            String... constructorArguments) {
-        modifyClass(f,
-                (cu) -> addComponent(cu, parentcomponentCreateLineNumber,
-                        parentComponentAttachLineNumber, Where.INSIDE,
+                (cu) -> addComponent(cu, referenceComponentCreateLineNumber,
+                        referenceComponentAttachLineNumber, where,
                         componentType, constructorArguments));
     }
 
-    public void addComponentAfter(Class<?> cls, int componentCreateLineNumber,
-            int componentAttachLineNumber, ComponentType componentType,
-            String... constructorArguments) {
-        addComponentAfter(getSourceFile(cls), componentCreateLineNumber,
-                componentAttachLineNumber, componentType, constructorArguments);
-    }
+    // public void addComponentAfter(Class<?> cls, int componentCreateLineNumber,
+    //         int componentAttachLineNumber, ComponentType componentType,
+    //         String... constructorArguments) {
+    //     addComponentAfter(getSourceFile(cls), componentCreateLineNumber,
+    //             componentAttachLineNumber, componentType, constructorArguments);
+    // }
 
-    public void addComponentInside(Class<?> cls,
-            int parentcomponentCreateLineNumber,
-            int parentComponentAttachLineNumber, ComponentType componentType,
-            String... constructorArguments) {
-        addComponentInside(getSourceFile(cls), parentcomponentCreateLineNumber,
-                parentComponentAttachLineNumber, componentType,
-                constructorArguments);
-    }
+    // public void addComponentInside(Class<?> cls,
+    //         int parentcomponentCreateLineNumber,
+    //         int parentComponentAttachLineNumber, ComponentType componentType,
+    //         String... constructorArguments) {
+    //     addComponentInside(getSourceFile(cls), parentcomponentCreateLineNumber,
+    //             parentComponentAttachLineNumber, componentType,
+    //             constructorArguments);
+    // }
 
     public void addClickListener(File f, int componentCreateLineNumber,
             int componentAttachLineNumber) {

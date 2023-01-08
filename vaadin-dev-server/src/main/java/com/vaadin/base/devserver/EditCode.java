@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.editor.ComponentType;
 import com.vaadin.base.devserver.editor.Editor;
+import com.vaadin.base.devserver.editor.Where;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.component.internal.ComponentTracker.Location;
@@ -32,6 +33,13 @@ public class EditCode {
         new Editor().setComponentAttribute(createdInClass,
                 location.lineNumber(), 123, type, editType, value);
 
+    }
+
+    public static void add(Component reference, Where where, ComponentType componentType, String... constructorArgs) {
+        int referenceComponentCreateLineNumber = ComponentTracker.findCreate(reference).lineNumber();
+        int referenceComponentAttachLineNumber = ComponentTracker.findAttach(reference).lineNumber();
+        new Editor().addComponent(null, referenceComponentCreateLineNumber, referenceComponentAttachLineNumber, where,
+                componentType, constructorArgs);
     }
 
     private static Logger getLogger() {

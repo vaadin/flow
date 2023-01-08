@@ -12,15 +12,15 @@ public class HelloWorldTest extends AbstractClassBasedTest {
         // Create is the class declaration when there is no constructor
         int create = getLineNumber(testFile, "public class EmptyView");
         int attach = create;
-        editor.addComponentInside(testFile, create, attach,
-                ComponentType.TEXTFIELD, "Your name");
+        editor.addComponent(testFile, create, attach,
+                Where.INSIDE, ComponentType.TEXTFIELD, "Your name");
 
         System.out.println(getTestFileContents());
 
         int yourNameCreate = getLineNumber(testFile, "new TextField");
         int yourNameAttach = getLineNumber(testFile, "add(");
-        editor.addComponentAfter(testFile, yourNameCreate, yourNameAttach,
-                ComponentType.BUTTON, "Say hello");
+        editor.addComponent(testFile, yourNameCreate, yourNameAttach,
+                Where.AFTER, ComponentType.BUTTON, "Say hello");
 
         System.out.println(getTestFileContents());
 
