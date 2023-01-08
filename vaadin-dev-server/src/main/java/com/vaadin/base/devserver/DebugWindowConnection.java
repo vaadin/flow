@@ -37,6 +37,7 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -259,6 +260,14 @@ public class DebugWindowConnection implements BrowserLiveReload {
         } else if ("addComponent".equals(command)) {
             int nodeId = (int) data.getNumber("nodeId");
             String appId = data.getString("appId");
+            String where = data.getString("where");
+            String componentType = data.getString("componentType");
+
+            String[] constructorArguments = JsonUtils
+                    .stream(data.getArray("constructorArguments"))
+                    .map(jsonString -> jsonString.asString())
+                    .toArray(String[]::new);
+
             VaadinSession session = VaadinSession.getCurrent();
             session.access(() -> {
                 Element element = session.findElement(appId, nodeId);
@@ -268,10 +277,12 @@ public class DebugWindowConnection implements BrowserLiveReload {
                     return;
                 }
 
-                Where where;
-                ComponentType componentType;
-                String constructorArgs;
-                EditCode.add(element.getComponent().get(), where, componentType, constructorArgs);
+                // Where where;
+                // ComponentType componentType;
+                // String constructorArgs;
+                EditCode.add(element.getComponent().get(), Where.from(where),
+                        ComponentType.from(componentType),
+                        constructorArguments);
             });
         } else {
             getLogger().info("Unknown command from the browser: " + command);

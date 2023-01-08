@@ -23,4 +23,13 @@ public enum ComponentType {
     public String getClassName() {
         return className;
     }
+
+    public static ComponentType from(String componentType) {
+        if (componentType.equalsIgnoreCase("button")) {
+            return ComponentType.BUTTON;
+        } else if (componentType.equalsIgnoreCase("textfield")) {
+            return ComponentType.TEXTFIELD;
+        }
+        return null;
+    }
 }

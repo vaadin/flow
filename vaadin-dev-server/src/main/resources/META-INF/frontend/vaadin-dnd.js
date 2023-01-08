@@ -11,6 +11,7 @@ import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { getComponents, isComponent } from './shim.ts';
 import './dnd-palette.ts';
 
+
 const isAddedComponent = (element) => {
   return element.added;
 };
@@ -299,7 +300,7 @@ class VaadinDnd extends PolymerElement {
     const ip = this._getNearestInsertPoint(this._getEventLocation(event), target);
     if (ip) {
       this.dispatchEvent(
-        new CustomEvent('vaadin-dnd-drop', { details: { element, parent: ip.parent, insertBefore: ip.insertBefore } })
+        new CustomEvent('vaadin-dnd-drop', { detail: { element, parent: ip.parent, insertBefore: ip.insertBefore } })
       );
       const template = element.querySelector('template');
       if (template) {

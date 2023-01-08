@@ -8,8 +8,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -26,6 +28,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -53,8 +56,7 @@ public class Editor {
     public static class Modification implements Comparable<Modification> {
 
         private enum Type {
-            INSERT_AFTER, INSERT_BEFORE, INSERT_LINE_AFTER, INSERT_LINE_BEFORE, REPLACE, INSERT_AFTER_STRING,
-            INSERT_AT_END_OF_BLOCK
+            INSERT_AFTER, INSERT_BEFORE, INSERT_LINE_AFTER, INSERT_LINE_BEFORE, REPLACE, INSERT_AFTER_STRING, INSERT_AT_END_OF_BLOCK
         };
 
         private Node referenceNode;
@@ -370,10 +372,12 @@ public class Editor {
 
         Statement createStatement = findStatement(cu,
                 componentCreateLineNumber);
-        if (createStatement == null && where == Where.INSIDE) {
-            // Potentially a @Route class
-            mods.addAll(addComponentToClass(cu, componentCreateLineNumber,
-                    componentType, constructorArguments));
+        if (createStatement == null) {
+            if (where == Where.INSIDE) {
+                // Potentially a @Route class
+                mods.addAll(addComponentToClass(cu, componentCreateLineNumber,
+                        componentType, constructorArguments));
+            }
             return mods;
         }
         Statement attachStatement = findStatement(cu,
@@ -823,28 +827,29 @@ public class Editor {
     }
 
     public void addComponent(File f, int referenceComponentCreateLineNumber,
-            int referenceComponentAttachLineNumber, Where where, ComponentType componentType,
-            String... constructorArguments) {
+            int referenceComponentAttachLineNumber, Where where,
+            ComponentType componentType, String... constructorArguments) {
         modifyClass(f,
                 (cu) -> addComponent(cu, referenceComponentCreateLineNumber,
                         referenceComponentAttachLineNumber, where,
                         componentType, constructorArguments));
     }
 
-    // public void addComponentAfter(Class<?> cls, int componentCreateLineNumber,
-    //         int componentAttachLineNumber, ComponentType componentType,
-    //         String... constructorArguments) {
-    //     addComponentAfter(getSourceFile(cls), componentCreateLineNumber,
-    //             componentAttachLineNumber, componentType, constructorArguments);
+    // public void addComponentAfter(Class<?> cls, int
+    // componentCreateLineNumber,
+    // int componentAttachLineNumber, ComponentType componentType,
+    // String... constructorArguments) {
+    // addComponentAfter(getSourceFile(cls), componentCreateLineNumber,
+    // componentAttachLineNumber, componentType, constructorArguments);
     // }
 
     // public void addComponentInside(Class<?> cls,
-    //         int parentcomponentCreateLineNumber,
-    //         int parentComponentAttachLineNumber, ComponentType componentType,
-    //         String... constructorArguments) {
-    //     addComponentInside(getSourceFile(cls), parentcomponentCreateLineNumber,
-    //             parentComponentAttachLineNumber, componentType,
-    //             constructorArguments);
+    // int parentcomponentCreateLineNumber,
+    // int parentComponentAttachLineNumber, ComponentType componentType,
+    // String... constructorArguments) {
+    // addComponentInside(getSourceFile(cls), parentcomponentCreateLineNumber,
+    // parentComponentAttachLineNumber, componentType,
+    // constructorArguments);
     // }
 
     public void addClickListener(File f, int componentCreateLineNumber,

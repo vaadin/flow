@@ -171,8 +171,19 @@ export class Connection extends Object {
   sendEditCode(editType: string, component: ComponentReference, value: string) {
     this.send('editCode', { editType, appId: component.appId, nodeId: component.nodeId, value });
   }
-  sendAddComponent(referenceComponent: ComponentReference, where: Where) {
-    this.send('addComponent', { appId: referenceComponent.appId, nodeId: referenceComponent.nodeId, where });
+  sendAddComponent(
+    referenceComponent: ComponentReference,
+    where: Where,
+    componentType: 'Button' | 'TextField',
+    constructorArguments: string[]
+  ) {
+    this.send('addComponent', {
+      appId: referenceComponent.appId,
+      nodeId: referenceComponent.nodeId,
+      where,
+      componentType,
+      constructorArguments
+    });
   }
 }
 
@@ -1685,8 +1696,8 @@ export class VaadinDevTools extends LitElement {
     this.addMode = true;
 
     activateAddMode(
-      (referenceComponent: ComponentReference, where: Where) => {
-        this.frontendConnection!.sendAddComponent(referenceComponent, where);
+      (referenceComponent, where, componentType, constructorArguments) => {
+        this.frontendConnection!.sendAddComponent(referenceComponent, where, componentType, constructorArguments);
       },
       (componentHierarchy, componentHierarchySelectedIndex) => {
         this.componentHierarchy = componentHierarchy;

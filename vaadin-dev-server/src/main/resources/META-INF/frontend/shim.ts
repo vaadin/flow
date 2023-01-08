@@ -103,7 +103,7 @@ export type ComponentReference = {
 export function isComponent(element: HTMLElement): boolean {
   return getComponent(element).nodeId !== -1;
 }
-function getComponent(element: HTMLElement): ComponentReference {
+export function getComponent(element: HTMLElement): ComponentReference {
   const { clients } = (window as any).Vaadin.Flow;
   const appIds = Object.keys(clients);
   for (const appId of appIds) {

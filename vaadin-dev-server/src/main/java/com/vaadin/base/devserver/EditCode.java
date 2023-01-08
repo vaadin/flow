@@ -1,5 +1,7 @@
 package com.vaadin.base.devserver;
 
+import java.io.File;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +13,8 @@ import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.component.internal.ComponentTracker.Location;
 
 public class EditCode {
+
+    private static Editor editor = new Editor();
 
     public static void edit(Component component, String editType,
             String value) {
@@ -30,16 +34,21 @@ public class EditCode {
                     + component.getClass().getName());
             return;
         }
-        new Editor().setComponentAttribute(createdInClass,
-                location.lineNumber(), 123, type, editType, value);
+        editor.setComponentAttribute(createdInClass, location.lineNumber(), 123,
+                type, editType, value);
 
     }
 
-    public static void add(Component reference, Where where, ComponentType componentType, String... constructorArgs) {
-        int referenceComponentCreateLineNumber = ComponentTracker.findCreate(reference).lineNumber();
-        int referenceComponentAttachLineNumber = ComponentTracker.findAttach(reference).lineNumber();
-        new Editor().addComponent(null, referenceComponentCreateLineNumber, referenceComponentAttachLineNumber, where,
-                componentType, constructorArgs);
+    public static void add(Component reference, Where where,
+            ComponentType componentType, String[] constructorArgs) {
+        Location createLocation = ComponentTracker.findCreate(reference);
+        int referenceComponentCreateLineNumber = createLocation.lineNumber();
+        int referenceComponentAttachLineNumber = ComponentTracker
+                .findAttach(reference).lineNumber();
+        File file = editor.getSourceFile(createLocation.className());
+        editor.addComponent(file, referenceComponentCreateLineNumber,
+                referenceComponentAttachLineNumber, where, componentType,
+                constructorArgs);
     }
 
     private static Logger getLogger() {

@@ -1,7 +1,12 @@
-import { activateShim, ComponentReference, deactivateShim, getComponents, highlight } from './shim';
+import { activateShim, ComponentReference, deactivateShim, getComponent, getComponents, highlight } from './shim';
 import './vaadin-dnd.js';
 
-type AddHandler = (referenceComponent: ComponentReference, where: Where) => void;
+type AddHandler = (
+  referenceComponent: ComponentReference,
+  where: Where,
+  conponentType: 'Button' | 'TextField',
+  constructorArguments: string[]
+) => void;
 type MoveHandler = (componentHierarchy: ComponentReference[], componentHierarchySelectedIndex: number) => void;
 
 export type Where = 'inside' | 'before' | 'after';
@@ -22,6 +27,30 @@ export function activateAddMode(addHandler: AddHandler, moveHandler: MoveHandler
   activeMoveHandler = moveHandler;
   dnd = document.createElement('vaadin-dev-tools-dnd');
   dnd.addEventListener('vaadin-dnd-drop', (e) => {
+    const detail = (e as any).detail;
+    const src = detail.element;
+    if (src.hasAttribute('palette')) {
+      let componentType: 'Button'|'TextField';
+      const text = src.querySelector('template').content.firstElementChild.innerText;
+      if (src.innerText.includes('Button')) {
+        componentType = 'Button';
+      } else {
+        componentType = 'TextField';
+      }
+      let referenceElement;
+      let where: Where;
+      if (detail.insertBefore) {
+        referenceElement = detail.insertBefore;
+        where = 'before';
+      } else {
+        // add to empty layout
+        referenceElement = detail.parent;
+        where = 'inside';
+      }
+      addHandler(getComponent(referenceElement), where, componentType, [text]);
+    } else {
+      debugger;
+    }
     console.log(e);
   });
   outlet = document.querySelector('#outlet');
@@ -51,7 +80,7 @@ function shimClick(_targetElement: HTMLElement, _e: MouseEvent): void {
 }
 
 function commitAdd(where: Where) {
-  activeAddHandler!(addComponent!, where);
+  // activeAddHandler!(addComponent!, where);
   stopAdding();
   // newValueAssigner!();
 }

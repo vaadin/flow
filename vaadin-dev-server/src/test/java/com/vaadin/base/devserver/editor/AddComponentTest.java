@@ -116,8 +116,8 @@ public class AddComponentTest extends AbstractClassBasedTest {
         int helloWorldCreate = getLineNumber(testFile, "new Button");
         int helloWorldAttach = getLineNumber(testFile, "add(helloWorld)");
 
-        editor.addComponent(testFile, helloWorldCreate, helloWorldAttach, Where.AFTER,
-                ComponentType.TEXTFIELD, "Goodbye world");
+        editor.addComponent(testFile, helloWorldCreate, helloWorldAttach,
+                Where.AFTER, ComponentType.TEXTFIELD, "Goodbye world");
 
         assertTestFileContains(
                 "Button helloWorld = new Button(\"Hello world\");");
@@ -139,8 +139,8 @@ public class AddComponentTest extends AbstractClassBasedTest {
 
         int instantiationLineNumber = getLineNumber(testFile, source);
         int attachLineNumber = getLineNumber(testFile, attachSource);
-        editor.addComponent(testFile, instantiationLineNumber,
-                attachLineNumber, Where.AFTER, componentType, constructorArguments);
+        editor.addComponent(testFile, instantiationLineNumber, attachLineNumber,
+                Where.AFTER, componentType, constructorArguments);
         assertTestFileContains(constructorString);
         assertTestFileContains(expected1);
         assertTestFileContains(expected2);
@@ -159,8 +159,8 @@ public class AddComponentTest extends AbstractClassBasedTest {
 
         int instantiationLineNumber = getLineNumber(testFile, source);
         int attachLineNumber = getLineNumber(testFile, attachSource);
-        editor.addComponent(testFile, instantiationLineNumber,
-                attachLineNumber, Where.BEFORE, componentType, constructorArguments);
+        editor.addComponent(testFile, instantiationLineNumber, attachLineNumber,
+                Where.BEFORE, componentType, constructorArguments);
         assertTestFileContains(constructorString);
         assertTestFileContains(expected1);
         assertTestFileContains(expected2);
