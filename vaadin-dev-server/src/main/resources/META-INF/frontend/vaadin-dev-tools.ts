@@ -171,6 +171,9 @@ export class Connection extends Object {
   sendEditCode(editType: string, component: ComponentReference, value: string) {
     this.send('editCode', { editType, appId: component.appId, nodeId: component.nodeId, value });
   }
+  sendAddListener(component: ComponentReference,listenerType: string) {
+    this.send('addListener', { appId: component.appId, nodeId: component.nodeId, listenerType });
+  }
   sendAddComponent(
     referenceComponent: ComponentReference,
     where: Where,
@@ -1685,6 +1688,8 @@ export class VaadinDevTools extends LitElement {
     this.editMode = true;
     activateEditMode((editComponent: ComponentReference, editType: string, value: string) => {
       this.frontendConnection!.sendEditCode(editType, editComponent, value);
+    }, (component,listenerType) => {
+      this.frontendConnection!.sendAddListener(component, listenerType);
     });
   }
   stopEditMode() {

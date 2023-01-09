@@ -68,5 +68,5 @@ export function pickComponent(
   pickCallback = onPick;
   pickingCallback = onPicking;
   pickCompleteCallback = onComplete;
-  activateShim(shimMove, shimClick);
+  activateShim(shimMove, shimClick, () => {});
 }

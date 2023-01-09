@@ -51,6 +51,16 @@ public class EditCode {
                 constructorArgs);
     }
 
+    public static void addListener(Component reference, String listenerType) {
+        Location createLocation = ComponentTracker.findCreate(reference);
+        int referenceComponentCreateLineNumber = createLocation.lineNumber();
+        int referenceComponentAttachLineNumber = ComponentTracker
+                .findAttach(reference).lineNumber();
+        File file = editor.getSourceFile(createLocation.className());
+        editor.addListener(file, referenceComponentCreateLineNumber,
+                referenceComponentAttachLineNumber, listenerType);
+    }
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(EditCode.class);
     }

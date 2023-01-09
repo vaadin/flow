@@ -31,7 +31,8 @@ public class HelloWorldTest extends AbstractClassBasedTest {
         editor.setComponentAttribute(testFile, sayHelloCreate, sayHelloAttach,
                 ComponentType.BUTTON, "setFoo", "bar");
         System.out.println(getTestFileContents());
-        editor.addClickListener(testFile, sayHelloCreate, sayHelloAttach);
+        editor.addListener(testFile, sayHelloCreate, sayHelloAttach,
+                "addClickListener");
 
         System.out.println(getTestFileContents());
 

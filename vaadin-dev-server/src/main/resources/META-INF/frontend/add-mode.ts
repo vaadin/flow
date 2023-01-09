@@ -30,8 +30,12 @@ export function activateAddMode(addHandler: AddHandler, moveHandler: MoveHandler
     const detail = (e as any).detail;
     const src = detail.element;
     if (src.hasAttribute('palette')) {
-      let componentType: 'Button'|'TextField';
-      const text = src.querySelector('template').content.firstElementChild.innerText;
+      let componentType: 'Button' | 'TextField';
+      const templateContent = src.querySelector('template').content;
+      let text = templateContent.firstElementChild.innerText;
+      if (!text) {
+        text = templateContent.firstElementChild.getAttribute('label');
+      }
       if (src.innerText.includes('Button')) {
         componentType = 'Button';
       } else {
@@ -95,7 +99,7 @@ function stopAdding() {
     restoreElement = undefined;
   }
 
-  activateShim(shimMove, shimClick);
+  activateShim(shimMove, shimClick, () => {});
 }
 export function handleKeyEvent(e: KeyboardEvent) {
   if (e.key === 'Escape') {

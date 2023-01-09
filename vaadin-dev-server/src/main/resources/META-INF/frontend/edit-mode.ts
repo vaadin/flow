@@ -1,17 +1,20 @@
-import { activateShim, ComponentReference, deactivateShim, getComponents, highlight } from './shim';
+import { activateShim, ComponentReference, deactivateShim, getComponent, getComponents, highlight } from './shim';
 
 type EditHandler = (editComponent: ComponentReference, editType: string, value: string) => void;
+type ListenerHandler = (editComponent: ComponentReference, listenerType: string) => void;
 
 let activeEditor: HTMLInputElement | undefined;
 let activeEditHandler: EditHandler | undefined;
+let activeListenerHandler: ListenerHandler | undefined;
 let editComponent: ComponentReference | undefined;
 let editType: 'setLabel' | 'setText' | undefined;
 let restoreElement: (() => void) | undefined;
 let newValueAssigner: ((newValue: string) => void) | undefined;
 
-export function activateEditMode(editHandler: EditHandler) {
+export function activateEditMode(editHandler: EditHandler, listenerHandler: ListenerHandler) {
   activeEditHandler = editHandler;
-  activateShim(shimMove, shimClick);
+  activeListenerHandler = listenerHandler;
+  activateShim(shimMove, shimClick, shimContextMenu);
 }
 export function deactiveEditMode() {
   deactivateShim();
@@ -33,6 +36,14 @@ function shimClick(targetElement: HTMLElement, _e: MouseEvent): void {
   } else if (isButton(targetElement)) {
     editButton(targetElement);
     deactivateShim();
+  }
+}
+
+function shimContextMenu(targetElement: HTMLElement, _e: MouseEvent): void {
+  if (activeListenerHandler) {
+    if (targetElement.tagName === 'VAADIN-BUTTON') {
+      activeListenerHandler(getComponent(targetElement), 'addClickListener');
+    }
   }
 }
 
@@ -67,7 +78,7 @@ function isButton(targetElement: HTMLElement) {
 function editLabel(targetElement: HTMLElement) {
   const editor = getInputEditor();
   editor.value = targetElement.innerText;
-  
+
   const editorWrapper = document.createElement('label');
   editorWrapper.slot = targetElement.slot;
   editorWrapper.append(editor);
@@ -132,5 +143,5 @@ function stopEditing() {
     restoreElement = undefined;
   }
 
-  activateShim(shimMove, shimClick);
+  activateShim(shimMove, shimClick, shimContextMenu);
 }

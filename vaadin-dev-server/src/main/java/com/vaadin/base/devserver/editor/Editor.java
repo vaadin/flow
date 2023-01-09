@@ -16,8 +16,11 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.compress.archivers.Lister;
 import org.apache.commons.io.IOUtils;
 
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParseResult;
 import com.github.javaparser.Position;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
@@ -29,6 +32,7 @@ import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -46,6 +50,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
@@ -386,7 +391,7 @@ public class Editor {
         String localVariableName = getVariableName(componentType,
                 constructorArguments);
         localVariableName = findUnusedVariableName(localVariableName,
-                (BlockStmt) createStatement.getParentNode().get());
+                (BlockStmt) createStatement.getParentNode().get(), null);
         ExpressionStmt componentConstructCode = assignToLocalVariable(
                 componentType, localVariableName,
                 getConstructorCode(componentType, constructorArguments));
@@ -456,9 +461,13 @@ public class Editor {
     }
 
     private String findUnusedVariableName(String localVariableName,
-            BlockStmt body) {
+            BlockStmt body, ClassOrInterfaceDeclaration classDefinition) {
         Set<String> usedLocalVariables = findLocalVariables(body);
-        Set<String> usedFieldNames = findFieldNames(body);
+        if (classDefinition == null) {
+            classDefinition = body
+                    .findAncestor(ClassOrInterfaceDeclaration.class).get();
+        }
+        Set<String> usedFieldNames = findFieldNames(classDefinition);
 
         String varName = localVariableName;
         int i = 2;
@@ -470,11 +479,10 @@ public class Editor {
         return varName;
     }
 
-    private Set<String> findFieldNames(BlockStmt body) {
+    private Set<String> findFieldNames(
+            ClassOrInterfaceDeclaration classDefinition) {
         Set<String> names = new HashSet<>();
-        ClassOrInterfaceDeclaration classDecl = body
-                .findAncestor(ClassOrInterfaceDeclaration.class).get();
-        for (FieldDeclaration field : classDecl.getFields()) {
+        for (FieldDeclaration field : classDefinition.getFields()) {
             for (VariableDeclarator varDecl : field.getVariables()) {
                 names.add(varDecl.getNameAsString());
             }
@@ -484,14 +492,17 @@ public class Editor {
 
     private Set<String> findLocalVariables(BlockStmt body) {
         Set<String> names = new HashSet<>();
-        for (Statement statement : body.getStatements()) {
-            if (statement.isExpressionStmt() && statement.asExpressionStmt()
-                    .getExpression().isVariableDeclarationExpr()) {
-                NodeList<VariableDeclarator> vars = statement.asExpressionStmt()
-                        .getExpression().asVariableDeclarationExpr()
-                        .getVariables();
-                for (VariableDeclarator varDecl : vars) {
-                    names.add(varDecl.getNameAsString());
+        if (body != null) {
+
+            for (Statement statement : body.getStatements()) {
+                if (statement.isExpressionStmt() && statement.asExpressionStmt()
+                        .getExpression().isVariableDeclarationExpr()) {
+                    NodeList<VariableDeclarator> vars = statement
+                            .asExpressionStmt().getExpression()
+                            .asVariableDeclarationExpr().getVariables();
+                    for (VariableDeclarator varDecl : vars) {
+                        names.add(varDecl.getNameAsString());
+                    }
                 }
             }
         }
@@ -527,18 +538,25 @@ public class Editor {
             String[] constructorArguments) {
         List<Modification> mods = new ArrayList<>();
 
+        ClassOrInterfaceDeclaration classDefinition = findClassDefinition(cu,
+                componentCreateLineNumber);
+        ConstructorDeclaration constructor = findConstructorDeclaration(cu,
+                componentCreateLineNumber);
+
         String variableName = getVariableName(componentType,
                 constructorArguments);
-
+        if (constructor != null) {
+            variableName = findUnusedVariableName(variableName,
+                    constructor.getBody(), null);
+        } else if (classDefinition != null) {
+            variableName = findUnusedVariableName(variableName, null,
+                    classDefinition);
+        }
         ExpressionStmt createComponent = assignToLocalVariable(componentType,
                 variableName,
                 getConstructorCode(componentType, constructorArguments));
         ExpressionStmt addComponent = addToLayout(variableName);
 
-        ClassOrInterfaceDeclaration classDefinition = findClassDefinition(cu,
-                componentCreateLineNumber);
-        ConstructorDeclaration constructor = findConstructorDeclaration(cu,
-                componentCreateLineNumber);
         if (constructor != null) {
             String code = createComponent.toString() + "\n"
                     + addComponent.toString() + "\n";
@@ -574,22 +592,30 @@ public class Editor {
                 .replaceAll(indent);
     }
 
-    private List<Modification> addClickListener(CompilationUnit cu,
-            int componentCreateLineNumber, int componentAttachLineNumber) {
+    private List<Modification> addListener(CompilationUnit cu,
+            int componentCreateLineNumber, int componentAttachLineNumber,
+            String listenerType) {
         List<Modification> mods = new ArrayList<>();
         Statement createStatement = findStatement(cu,
                 componentCreateLineNumber);
         SimpleName referenceLocalVariableOrField = findLocalVariableOrField(cu,
                 componentCreateLineNumber);
 
-        LambdaExpr emptyCallback = new LambdaExpr(new NodeList<>(),
+        // ClassOrInterfaceType type =
+        // StaticJavaParser.parseClassOrInterfaceType("ClickListener");
+        // VoidType type = new VoidType();
+        // LambdaExpr emptyCallback = new LambdaExpr(new Parameter(type, "e"),
+        // new BlockStmt(new NodeList<>()));
+        Parameter param = new Parameter();
+        param.setName("e");
+        LambdaExpr emptyCallback = new LambdaExpr(param,
                 new BlockStmt(new NodeList<>()));
-        MethodCallExpr clickListener = new MethodCallExpr(
-                new NameExpr(referenceLocalVariableOrField), "addClickListener",
+        MethodCallExpr listener = new MethodCallExpr(
+                new NameExpr(referenceLocalVariableOrField), listenerType,
                 new NodeList<>(emptyCallback));
         // Add an empty row where the code can be written
-        String clickListenerCode = addNewLineToBody(
-                new ExpressionStmt(clickListener).toString()) + "\n";
+        String listenerCode = addNewLineToBody(
+                new ExpressionStmt(listener).toString()) + "\n";
         Node parent = createStatement.getParentNode().get();
         if (parent instanceof BlockStmt) {
             // Find last method call for the local variable and add after that
@@ -597,19 +623,16 @@ public class Editor {
                     (BlockStmt) parent, referenceLocalVariableOrField);
             if (methodCalls.isEmpty()) {
                 mods.add(Modification.insertLineAfter(createStatement,
-                        clickListenerCode));
+                        listenerCode));
             } else {
-                mods.add(
-                        Modification.insertLineAfter(
-                                methodCalls.get(methodCalls.size() - 1)
-                                        .getParentNode().get(),
-                                clickListenerCode));
+                mods.add(Modification.insertLineAfter(methodCalls
+                        .get(methodCalls.size() - 1).getParentNode().get(),
+                        listenerCode));
             }
 
         } else {
             // Add after create. Not sure what the code looks like
-            mods.add(Modification.insertAfter(createStatement,
-                    clickListenerCode));
+            mods.add(Modification.insertAfter(createStatement, listenerCode));
         }
         return mods;
     }
@@ -897,10 +920,10 @@ public class Editor {
     // constructorArguments);
     // }
 
-    public void addClickListener(File f, int componentCreateLineNumber,
-            int componentAttachLineNumber) {
-        modifyClass(f, (cu) -> addClickListener(cu, componentCreateLineNumber,
-                componentAttachLineNumber));
+    public void addListener(File f, int componentCreateLineNumber,
+            int componentAttachLineNumber, String listenerType) {
+        modifyClass(f, (cu) -> addListener(cu, componentCreateLineNumber,
+                componentAttachLineNumber, listenerType));
     }
 
     public void modifyClass(File f,

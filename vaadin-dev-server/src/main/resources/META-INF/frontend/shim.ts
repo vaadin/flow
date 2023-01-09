@@ -7,10 +7,12 @@ type ShimEventHandler = (targetElement: HTMLElement, e: MouseEvent) => void;
 
 let shimMoveHandler: ShimEventHandler | undefined;
 let shimClickHandler: ((targetElement: HTMLElement, e: MouseEvent) => void) | undefined;
+let shimContextMenuHandler: ((targetElement: HTMLElement, e: MouseEvent) => void) | undefined;
 
-export function activateShim(moveHandler: ShimEventHandler, clickHandler: ShimEventHandler) {
+export function activateShim(moveHandler: ShimEventHandler, clickHandler: ShimEventHandler, contextMenuHandler: ShimEventHandler) {
   shimMoveHandler = moveHandler;
   shimClickHandler = clickHandler;
+  shimContextMenuHandler = contextMenuHandler;
   if (!shim) {
     render(
       html`<style>
@@ -31,7 +33,7 @@ export function activateShim(moveHandler: ShimEventHandler, clickHandler: ShimEv
             animation-direction: alternate;
           }
         </style>
-        <div id="vaadin-dev-tools-shim" @mousemove=${shimMove} @click=${shimClick}></div> `,
+        <div id="vaadin-dev-tools-shim" @mousemove=${shimMove} @click=${shimClick} @contextmenu=${shimContextMenu}></div> `,
       document.body
     );
     shim = document.querySelector('#vaadin-dev-tools-shim') as HTMLElement;
@@ -44,6 +46,12 @@ function shimClick(e: MouseEvent) {
     return;
   }
   shimClickHandler(getTargetElement(e), e);
+}
+function shimContextMenu(e: MouseEvent) {
+  if (!shimContextMenuHandler) {
+    return;
+  }
+  shimContextMenuHandler(getTargetElement(e), e);
 }
 function shimMove(e: MouseEvent) {
   if (!shimMoveHandler) {
