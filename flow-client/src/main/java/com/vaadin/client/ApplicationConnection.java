@@ -175,13 +175,17 @@ public class ApplicationConnection {
         var ap = this;
         var client = {};
         client.isActive = $entry(function() {
-            return ap.@com.vaadin.client.ApplicationConnection::isActive()();
+            return ap.@ApplicationConnection::isActive()();
         });
         client.getByNodeId = $entry(function(nodeId) {
             return ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId);
         });
         client.getNodeId = $entry(function(element) {
             return ap.@ApplicationConnection::getNodeId(*)(element);
+        });
+        client.getUIId = $entry(function() {
+            var appConfiguration = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getApplicationConfiguration()();
+            return appConfiguration.@ApplicationConfiguration::getUIId(*)();
         });
         client.addDomBindingListener = $entry(function(nodeId, callback) {
             ap.@ApplicationConnection::addDomSetListener(*)(nodeId, callback);
