@@ -1215,21 +1215,32 @@ public class FrontendUtils {
         return IOUtils.toString(statsJson, StandardCharsets.UTF_8);
     }
 
-    public static String getThemeName(File projectFolder) throws IOException {
+    /**
+     * Gets the custom theme name if the custom theme is used in the project.
+     * <p>
+     * Should be only used in the development mode.
+     *
+     * @param projectFolder
+     *            the project root folder
+     * @return custom theme name or empty optional if no theme is used
+     * @throws IOException
+     *             if I/O exceptions occur while trying to extract the theme
+     *             name.
+     */
+    public static Optional<String> getThemeName(File projectFolder)
+            throws IOException {
         File themeJs = new File(projectFolder, FrontendUtils.FRONTEND
                 + FrontendUtils.GENERATED + FrontendUtils.THEME_IMPORTS_NAME);
 
         if (!themeJs.exists()) {
-            getLogger().debug(
-                    "Couldn't find file 'theme.js'. A link tag for styles.css won't be added");
-            return null;
+            return Optional.empty();
         }
 
         String themeJsContent = FileUtils.readFileToString(themeJs,
                 StandardCharsets.UTF_8);
         Matcher matcher = THEME_GENERATED_FILE_PATTERN.matcher(themeJsContent);
         if (matcher.find()) {
-            return matcher.group(1);
+            return Optional.of(matcher.group(1));
         } else {
             throw new IllegalStateException(
                     "Couldn't extract theme name from theme imports file 'theme.js'");
