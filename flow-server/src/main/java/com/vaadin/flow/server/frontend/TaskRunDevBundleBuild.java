@@ -163,8 +163,9 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
     }
 
     private static boolean arrayContainsString(JsonArray array, String string) {
+        string = string.replace("Frontend/", "./");
         for (int i = 0; i < array.length(); i++) {
-            if (string.equals(array.getString(i))) {
+            if (string.equals(array.getString(i).replace("Frontend/", "./"))) {
                 return true;
             }
         }
