@@ -66,20 +66,8 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            a reusable class finder
      * @param frontendDependencies
      *            a reusable frontend dependencies
-     * @param npmFolder
-     *            folder with the `package.json` file
-     * @param generatedPath
-     *            folder where flow generated files will be placed.
-     * @param jarResourcesFolder
-     *            folder where frontend resources from jar files will be placed.
-     * @param forceCleanUp
-     *            forces the clean up process to be run. If {@code false}, clean
-     *            up will be performed when platform version update is detected.
-     * @param enablePnpm
-     *            if {@code true} then pnpm is used instead of npm, otherwise
-     *            npm is used
-     * @param buildDir
-     *            the used build directory
+     * @param options
+     *            the task options
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, Options options) {
