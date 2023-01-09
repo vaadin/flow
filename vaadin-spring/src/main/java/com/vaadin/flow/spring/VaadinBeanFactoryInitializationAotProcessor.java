@@ -1,20 +1,23 @@
 package com.vaadin.flow.spring;
 
-import java.lang.reflect.Member;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 
 import com.vaadin.flow.component.Component;
@@ -28,7 +31,10 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 
 class VaadinBeanFactoryInitializationAotProcessor
-        implements BeanFactoryInitializationAotProcessor {
+        implements BeanFactoryInitializationAotProcessor,
+        BeanDefinitionRegistryPostProcessor {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     public BeanFactoryInitializationAotContribution processAheadOfTime(
@@ -45,12 +51,7 @@ class VaadinBeanFactoryInitializationAotProcessor
                  * instantiated through reflection etc
                  */
 
-                Set<Class<?>> routeTypes = new HashSet<Class<?>>();
-                routeTypes
-                        .addAll(reflections.getTypesAnnotatedWith(Route.class));
-                routeTypes.addAll(
-                        reflections.getTypesAnnotatedWith(RouteAlias.class));
-                for (var c : routeTypes) {
+                for (var c : getRouteTypesFor(reflections, pkg)) {
                     registerType(hints, c);
                     registerResources(hints, c);
                 }
@@ -82,6 +83,14 @@ class VaadinBeanFactoryInitializationAotProcessor
         };
     }
 
+    private static Collection<Class<?>> getRouteTypesFor(
+            Reflections reflections, String packageName) {
+        var routeTypes = new HashSet<Class<?>>();
+        routeTypes.addAll(reflections.getTypesAnnotatedWith(Route.class));
+        routeTypes.addAll(reflections.getTypesAnnotatedWith(RouteAlias.class));
+        return routeTypes;
+    }
+
     private void registerResources(RuntimeHints hints, Class<?> c) {
         if (c.getCanonicalName() == null) {
             // See
@@ -106,6 +115,53 @@ class VaadinBeanFactoryInitializationAotProcessor
         listOf.add("com.vaadin");
         listOf.addAll(AutoConfigurationPackages.get(beanFactory));
         return listOf;
+    }
+
+    @Override
+    public void postProcessBeanFactory(
+            ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        // Nothing to do
+    }
+
+    static class FlowAotRoutesStatus {
+
+    }
+
+    @Override
+    public void postProcessBeanDefinitionRegistry(
+            BeanDefinitionRegistry registry) throws BeansException {
+        var statusBeanName = "default"
+                + FlowAotRoutesStatus.class.getSimpleName();
+
+        if (registry.containsBeanDefinition(statusBeanName))
+            return;
+
+        if (registry instanceof BeanFactory beanFactory) {
+            for (var pkg : getPackages(beanFactory)) {
+                var reflections = new Reflections(pkg);
+
+                for (var routeClass : getRouteTypesFor(reflections, pkg)) {
+                    var beanDefinition = BeanDefinitionBuilder
+                            .rootBeanDefinition(routeClass)
+                            .setScope("prototype").getBeanDefinition();
+                    registry.registerBeanDefinition(routeClass.getName(),
+                            beanDefinition);
+                }
+            }
+            registry.registerBeanDefinition(statusBeanName,
+                    BeanDefinitionBuilder
+                            .rootBeanDefinition(FlowAotRoutesStatus.class)
+                            .getBeanDefinition());
+
+        } else {
+            logger.warn("The " + BeanFactory.class.getName()
+                    + " is not an instance of "
+                    + BeanDefinitionRegistry.class.getName() + '.'
+                    + " Unable to register bean definitions for classes annotated with "
+                    + Route.class.getName() + " and "
+                    + RouteAlias.class.getName());
+
+        }
     }
 
 }
