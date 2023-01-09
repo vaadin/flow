@@ -178,6 +178,21 @@ public class FrontendDependenciesTest {
     }
 
     @Test
+    public void onlyThemeVariantDefined_getsLumoAsTheme_preserveVariant() {
+        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+                .thenReturn(Collections.singleton(ThemeVariantOnly.class));
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+
+        Assert.assertEquals("Faulty default theme received", FakeLumo.class,
+                dependencies.getThemeDefinition().getTheme());
+        Assert.assertEquals("Faulty variant received", "dark",
+                dependencies.getThemeDefinition().getVariant());
+
+    }
+
+    @Test
     public void hasErrorParameterComponent_endpointIsCollected() {
         Mockito.when(classFinder.getSubTypesOf(HasErrorParameter.class))
                 .thenReturn(Collections.singleton(ErrorComponent.class));
@@ -369,6 +384,10 @@ public class FrontendDependenciesTest {
 
     @Theme(value = "my-theme", themeClass = FakeLumo.class)
     public static class FaultyThemeAnnotation implements AppShellConfigurator {
+    }
+
+    @Theme(variant = "dark")
+    public static class ThemeVariantOnly implements AppShellConfigurator {
     }
 
     @JsModule("reference.js")
