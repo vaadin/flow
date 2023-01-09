@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -35,9 +36,9 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  **/
 public class ComponentTracker {
 
-    private static Map<Component, StackTraceElement> createLocation = Collections
+    private static Map<Component, Location> createLocation = Collections
             .synchronizedMap(new WeakHashMap<>());
-    private static Map<Component, StackTraceElement> attachLocation = Collections
+    private static Map<Component, Location> attachLocation = Collections
             .synchronizedMap(new WeakHashMap<>());
 
     private static Boolean productionMode = null;
@@ -48,14 +49,19 @@ public class ComponentTracker {
             "org.springframework.beans.", };
 
     /**
+     * Represents a location in the source code.
+     */
+    public record Location(String className, String filename, int lineNumber) implements Serializable {
+    }
+
+    /**
      * Finds the location where the given component instance was created.
      *
      * @param component
      *            the component to find
-     * @return an element from the stack trace describing the relevant location
-     *         where the component was created
+     * @return the location where the component was created
      */
-    public static StackTraceElement findCreate(Component component) {
+    public static Location findCreate(Component component) {
         return createLocation.get(component);
     }
 
@@ -72,10 +78,10 @@ public class ComponentTracker {
             return;
         }
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        StackTraceElement location = findRelevantElement(component.getClass(),
-                stack, null);
+        Location location = findRelevantLocation(component.getClass(), stack,
+                null);
         if (isNavigatorCreate(location)) {
-            location = findRelevantElement(null, stack, null);
+            location = findRelevantLocation(null, stack, null);
         }
         createLocation.put(component, location);
     }
@@ -86,10 +92,9 @@ public class ComponentTracker {
      *
      * @param component
      *            the component to find
-     * @return an element from the stack trace describing the relevant location
-     *         where the component was attached
+     * @return the location where the component was attached
      */
-    public static StackTraceElement findAttach(Component component) {
+    public static Location findAttach(Component component) {
         return attachLocation.get(component);
     }
 
@@ -109,8 +114,8 @@ public class ComponentTracker {
 
         // In most cases the interesting attach call is found in the same class
         // where the component was created and not in a generic layout class
-        StackTraceElement location = findRelevantElement(component.getClass(),
-                stack, findCreate(component));
+        Location location = findRelevantLocation(component.getClass(), stack,
+                findCreate(component));
         if (isNavigatorCreate(location)) {
             // For routes, we can just show the init location as we have nothing
             // better
@@ -119,14 +124,14 @@ public class ComponentTracker {
         attachLocation.put(component, location);
     }
 
-    private static boolean isNavigatorCreate(StackTraceElement location) {
-        return location.getClassName()
+    private static boolean isNavigatorCreate(Location location) {
+        return location.className()
                 .equals(AbstractNavigationStateRenderer.class.getName());
     }
 
-    private static StackTraceElement findRelevantElement(
+    private static Location findRelevantLocation(
             Class<? extends Component> excludeClass, StackTraceElement[] stack,
-            StackTraceElement preferredClass) {
+            Location preferredClass) {
         List<StackTraceElement> candidates = Stream.of(stack)
                 .filter(e -> excludeClass == null
                         || !e.getClassName().equals(excludeClass.getName()))
@@ -141,13 +146,13 @@ public class ComponentTracker {
         if (preferredClass != null) {
             Optional<StackTraceElement> preferredCandidate = candidates.stream()
                     .filter(e -> e.getClassName()
-                            .equals(preferredClass.getClassName()))
+                            .equals(preferredClass.className()))
                     .findFirst();
             if (preferredCandidate.isPresent()) {
-                return preferredCandidate.get();
+                return toLocation(preferredCandidate.get());
             }
         }
-        return candidates.stream().findFirst().orElse(null);
+        return toLocation(candidates.stream().findFirst().orElse(null));
     }
 
     /**
@@ -183,6 +188,17 @@ public class ComponentTracker {
 
         productionMode = applicationConfiguration.isProductionMode();
         return productionMode;
+    }
+
+    private static Location toLocation(StackTraceElement stackTraceElement) {
+        if (stackTraceElement == null) {
+            return null;
+        }
+
+        String className = stackTraceElement.getClassName();
+        String fileName = stackTraceElement.getFileName();
+        int lineNumber = stackTraceElement.getLineNumber();
+        return new Location(className, fileName, lineNumber);
     }
 
 }
