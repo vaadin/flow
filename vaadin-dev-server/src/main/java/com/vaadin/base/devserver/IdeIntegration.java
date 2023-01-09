@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.internal.ComponentTracker;
+import com.vaadin.flow.component.internal.ComponentTracker.Location;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -53,16 +54,15 @@ public class IdeIntegration {
         internalShowInIde(component, ComponentTracker.findAttach(component));
     }
 
-    private void internalShowInIde(Component component,
-            StackTraceElement location) {
+    private void internalShowInIde(Component component, Location location) {
         if (location == null) {
             getLogger().error("Unable to find the location where the component "
                     + component.getClass().getName() + " was created");
             return;
         }
 
-        String cls = location.getClassName();
-        String filename = location.getFileName();
+        String cls = location.className();
+        String filename = location.filename();
 
         if (cls.endsWith(filename.replace(".java", ""))) {
             File src = configuration.getJavaSourceFolder();
@@ -73,8 +73,7 @@ public class IdeIntegration {
                 return;
             }
 
-            if (!OpenInCurrentIde.openFile(javaFile,
-                    location.getLineNumber())) {
+            if (!OpenInCurrentIde.openFile(javaFile, location.lineNumber())) {
                 // Failed to open in IDE so print the file and line info.
                 // Either an IDE makes it clickable or you can copy the file
                 // info
