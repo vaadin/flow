@@ -326,6 +326,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 .filter(data -> data.getTheme().getThemeClass() != null
                         || (data.getTheme().getThemeName() != null
                                 && !data.getTheme().getThemeName().isEmpty())
+                        || !data.getTheme().getVariant().isEmpty()
                         || data.getTheme().isNotheme())
                 .map(EndPointData::getTheme)
                 // Remove duplicates by returning a set
