@@ -202,13 +202,17 @@ public abstract class Component
      * <b>Note!</b> Element API is designed for building components at a lower
      * abstraction level than normal Vaadin UI development. If you see a direct
      * call to this method in your applications UI code, you should consider
-     * that as a sign that you are probably doing something wrong. This method
-     * is breaking the abstraction layer Component interface and its
-     * implementations are providing. You should only call this method this when
-     * creating or extending components, or when you otherwise need to break
-     * through the abstraction layer. If it is a hack or a workaround, it is
-     * also better to hide that into an extension, helper class, separate add-on
-     * module or at least into private helper method documenting it.
+     * that as a sign that you are probably doing something wrong and you should
+     * instead use other methods from your component, e.g. when getting
+     * children, parent or ancestor component or adding listeners. This method
+     * is breaking the Component's abstraction layer and its implementations
+     * provided. You should only call this method and use the Element API when
+     * creating or extending components (e.g. setting the attributes and
+     * properties, adding DOM listeners, execute JavaScript code), or when you
+     * otherwise need to break through the abstraction layer. If it is a hack or
+     * a workaround, it is also better to hide that into an extension, helper
+     * class, separate add-on module or at least into a private method
+     * documenting the usage.
      * <p>
      * Each component must have exactly one root element. When the component is
      * attached to a parent component, this element is attached to the parent
@@ -222,7 +226,7 @@ public abstract class Component
      *             or to be shared as add-on components. If your project
      *             settings don't allow you to call deprecated methods
      *             suppressing and suppressing warnings, use
-     *             {@link Element#of(com.vaadin.flow.component.Component) }
+     *             {@link Element#unwrap(com.vaadin.flow.component.Component) }
      *             instead.
      */
     @Deprecated(forRemoval = false)
