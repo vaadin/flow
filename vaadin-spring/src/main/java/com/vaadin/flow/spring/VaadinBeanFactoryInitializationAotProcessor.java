@@ -16,11 +16,13 @@ import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouterLayout;
 
 class VaadinBeanFactoryInitializationAotProcessor
         implements BeanFactoryInitializationAotProcessor {
@@ -30,7 +32,6 @@ class VaadinBeanFactoryInitializationAotProcessor
             ConfigurableListableBeanFactory beanFactory) {
         return (generationContext, beanFactoryInitializationCode) -> {
             var hints = generationContext.getRuntimeHints();
-            var resources = hints.resources();
             var memberCategories = MemberCategory.values();
             for (var pkg : getPackages(beanFactory)) {
                 var reflections = new Reflections(pkg);
@@ -49,10 +50,17 @@ class VaadinBeanFactoryInitializationAotProcessor
                         reflections.getTypesAnnotatedWith(RouteAlias.class));
                 for (var c : routeTypes) {
                     registerType(hints, c, memberCategories);
-
-                    resources.registerType(c);
+                    registerResources(hints, c);
+                }
+                for (var c : reflections
+                        .getSubTypesOf(AppShellConfigurator.class)) {
+                    registerType(hints, c, memberCategories);
+                    registerResources(hints, c);
                 }
                 for (var c : reflections.getSubTypesOf(Component.class)) {
+                    registerType(hints, c, memberCategories);
+                }
+                for (var c : reflections.getSubTypesOf(RouterLayout.class)) {
                     registerType(hints, c, memberCategories);
                 }
                 for (var c : reflections
@@ -70,6 +78,15 @@ class VaadinBeanFactoryInitializationAotProcessor
                 }
             }
         };
+    }
+
+    private void registerResources(RuntimeHints hints, Class<?> c) {
+        if (c.getCanonicalName() == null) {
+            // See
+            // https://github.com/spring-projects/spring-framework/issues/29774
+            return;
+        }
+        hints.resources().registerType(c);
     }
 
     private void registerType(RuntimeHints hints, Class<?> c,
