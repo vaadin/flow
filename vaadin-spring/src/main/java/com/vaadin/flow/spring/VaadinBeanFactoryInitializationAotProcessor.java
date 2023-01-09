@@ -10,14 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 
 import com.vaadin.flow.component.Component;
@@ -31,8 +27,7 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 
 class VaadinBeanFactoryInitializationAotProcessor
-        implements BeanFactoryInitializationAotProcessor,
-        BeanDefinitionRegistryPostProcessor {
+        implements BeanFactoryInitializationAotProcessor {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -115,53 +110,6 @@ class VaadinBeanFactoryInitializationAotProcessor
         listOf.add("com.vaadin");
         listOf.addAll(AutoConfigurationPackages.get(beanFactory));
         return listOf;
-    }
-
-    @Override
-    public void postProcessBeanFactory(
-            ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        // Nothing to do
-    }
-
-    static class FlowAotRoutesStatus {
-
-    }
-
-    @Override
-    public void postProcessBeanDefinitionRegistry(
-            BeanDefinitionRegistry registry) throws BeansException {
-        var statusBeanName = "default"
-                + FlowAotRoutesStatus.class.getSimpleName();
-
-        if (registry.containsBeanDefinition(statusBeanName))
-            return;
-
-        if (registry instanceof BeanFactory beanFactory) {
-            for (var pkg : getPackages(beanFactory)) {
-                var reflections = new Reflections(pkg);
-
-                for (var routeClass : getRouteTypesFor(reflections, pkg)) {
-                    var beanDefinition = BeanDefinitionBuilder
-                            .rootBeanDefinition(routeClass)
-                            .setScope("prototype").getBeanDefinition();
-                    registry.registerBeanDefinition(routeClass.getName(),
-                            beanDefinition);
-                }
-            }
-            registry.registerBeanDefinition(statusBeanName,
-                    BeanDefinitionBuilder
-                            .rootBeanDefinition(FlowAotRoutesStatus.class)
-                            .getBeanDefinition());
-
-        } else {
-            logger.warn("The " + BeanFactory.class.getName()
-                    + " is not an instance of "
-                    + BeanDefinitionRegistry.class.getName() + '.'
-                    + " Unable to register bean definitions for classes annotated with "
-                    + Route.class.getName() + " and "
-                    + RouteAlias.class.getName());
-
-        }
     }
 
 }
