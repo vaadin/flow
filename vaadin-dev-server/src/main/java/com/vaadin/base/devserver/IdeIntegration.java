@@ -92,11 +92,18 @@ public final class IdeIntegration {
                 // Failed to open in IDE so print the file and line info.
                 // Either an IDE makes it clickable or you can copy the file
                 // info
-                System.out.println(location);
+                System.out.println(toStackTraceElement(location));
             }
         } else {
-            System.out.println(location);
+            System.out.println(toStackTraceElement(location));
         }
+    }
+
+    private StackTraceElement toStackTraceElement(Location location) {
+        return new StackTraceElement("", "", "", location.className(),
+                location.methodName(), location.filename(),
+                location.lineNumber());
+
     }
 
     private static Logger getLogger() {
