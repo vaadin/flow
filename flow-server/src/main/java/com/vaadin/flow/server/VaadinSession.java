@@ -1169,37 +1169,32 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Finds the given element in the session.
      * <p>
-     * The ids are typically acquired in the browser: {@literal appId} (client
-     * side the key in {@code window.Vaadin.Flow.clients}) refers to the UI
-     * instance and {@literal nodeId} (client side fetched using
-     * {@code getNodeId} in the {@code window.Vaadin.Flow.clients} value) refers
-     * to the element inside that UI instance.
+     * The ids are typically acquired in the browser using {@code getUiId()} and
+     * {@code getNodeId(element)} available in the
+     * {@code window.Vaadin.Flow.clients} value.
      *
-     * @param appId
-     *            the application id
+     * @param uiId
+     *            The UI id
      * @param nodeId
      *            the node id
-     * @return the component instance
+     * @return the element instance
      * @throws IllegalArgumentException
-     *             if the component was not found
+     *             if the element was not found
      */
-    public Element findElement(String appId, int nodeId)
+    public Element findElement(int uiId, int nodeId)
             throws IllegalArgumentException {
         checkHasLock();
 
-        Optional<UI> ui = getUIs().stream().filter(u -> {
-            return u.getInternals().getAppId().equals(appId);
-        }).findFirst();
-        if (!ui.isPresent()) {
+        UI ui = getUIById(uiId);
+        if (ui == null) {
             throw new IllegalArgumentException(
-                    "Unable to find the UI for app id " + appId);
+                    "Unable to find the UI for UI id " + uiId);
         }
-        StateNode node = ui.get().getInternals().getStateTree()
-                .getNodeById(nodeId);
+        StateNode node = ui.getInternals().getStateTree().getNodeById(nodeId);
         if (node == null) {
             throw new IllegalArgumentException(
                     "Unable to find the component for node " + nodeId
-                            + " in app " + appId);
+                            + " in the UI " + uiId);
         }
 
         return Element.get(node);

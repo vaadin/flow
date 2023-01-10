@@ -153,7 +153,11 @@ public class NodeTasks implements FallibleCommand {
         if (frontendDependencies != null) {
             addGenerateServiceWorkerTask(options,
                     frontendDependencies.getPwaConfiguration());
-            addGenerateTsConfigTask(options);
+
+            if (options.productionMode || options.isEnableDevServer()
+                    || options.isDevBundleBuild()) {
+                addGenerateTsConfigTask(options);
+            }
         }
 
         addBootstrapTasks(options);
@@ -199,7 +203,10 @@ public class NodeTasks implements FallibleCommand {
             pwa = new PwaConfiguration();
         }
         commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
-        commands.add(new TaskUpdateVite(options));
+        if (options.productionMode || options.isEnableDevServer()
+                || options.isDevBundleBuild()) {
+            commands.add(new TaskUpdateVite(options));
+        }
 
         if (options.enableImportsUpdate) {
             commands.add(new TaskUpdateImports(classFinder,
@@ -218,14 +225,13 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addBootstrapTasks(Options options) {
-        TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
-                options);
-        commands.add(taskGenerateIndexHtml);
-        TaskGenerateIndexTs taskGenerateIndexTs = new TaskGenerateIndexTs(
-                options);
-        commands.add(taskGenerateIndexTs);
-        if (!options.productionMode) {
-            commands.add(new TaskGenerateViteDevMode(options));
+        commands.add(new TaskGenerateIndexHtml(options));
+        if (options.productionMode || options.isEnableDevServer()
+                || options.isDevBundleBuild()) {
+            commands.add(new TaskGenerateIndexTs(options));
+            if (!options.productionMode) {
+                commands.add(new TaskGenerateViteDevMode(options));
+            }
         }
     }
 
