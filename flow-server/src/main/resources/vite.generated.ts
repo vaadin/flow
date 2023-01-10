@@ -494,18 +494,6 @@ const allowedFrontendFolders = [
   nodeModulesFolder
 ];
 
-function setHmrPortToServerPort(): PluginOption {
-  return {
-    name: 'set-hmr-port-to-server-port',
-    configResolved(config) {
-      if (config.server.strictPort && config.server.hmr !== false) {
-        if (config.server.hmr === true) config.server.hmr = {};
-        config.server.hmr = config.server.hmr || {};
-        config.server.hmr.clientPort = config.server.port;
-      }
-    }
-  };
-}
 function showRecompileReason(): PluginOption {
   return {
     name: 'vaadin:why-you-compile',
@@ -577,7 +565,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
     plugins: [
       !devMode && brotli(),
       devMode && vaadinBundlesPlugin(),
-      devMode && setHmrPortToServerPort(),
       devMode && showRecompileReason(),
       settings.offlineEnabled && buildSWPlugin({ devMode }),
       !devMode && statsExtracterPlugin(),

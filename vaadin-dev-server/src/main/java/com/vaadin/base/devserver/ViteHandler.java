@@ -15,6 +15,11 @@
  */
 package com.vaadin.base.devserver;
 
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -27,16 +32,13 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.base.devserver.viteproxy.ViteWebsocketEndpointInitializer;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
 
 /**
  * Handles communication with a Vite server.
@@ -168,5 +170,12 @@ public final class ViteHandler extends AbstractDevServerRunner {
     private VaadinServletContext getServletContext() {
         return (VaadinServletContext) getApplicationConfiguration()
                 .getContext();
+    }
+
+    @Override
+    void doStartDevModeServer() throws ExecutionFailedException {
+        super.doStartDevModeServer();
+        new ViteWebsocketEndpointInitializer(getServletContext(),
+                getPathToVaadin(), getPort());
     }
 }
