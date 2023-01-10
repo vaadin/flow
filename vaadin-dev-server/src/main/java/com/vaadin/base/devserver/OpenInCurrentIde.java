@@ -82,7 +82,7 @@ public final class OpenInCurrentIde {
         } else if (isEclipse(processInfo)) {
             String cmd = processInfo.command().get();
             if (OSUtils.isMac()) {
-                cmd = cmd.replaceFirst("/Contents/MacOS/eclipse$", "");
+                cmd = getBinary(cmd);
                 try {
                     run("open", "-a", cmd, absolutePath);
                 } catch (Exception e) {
@@ -100,6 +100,10 @@ public final class OpenInCurrentIde {
 
         return false;
 
+    }
+
+    static String getBinary(String cmd) {
+        return cmd.replaceFirst("/Contents/MacOS/eclipse$", "");
     }
 
     private static Logger getLogger() {
@@ -138,7 +142,11 @@ public final class OpenInCurrentIde {
     }
 
     private static Optional<Info> findIdeCommand() {
-        for (Info info : getProcessTree()) {
+        return findIdeCommand(getProcessTree());
+    }
+
+    static Optional<Info> findIdeCommand(List<Info> processes) {
+        for (Info info : processes) {
             if (isEclipse(info) || isIdea(info)) {
                 return Optional.of(info);
             }
