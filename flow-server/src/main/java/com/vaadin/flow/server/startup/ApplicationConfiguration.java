@@ -52,7 +52,7 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
                         + Lookup.class.getSimpleName()
                         + " instance is not found in "
                         + VaadinContext.class.getSimpleName()
-                        + ". The instance is suppoed to be created by a ServletContainerInitializer. Issues known to cause this problem are:\n"
+                        + ". The instance is supposed to be created by a ServletContainerInitializer. Issues known to cause this problem are:\n"
                         + "- A Spring Boot application deployed as a war-file but the main application class does not extend SpringBootServletInitializer\n"
                         + "- An embedded server that is not set up to execute ServletContainerInitializers\n"
                         + "- Unit tests which do not properly set up the context for the test\n");
