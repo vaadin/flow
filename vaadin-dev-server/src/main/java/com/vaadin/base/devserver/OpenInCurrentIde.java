@@ -106,6 +106,23 @@ public final class OpenInCurrentIde {
         return LoggerFactory.getLogger(OpenInCurrentIde.class);
     }
 
+    public static void main(String[] args) {
+        // This is so it will be easier to debug problems in the future
+        for (Info info : getProcessTree()) {
+            System.out.println("Process:");
+            info.command().ifPresent(
+                    value -> System.out.println("Command: " + value));
+            info.commandLine().ifPresent(
+                    value -> System.out.println("Command line: " + value));
+            info.arguments().ifPresent(values -> {
+                for (int i = 0; i < values.length; i++) {
+                    System.out.println("Arguments[" + i + "]: " + values[i]);
+                }
+            });
+            System.out.println("");
+        }
+    }
+
     private static void run(String command, String... arguments)
             throws Exception {
         List<String> cmd = new ArrayList<>();
