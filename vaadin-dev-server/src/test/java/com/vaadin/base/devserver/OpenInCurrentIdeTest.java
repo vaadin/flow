@@ -19,25 +19,18 @@ public class OpenInCurrentIdeTest {
         String cmd1 = "/opt/homebrew/Cellar/openjdk@11/11.0.16.1_1/libexec/openjdk.jdk/Contents/Home/bin/java";
         String[] args1 = new String[] {
                 "@/var/folders/3r/3_0g1bhn44j1vvvpfksrz1z40000gn/T/cp_etuvzkvp19t6wovy4ilfmnb6l.argfile",
-                "com.example.application.Application",
-        };
+                "com.example.application.Application", };
 
         String cmd2 = "/bin/zsh";
-        String[] args2 = new String[] {
-                "-l",
-        };
+        String[] args2 = new String[] { "-l", };
         String cmd3 = "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer)";
-        String[] args3 = new String[] {
-                "--ms-enable-electron-run-as-node",
+        String[] args3 = new String[] { "--ms-enable-electron-run-as-node",
                 "/Applications/Visual Studio Code.app/Contents/Resources/app/out/bootstrap-fork",
-                "--type=ptyHost",
-                "--logsPath",
-                "/Users/artur/Library/Application Support/Code/logs/20221225T212012",
-        };
+                "--type=ptyHost", "--logsPath",
+                "/Users/artur/Library/Application Support/Code/logs/20221225T212012", };
 
         String cmd4 = "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer)";
-        String[] args4 = new String[] {
-                "--type=renderer",
+        String[] args4 = new String[] { "--type=renderer",
                 "--user-data-dir=/Users/artur/Library/Application Support/Code",
                 "--standard-schemes=vscode-webview,vscode-file",
                 "--secure-schemes=vscode-webview,vscode-file",
@@ -47,26 +40,19 @@ public class OpenInCurrentIdeTest {
                 "--service-worker-schemes=vscode-webview",
                 "--streaming-schemes",
                 "--app-path=/Applications/Visual Studio Code.app/Contents/Resources/app",
-                "--no-sandbox",
-                "--no-zygote",
-                "--node-integration-in-worker",
-                "--lang=en-GB",
-                "--num-raster-threads=4",
-                "--enable-zero-copy",
+                "--no-sandbox", "--no-zygote", "--node-integration-in-worker",
+                "--lang=en-GB", "--num-raster-threads=4", "--enable-zero-copy",
                 "--enable-gpu-memory-buffer-compositor-resources",
                 "--enable-main-frame-before-activation",
-                "--renderer-client-id=20",
-                "--launch-time-ticks=444960654929",
+                "--renderer-client-id=20", "--launch-time-ticks=444960654929",
                 "--shared-files",
                 "--field-trial-handle=1718379636,r,11433658063312687633,15858774526786421505,131072",
                 "--enable-features=AutoDisableAccessibility",
                 "--disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess",
                 "--vscode-window-config=vscode:0d71a071-dced-4d7f-b3aa-1a4862b8d021",
-                "--vscode-window-kind=shared-process",
-        };
+                "--vscode-window-kind=shared-process", };
         String cmd5 = "/Applications/Visual Studio Code.app/Contents/MacOS/Electron";
-        String[] args5 = new String[] {
-        };
+        String[] args5 = new String[] {};
 
         List<Info> processes = new ArrayList<>();
         processes.add(mock(cmd1, args1));
@@ -158,9 +144,12 @@ public class OpenInCurrentIdeTest {
         String baseDirInCommands = "/home/sombody/local/tools/idea/2021.3";
         String baseDir = baseDirectory.getAbsolutePath();
 
-        Info info1 = mock(cmd1.replace(baseDirInCommands, baseDir), cmdLine1.replace(baseDirInCommands, baseDir));
-        Info info2 = mock(cmd2.replace(baseDirInCommands, baseDir), cmdLine2.replace(baseDirInCommands, baseDir));
-        Info info3 = mock("/usr/lib/systemd/systemd", new String[] { "--user" });
+        Info info1 = mock(cmd1.replace(baseDirInCommands, baseDir),
+                cmdLine1.replace(baseDirInCommands, baseDir));
+        Info info2 = mock(cmd2.replace(baseDirInCommands, baseDir),
+                cmdLine2.replace(baseDirInCommands, baseDir));
+        Info info3 = mock("/usr/lib/systemd/systemd",
+                new String[] { "--user" });
 
         List<Info> processes = new ArrayList<>();
         processes.add(info1);
@@ -175,6 +164,33 @@ public class OpenInCurrentIdeTest {
 
         Assert.assertEquals(new File(binDirectory, "idea").getAbsolutePath(),
                 OpenInCurrentIde.getBinary(ideCommand.get()));
+    }
+
+    @Test
+    public void ideaOnWindowsDetected() throws IOException {
+        String cmd1 = "C:\\dev\\devtools\\java\\eclipse-temurin-hotspot\\jdk-17.0.4.1+1\\bin\\java.exe";
+        String cmd2 = "C:\\Users\\Somebody\\AppData\\Local\\JetBrains\\Toolbox\\apps\\IDEA-U\\ch-0\\223.8214.52\\bin\\idea64.exe";
+
+        Info info1 = mock(cmd1);
+        Info info2 = mock(cmd2);
+
+        List<Info> processes = new ArrayList<>();
+        processes.add(info1);
+        processes.add(info2);
+
+        Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
+
+        Assert.assertTrue(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assert.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assert.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
+
+        Assert.assertEquals(
+                "C:\\Users\\Somebody\\AppData\\Local\\JetBrains\\Toolbox\\apps\\IDEA-U\\ch-0\\223.8214.52\\bin\\idea64.exe",
+                OpenInCurrentIde.getBinary(ideCommand.get()));
+    }
+
+    private Info mock(String cmd) {
+        return mock(cmd, cmd);
     }
 
     private Info mock(String cmd, String[] arguments) {

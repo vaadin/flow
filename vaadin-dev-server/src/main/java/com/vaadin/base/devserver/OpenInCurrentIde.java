@@ -54,9 +54,9 @@ public final class OpenInCurrentIde {
      * unsupported IDE, then this method does nothing.
      *
      * @param file
-     *                   the file to open
+     *            the file to open
      * @param lineNumber
-     *                   the line number to highlight
+     *            the line number to highlight
      * @return true if the file was opened, false otherwise
      */
     public static boolean openFile(File file, int lineNumber) {
@@ -130,8 +130,8 @@ public final class OpenInCurrentIde {
     private static void printProcessTree(Consumer<String> printer) {
         for (Info info : getProcessTree()) {
             printer.accept("Process tree:");
-            info.command().ifPresent(
-                    value -> printer.accept("Command: " + value));
+            info.command()
+                    .ifPresent(value -> printer.accept("Command: " + value));
             info.commandLine().ifPresent(
                     value -> printer.accept("Command line: " + value));
             info.arguments().ifPresent(values -> {
@@ -186,8 +186,9 @@ public final class OpenInCurrentIde {
     }
 
     static boolean isEclipse(Info info) {
-        return info.command().get().toLowerCase(Locale.ENGLISH)
-                .contains(ECLIPSE_IDENTIFIER);
+        String lowerCase = info.command().get().toLowerCase(Locale.ENGLISH);
+        return lowerCase.contains(ECLIPSE_IDENTIFIER)
+                && !lowerCase.contains("eclipse-temurin");
     }
 
     static boolean isIdea(Info info) {
@@ -196,21 +197,25 @@ public final class OpenInCurrentIde {
 
     private static String getIdeaBinary(Info info) {
         String commandAndArguments = getCommandAndArguments(info);
-        int agentPos = commandAndArguments.toLowerCase(Locale.ENGLISH).indexOf("-javaagent:");
+        int agentPos = commandAndArguments.toLowerCase(Locale.ENGLISH)
+                .indexOf("-javaagent:");
         if (agentPos >= 0) {
-            String javaAgent = commandAndArguments.substring(agentPos + "-javaagent:".length(),
+            String javaAgent = commandAndArguments.substring(
+                    agentPos + "-javaagent:".length(),
                     commandAndArguments.indexOf(" ", agentPos));
             if (javaAgent.contains(":")) {
                 String binFolder = javaAgent.split(":")[1];
                 Optional<File> bin = Stream.of("idea", "idea.sh", "idea.bat")
-                        .map(binName -> new File(binFolder, binName)).filter(binaryFile -> binaryFile.exists())
-                        .findFirst();
+                        .map(binName -> new File(binFolder, binName))
+                        .filter(binaryFile -> binaryFile.exists()).findFirst();
                 if (bin.isPresent()) {
                     return bin.get().getAbsolutePath();
                 }
             }
         }
-
+        if (info.command().get().contains("idea")) {
+            return info.command().get();
+        }
         return null;
     }
 
