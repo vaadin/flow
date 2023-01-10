@@ -66,3 +66,4 @@ flow-tests/**/*.npmrc
 *.xml.versionsBackup
 
 flow-polymer2lit/**/frontend/generated
+flow-tests/test-express-build/test-dev-bundle-frontend-add-on/dev-bundle
