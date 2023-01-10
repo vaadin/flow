@@ -22,7 +22,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,37 +54,41 @@ public final class OpenInCurrentIde {
      * unsupported IDE, then this method does nothing.
      *
      * @param file
-     *            the file to open
+     *                   the file to open
      * @param lineNumber
-     *            the line number to highlight
+     *                   the line number to highlight
      * @return true if the file was opened, false otherwise
      */
     public static boolean openFile(File file, int lineNumber) {
         String absolutePath = file.getAbsolutePath();
 
-        Optional<Info> maybeProcessInfo = findIdeCommand();
-        if (!maybeProcessInfo.isPresent()) {
-            getLogger().debug("Unable to detect IDE from process tree:");
-            for (Info i : getProcessTree()) {
-                if (i.commandLine().isPresent()) {
-                    getLogger().debug("- " + i.commandLine().get());
-                }
-            }
-
+        Optional<Info> maybeIdeCommand = findIdeCommandInfo();
+        if (!maybeIdeCommand.isPresent()) {
+            getLogger().debug("Unable to detect IDE from process tree");
+            printProcessTree(msg -> getLogger().debug(msg));
             return false;
         }
 
-        Info processInfo = maybeProcessInfo.get();
+        Info processInfo = maybeIdeCommand.get();
+        String cmd = processInfo.command().get();
 
         if (isVSCode(processInfo)) {
             return Open.open("vscode://file" + absolutePath + ":" + lineNumber);
         } else if (isIdea(processInfo)) {
-            return Open.open(
-                    "idea://open?file=" + absolutePath + "&line=" + lineNumber);
-        } else if (isEclipse(processInfo)) {
-            String cmd = processInfo.command().get();
             if (OSUtils.isMac()) {
-                cmd = getBinary(cmd);
+                // On Mac, the idea:// protocol works...
+                return Open.open("idea://open?file=" + absolutePath + "&line="
+                        + lineNumber);
+            } else {
+                try {
+                    run(cmd, "--line", lineNumber + "", absolutePath);
+                } catch (Exception e) {
+                    getLogger().error("Unable to launch IntelliJ IDEA", e);
+                }
+            }
+        } else if (isEclipse(processInfo)) {
+            if (OSUtils.isMac()) {
+                cmd = getBinary(processInfo);
                 try {
                     run("open", "-a", cmd, absolutePath);
                 } catch (Exception e) {
@@ -102,8 +108,14 @@ public final class OpenInCurrentIde {
 
     }
 
-    static String getBinary(String cmd) {
-        return cmd.replaceFirst("/Contents/MacOS/eclipse$", "");
+    static String getBinary(Info info) {
+        String cmd = info.command().get();
+        if (isIdea(info)) {
+            return getIdeaBinary(info);
+        } else if (isEclipse(info)) {
+            return cmd.replaceFirst("/Contents/MacOS/eclipse$", "");
+        }
+        return cmd;
     }
 
     private static Logger getLogger() {
@@ -112,19 +124,24 @@ public final class OpenInCurrentIde {
 
     public static void main(String[] args) {
         // This is so it will be easier to debug problems in the future
+        printProcessTree(System.out::println);
+    }
+
+    private static void printProcessTree(Consumer<String> printer) {
         for (Info info : getProcessTree()) {
-            System.out.println("Process:");
+            printer.accept("Process tree:");
             info.command().ifPresent(
-                    value -> System.out.println("Command: " + value));
+                    value -> printer.accept("Command: " + value));
             info.commandLine().ifPresent(
-                    value -> System.out.println("Command line: " + value));
+                    value -> printer.accept("Command line: " + value));
             info.arguments().ifPresent(values -> {
                 for (int i = 0; i < values.length; i++) {
-                    System.out.println("Arguments[" + i + "]: " + values[i]);
+                    printer.accept("Arguments[" + i + "]: " + values[i]);
                 }
             });
-            System.out.println("");
+            printer.accept("");
         }
+
     }
 
     private static void run(String command, String... arguments)
@@ -141,29 +158,21 @@ public final class OpenInCurrentIde {
                 .collect(Collectors.toList());
     }
 
-    private static Optional<Info> findIdeCommand() {
+    private static Optional<Info> findIdeCommandInfo() {
         return findIdeCommand(getProcessTree());
     }
 
     static Optional<Info> findIdeCommand(List<Info> processes) {
         for (Info info : processes) {
-            if (isEclipse(info) || isIdea(info)) {
+            if (isEclipse(info) || isIdea(info) || isVSCode(info)) {
                 return Optional.of(info);
             }
-
-            String cmd = info.command().get().toLowerCase(Locale.ENGLISH);
-            if (cmd.contains("vscode") || cmd.contains("vs code")
-                    || cmd.contains("code helper")
-                    || cmd.contains("visual studio code")) {
-                return Optional.of(info);
-            }
-
         }
         return Optional.empty();
     }
 
-    private static String getLowerCommandAndArguments(Info info) {
-        return info.commandLine().get().toLowerCase(Locale.ENGLISH);
+    private static String getCommandAndArguments(Info info) {
+        return info.commandLine().get();
     }
 
     private static List<ProcessHandle> getParentProcesses() {
@@ -176,20 +185,48 @@ public final class OpenInCurrentIde {
         return proceses;
     }
 
-    private static boolean isEclipse(Info info) {
+    static boolean isEclipse(Info info) {
         return info.command().get().toLowerCase(Locale.ENGLISH)
                 .contains(ECLIPSE_IDENTIFIER);
     }
 
-    private static boolean isIdea(Info info) {
-        return getLowerCommandAndArguments(info).contains(INTELLIJ_IDENTIFIER);
+    static boolean isIdea(Info info) {
+        return getIdeaBinary(info) != null;
     }
 
-    private static boolean isVSCode(Info info) {
+    private static String getIdeaBinary(Info info) {
+        String commandAndArguments = getCommandAndArguments(info);
+        int agentPos = commandAndArguments.toLowerCase(Locale.ENGLISH).indexOf("-javaagent:");
+        if (agentPos >= 0) {
+            String javaAgent = commandAndArguments.substring(agentPos + "-javaagent:".length(),
+                    commandAndArguments.indexOf(" ", agentPos));
+            if (javaAgent.contains(":")) {
+                String binFolder = javaAgent.split(":")[1];
+                Optional<File> bin = Stream.of("idea", "idea.sh", "idea.bat")
+                        .map(binName -> new File(binFolder, binName)).filter(binaryFile -> binaryFile.exists())
+                        .findFirst();
+                if (bin.isPresent()) {
+                    return bin.get().getAbsolutePath();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    static boolean isVSCode(Info info) {
         String termProgram = System.getenv("TERM_PROGRAM");
         if ("vscode".equalsIgnoreCase(termProgram)) {
             return true;
         }
+
+        String cmd = getCommandAndArguments(info);
+        if (cmd.contains("vscode") || cmd.contains("vs code")
+                || cmd.contains("code helper")
+                || cmd.contains("visual studio code")) {
+            return true;
+        }
+
         return false;
     }
 

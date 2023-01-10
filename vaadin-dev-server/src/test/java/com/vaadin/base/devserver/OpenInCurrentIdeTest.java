@@ -1,6 +1,9 @@
 package com.vaadin.base.devserver;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.ProcessHandle.Info;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +13,78 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 public class OpenInCurrentIdeTest {
+
+    @Test
+    public void vsCodeOnMacDetected() {
+        String cmd1 = "/opt/homebrew/Cellar/openjdk@11/11.0.16.1_1/libexec/openjdk.jdk/Contents/Home/bin/java";
+        String[] args1 = new String[] {
+                "@/var/folders/3r/3_0g1bhn44j1vvvpfksrz1z40000gn/T/cp_etuvzkvp19t6wovy4ilfmnb6l.argfile",
+                "com.example.application.Application",
+        };
+
+        String cmd2 = "/bin/zsh";
+        String[] args2 = new String[] {
+                "-l",
+        };
+        String cmd3 = "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer)";
+        String[] args3 = new String[] {
+                "--ms-enable-electron-run-as-node",
+                "/Applications/Visual Studio Code.app/Contents/Resources/app/out/bootstrap-fork",
+                "--type=ptyHost",
+                "--logsPath",
+                "/Users/artur/Library/Application Support/Code/logs/20221225T212012",
+        };
+
+        String cmd4 = "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer)";
+        String[] args4 = new String[] {
+                "--type=renderer",
+                "--user-data-dir=/Users/artur/Library/Application Support/Code",
+                "--standard-schemes=vscode-webview,vscode-file",
+                "--secure-schemes=vscode-webview,vscode-file",
+                "--bypasscsp-schemes",
+                "--cors-schemes=vscode-webview,vscode-file",
+                "--fetch-schemes=vscode-webview,vscode-file",
+                "--service-worker-schemes=vscode-webview",
+                "--streaming-schemes",
+                "--app-path=/Applications/Visual Studio Code.app/Contents/Resources/app",
+                "--no-sandbox",
+                "--no-zygote",
+                "--node-integration-in-worker",
+                "--lang=en-GB",
+                "--num-raster-threads=4",
+                "--enable-zero-copy",
+                "--enable-gpu-memory-buffer-compositor-resources",
+                "--enable-main-frame-before-activation",
+                "--renderer-client-id=20",
+                "--launch-time-ticks=444960654929",
+                "--shared-files",
+                "--field-trial-handle=1718379636,r,11433658063312687633,15858774526786421505,131072",
+                "--enable-features=AutoDisableAccessibility",
+                "--disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess",
+                "--vscode-window-config=vscode:0d71a071-dced-4d7f-b3aa-1a4862b8d021",
+                "--vscode-window-kind=shared-process",
+        };
+        String cmd5 = "/Applications/Visual Studio Code.app/Contents/MacOS/Electron";
+        String[] args5 = new String[] {
+        };
+
+        List<Info> processes = new ArrayList<>();
+        processes.add(mock(cmd1, args1));
+        processes.add(mock(cmd2, args2));
+        processes.add(mock(cmd3, args3));
+        processes.add(mock(cmd4, args4));
+        processes.add(mock(cmd5, args5));
+
+        Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
+        Assert.assertFalse(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assert.assertTrue(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assert.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
+
+        // THe binary is not used for VSCode
+        // Assert.assertEquals("",
+        // OpenInCurrentIde.getBinary(ideCommand.get()));
+
+    }
 
     @Test
     public void eclipseOnMacDetected() {
@@ -63,7 +138,43 @@ public class OpenInCurrentIdeTest {
         Assert.assertEquals(Optional.of(info2), ideCommand);
 
         Assert.assertEquals("/eclipse/install/dir/Eclipse.app",
-                OpenInCurrentIde.getBinary(ideCommand.get().command().get()));
+                OpenInCurrentIde.getBinary(ideCommand.get()));
+    }
+
+    @Test
+    public void ideaOnLinuxDetected() throws IOException {
+        File baseDirectory = Files.createTempDirectory("testIntellij").toFile();
+        File binDirectory = new File(baseDirectory, "bin");
+        binDirectory.mkdir();
+        File bin = new File(binDirectory, "idea");
+        bin.createNewFile();
+
+        String cmd1 = "/home/sombody/.sdkman/candidates/java/17.0.5-tem/bin/java";
+        String cmdLine1 = "-javaagent:/home/sombody/local/tools/idea/2021.3/lib/idea_rt.jar=46177:/home/sombody/local/tools/idea/2021.3/bin -Dfile.encoding=UTF-8 -classpath /home/sombody/tmp/my-app-v24/target/classes:/home/sombody/.m2/repository/com/vaadin/vaadin/24.0-SNAPSHOT/vaadin-24.0-20230110.022317-120.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-core/24.0-SNAPSHOT/vaadin-core-24.0-20230110.022311-120.jar:/home/sombody/.m2/repository/com/vaadin/flow-server/24.0-SNAPSHOT/flow-server-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/servletdetector/throw-if-servlet3/1.0.2/throw-if-servlet3-1.0.2.jar:/home/sombody/.m2/repository/com/vaadin/flow-commons-upload/24.0-SNAPSHOT/flow-commons-upload-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/commons-io/commons-io/2.11.0/commons-io-2.11.0.jar:/home/sombody/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.14.1/jackson-core-2.14.1.jar:/home/sombody/.m2/repository/org/jsoup/jsoup/1.15.3/jsoup-1.15.3.jar:/home/sombody/.m2/repository/com/helger/ph-css/6.5.0/ph-css-6.5.0.jar:/home/sombody/.m2/repository/com/helger/commons/ph-commons/10.1.6/ph-commons-10.1.6.jar:/home/sombody/.m2/repository/com/vaadin/external/gentyref/1.2.0.vaadin1/gentyref-1.2.0.vaadin1.jar:/home/sombody/.m2/repository/org/apache/commons/commons-compress/1.22/commons-compress-1.22.jar:/home/sombody/.m2/repository/org/apache/httpcomponents/httpclient/4.5.13/httpclient-4.5.13.jar:/home/sombody/.m2/repository/org/apache/httpcomponents/httpcore/4.4.15/httpcore-4.4.15.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-dev-server/24.0-SNAPSHOT/vaadin-dev-server-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/open/8.4.0.3/open-8.4.0.3.jar:/home/sombody/.m2/repository/com/vaadin/flow-lit-template/24.0-SNAPSHOT/flow-lit-template-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/flow-push/24.0-SNAPSHOT/flow-push-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/external/atmosphere/atmosphere-runtime/3.0.0.slf4jvaadin2/atmosphere-runtime-3.0.0.slf4jvaadin2.jar:/home/sombody/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/home/sombody/.m2/repository/com/vaadin/flow-client/24.0-SNAPSHOT/flow-client-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/flow-html-components/24.0-SNAPSHOT/flow-html-components-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/flow-data/24.0-SNAPSHOT/flow-data-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/flow-dnd/24.0-SNAPSHOT/flow-dnd-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/org/webjars/npm/vaadin__vaadin-mobile-drag-drop/1.0.1/vaadin__vaadin-mobile-drag-drop-1.0.1.jar:/home/sombody/.m2/repository/org/webjars/npm/mobile-drag-drop/2.3.0-rc.2/mobile-drag-drop-2.3.0-rc.2.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-lumo-theme/24.0-SNAPSHOT/vaadin-lumo-theme-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-material-theme/24.0-SNAPSHOT/vaadin-material-theme-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-accordion-flow/24.0-SNAPSHOT/vaadin-accordion-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-avatar-flow/24.0-SNAPSHOT/vaadin-avatar-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-button-flow/24.0-SNAPSHOT/vaadin-button-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-checkbox-flow/24.0-SNAPSHOT/vaadin-checkbox-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-combo-box-flow/24.0-SNAPSHOT/vaadin-combo-box-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-confirm-dialog-flow/24.0-SNAPSHOT/vaadin-confirm-dialog-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-custom-field-flow/24.0-SNAPSHOT/vaadin-custom-field-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-date-picker-flow/24.0-SNAPSHOT/vaadin-date-picker-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-date-time-picker-flow/24.0-SNAPSHOT/vaadin-date-time-picker-flow-24.0-2023010";
+
+        String cmd2 = "/home/sombody/local/tools/idea/2021.3/jbr/bin/java";
+        String cmdLine2 = "/home/sombody/.sdkman/candidates/java/17/bin/java -javaagent:/home/sombody/local/tools/idea/2021.3/lib/idea_rt.jar=46177:/home/sombody/local/tools/idea/2021.3/bin -Dfile.encoding=UTF-8 -classpath /home/sombody/tmp/my-app-v24/target/classes:/home/sombody/.m2/repository/com/vaadin/vaadin/24.0-SNAPSHOT/vaadin-24.0-20230110.022317-120.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-core/24.0-SNAPSHOT/vaadin-core-24.0-20230110.022311-120.jar:/home/sombody/.m2/repository/com/vaadin/flow-server/24.0-SNAPSHOT/flow-server-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/servletdetector/throw-if-servlet3/1.0.2/throw-if-servlet3-1.0.2.jar:/home/sombody/.m2/repository/com/vaadin/flow-commons-upload/24.0-SNAPSHOT/flow-commons-upload-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/commons-io/commons-io/2.11.0/commons-io-2.11.0.jar:/home/sombody/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.14.1/jackson-core-2.14.1.jar:/home/sombody/.m2/repository/org/jsoup/jsoup/1.15.3/jsoup-1.15.3.jar:/home/sombody/.m2/repository/com/helger/ph-css/6.5.0/ph-css-6.5.0.jar:/home/sombody/.m2/repository/com/helger/commons/ph-commons/10.1.6/ph-commons-10.1.6.jar:/home/sombody/.m2/repository/com/vaadin/external/gentyref/1.2.0.vaadin1/gentyref-1.2.0.vaadin1.jar:/home/sombody/.m2/repository/org/apache/commons/commons-compress/1.22/commons-compress-1.22.jar:/home/sombody/.m2/repository/org/apache/httpcomponents/httpclient/4.5.13/httpclient-4.5.13.jar:/home/sombody/.m2/repository/org/apache/httpcomponents/httpcore/4.4.15/httpcore-4.4.15.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-dev-server/24.0-SNAPSHOT/vaadin-dev-server-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/open/8.4.0.3/open-8.4.0.3.jar:/home/sombody/.m2/repository/com/vaadin/flow-lit-template/24.0-SNAPSHOT/flow-lit-template-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/flow-push/24.0-SNAPSHOT/flow-push-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/external/atmosphere/atmosphere-runtime/3.0.0.slf4jvaadin2/atmosphere-runtime-3.0.0.slf4jvaadin2.jar:/home/sombody/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/home/sombody/.m2/repository/com/vaadin/flow-client/24.0-SNAPSHOT/flow-client-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/flow-html-components/24.0-SNAPSHOT/flow-html-components-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/flow-data/24.0-SNAPSHOT/flow-data-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/flow-dnd/24.0-SNAPSHOT/flow-dnd-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/org/webjars/npm/vaadin__vaadin-mobile-drag-drop/1.0.1/vaadin__vaadin-mobile-drag-drop-1.0.1.jar:/home/sombody/.m2/repository/org/webjars/npm/mobile-drag-drop/2.3.0-rc.2/mobile-drag-drop-2.3.0-rc.2.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-lumo-theme/24.0-SNAPSHOT/vaadin-lumo-theme-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-material-theme/24.0-SNAPSHOT/vaadin-material-theme-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-accordion-flow/24.0-SNAPSHOT/vaadin-accordion-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-avatar-flow/24.0-SNAPSHOT/vaadin-avatar-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-button-flow/24.0-SNAPSHOT/vaadin-button-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-checkbox-flow/24.0-SNAPSHOT/vaadin-checkbox-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-combo-box-flow/24.0-SNAPSHOT/vaadin-combo-box-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-confirm-dialog-flow/24.0-SNAPSHOT/vaadin-confirm-dialog-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-custom-field-flow/24.0-SNAPSHOT/vaadin-custom-field-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-date-picker-flow/24.0-SNAPSHOT/vaadin-date-picker-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-date-time-picker-flow/24.0-SNAPSHOT/vaadin-date-time-picker-flow-24.0-2023010";
+
+        String baseDirInCommands = "/home/sombody/local/tools/idea/2021.3";
+        String baseDir = baseDirectory.getAbsolutePath();
+
+        Info info1 = mock(cmd1.replace(baseDirInCommands, baseDir), cmdLine1.replace(baseDirInCommands, baseDir));
+        Info info2 = mock(cmd2.replace(baseDirInCommands, baseDir), cmdLine2.replace(baseDirInCommands, baseDir));
+        Info info3 = mock("/usr/lib/systemd/systemd", new String[] { "--user" });
+
+        List<Info> processes = new ArrayList<>();
+        processes.add(info1);
+        processes.add(info2);
+        processes.add(info3);
+
+        Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
+
+        Assert.assertTrue(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assert.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assert.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
+
+        Assert.assertEquals(new File(binDirectory, "idea").getAbsolutePath(),
+                OpenInCurrentIde.getBinary(ideCommand.get()));
     }
 
     private Info mock(String cmd, String[] arguments) {
@@ -72,6 +183,15 @@ public class OpenInCurrentIdeTest {
         Mockito.when(info.arguments()).thenReturn(Optional.of(arguments));
         Mockito.when(info.commandLine()).thenReturn(
                 Optional.of(cmd + " " + String.join(" ", arguments)));
+
+        return info;
+    }
+
+    private Info mock(String cmd, String cmdline) {
+        Info info = Mockito.mock(Info.class);
+        Mockito.when(info.command()).thenReturn(Optional.of(cmd));
+        Mockito.when(info.arguments()).thenReturn(Optional.empty());
+        Mockito.when(info.commandLine()).thenReturn(Optional.of(cmdline));
 
         return info;
     }
