@@ -16,11 +16,13 @@
 package com.vaadin.base.devserver;
 
 import java.io.File;
+import java.lang.ProcessHandle.Info;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,30 +59,40 @@ public final class OpenInCurrentIde {
      */
     public static boolean openFile(File file, int lineNumber) {
         String absolutePath = file.getAbsolutePath();
-        if (isVSCode()) {
+
+        Optional<Info> maybeProcessInfo = findIdeCommand();
+        if (!maybeProcessInfo.isPresent()) {
+            getLogger().debug("Unable to detect IDE from process tree:");
+            for (Info i : getProcessTree()) {
+                if (i.commandLine().isPresent()) {
+                    getLogger().debug("- " + i.commandLine().get());
+                }
+            }
+
+            return false;
+        }
+
+        Info processInfo = maybeProcessInfo.get();
+
+        if (isVSCode(processInfo)) {
             return Open.open("vscode://file" + absolutePath + ":" + lineNumber);
-        } else if (isIdea()) {
+        } else if (isIdea(processInfo)) {
             return Open.open(
                     "idea://open?file=" + absolutePath + "&line=" + lineNumber);
-        } else if (isEclipse()) {
-            Optional<String> eclipseApp = findIdeCommand();
+        } else if (isEclipse(processInfo)) {
+            String cmd = processInfo.command().get();
             if (OSUtils.isMac()) {
-                if (eclipseApp.isPresent()) {
-                    String cmd = eclipseApp.get();
-                    cmd = cmd.replaceFirst("/Contents/MacOS/eclipse$", "");
-                    try {
-                        run("open", "-a", cmd, absolutePath);
-                    } catch (Exception e) {
-                        getLogger().error("Unable to launch Eclipse", e);
-                    }
+                cmd = cmd.replaceFirst("/Contents/MacOS/eclipse$", "");
+                try {
+                    run("open", "-a", cmd, absolutePath);
+                } catch (Exception e) {
+                    getLogger().error("Unable to launch Eclipse", e);
                 }
             } else {
-                if (eclipseApp.isPresent()) {
-                    try {
-                        run(eclipseApp.get(), absolutePath + ":" + lineNumber);
-                    } catch (Exception e) {
-                        getLogger().error("Unable to launch Eclipse", e);
-                    }
+                try {
+                    run(cmd, absolutePath + ":" + lineNumber);
+                } catch (Exception e) {
+                    getLogger().error("Unable to launch Eclipse", e);
                 }
             }
             return true;
@@ -103,26 +115,30 @@ public final class OpenInCurrentIde {
         pb.start().waitFor();
     }
 
-    private static Optional<String> findIdeCommand() {
-        for (ProcessHandle p : getParentProcesses()) {
-            String cmd = p.info().command().orElse("");
-            String cmdLower = cmd.toLowerCase(Locale.ENGLISH);
+    private static List<Info> getProcessTree() {
+        return getParentProcesses().stream().map(p -> p.info())
+                .collect(Collectors.toList());
+    }
 
-            if (cmdLower.contains(ECLIPSE_IDENTIFIER)) {
-                return Optional.of(cmd);
+    private static Optional<Info> findIdeCommand() {
+        for (Info info : getProcessTree()) {
+            if (isEclipse(info) || isIdea(info)) {
+                return Optional.of(info);
             }
 
-            if (cmdLower.contains(INTELLIJ_IDENTIFIER)) {
-                return Optional.of(cmd);
-            }
-            if (cmdLower.contains("vscode") || cmdLower.contains("vs code")
-                    || cmdLower.contains("code helper")
-                    || cmdLower.contains("visual studio code")) {
-                return Optional.of(cmd);
+            String cmd = info.command().get().toLowerCase(Locale.ENGLISH);
+            if (cmd.contains("vscode") || cmd.contains("vs code")
+                    || cmd.contains("code helper")
+                    || cmd.contains("visual studio code")) {
+                return Optional.of(info);
             }
 
         }
         return Optional.empty();
+    }
+
+    private static String getLowerCommandAndArguments(Info info) {
+        return info.commandLine().get().toLowerCase(Locale.ENGLISH);
     }
 
     private static List<ProcessHandle> getParentProcesses() {
@@ -135,17 +151,16 @@ public final class OpenInCurrentIde {
         return proceses;
     }
 
-    private static boolean isEclipse() {
-        return findIdeCommand().map(cmd -> cmd.toLowerCase(Locale.ENGLISH))
-                .filter(cmd -> cmd.contains(ECLIPSE_IDENTIFIER)).isPresent();
+    private static boolean isEclipse(Info info) {
+        return info.command().get().toLowerCase(Locale.ENGLISH)
+                .contains(ECLIPSE_IDENTIFIER);
     }
 
-    private static boolean isIdea() {
-        return findIdeCommand().map(cmd -> cmd.toLowerCase(Locale.ENGLISH))
-                .filter(cmd -> cmd.contains(INTELLIJ_IDENTIFIER)).isPresent();
+    private static boolean isIdea(Info info) {
+        return getLowerCommandAndArguments(info).contains(INTELLIJ_IDENTIFIER);
     }
 
-    private static boolean isVSCode() {
+    private static boolean isVSCode(Info info) {
         String termProgram = System.getenv("TERM_PROGRAM");
         if ("vscode".equalsIgnoreCase(termProgram)) {
             return true;
