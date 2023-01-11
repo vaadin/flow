@@ -262,14 +262,16 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 frontendDirectory = file("src/main/frontend")
             }
         """)
-        val result: BuildResult = testProject.build("vaadinPrepareFrontend")
         // let's explicitly check that vaadinPrepareFrontend has been run.
+        val result: BuildResult = testProject.build("-Pvaadin.productionMode", "build")
         result.expectTaskSucceded("vaadinPrepareFrontend")
+        result.expectTaskSucceded("vaadinBuildFrontend")
 
         expect(false) {
             File(testProject.dir, "frontend/generated/index.ts").exists()
         }
         expect(true) {
+            // Only generated for executing project or building bundle
             File(testProject.dir, "src/main/frontend/generated/index.ts").exists()
         }
     }
