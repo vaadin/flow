@@ -17,6 +17,7 @@ package com.vaadin.flow.todo;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -51,7 +52,7 @@ public class TodoCreator extends LitTemplate {
         Todo todo = new Todo();
         todo.setTask(task);
         todo.setUser(user);
-        todo.setTime(LocalDateTime.now());
+        todo.setTime(LocalDateTime.now(ZoneId.systemDefault()));
         todo.setCompleted(false);
         todo.setRid(rand.nextInt());
 
