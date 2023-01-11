@@ -274,8 +274,7 @@ public class Element extends Node<Element> {
         if (customAttribute.isPresent()) {
             customAttribute.get().setAttribute(this, value);
         } else {
-            getStateProvider().setAttribute(getNode(), attribute,
-                    value);
+            getStateProvider().setAttribute(getNode(), attribute, value);
         }
         return this;
     }
@@ -390,8 +389,7 @@ public class Element extends Node<Element> {
         if (customAttribute.isPresent()) {
             return customAttribute.get().hasAttribute(this);
         } else {
-            return getStateProvider().hasAttribute(getNode(),
-                    attribute);
+            return getStateProvider().hasAttribute(getNode(), attribute);
         }
 
     }
@@ -443,8 +441,7 @@ public class Element extends Node<Element> {
             if (customAttribute.isPresent()) {
                 customAttribute.get().removeAttribute(this);
             } else {
-                getStateProvider().removeAttribute(getNode(),
-                        attribute);
+                getStateProvider().removeAttribute(getNode(), attribute);
             }
         }
         return this;
