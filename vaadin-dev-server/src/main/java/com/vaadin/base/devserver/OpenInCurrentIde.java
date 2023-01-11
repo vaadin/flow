@@ -163,7 +163,9 @@ public final class OpenInCurrentIde {
     }
 
     static Optional<Info> findIdeCommand(List<Info> processes) {
-        for (Info info : processes) {
+        // Skip the first process as it is the process launching the app and not
+        // the IDE
+        for (Info info : processes.subList(1, processes.size())) {
             if (isEclipse(info) || isIdea(info) || isVSCode(info)) {
                 return Optional.of(info);
             }

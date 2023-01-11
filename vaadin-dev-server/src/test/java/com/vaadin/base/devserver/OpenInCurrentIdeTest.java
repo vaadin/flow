@@ -43,6 +43,7 @@ public class OpenInCurrentIdeTest {
         Assert.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
         Assert.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
 
+        // The binary on Mac is /.../IntelliJ IDEA.app/Contents/MacOS/idea
         Assert.assertEquals(
                 new File(baseDirectory, "MacOS/idea").getAbsolutePath(),
                 OpenInCurrentIde.getBinary(ideCommand.get()));
@@ -237,6 +238,34 @@ public class OpenInCurrentIdeTest {
 
         Assert.assertEquals(
                 "C:\\Users\\Somebody\\AppData\\Local\\JetBrains\\Toolbox\\apps\\IDEA-U\\ch-0\\223.8214.52\\bin\\idea64.exe",
+                OpenInCurrentIde.getBinary(ideCommand.get()));
+    }
+
+    @Test
+    public void eclipseOnWindowsDetected() throws IOException {
+        String cmd1 = "C:\\Program Files\\Eclipse Adoptium\\jdk-11.0.15.10-hotspot\\bin\\javaw.exe";
+
+        String cmd2 = "C:\\Users\\Somebody\\eclipse\\java-2022-06\\eclipse\\eclipse.exe";
+
+        String cmd3 = "C:\\Windows\\explorer.exe";
+
+        Info info1 = mock(cmd1);
+        Info info2 = mock(cmd2);
+        Info info3 = mock(cmd3);
+
+        List<Info> processes = new ArrayList<>();
+        processes.add(info1);
+        processes.add(info2);
+        processes.add(info3);
+
+        Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
+
+        Assert.assertFalse(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assert.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assert.assertTrue(OpenInCurrentIde.isEclipse(ideCommand.get()));
+
+        Assert.assertEquals(
+                "C:\\Users\\Somebody\\eclipse\\java-2022-06\\eclipse\\eclipse.exe",
                 OpenInCurrentIde.getBinary(ideCommand.get()));
     }
 
