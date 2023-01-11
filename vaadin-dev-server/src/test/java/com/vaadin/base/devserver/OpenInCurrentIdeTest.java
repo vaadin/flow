@@ -15,6 +15,49 @@ import org.mockito.Mockito;
 public class OpenInCurrentIdeTest {
 
     @Test
+    public void ideaOnMacDetected() throws IOException {
+        File baseDirectory = setupIntelliJDirectory("idea");
+
+        String cmd1 = "/Users/somebody/.sdkman/candidates/java/17.0.1-zulu/zulu-17.jdk/Contents/Home/bin/java";
+        String[] args1 = new String[] {
+                "-javaagent:/Users/somebody/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-0/223.8214.52/IntelliJ IDEA.app/Contents/lib/idea_rt.jar=58063:/Users/somebody/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-0/223.8214.52/IntelliJ IDEA.app/Contents/bin",
+                "-Dfile.encoding=UTF-8", "-classpath",
+                "/Users/somebody/Downloads/processtree-main/target/classes:/Users/somebody/.m2/repository/com/vaadin/open/8.4.0.3/open-8.4.0.3.jar:/Users/somebody/.m2/repository/commons-io/commons-io/2.11.0/commons-io-2.11.0.jar",
+                "com.example.application.Application", };
+
+        String cmd2 = "/Users/somebody/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-0/223.8214.52/IntelliJ IDEA.app/Contents/MacOS/idea";
+        String[] args2 = new String[] {};
+
+        String baseDirInCommands = "/Users/somebody/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-0/223.8214.52/IntelliJ IDEA.app/Contents";
+        String baseDir = baseDirectory.getAbsolutePath();
+
+        List<Info> processes = new ArrayList<>();
+
+        processes.add(mock(cmd1.replace(baseDirInCommands, baseDir),
+                replaceInArray(args1, baseDirInCommands, baseDir)));
+        processes.add(mock(cmd2.replace(baseDirInCommands, baseDir),
+                replaceInArray(args2, baseDirInCommands, baseDir)));
+
+        Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
+        Assert.assertTrue(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assert.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assert.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
+
+        Assert.assertEquals(
+                new File(baseDirectory, "MacOS/idea").getAbsolutePath(),
+                OpenInCurrentIde.getBinary(ideCommand.get()));
+
+    }
+
+    private String[] replaceInArray(String[] args, String find,
+            String replace) {
+        for (int i = 0; i < args.length; i++) {
+            args[i] = args[i].replace(find, replace);
+        }
+        return args;
+    }
+
+    @Test
     public void vsCodeOnMacDetected() {
         String cmd1 = "/opt/homebrew/Cellar/openjdk@11/11.0.16.1_1/libexec/openjdk.jdk/Contents/Home/bin/java";
         String[] args1 = new String[] {
@@ -129,11 +172,7 @@ public class OpenInCurrentIdeTest {
 
     @Test
     public void ideaOnLinuxDetected() throws IOException {
-        File baseDirectory = Files.createTempDirectory("testIntellij").toFile();
-        File binDirectory = new File(baseDirectory, "bin");
-        binDirectory.mkdir();
-        File bin = new File(binDirectory, "idea");
-        bin.createNewFile();
+        File baseDirectory = setupIntelliJDirectory("idea");
 
         String cmd1 = "/home/sombody/.sdkman/candidates/java/17.0.5-tem/bin/java";
         String cmdLine1 = "-javaagent:/home/sombody/local/tools/idea/2021.3/lib/idea_rt.jar=46177:/home/sombody/local/tools/idea/2021.3/bin -Dfile.encoding=UTF-8 -classpath /home/sombody/tmp/my-app-v24/target/classes:/home/sombody/.m2/repository/com/vaadin/vaadin/24.0-SNAPSHOT/vaadin-24.0-20230110.022317-120.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-core/24.0-SNAPSHOT/vaadin-core-24.0-20230110.022311-120.jar:/home/sombody/.m2/repository/com/vaadin/flow-server/24.0-SNAPSHOT/flow-server-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/servletdetector/throw-if-servlet3/1.0.2/throw-if-servlet3-1.0.2.jar:/home/sombody/.m2/repository/com/vaadin/flow-commons-upload/24.0-SNAPSHOT/flow-commons-upload-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/commons-io/commons-io/2.11.0/commons-io-2.11.0.jar:/home/sombody/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.14.1/jackson-core-2.14.1.jar:/home/sombody/.m2/repository/org/jsoup/jsoup/1.15.3/jsoup-1.15.3.jar:/home/sombody/.m2/repository/com/helger/ph-css/6.5.0/ph-css-6.5.0.jar:/home/sombody/.m2/repository/com/helger/commons/ph-commons/10.1.6/ph-commons-10.1.6.jar:/home/sombody/.m2/repository/com/vaadin/external/gentyref/1.2.0.vaadin1/gentyref-1.2.0.vaadin1.jar:/home/sombody/.m2/repository/org/apache/commons/commons-compress/1.22/commons-compress-1.22.jar:/home/sombody/.m2/repository/org/apache/httpcomponents/httpclient/4.5.13/httpclient-4.5.13.jar:/home/sombody/.m2/repository/org/apache/httpcomponents/httpcore/4.4.15/httpcore-4.4.15.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-dev-server/24.0-SNAPSHOT/vaadin-dev-server-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/open/8.4.0.3/open-8.4.0.3.jar:/home/sombody/.m2/repository/com/vaadin/flow-lit-template/24.0-SNAPSHOT/flow-lit-template-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/flow-push/24.0-SNAPSHOT/flow-push-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/external/atmosphere/atmosphere-runtime/3.0.0.slf4jvaadin2/atmosphere-runtime-3.0.0.slf4jvaadin2.jar:/home/sombody/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/home/sombody/.m2/repository/com/vaadin/flow-client/24.0-SNAPSHOT/flow-client-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/flow-html-components/24.0-SNAPSHOT/flow-html-components-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/flow-data/24.0-SNAPSHOT/flow-data-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/com/vaadin/flow-dnd/24.0-SNAPSHOT/flow-dnd-24.0-SNAPSHOT.jar:/home/sombody/.m2/repository/org/webjars/npm/vaadin__vaadin-mobile-drag-drop/1.0.1/vaadin__vaadin-mobile-drag-drop-1.0.1.jar:/home/sombody/.m2/repository/org/webjars/npm/mobile-drag-drop/2.3.0-rc.2/mobile-drag-drop-2.3.0-rc.2.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-lumo-theme/24.0-SNAPSHOT/vaadin-lumo-theme-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-material-theme/24.0-SNAPSHOT/vaadin-material-theme-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-accordion-flow/24.0-SNAPSHOT/vaadin-accordion-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-avatar-flow/24.0-SNAPSHOT/vaadin-avatar-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-button-flow/24.0-SNAPSHOT/vaadin-button-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-checkbox-flow/24.0-SNAPSHOT/vaadin-checkbox-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-combo-box-flow/24.0-SNAPSHOT/vaadin-combo-box-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-confirm-dialog-flow/24.0-SNAPSHOT/vaadin-confirm-dialog-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-custom-field-flow/24.0-SNAPSHOT/vaadin-custom-field-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-date-picker-flow/24.0-SNAPSHOT/vaadin-date-picker-flow-24.0-20230109.170111-251.jar:/home/sombody/.m2/repository/com/vaadin/vaadin-date-time-picker-flow/24.0-SNAPSHOT/vaadin-date-time-picker-flow-24.0-2023010";
@@ -162,8 +201,20 @@ public class OpenInCurrentIdeTest {
         Assert.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
         Assert.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
 
-        Assert.assertEquals(new File(binDirectory, "idea").getAbsolutePath(),
+        Assert.assertEquals(
+                new File(baseDirectory, "bin/idea").getAbsolutePath(),
                 OpenInCurrentIde.getBinary(ideCommand.get()));
+    }
+
+    private File setupIntelliJDirectory(String binaryFilename)
+            throws IOException {
+        File baseDirectory = Files.createTempDirectory("testIntellij").toFile();
+        File binDirectory = new File(baseDirectory, "bin");
+        binDirectory.mkdir();
+        File bin = new File(binDirectory, binaryFilename);
+        bin.createNewFile();
+        baseDirectory.deleteOnExit();
+        return baseDirectory;
     }
 
     @Test
