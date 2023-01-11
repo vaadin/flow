@@ -100,6 +100,40 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${project.basedir}</directory>
+                            <includes>
+                                <include>package*.json</include>
+                                <include>vite.*.ts</include>
+                                <include>types.d.ts</include>
+                                <include>tsconfig.json</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/node_modules</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/dev-bundle</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/frontend</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

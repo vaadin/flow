@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -205,6 +207,11 @@ public class NodeTasks implements FallibleCommand {
         commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
         if (options.productionMode || options.isEnableDevServer()
                 || options.isDevBundleBuild()) {
+            LoggerFactory.getLogger(NodeTasks.class)
+                    .info("Running Vite update due to prod: "
+                            + options.productionMode + " devServer: "
+                            + options.isEnableDevServer() + " devBundle "
+                            + options.isDevBundleBuild());
             commands.add(new TaskUpdateVite(options));
         }
 

@@ -373,7 +373,7 @@ abstract class AbstractUpdateImports implements Runnable {
                         COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
                         FrontendUtils.PARAM_FRONTEND_DIR);
             }
-            if(inMemoryCollection()) {
+            if (inMemoryCollection()) {
                 es6ImportPaths.addAll(resourceNotFound);
                 return es6ImportPaths;
             }
