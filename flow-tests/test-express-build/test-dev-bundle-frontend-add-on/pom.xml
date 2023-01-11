@@ -95,6 +95,17 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-frontend</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <configuration>
                     <filesets>
@@ -103,10 +114,26 @@
                             <includes>
                                 <include>package*.json</include>
                                 <include>vite.*.ts</include>
-                                <include>node_modules</include>
-                                <include>dev-bundle</include>
                                 <include>types.d.ts</include>
                                 <include>tsconfig.json</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/node_modules</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/dev-bundle</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/frontend</directory>
+                            <includes>
+                                <include>**</include>
                             </includes>
                         </fileset>
                     </filesets>

@@ -67,3 +67,4 @@ flow-tests/**/*.npmrc
 
 flow-polymer2lit/**/frontend/generated
 flow-tests/test-express-build/test-dev-bundle-frontend-add-on/dev-bundle
+flow-tests/test-express-build/frontend-add-on/dev-bundle
