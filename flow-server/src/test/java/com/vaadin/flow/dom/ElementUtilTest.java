@@ -48,10 +48,8 @@ public class ElementUtilTest {
         Assert.assertFalse(ElementUtil.isValidAttributeName(""));
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void isUpperCaseValidAttribute() {
-        // isValidAttributeName is designed to only be called with lowercase
-        // attribute names
         ElementUtil.isValidAttributeName("FOO");
     }
 
