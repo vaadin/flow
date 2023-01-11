@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,6 +30,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -39,8 +40,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
@@ -95,6 +94,7 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
  * </code>
  * </pre>
  */
+@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public abstract class VaadinWebSecurity {
 
     @Autowired
@@ -208,23 +208,6 @@ public abstract class VaadinWebSecurity {
 
         // Enable view access control
         viewAccessChecker.enable();
-    }
-
-    /**
-     * Registers {@link SecurityContextHolderStrategy} bean.
-     * <p>
-     * Beans of this type will automatically be used by
-     * {@link org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration}
-     * to configure the current {@link SecurityContextHolderStrategy}.
-     */
-    @Bean(name = "VaadinSecurityContextHolderStrategy")
-    public SecurityContextHolderStrategy securityContextHolderStrategy() {
-        VaadinAwareSecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy = new VaadinAwareSecurityContextHolderStrategy();
-        // Use a security context holder that can find the context from Vaadin
-        // specific classes
-        SecurityContextHolder.setContextHolderStrategy(
-                vaadinAwareSecurityContextHolderStrategy);
-        return vaadinAwareSecurityContextHolderStrategy;
     }
 
     /**
