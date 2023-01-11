@@ -41,7 +41,6 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ClientCallableHandlers;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
-import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -116,15 +115,9 @@ public class PublishedServerEventHandlerRpcHandler
         if (!execute) {
             ClientCallableHandlers clientDelegate = node
                     .getFeature(ClientCallableHandlers.class);
-            PolymerServerEventHandlers eventHandlers = node
-                    .getFeature(PolymerServerEventHandlers.class);
             if (clientDelegate.hasHandler(methodName)) {
                 execute = DisabledUpdateMode.ALWAYS.equals(
                         clientDelegate.getDisabledUpdateMode(methodName));
-            }
-            if (eventHandlers.hasHandler(methodName)) {
-                execute = execute || DisabledUpdateMode.ALWAYS.equals(
-                        eventHandlers.getDisabledUpdateMode(methodName));
             }
         }
 

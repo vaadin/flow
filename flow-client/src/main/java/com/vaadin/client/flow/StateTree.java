@@ -480,8 +480,6 @@ public class StateTree {
                     "componentMapping");
             nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_MODELLIST,
                     "modelList");
-            nodeFeatureDebugName.set(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                    "polymerServerEventHandlers");
             nodeFeatureDebugName.set(NodeFeatures.POLYMER_EVENT_LISTENERS,
                     "polymerEventListenerMap");
             nodeFeatureDebugName.set(NodeFeatures.CLIENT_DELEGATE_HANDLERS,

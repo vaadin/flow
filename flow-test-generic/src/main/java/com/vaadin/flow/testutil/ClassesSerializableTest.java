@@ -102,7 +102,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.internal\\.DeadlockDetectingCompletableFuture",
                 "com\\.vaadin\\.flow\\.function\\.VaadinApplicationInitializationBootstrap",
                 "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReloadAccessor",
-                "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReloadAccess",
                 "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReload",
                 "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReloadImpl",
                 "com\\.vaadin\\.flow\\.internal\\.DevModeHandlerManager",

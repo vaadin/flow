@@ -93,11 +93,6 @@ public final class NodeFeatures {
     public static final int TEMPLATE_MODELLIST = 16;
 
     /**
-     * Id for {@link PolymerServerEventHandlers}.
-     */
-    public static final int POLYMER_SERVER_EVENT_HANDLERS = 17;
-
-    /**
      * Id for {@link PolymerEventListenerMap}.
      */
     public static final int POLYMER_EVENT_LISTENERS = 18;

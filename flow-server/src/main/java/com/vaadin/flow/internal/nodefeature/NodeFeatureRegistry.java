@@ -102,9 +102,6 @@ public class NodeFeatureRegistry {
         registerFeature(PolymerEventListenerMap.class,
                 PolymerEventListenerMap::new,
                 NodeFeatures.POLYMER_EVENT_LISTENERS);
-        registerFeature(PolymerServerEventHandlers.class,
-                PolymerServerEventHandlers::new,
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
 
         /* Rarely used element stuff */
         registerFeature(ElementStylePropertyMap.class,
