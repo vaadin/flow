@@ -284,37 +284,6 @@ public class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setGetAttributeNameCaseInsensitive() {
-        Element e = new Element(Tag.SPAN);
-        e.setAttribute("foo", "bar");
-        e.setAttribute("FOO", "baz");
-
-        Assert.assertEquals("baz", e.getAttribute("foo"));
-        Assert.assertEquals("baz", e.getAttribute("FOO"));
-    }
-
-    @Test
-    public void hasAttributeNamesCaseInsensitive() {
-        Element e = new Element(Tag.SPAN);
-        e.setAttribute("fooo", "bar");
-        Assert.assertTrue(e.hasAttribute("fOoO"));
-    }
-
-    @Test
-    public void getAttributeNamesLowerCase() {
-        Element e = new Element(Tag.SPAN);
-        e.setAttribute("FOO", "bar");
-        e.setAttribute("Baz", "bar");
-
-        Set<String> attributeNames = e.getAttributeNames()
-                .collect(Collectors.toSet());
-        Assert.assertTrue(attributeNames.contains("foo"));
-        Assert.assertFalse(attributeNames.contains("FOO"));
-        Assert.assertTrue(attributeNames.contains("baz"));
-        Assert.assertFalse(attributeNames.contains("Baz"));
-    }
-
-    @Test
     public void removeDetachedFromParent() {
         Element otherElement = new Element("other");
         Assert.assertNull(otherElement.getParent());

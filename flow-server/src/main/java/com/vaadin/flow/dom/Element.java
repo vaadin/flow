@@ -245,9 +245,6 @@ public class Element extends Node<Element> {
     /**
      * Sets the given attribute to the given value.
      * <p>
-     * Attribute names are considered case insensitive and all names will be
-     * converted to lower case automatically.
-     * <p>
      * An attribute always has a String key and a String value.
      * <p>
      * Note: An empty attribute value ({@literal ""}) will be rendered as
@@ -270,14 +267,14 @@ public class Element extends Node<Element> {
      * @return this element
      */
     public Element setAttribute(String attribute, String value) {
-        String lowerCaseAttribute = validateAttribute(attribute, value);
+        validateAttribute(attribute, value);
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
-                .get(lowerCaseAttribute);
+                .get(attribute);
         if (customAttribute.isPresent()) {
             customAttribute.get().setAttribute(this, value);
         } else {
-            getStateProvider().setAttribute(getNode(), lowerCaseAttribute,
+            getStateProvider().setAttribute(getNode(), attribute,
                     value);
         }
         return this;
@@ -292,9 +289,6 @@ public class Element extends Node<Element> {
      * <p>
      * Use {@link #hasAttribute(String)} to check whether a boolean attribute
      * has been set.
-     * <p>
-     * Attribute names are considered case insensitive and all names will be
-     * converted to lower case automatically.
      *
      * @see #setAttribute(String, String)
      *
@@ -315,9 +309,6 @@ public class Element extends Node<Element> {
     /**
      * Sets the given attribute to the given {@link StreamResource} value.
      * <p>
-     * Attribute names are considered case insensitive and all names will be
-     * converted to lower case automatically.
-     * <p>
      * This is a convenience method to register a {@link StreamResource}
      * instance into the session and use the registered resource URI as an
      * element attribute.
@@ -333,10 +324,10 @@ public class Element extends Node<Element> {
      */
     public Element setAttribute(String attribute,
             AbstractStreamResource resource) {
-        String lowerCaseAttribute = validateAttribute(attribute, resource);
+        validateAttribute(attribute, resource);
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
-                .get(lowerCaseAttribute);
+                .get(attribute);
         if (!customAttribute.isPresent()) {
             getStateProvider().setAttribute(getNode(), attribute, resource);
         } else {
@@ -349,9 +340,6 @@ public class Element extends Node<Element> {
 
     /**
      * Gets the value of the given attribute.
-     * <p>
-     * Attribute names are considered case insensitive and all names will be
-     * converted to lower case automatically.
      * <p>
      * An attribute always has a String key and a String value.
      * <p>
@@ -376,19 +364,14 @@ public class Element extends Node<Element> {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
 
-        String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
-
-        return CustomAttribute.get(lowerCaseAttribute)
+        return CustomAttribute.get(attribute)
                 .map(attr -> attr.getAttribute(this))
                 .orElseGet(() -> getStateProvider().getAttribute(getNode(),
-                        lowerCaseAttribute));
+                        attribute));
     }
 
     /**
      * Checks if the given attribute has been set.
-     * <p>
-     * Attribute names are considered case insensitive and all names will be
-     * converted to lower case automatically.
      * <p>
      * Note that attribute changes made on the server are sent to the client but
      * attribute changes made on the client side are not reflected back to the
@@ -402,24 +385,19 @@ public class Element extends Node<Element> {
         if (attribute == null) {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
-        String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
-
         Optional<CustomAttribute> customAttribute = CustomAttribute
-                .get(lowerCaseAttribute);
+                .get(attribute);
         if (customAttribute.isPresent()) {
             return customAttribute.get().hasAttribute(this);
         } else {
             return getStateProvider().hasAttribute(getNode(),
-                    lowerCaseAttribute);
+                    attribute);
         }
 
     }
 
     /**
      * Gets the defined attribute names.
-     * <p>
-     * Attribute names are considered case insensitive and all names will be
-     * converted to lower case automatically.
      * <p>
      * Note that attribute changes made on the server are sent to the client but
      * attribute changes made on the client side are not reflected back to the
@@ -445,9 +423,6 @@ public class Element extends Node<Element> {
     /**
      * Removes the given attribute.
      * <p>
-     * Attribute names are considered case insensitive and all names will be
-     * converted to lower case automatically.
-     * <p>
      * If the attribute has not been set, does nothing.
      * <p>
      * Note that attribute changes made on the server are sent to the client but
@@ -462,15 +437,14 @@ public class Element extends Node<Element> {
         if (attribute == null) {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
-        String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
-        if (hasAttribute(lowerCaseAttribute)) {
+        if (hasAttribute(attribute)) {
             Optional<CustomAttribute> customAttribute = CustomAttribute
-                    .get(lowerCaseAttribute);
+                    .get(attribute);
             if (customAttribute.isPresent()) {
                 customAttribute.get().removeAttribute(this);
             } else {
                 getStateProvider().removeAttribute(getNode(),
-                        lowerCaseAttribute);
+                        attribute);
             }
         }
         return this;
@@ -1186,22 +1160,20 @@ public class Element extends Node<Element> {
         return getStateProvider().getComponent(getNode());
     }
 
-    private String validateAttribute(String attribute, Object value) {
+    private void validateAttribute(String attribute, Object value) {
         if (attribute == null) {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
 
-        String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
-        if (!ElementUtil.isValidAttributeName(lowerCaseAttribute)) {
+        if (!ElementUtil.isValidAttributeName(attribute)) {
             throw new IllegalArgumentException(String.format(
                     "Attribute \"%s\" is not a valid attribute name",
-                    lowerCaseAttribute));
+                    attribute));
         }
 
         if (value == null) {
             throw new IllegalArgumentException("Value cannot be null");
         }
-        return lowerCaseAttribute;
     }
 
     static void verifyEventType(String eventType) {

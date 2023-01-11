@@ -64,14 +64,13 @@ public class ElementUtil {
      * Checks if the given attribute name is valid.
      *
      * @param attribute
-     *            the name of the attribute in lower case
+     *            the name of the attribute
      * @return true if the name is valid, false otherwise
      */
     public static boolean isValidAttributeName(String attribute) {
         if (attribute == null || attribute.isEmpty()) {
             return false;
         }
-        assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
         // https://html.spec.whatwg.org/multipage/syntax.html#attributes-2
         // Attribute names must consist of one or more characters other than the
