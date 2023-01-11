@@ -67,7 +67,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * Whether or not insert the initial Uidl object in the bootstrap index.html
      */
     @Parameter(defaultValue = "${vaadin."
-            + Constants.SERVLET_PARAMETER_INITIAL_UIDL + "}")
+            + InitParameters.SERVLET_PARAMETER_INITIAL_UIDL + "}")
     private boolean eagerServerLoad;
 
     /**
@@ -179,7 +179,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * absent. Then it will be used instead of globally 'node' or locally
      * installed installed 'node'.
      */
-    @Parameter(property = Constants.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = ""
+    @Parameter(property = InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = ""
             + Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE)
     private boolean requireHomeNodeExec;
 

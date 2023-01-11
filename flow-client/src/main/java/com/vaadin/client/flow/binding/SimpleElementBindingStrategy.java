@@ -212,7 +212,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (isVisible) {
             // Potential dependencies for any observer
             listeners.push(bindClientCallableMethods(context));
-            listeners.push(bindPolymerEventHandlerNames(context));
 
             // Flow's own event listeners
             listeners.push(bindDomEventListeners(context));
@@ -1432,12 +1431,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 classList.add((String) add.get(i));
             }
         });
-    }
-
-    private EventRemover bindPolymerEventHandlerNames(BindingContext context) {
-        return ServerEventHandlerBinder.bindServerEventHandlerNames(
-                () -> WidgetUtil.crazyJsoCast(context.htmlNode), context.node,
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS, false);
     }
 
     private EventRemover bindClientCallableMethods(BindingContext context) {

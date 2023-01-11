@@ -165,11 +165,6 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
         assertListPropertiesDoubleBind(NodeFeatures.CLIENT_DELEGATE_HANDLERS);
     }
 
-    public void testEventHandlerMethodDoubleBind() {
-        assertListPropertiesDoubleBind(
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
-    }
-
     public void testBindShadowRootDoubleBind() {
         Binder.bind(node, element);
 
