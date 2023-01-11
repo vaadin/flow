@@ -227,7 +227,7 @@ public final class OpenInCurrentIde {
             return true;
         }
 
-        String cmd = getCommandAndArguments(info);
+        String cmd = getCommandAndArguments(info).toLowerCase(Locale.ENGLISH);
         if (cmd.contains("vscode") || cmd.contains("vs code")
                 || cmd.contains("code helper")
                 || cmd.contains("visual studio code")) {
