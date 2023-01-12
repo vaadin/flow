@@ -169,7 +169,7 @@ public class DebugWindowConnectionTest {
         // com.vaadin.flow.internal.BrowserLiveReloadAccessor exists on
         // classpath.
         ClassLoader classLoader = getClass().getClassLoader();
-        String className = "com.vaadin.flow.internal.BrowserLiveReloadAccessor";
+        String className = "com.vaadin.base.devserver.BrowserLiveReloadAccessorImpl";
         String methodName = "getLiveReload";
         try {
             Class<?> clazz = classLoader.loadClass(className);
