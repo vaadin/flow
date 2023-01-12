@@ -40,7 +40,6 @@ import com.vaadin.open.Open;
 public final class OpenInCurrentIde {
 
     private static final String ECLIPSE_IDENTIFIER = "eclipse";
-    private static final String INTELLIJ_IDENTIFIER = "intellij";
 
     private OpenInCurrentIde() {
         // Utils only
@@ -70,7 +69,6 @@ public final class OpenInCurrentIde {
         }
 
         Info processInfo = maybeIdeCommand.get();
-        String cmd = processInfo.command().get();
 
         if (isVSCode(processInfo)) {
             return Open.open("vscode://file" + absolutePath + ":" + lineNumber);
@@ -81,22 +79,23 @@ public final class OpenInCurrentIde {
                         + lineNumber);
             } else {
                 try {
-                    run(cmd, "--line", lineNumber + "", absolutePath);
+                    run(getBinary(processInfo), "--line", lineNumber + "",
+                            absolutePath);
                 } catch (Exception e) {
                     getLogger().error("Unable to launch IntelliJ IDEA", e);
                 }
             }
         } else if (isEclipse(processInfo)) {
             if (OSUtils.isMac()) {
-                cmd = getBinary(processInfo);
                 try {
-                    run("open", "-a", cmd, absolutePath);
+                    run("open", "-a", getBinary(processInfo), absolutePath);
                 } catch (Exception e) {
                     getLogger().error("Unable to launch Eclipse", e);
                 }
             } else {
                 try {
-                    run(cmd, absolutePath + ":" + lineNumber);
+                    run(getBinary(processInfo),
+                            absolutePath + ":" + lineNumber);
                 } catch (Exception e) {
                     getLogger().error("Unable to launch Eclipse", e);
                 }
