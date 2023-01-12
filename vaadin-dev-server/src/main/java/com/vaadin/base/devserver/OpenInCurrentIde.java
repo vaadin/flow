@@ -198,12 +198,9 @@ public final class OpenInCurrentIde {
 
     private static String getIdeaBinary(Info info) {
         String commandAndArguments = getCommandAndArguments(info);
-        int agentPos = commandAndArguments.toLowerCase(Locale.ENGLISH)
-                .indexOf("-javaagent:");
-        if (agentPos >= 0) {
-            String javaAgent = commandAndArguments.substring(
-                    agentPos + "-javaagent:".length(),
-                    commandAndArguments.indexOf(" ", agentPos));
+        String[] javaAgents = getArguments("-javaagent:", commandAndArguments);
+        for (String javaAgent : javaAgents) {
+            javaAgent = javaAgent.substring(("-javaagent:".length()));
             if (javaAgent.contains(":")) {
                 String binFolder = javaAgent.split(":")[1];
                 Optional<File> bin = Stream.of("idea", "idea.sh", "idea.bat")
@@ -218,6 +215,14 @@ public final class OpenInCurrentIde {
             return info.command().get();
         }
         return null;
+    }
+
+    private static String[] getArguments(String startsWith,
+            String commandAndArguments) {
+        return Stream.of(commandAndArguments.split(" "))
+                .filter(cmd -> cmd.toLowerCase(Locale.ENGLISH)
+                        .startsWith(startsWith.toLowerCase(Locale.ENGLISH)))
+                .toArray(String[]::new);
     }
 
     static boolean isVSCode(Info info) {
