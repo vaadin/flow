@@ -198,23 +198,16 @@ public final class OpenInCurrentIde {
 
     private static String getIdeaBinary(Info info) {
         String commandAndArguments = getCommandAndArguments(info);
-        String[] javaAgents = getArguments("-javaagent:", commandAndArguments);
-        for (String javaAgent : javaAgents) {
-            javaAgent = javaAgent.substring(("-javaagent:".length()));
-            String candidate = null;
-            if (javaAgent.contains(":")) {
-                // The last folder can be IDEA_FOLDER/bin (when running)
-                candidate = javaAgent.split(":")[1];
-            } else if (javaAgent
-                    .contains("plugins/java/lib/rt/debugger-agent.jar")) {
-                // Can IDEA_FOLDER/plugins/java/lib/rt/debugger-agent.jar (when
-                // debugging)
-                candidate = javaAgent.replace(
-                        "plugins/java/lib/rt/debugger-agent.jar", "bin");
-            }
-            if (candidate != null) {
-                String binFolder = candidate;
-                Optional<File> bin = Stream.of("idea", "idea.sh", "idea.bat")
+        if (commandAndArguments.contains("idea_rt.jar")) {
+            String replaced = commandAndArguments
+                    .replaceFirst(".*[:;]([^:;]*)(idea_rt.jar).*", "$1$2");
+            if (!replaced.equals(commandAndArguments)) {
+                System.out.println(replaced);
+                File binFolder = new File(
+                        new File(replaced).getParentFile().getParentFile(),
+                        "bin");
+                Optional<File> bin = Stream
+                        .of("idea", "idea.sh", "idea.bat")
                         .map(binName -> new File(binFolder, binName))
                         .filter(binaryFile -> binaryFile.exists()).findFirst();
                 if (bin.isPresent()) {
@@ -226,14 +219,6 @@ public final class OpenInCurrentIde {
             return info.command().get();
         }
         return null;
-    }
-
-    private static String[] getArguments(String startsWith,
-            String commandAndArguments) {
-        return Stream.of(commandAndArguments.split(" "))
-                .filter(cmd -> cmd.toLowerCase(Locale.ENGLISH)
-                        .startsWith(startsWith.toLowerCase(Locale.ENGLISH)))
-                .toArray(String[]::new);
     }
 
     static boolean isVSCode(Info info) {
