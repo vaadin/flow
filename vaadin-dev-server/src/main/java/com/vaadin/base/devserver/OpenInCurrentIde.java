@@ -205,8 +205,7 @@ public final class OpenInCurrentIde {
                 File binFolder = new File(
                         new File(replaced).getParentFile().getParentFile(),
                         "bin");
-                Optional<File> bin = Stream
-                        .of("idea", "idea.sh", "idea.bat")
+                Optional<File> bin = Stream.of("idea", "idea.sh", "idea.bat")
                         .map(binName -> new File(binFolder, binName))
                         .filter(binaryFile -> binaryFile.exists()).findFirst();
                 if (bin.isPresent()) {
