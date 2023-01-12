@@ -129,6 +129,11 @@ public class GenerateMainImports extends AbstractUpdateImports {
     }
 
     @Override
+    protected boolean inMemoryCollection() {
+        return true;
+    }
+
+    @Override
     protected String getImportsNotFoundMessage() {
         return "";
     }
