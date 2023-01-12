@@ -202,7 +202,6 @@ public final class OpenInCurrentIde {
             String replaced = commandAndArguments
                     .replaceFirst(".*[:;]([^:;]*)(idea_rt.jar).*", "$1$2");
             if (!replaced.equals(commandAndArguments)) {
-                System.out.println(replaced);
                 File binFolder = new File(
                         new File(replaced).getParentFile().getParentFile(),
                         "bin");
