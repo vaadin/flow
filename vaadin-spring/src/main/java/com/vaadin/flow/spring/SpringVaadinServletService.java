@@ -78,7 +78,6 @@ public class SpringVaadinServletService extends VaadinServletService {
         Optional<Instantiator> spiInstantiator = super.loadInstantiators();
         List<Instantiator> springInstantiators = context
                 .getBeansOfType(Instantiator.class).values().stream()
-                .filter(instantiator -> instantiator.init(this))
                 .collect(Collectors.toList());
         if (spiInstantiator.isPresent() && !springInstantiators.isEmpty()) {
             throw new ServiceException(
@@ -91,7 +90,6 @@ public class SpringVaadinServletService extends VaadinServletService {
         if (!spiInstantiator.isPresent() && springInstantiators.isEmpty()) {
             Instantiator defaultInstantiator = new SpringInstantiator(this,
                     context);
-            defaultInstantiator.init(this);
             return Optional.of(defaultInstantiator);
         }
         return spiInstantiator.isPresent() ? spiInstantiator

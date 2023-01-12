@@ -462,7 +462,6 @@ public class VaadinServiceTest {
         Mockito.when((factory.createInstantitor(Mockito.any())))
                 .thenReturn(instantiator);
 
-        Mockito.when(instantiator.init(Mockito.any())).thenReturn(true);
         return factory;
     }
 

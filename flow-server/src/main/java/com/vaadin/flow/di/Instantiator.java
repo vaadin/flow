@@ -47,27 +47,6 @@ import com.vaadin.flow.server.communication.UidlWriter;
  * @since 1.0
  */
 public interface Instantiator extends Serializable {
-    /**
-     * Initializes this instantiator. This method is run only once and before
-     * running any other method. An implementation can opt-out from being used
-     * by returning <code>false</code>. It is recommended that all
-     * implementations provide a way for application developers to disable an
-     * implementation so that it can be present on the classpath without
-     * preventing the application from being deployed in cases when multiple
-     * candidates are available.
-     *
-     * @param service
-     *            the Vaadin service for which this instance is initialized
-     * @return <code>true</code> if this instance should be considered as a
-     *         candidate for usage for the provided service; <code>false</code>
-     *         to opt-out from the selection process
-     * @deprecated The {@link Instantiator} instance should be created by an
-     *             {@link InstantiatorFactory} which should just return
-     *             {@code null} if the provided {@code service} can't be handled
-     *             by it
-     */
-    @Deprecated
-    boolean init(VaadinService service);
 
     /**
      * Gets all service init listeners to use. In addition to listeners defined

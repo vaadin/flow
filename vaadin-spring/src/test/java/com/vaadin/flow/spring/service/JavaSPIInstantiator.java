@@ -27,13 +27,6 @@ public class JavaSPIInstantiator implements Instantiator {
     static final String FOO = "foo";
 
     @Override
-    public boolean init(VaadinService service) {
-        return Boolean.FALSE.toString()
-                .equals(service.getDeploymentConfiguration().getInitParameters()
-                        .getProperty(FOO));
-    }
-
-    @Override
     public Stream<VaadinServiceInitListener> getServiceInitListeners() {
         return Stream.of();
     }

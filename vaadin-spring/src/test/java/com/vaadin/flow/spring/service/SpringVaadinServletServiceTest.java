@@ -53,13 +53,6 @@ public class SpringVaadinServletServiceTest {
     public static class TestInstantiator implements Instantiator {
 
         @Override
-        public boolean init(VaadinService service) {
-            return Boolean.TRUE.toString()
-                    .equals(service.getDeploymentConfiguration()
-                            .getInitParameters().getProperty(FOO));
-        }
-
-        @Override
         public Stream<VaadinServiceInitListener> getServiceInitListeners() {
             return Stream.of();
         }
@@ -79,11 +72,6 @@ public class SpringVaadinServletServiceTest {
     @Component
     public static class NonUniqueInstantiator extends TestInstantiator {
 
-        @Override
-        public boolean init(VaadinService service) {
-            return BAR.equals(service.getDeploymentConfiguration()
-                    .getInitParameters().getProperty(FOO));
-        }
     }
 
     @Test

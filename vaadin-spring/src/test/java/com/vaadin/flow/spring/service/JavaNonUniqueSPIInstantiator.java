@@ -15,14 +15,6 @@
  */
 package com.vaadin.flow.spring.service;
 
-import com.vaadin.flow.server.VaadinService;
-
 public class JavaNonUniqueSPIInstantiator extends JavaSPIInstantiator {
-
-    @Override
-    public boolean init(VaadinService service) {
-        return "bar".equals(service.getDeploymentConfiguration()
-                .getInitParameters().getProperty(FOO));
-    }
 
 }
