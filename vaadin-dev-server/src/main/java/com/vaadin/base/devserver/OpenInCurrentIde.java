@@ -39,8 +39,6 @@ import com.vaadin.open.Open;
  */
 public final class OpenInCurrentIde {
 
-    private static final String ECLIPSE_IDENTIFIER = "eclipse";
-
     private OpenInCurrentIde() {
         // Utils only
     }
@@ -162,10 +160,8 @@ public final class OpenInCurrentIde {
     }
 
     static Optional<Info> findIdeCommand(List<Info> processes) {
-        // Skip the first process as it is the process launching the app and not
-        // the IDE
-        for (Info info : processes.subList(1, processes.size())) {
-            if (isEclipse(info) || isIdea(info) || isVSCode(info)) {
+        for (Info info : processes) {
+            if (isIdea(info) || isVSCode(info) || isEclipse(info)) {
                 return Optional.of(info);
             }
         }
@@ -188,8 +184,12 @@ public final class OpenInCurrentIde {
 
     static boolean isEclipse(Info info) {
         String lowerCase = info.command().get().toLowerCase(Locale.ENGLISH);
-        return lowerCase.contains(ECLIPSE_IDENTIFIER)
-                && !lowerCase.contains("eclipse-temurin");
+        // Eclipse has a lot of other products like Temurin and Adoptium so we
+        // cannot
+        // check with "contains"
+        return lowerCase.endsWith("eclipse")
+                || lowerCase.endsWith("eclipse.exe");
+
     }
 
     static boolean isIdea(Info info) {
