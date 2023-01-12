@@ -201,8 +201,19 @@ public final class OpenInCurrentIde {
         String[] javaAgents = getArguments("-javaagent:", commandAndArguments);
         for (String javaAgent : javaAgents) {
             javaAgent = javaAgent.substring(("-javaagent:".length()));
+            String candidate = null;
             if (javaAgent.contains(":")) {
-                String binFolder = javaAgent.split(":")[1];
+                // The last folder can be IDEA_FOLDER/bin (when running)
+                candidate = javaAgent.split(":")[1];
+            } else if (javaAgent
+                    .contains("plugins/java/lib/rt/debugger-agent.jar")) {
+                // Can IDEA_FOLDER/plugins/java/lib/rt/debugger-agent.jar (when
+                // debugging)
+                candidate = javaAgent.replace(
+                        "plugins/java/lib/rt/debugger-agent.jar", "bin");
+            }
+            if (candidate != null) {
+                String binFolder = candidate;
                 Optional<File> bin = Stream.of("idea", "idea.sh", "idea.bat")
                         .map(binName -> new File(binFolder, binName))
                         .filter(binaryFile -> binaryFile.exists()).findFirst();
