@@ -1293,6 +1293,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 shadowRootElement, null, element.getTagName());
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
+                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
                 NodeFeatures.ELEMENT_CHILDREN);
 
         expectedAfterBindingFeatures.forEach(notExpectedFeature -> assertFalse(
@@ -1343,6 +1344,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 shadowRootElement, childId, element.getTagName());
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
+                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
                 NodeFeatures.ELEMENT_CHILDREN);
 
         expectedAfterBindingFeatures.forEach(notExpectedFeature -> assertFalse(
@@ -1390,6 +1392,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Element shadowRoot = addShadowRootElement(element);
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
+                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
                 NodeFeatures.ELEMENT_CHILDREN);
 
         Binder.bind(node, element);
@@ -1463,6 +1466,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Element shadowRoot = Browser.getDocument().createElement("div");
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
+                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
                 NodeFeatures.ELEMENT_CHILDREN);
 
         Reactive.flush();
