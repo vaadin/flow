@@ -64,6 +64,11 @@ public class ComponentMapping extends ServerSideFeature {
             getNode().getFeature(ClientCallableHandlers.class)
                     .componentSet(component);
         }
+        if (component instanceof DeprecatedPolymerTemplate
+                && getNode().hasFeature(PolymerServerEventHandlers.class)) {
+            getNode().getFeature(PolymerServerEventHandlers.class)
+                    .componentSet((DeprecatedPolymerTemplate) component);
+        }
     }
 
     /**

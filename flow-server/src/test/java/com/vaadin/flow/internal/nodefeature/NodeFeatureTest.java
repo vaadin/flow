@@ -80,6 +80,8 @@ public class NodeFeatureTest {
                 NodeFeatures.ELEMENT_STYLE_PROPERTIES);
         expectedIds.put(ComponentMapping.class, NodeFeatures.COMPONENT_MAPPING);
         expectedIds.put(ModelList.class, NodeFeatures.TEMPLATE_MODELLIST);
+        expectedIds.put(PolymerServerEventHandlers.class,
+                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
         expectedIds.put(PolymerEventListenerMap.class,
                 NodeFeatures.POLYMER_EVENT_LISTENERS);
         expectedIds.put(ClientCallableHandlers.class,
@@ -148,7 +150,7 @@ public class NodeFeatureTest {
                 ReturnChannelMap.class,
 
                 /* PolymerTemplate stuff */
-                PolymerEventListenerMap.class,
+                PolymerEventListenerMap.class, PolymerServerEventHandlers.class,
 
                 /* Rarely used element stuff */
                 ElementStylePropertyMap.class, ShadowRootData.class,

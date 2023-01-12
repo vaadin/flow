@@ -163,6 +163,27 @@ public class DebugWindowConnectionTest {
                 reload.getBackend());
     }
 
+    @Test
+    public void backwardsCompatibilityClassExists() {
+        // JRebel and HotswapAgent live reload triggering only works if
+        // com.vaadin.flow.internal.BrowserLiveReloadAccess exists on classpath.
+        ClassLoader classLoader = getClass().getClassLoader();
+        String className = "com.vaadin.flow.internal.BrowserLiveReloadAccess";
+        String methodName = "getLiveReload";
+        try {
+            Class<?> clazz = classLoader.loadClass(className);
+            clazz.getMethod(methodName, VaadinService.class);
+            clazz.getDeclaredConstructor().newInstance();
+        } catch (ClassNotFoundException | NoSuchMethodException
+                | InstantiationException | IllegalAccessException
+                | InvocationTargetException e) {
+            e.printStackTrace();
+            Assert.fail(className
+                    + " required on classpath for JRebel / HotswapAgent live reload integration, must be instantiable and have method "
+                    + methodName + " accepting a VaadinService");
+        }
+    }
+
     private VaadinContext getMockContext() {
         VaadinContext context = new MockVaadinContext();
         context.setAttribute(Lookup.class,
