@@ -149,7 +149,7 @@ public class StreamReceiverHandler implements Serializable {
                 // if boundary string does not exist, the posted file is from
                 // XHR2.post(File)
                 doHandleXhrFilePost(session, request, response, streamReceiver,
-                        source, getContentLength(request));
+                        source, request.getContentLengthLong());
             }
         } finally {
             UI.setCurrent(null);
@@ -247,7 +247,7 @@ public class StreamReceiverHandler implements Serializable {
             VaadinSession session, VaadinRequest request,
             StreamReceiver streamReceiver, StateNode owner) throws IOException {
         boolean success = true;
-        long contentLength = getContentLength(request);
+        long contentLength = request.getContentLength();
         // Parse the request
         FileItemIterator iter;
         try {
@@ -586,18 +586,6 @@ public class StreamReceiverHandler implements Serializable {
             return now;
         }
         return lastStreamingEvent;
-    }
-
-    /**
-     * The request.getContentLength() is limited to "int" by the Servlet
-     * specification. To support larger file uploads manually evaluate the
-     * Content-Length header which can contain long values.
-     *
-     * @deprecated use {@link VaadinRequest#getContentLengthLong()} instead
-     */
-    @Deprecated
-    protected long getContentLength(VaadinRequest request) {
-        return request.getContentLengthLong();
     }
 
     protected boolean isMultipartUpload(VaadinRequest request) {

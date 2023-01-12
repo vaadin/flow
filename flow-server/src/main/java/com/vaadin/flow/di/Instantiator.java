@@ -37,11 +37,8 @@ import com.vaadin.flow.server.communication.UidlWriter;
  * that manages instances according to the conventions of that framework.
  * <p>
  * {@link VaadinService} will by default use {@link ServiceLoader} for finding
- * an instantiator implementation. Deployment will fail if multiple candidates
- * are returning <code>true</code> from {@link #init(VaadinService)}. If no
- * candidate is found, {@link DefaultInstantiator} will be used. It is possible
- * to override this mechanism by overriding
- * {@link VaadinService#createInstantiator}.
+ * an instantiator implementation. It is possible to override this mechanism by
+ * overriding {@link VaadinService#createInstantiator}.
  *
  * @author Vaadin Ltd
  * @since 1.0

@@ -551,7 +551,8 @@ public class VaadinServletContextInitializer
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info("Search for VaadinAppShell took {} ms", ms);
 
-            VaadinAppShellInitializer.init(classes, event.getServletContext());
+            VaadinAppShellInitializer.init(classes,
+                    new VaadinServletContext(event.getServletContext()));
         }
     }
 

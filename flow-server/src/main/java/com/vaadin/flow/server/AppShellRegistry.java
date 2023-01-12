@@ -37,7 +37,6 @@ import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.server.startup.AppShellPredicate;
 import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.getClassAnnotations;
@@ -145,22 +144,6 @@ public class AppShellRegistry implements Serializable {
      */
     public Class<? extends AppShellConfigurator> getShell() {
         return appShellClass;
-    }
-
-    /**
-     * Checks whether the class is extending {@link AppShellConfigurator}.
-     *
-     * @param clz
-     *            the class to check.
-     * @return true if the class extends {@link AppShellConfigurator}.
-     * @deprecated use {@link AppShellPredicate} to test whether the class is an
-     *             {@link AppShellConfigurator} or not
-     */
-    @Deprecated
-    public boolean isShell(Class<?> clz) {
-        assert clz != null;
-        AppShellPredicate predicate = lookup.lookup(AppShellPredicate.class);
-        return predicate.isShell(clz);
     }
 
     /**
