@@ -15,6 +15,8 @@
 
     <modules>
         <module>test-dev-bundle</module>
+        <module>frontend-add-on</module>
+        <module>java-add-on</module>
     </modules>
 
     <profiles>
@@ -29,6 +31,8 @@
                 <module>test-dev-bundle-no-plugin</module>
                 <module>test-theme-dev-bundle</module>
                 <module>test-theme-default-dev-bundle</module>
+                <module>test-dev-bundle-frontend-add-on</module>
+                <module>test-dev-bundle-java-add-on</module>
             </modules>
         </profile>
     </profiles>

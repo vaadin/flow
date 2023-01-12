@@ -373,6 +373,10 @@ abstract class AbstractUpdateImports implements Runnable {
                         COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
                         FrontendUtils.PARAM_FRONTEND_DIR);
             }
+            if (inMemoryCollection()) {
+                es6ImportPaths.addAll(resourceNotFound);
+                return es6ImportPaths;
+            }
             throw new IllegalStateException(
                     notFoundMessage(resourceNotFound, prefix, suffix));
         }
@@ -387,6 +391,15 @@ abstract class AbstractUpdateImports implements Runnable {
         }
 
         return es6ImportPaths;
+    }
+
+    /**
+     * If in memory collection we are collecting for devBundle check.
+     *
+     * @return {@code true} if devBundle in memory collecting
+     */
+    protected boolean inMemoryCollection() {
+        return false;
     }
 
     private Collection<String> getModuleLines(Set<String> modules) {
