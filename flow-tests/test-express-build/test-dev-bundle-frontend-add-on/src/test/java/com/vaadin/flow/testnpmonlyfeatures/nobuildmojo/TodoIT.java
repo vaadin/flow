@@ -50,10 +50,10 @@ public class TodoIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void noFrontendFilesCreated() {
+    public void frontendFilesCreated() {
         File baseDir = new File(System.getProperty("user.dir", "."));
 
-        // shouldn't create a dev-bundle
+        // should create a dev-bundle
         Assert.assertTrue("New devBundle should be generated",
                 new File(baseDir, "dev-bundle").exists());
         Assert.assertTrue("node_modules should be downloaded",
