@@ -59,7 +59,6 @@ public class TodoIT extends ChromeBrowserTest {
         Assert.assertTrue("node_modules should be downloaded",
                 new File(baseDir, "node_modules").exists());
 
-        // These should not be generated either, but at the moment they are
         Assert.assertTrue("package.json should be created",
                 new File(baseDir, "package.json").exists());
         Assert.assertTrue("vite generated should be created",

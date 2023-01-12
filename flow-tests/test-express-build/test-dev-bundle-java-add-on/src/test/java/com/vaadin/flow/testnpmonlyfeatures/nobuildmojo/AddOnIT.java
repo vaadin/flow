@@ -38,7 +38,6 @@ public class AddOnIT extends ChromeBrowserTest {
         Assert.assertFalse("No node_modules should be created",
                 new File(baseDir, "node_modules").exists());
 
-        // These should not be generated either, but at the moment they are
         Assert.assertFalse("No package.json should be created",
                 new File(baseDir, "package.json").exists());
         Assert.assertFalse("No vite generated should be created",
