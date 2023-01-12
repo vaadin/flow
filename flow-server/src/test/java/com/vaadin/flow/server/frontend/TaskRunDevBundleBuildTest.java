@@ -378,7 +378,7 @@ public class TaskRunDevBundleBuildTest {
                             + "    \"@vaadin/common-frontend\": \"0.0.17\",\n"
                             + "    \"@vaadin/router\": \"1.7.4\",\n"
                             + "    \"construct-style-sheets-polyfill\": \"3.1.0\",\n"
-                            + "    \"lit\": \"2.5.0\",\n"
+                            + "    \"lit\": \"2.6.1\",\n"
                             + "    \"@vaadin/text\": \"1.0.0\"\n},\n"
                             + " \"entryScripts\": [\n"
                             + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
@@ -455,7 +455,7 @@ public class TaskRunDevBundleBuildTest {
                             + "    \"@vaadin/common-frontend\": \"0.0.17\",\n"
                             + "    \"@vaadin/router\": \"1.7.4\",\n"
                             + "    \"construct-style-sheets-polyfill\": \"3.1.0\",\n"
-                            + "    \"lit\": \"2.5.0\"\n" + " },\n"
+                            + "    \"lit\": \"2.6.1\"\n" + " },\n"
                             + " \"entryScripts\": [\n"
                             + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
                             + " ],\n" + " \"packageJsonHash\": \"" + defaultHash
