@@ -247,7 +247,7 @@ public class StreamReceiverHandler implements Serializable {
             VaadinSession session, VaadinRequest request,
             StreamReceiver streamReceiver, StateNode owner) throws IOException {
         boolean success = true;
-        long contentLength = request.getContentLength();
+        long contentLength = request.getContentLengthLong();
         // Parse the request
         FileItemIterator iter;
         try {
