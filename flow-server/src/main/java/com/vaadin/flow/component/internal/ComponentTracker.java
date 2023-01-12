@@ -51,7 +51,8 @@ public class ComponentTracker {
     /**
      * Represents a location in the source code.
      */
-    public record Location(String className, String filename, int lineNumber) implements Serializable {
+    public record Location(String className, String filename, String methodName, int lineNumber)
+            implements Serializable {
     }
 
     /**
@@ -197,8 +198,9 @@ public class ComponentTracker {
 
         String className = stackTraceElement.getClassName();
         String fileName = stackTraceElement.getFileName();
+        String methodName = stackTraceElement.getMethodName();
         int lineNumber = stackTraceElement.getLineNumber();
-        return new Location(className, fileName, lineNumber);
+        return new Location(className, fileName, methodName, lineNumber);
     }
 
 }
