@@ -34,7 +34,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.page.Page.ExecutionCanceler;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.shared.Registration;
@@ -418,7 +417,7 @@ public class PageTest {
             }
         };
 
-        ExecutionCanceler executionCanceler = page.executeJavaScript("foo", 1,
+        PendingJavaScriptResult executionCanceler = page.executeJs("foo", 1,
                 true);
 
         Assert.assertNull(executionCanceler);
