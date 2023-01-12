@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Vaadin-Package-Version: 1
+Vaadin-Addon: ${project.build.finalName}.${project.packaging}
+Implementation-Vendor: ${organization.name}
+Implementation-Title: ${project.name}
+Implementation-Version: ${project.version}

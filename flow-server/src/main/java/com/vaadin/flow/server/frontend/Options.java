@@ -117,7 +117,7 @@ public class Options implements Serializable {
 
     private FeatureFlags featureFlags;
 
-    private boolean enableDevServer = true;
+    private boolean enableDevServer = false;
 
     /**
      * Creates a new instance.
