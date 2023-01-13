@@ -66,7 +66,8 @@ public class SpringVaadinServletServiceTest {
     @Test
     public void getInstantiator_springManagedBean_instantiatorBeanReturned()
             throws ServletException {
-        VaadinService service = SpringInstantiatorTest.getService(context, null);
+        VaadinService service = SpringInstantiatorTest.getService(context,
+                null);
 
         Instantiator instantiator = service.getInstantiator();
 
