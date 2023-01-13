@@ -14,7 +14,7 @@
     "@vaadin/vaadin-text-field": "24.0.0-alpha8",
     "@vaadin/vaadin-themable-mixin": "24.0.0-alpha8",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "2.4.1",
+    "lit": "2.6.1",
     "package-outside-npm": "file:../vite-test-assets/packages/package-outside-npm",
     "package2-outside-npm": "../vite-test-assets/packages/package2-outside-npm"
   },
@@ -44,7 +44,7 @@
       "@vaadin/vaadin-text-field": "24.0.0-alpha8",
       "@vaadin/vaadin-themable-mixin": "24.0.0-alpha8",
       "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "2.4.1"
+      "lit": "2.6.1"
     },
     "devDependencies": {
       "@rollup/plugin-replace": "3.1.0",

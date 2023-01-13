@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Stack;
 import java.util.UUID;
@@ -303,20 +304,20 @@ public class ResponseWriter implements Serializable {
         ServletOutputStream outputStream = response.getOutputStream();
         try {
             for (Pair<Long, Long> rangePair : ranges) {
-                outputStream.write(
-                        String.format("\r\n--%s\r\n", partBoundary).getBytes());
+                outputStream.write(String.format("\r\n--%s\r\n", partBoundary)
+                        .getBytes(StandardCharsets.UTF_8));
                 long start = rangePair.getFirst();
                 long end = rangePair.getSecond();
                 if (mimeType != null) {
                     outputStream.write(
                             String.format("Content-Type: %s\r\n", mimeType)
-                                    .getBytes());
+                                    .getBytes(StandardCharsets.UTF_8));
                 }
                 outputStream.write(String
                         .format("Content-Range: %s\r\n\r\n",
                                 createContentRangeHeader(start, end,
                                         connection.getContentLengthLong()))
-                        .getBytes());
+                        .getBytes(StandardCharsets.UTF_8));
 
                 if (position > start) {
                     // out-of-sequence range -> open new stream to the file
@@ -334,7 +335,8 @@ public class ResponseWriter implements Serializable {
         } finally {
             closeStream(dataStream);
         }
-        outputStream.write(String.format("\r\n--%s", partBoundary).getBytes());
+        outputStream.write(String.format("\r\n--%s", partBoundary)
+                .getBytes(StandardCharsets.UTF_8));
     }
 
     private String createContentRangeHeader(long start, long end, long size) {
