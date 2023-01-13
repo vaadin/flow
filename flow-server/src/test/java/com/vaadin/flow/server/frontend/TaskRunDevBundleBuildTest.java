@@ -603,4 +603,121 @@ public class TaskRunDevBundleBuildTest {
         }
 
     }
+
+    @Test
+    public void frontendFileHashMatches_noBundleRebuild() throws IOException {
+        String fileContent = "TodoContent";
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"a5\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(
+                    () -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
+                    .thenReturn(fileContent);
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn("{\n" + " \"npmModules\": {\n"
+                            + "  \"@vaadin/router\": \"1.8.6\"" + "},\n"
+                            + " \"bundleImports\": [\n"
+                            + "  \"Frontend/generated/jar-resources/TodoTemplate.js\"\n"
+                            + " ],\n" + "\n" + " \"frontendHashes\": {\n"
+                            + "  \"TodoTemplate.js\": \"dea5180dd21d2f18d1472074cd5305f60b824e557dae480fb66cdf3ea73edc65\",\n"
+                            + " }," + " \"packageJsonHash\": \"a5\"\n" + "}");
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse("Jar fronted file content hash should match.",
+                    needsBuild);
+        }
+
+    }
+
+    @Test
+    public void noFrontendFileHash_bundleRebuild() throws IOException {
+        String fileContent = "TodoContent";
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"a5\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(
+                    () -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
+                    .thenReturn(fileContent);
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn("{\n" + " \"npmModules\": {\n"
+                            + "  \"@vaadin/router\": \"1.8.6\"" + "},\n"
+                            + " \"bundleImports\": [\n"
+                            + "  \"Frontend/generated/jar-resources/TodoTemplate.js\"\n"
+                            + " ],\n" + "\n" + " \"frontendHashes\": {\n"
+                            + " }," + " \"packageJsonHash\": \"a5\"\n" + "}");
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse("Jar fronted file content hash should match.",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void frontendFileHashMissmatch_bundleRebuild() throws IOException {
+        String fileContent = "TodoContent2";
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"a5\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(
+                    () -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
+                    .thenReturn(fileContent);
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn("{\n" + " \"npmModules\": {\n"
+                            + "  \"@vaadin/router\": \"1.8.6\"" + "},\n"
+                            + " \"bundleImports\": [\n"
+                            + "  \"Frontend/generated/jar-resources/TodoTemplate.js\"\n"
+                            + " ],\n" + "\n" + " \"frontendHashes\": {\n"
+                            + "  \"TodoTemplate.js\": \"dea5180dd21d2f18d1472074cd5305f60b824e557dae480fb66cdf3ea73edc65\",\n"
+                            + " }," + " \"packageJsonHash\": \"a5\"\n" + "}");
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse("Jar fronted file content hash should match.",
+                    needsBuild);
+        }
+    }
 }

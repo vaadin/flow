@@ -32,6 +32,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -159,6 +160,34 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             return false;
         }
 
+        String resourcePath = "generated/jar-resources/";
+        final List<String> jarImports = imports.stream()
+                .filter(importString -> importString.contains(resourcePath))
+                .map(importString -> importString
+                        .substring(importString.indexOf(resourcePath)
+                                + resourcePath.length()))
+                .collect(Collectors.toList());
+
+        final JsonObject frontendHashes = statsJson.getObject("frontendHashes");
+        List<String> faultyContent = new ArrayList<>();
+        for (String jarImport : jarImports) {
+            String content = FrontendUtils.getJarResourceString(jarImport)
+                    .replaceAll("\\r\\n", "\n");
+            final String contentHash = StringUtil.getHash(content,
+                    StandardCharsets.UTF_8);
+
+            if (frontendHashes.hasKey(jarImport) && !frontendHashes
+                    .getString(jarImport).equals(contentHash)) {
+                faultyContent.add(jarImport);
+            } else if (!frontendHashes.hasKey(jarImport)) {
+                getLogger().info("No has info for '{}'", jarImport);
+                faultyContent.add(jarImport);
+            }
+        }
+        if (!faultyContent.isEmpty()) {
+            getLogger().info("Faulty content for files: ", faultyContent);
+            return false;
+        }
         return true;
     }
 
