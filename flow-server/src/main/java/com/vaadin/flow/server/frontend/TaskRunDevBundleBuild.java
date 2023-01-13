@@ -171,8 +171,13 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         final JsonObject frontendHashes = statsJson.getObject("frontendHashes");
         List<String> faultyContent = new ArrayList<>();
         for (String jarImport : jarImports) {
-            String content = FrontendUtils.getJarResourceString(jarImport)
-                    .replaceAll("\\r\\n", "\n");
+            final String jarResourceString = FrontendUtils
+                    .getJarResourceString(jarImport);
+            if (jarResourceString == null) {
+                getLogger().info("No file found for '{}'", jarImport);
+                return false;
+            }
+            String content = jarResourceString.replaceAll("\\r\\n", "\n");
             final String contentHash = StringUtil.getHash(content,
                     StandardCharsets.UTF_8);
 

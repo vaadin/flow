@@ -184,7 +184,7 @@ public final class StringUtil {
     }
 
     private static String bytesToHex(byte[] hash) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (byte hashByte : hash) {
             String hex = Integer.toHexString(0xff & hashByte);
             if (hex.length() == 1) {
