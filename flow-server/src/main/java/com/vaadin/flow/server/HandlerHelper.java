@@ -87,7 +87,7 @@ public class HandlerHelper implements Serializable {
          */
         PUSH(ApplicationConstants.REQUEST_TYPE_PUSH);
 
-        private String identifier;
+        private final String identifier;
 
         private RequestType(String identifier) {
             this.identifier = identifier;
