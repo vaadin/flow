@@ -216,22 +216,11 @@ public abstract class AbstractServerHandlers<T>
     }
 
     /**
-     * Gets the annotation which is used to mark methods as handlers.
-     *
-     * @return the handler marker annotation
-     * @deprecated Implement {@link #getHandlerAnnotationFqn()} instead
-     */
-    @Deprecated
-    protected abstract Class<? extends Annotation> getHandlerAnnotation();
-
-    /**
      * Gets the annotation FQN which is used to mark methods as handlers.
      *
      * @return the handler marker annotation
      */
-    protected String getHandlerAnnotationFqn() {
-        return getHandlerAnnotation().getName();
-    }
+    protected abstract String getHandlerAnnotationFqn();
 
     /**
      * Returns method's RPC communication mode from the client side to the
