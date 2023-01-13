@@ -5,7 +5,7 @@
  * This file will be overwritten on every run. Any custom changes should be made to vite.config.ts
  */
 import path from 'path';
-import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
+import { readdirSync, readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
 import { createHash } from 'crypto';
 import * as net from 'net';
 
@@ -223,11 +223,27 @@ function statsExtracterPlugin(): PluginOption {
         frontendFiles[`${fileKey}`] = hash;
       });
 
+      const themeJsonHashes = { };
+      const themesFolder = path.resolve(jarResourcesFolder, "themes");
+      if (existsSync(themesFolder)) {
+        readdirSync(themesFolder).forEach((themeFolder) => {
+          const themeJson = path.resolve(themesFolder, themeFolder, "theme.json");
+          if (existsSync(themeJson)) {
+            const themeJsonContent = JSON.parse(readFileSync(themeJson, { encoding: 'utf8' }));
+            const hash = themeJsonContent.hash;
+            if (hash) {
+              themeJsonHashes[`${path.basename(themeFolder)}`] = hash;
+            }
+          }
+        });
+      }
+
       const stats = {
         npmModules: projectPackageJson.dependencies,
         handledModules: npmModuleAndVersion,
         bundleImports: generatedImports,
         frontendHashes: frontendFiles,
+        themeJsonHashes: themeJsonHashes,
         entryScripts,
         packageJsonHash: projectPackageJson?.vaadin?.hash
       };

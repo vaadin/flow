@@ -25,11 +25,11 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -184,9 +184,36 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return;
         }
 
+        // First check if project has a packaged themes and add a link if any
+        File frontendFolder = new File(config.getProjectFolder(),
+                FrontendUtils.FRONTEND);
+        File jarResourcesFolder = FrontendUtils
+                .getJarResourcesFolder(frontendFolder);
+        File packagedThemesFolder = new File(jarResourcesFolder,
+                Constants.APPLICATION_THEME_ROOT);
+
+        Collection<String> packagedThemeNames = new LinkedList<>();
+        if (packagedThemesFolder.exists()) {
+            for (File themeFolder : Objects.requireNonNull(
+                    packagedThemesFolder.listFiles(File::isDirectory),
+                    "Expected at least one theme in the front-end generated themes folder")) {
+                final String packagedThemeName = themeFolder.getName();
+                packagedThemeNames.add(packagedThemeName);
+                createStylesCssLink(indexDocument, packagedThemeName);
+            }
+        }
+
+        // Secondly, add a link for the project's custom theme, if it exists
+        if (!packagedThemeNames.contains(themeName.get())) {
+            createStylesCssLink(indexDocument, themeName.get());
+        }
+    }
+
+    private static void createStylesCssLink(Document indexDocument,
+            String themeName) {
         Element element = new Element("link");
         element.attr("rel", "stylesheet");
-        element.attr("href", "themes/" + themeName.get() + "/styles.css");
+        element.attr("href", "themes/" + themeName + "/styles.css");
         indexDocument.head().appendChild(element);
     }
 

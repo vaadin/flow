@@ -24,8 +24,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -41,6 +44,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.server.Constants.ASSETS;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
 /**
@@ -129,6 +133,59 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         if (!frontendImportsFound(statsJson, options, finder,
                 frontendDependencies)) {
             return true;
+        }
+
+        if (packagedThemeAddedOrUpdated(options, statsJson)) {
+            getLogger().info(
+                    "Newly added or updated packaged custom theme found.");
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean packagedThemeAddedOrUpdated(Options options,
+            JsonObject statsJson) {
+        File packagedThemesFolder = new File(
+                options.getJarFrontendResourcesFolder(), "themes");
+        if (!packagedThemesFolder.exists()) {
+            return false;
+        }
+
+        Map<String, String> packagedThemeHashes = new HashMap<>(1);
+        for (File packagedThemeFolder : Objects.requireNonNull(
+                packagedThemesFolder.listFiles(File::isDirectory),
+                "Expected at least one theme in the front-end generated themes folder")) {
+            File themeJson = new File(packagedThemeFolder, "theme.json");
+            try {
+                if (themeJson.exists()) {
+                    String themeJsonContent = FileUtils.readFileToString(
+                            themeJson, StandardCharsets.UTF_8);
+                    JsonObject json = Json.parse(themeJsonContent);
+                    if (json.hasKey("hash")) {
+                        packagedThemeHashes.put(packagedThemeFolder.getName(),
+                                json.getString("hash"));
+                    }
+                }
+            } catch (IOException e) {
+                getLogger().error("Failed to read a hash from {}", themeJson);
+            }
+        }
+
+        JsonObject hashesInStats = statsJson.getObject("themeJsonHashes");
+        if (hashesInStats == null) {
+            return true;
+        }
+        for (Map.Entry<String, String> themeHash : packagedThemeHashes
+                .entrySet()) {
+            if (hashesInStats.hasKey(themeHash.getKey())) {
+                if (!hashesInStats.getString(themeHash.getKey())
+                        .equals(themeHash.getValue())) {
+                    return true;
+                }
+            } else {
+                return true;
+            }
         }
 
         return false;

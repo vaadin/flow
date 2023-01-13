@@ -16,12 +16,23 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.server.Constants;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import static com.vaadin.flow.server.Constants.ASSETS;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
@@ -86,6 +97,38 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
         long ms = (System.nanoTime() - start) / 1000000;
         log().info("Visited {} resources. Took {} ms.",
                 resourceLocations.size(), ms);
+
+        calculateHashForPackagedThemes(targetDirectory);
+    }
+
+    private void calculateHashForPackagedThemes(File targetDirectory) {
+        File packagedThemesFolder = new File(targetDirectory,
+                Constants.APPLICATION_THEME_ROOT);
+        if (packagedThemesFolder.exists()) {
+            for (File themeFolder : Objects.requireNonNull(
+                    packagedThemesFolder.listFiles(File::isDirectory),
+                    "Expected at least one theme in the front-end generated themes folder")) {
+                File themeJson = new File(themeFolder, "theme.json");
+                if (themeJson.exists()) {
+                    try {
+                        String themeJsonContent = FileUtils.readFileToString(
+                                themeJson, StandardCharsets.UTF_8);
+                        JsonObject json = Json.parse(themeJsonContent);
+                        if (json.hasKey(ASSETS)) {
+                            final String contentHash = StringUtil.getHash(
+                                    themeJsonContent, StandardCharsets.UTF_8);
+                            json.put("hash", contentHash);
+                            FileUtils.write(themeJson, json.toJson(),
+                                    StandardCharsets.UTF_8);
+                        }
+                    } catch (IOException e) {
+                        log().error(
+                                "Failed to write a hash to the {}. Please check if the packaged theme contains a valid theme.json file",
+                                themeJson);
+                    }
+                }
+            }
+        }
     }
 
     private Logger log() {
