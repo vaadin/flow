@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.flow.component.Component;
@@ -60,9 +61,14 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
         assert targetType == navigationState.getNavigationTarget()
                 : "Trying to get layouts for wrong route target";
 
-        return router.getRegistry()
-                .getNavigationRouteTarget(navigationState.getResolvedPath())
-                .getRouteTarget().getParentLayouts();
+        NavigationRouteTarget target = router.getRegistry()
+                .getNavigationRouteTarget(navigationState.getResolvedPath());
+
+        if (target.hasTarget()) {
+            return target.getRouteTarget().getParentLayouts();
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @Override
