@@ -3413,13 +3413,14 @@ public class RouterTest extends RoutingTestBase {
                 .setAnnotatedRoute(AliasLayout.class);
 
         List<Class<? extends RouterLayout>> parents = router.getRegistry()
-                .getRouteLayouts("noParent", AliasLayout.class);
+                .getNavigationRouteTarget("noParent").getRouteTarget()
+                .getParentLayouts();
 
         Assert.assertTrue("Main route should have no parents.",
                 parents.isEmpty());
 
-        parents = router.getRegistry().getRouteLayouts("twoParents",
-                AliasLayout.class);
+        parents = router.getRegistry().getNavigationRouteTarget("twoParents")
+                .getRouteTarget().getParentLayouts();
 
         Assert.assertEquals("Route alias should have two parents", 2,
                 parents.size());

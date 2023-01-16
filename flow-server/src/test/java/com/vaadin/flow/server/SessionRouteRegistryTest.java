@@ -247,15 +247,14 @@ public class SessionRouteRegistryTest {
                 Arrays.asList(MiddleLayout.class, MainLayout.class));
 
         Assert.assertFalse("'MyRoute' should have a single parent",
-                sessionRegistry
-                        .getRouteLayouts("MyRoute", MyRouteWithAliases.class)
-                        .isEmpty());
-        Assert.assertTrue("'info' should have no parents.", sessionRegistry
-                .getRouteLayouts("info", MyRouteWithAliases.class).isEmpty());
+                sessionRegistry.getNavigationRouteTarget("MyRoute")
+                        .getRouteTarget().getParentLayouts().isEmpty());
+        Assert.assertTrue("'info' should have no parents.",
+                sessionRegistry.getNavigationRouteTarget("info")
+                        .getRouteTarget().getParentLayouts().isEmpty());
         Assert.assertEquals("'version' should return two parents", 2,
-                sessionRegistry
-                        .getRouteLayouts("version", MyRouteWithAliases.class)
-                        .size());
+                sessionRegistry.getNavigationRouteTarget("version")
+                        .getRouteTarget().getParentLayouts().size());
     }
 
     @Test
@@ -271,7 +270,8 @@ public class SessionRouteRegistryTest {
 
         Assert.assertEquals(
                 "'version' should return two parents even when original list is changed",
-                2, registry.getRouteLayouts("version", MyRoute.class).size());
+                2, registry.getNavigationRouteTarget("version").getRouteTarget()
+                        .getParentLayouts().size());
     }
 
     @Test
@@ -286,7 +286,8 @@ public class SessionRouteRegistryTest {
         Assert.assertArrayEquals(
                 "Registry should return parent layouts in the same order as set.",
                 parentChain.toArray(),
-                registry.getRouteLayouts("version", MyRoute.class).toArray());
+                registry.getNavigationRouteTarget("version").getRouteTarget()
+                        .getParentLayouts().toArray());
     }
 
     @Test

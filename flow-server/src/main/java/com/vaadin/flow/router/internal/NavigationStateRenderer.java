@@ -61,7 +61,8 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
                 : "Trying to get layouts for wrong route target";
 
         return router.getRegistry()
-                .getRouteLayouts(navigationState.getResolvedPath(), targetType);
+                .getNavigationRouteTarget(navigationState.getResolvedPath())
+                .getRouteTarget().getParentLayouts();
     }
 
     @Override

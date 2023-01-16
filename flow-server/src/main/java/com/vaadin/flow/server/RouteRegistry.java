@@ -207,26 +207,6 @@ public interface RouteRegistry extends Serializable {
     Optional<String> getTemplate(Class<? extends Component> navigationTarget);
 
     /**
-     * Get the layout chain for given navigation target on the targeted path.
-     * <p>
-     * This chain may be pre-defined or generated from annotation data.
-     *
-     * @param path
-     *            path to use for resolving chain
-     * @param navigationTarget
-     *            navigation target to get layout chain for
-     * @return layout chain of target
-     * @deprecated instead use {@link #getNavigationRouteTarget(String)} and
-     *             retrieve the list of route layouts from the
-     *             {@link RouteTarget} contained in the
-     *             {@link NavigationRouteTarget}.
-     * @see RouteTarget#getParentLayouts()
-     */
-    @Deprecated
-    List<Class<? extends RouterLayout>> getRouteLayouts(String path,
-            Class<? extends Component> navigationTarget);
-
-    /**
      * Block updates to the registry configuration from other threads until
      * update command has completed. This makes the command changes atomic for
      * the registry as no one else can change the registry state during the
