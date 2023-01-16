@@ -7,31 +7,23 @@
     "@vaadin/router": "1.7.4",
     "@vaadin/vaadin-text-field": "23.3.0-alpha2",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "2.4.1"
+    "lit": "2.6.1"
   },
   "devDependencies": {
+    "@rollup/plugin-replace": "5.0.2",
+    "@rollup/pluginutils": "5.0.2",
     "async": "3.2.2",
-    "chokidar": "^3.5.0",
-    "compression-webpack-plugin": "4.0.1",
-    "css-loader": "5.2.7",
-    "esbuild-loader": "2.19.0",
-    "extra-watch-webpack-plugin": "1.0.3",
-    "extract-loader": "5.1.0",
-    "file-loader": "6.2.0",
-    "fork-ts-checker-webpack-plugin": "6.2.1",
     "glob": "7.2.3",
-    "html-webpack-plugin": "4.5.1",
-    "lit-css-loader": "0.1.0",
-    "loader-utils": "2.0.4",
+    "mkdirp": "1.0.4",
+    "rollup-plugin-brotli": "3.1.0",
     "strip-css-comments": "5.0.0",
-    "typescript": "4.7.4",
-    "webpack": "4.46.0",
-    "webpack-cli": "4.10.0",
-    "webpack-dev-server": "4.10.0",
-    "webpack-merge": "4.2.2",
-    "workbox-core": "6.5.0",
-    "workbox-precaching": "6.5.0",
-    "workbox-webpack-plugin": "6.5.0"
+    "transform-ast": "2.4.4",
+    "typescript": "4.9.3",
+    "vite": "4.0.2",
+    "vite-plugin-checker": "0.5.2",
+    "workbox-build": "6.5.4",
+    "workbox-core": "6.5.4",
+    "workbox-precaching": "6.5.4"
   },
   "vaadin": {
     "dependencies": {
@@ -40,33 +32,25 @@
       "@vaadin/router": "1.7.4",
       "@vaadin/vaadin-text-field": "23.3.0-alpha2",
       "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "2.4.1"
+      "lit": "2.6.1"
     },
     "devDependencies": {
+      "@rollup/plugin-replace": "5.0.2",
+      "@rollup/pluginutils": "5.0.2",
       "async": "3.2.2",
-      "chokidar": "^3.5.0",
-      "compression-webpack-plugin": "4.0.1",
-      "css-loader": "5.2.7",
-      "esbuild-loader": "2.19.0",
-      "extra-watch-webpack-plugin": "1.0.3",
-      "extract-loader": "5.1.0",
-      "file-loader": "6.2.0",
-      "fork-ts-checker-webpack-plugin": "6.2.1",
       "glob": "7.2.3",
-      "html-webpack-plugin": "4.5.1",
-      "lit-css-loader": "0.1.0",
-      "loader-utils": "2.0.4",
+      "mkdirp": "1.0.4",
+      "rollup-plugin-brotli": "3.1.0",
       "strip-css-comments": "5.0.0",
-      "typescript": "4.7.4",
-      "webpack": "4.46.0",
-      "webpack-cli": "4.10.0",
-      "webpack-dev-server": "4.10.0",
-      "webpack-merge": "4.2.2",
-      "workbox-core": "6.5.0",
-      "workbox-precaching": "6.5.0",
-      "workbox-webpack-plugin": "6.5.0"
+      "transform-ast": "2.4.4",
+      "typescript": "4.9.3",
+      "vite": "4.0.2",
+      "vite-plugin-checker": "0.5.2",
+      "workbox-build": "6.5.4",
+      "workbox-core": "6.5.4",
+      "workbox-precaching": "6.5.4"
     },
-    "hash": "c9061d5242f414617f1329a92a613865c226abda194599db84aadea64bb34cff"
+    "hash": "c5e599a1ccc4ae18cdbd06d240b3af84195ae60a3e5aeea766a56623ebaa3edc"
   },
   "overrides": {
     "@vaadin/common-frontend": "$@vaadin/common-frontend",
@@ -74,7 +58,6 @@
     "lit": "$lit",
     "@vaadin/router": "$@vaadin/router",
     "@polymer/polymer": "$@polymer/polymer",
-    "@vaadin/vaadin-text-field": "$@vaadin/vaadin-text-field",
-    "chokidar": "$chokidar"
+    "@vaadin/vaadin-text-field": "$@vaadin/vaadin-text-field"
   }
 }
