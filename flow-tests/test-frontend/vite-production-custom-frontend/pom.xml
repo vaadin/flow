@@ -70,7 +70,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <productionMode>true</productionMode>
                     <frontendDirectory>${project.basedir}/frontend-custom</frontendDirectory>
                 </configuration>
             </plugin>
