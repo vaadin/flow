@@ -140,7 +140,7 @@ public class RouteUtilTest {
     @Test
     public void absolute_middle_parent_route_should_not_contain_parent_prefix() {
         String routePath = RouteUtil.getRoutePath(new MockVaadinContext(),
-                AbsoluteRoute.class);
+                AbsoluteCenterRoute.class);
         Assert.assertEquals("No parent prefix should have been added.",
                 "absolute/child", routePath);
     }
