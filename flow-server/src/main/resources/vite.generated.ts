@@ -208,7 +208,12 @@ function statsExtracterPlugin(): PluginOption {
 
       const frontendFiles = { };
       generatedImports.filter((line: string) => line.includes("generated/jar-resources")).forEach((line: string) => {
-        const filename = line.substring(line.indexOf("generated"));
+        var filename;
+        if(line.includes('?')) {
+          filename = line.substring(line.indexOf("generated"), line.lastIndexOf('?'));
+        } else {
+          filename = line.substring(line.indexOf("generated"));
+        }
         // \r\n from windows made files may be used ro remove to be only \n
         const fileBuffer = readFileSync(path.resolve(frontendFolder, filename), {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
         const hash = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
