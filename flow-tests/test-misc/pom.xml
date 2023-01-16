@@ -46,9 +46,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <productionMode>true</productionMode>
-                </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->
             <plugin>

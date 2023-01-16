@@ -49,9 +49,6 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
-                <configuration>
-                    <productionMode>true</productionMode>
-                </configuration>
                 <executions>
                     <execution>
                         <goals>
