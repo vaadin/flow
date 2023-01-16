@@ -24,6 +24,7 @@ import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.VaadinContext;
 
 /**
  * Defines the route template suffix for components that function as navigation
@@ -68,8 +69,8 @@ public @interface Route {
      *
      * <p>
      * Note for framework developers: do not use the value directly, but use the
-     * helper method {@link RouteUtil#resolve(Class, Route)}, so that naming
-     * convention based values are dealt correctly.
+     * helper method {@link RouteUtil#resolve(VaadinContext, Class)}, so that
+     * naming convention based values are dealt correctly.
      * </p>
      *
      * @return the explicit path value of this route

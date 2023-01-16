@@ -61,10 +61,12 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
 
@@ -415,7 +417,13 @@ public abstract class VaadinWebSecurity {
                             + flowLoginView.getName());
         }
 
-        String loginPath = RouteUtil.getRoutePath(flowLoginView, route.get());
+        UI ui = UI.getCurrent();
+        if (ui == null) {
+            throw new IllegalStateException(
+                    "There is no UI available. The route scope is not active");
+        }
+        VaadinContext vaadinContext = ui.getSession().getService().getContext();
+        String loginPath = RouteUtil.getRoutePath(vaadinContext, flowLoginView);
         if (!loginPath.startsWith("/")) {
             loginPath = "/" + loginPath;
         }

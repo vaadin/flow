@@ -32,6 +32,7 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -746,7 +747,8 @@ public class ViewAccessCheckerTest {
         Optional<Route> route = AnnotationReader
                 .getAnnotationFor(navigationTarget, Route.class);
 
-        return RouteUtil.getRoutePath(navigationTarget, route.get());
+        return RouteUtil.getRoutePath(new MockVaadinContext(),
+                navigationTarget);
     }
 
 }
