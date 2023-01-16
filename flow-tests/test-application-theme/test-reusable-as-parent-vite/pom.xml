@@ -51,9 +51,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <productionMode>true</productionMode>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>

@@ -69,9 +69,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <productionMode>true</productionMode>
-                </configuration>
             </plugin>
         </plugins>
     </build>
