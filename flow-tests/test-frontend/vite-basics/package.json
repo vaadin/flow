@@ -14,7 +14,7 @@
     "@vaadin/polymer-legacy-adapter": "24.0.0-alpha10",
     "@vaadin/router": "1.7.4",
     "@vaadin/vaadin-lumo-styles": "24.0.0-alpha10",
-    "@vaadin/vaadin-text-field": "24.0.0-alpha10",
+    "@vaadin/text-field": "24.0.0-alpha10",
     "@vaadin/vaadin-themable-mixin": "24.0.0-alpha10",
     "construct-style-sheets-polyfill": "3.1.0",
     "copy-to-clipboard": "^3.3.1",
@@ -63,7 +63,7 @@
       "@vaadin/polymer-legacy-adapter": "24.0.0-alpha10",
       "@vaadin/router": "1.7.4",
       "@vaadin/vaadin-lumo-styles": "24.0.0-alpha10",
-      "@vaadin/vaadin-text-field": "24.0.0-alpha10",
+      "@vaadin/text-field": "24.0.0-alpha10",
       "@vaadin/vaadin-themable-mixin": "24.0.0-alpha10",
       "construct-style-sheets-polyfill": "3.1.0",
       "lit": "2.6.1"

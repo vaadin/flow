@@ -27,7 +27,7 @@ import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
  */
 @JsModule("@vaadin/text-field/vaadin-text-field.js")
 @Tag("vaadin-text-field")
-@NpmPackage(value = "@vaadin/vaadin-text-field", version = TestVersion.VAADIN)
+@NpmPackage(value = "@vaadin/text-field", version = TestVersion.VAADIN)
 public class MyPolymerField extends Component {
 
     /**
