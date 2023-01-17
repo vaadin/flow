@@ -15,6 +15,7 @@
  */
 package com.vaadin.base.devserver.viteproxy;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import jakarta.servlet.ServletContext;
 import jakarta.websocket.DeploymentException;
 import jakarta.websocket.server.ServerContainer;
 import jakarta.websocket.server.ServerEndpointConfig;
+import jakarta.websocket.server.ServerEndpointConfig.Configurator;
 
 /**
  * Creates the websocket endpoint that the Vite client JS connects to.
@@ -56,10 +58,27 @@ public class ViteWebsocketEndpointInitializer {
             return;
         }
         try {
+            // Workaround as jetty:run 11.0.13 does not find the default
+            // configurator
+            Configurator configurator = new ServerEndpointConfig.Configurator() {
+                @Override
+                public <T> T getEndpointInstance(Class<T> endpointClass)
+                        throws InstantiationException {
+                    try {
+                        return endpointClass.getDeclaredConstructor()
+                                .newInstance();
+                    } catch (IllegalAccessException | IllegalArgumentException
+                            | InvocationTargetException | NoSuchMethodException
+                            | SecurityException e) {
+                        throw new InstantiationException(e.getMessage());
+                    }
+                }
+            };
             List<String> subProtocols = Collections.singletonList("vite-hmr");
             ServerEndpointConfig endpointConfig = ServerEndpointConfig.Builder
                     .create(ViteWebsocketEndpoint.class, path)
-                    .subprotocols(subProtocols).build();
+                    .configurator(configurator).subprotocols(subProtocols)
+                    .build();
             endpointConfig.getUserProperties()
                     .put(ViteWebsocketEndpoint.VITE_PORT, port);
             container.addEndpoint(endpointConfig);
