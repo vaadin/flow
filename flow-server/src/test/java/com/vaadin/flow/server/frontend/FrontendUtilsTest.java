@@ -249,8 +249,9 @@ public class FrontendUtilsTest {
         String wrappedCommand = FrontendUtils.commandToString(".", command);
         Assert.assertEquals("\n" + "./node/node \\ \n"
                 + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \\ \n"
-                + "    --config ./webpack.config.js --port 57799 -d \\ \n"
-                + "    --env watchDogPort=57798 --inline=false --progress --colors \n", wrappedCommand);
+                + "    --config ./webpack.config.js --port 57799 \\ \n"
+                + "    --env watchDogPort=57798 -d --inline=false \\ \n"
+                + "    --progress --colors \n", wrappedCommand);
     }
 
     @Test
