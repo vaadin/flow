@@ -19,6 +19,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.net.http.WebSocket.Listener;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -34,6 +35,7 @@ import com.vaadin.base.devserver.ViteHandler;
 public class ViteWebsocketConnection implements Listener {
 
     private final Consumer<String> onMessage;
+    private WebSocket clientWebSocket;
 
     /**
      * Established a connection with a Vite server running on the given port,
@@ -57,9 +59,8 @@ public class ViteWebsocketConnection implements Listener {
         this.onMessage = onMessage;
         String wsHost = ViteHandler.DEV_SERVER_HOST.replace("http://", "ws://");
         URI uri = URI.create(wsHost + ":" + port + "/VAADIN/");
-        WebSocket clientWebSocket = HttpClient.newHttpClient()
-                .newWebSocketBuilder().subprotocols(subProtocol)
-                .buildAsync(uri, this).get();
+        clientWebSocket = HttpClient.newHttpClient().newWebSocketBuilder()
+                .subprotocols(subProtocol).buildAsync(uri, this).get();
         getLogger().debug("Connecting to {} using the {} protocol", uri,
                 clientWebSocket.getSubprotocol());
     }
@@ -84,5 +85,23 @@ public class ViteWebsocketConnection implements Listener {
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(getClass());
+    }
+
+    /**
+     * Sends the given message to the Vite server.
+     *
+     * @param message
+     *            the message to send
+     * @throws InterruptedException
+     *             if there is a problem with the connection
+     * @throws ExecutionException
+     *             if there is a problem with the connection
+     */
+    public void send(String message)
+            throws InterruptedException, ExecutionException {
+        CompletableFuture<WebSocket> send = clientWebSocket.sendText(message,
+                false);
+        send.get();
+
     }
 }

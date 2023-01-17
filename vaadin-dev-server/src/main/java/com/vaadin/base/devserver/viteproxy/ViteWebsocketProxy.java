@@ -15,8 +15,6 @@
  */
 package com.vaadin.base.devserver.viteproxy;
 
-import java.net.http.WebSocket;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
@@ -33,7 +31,7 @@ import jakarta.websocket.Session;
  */
 public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
 
-    private CompletableFuture<WebSocket> clientWebSocket;
+    private ViteWebsocketConnection viteConnection;
 
     /**
      * Creates a new proxy for the given browser-server websocket connection.
@@ -52,7 +50,7 @@ public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
      */
     public ViteWebsocketProxy(Session browserSession, Integer vitePort)
             throws InterruptedException, ExecutionException {
-        new ViteWebsocketConnection(vitePort,
+        viteConnection = new ViteWebsocketConnection(vitePort,
                 browserSession.getNegotiatedSubprotocol(), msg -> {
                     try {
                         browserSession.getBasicRemote().sendText(msg);
@@ -72,9 +70,7 @@ public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
     public void onMessage(String message) {
         getLogger().debug("Got message from browser: " + message);
         try {
-            CompletableFuture<WebSocket> send = clientWebSocket.get()
-                    .sendText(message, false);
-            send.get();
+            viteConnection.send(message);
             getLogger().debug("Sent message to Vite: " + message);
         } catch (InterruptedException | ExecutionException e) {
             getLogger().debug("Error sending message (" + message + ") to Vite",

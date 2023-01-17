@@ -44,7 +44,7 @@ public class ViteWebsocketEndpoint extends Endpoint {
             proxy = new ViteWebsocketProxy(session, vitePort);
             session.addMessageHandler(proxy);
         } catch (Exception e) {
-            getLogger().debug("Error creating Vite proxy connection", e);
+            getLogger().error("Error creating Vite proxy connection", e);
             try {
                 session.close();
             } catch (IOException e1) {

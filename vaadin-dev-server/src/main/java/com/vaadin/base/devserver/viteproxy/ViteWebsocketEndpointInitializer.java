@@ -25,7 +25,6 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 
 import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletContextListener;
 import jakarta.websocket.DeploymentException;
 import jakarta.websocket.server.ServerContainer;
 import jakarta.websocket.server.ServerEndpointConfig;
@@ -33,8 +32,7 @@ import jakarta.websocket.server.ServerEndpointConfig;
 /**
  * Creates the websocket endpoint that the Vite client JS connects to.
  */
-public class ViteWebsocketEndpointInitializer
-        implements ServletContextListener {
+public class ViteWebsocketEndpointInitializer {
 
     /**
      * Creates the websocket endpoint that Vite connects to.
