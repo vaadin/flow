@@ -35,6 +35,7 @@ public class ViteWebsocketEndpoint extends Endpoint {
     @Override
     public void onOpen(Session session, EndpointConfig config) {
         getLogger().debug("Browser connected to Vite proxy");
+        session.setMaxIdleTimeout(60000); // Vite pings every 30s so this needs to be larger
         ViteWebsocketProxy proxy;
         try {
             Integer vitePort = (Integer) config.getUserProperties()
