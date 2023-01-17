@@ -21,10 +21,8 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.websocket.CloseReason;
 import jakarta.websocket.MessageHandler;
 import jakarta.websocket.Session;
-import jakarta.websocket.CloseReason.CloseCode;
 
 /**
  * Connects a brower-server websocket connection with a server-Vite websocket

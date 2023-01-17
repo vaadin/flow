@@ -158,11 +158,18 @@ public final class ViteHandler extends AbstractDevServerRunner {
      *
      * @return the url path to the /VAADIN folder, relative to the host root
      */
-    public String getPathToVaadin() {
-        return getContextPath()
-                + FrontendUtils.getFrontendServletPath(
-                        getServletContext().getContext())
-                + "/" + VAADIN_MAPPING;
+    private String getPathToVaadin() {
+        return getContextPath() + getPathToVaadinInContext();
+    }
+
+    /**
+     * Gets the url path to the /VAADIN folder inside the context root.
+     *
+     * @return the url path to the /VAADIN folder, relative to the context root
+     */
+    public String getPathToVaadinInContext() {
+        return FrontendUtils.getFrontendServletPath(
+                getServletContext().getContext()) + "/" + VAADIN_MAPPING;
     }
 
     private String getContextPath() {

@@ -69,7 +69,7 @@ public class ViteWebsocketEndpoint extends Endpoint {
             List<String> subProtocols = Collections.singletonList("vite-hmr");
             ServerEndpointConfig endpointConfig = ServerEndpointConfig.Builder
                     .create(ViteWebsocketEndpoint.class,
-                            viteHandler.getPathToVaadin())
+                            viteHandler.getPathToVaadinInContext())
                     .subprotocols(subProtocols).build();
             endpointConfig.getUserProperties()
                     .put(ViteWebsocketEndpoint.VITE_HANDLER, viteHandler);
