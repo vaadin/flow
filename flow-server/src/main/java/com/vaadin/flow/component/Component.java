@@ -219,17 +219,7 @@ public abstract class Component
      * component's element hierarchy.
      *
      * @return the root element of this component
-     * @deprecated This is deprecated as a warning as you should never call this
-     *             method directly from your UI logic. This not planned to be
-     *             removed and calling this method is perfectly fine when
-     *             creating components/extension to be used in your application
-     *             or to be shared as add-on components. If your project
-     *             settings don't allow you to call deprecated methods
-     *             suppressing and suppressing warnings, use
-     *             {@link Element#unwrap(com.vaadin.flow.component.Component) }
-     *             instead.
      */
-    @Deprecated(forRemoval = false)
     @Override
     public Element getElement() {
         assert element != null
