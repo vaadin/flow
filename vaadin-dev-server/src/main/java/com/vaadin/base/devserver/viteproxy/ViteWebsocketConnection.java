@@ -33,7 +33,7 @@ import com.vaadin.base.devserver.ViteHandler;
  */
 public class ViteWebsocketConnection implements Listener {
 
-    private Consumer<String> onMessage;
+    private final Consumer<String> onMessage;
 
     /**
      * Established a connection with a Vite server running on the given port,
@@ -60,14 +60,15 @@ public class ViteWebsocketConnection implements Listener {
         WebSocket clientWebSocket = HttpClient.newHttpClient()
                 .newWebSocketBuilder().subprotocols(subProtocol)
                 .buildAsync(uri, this).get();
-        getLogger().debug("Connecting to " + uri + " using the "
-                + clientWebSocket.getSubprotocol() + " protocol");
+        getLogger().debug("Connecting to {} using the {} protocol", uri,
+                clientWebSocket.getSubprotocol());
     }
 
     @Override
     public void onOpen(WebSocket webSocket) {
-        getLogger().debug("Connected using the " + webSocket.getSubprotocol()
-                + " protocol");
+        getLogger().debug("Connected using the {} protocol",
+                webSocket.getSubprotocol());
+
         Listener.super.onOpen(webSocket);
     }
 
@@ -76,7 +77,7 @@ public class ViteWebsocketConnection implements Listener {
             boolean last) {
         // Message from Vite
         String msg = data.toString();
-        getLogger().debug("Message from Vite: " + msg);
+        getLogger().debug("Message from Vite: {}", msg);
         onMessage.accept(msg);
         return Listener.super.onText(webSocket, data, last);
     }
