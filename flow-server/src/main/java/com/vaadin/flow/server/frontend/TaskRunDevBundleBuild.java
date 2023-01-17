@@ -102,12 +102,14 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         if (!FrontendUtils.getDevBundleFolder(npmFolder).exists()
                 && !hasJarBundle()) {
+            getLogger().info("No dev-bundle found.");
             return true;
         }
 
         String statsJsonContent = FrontendUtils.findBundleStatsJson(npmFolder);
         if (statsJsonContent == null) {
             // without stats.json in bundle we can not say if it is up to date
+            getLogger().info("No dev-bundle stats.json found for validation.");
             return true;
         }
 
