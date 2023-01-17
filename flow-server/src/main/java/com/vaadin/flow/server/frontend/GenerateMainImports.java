@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.helpers.NOPLogger;
@@ -36,6 +38,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
 /**
@@ -95,11 +98,16 @@ public class GenerateMainImports extends AbstractUpdateImports {
         if (options.getGeneratedFolder() == null) {
             return Collections.emptySet();
         }
-        // Exclude generated-flow-imports.js as it's not a generated module.
-        return NodeUpdater.getGeneratedModules(options.getGeneratedFolder(),
-                Collections.singleton(
-                        new File(options.getGeneratedFolder(), IMPORTS_NAME)
-                                .getName()));
+        // Exclude generated-flow-imports.js and
+        // generated-flow-imports-fallback.js
+        // as they are not generated modules, but import files.
+        return NodeUpdater
+                .getGeneratedModules(options.getGeneratedFolder(), Stream
+                        .of(new File(options.getGeneratedFolder(), IMPORTS_NAME)
+                                .getName(),
+                                new File(options.getGeneratedFolder(),
+                                        FALLBACK_IMPORTS_NAME).getName())
+                        .collect(Collectors.toSet()));
     }
 
     @Override
