@@ -17,7 +17,9 @@ package com.vaadin.base.devserver.viteproxy;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 
 import jakarta.servlet.ServletContext;
+import jakarta.websocket.CloseReason;
 import jakarta.websocket.DeploymentException;
 import jakarta.websocket.Endpoint;
 import jakarta.websocket.EndpointConfig;
@@ -41,6 +44,9 @@ import jakarta.websocket.server.ServerEndpointConfig;
 public class ViteWebsocketEndpoint extends Endpoint {
 
     public static final String VITE_HANDLER = "viteServer";
+
+    private static Map<String, ViteWebsocketProxy> proxies = Collections
+            .synchronizedMap(new HashMap<>());
 
     /**
      * Creates the websocket endpoint that Vite connects to.
@@ -78,7 +84,8 @@ public class ViteWebsocketEndpoint extends Endpoint {
 
     @Override
     public void onOpen(Session session, EndpointConfig config) {
-        getLogger().debug("Browser connected to Vite proxy");
+        getLogger().debug("Browser ({}) connected to Vite proxy",
+                session.getId());
         session.setMaxIdleTimeout(60000); // Vite pings every 30s so this needs
                                           // to be larger
 
@@ -87,6 +94,7 @@ public class ViteWebsocketEndpoint extends Endpoint {
         ViteWebsocketProxy proxy;
         try {
             proxy = new ViteWebsocketProxy(session, viteHandler.getPort());
+            proxies.put(session.getId(), proxy);
             session.addMessageHandler(proxy);
         } catch (Exception e) {
             getLogger().error("Error creating Vite proxy connection", e);
@@ -96,6 +104,17 @@ public class ViteWebsocketEndpoint extends Endpoint {
                 getLogger().debug("Error closing connection", e1);
             }
         }
+    }
+
+    @Override
+    public void onClose(Session session, CloseReason closeReason) {
+        getLogger().debug("Browser ({}) closed the connection",
+                session.getId());
+        ViteWebsocketProxy proxy = proxies.remove(session.getId());
+        if (proxy != null) {
+            proxy.close();
+        }
+        super.onClose(session, closeReason);
     }
 
     private static Logger getLogger() {

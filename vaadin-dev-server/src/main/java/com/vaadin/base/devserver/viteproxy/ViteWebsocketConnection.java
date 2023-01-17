@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.ViteHandler;
 
+import jakarta.websocket.CloseReason.CloseCodes;
+
 /**
  * Communicates with a Vite server through a websocket connection.
  */
@@ -36,6 +38,11 @@ public class ViteWebsocketConnection implements Listener {
 
     private final Consumer<String> onMessage;
     private WebSocket clientWebSocket;
+    private Runnable onClose;
+
+    private Logger getLogger() {
+        return LoggerFactory.getLogger(getClass());
+    }
 
     /**
      * Established a connection with a Vite server running on the given port,
@@ -47,6 +54,8 @@ public class ViteWebsocketConnection implements Listener {
      *            the sub protocol to use
      * @param onMessage
      *            a callback to invoke when a message arrives.
+     * @param onClose
+     *            a callback to invoke if the connection to Vite is closed
      *
      * @throws InterruptedException
      *             if there is a problem with the connection
@@ -54,9 +63,10 @@ public class ViteWebsocketConnection implements Listener {
      *             if there is a problem with the connection
      */
     public ViteWebsocketConnection(int port, String subProtocol,
-            Consumer<String> onMessage)
+            Consumer<String> onMessage, Runnable onClose)
             throws InterruptedException, ExecutionException {
         this.onMessage = onMessage;
+        this.onClose = onClose;
         String wsHost = ViteHandler.DEV_SERVER_HOST.replace("http://", "ws://");
         URI uri = URI.create(wsHost + ":" + port + "/VAADIN/");
         clientWebSocket = HttpClient.newHttpClient().newWebSocketBuilder()
@@ -74,6 +84,13 @@ public class ViteWebsocketConnection implements Listener {
     }
 
     @Override
+    public CompletionStage<?> onClose(WebSocket webSocket, int statusCode,
+            String reason) {
+        onClose.run();
+        return Listener.super.onClose(webSocket, statusCode, reason);
+    }
+
+    @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data,
             boolean last) {
         // Message from Vite
@@ -81,10 +98,6 @@ public class ViteWebsocketConnection implements Listener {
         getLogger().debug("Message from Vite: {}", msg);
         onMessage.accept(msg);
         return Listener.super.onText(webSocket, data, last);
-    }
-
-    private Logger getLogger() {
-        return LoggerFactory.getLogger(getClass());
     }
 
     /**
@@ -102,6 +115,20 @@ public class ViteWebsocketConnection implements Listener {
         CompletableFuture<WebSocket> send = clientWebSocket.sendText(message,
                 false);
         send.get();
+    }
 
+    /**
+     * Closes the connection.
+     *
+     * @throws ExecutionException
+     *             if there is a problem with the connection
+     * @throws InterruptedException
+     *             if there is a problem with the connection
+     */
+    public void close() throws InterruptedException, ExecutionException {
+        getLogger().debug("Closing the connection");
+        CompletableFuture<WebSocket> closeRequest = clientWebSocket
+                .sendClose(CloseCodes.NORMAL_CLOSURE.getCode(), "");
+        closeRequest.get();
     }
 }

@@ -15,13 +15,16 @@
  */
 package com.vaadin.base.devserver.viteproxy;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.websocket.CloseReason;
 import jakarta.websocket.MessageHandler;
 import jakarta.websocket.Session;
+import jakarta.websocket.CloseReason.CloseCode;
 
 /**
  * Connects a brower-server websocket connection with a server-Vite websocket
@@ -59,6 +62,13 @@ public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
                         getLogger().debug("Error sending message to browser",
                                 e);
                     }
+                }, () -> {
+                    try {
+                        browserSession.close();
+                    } catch (IOException e) {
+                        getLogger().debug("Error closing browser connection",
+                                e);
+                    }
                 });
     }
 
@@ -77,6 +87,17 @@ public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
                     e);
         }
 
+    }
+
+    /**
+     * Terminates the connection.
+     */
+    public void close() {
+        try {
+            viteConnection.close();
+        } catch (InterruptedException | ExecutionException e) {
+            getLogger().debug("Error closing connection to Vite", e);
+        }
     }
 
 }
