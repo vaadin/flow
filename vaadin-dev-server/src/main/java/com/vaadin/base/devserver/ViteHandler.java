@@ -32,9 +32,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.base.devserver.viteproxy.ViteWebsocketEndpointInitializer;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.FrontendTools;
@@ -155,7 +153,12 @@ public final class ViteHandler extends AbstractDevServerRunner {
         return super.prepareConnection(vitePath, method);
     }
 
-    private String getPathToVaadin() {
+    /**
+     * Gets the url path to the /VAADIN folder.
+     *
+     * @return the url path to the /VAADIN folder, relative to the host root
+     */
+    public String getPathToVaadin() {
         return getContextPath()
                 + FrontendUtils.getFrontendServletPath(
                         getServletContext().getContext())
@@ -172,10 +175,4 @@ public final class ViteHandler extends AbstractDevServerRunner {
                 .getContext();
     }
 
-    @Override
-    void doStartDevModeServer() throws ExecutionFailedException {
-        super.doStartDevModeServer();
-        new ViteWebsocketEndpointInitializer(getServletContext(),
-                getPathToVaadin(), getPort());
-    }
 }

@@ -15,17 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRegistration;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -35,6 +24,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Consumer;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
@@ -45,6 +38,14 @@ import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.JsonConstants;
+
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * The main servlet, which handles all incoming requests to the application.
@@ -69,6 +70,8 @@ public class VaadinServlet extends HttpServlet {
 
     private volatile boolean isServletInitialized;
     private static String frontendMapping = null;
+
+    private static List<Runnable> whenFrontendMappingAvailable = new ArrayList<>();
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -162,6 +165,7 @@ public class VaadinServlet extends HttpServlet {
             if (definedPath != null) {
                 // Use the path define in a property
                 frontendMapping = definedPath;
+                invokeWhenFrontendMappingAvailable();
                 return;
             }
 
@@ -194,6 +198,32 @@ public class VaadinServlet extends HttpServlet {
                 getLogger().debug("Using mapping " + frontendMapping
                         + " from servlet " + getClass().getSimpleName()
                         + " as the frontend servlet because this was the first deployed VaadinServlet");
+                invokeWhenFrontendMappingAvailable();
+            }
+        }
+    }
+
+    private void invokeWhenFrontendMappingAvailable() {
+        synchronized (VaadinServlet.class) {
+            for (Runnable consumer : whenFrontendMappingAvailable) {
+                consumer.run();
+            }
+            whenFrontendMappingAvailable.clear();
+        }
+    }
+
+    /**
+     * Runs the given runnable when frontend mapping is available.
+     *
+     * @param runnable
+     *            the runnable to run
+     */
+    public static void whenFrontendMappingAvailable(Runnable runnable) {
+        synchronized (VaadinServlet.class) {
+            if (frontendMapping != null) {
+                runnable.run();
+            } else {
+                whenFrontendMappingAvailable.add(runnable);
             }
         }
     }
