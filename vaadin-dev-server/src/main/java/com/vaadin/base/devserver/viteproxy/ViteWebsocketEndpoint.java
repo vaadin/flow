@@ -44,7 +44,7 @@ public class ViteWebsocketEndpoint extends Endpoint {
 
     public static final String VITE_HANDLER = "viteServer";
 
-    private static Map<String, ViteWebsocketProxy> proxies = Collections
+    private final static Map<String, ViteWebsocketProxy> proxies = Collections
             .synchronizedMap(new HashMap<>());
 
     /**

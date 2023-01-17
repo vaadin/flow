@@ -37,8 +37,8 @@ import jakarta.websocket.CloseReason.CloseCodes;
 public class ViteWebsocketConnection implements Listener {
 
     private final Consumer<String> onMessage;
-    private WebSocket clientWebSocket;
-    private Runnable onClose;
+    private final WebSocket clientWebSocket;
+    private final Runnable onClose;
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(getClass());

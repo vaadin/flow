@@ -32,7 +32,7 @@ import jakarta.websocket.Session;
  */
 public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
 
-    private ViteWebsocketConnection viteConnection;
+    private final ViteWebsocketConnection viteConnection;
 
     /**
      * Creates a new proxy for the given browser-server websocket connection.
