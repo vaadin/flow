@@ -38,8 +38,7 @@ import jakarta.websocket.server.ServerContainer;
 import jakarta.websocket.server.ServerEndpointConfig;
 
 /**
- * The websocket endpoint for Vite, initialized by the servlet container through
- * {@link ViteWebsocketEndpointInitializer}.
+ * The websocket endpoint for Vite.
  */
 public class ViteWebsocketEndpoint extends Endpoint {
 
