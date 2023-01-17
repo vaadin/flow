@@ -300,7 +300,8 @@ public class UITest {
         List<HasElement> chain = ui.getInternals()
                 .getActiveRouterTargetsChain();
         Assert.assertEquals(1, chain.size());
-        MatcherAssert.assertThat(chain.get(0),
+        Component currentRoute = ui.getCurrentRoute().get();
+        MatcherAssert.assertThat(currentRoute,
                 CoreMatchers.instanceOf(FooBarNavigationTarget.class));
     }
 

@@ -1196,6 +1196,30 @@ public class UI extends Component
     }
 
     /**
+     * Returns the currently active route aka navigation target shown in this
+     * UI.
+     * <p>
+     * Note, that certain UIs, like embedded apps, don't support routing and for
+     * those an empty optional is returned.
+     * <p>
+     * Also, the current route might not be initialized if this method is called
+     * while still building the view chain, for example in the constructor of
+     * layouts. Thus, consider postponing the usage of this method to for
+     * example AfterNavigationEvent.
+     *
+     * @return the currently active route instance if available
+     */
+    public Optional<Component> getCurrentRoute() {
+        try {
+            return Optional.ofNullable((Component) getInternals()
+                    .getActiveRouterTargetsChain().get(0));
+        } catch (Exception e) {
+            // Current route is not always available
+            return Optional.empty();
+        }
+    }
+
+    /**
      * Gets the router used for navigating in this UI.
      *
      * @return a router
