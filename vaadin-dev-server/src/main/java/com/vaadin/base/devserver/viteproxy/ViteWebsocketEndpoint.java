@@ -20,7 +20,6 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.servlet.annotation.WebListener;
 import jakarta.websocket.Endpoint;
 import jakarta.websocket.EndpointConfig;
 import jakarta.websocket.Session;
@@ -29,7 +28,6 @@ import jakarta.websocket.Session;
  * The websocket endpoint for Vite, initialized by the servlet container through
  * {@link ViteWebsocketEndpointInitializer}.
  */
-@WebListener
 public class ViteWebsocketEndpoint extends Endpoint {
 
     static final String VITE_PORT = "vitePort";
