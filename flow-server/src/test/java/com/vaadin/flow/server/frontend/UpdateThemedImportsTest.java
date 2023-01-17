@@ -188,6 +188,64 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
                 count);
     }
 
+    @Test
+    public void directoryImportEntryIsResolvedAsIndexJS() throws Exception {
+
+        createImport("./src/directory/index.js",
+                "import { xx } from './sub1.js';");
+        createImport("./src/directory/sub1.js", "");
+        createImport("./src/main-template.js",
+                "import 'xx' from './directory';");
+
+        // create themed modules
+        createImport("./theme/myTheme/directory/index.js", "");
+        createImport("./theme/myTheme/directory/sub1.js", "");
+        createImport("./theme/myTheme/main-template.js", "");
+
+        updater.execute();
+
+        String content = FileUtils.readFileToString(importsFile,
+                Charset.defaultCharset());
+        MatcherAssert.assertThat(content, CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/main-template.js';"),
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/directory';"),
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/directory/sub1.js';")));
+    }
+
+    @Test
+    public void directoryImportEntry_avoidRecursion() throws Exception {
+
+        createImport("./src/directory/index.js",
+                "import { xx } from '../import2.js';");
+        createImport("./src/import1.js", "import { xx } from './directory/';");
+        createImport("./src/import2.js", "import 'xx' from './import1.js';");
+        createImport("./src/main-template.js",
+                "import 'xx' from './directory';");
+
+        // create themed modules
+        createImport("./theme/myTheme/directory", "");
+        createImport("./theme/myTheme/import1.js", "");
+        createImport("./theme/myTheme/import2.js", "");
+        createImport("./theme/myTheme/main-template.js", "");
+
+        updater.execute();
+
+        String content = FileUtils.readFileToString(importsFile,
+                Charset.defaultCharset());
+        MatcherAssert.assertThat(content, CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/main-template.js';"),
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/directory';"),
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/import1.js';"),
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/import2.js';")));
+    }
+
     private void createImport(String path, String content) throws IOException {
         File newFile = resolveImportFile(frontendDirectory, nodeModulesPath,
                 path);

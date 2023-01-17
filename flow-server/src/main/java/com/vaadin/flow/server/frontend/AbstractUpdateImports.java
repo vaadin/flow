@@ -494,6 +494,11 @@ abstract class AbstractUpdateImports implements Runnable {
         return getFile(base, path).isFile();
     }
 
+    private boolean isFileOrDirectory(File base, String... path) {
+        File file = getFile(base, path);
+        return file.isFile() || file.isDirectory();
+    }
+
     private boolean addCssLines(Collection<String> lines, CssData cssData,
             int i) {
         String cssFile = resolveResource(cssData.getValue());
@@ -560,7 +565,8 @@ abstract class AbstractUpdateImports implements Runnable {
     private String toValidBrowserImport(String jsImport) {
         if (jsImport.startsWith(NodeUpdater.GENERATED_PREFIX)) {
             return generatedResourcePathIntoRelativePath(jsImport);
-        } else if (isFile(options.getFrontendDirectory(), jsImport)) {
+        } else if (isFileOrDirectory(options.getFrontendDirectory(),
+                jsImport)) {
             if (!jsImport.startsWith("./")) {
                 getLogger().warn(
                         "Use the './' prefix for files in the '{}' folder: '{}', please update your annotations.",
@@ -633,7 +639,11 @@ abstract class AbstractUpdateImports implements Runnable {
             return;
         }
         Path filePath = file.toPath();
-        visitedImports.add(filePath.normalize().toString().replace("\\", "/"));
+        String normalizedPath = filePath.normalize().toString().replace("\\",
+                "/");
+        if (!visitedImports.add(normalizedPath)) {
+            return;
+        }
         try {
             visitImportsRecursively(filePath, path, theme, imports,
                     visitedImports);
@@ -659,8 +669,13 @@ abstract class AbstractUpdateImports implements Runnable {
      */
     private String resolve(String importedPath, Path moduleFile, String path) {
         String pathPrefix = moduleFile.toString();
-        pathPrefix = pathPrefix.substring(0,
-                pathPrefix.length() - path.length());
+        int pathLength = path.length();
+        // path may have been resolved as `path/index.js`, if path points to a
+        // directory
+        if (!moduleFile.endsWith(path) && moduleFile.endsWith("index.js")) {
+            pathLength += 9;
+        }
+        pathPrefix = pathPrefix.substring(0, pathPrefix.length() - pathLength);
         try {
             String resolvedPath = moduleFile.getParent().resolve(importedPath)
                     .toString();
