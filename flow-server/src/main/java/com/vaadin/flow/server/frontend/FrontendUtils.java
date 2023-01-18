@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
@@ -613,6 +615,32 @@ public class FrontendUtils {
                         addonsFolder);
         return candidateParents.stream().map(parent -> new File(parent, path))
                 .filter(File::exists).findFirst().orElse(null);
+    }
+
+    /**
+     * Get resource from JAR package.
+     *
+     * @param jarImport
+     *            jar file to get (no resource folder should be added)
+     * @return resource as String or {@code null} if not found
+     */
+    public static String getJarResourceString(String jarImport) {
+        final ClassLoader classLoader = FrontendUtils.class.getClassLoader();
+        URL resource = classLoader
+                .getResource(RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
+        if (resource == null) {
+            resource = classLoader.getResource(
+                    COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
+        }
+
+        if (resource == null) {
+            return null;
+        }
+        try (InputStream frontendContent = resource.openStream()) {
+            return FrontendUtils.streamToString(frontendContent);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static File getJarResourcesFolder(File frontendDirectory) {

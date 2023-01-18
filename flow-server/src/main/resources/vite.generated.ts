@@ -6,6 +6,7 @@
  */
 import path from 'path';
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
+import { createHash } from 'crypto';
 import * as net from 'net';
 
 import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle.js';
@@ -205,10 +206,28 @@ function statsExtracterPlugin(): PluginOption {
           .filter((line: string) => line.startsWith("import"))
           .map((line: string) => line.substring(line.indexOf("'")+1, line.lastIndexOf("'")));
 
+      const frontendFiles = { };
+      generatedImports.filter((line: string) => line.includes("generated/jar-resources")).forEach((line: string) => {
+        var filename;
+        if(line.includes('?')) {
+          filename = line.substring(line.indexOf("generated"), line.lastIndexOf('?'));
+        } else {
+          filename = line.substring(line.indexOf("generated"));
+        }
+        // \r\n from windows made files may be used ro remove to be only \n
+        const fileBuffer = readFileSync(path.resolve(frontendFolder, filename), {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+        const hash = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
+
+        const fileKey = line.substring(line.indexOf("jar-resources/") + 14);
+        // @ts-ignore
+        frontendFiles[`${fileKey}`] = hash;
+      });
+
       const stats = {
         npmModules: projectPackageJson.dependencies,
         handledModules: npmModuleAndVersion,
         bundleImports: generatedImports,
+        frontendHashes: frontendFiles,
         entryScripts,
         packageJsonHash: projectPackageJson?.vaadin?.hash
       };
