@@ -111,6 +111,9 @@
                                 <include>vite.*.ts</include>
                                 <include>types.d.ts</include>
                                 <include>tsconfig.json</include>
+                                <include>.npmrc</include>
+                                <include>.pnpmfile.cjs</include>
+                                <include>pnpm-lock.yaml</include>
                             </includes>
                         </fileset>
                         <fileset>

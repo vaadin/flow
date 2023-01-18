@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.internal;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -160,11 +162,25 @@ public final class StringUtil {
      *         returns empty String.
      */
     public static String getHash(String content) {
+        return getHash(content, StandardCharsets.UTF_16);
+    }
+
+    /**
+     * Generate hash for content using given charset for string byte encoding.
+     *
+     * @param content
+     *            content to hash
+     * @param charset
+     *            charset for encoding
+     * @return hash String for given content. In case content is null or empty *
+     *         returns empty String.
+     */
+    public static String getHash(String content, Charset charset) {
         if (content == null || content.isEmpty()) {
             return "";
         }
 
-        return bytesToHex(MessageDigestUtil.sha256(content));
+        return bytesToHex(MessageDigestUtil.sha256(content, charset));
     }
 
     private static String bytesToHex(byte[] hash) {
