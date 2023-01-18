@@ -58,4 +58,10 @@ public class BasicsIT extends ViteDevModeIT {
                 "Body should be grey, not red as specified for the component",
                 bodyColor.contains("211, 211, 211"));
     }
+
+    @Test
+    public void importFromDirectoryWorks() {
+        String importResult = $("div").id("directoryImportResult").getText();
+        Assert.assertEquals("Directory import ok", importResult);
+    }
 }
