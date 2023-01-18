@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,11 +112,12 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
 
     static Set<String> getFilesInDirectory(File targetDirectory)
             throws IOException {
-        return Files.walk(targetDirectory.toPath())
-                .filter(path -> path.toFile().isFile())
-                .map(path -> targetDirectory.toPath().relativize(path)
-                        .toString())
-                .collect(Collectors.toSet());
+        try (Stream<Path> stream = Files.walk(targetDirectory.toPath())) {
+            return stream.filter(path -> path.toFile().isFile())
+                    .map(path -> targetDirectory.toPath().relativize(path)
+                            .toString())
+                    .collect(Collectors.toSet());
+        }
     }
 
     private Logger log() {
