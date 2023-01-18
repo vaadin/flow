@@ -70,6 +70,7 @@ import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.base.devserver.stats.StatisticsSender;
 import com.vaadin.base.devserver.stats.StatisticsStorage;
+import com.vaadin.base.devserver.viteproxy.ViteWebsocketEndpoint;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandler;
@@ -365,8 +366,11 @@ public class DevModeInitializer implements Serializable {
             nodeTasksFuture.join();
             return null;
         } else {
-            return new ViteHandler(devServerLookup, port,
+            ViteHandler handler = new ViteHandler(devServerLookup, port,
                     options.getNpmFolder(), nodeTasksFuture);
+            VaadinServlet.whenFrontendMappingAvailable(
+                    () -> ViteWebsocketEndpoint.init(context, handler));
+            return handler;
         }
     }
 
