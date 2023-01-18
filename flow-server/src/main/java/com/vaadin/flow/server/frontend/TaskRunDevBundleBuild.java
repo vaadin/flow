@@ -187,12 +187,17 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                     .getString(jarImport).equals(contentHash)) {
                 faultyContent.add(jarImport);
             } else if (!frontendHashes.hasKey(jarImport)) {
-                getLogger().info("No has info for '{}'", jarImport);
+                getLogger().info("No hash info for '{}'", jarImport);
                 faultyContent.add(jarImport);
             }
         }
         if (!faultyContent.isEmpty()) {
-            getLogger().info("Faulty content for files: ", faultyContent);
+            StringBuilder faulty = new StringBuilder();
+            for (String file : faultyContent) {
+                faulty.append(" - ").append(faulty).append("\n");
+            }
+            getLogger().info("Detected changed content for jar-resource:\n{}",
+                    faulty.toString());
             return false;
         }
         return true;
