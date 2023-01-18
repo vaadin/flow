@@ -138,7 +138,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             Options options, ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies) {
 
-        // Validate frontend requirements in generated-flow-imports.js
+        // Validate frontend requirements in flow-generated-imports.js
         final GenerateMainImports generateMainImports = new GenerateMainImports(
                 finder, frontendDependencies, options, statsJson);
         generateMainImports.run();
@@ -194,7 +194,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         if (!faultyContent.isEmpty()) {
             StringBuilder faulty = new StringBuilder();
             for (String file : faultyContent) {
-                faulty.append(" - ").append(faulty).append("\n");
+                faulty.append(" - ").append(file).append("\n");
             }
             getLogger().info("Detected changed content for jar-resource:\n{}",
                     faulty.toString());

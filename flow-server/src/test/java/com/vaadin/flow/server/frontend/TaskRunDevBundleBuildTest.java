@@ -618,6 +618,9 @@ public class TaskRunDevBundleBuildTest {
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getModules())
+                .thenReturn(Collections.singletonList(
+                        "Frontend/generated/jar-resources/TodoTemplate.js"));
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -658,6 +661,9 @@ public class TaskRunDevBundleBuildTest {
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getModules())
+                .thenReturn(Collections.singletonList(
+                        "Frontend/generated/jar-resources/TodoTemplate.js"));
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -677,7 +683,7 @@ public class TaskRunDevBundleBuildTest {
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse("Jar fronted file content hash should match.",
+            Assert.assertTrue("Content should not have been validated.",
                     needsBuild);
         }
     }
@@ -696,6 +702,9 @@ public class TaskRunDevBundleBuildTest {
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getModules())
+                .thenReturn(Collections.singletonList(
+                        "Frontend/generated/jar-resources/TodoTemplate.js"));
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -716,7 +725,8 @@ public class TaskRunDevBundleBuildTest {
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse("Jar fronted file content hash should match.",
+            Assert.assertTrue(
+                    "Jar fronted file content hash should not be a match.",
                     needsBuild);
         }
     }
