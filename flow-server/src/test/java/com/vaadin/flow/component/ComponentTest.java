@@ -34,6 +34,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -1668,7 +1669,8 @@ public class ComponentTest {
     public void getTranslation_delegateToDeprecated() {
         Component component = Mockito.mock(Component.class);
         Mockito.doCallRealMethod().when(component).getTranslation(
-                Mockito.any(Locale.class), Mockito.anyString(), Mockito.any());
+                Mockito.any(Locale.class), Mockito.anyString(),
+                Mockito.any(Object[].class));
 
         component.getTranslation(Locale.GERMAN, "foo");
 
