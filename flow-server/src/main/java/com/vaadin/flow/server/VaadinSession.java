@@ -77,12 +77,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private static final String SESSION_NOT_LOCKED_MESSAGE = "Cannot access state in VaadinSession or UI without locking the session.";
 
-    /**
-     * @deprecated Use {@link InitParameters#UI_PARAMETER} instead.
-     */
-    @Deprecated
-    public static final String UI_PARAMETER = InitParameters.UI_PARAMETER;
-
     volatile boolean sessionClosedExplicitly = false;
 
     /**

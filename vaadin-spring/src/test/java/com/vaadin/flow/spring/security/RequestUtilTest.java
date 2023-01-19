@@ -17,6 +17,7 @@ import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.spring.MockVaadinContext;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import com.vaadin.flow.spring.SpringServlet;
@@ -361,7 +362,7 @@ public class RequestUtilTest {
                     "Unable find a @Route annotation");
         }
 
-        String path = RouteUtil.getRoutePath(view, route.get());
+        String path = RouteUtil.getRoutePath(new MockVaadinContext(), view);
         RouteRegistry routeRegistry = servlet.getService().getRouter()
                 .getRegistry();
         RouteTarget publicRouteTarget = Mockito.mock(RouteTarget.class);

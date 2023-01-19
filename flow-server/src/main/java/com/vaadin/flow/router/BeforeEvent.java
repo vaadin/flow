@@ -646,21 +646,6 @@ public abstract class BeforeEvent extends EventObject {
      * @throws NullPointerException
      *             if no forward target is set. Check
      *             {@link #hasForwardTarget()} before accessing this method.
-     * @deprecated use {@link #getForwardTargetRouteParameters()} instead.
-     */
-    @Deprecated
-    public List<String> getForwardTargetParameters() {
-        return forwardTargetState.getUrlParameters()
-                .orElse(Collections.emptyList());
-    }
-
-    /**
-     * Gets the URL parameters of the forward target.
-     *
-     * @return URL parameters of forward target
-     * @throws NullPointerException
-     *             if no forward target is set. Check
-     *             {@link #hasForwardTarget()} before accessing this method.
      */
     public RouteParameters getForwardTargetRouteParameters() {
         return forwardTargetState.getRouteParameters();
@@ -682,39 +667,12 @@ public abstract class BeforeEvent extends EventObject {
      * Get the route target type for rerouting.
      *
      * @return route target type
-     *
-     * @deprecated use {@link #getRerouteTargetType()} instead.
-     */
-    @Deprecated
-    public Class<? extends Component> getRouteTargetType() {
-        return getRerouteTargetType();
-    }
-
-    /**
-     * Get the route target type for rerouting.
-     *
-     * @return route target type
      * @throws NullPointerException
      *             if no reroute target is set. Check
      *             {@link #hasRerouteTarget()} before accessing this method.
      */
     public Class<? extends Component> getRerouteTargetType() {
         return rerouteTargetState.getNavigationTarget();
-    }
-
-    /**
-     * Get the URL parameters of the reroute target.
-     *
-     * @return URL parameters of reroute target
-     * @throws NullPointerException
-     *             if no reroute target is set. Check
-     *             {@link #hasRerouteTarget()} before accessing this method.
-     * @deprecated use {@link #getRerouteTargetRouteParameters()} instead.
-     */
-    @Deprecated
-    public List<String> getRerouteTargetParameters() {
-        return rerouteTargetState.getUrlParameters()
-                .orElse(Collections.emptyList());
     }
 
     /**

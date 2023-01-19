@@ -52,11 +52,6 @@ public class DefaultInstantiator implements Instantiator {
     }
 
     @Override
-    public boolean init(VaadinService service) {
-        return service == this.service;
-    }
-
-    @Override
     public Stream<VaadinServiceInitListener> getServiceInitListeners() {
         return getServiceLoaderListeners(service.getClassLoader());
     }

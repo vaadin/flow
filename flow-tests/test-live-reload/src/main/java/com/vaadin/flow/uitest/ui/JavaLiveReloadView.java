@@ -18,7 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -37,8 +37,8 @@ public class JavaLiveReloadView extends AbstractLiveReloadView {
 
     // Java triggered live reload is faked as we do not have Trava JDK in test
     private void handleClickJavaLiveReload(ClickEvent<?> event) {
-        BrowserLiveReloadAccess liveReloadAccess = VaadinService.getCurrent()
-                .getInstantiator().getOrCreate(BrowserLiveReloadAccess.class);
+        BrowserLiveReloadAccessor liveReloadAccess = VaadinService.getCurrent()
+                .getInstantiator().getOrCreate(BrowserLiveReloadAccessor.class);
         BrowserLiveReload browserLiveReload = liveReloadAccess
                 .getLiveReload(VaadinService.getCurrent());
         browserLiveReload.reload();

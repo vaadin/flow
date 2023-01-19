@@ -176,15 +176,14 @@ public abstract class RouteRegistryTestBase {
                 Arrays.asList(MiddleLayout.class, MainLayout.class));
 
         Assert.assertFalse("'MyRoute' should have a single parent",
-                getTestedRegistry()
-                        .getRouteLayouts("MyRoute", MyRouteWithAliases.class)
-                        .isEmpty());
-        Assert.assertTrue("'info' should have no parents.", getTestedRegistry()
-                .getRouteLayouts("info", MyRouteWithAliases.class).isEmpty());
+                getTestedRegistry().getNavigationRouteTarget("MyRoute")
+                        .getRouteTarget().getParentLayouts().isEmpty());
+        Assert.assertTrue("'info' should have no parents.",
+                getTestedRegistry().getNavigationRouteTarget("info")
+                        .getRouteTarget().getParentLayouts().isEmpty());
         Assert.assertEquals("'version' should return two parents", 2,
-                getTestedRegistry()
-                        .getRouteLayouts("version", MyRouteWithAliases.class)
-                        .size());
+                getTestedRegistry().getNavigationRouteTarget("version")
+                        .getRouteTarget().getParentLayouts().size());
     }
 
     @Test
@@ -201,8 +200,8 @@ public abstract class RouteRegistryTestBase {
 
         Assert.assertEquals(
                 "'version' should return two parents even when original list is changed",
-                2, getTestedRegistry().getRouteLayouts("version", MyRoute.class)
-                        .size());
+                2, getTestedRegistry().getNavigationRouteTarget("version")
+                        .getRouteTarget().getParentLayouts().size());
     }
 
     @Test
@@ -217,8 +216,9 @@ public abstract class RouteRegistryTestBase {
 
         Assert.assertArrayEquals(
                 "Registry should return parent layouts in the same order as set.",
-                parentChain.toArray(), getTestedRegistry()
-                        .getRouteLayouts("version", MyRoute.class).toArray());
+                parentChain.toArray(),
+                getTestedRegistry().getNavigationRouteTarget("version")
+                        .getRouteTarget().getParentLayouts().toArray());
     }
 
     /**

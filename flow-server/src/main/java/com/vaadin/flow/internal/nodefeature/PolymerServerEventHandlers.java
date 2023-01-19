@@ -79,12 +79,6 @@ public class PolymerServerEventHandlers
     }
 
     @Override
-    protected Class<? extends Annotation> getHandlerAnnotation() {
-        throw new UnsupportedOperationException(
-                "This method may not be invoked");
-    }
-
-    @Override
     protected String getHandlerAnnotationFqn() {
         return "com.vaadin.flow.component.polymertemplate.EventHandler";
     }

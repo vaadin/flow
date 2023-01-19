@@ -229,34 +229,6 @@ public class FrontendTools {
      *            the getter for a directory where tools will be installed if
      *            they are not found globally or in the {@code baseDir}, may be
      *            {@code null}
-     * @deprecated use
-     *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
-     *             instead, as it simplifies configuring the frontend tools and
-     *             gives the default values to configuration parameters.
-     */
-    @Deprecated
-    public FrontendTools(String baseDir,
-            Supplier<String> alternativeDirGetter) {
-        this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
-                URI.create(Platform.guess().getNodeDownloadRoot()), false,
-                false);
-    }
-
-    /**
-     * Creates an instance of the class using the {@code baseDir} as a base
-     * directory to locate the tools and the directory returned by the
-     * {@code alternativeDirGetter} as a directory to install tools if they are
-     * not found and use it as an alternative tools location.
-     * <p>
-     * If {@code alternativeDir} is {@code null} tools won't be installed.
-     *
-     *
-     * @param baseDir
-     *            the base directory to locate the tools, not {@code null}
-     * @param alternativeDirGetter
-     *            the getter for a directory where tools will be installed if
-     *            they are not found globally or in the {@code baseDir}, may be
-     *            {@code null}
      * @param forceAlternativeNode
      *            force usage of node executable from alternative directory
      * @deprecated use

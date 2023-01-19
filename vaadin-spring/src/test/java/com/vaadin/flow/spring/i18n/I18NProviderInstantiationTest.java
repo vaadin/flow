@@ -34,7 +34,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 
 @RunWith(SpringRunner.class)
@@ -88,7 +88,7 @@ public class I18NProviderInstantiationTest {
     public static Instantiator getInstantiator(ApplicationContext context)
             throws ServletException {
         Properties properties = new Properties();
-        properties.put(Constants.I18N_PROVIDER,
+        properties.put(InitParameters.I18N_PROVIDER,
                 DefaultI18NTestProvider.class.getName());
         return SpringInstantiatorTest.getService(context, properties)
                 .getInstantiator();

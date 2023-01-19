@@ -73,24 +73,6 @@ public class Router implements Serializable {
      *
      * @param ui
      *            the UI that navigation should be set up for
-     * @param initRequest
-     *            the Vaadin request that bootstraps the provided UI
-     * @deprecated use {@link #initializeUI(UI, Location)} instead
-     */
-    @Deprecated
-    public void initializeUI(UI ui, VaadinRequest initRequest) {
-        Location location = new Location(initRequest.getPathInfo(),
-                QueryParameters.full(initRequest.getParameterMap()));
-        initializeUI(ui, location);
-    }
-
-    /**
-     * Enables navigation for a new UI instance. This initializes the UI content
-     * based on the location used for loading the UI and sets up the UI to be
-     * updated when the user navigates to some other location.
-     *
-     * @param ui
-     *            the UI that navigation should be set up for
      * @param location
      *            the location object of the route
      */
