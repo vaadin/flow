@@ -40,6 +40,8 @@ public class AddOnIT extends ChromeBrowserTest {
 
         Assert.assertFalse("No package.json should be created",
                 new File(baseDir, "package.json").exists());
+        Assert.assertFalse("No package-lock.json should be created",
+                new File(baseDir, "package-lock.json").exists());
         Assert.assertFalse("No vite generated should be created",
                 new File(baseDir, "vite.generated.ts").exists());
         Assert.assertFalse("No vite config should be created",
@@ -48,5 +50,11 @@ public class AddOnIT extends ChromeBrowserTest {
                 new File(baseDir, "types.d.ts").exists());
         Assert.assertFalse("No tsconfig should be created",
                 new File(baseDir, "tsconfig.json").exists());
+        Assert.assertFalse("No package-lock.yaml should be created",
+                new File(baseDir, "package-lock.yaml").exists());
+        Assert.assertFalse("No .npmrc should be created",
+                new File(baseDir, ".npmrc").exists());
+        Assert.assertFalse("No .pnpmfile.cjs should be created",
+                new File(baseDir, ".pnpmfile.cjs").exists());
     }
 }

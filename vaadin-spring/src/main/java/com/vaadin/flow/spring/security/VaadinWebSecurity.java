@@ -24,11 +24,13 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -59,12 +61,17 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
 
@@ -102,6 +109,9 @@ public abstract class VaadinWebSecurity {
 
     @Autowired
     private RequestUtil requestUtil;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Autowired
     private ViewAccessChecker viewAccessChecker;
@@ -415,7 +425,16 @@ public abstract class VaadinWebSecurity {
                             + flowLoginView.getName());
         }
 
-        String loginPath = RouteUtil.getRoutePath(flowLoginView, route.get());
+        if (!(applicationContext instanceof WebApplicationContext)) {
+            throw new RuntimeException(
+                    "VaadinWebSecurity cannot be used without WebApplicationContext.");
+        }
+
+        VaadinServletContext vaadinServletContext = new VaadinServletContext(
+                ((WebApplicationContext) applicationContext)
+                        .getServletContext());
+        String loginPath = RouteUtil.getRoutePath(vaadinServletContext,
+                flowLoginView);
         if (!loginPath.startsWith("/")) {
             loginPath = "/" + loginPath;
         }

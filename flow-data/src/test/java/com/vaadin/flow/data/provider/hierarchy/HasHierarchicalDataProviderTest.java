@@ -233,11 +233,6 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public void setDataProvider(DataProvider<String, ?> dataProvider) {
-
-        }
-
-        @Override
         public void setDataProvider(
                 HierarchicalDataProvider<String, ?> hierarchicalDataProvider) {
 

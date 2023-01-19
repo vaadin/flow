@@ -65,6 +65,7 @@ public abstract class AbstractDevModeTest {
                 .thenReturn(appConfig);
         Mockito.when(servletContext.getClassLoader())
                 .thenReturn(servletContext.getClass().getClassLoader());
+        Mockito.when(servletContext.getContextPath()).thenReturn("");
 
         vaadinContext = new VaadinServletContext(servletContext);
 

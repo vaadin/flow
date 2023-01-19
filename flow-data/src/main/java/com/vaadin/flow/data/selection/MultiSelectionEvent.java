@@ -80,27 +80,6 @@ public class MultiSelectionEvent<C extends Component, T> extends
     }
 
     /**
-     * Gets the new selection.
-     * <p>
-     * The result is the current selection of the source listing. So it's always
-     * exactly the same as {@link #getValue()}.
-     * <p>
-     * The method will be removed in a later major version.
-     *
-     * @see #getValue()
-     * @see #getAllSelectedItems()
-     *
-     * @return an unmodifiable set of items selected after the selection was
-     *         changed
-     * @deprecated Use {@link #getValue()} or {@link #getAllSelectedItems()}
-     *             instead which are the exact replacements for this method.
-     */
-    @Deprecated
-    public Set<T> getNewSelection() {
-        return getValue();
-    }
-
-    /**
      * Gets the old selection.
      *
      * @return an unmodifiable set of items selected before the selection was
@@ -115,13 +94,13 @@ public class MultiSelectionEvent<C extends Component, T> extends
      * <p>
      * This is just a convenience method for checking what was previously
      * selected in {@link #getOldSelection()} but not selected anymore in
-     * {@link #getNewSelection()}.
+     * {@link #getValue()}.
      *
      * @return the items that were removed from selection
      */
     public Set<T> getRemovedSelection() {
         Set<T> copy = new LinkedHashSet<>(getOldValue());
-        copy.removeAll(getNewSelection());
+        copy.removeAll(getValue());
         return copy;
     }
 
@@ -129,8 +108,7 @@ public class MultiSelectionEvent<C extends Component, T> extends
      * Gets the items that were added to selection.
      * <p>
      * This is just a convenience method for checking what is new selected in
-     * {@link #getNewSelection()} and wasn't selected in
-     * {@link #getOldSelection()}.
+     * {@link #getValue()} and wasn't selected in {@link #getOldSelection()}.
      *
      * @return the items that were removed from selection
      */

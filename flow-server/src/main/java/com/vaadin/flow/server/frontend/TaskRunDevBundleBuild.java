@@ -32,6 +32,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -101,12 +102,14 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         if (!FrontendUtils.getDevBundleFolder(npmFolder).exists()
                 && !hasJarBundle()) {
+            getLogger().info("No dev-bundle found.");
             return true;
         }
 
         String statsJsonContent = FrontendUtils.findBundleStatsJson(npmFolder);
         if (statsJsonContent == null) {
             // without stats.json in bundle we can not say if it is up to date
+            getLogger().info("No dev-bundle stats.json found for validation.");
             return true;
         }
 
@@ -159,6 +162,44 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             return false;
         }
 
+        String resourcePath = "generated/jar-resources/";
+        final List<String> jarImports = imports.stream()
+                .filter(importString -> importString.contains(resourcePath))
+                .map(importString -> importString
+                        .substring(importString.indexOf(resourcePath)
+                                + resourcePath.length()))
+                .collect(Collectors.toList());
+
+        final JsonObject frontendHashes = statsJson.getObject("frontendHashes");
+        List<String> faultyContent = new ArrayList<>();
+        for (String jarImport : jarImports) {
+            final String jarResourceString = FrontendUtils
+                    .getJarResourceString(jarImport);
+            if (jarResourceString == null) {
+                getLogger().info("No file found for '{}'", jarImport);
+                return false;
+            }
+            String content = jarResourceString.replaceAll("\\r\\n", "\n");
+            final String contentHash = StringUtil.getHash(content,
+                    StandardCharsets.UTF_8);
+
+            if (frontendHashes.hasKey(jarImport) && !frontendHashes
+                    .getString(jarImport).equals(contentHash)) {
+                faultyContent.add(jarImport);
+            } else if (!frontendHashes.hasKey(jarImport)) {
+                getLogger().info("No hash info for '{}'", jarImport);
+                faultyContent.add(jarImport);
+            }
+        }
+        if (!faultyContent.isEmpty()) {
+            StringBuilder faulty = new StringBuilder();
+            for (String file : faultyContent) {
+                faulty.append(" - ").append(file).append("\n");
+            }
+            getLogger().info("Detected changed content for jar-resource:\n{}",
+                    faulty.toString());
+            return false;
+        }
         return true;
     }
 
@@ -275,8 +316,16 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         if (packageJsonFile.exists()) {
             try {
-                return Json.parse(FileUtils.readFileToString(packageJsonFile,
-                        StandardCharsets.UTF_8));
+                final JsonObject packageJson = Json
+                        .parse(FileUtils.readFileToString(packageJsonFile,
+                                StandardCharsets.UTF_8));
+                if (!packageJson.hasKey(NodeUpdater.VAADIN_DEP_KEY)
+                        || !packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
+                                .hasKey(NodeUpdater.HASH_KEY)) {
+                    updatePackageJsonWithDefaultDependencies(options,
+                            frontendDependencies, finder, packageJson);
+                }
+                return packageJson;
             } catch (IOException e) {
                 getLogger().warn("Failed to read package.json", e);
             }
@@ -288,6 +337,33 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             }
         }
         return null;
+    }
+
+    private static void updatePackageJsonWithDefaultDependencies(
+            Options options, FrontendDependenciesScanner frontendDependencies,
+            ClassFinder finder, JsonObject packageJson) {
+        // If we have executed flow:clean-frontend we will have an empty
+        // package.json with no hash field.
+        JsonObject defaultPackageJson = getDefaultPackageJson(options,
+                frontendDependencies, finder);
+
+        // Add dependencies as it should be enough to have the expected
+        // dependencies in the package.json
+        final JsonObject defaultDependencies = defaultPackageJson
+                .getObject(NodeUpdater.DEPENDENCIES);
+        for (String key : defaultDependencies.keys()) {
+            packageJson.getObject(NodeUpdater.DEPENDENCIES).put(key,
+                    defaultDependencies.getString(key));
+        }
+
+        // Add hash to package.json so we don't fail just because it is missing
+        final String hash = TaskUpdatePackages
+                .generatePackageJsonHash(packageJson);
+        if (!packageJson.hasKey(NodeUpdater.VAADIN_DEP_KEY)) {
+            packageJson.put(NodeUpdater.VAADIN_DEP_KEY, Json.createObject());
+        }
+        packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
+                .put(NodeUpdater.HASH_KEY, hash);
     }
 
     protected static JsonObject getDefaultPackageJson(Options options,

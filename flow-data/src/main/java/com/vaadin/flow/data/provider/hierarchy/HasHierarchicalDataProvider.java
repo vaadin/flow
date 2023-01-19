@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 
@@ -73,8 +72,8 @@ public interface HasHierarchicalDataProvider<T> extends Serializable {
      * <p>
      * The provided items are wrapped into a {@link TreeDataProvider} backed by
      * a flat {@link TreeData} structure. The data provider instance is used as
-     * a parameter for the {@link #setDataProvider(DataProvider)} method. It
-     * means that the items collection can be accessed later on via
+     * a parameter for the {@link #setDataProvider(HierarchicalDataProvider)}
+     * method. It means that the items collection can be accessed later on via
      * {@link #getTreeData()}:
      *
      * <pre>
@@ -117,8 +116,8 @@ public interface HasHierarchicalDataProvider<T> extends Serializable {
      * <p>
      * The provided items are wrapped into a {@link TreeDataProvider} backed by
      * a flat {@link TreeData} structure. The data provider instance is used as
-     * a parameter for the {@link #setDataProvider(DataProvider)} method. It
-     * means that the items collection can be accessed later on via
+     * a parameter for the {@link #setDataProvider(HierarchicalDataProvider)}
+     * method. It means that the items collection can be accessed later on via
      * {@link #getTreeData()}:
      *
      * <pre>
@@ -153,22 +152,6 @@ public interface HasHierarchicalDataProvider<T> extends Serializable {
         setDataProvider(new TreeDataProvider<>(
                 new TreeData<T>().addItems(rootItems, childItemProvider)));
     }
-
-    /**
-     * Sets the data provider for this listing. The data provider is queried for
-     * displayed items as needed.
-     * <p>
-     * <em>NOTE:</em> This method is here for backwards compatibility, but the
-     * implementation for it will most likely throw if the data provider is not
-     * a {@link HierarchicalDataProvider}.
-     *
-     * @param dataProvider
-     *            the data provider, not null
-     * @deprecated Use {@link #setDataProvider(HierarchicalDataProvider)}
-     *             instead as the data should be hierarchical
-     */
-    @Deprecated
-    void setDataProvider(DataProvider<T, ?> dataProvider);
 
     /**
      * Sets the hierarchical data provider for this listing. The data provider

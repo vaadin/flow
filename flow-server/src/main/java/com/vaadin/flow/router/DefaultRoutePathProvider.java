@@ -37,7 +37,21 @@ public class DefaultRoutePathProvider implements RoutePathProvider {
         if (route == null) {
             return null;
         }
-        return RouteUtil.resolve(navigationTarget, route);
+
+        if (route.value().equals(Route.NAMING_CONVENTION)) {
+            String simpleName = navigationTarget.getSimpleName();
+            if ("MainView".equals(simpleName) || "Main".equals(simpleName)) {
+                return "";
+            }
+            if (simpleName.endsWith("View")) {
+                return simpleName
+                        .substring(0, simpleName.length() - "View".length())
+                        .toLowerCase();
+            }
+            return simpleName.toLowerCase();
+        }
+        return route.value();
+
     }
 
 }

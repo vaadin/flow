@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.component.webcomponent;
 
+import java.io.Serializable;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -164,6 +166,7 @@ public class WebComponentTest {
         // JsonValue has a different number of arguments
         webComponent.setProperty(jsonConfiguration, Json.create(true));
         verify(element, Mockito.times(5)).executeJs(
-                ArgumentMatchers.anyString(), ArgumentMatchers.any());
+                ArgumentMatchers.anyString(),
+                ArgumentMatchers.any(Serializable[].class));
     }
 }
