@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -43,7 +44,20 @@ public class MessageDigestUtil {
      * @return 32 bytes making up the hash
      */
     public static byte[] sha256(String string) {
-        return getSha256().digest(string.getBytes(StandardCharsets.UTF_16));
+        return sha256(string, StandardCharsets.UTF_16);
+    }
+
+    /**
+     * Calculates the SHA-256 hash of the given string representation using the
+     * supplied charset.
+     *
+     * @param string
+     *            the string to hash
+     *
+     * @return 32 bytes making up the hash
+     */
+    public static byte[] sha256(String string, Charset charset) {
+        return getSha256().digest(string.getBytes(charset));
     }
 
     private static MessageDigest getSha256() {

@@ -78,7 +78,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     private static final String START_FAILURE = "Couldn't start dev server because";
 
-    private static final String DEV_SERVER_HOST = "http://127.0.0.1";
+    public static final String DEV_SERVER_HOST = "http://127.0.0.1";
 
     private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. ------------------\n\n";
     private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------\n\n";
