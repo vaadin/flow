@@ -35,7 +35,8 @@ public class SpringDevToolsPortHandler implements EnvironmentPostProcessor {
             SpringApplication application) {
         if (environment.getProperty(SPRING_DEVTOOLS_LIVERELOAD_PORT) == null
                 && !NetworkUtil.isFreePort(DEFAULT_PORT)) {
-            // We must set a system property and not a Spring Boot property so it survives
+            // We must set a system property and not a Spring Boot property so
+            // it survives
             // the server restart
             System.setProperty(SPRING_DEVTOOLS_LIVERELOAD_PORT,
                     NetworkUtil.getFreePort() + "");
