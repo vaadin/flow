@@ -312,7 +312,7 @@ public class NavigationStateRendererTest {
                         "ROOT.123", new Location("preserved")).isPresent());
 
         // given the recently instantiated view
-        final Component view = ui1.getCurrentRoute().get();
+        final Component view = ui1.getCurrentView().get();
 
         // given a new UI with the same window name
         MockUI ui2 = new MockUI(session);

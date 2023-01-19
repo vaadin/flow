@@ -1209,7 +1209,7 @@ public class UI extends Component
      *
      * @return the currently active route instance if available
      */
-    public Optional<Component> getCurrentRoute() {
+    public Optional<Component> getCurrentView() {
         try {
             return Optional.ofNullable((Component) getInternals()
                     .getActiveRouterTargetsChain().get(0));
