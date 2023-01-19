@@ -155,16 +155,4 @@ public class NavigationState implements Serializable {
                 HasUrlParameterFormat.getParameterValues(getRouteParameters()));
     }
 
-    /**
-     * Set the list of strings that correspond to the raw string route
-     * parameters.
-     *
-     * @param parameters
-     *            the url parameters to set
-     * @deprecated use {@link #setRouteParameters(RouteParameters)} instead.
-     */
-    @Deprecated
-    public void setUrlParameters(List<String> parameters) {
-        setRouteParameters(HasUrlParameterFormat.getParameters(parameters));
-    }
 }

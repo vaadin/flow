@@ -40,24 +40,11 @@ import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 @Import(TestServletConfiguration.class)
 public class SpringVaadinServletServiceTest {
 
-    private static final String FOO = "foo";
-
-    private static final String BAR = "bar";
-
-    private static final Properties BASE_PROPERTIES = new Properties();
-
     @Autowired
     private ApplicationContext context;
 
     @Component
     public static class TestInstantiator implements Instantiator {
-
-        @Override
-        public boolean init(VaadinService service) {
-            return Boolean.TRUE.toString()
-                    .equals(service.getDeploymentConfiguration()
-                            .getInitParameters().getProperty(FOO));
-        }
 
         @Override
         public Stream<VaadinServiceInitListener> getServiceInitListeners() {
@@ -76,48 +63,15 @@ public class SpringVaadinServletServiceTest {
         }
     }
 
-    @Component
-    public static class NonUniqueInstantiator extends TestInstantiator {
-
-        @Override
-        public boolean init(VaadinService service) {
-            return BAR.equals(service.getDeploymentConfiguration()
-                    .getInitParameters().getProperty(FOO));
-        }
-    }
-
     @Test
     public void getInstantiator_springManagedBean_instantiatorBeanReturned()
             throws ServletException {
-        Properties properties = new Properties(BASE_PROPERTIES);
-        properties.setProperty(FOO, Boolean.TRUE.toString());
         VaadinService service = SpringInstantiatorTest.getService(context,
-                properties);
+                null);
 
         Instantiator instantiator = service.getInstantiator();
 
         Assert.assertEquals(TestInstantiator.class, instantiator.getClass());
-    }
-
-    @Test
-    public void getInstantiator_javaSPIClass_instantiatorPojoReturned()
-            throws ServletException {
-        Properties properties = new Properties(BASE_PROPERTIES);
-        properties.setProperty(FOO, Boolean.FALSE.toString());
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                properties);
-
-        Instantiator instantiator = service.getInstantiator();
-
-        Assert.assertEquals(JavaSPIInstantiator.class, instantiator.getClass());
-    }
-
-    @Test(expected = ServletException.class)
-    public void getInstantiator_nonUnique_exceptionIsThrown()
-            throws ServletException {
-        Properties properties = new Properties(BASE_PROPERTIES);
-        properties.setProperty(FOO, BAR);
-        SpringInstantiatorTest.getService(context, properties);
     }
 
     @Test

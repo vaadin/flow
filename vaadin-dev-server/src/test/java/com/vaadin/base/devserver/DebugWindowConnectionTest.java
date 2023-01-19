@@ -166,9 +166,10 @@ public class DebugWindowConnectionTest {
     @Test
     public void backwardsCompatibilityClassExists() {
         // JRebel and HotswapAgent live reload triggering only works if
-        // com.vaadin.flow.internal.BrowserLiveReloadAccess exists on classpath.
+        // com.vaadin.flow.internal.BrowserLiveReloadAccessor exists on
+        // classpath.
         ClassLoader classLoader = getClass().getClassLoader();
-        String className = "com.vaadin.flow.internal.BrowserLiveReloadAccess";
+        String className = "com.vaadin.base.devserver.BrowserLiveReloadAccessorImpl";
         String methodName = "getLiveReload";
         try {
             Class<?> clazz = classLoader.loadClass(className);
