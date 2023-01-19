@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -102,6 +103,7 @@ public class NodeTasks implements FallibleCommand {
             // determine if we need a rebuild as the check happens immediately
             // and no update tasks are executed before it.
             if (!options.productionMode && options.isDevBundleBuild()) {
+                UsageStatistics.markAsUsed("flow/expressBuild", null);
                 if (TaskRunDevBundleBuild.needsBuild(options,
                         frontendDependencies, classFinder)) {
                     options.runNpmInstall(true);
