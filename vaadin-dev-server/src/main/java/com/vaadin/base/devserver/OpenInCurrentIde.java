@@ -71,18 +71,13 @@ public final class OpenInCurrentIde {
         if (isVSCode(processInfo)) {
             return Open.open("vscode://file" + absolutePath + ":" + lineNumber);
         } else if (isIdea(processInfo)) {
-            if (OSUtils.isMac()) {
-                // On Mac, the idea:// protocol works...
-                return Open.open("idea://open?file=" + absolutePath + "&line="
-                        + lineNumber);
-            } else {
-                try {
-                    run(getBinary(processInfo), "--line", lineNumber + "",
-                            absolutePath);
-                } catch (Exception e) {
-                    getLogger().error("Unable to launch IntelliJ IDEA", e);
-                }
+            try {
+                run(getBinary(processInfo), "--line", lineNumber + "",
+                        absolutePath);
+            } catch (Exception e) {
+                getLogger().error("Unable to launch IntelliJ IDEA", e);
             }
+
         } else if (isEclipse(processInfo)) {
             if (OSUtils.isMac()) {
                 try {
