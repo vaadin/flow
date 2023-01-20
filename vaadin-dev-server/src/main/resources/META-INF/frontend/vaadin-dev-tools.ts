@@ -1453,7 +1453,7 @@ export class VaadinDevTools extends LitElement {
           }
           this.componentPickActive = false;
         }}
-        @component-picker-abort=${(e: CustomEvent) => {
+        @component-picker-abort=${(_e: CustomEvent) => {
           this.componentPickActive = false;
         }}
       ></vaadin-dev-tools-component-picker>
