@@ -1546,10 +1546,26 @@ public class Element extends Node<Element> {
      * @return the element
      */
     public Element scrollIntoView() {
+        return scrollIntoView(false);
+    }
+
+    /**
+     * Executes the similarly named DOM method on the client side.
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
+     *      docs</a>
+     * @return the element
+     */
+    public Element scrollIntoView(boolean smooth) {
         // for an unknown reason, needs to be called deferred to work on a newly
         // created element
-        executeJs(
-                "var el = this; setTimeout(function() {el.scrollIntoView();}, 0);");
+        String options = "";
+        if (smooth) {
+            options = "{ behavior: 'smooth' }";
+        }
+        executeJs("var el = this; setTimeout(function() {el.scrollIntoView("
+                + options + ");}, 0);");
         return getSelf();
     }
 
