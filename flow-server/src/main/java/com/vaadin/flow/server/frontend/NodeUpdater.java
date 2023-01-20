@@ -303,11 +303,11 @@ public abstract class NodeUpdater implements FallibleCommand {
         return result;
     }
 
-    Map<String, String> getDefaultDependencies() {
+    static Map<String, String> getDefaultDependencies() {
         return readDependencies("default", "dependencies");
     }
 
-    private Map<String, String> readDependencies(String id,
+    private static Map<String, String> readDependencies(String id,
             String packageJsonKey) {
         try {
             Map<String, String> map = new HashMap<>();
@@ -319,7 +319,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
             return map;
         } catch (IOException e) {
-            log().error(
+            LoggerFactory.getLogger(NodeUpdater.class).error(
                     "Unable to read " + packageJsonKey + " from '" + id + "'",
                     e);
             return new HashMap<>();
@@ -327,8 +327,8 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     }
 
-    private JsonObject readPackageJson(String id) throws IOException {
-        try (InputStream packageJson = getClass()
+    private static JsonObject readPackageJson(String id) throws IOException {
+        try (InputStream packageJson = NodeUpdater.class
                 .getResourceAsStream("dependencies/" + id + "/package.json")) {
             JsonObject content = Json.parse(
                     IOUtils.toString(packageJson, StandardCharsets.UTF_8));
