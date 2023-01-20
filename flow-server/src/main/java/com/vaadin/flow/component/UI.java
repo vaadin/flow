@@ -1209,12 +1209,12 @@ public class UI extends Component
      *
      * @return the currently active route instance if available
      */
-    public Optional<Component> getCurrentView() {
+    public Component getCurrentView() {
         if (getInternals().getActiveRouterTargetsChain().isEmpty()) {
-            return Optional.empty();
+            throw new IllegalStateException(
+                    "Routing is not in use or not yet initialized. If you are not using embedded UI, try posponing the call to an onAttach method or to an AfterNavigationEvent listener.");
         }
-        return Optional.of((Component) getInternals()
-                .getActiveRouterTargetsChain().get(0));
+        return (Component) getInternals().getActiveRouterTargetsChain().get(0);
     }
 
     /**
