@@ -17,6 +17,7 @@ package com.vaadin.client.flow;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ClientEngineTestBase;
@@ -24,6 +25,7 @@ import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.InitialPropertiesHandler;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.binding.Binder;
+import com.vaadin.client.flow.binding.Debouncer;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
@@ -290,6 +292,78 @@ public abstract class GwtPropertyElementBinderTest
          * synchronization of one specific property.
          */
         assertSynchronized("offsetWidth");
+    }
+
+    public void testFlushPendingChangesOnDomEvent() {
+        Browser.getDocument().getBody().appendChild(element);
+        Binder.bind(node, element);
+
+        AtomicInteger commandExecution = new AtomicInteger();
+        Debouncer debouncer = Debouncer.getOrCreate(element, "on-value:false",
+                300);
+        debouncer.trigger(JsCollections.<String> set()
+                .add(JsonConstants.EVENT_PHASE_TRAILING), phase -> {
+                    if (phase == null) {
+                        commandExecution.incrementAndGet();
+                    } else if (JsonConstants.EVENT_PHASE_TRAILING
+                            .equals(phase)) {
+                        finishTest();
+                    }
+                });
+
+        String constantPoolKey = "expressionsKey";
+        JsonObject expressions = Json.createObject();
+        expressions.put(
+                JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "offsetWidth",
+                false);
+        GwtBasicElementBinderTest.addToConstantPool(constantPool,
+                constantPoolKey, expressions);
+        node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty("event1")
+                .setValue(constantPoolKey);
+        Reactive.flush();
+
+        dispatchEvent("event1");
+
+        assertEquals("Changes should have not been flushed", 0,
+                commandExecution.get());
+
+        // Wait for debouncer to be unregistered
+        delayTestFinish(1000);
+    }
+
+    public void testDoNotFlushPendingChangesOnPropertySynchronization() {
+        Browser.getDocument().getBody().appendChild(element);
+        Binder.bind(node, element);
+
+        AtomicInteger commandExecution = new AtomicInteger();
+        Debouncer debouncer = Debouncer.getOrCreate(element, "on-value:false",
+                300);
+        debouncer.trigger(JsCollections.<String> set()
+                .add(JsonConstants.EVENT_PHASE_TRAILING), phase -> {
+                    if (phase == null) {
+                        commandExecution.incrementAndGet();
+                    } else if (JsonConstants.EVENT_PHASE_TRAILING
+                            .equals(phase)) {
+                        finishTest();
+                    }
+                });
+
+        String constantPoolKey = "expressionsKey";
+        JsonObject expressions = Json.createObject();
+        node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty("event1")
+                .setValue(constantPoolKey);
+        GwtBasicElementBinderTest.addToConstantPool(constantPool,
+                constantPoolKey, expressions);
+
+        Reactive.flush();
+
+        dispatchEvent("event1");
+
+        assertEquals("Changes should have been flushed", 1,
+                commandExecution.get());
+
+        // Wait for debouncer to be unregistered
+        delayTestFinish(1000);
     }
 
     protected StateNode createNode() {
