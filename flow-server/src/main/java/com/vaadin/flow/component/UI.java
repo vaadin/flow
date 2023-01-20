@@ -1210,13 +1210,11 @@ public class UI extends Component
      * @return the currently active route instance if available
      */
     public Optional<Component> getCurrentView() {
-        try {
-            return Optional.ofNullable((Component) getInternals()
-                    .getActiveRouterTargetsChain().get(0));
-        } catch (Exception e) {
-            // Current route is not always available
+        if(getInternals().getActiveRouterTargetsChain().isEmpty()) {
             return Optional.empty();
         }
+        return Optional.of((Component) getInternals()
+                    .getActiveRouterTargetsChain().get(0));
     }
 
     /**
