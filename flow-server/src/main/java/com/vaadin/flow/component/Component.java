@@ -786,18 +786,18 @@ public abstract class Component
      * window.
      */
     public void scrollIntoView() {
-        scrollIntoView(false);
+        scrollIntoView(null);
     }
 
     /**
      * Scrolls the current component into the visible area of the browser
      * window.
      *
-     * @param smooth
-     *            true to scroll smoothly
+     * @param scrollOptions
+     *            options to define the scrolling behavior
      */
-    public void scrollIntoView(boolean smooth) {
-        getElement().scrollIntoView(smooth);
+    public void scrollIntoView(ScrollOptions scrollOptions) {
+        getElement().scrollIntoView(scrollOptions);
     }
 
     /**

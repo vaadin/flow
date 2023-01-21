@@ -31,6 +31,7 @@ import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.ScrollOptions;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
@@ -1546,7 +1547,7 @@ public class Element extends Node<Element> {
      * @return the element
      */
     public Element scrollIntoView() {
-        return scrollIntoView(false);
+        return scrollIntoView(null);
     }
 
     /**
@@ -1557,13 +1558,12 @@ public class Element extends Node<Element> {
      *      docs</a>
      * @return the element
      */
-    public Element scrollIntoView(boolean smooth) {
+    public Element scrollIntoView(ScrollOptions scrollOptions) {
         // for an unknown reason, needs to be called deferred to work on a newly
         // created element
-        String options = "";
-        if (smooth) {
-            options = "{ behavior: 'smooth' }";
-        }
+        final String options = scrollOptions == null ? ""
+                : scrollOptions.toJson();
+
         executeJs("var el = this; setTimeout(function() {el.scrollIntoView("
                 + options + ");}, 0);");
         return getSelf();
