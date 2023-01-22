@@ -22,14 +22,17 @@ export function getComponents(element: HTMLElement): ComponentReference[] {
 }
 
 function getComponent(element: HTMLElement): ComponentReference {
-  const { clients } = (window as any).Vaadin.Flow;
-  const appIds = Object.keys(clients);
-  for (const appId of appIds) {
-    const client = clients[appId];
-    if (client.getNodeId) {
-      const nodeId = client.getNodeId(element);
-      if (nodeId >= 0) {
-        return { nodeId, uiId: client.getUIId(), element };
+  const vaadin = (window as any).Vaadin;
+  if (vaadin && vaadin.Flow) {
+    const { clients } = vaadin.Flow;
+    const appIds = Object.keys(clients);
+    for (const appId of appIds) {
+      const client = clients[appId];
+      if (client.getNodeId) {
+        const nodeId = client.getNodeId(element);
+        if (nodeId >= 0) {
+          return { nodeId, uiId: client.getUIId(), element };
+        }
       }
     }
   }

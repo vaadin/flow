@@ -139,6 +139,10 @@ export class ComponentPicker extends LitElement {
 
   pickSelectedComponent() {
     const component = this.components[this.selected];
+    if (!component) {
+      this.abort();
+      return;
+    }
     this.dispatchEvent(
       new CustomEvent('component-picker-pick', {
         detail: { component: { nodeId: component.nodeId, uiId: component.uiId } }
