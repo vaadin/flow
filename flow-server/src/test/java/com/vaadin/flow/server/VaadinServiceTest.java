@@ -296,7 +296,7 @@ public class VaadinServiceTest {
         VaadinService.setCurrent(null);
 
         Assert.assertEquals(1, availableRoutes.size());
-        Assert.assertEquals(availableRoutes.get(0).getUrl(), "test");
+        Assert.assertEquals(availableRoutes.get(0).getTemplate(), "test");
     }
 
     @Test
@@ -462,7 +462,6 @@ public class VaadinServiceTest {
         Mockito.when((factory.createInstantitor(Mockito.any())))
                 .thenReturn(instantiator);
 
-        Mockito.when(instantiator.init(Mockito.any())).thenReturn(true);
         return factory;
     }
 

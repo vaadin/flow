@@ -118,7 +118,6 @@ public class RouterLayoutCustomScopeServlet extends VaadinServlet {
         protected Instantiator createInstantiator() {
             RouterLayoutCustomScopeInstantiator routerLayoutCustomScopeInstantiator = new RouterLayoutCustomScopeInstantiator(
                     this);
-            routerLayoutCustomScopeInstantiator.init(this);
             return routerLayoutCustomScopeInstantiator;
         }
     }

@@ -25,8 +25,8 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -192,12 +192,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         File packagedThemesFolder = new File(jarResourcesFolder,
                 Constants.APPLICATION_THEME_ROOT);
 
-        Collection<String> packagedThemeNames = new LinkedList<>();
+        Collection<String> packagedThemeNames = new ArrayList<>();
         if (packagedThemesFolder.exists()) {
             for (File themeFolder : Objects.requireNonNull(
                     packagedThemesFolder.listFiles(File::isDirectory),
                     "Expected at least one theme in the front-end generated themes folder")) {
-                final String packagedThemeName = themeFolder.getName();
+                String packagedThemeName = themeFolder.getName();
                 packagedThemeNames.add(packagedThemeName);
                 createStylesCssLink(indexDocument, packagedThemeName);
             }

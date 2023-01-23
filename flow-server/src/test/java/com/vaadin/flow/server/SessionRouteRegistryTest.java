@@ -247,15 +247,14 @@ public class SessionRouteRegistryTest {
                 Arrays.asList(MiddleLayout.class, MainLayout.class));
 
         Assert.assertFalse("'MyRoute' should have a single parent",
-                sessionRegistry
-                        .getRouteLayouts("MyRoute", MyRouteWithAliases.class)
-                        .isEmpty());
-        Assert.assertTrue("'info' should have no parents.", sessionRegistry
-                .getRouteLayouts("info", MyRouteWithAliases.class).isEmpty());
+                sessionRegistry.getNavigationRouteTarget("MyRoute")
+                        .getRouteTarget().getParentLayouts().isEmpty());
+        Assert.assertTrue("'info' should have no parents.",
+                sessionRegistry.getNavigationRouteTarget("info")
+                        .getRouteTarget().getParentLayouts().isEmpty());
         Assert.assertEquals("'version' should return two parents", 2,
-                sessionRegistry
-                        .getRouteLayouts("version", MyRouteWithAliases.class)
-                        .size());
+                sessionRegistry.getNavigationRouteTarget("version")
+                        .getRouteTarget().getParentLayouts().size());
     }
 
     @Test
@@ -271,7 +270,8 @@ public class SessionRouteRegistryTest {
 
         Assert.assertEquals(
                 "'version' should return two parents even when original list is changed",
-                2, registry.getRouteLayouts("version", MyRoute.class).size());
+                2, registry.getNavigationRouteTarget("version").getRouteTarget()
+                        .getParentLayouts().size());
     }
 
     @Test
@@ -286,7 +286,8 @@ public class SessionRouteRegistryTest {
         Assert.assertArrayEquals(
                 "Registry should return parent layouts in the same order as set.",
                 parentChain.toArray(),
-                registry.getRouteLayouts("version", MyRoute.class).toArray());
+                registry.getNavigationRouteTarget("version").getRouteTarget()
+                        .getParentLayouts().toArray());
     }
 
     @Test
@@ -779,7 +780,7 @@ public class SessionRouteRegistryTest {
                 removed.isEmpty());
 
         Assert.assertEquals(MyRoute.class, added.get(0).getNavigationTarget());
-        Assert.assertEquals("", added.get(0).getUrl());
+        Assert.assertEquals("", added.get(0).getTemplate());
 
         registry.setRoute("home", Secondary.class, Collections.emptyList());
 
@@ -792,7 +793,7 @@ public class SessionRouteRegistryTest {
 
         Assert.assertEquals(Secondary.class,
                 added.get(0).getNavigationTarget());
-        Assert.assertEquals("home", added.get(0).getUrl());
+        Assert.assertEquals("home", added.get(0).getTemplate());
 
         registry.removeRoute("home");
 
@@ -803,7 +804,7 @@ public class SessionRouteRegistryTest {
         Assert.assertEquals(Secondary.class,
                 removed.get(0).getNavigationTarget());
         Assert.assertEquals("The 'home' route should have been removed", "home",
-                removed.get(0).getUrl());
+                removed.get(0).getTemplate());
     }
 
     @Test
@@ -835,7 +836,7 @@ public class SessionRouteRegistryTest {
                 removed.size());
 
         for (RouteBaseData data : added) {
-            if (data.getUrl().equals("")) {
+            if (data.getTemplate().equals("")) {
                 Assert.assertEquals("MyRoute should have been added",
                         MyRoute.class, data.getNavigationTarget());
                 Assert.assertEquals(

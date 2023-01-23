@@ -106,19 +106,6 @@ public class RouteConfiguration implements Serializable {
     }
 
     /**
-     * Check if there is a registered target for the given path.
-     *
-     * @param path
-     *            path to check for route registration
-     * @return true if there exists a route for the given path
-     * @deprecated Use {@link #isPathAvailable(String)}
-     */
-    @Deprecated
-    public boolean isPathRegistered(String path) {
-        return isPathAvailable(path);
-    }
-
-    /**
      * Check if the given path is available.
      *
      * @param path

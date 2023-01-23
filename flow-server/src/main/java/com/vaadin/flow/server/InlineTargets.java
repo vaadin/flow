@@ -46,21 +46,6 @@ public class InlineTargets {
      *
      * @param inline
      *            inline dependency to add to bootstrap page
-     * @param request
-     *            the request that is handled
-     * @deprecated use {@link #addInlineDependency(Inline, VaadinService)}
-     *             instead
-     */
-    @Deprecated
-    public void addInlineDependency(Inline inline, VaadinRequest request) {
-        addInlineDependency(inline, request.getService());
-    }
-
-    /**
-     * Inline contents from classpath file to head of initial page.
-     *
-     * @param inline
-     *            inline dependency to add to bootstrap page
      * @param service
      *            the service that can find the dependency
      */

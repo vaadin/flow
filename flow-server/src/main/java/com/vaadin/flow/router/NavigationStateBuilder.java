@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import java.util.List;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.internal.RouteTarget;
 
@@ -41,26 +39,6 @@ public class NavigationStateBuilder {
     public NavigationStateBuilder(Router router) {
         currentState = new NavigationState(router);
         this.router = router;
-    }
-
-    /**
-     * Assigns the given navigation target with the given route parameters to
-     * the navigation state being built.
-     *
-     * @param navigationTarget
-     *            the navigation target
-     * @param parameters
-     *            the route parameters of the navigation target
-     * @return this builder, for chaining
-     * @deprecated use {@link #withTarget(Class, RouteParameters)} instead.
-     */
-    @Deprecated
-    public NavigationStateBuilder withTarget(
-            Class<? extends Component> navigationTarget,
-            List<String> parameters) {
-        currentState.setNavigationTarget(navigationTarget);
-        currentState.setUrlParameters(parameters);
-        return this;
     }
 
     /**

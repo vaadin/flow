@@ -57,44 +57,6 @@ public class RouteUtil {
      * Get parent layouts for navigation target according to the {@link Route}
      * or {@link RouteAlias} annotation.
      *
-     * @param component
-     *            navigation target to get parents for
-     * @param path
-     *            path used to get navigation target so we know which annotation
-     *            to handle
-     * @return parent layouts for target
-     * @deprecated Use {@link #getParentLayouts(VaadinContext, Class, String)}
-     */
-    @Deprecated
-    public static List<Class<? extends RouterLayout>> getParentLayouts(
-            Class<?> component, String path) {
-        final List<Class<? extends RouterLayout>> list = new ArrayList<>();
-
-        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
-                Route.class);
-        List<RouteAlias> routeAliases = AnnotationReader
-                .getAnnotationsFor(component, RouteAlias.class);
-        if (route.isPresent()
-                && path.equals(getRoutePath(component, route.get()))
-                && !route.get().layout().equals(UI.class)) {
-            list.addAll(collectRouteParentLayouts(route.get().layout()));
-        } else {
-
-            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
-                    component, path, routeAliases);
-            if (matchingRoute.isPresent()) {
-                list.addAll(collectRouteParentLayouts(
-                        matchingRoute.get().layout()));
-            }
-        }
-
-        return list;
-    }
-
-    /**
-     * Get parent layouts for navigation target according to the {@link Route}
-     * or {@link RouteAlias} annotation.
-     *
      * @param context
      *            a Vaadin context
      * @param component
@@ -126,27 +88,6 @@ public class RouteUtil {
         }
 
         return list;
-    }
-
-    /**
-     * Get the actual route path including all parent layout
-     * {@link RoutePrefix}.
-     *
-     * @param component
-     *            navigation target component to get route path for
-     * @param route
-     *            route annotation to check
-     * @return actual path for given route target
-     * @deprecated Use {@link #getRoutePath(VaadinContext, Class)} instead
-     */
-    @Deprecated
-    public static String getRoutePath(Class<?> component, Route route) {
-        if (route.absolute()) {
-            return resolve(component, route);
-        }
-        List<String> parentRoutePrefixes = getRoutePrefixes(component,
-                route.layout(), resolve(component, route));
-        return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
     }
 
     /**
@@ -284,52 +225,6 @@ public class RouteUtil {
      *            path used to get navigation target so we know which annotation
      *            to handle or null for error views.
      * @return top parent layout for target or null if none found
-     * @deprecated Use {@link #getTopParentLayout(VaadinContext, Class, String)}
-     *             instead
-     */
-    @Deprecated
-    public static Class<? extends RouterLayout> getTopParentLayout(
-            final Class<?> component, final String path) {
-        if (path == null) {
-            Optional<ParentLayout> parentLayout = AnnotationReader
-                    .getAnnotationFor(component, ParentLayout.class);
-            if (parentLayout.isPresent()) {
-                return recurseToTopLayout(parentLayout.get().value());
-            }
-            // No need to check for Route or RouteAlias as the path is null
-            return null;
-        }
-
-        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
-                Route.class);
-        List<RouteAlias> routeAliases = AnnotationReader
-                .getAnnotationsFor(component, RouteAlias.class);
-        if (route.isPresent()
-                && path.equals(getRoutePath(component, route.get()))
-                && !route.get().layout().equals(UI.class)) {
-            return recurseToTopLayout(route.get().layout());
-        } else {
-            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
-                    component, path, routeAliases);
-            if (matchingRoute.isPresent()) {
-                return recurseToTopLayout(matchingRoute.get().layout());
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Get the top most parent layout for navigation target according to the
-     * {@link Route} or {@link RouteAlias} annotation. Also handles non route
-     * targets with {@link ParentLayout}.
-     *
-     * @param component
-     *            navigation target to get top most parent for
-     * @param path
-     *            path used to get navigation target so we know which annotation
-     *            to handle or null for error views.
-     * @return top parent layout for target or null if none found
      */
     public static Class<? extends RouterLayout> getTopParentLayout(
             VaadinContext context, final Class<?> component,
@@ -376,37 +271,8 @@ public class RouteUtil {
     /**
      * Gets the effective route path value of the annotated class.
      *
-     * @param component
-     *            the component where the route points to
-     * @param route
-     *            the annotation
-     * @return The value of the annotation or naming convention based value if
-     *         no explicit value is given.
-     * @deprecated Use {@link #resolve(VaadinContext, Class)} or
-     *             {@link RoutePathProvider} directly instead
-     */
-    @Deprecated
-    public static String resolve(Class<?> component, Route route) {
-        if (route.value().equals(Route.NAMING_CONVENTION)) {
-            String simpleName = component.getSimpleName();
-            if ("MainView".equals(simpleName) || "Main".equals(simpleName)) {
-                return "";
-            }
-            if (simpleName.endsWith("View")) {
-                return simpleName
-                        .substring(0, simpleName.length() - "View".length())
-                        .toLowerCase();
-            }
-            return simpleName.toLowerCase();
-        }
-        return route.value();
-    }
-
-    /**
-     * Gets the effective route path value of the annotated class.
-     *
      * @param context
-     *            a Vaadin contexxt
+     *            a Vaadin context
      * @param component
      *            the component where the route points to
      * @return The value of the annotation or naming convention based value if

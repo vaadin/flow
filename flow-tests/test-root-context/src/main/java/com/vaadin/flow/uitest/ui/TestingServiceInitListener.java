@@ -46,7 +46,7 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
                 .forApplicationScope();
         // lock registry from any other updates to get registrations correctly.
         configuration.getHandledRegistry().update(() -> {
-            if (!configuration.isPathRegistered(DYNAMICALLY_REGISTERED_ROUTE)) {
+            if (!configuration.isPathAvailable(DYNAMICALLY_REGISTERED_ROUTE)) {
                 configuration.setRoute(DYNAMICALLY_REGISTERED_ROUTE,
                         DynamicallyRegisteredRoute.class);
             }

@@ -28,11 +28,6 @@ public class TestInstantiatorFactory implements InstantiatorFactory {
     public static class TestInstantiator implements Instantiator {
 
         @Override
-        public boolean init(VaadinService service) {
-            return false;
-        }
-
-        @Override
         public Stream<VaadinServiceInitListener> getServiceInitListeners() {
             return null;
         }

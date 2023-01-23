@@ -21,7 +21,10 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -65,11 +68,13 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
         }
     }
 
-    static void copyLocalResources(File source, File target) {
+    static Set<String> copyLocalResources(File source, File target) {
         if (!source.isDirectory() || !target.isDirectory()) {
-            return;
+            return Collections.emptySet();
         }
         try {
+            Set<String> handledFiles = new HashSet<>(
+                    TaskCopyFrontendFiles.getFilesInDirectory(source));
             FileUtils.copyDirectory(source, target);
             try (Stream<Path> fileStream = Files
                     .walk(Paths.get(target.getPath()))) {
@@ -77,6 +82,7 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
                 fileStream.filter(file -> !Files.isWritable(file)).forEach(
                         filePath -> filePath.toFile().setWritable(true));
             }
+            return handledFiles;
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
                     "Failed to copy project frontend resources from '%s' to '%s'",

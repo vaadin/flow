@@ -30,11 +30,6 @@ public class MockInstantiator implements Instantiator {
     }
 
     @Override
-    public boolean init(VaadinService service) {
-        return true;
-    }
-
-    @Override
     public Stream<VaadinServiceInitListener> getServiceInitListeners() {
         return Stream.of(serviceInitListeners);
     }
