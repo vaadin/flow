@@ -1561,8 +1561,7 @@ public class Element extends Node<Element> {
     public Element scrollIntoView(ScrollOptions scrollOptions) {
         // for an unknown reason, needs to be called deferred to work on a newly
         // created element
-        final String options = scrollOptions == null ? ""
-                : scrollOptions.toJson();
+        String options = scrollOptions == null ? "" : scrollOptions.toJson();
 
         executeJs("var el = this; setTimeout(function() {el.scrollIntoView("
                 + options + ");}, 0);");
