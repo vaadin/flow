@@ -101,7 +101,7 @@ public class ScrollOptions implements Serializable {
     /**
      * Sets the horizontal alignment.
      *
-     * @param block
+     * @param inline
      *            the horizontal alignment
      */
     public void setInline(Alignment inline) {

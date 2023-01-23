@@ -1556,6 +1556,8 @@ public class Element extends Node<Element> {
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
      *      docs</a>
+     * @param scrollOptions
+     *            the scroll options to pass to the method
      * @return the element
      */
     public Element scrollIntoView(ScrollOptions scrollOptions) {
