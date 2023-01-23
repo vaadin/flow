@@ -112,9 +112,15 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                                 WILDCARD_INCLUSION_APP_THEME_JAR));
             }
         }
+        log().error("Existing files = " + String.join(", ", existingFiles));
+        log().error("Handled files = " + String.join(", ", handledFiles));
         existingFiles.removeAll(handledFiles);
         existingFiles.forEach(
-                filename -> new File(targetDirectory, filename).delete());
+                filename -> {
+                    File removed = new File(targetDirectory, filename);
+                    log().error("Deleted frontend file = " + removed);
+                    removed.delete();
+                });
         long ms = (System.nanoTime() - start) / 1000000;
         log().info("Visited {} resources. Took {} ms.",
                 resourceLocations.size(), ms);
