@@ -1,5 +1,6 @@
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
 import java.util.Locale;
 
 import elemental.json.Json;
@@ -10,7 +11,7 @@ import elemental.json.JsonObject;
  * <p>
  * See https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
  **/
-public class ScrollOptions {
+public class ScrollOptions implements Serializable {
     /**
      * Scroll behavior for scrollIntoView.
      */
