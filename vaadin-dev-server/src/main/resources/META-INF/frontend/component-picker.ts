@@ -57,7 +57,6 @@ export class ComponentPicker extends LitElement {
 
     return html`
       <vaadin-dev-tools-shim
-        @keydown=${(e: KeyboardEvent) => {}}
         @shim-click=${this.shimClick}
         @shim-mousemove=${this.shimMove}
         @shim-keydown=${this.shimKeydown}
