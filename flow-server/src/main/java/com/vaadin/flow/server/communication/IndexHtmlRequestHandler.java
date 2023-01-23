@@ -19,7 +19,6 @@ import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
@@ -53,6 +52,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -72,6 +72,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
+    public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -314,8 +315,17 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             if (backend != null) {
                 devTools.attr("backend", backend.toString());
             }
-            devTools.attr("springbootlivereloadport", Integer
-                    .toString(Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT));
+            String liveReloadPort = ""
+                    + Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT;
+            VaadinContext context = service.getContext();
+            if (context instanceof VaadinServletContext vaadinServletContext) {
+                String customPort = (String) vaadinServletContext.getContext()
+                        .getAttribute(LIVE_RELOAD_PORT_ATTR);
+                if (customPort != null) {
+                    liveReloadPort = customPort;
+                }
+            }
+            devTools.attr("springbootlivereloadport", liveReloadPort);
             indexDocument.body().appendChild(devTools);
         }
     }
