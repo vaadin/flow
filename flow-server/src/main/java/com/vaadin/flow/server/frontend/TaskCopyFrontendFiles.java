@@ -136,7 +136,7 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                                 themeJson, StandardCharsets.UTF_8);
                         JsonObject json = Json.parse(themeJsonContent);
                         if (json.hasKey(ASSETS)) {
-                            final String contentHash = StringUtil.getHash(
+                            String contentHash = StringUtil.getHash(
                                     themeJsonContent, StandardCharsets.UTF_8);
                             json.put("hash", contentHash);
                             FileUtils.write(themeJson, json.toJson(),
