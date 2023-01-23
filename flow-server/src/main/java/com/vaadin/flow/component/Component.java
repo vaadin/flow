@@ -786,7 +786,18 @@ public abstract class Component
      * window.
      */
     public void scrollIntoView() {
-        getElement().scrollIntoView();
+        scrollIntoView(null);
+    }
+
+    /**
+     * Scrolls the current component into the visible area of the browser
+     * window.
+     *
+     * @param scrollOptions
+     *            options to define the scrolling behavior
+     */
+    public void scrollIntoView(ScrollOptions scrollOptions) {
+        getElement().scrollIntoView(scrollOptions);
     }
 
     /**
