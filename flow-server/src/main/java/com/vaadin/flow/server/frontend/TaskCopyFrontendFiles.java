@@ -24,11 +24,14 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
 
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
@@ -76,45 +79,28 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
         log().info("Copying frontend resources from jar files ...");
         File targetDirectory = options.getJarFrontendResourcesFolder();
         TaskCopyLocalFrontendFiles.createTargetFolder(targetDirectory);
-        Set<String> existingFiles;
-        try {
-            existingFiles = getFilesInDirectory(targetDirectory);
-        } catch (IOException e) {
-            // If we do not find the existing files, we will not delete anything
-            existingFiles = new HashSet<>();
-            log().error("Unable to list contents of the directory "
-                    + targetDirectory.getAbsolutePath());
-        }
         JarContentsManager jarContentsManager = new JarContentsManager();
-        Set<String> handledFiles = new HashSet<>();
         for (File location : resourceLocations) {
             if (location.isDirectory()) {
-                handledFiles
-                        .addAll(TaskCopyLocalFrontendFiles.copyLocalResources(
-                                new File(location, RESOURCES_FRONTEND_DEFAULT),
-                                targetDirectory));
-                handledFiles.addAll(TaskCopyLocalFrontendFiles
-                        .copyLocalResources(new File(location,
+                TaskCopyLocalFrontendFiles.copyLocalResources(
+                        new File(location, RESOURCES_FRONTEND_DEFAULT),
+                        targetDirectory);
+                TaskCopyLocalFrontendFiles.copyLocalResources(
+                        new File(location,
                                 COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT),
-                                targetDirectory));
+                        targetDirectory);
             } else {
-                handledFiles.addAll(jarContentsManager
-                        .copyIncludedFilesFromJarTrimmingBasePath(location,
-                                RESOURCES_FRONTEND_DEFAULT, targetDirectory,
-                                WILDCARD_INCLUSIONS));
-                handledFiles.addAll(jarContentsManager
-                        .copyIncludedFilesFromJarTrimmingBasePath(location,
-                                COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
-                                targetDirectory, WILDCARD_INCLUSIONS));
-                handledFiles.addAll(jarContentsManager
-                        .copyIncludedFilesFromJarTrimmingBasePath(location,
-                                RESOURCES_JAR_DEFAULT, targetDirectory,
-                                WILDCARD_INCLUSION_APP_THEME_JAR));
+                jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
+                        location, RESOURCES_FRONTEND_DEFAULT, targetDirectory,
+                        WILDCARD_INCLUSIONS);
+                jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
+                        location, COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
+                        targetDirectory, WILDCARD_INCLUSIONS);
+                jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
+                        location, RESOURCES_JAR_DEFAULT, targetDirectory,
+                        WILDCARD_INCLUSION_APP_THEME_JAR);
             }
         }
-        existingFiles.removeAll(handledFiles);
-        existingFiles.forEach(
-                filename -> new File(targetDirectory, filename).delete());
         long ms = (System.nanoTime() - start) / 1000000;
         log().info("Visited {} resources. Took {} ms.",
                 resourceLocations.size(), ms);
@@ -149,16 +135,6 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                     }
                 }
             }
-        }
-    }
-
-    static Set<String> getFilesInDirectory(File targetDirectory)
-            throws IOException {
-        try (Stream<Path> stream = Files.walk(targetDirectory.toPath())) {
-            return stream.filter(path -> path.toFile().isFile())
-                    .map(path -> targetDirectory.toPath().relativize(path)
-                            .toString())
-                    .collect(Collectors.toSet());
         }
     }
 

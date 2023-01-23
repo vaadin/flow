@@ -101,7 +101,6 @@ public class BuildFrontendMojoTest {
     private File openApiJsonFile;
     private File generatedTsFolder;
     private File tokenFile;
-    private File jarResourcesSource;
 
     private final BuildFrontendMojo mojo = Mockito.spy(new BuildFrontendMojo());
     private Lookup lookup;
@@ -142,9 +141,6 @@ public class BuildFrontendMojoTest {
         webpackOutputDirectory = new File(projectBase, VAADIN_WEBAPP_RESOURCES);
         resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
-        jarResourcesSource = new File(projectBase,
-                "jar-resources-source/META-INF/frontend");
-        jarResourcesSource.mkdirs();
 
         projectFrontendResourcesDirectory = new File(npmFolder,
                 "flow_resources");
@@ -197,8 +193,6 @@ public class BuildFrontendMojoTest {
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
                 Paths.get(projectBase.toString(), "target").toString());
-        Mockito.when(mojo.getJarFiles()).thenReturn(
-                Set.of(jarResourcesSource.getParentFile().getParentFile()));
 
         generatedFolder.mkdirs();
 
@@ -646,16 +640,10 @@ public class BuildFrontendMojoTest {
     private void createExpectedImports(File directoryWithImportsJs,
             File nodeModulesPath) throws IOException {
         for (String expectedImport : getExpectedImports()) {
-            if (expectedImport.startsWith("./generated/jar-resources/")) {
-                File newFile = new File(jarResourcesSource, expectedImport
-                        .substring("./generated/jar-resources/".length()));
-                Assert.assertTrue(newFile.createNewFile());
-            } else {
-                File newFile = resolveImportFile(directoryWithImportsJs,
-                        nodeModulesPath, expectedImport);
-                newFile.getParentFile().mkdirs();
-                Assert.assertTrue(newFile.createNewFile());
-            }
+            File newFile = resolveImportFile(directoryWithImportsJs,
+                    nodeModulesPath, expectedImport);
+            newFile.getParentFile().mkdirs();
+            Assert.assertTrue(newFile.createNewFile());
         }
     }
 
