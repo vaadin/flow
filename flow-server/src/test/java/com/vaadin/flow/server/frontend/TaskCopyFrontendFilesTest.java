@@ -71,6 +71,16 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     }
 
     @Test
+    public void should_collectJsAndCssFilesFromJars_removeExtraFiles()
+            throws IOException {
+        File dummy = new File(frontendDepsFolder, "dummy.ts");
+        frontendDepsFolder.mkdirs();
+        dummy.createNewFile();
+        should_collectJsAndCssFilesFromJars("jar-with-modern-frontend.jar",
+                "dir-with-modern-frontend");
+    }
+
+    @Test
     public void should_createPackageJson() throws IOException {
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
                 .withGeneratedFolder(generatedFolder)
