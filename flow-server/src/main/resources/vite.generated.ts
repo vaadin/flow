@@ -539,7 +539,7 @@ function showRecompileReason(): PluginOption {
 }
 
 export const vaadinConfig: UserConfigFn = (env) => {
-  const devMode = env.mode === 'development';
+  const devMode = env.mode === 'development' || devBundle;
 
   if (devMode && process.env.watchDogPort) {
     // Open a connection with the Java dev-mode handler in order to finish
