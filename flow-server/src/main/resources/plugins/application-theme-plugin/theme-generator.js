@@ -146,7 +146,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
   const componentCssFlag = themeIdentifier + 'componentCss';
 
   if (!existsSync(styles)) {
-    if (productionMode) {
+    if (productionMode && !options.useDevBundle) {
       throw new Error(`styles.css file is missing and is needed for '${themeName}' in folder '${themeFolder}'`);
     }
     writeFileSync(
