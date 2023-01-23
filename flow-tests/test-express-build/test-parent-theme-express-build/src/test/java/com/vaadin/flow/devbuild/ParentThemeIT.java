@@ -44,8 +44,7 @@ public class ParentThemeIT extends ChromeBrowserTest {
     @Before
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
-        statsJson =  new File(baseDir,
-                "dev-bundle/config/stats.json");
+        statsJson = new File(baseDir, "dev-bundle/config/stats.json");
         themeAssetsInBundle = new File(baseDir,
                 "dev-bundle/assets/themes/reusable-theme");
     }
@@ -81,8 +80,7 @@ public class ParentThemeIT extends ChromeBrowserTest {
             WebElement image = findElement(By.tagName("img"));
             if (image != null) {
                 String id = image.getAttribute("id");
-                Assert.assertEquals(
-                        "Fortawesome asset not found, but expected",
+                Assert.assertEquals("Fortawesome asset not found, but expected",
                         "snowflake", id);
                 return true;
             }
@@ -99,12 +97,12 @@ public class ParentThemeIT extends ChromeBrowserTest {
 
     private void verifyThemeJsonHash() {
         try {
-            String themeJsonContent = FileUtils.readFileToString(
-                    statsJson, StandardCharsets.UTF_8);
+            String themeJsonContent = FileUtils.readFileToString(statsJson,
+                    StandardCharsets.UTF_8);
             JsonObject json = Json.parse(themeJsonContent);
             Assert.assertTrue(json.hasKey("themeJsonHashes"));
-            Assert.assertTrue(json.getObject("themeJsonHashes")
-                    .hasKey("reusable-theme"));
+            Assert.assertTrue(
+                    json.getObject("themeJsonHashes").hasKey("reusable-theme"));
             Assert.assertFalse(json.getObject("themeJsonHashes")
                     .getString("reusable-theme").isBlank());
         } catch (IOException e) {

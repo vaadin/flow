@@ -171,9 +171,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
 
         JsonObject hashesInStats = statsJson.getObject("themeJsonHashes");
-        if (hashesInStats == null) {
-            getLogger().info(
-                    "Newly added packaged custom theme found.");
+        if (hashesInStats == null && !packagedThemeHashes.isEmpty()) {
+            getLogger().info("Found newly added packaged custom themes.");
             return true;
         }
         for (Map.Entry<String, String> themeHash : packagedThemeHashes
@@ -181,14 +180,13 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             if (hashesInStats.hasKey(themeHash.getKey())) {
                 if (!hashesInStats.getString(themeHash.getKey())
                         .equals(themeHash.getValue())) {
-                    getLogger().info(
-                            "Found updated package custom theme '{}'.",
+                    getLogger().info("Found updated package custom theme '{}'.",
                             themeHash.getKey());
                     return true;
                 }
             } else {
                 getLogger().info(
-                        "Found newly added package custom theme '{}'.",
+                        "Found newly added packaged custom theme '{}'.",
                         themeHash.getKey());
                 return true;
             }
