@@ -15,15 +15,13 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
-
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,6 +35,7 @@ import com.vaadin.flow.server.Constants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.ASSETS;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
