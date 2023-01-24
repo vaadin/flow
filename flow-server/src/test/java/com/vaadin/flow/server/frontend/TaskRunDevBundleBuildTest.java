@@ -26,9 +26,6 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 public class TaskRunDevBundleBuildTest {
-    public static final String BLANK_STATS_JSON_WITH_PACKAGE_HASH = "{\n \"npmModules\": {},\n"
-            + " \"bundleImports\": [],\n" + " \"frontendHashes\": {},\n"
-            + " \"packageJsonHash\": \"a5\"\n}";
 
     public static final String BLANK_PACKAGE_JSON_WITH_HASH = "{\n \"dependencies\": {},"
             + "\"vaadin\": { \"hash\": \"a5\"} \n}";
@@ -37,6 +34,7 @@ public class TaskRunDevBundleBuildTest {
     public static final String ENTRY_SCRIPTS = "entryScripts";
     public static final String BUNDLE_IMPORTS = "bundleImports";
     public static final String FRONTEND_HASHES = "frontendHashes";
+    public static final String THEME_JSON_HASHES = "themeJsonHashes";
     public static final String PACKAGE_JSON_HASH = "packageJsonHash";
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -57,6 +55,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject npmModules = Json.createObject();
         JsonObject frontendHashes = Json.createObject();
+        JsonObject themeJsonHashes = Json.createObject();
 
         JsonArray entryScripts = Json.createArray();
         JsonArray bundleImports = Json.createArray();
@@ -65,6 +64,7 @@ public class TaskRunDevBundleBuildTest {
         stats.put(ENTRY_SCRIPTS, entryScripts);
         stats.put(BUNDLE_IMPORTS, bundleImports);
         stats.put(FRONTEND_HASHES, frontendHashes);
+        stats.put(THEME_JSON_HASHES, themeJsonHashes);
         stats.put(PACKAGE_JSON_HASH, "aHash");
 
         // Add default npmModules
@@ -90,7 +90,11 @@ public class TaskRunDevBundleBuildTest {
             throws IOException {
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            mockStatsJson(utils, null);
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(null);
 
             final boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(
                     options, Mockito.mock(FrontendDependenciesScanner.class),
@@ -176,7 +180,10 @@ public class TaskRunDevBundleBuildTest {
     public void hashesMatch_statsMissingPackageJsonPackage_compilationRequired()
             throws IOException {
 
-        createPackageJsonStub("{\"dependencies\": {"
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson, "{\"dependencies\": {"
                 + "\"@vaadin/router\": \"1.7.4\", \"@vaadin/text\":\"1.0.0\"}, "
                 + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
@@ -729,7 +736,10 @@ public class TaskRunDevBundleBuildTest {
     public void frontendFileHashMatches_noBundleRebuild() throws IOException {
         String fileContent = "TodoContent";
 
-        createPackageJsonStub(
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
                 "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
@@ -770,7 +780,10 @@ public class TaskRunDevBundleBuildTest {
     public void noFrontendFileHash_bundleRebuild() throws IOException {
         String fileContent = "TodoContent";
 
-        createPackageJsonStub(
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
                 "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
@@ -788,12 +801,8 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            mockStatsJson(utils, "{\n" + " \"npmModules\": {\n"
-                    + "  \"@vaadin/router\": \"1.8.6\"" + "},\n"
-                    + " \"bundleImports\": [\n"
-                    + "  \"Frontend/generated/jar-resources/TodoTemplate.js\"\n"
-                    + " ],\n" + "\n" + " \"frontendHashes\": {\n" + " },"
-                    + " \"packageJsonHash\": \"a5\"\n" + "}");
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
             utils.when(
                     () -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
                     .thenReturn(fileContent);
@@ -812,7 +821,10 @@ public class TaskRunDevBundleBuildTest {
     public void frontendFileHashMissmatch_bundleRebuild() throws IOException {
         String fileContent = "TodoContent2";
 
-        createPackageJsonStub(
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
                 "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
@@ -857,9 +869,16 @@ public class TaskRunDevBundleBuildTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
+        JsonObject basicStats = getBasicStats();
+        basicStats.remove(THEME_JSON_HASHES);
+
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            mockStatsJson(utils, BLANK_STATS_JSON_WITH_PACKAGE_HASH);
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(basicStats.toJson());
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -885,10 +904,11 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            mockStatsJson(utils,
-                    "{\n \"npmModules\": {},\n" + " \"bundleImports\": [],\n"
-                            + " \"frontendHashes\": {},\n"
-                            + " \"packageJsonHash\": \"a5\"\n}");
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(getBasicStats().toJson());
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -910,10 +930,11 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            mockStatsJson(utils,
-                    "{\n \"npmModules\": {},\n" + " \"bundleImports\": [],\n"
-                            + " \"frontendHashes\": {},\n"
-                            + " \"packageJsonHash\": \"a5\"\n}");
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(getBasicStats().toJson());
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -939,7 +960,11 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            mockStatsJson(utils, BLANK_STATS_JSON_WITH_PACKAGE_HASH);
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(getBasicStats().toJson());
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -962,15 +987,17 @@ public class TaskRunDevBundleBuildTest {
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
+        JsonObject stats = getBasicStats();
+        stats.getObject(THEME_JSON_HASHES).put("other-theme",
+                "other-theme-hash");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            mockStatsJson(utils,
-                    "{\n \"npmModules\": {},\n" + " \"bundleImports\": [],\n"
-                            + " \"frontendHashes\": {},\n"
-                            + " \"themeJsonHashes\": {\n"
-                            + "   \"other-theme\": \"other-theme-hash\",\n"
-                            + " },\n" + " \"packageJsonHash\": \"a5\"\n}");
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -996,11 +1023,15 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            mockStatsJson(utils, "{\n \"npmModules\": {},\n"
-                    + " \"bundleImports\": [],\n" + " \"frontendHashes\": {},\n"
-                    + " \"themeJsonHashes\": {\n"
-                    + "   \"custom-theme\": \"custom-theme-old-hash\",\n"
-                    + " },\n" + " \"packageJsonHash\": \"a5\"\n}");
+            JsonObject stats = getBasicStats();
+            stats.getObject(THEME_JSON_HASHES).put("custom-theme",
+                    "custom-theme-old-hash");
+
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1026,12 +1057,15 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            mockStatsJson(utils,
-                    "{\n \"npmModules\": {},\n" + " \"bundleImports\": [],\n"
-                            + " \"frontendHashes\": {},\n"
-                            + " \"themeJsonHashes\": {\n"
-                            + "   \"custom-theme\": \"custom-theme-hash\",\n"
-                            + " },\n" + " \"packageJsonHash\": \"a5\"\n}");
+            JsonObject stats = getBasicStats();
+            stats.getObject(THEME_JSON_HASHES).put("custom-theme",
+                    "custom-theme-hash");
+
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1039,15 +1073,6 @@ public class TaskRunDevBundleBuildTest {
                     "Should not trigger a bundle rebuild when the themes not changed",
                     needsBuild);
         }
-    }
-
-    private void mockStatsJson(MockedStatic<FrontendUtils> utils,
-            String statsJson) {
-        utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                .thenReturn(temporaryFolder.getRoot());
-        utils.when(() -> FrontendUtils
-                .findBundleStatsJson(temporaryFolder.getRoot()))
-                .thenReturn(statsJson);
     }
 
     private void createPackageJsonStub(String content) throws IOException {
