@@ -97,6 +97,8 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                         .copyLocalResources(new File(location,
                                 COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT),
                                 targetDirectory));
+                // copies from resources, but excludes already copied from
+                // resources/frontend
                 handledFiles
                         .addAll(TaskCopyLocalFrontendFiles.copyLocalResources(
                                 new File(location, RESOURCES_JAR_DEFAULT),
@@ -156,10 +158,12 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
         }
     }
 
-    static Set<String> getFilesInDirectory(File targetDirectory)
-            throws IOException {
+    static Set<String> getFilesInDirectory(File targetDirectory,
+            String... relativePathExclusions) throws IOException {
         try (Stream<Path> stream = Files.walk(targetDirectory.toPath())) {
-            return stream.filter(path -> path.toFile().isFile())
+            return stream.filter(path -> path.toFile().isFile()
+                    && TaskCopyLocalFrontendFiles.notExcluded(targetDirectory,
+                            relativePathExclusions, path.toFile()))
                     .map(path -> targetDirectory.toPath().relativize(path)
                             .toString())
                     .collect(Collectors.toSet());

@@ -22,12 +22,10 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -71,14 +69,28 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
         }
     }
 
+    /**
+     * Copies the local resources from specified source directory to within the
+     * specified target directory ignoring the file exclusions defined as a
+     * relative paths to source directory.
+     *
+     * @param source
+     *            directory to copy the files from
+     * @param target
+     *            directory to copy the files to
+     * @param relativePathExclusions
+     *            files or directories that shouldn't be copied, relative to
+     *            source directory
+     * @return set of copied files
+     */
     static Set<String> copyLocalResources(File source, File target,
             String... relativePathExclusions) {
         if (!source.isDirectory() || !target.isDirectory()) {
             return Collections.emptySet();
         }
         try {
-            Set<String> handledFiles = new HashSet<>(
-                    TaskCopyFrontendFiles.getFilesInDirectory(source));
+            Set<String> handledFiles = new HashSet<>(TaskCopyFrontendFiles
+                    .getFilesInDirectory(source, relativePathExclusions));
             FileUtils.copyDirectory(source, target,
                     withoutExclusions(source, relativePathExclusions));
             try (Stream<Path> fileStream = Files
@@ -95,19 +107,6 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
         }
     }
 
-    private static FileFilter withoutExclusions(File source,
-            String[] relativePathExclusions) {
-        return file -> {
-            for (String exclusion : relativePathExclusions) {
-                File basePath = new File(source, exclusion);
-                if (file.getPath().startsWith(basePath.getPath())) {
-                    return false;
-                }
-            }
-            return true;
-        };
-    }
-
     static void createTargetFolder(File target) {
         try {
             FileUtils.forceMkdir(Objects.requireNonNull(target));
@@ -116,6 +115,22 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
                     String.format("Failed to create directory '%s'", target),
                     e);
         }
+    }
+
+    static boolean notExcluded(File source, String[] relativePathExclusions,
+            File fileToCheck) {
+        for (String exclusion : relativePathExclusions) {
+            File basePath = new File(source, exclusion);
+            if (fileToCheck.getPath().startsWith(basePath.getPath())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static FileFilter withoutExclusions(File source,
+            String[] relativePathExclusions) {
+        return file -> notExcluded(source, relativePathExclusions, file);
     }
 
     private static Logger log() {
