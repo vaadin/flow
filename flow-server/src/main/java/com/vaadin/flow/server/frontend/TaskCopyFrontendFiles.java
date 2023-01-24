@@ -100,7 +100,7 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                 handledFiles
                         .addAll(TaskCopyLocalFrontendFiles.copyLocalResources(
                                 new File(location, RESOURCES_JAR_DEFAULT),
-                                targetDirectory));
+                                targetDirectory, FrontendUtils.FRONTEND));
             } else {
                 handledFiles.addAll(jarContentsManager
                         .copyIncludedFilesFromJarTrimmingBasePath(location,

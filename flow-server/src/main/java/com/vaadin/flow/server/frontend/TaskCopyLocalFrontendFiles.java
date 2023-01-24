@@ -16,15 +16,18 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -68,14 +71,16 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
         }
     }
 
-    static Set<String> copyLocalResources(File source, File target) {
+    static Set<String> copyLocalResources(File source, File target,
+            String... relativePathExclusions) {
         if (!source.isDirectory() || !target.isDirectory()) {
             return Collections.emptySet();
         }
         try {
             Set<String> handledFiles = new HashSet<>(
                     TaskCopyFrontendFiles.getFilesInDirectory(source));
-            FileUtils.copyDirectory(source, target);
+            FileUtils.copyDirectory(source, target,
+                    withoutExclusions(source, relativePathExclusions));
             try (Stream<Path> fileStream = Files
                     .walk(Paths.get(target.getPath()))) {
                 // used with try-with-resources as defined in walk API note
@@ -88,6 +93,19 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
                     "Failed to copy project frontend resources from '%s' to '%s'",
                     source, target), e);
         }
+    }
+
+    private static FileFilter withoutExclusions(File source,
+            String[] relativePathExclusions) {
+        return file -> {
+            for (String exclusion : relativePathExclusions) {
+                File basePath = new File(source, exclusion);
+                if (file.getPath().startsWith(basePath.getPath())) {
+                    return false;
+                }
+            }
+            return true;
+        };
     }
 
     static void createTargetFolder(File target) {
