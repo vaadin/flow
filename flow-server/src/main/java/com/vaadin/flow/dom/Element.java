@@ -31,6 +31,7 @@ import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.ScrollOptions;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
@@ -1546,10 +1547,26 @@ public class Element extends Node<Element> {
      * @return the element
      */
     public Element scrollIntoView() {
+        return scrollIntoView(null);
+    }
+
+    /**
+     * Executes the similarly named DOM method on the client side.
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
+     *      docs</a>
+     * @param scrollOptions
+     *            the scroll options to pass to the method
+     * @return the element
+     */
+    public Element scrollIntoView(ScrollOptions scrollOptions) {
         // for an unknown reason, needs to be called deferred to work on a newly
         // created element
-        executeJs(
-                "var el = this; setTimeout(function() {el.scrollIntoView();}, 0);");
+        String options = scrollOptions == null ? "" : scrollOptions.toJson();
+
+        executeJs("var el = this; setTimeout(function() {el.scrollIntoView("
+                + options + ");}, 0);");
         return getSelf();
     }
 

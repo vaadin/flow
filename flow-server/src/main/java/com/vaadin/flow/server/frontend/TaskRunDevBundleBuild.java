@@ -299,7 +299,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         String bundlePackageJsonHash = getStatsHash(statsJson);
 
         if (packageJsonHash == null || packageJsonHash.isEmpty()) {
-            getLogger().warn("No hash found for 'package.json'.");
+            getLogger().error(
+                    "No hash found for 'package.json' even though one should always be generated!");
             return false;
         }
 
@@ -369,6 +370,20 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         return expectedVersion.isEqualTo(actualVersion);
     }
 
+    /**
+     * Get the package.json file from disk if available else generate in memory.
+     * <p>
+     * For the loaded file update versions as per in memory to get correct
+     * application versions.
+     *
+     * @param options
+     *            the task options
+     * @param frontendDependencies
+     *            frontend dependency scanner
+     * @param finder
+     *            classfinder
+     * @return package.json content as JsonObject
+     */
     private static JsonObject getPackageJson(Options options,
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder) {
@@ -379,19 +394,14 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 final JsonObject packageJson = Json
                         .parse(FileUtils.readFileToString(packageJsonFile,
                                 StandardCharsets.UTF_8));
-                if (!packageJson.hasKey(NodeUpdater.VAADIN_DEP_KEY)
-                        || !packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
-                                .hasKey(NodeUpdater.HASH_KEY)) {
-                    updatePackageJsonWithDefaultDependencies(options,
-                            frontendDependencies, finder, packageJson);
-                }
-                return packageJson;
+                return getDefaultPackageJson(options, frontendDependencies,
+                        finder, packageJson);
             } catch (IOException e) {
                 getLogger().warn("Failed to read package.json", e);
             }
         } else {
             JsonObject packageJson = getDefaultPackageJson(options,
-                    frontendDependencies, finder);
+                    frontendDependencies, finder, null);
             if (packageJson != null) {
                 return packageJson;
             }
@@ -399,36 +409,9 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         return null;
     }
 
-    private static void updatePackageJsonWithDefaultDependencies(
-            Options options, FrontendDependenciesScanner frontendDependencies,
-            ClassFinder finder, JsonObject packageJson) {
-        // If we have executed flow:clean-frontend we will have an empty
-        // package.json with no hash field.
-        JsonObject defaultPackageJson = getDefaultPackageJson(options,
-                frontendDependencies, finder);
-
-        // Add dependencies as it should be enough to have the expected
-        // dependencies in the package.json
-        final JsonObject defaultDependencies = defaultPackageJson
-                .getObject(NodeUpdater.DEPENDENCIES);
-        for (String key : defaultDependencies.keys()) {
-            packageJson.getObject(NodeUpdater.DEPENDENCIES).put(key,
-                    defaultDependencies.getString(key));
-        }
-
-        // Add hash to package.json so we don't fail just because it is missing
-        final String hash = TaskUpdatePackages
-                .generatePackageJsonHash(packageJson);
-        if (!packageJson.hasKey(NodeUpdater.VAADIN_DEP_KEY)) {
-            packageJson.put(NodeUpdater.VAADIN_DEP_KEY, Json.createObject());
-        }
-        packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
-                .put(NodeUpdater.HASH_KEY, hash);
-    }
-
     protected static JsonObject getDefaultPackageJson(Options options,
             FrontendDependenciesScanner frontendDependencies,
-            ClassFinder finder) {
+            ClassFinder finder, JsonObject packageJson) {
         NodeUpdater nodeUpdater = new NodeUpdater(finder, frontendDependencies,
                 options) {
             @Override
@@ -436,8 +419,22 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             }
         };
         try {
-            JsonObject packageJson = nodeUpdater.getPackageJson();
+            if (packageJson == null) {
+                packageJson = nodeUpdater.getPackageJson();
+            }
+            nodeUpdater.addVaadinDefaultsToJson(packageJson);
             nodeUpdater.updateDefaultDependencies(packageJson);
+
+            final Map<String, String> applicationDependencies = frontendDependencies
+                    .getPackages();
+
+            // Add application dependencies
+            for (Map.Entry<String, String> dep : applicationDependencies
+                    .entrySet()) {
+                nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES,
+                        dep.getKey(), dep.getValue());
+            }
+
             final String hash = TaskUpdatePackages
                     .generatePackageJsonHash(packageJson);
             packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
