@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
@@ -51,8 +52,79 @@ public class ComponentTracker {
     /**
      * Represents a location in the source code.
      */
-    public record Location(String className, String filename, String methodName, int lineNumber)
-            implements Serializable {
+    public static class Location implements Serializable {
+        private String className;
+        private String filename;
+        private String methodName;
+        private int lineNumber;
+
+        public Location(String className, String filename, String methodName,
+                int lineNumber) {
+            this.className = className;
+            this.filename = filename;
+            this.methodName = methodName;
+            this.lineNumber = lineNumber;
+        }
+
+        public String getClassName() {
+            return className;
+        }
+
+        public void setClassName(String className) {
+            this.className = className;
+        }
+
+        public String getFilename() {
+            return filename;
+        }
+
+        public void setFilename(String filename) {
+            this.filename = filename;
+        }
+
+        public String getMethodName() {
+            return methodName;
+        }
+
+        public void setMethodName(String methodName) {
+            this.methodName = methodName;
+        }
+
+        public int getLineNumber() {
+            return lineNumber;
+        }
+
+        public void setLineNumber(int lineNumber) {
+            this.lineNumber = lineNumber;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+
+            Location location = (Location) o;
+
+            if (lineNumber != location.lineNumber)
+                return false;
+            if (!Objects.equals(className, location.className))
+                return false;
+            if (!Objects.equals(filename, location.filename))
+                return false;
+            return Objects.equals(methodName, location.methodName);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = className != null ? className.hashCode() : 0;
+            result = 31 * result + (filename != null ? filename.hashCode() : 0);
+            result = 31 * result
+                    + (methodName != null ? methodName.hashCode() : 0);
+            result = 31 * result + lineNumber;
+            return result;
+        }
     }
 
     /**
@@ -126,7 +198,7 @@ public class ComponentTracker {
     }
 
     private static boolean isNavigatorCreate(Location location) {
-        return location.className()
+        return location.getClassName()
                 .equals(AbstractNavigationStateRenderer.class.getName());
     }
 
@@ -147,7 +219,7 @@ public class ComponentTracker {
         if (preferredClass != null) {
             Optional<StackTraceElement> preferredCandidate = candidates.stream()
                     .filter(e -> e.getClassName()
-                            .equals(preferredClass.className()))
+                            .equals(preferredClass.getClassName()))
                     .findFirst();
             if (preferredCandidate.isPresent()) {
                 return toLocation(preferredCandidate.get());

@@ -26,27 +26,30 @@ public enum SortDirection {
     /**
      * Ascending (e.g. A-Z, 1..9) sort order
      */
-    ASCENDING {
-        @Override
-        public SortDirection getOpposite() {
-            return DESCENDING;
-        }
-    },
+    ASCENDING(Constants.ASCENDING_OPPOSITE),
 
     /**
      * Descending (e.g. Z-A, 9..1) sort order
      */
-    DESCENDING {
-        @Override
-        public SortDirection getOpposite() {
-            return ASCENDING;
-        }
-    };
+    DESCENDING(Constants.DESCENDING_OPPOSITE);
+
+    private final SortDirection opposite;
+
+    SortDirection(SortDirection opposite) {
+        this.opposite = opposite;
+    }
 
     /**
      * Get the sort direction that is the direct opposite to this one.
      *
      * @return a sort direction value
      */
-    public abstract SortDirection getOpposite();
+    public SortDirection getOpposite() {
+        return opposite;
+    }
+
+    private static class Constants {
+        public static final SortDirection ASCENDING_OPPOSITE = DESCENDING;
+        public static final SortDirection DESCENDING_OPPOSITE = ASCENDING;
+    }
 }
