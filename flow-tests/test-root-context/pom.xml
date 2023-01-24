@@ -13,7 +13,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <vaadin.allow.appshell.annotations>true</vaadin.allow.appshell.annotations>
-        <vaadin.enableDevServer>false</vaadin.enableDevServer>
+        <vaadin.frontend.hotdeploy>false</vaadin.frontend.hotdeploy>
     </properties>
 
     <dependencies>

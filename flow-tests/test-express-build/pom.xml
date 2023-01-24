@@ -13,6 +13,10 @@
     <name>Flow Express Build Tests</name>
     <packaging>pom</packaging>
 
+    <properties>
+        <vaadin.frontend.hotdeploy>false</vaadin.frontend.hotdeploy>
+    </properties>
+
     <modules>
         <module>test-dev-bundle</module>
         <module>frontend-add-on</module>
