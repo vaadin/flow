@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2022 Vaadin Ltd
+ *    Copyright 2000-2023 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package com.vaadin.gradle
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.frontend.FrontendTools
 import org.gradle.api.DefaultTask
-import org.gradle.api.Task
-import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.tasks.TaskAction
 
 /**
@@ -33,17 +31,18 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
         group = "Vaadin"
         description = "checks that node and npm tools are installed, copies frontend resources available inside `.jar` dependencies to `node_modules`, and creates or updates `package.json` and `webpack.config.json` files."
 
+        val extension: VaadinFlowPluginExtension = VaadinFlowPluginExtension.get(project)
         // Maven's task run in the LifecyclePhase.PROCESS_RESOURCES phase
 
         // the processResources copies stuff from build/vaadin-generated
         // (which is populated by this task) and therefore must run after this task.
-        project.tasks.getByName("processResources").mustRunAfter("vaadinPrepareFrontend")
+        project.tasks.getByName(extension.processResourcesTaskName!!).mustRunAfter("vaadinPrepareFrontend")
 
         // make sure all dependent projects have finished building their jars, otherwise
         // the Vaadin classpath scanning will not work properly. See
         // https://github.com/vaadin/vaadin-gradle-plugin/issues/38
         // for more details.
-        dependsOn(project.configurations.runtimeClasspath.jars)
+        dependsOn(project.configurations.getByName(extension.dependencyScope!!).jars)
     }
 
     @TaskAction
