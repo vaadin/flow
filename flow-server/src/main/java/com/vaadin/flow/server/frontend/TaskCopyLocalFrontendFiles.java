@@ -117,7 +117,7 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
         }
     }
 
-    static boolean notExcluded(File source, String[] relativePathExclusions,
+    static boolean keepFile(File source, String[] relativePathExclusions,
             File fileToCheck) {
         for (String exclusion : relativePathExclusions) {
             File basePath = new File(source, exclusion);
@@ -130,7 +130,7 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
 
     private static FileFilter withoutExclusions(File source,
             String[] relativePathExclusions) {
-        return file -> notExcluded(source, relativePathExclusions, file);
+        return file -> keepFile(source, relativePathExclusions, file);
     }
 
     private static Logger log() {

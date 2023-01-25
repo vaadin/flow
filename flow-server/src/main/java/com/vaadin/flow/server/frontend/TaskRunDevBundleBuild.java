@@ -27,14 +27,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -54,6 +57,9 @@ import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
  * For internal use only. May be renamed or removed in a future release.
  */
 public class TaskRunDevBundleBuild implements FallibleCommand {
+
+    private static final Pattern THEME_PATH_PATTERN = Pattern
+            .compile("themes\\/([\\s\\S]+?)\\/theme.json");
 
     private final Options options;
 
@@ -143,29 +149,37 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
     private static boolean packagedThemeAddedOrUpdated(Options options,
             JsonObject statsJson) {
-        File packagedThemesFolder = new File(
-                options.getJarFrontendResourcesFolder(), "themes");
-        if (!packagedThemesFolder.exists()) {
+        JarContentsManager jarContentsManager = new JarContentsManager();
+        Map<String, String> packagedThemeHashes = new HashMap<>(1);
+
+        if (options.jarFiles == null) {
             return false;
         }
 
-        Map<String, String> packagedThemeHashes = new HashMap<>(1);
-        for (File packagedThemeFolder : Objects.requireNonNull(
-                packagedThemesFolder.listFiles(File::isDirectory),
-                "Expected at least one theme in the front-end generated themes folder")) {
-            File themeJson = new File(packagedThemeFolder, "theme.json");
-            try {
-                if (themeJson.exists()) {
-                    String themeJsonContent = FileUtils.readFileToString(
-                            themeJson, StandardCharsets.UTF_8);
-                    JsonObject json = Json.parse(themeJsonContent);
-                    if (json.hasKey("hash")) {
-                        packagedThemeHashes.put(packagedThemeFolder.getName(),
-                                json.getString("hash"));
+        for (File jarFile : options.jarFiles) {
+            if (jarContentsManager.containsPath(jarFile,
+                    Constants.RESOURCES_THEME_JAR_DEFAULT)) {
+                List<String> themeJsons = jarContentsManager.findFiles(jarFile,
+                        Constants.RESOURCES_THEME_JAR_DEFAULT, "theme.json");
+                themeJsons.forEach(themeJson -> {
+                    byte[] byteContent = jarContentsManager
+                            .getFileContents(jarFile, themeJson);
+                    String content = IOUtils.toString(byteContent, "UTF-8");
+                    content = content.replaceAll("\\r\\n", "\n");
+
+                    JsonObject themeJsonContent = Json.parse(content);
+                    if (themeJsonContent.hasKey(Constants.ASSETS)) {
+                        Matcher matcher = THEME_PATH_PATTERN.matcher(themeJson);
+                        if (!matcher.find()) {
+                            throw new IllegalStateException(
+                                    "Packaged theme folders structure is incorrect, should have META-INF/resources/themes/[theme-name]/");
+                        }
+                        String themeName = matcher.group(1);
+                        String hash = StringUtil.getHash(content,
+                                StandardCharsets.UTF_8);
+                        packagedThemeHashes.put(themeName, hash);
                     }
-                }
-            } catch (IOException e) {
-                getLogger().error("Failed to read a hash from {}", themeJson);
+                });
             }
         }
 

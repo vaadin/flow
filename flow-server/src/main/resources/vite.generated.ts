@@ -229,9 +229,11 @@ function statsExtracterPlugin(): PluginOption {
         readdirSync(themesFolder).forEach((themeFolder) => {
           const themeJson = path.resolve(themesFolder, themeFolder, "theme.json");
           if (existsSync(themeJson)) {
-            const themeJsonContent = JSON.parse(readFileSync(themeJson, { encoding: 'utf8' }));
-            const hash = themeJsonContent.hash;
-            if (hash) {
+            const themeJsonContent = readFileSync(themeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+            const themeJsonContentAsJson = JSON.parse(themeJsonContent);
+            const assets = themeJsonContentAsJson.assets;
+            if (assets) {
+              const hash = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
               themeJsonHashes[`${path.basename(themeFolder)}`] = hash;
             }
           }

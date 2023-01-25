@@ -20,6 +20,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.flow.testutil.TestUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -47,6 +48,7 @@ public class TaskRunDevBundleBuildTest {
     public void init() {
         options = new Options(Mockito.mock(Lookup.class),
                 temporaryFolder.getRoot()).withBuildDirectory("target");
+        options.copyResources(Collections.emptySet());
         finder = Mockito.mock(ClassFinder.class);
     }
 
@@ -892,6 +894,8 @@ public class TaskRunDevBundleBuildTest {
     public void reusedTheme_newlyAddedTheme_noThemeJson_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        File jarWithTheme = TestUtils.getTestJar("jar-with-no-theme-json.jar");
+        options.copyResources(Collections.singleton(jarWithTheme));
 
         // create custom-theme folder with no theme.json
         File jarResourcesFolder = new File(temporaryFolder.getRoot(),
@@ -922,8 +926,8 @@ public class TaskRunDevBundleBuildTest {
     public void reusedTheme_newlyAddedTheme_noAssets_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        mockThemeJson(
-                "{\"lumoImports\":[\"typography\",\"color\",\"spacing\",\"badge\",\"utility\"]}");
+        File jarWithTheme = TestUtils.getTestJar("jar-with-no-assets.jar");
+        options.copyResources(Collections.singleton(jarWithTheme));
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -949,11 +953,9 @@ public class TaskRunDevBundleBuildTest {
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        mockThemeJson("{\n" + "  \"assets\": {\n"
-                + "    \"@my-asset/my-asset-subdir\": {\n"
-                + "      \"my-asset-rules\": \"my-asset-target-folder\"\n"
-                + "    }\n" + "  },\n" + "  \"hash\": \"custom-theme-hash\"\n"
-                + "}");
+        File jarWithTheme = TestUtils
+                .getTestJar("jar-with-theme-json-and-assets.jar");
+        options.copyResources(Collections.singleton(jarWithTheme));
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -979,11 +981,9 @@ public class TaskRunDevBundleBuildTest {
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        mockThemeJson("{\n" + "  \"assets\": {\n"
-                + "    \"@my-asset/my-asset-subdir\": {\n"
-                + "      \"my-asset-rules\": \"my-asset-target-folder\"\n"
-                + "    }\n" + "  },\n" + "  \"hash\": \"custom-theme-hash\"\n"
-                + "}");
+        File jarWithTheme = TestUtils
+                .getTestJar("jar-with-theme-json-and-assets.jar");
+        options.copyResources(Collections.singleton(jarWithTheme));
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1012,11 +1012,9 @@ public class TaskRunDevBundleBuildTest {
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        mockThemeJson("{\n" + "  \"assets\": {\n"
-                + "    \"@my-asset/my-asset-subdir\": {\n"
-                + "      \"my-asset-new-rules\": \"my-asset-target-folder\"\n"
-                + "    }\n" + "  },\n"
-                + "  \"hash\": \"custom-theme-new-hash\"\n" + "}");
+        File jarWithTheme = TestUtils
+                .getTestJar("jar-with-theme-json-and-assets.jar");
+        options.copyResources(Collections.singleton(jarWithTheme));
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1024,8 +1022,8 @@ public class TaskRunDevBundleBuildTest {
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             JsonObject stats = getBasicStats();
-            stats.getObject(THEME_JSON_HASHES).put("custom-theme",
-                    "custom-theme-old-hash");
+            stats.getObject(THEME_JSON_HASHES).put("reusable-theme",
+                    "theme-old-hash");
 
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
@@ -1046,11 +1044,9 @@ public class TaskRunDevBundleBuildTest {
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        mockThemeJson("{\n" + "  \"assets\": {\n"
-                + "    \"@my-asset/my-asset-subdir\": {\n"
-                + "      \"my-asset-rules\": \"my-asset-target-folder\"\n"
-                + "    }\n" + "  },\n" + "  \"hash\": \"custom-theme-hash\"\n"
-                + "}");
+        File jarWithTheme = TestUtils
+                .getTestJar("jar-with-theme-json-and-assets.jar");
+        options.copyResources(Collections.singleton(jarWithTheme));
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1058,8 +1054,8 @@ public class TaskRunDevBundleBuildTest {
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             JsonObject stats = getBasicStats();
-            stats.getObject(THEME_JSON_HASHES).put("custom-theme",
-                    "custom-theme-hash");
+            stats.getObject(THEME_JSON_HASHES).put("reusable-theme",
+                    "8a7121398c0c3871458fffcaa62f70f90fdd9714aded63b553ba9068e5fb3b71");
 
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
@@ -1081,21 +1077,5 @@ public class TaskRunDevBundleBuildTest {
         boolean created = packageJson.createNewFile();
         Assert.assertTrue(created);
         FileUtils.write(packageJson, content, StandardCharsets.UTF_8);
-    }
-
-    private void mockThemeJson(String content) throws IOException {
-        File jarResourcesFolder = new File(temporaryFolder.getRoot(),
-                "frontend/generated/jar-resources");
-        boolean created = jarResourcesFolder.mkdirs();
-        Assert.assertTrue(created);
-
-        File themeJson = new File(jarResourcesFolder,
-                "/themes/custom-theme/theme.json");
-        FileUtils.createParentDirectories(themeJson);
-        created = themeJson.createNewFile();
-        Assert.assertTrue(created);
-
-        FileUtils.write(themeJson, content, StandardCharsets.UTF_8);
-        options.withJarFrontendResourcesFolder(jarResourcesFolder);
     }
 }

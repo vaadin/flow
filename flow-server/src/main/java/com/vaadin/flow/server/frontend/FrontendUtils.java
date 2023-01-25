@@ -646,8 +646,8 @@ public class FrontendUtils {
     }
 
     /**
-     * Get the folder the front-end resources from JAR dependencies are copied
-     * into.
+     * Get the front-end resources folder. This is where the contents of JAR
+     * dependencies are copied to.
      *
      * @param frontendDirectory
      *            project's frontend directory
