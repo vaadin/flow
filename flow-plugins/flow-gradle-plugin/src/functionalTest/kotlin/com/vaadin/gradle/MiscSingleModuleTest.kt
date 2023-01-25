@@ -24,6 +24,9 @@ import kotlin.test.expect
 import org.junit.Ignore
 
 class MiscSingleModuleTest : AbstractGradleTest() {
+
+    val springBootVersion = "2.2.4.RELEASE"
+
     /**
      * Tests https://github.com/vaadin/vaadin-gradle-plugin/issues/26
      */
@@ -253,8 +256,6 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     private fun doTestSpringProjectProductionMode(compressedExtension: String = "*.br") {
-
-        val springBootVersion = "2.2.4.RELEASE"
 
         testProject.buildFile.writeText(
                 """
@@ -536,7 +537,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
             plugins {
                 id 'java'
-                id 'org.springframework.boot' version '2.7.6'
+                id 'org.springframework.boot' version '${springBootVersion}'
                 id 'io.spring.dependency-management' version '1.0.11.RELEASE'
                 id("com.vaadin")
             }
