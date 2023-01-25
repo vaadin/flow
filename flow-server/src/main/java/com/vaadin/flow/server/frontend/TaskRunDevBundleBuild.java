@@ -156,32 +156,36 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             return false;
         }
 
-        for (File jarFile : options.jarFiles) {
-            if (jarContentsManager.containsPath(jarFile,
-                    Constants.RESOURCES_THEME_JAR_DEFAULT)) {
-                List<String> themeJsons = jarContentsManager.findFiles(jarFile,
-                        Constants.RESOURCES_THEME_JAR_DEFAULT, "theme.json");
-                themeJsons.forEach(themeJson -> {
-                    byte[] byteContent = jarContentsManager
-                            .getFileContents(jarFile, themeJson);
-                    String content = IOUtils.toString(byteContent, "UTF-8");
-                    content = content.replaceAll("\\r\\n", "\n");
+        options.jarFiles.stream().filter(File::exists)
+                .filter(file -> !file.isDirectory()).forEach(jarFile -> {
+                    if (jarContentsManager.containsPath(jarFile,
+                            Constants.RESOURCES_THEME_JAR_DEFAULT)) {
+                        List<String> themeJsons = jarContentsManager.findFiles(
+                                jarFile, Constants.RESOURCES_THEME_JAR_DEFAULT,
+                                "theme.json");
+                        themeJsons.forEach(themeJson -> {
+                            byte[] byteContent = jarContentsManager
+                                    .getFileContents(jarFile, themeJson);
+                            String content = IOUtils.toString(byteContent,
+                                    "UTF-8");
+                            content = content.replaceAll("\\r\\n", "\n");
 
-                    JsonObject themeJsonContent = Json.parse(content);
-                    if (themeJsonContent.hasKey(Constants.ASSETS)) {
-                        Matcher matcher = THEME_PATH_PATTERN.matcher(themeJson);
-                        if (!matcher.find()) {
-                            throw new IllegalStateException(
-                                    "Packaged theme folders structure is incorrect, should have META-INF/resources/themes/[theme-name]/");
-                        }
-                        String themeName = matcher.group(1);
-                        String hash = StringUtil.getHash(content,
-                                StandardCharsets.UTF_8);
-                        packagedThemeHashes.put(themeName, hash);
+                            JsonObject themeJsonContent = Json.parse(content);
+                            if (themeJsonContent.hasKey(Constants.ASSETS)) {
+                                Matcher matcher = THEME_PATH_PATTERN
+                                        .matcher(themeJson);
+                                if (!matcher.find()) {
+                                    throw new IllegalStateException(
+                                            "Packaged theme folders structure is incorrect, should have META-INF/resources/themes/[theme-name]/");
+                                }
+                                String themeName = matcher.group(1);
+                                String hash = StringUtil.getHash(content,
+                                        StandardCharsets.UTF_8);
+                                packagedThemeHashes.put(themeName, hash);
+                            }
+                        });
                     }
                 });
-            }
-        }
 
         JsonObject hashesInStats = statsJson.getObject("themeJsonHashes");
         if (hashesInStats == null && !packagedThemeHashes.isEmpty()) {
