@@ -564,6 +564,6 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
-        expectArchiveContainsVaadinBundle(jar, true)
+        expectArchiveContainsVaadinWebpackBundle(jar, true)
     }
 }
