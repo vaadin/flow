@@ -39,6 +39,8 @@ public class BasicComponentIT extends ChromeDeviceTest {
 
     private String sessionId;
 
+    private String hotdeploy;
+
     @Before
     public void init() throws Exception {
         setup(8888);
@@ -98,6 +100,8 @@ public class BasicComponentIT extends ChromeDeviceTest {
     }
 
     public void setup(int port) throws Exception {
+        hotdeploy = System.getProperty("vaadin.frontend.hotdeploy");
+        System.setProperty("vaadin.frontend.hotdeploy", "true");
         server = new Server();
         try (ServerConnector connector = new ServerConnector(server)) {
             connector.setPort(port);
@@ -131,6 +135,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
             context = null;
         } finally {
             server.stop();
+            System.setProperty("vaadin.frontend.hotdeploy", hotdeploy);
         }
     }
 }
