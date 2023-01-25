@@ -489,7 +489,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
             plugins {
                 id 'java'
-                id 'org.springframework.boot' version '2.7.6'
+                id 'org.springframework.boot' version '2.2.4.RELEASE'
                 id 'io.spring.dependency-management' version '1.0.11.RELEASE'
                 id("com.vaadin")
             }
