@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2022 Vaadin Ltd
+ *    Copyright 2000-2023 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -519,5 +519,98 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         expect(listOf("flow-client-", "flow-html-components-", "flow-lit-template-", "flow-polymer-template-", "flow-push-", "flow-server-")) {
             classpath.map { it.removeSuffix("-SNAPSHOT.jar").dropLastWhile { it != '-' } }
         }
+    }
+
+    @Test
+    fun testUsingNonMainSourceSet() {
+        testProject.settingsFile.writeText(
+            """
+            pluginManagement {
+                repositories {
+                  gradlePluginPortal()
+                }
+              }
+            """
+        )
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id 'org.springframework.boot' version '3.0.0'
+                id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+                id("com.vaadin")
+            }
+            
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            
+            sourceSets {
+                ui {
+                    java
+                }
+                main {
+                    java {
+                        compileClasspath += ui.output
+                        runtimeClasspath += ui.output + ui.runtimeClasspath
+                    }
+                }
+            }
+            
+            vaadin {
+                productionMode = true
+                sourceSetName = 'ui'
+            }
+            
+            dependencies {
+                uiImplementation('com.vaadin:flow:$flowVersion')
+                implementation('org.springframework.boot:spring-boot-starter-web')
+            }
+            
+            jar {
+                enabled = false
+            }
+            """
+        )
+
+        testProject.newFile(
+            "src/main/java/com/example/demo/DemoApplication.java", """
+            package com.example.demo;
+            
+            import org.springframework.boot.SpringApplication;
+            import org.springframework.boot.autoconfigure.SpringBootApplication;
+            
+            @SpringBootApplication
+            public class DemoApplication {
+            
+                public static void main(String[] args) {
+                    SpringApplication.run(DemoApplication.class, args);
+                }
+            
+            }
+        """.trimIndent()
+        )
+
+        testProject.newFile(
+            "src/ui/java/com/example/demo/AppShell.java", """
+            package com.example.demo;
+            
+            import com.vaadin.flow.component.page.AppShellConfigurator;
+            import com.vaadin.flow.server.PWA;
+
+            @PWA(name = "Demo application", shortName = "Demo")
+            public class AppShell implements AppShellConfigurator {
+            }
+        """.trimIndent()
+        )
+
+        val build: BuildResult = testProject.build("build")
+        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskSucceded("vaadinBuildFrontend")
+
+        val jar: File = testProject.builtJar
+        expectArchiveContainsVaadinBundle(jar, true)
     }
 }
