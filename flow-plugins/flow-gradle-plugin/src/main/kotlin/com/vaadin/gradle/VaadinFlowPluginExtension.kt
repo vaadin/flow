@@ -205,6 +205,27 @@ public open class VaadinFlowPluginExtension(project: Project) {
 
     public var classpathFilter: ClasspathFilter = ClasspathFilter()
 
+    /**
+     * The name of the SourceSet to scan for Vaadin components - i.e. the classes that are annoated with
+     * Vaadin annotations.
+     */
+    public var sourceSetName : String = "main"
+
+    /**
+     * The Gradle scope the Vaadin dependencies have been added to. Defaults to 'runtimeClasspath' if
+     * no sourceSetName has been specified, or '<code>sourceSetName</code>RuntimeClasspath' if a non-main sourceset
+     * has been set.
+     */
+    public var dependencyScope : String? = null
+
+    /**
+     * The Gradle task that the `vaadinPrepareFrontend` task must run before. The target task should run before
+     * or be the task that copies the files from the resources directories of the specified SourceSet to the relevant
+     * output directory for that SourceSet. Defaults to 'processResources' if no sourceSetName has been specified, or
+     * 'process<code>SourceSetName</code>Resources' if a non-main sourceset has been specified.
+     */
+    public var processResourcesTaskName : String? = null
+
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>? = null): ClasspathFilter {
         if (block != null) {
             block.delegate = classpathFilter
@@ -254,6 +275,24 @@ public open class VaadinFlowPluginExtension(project: Project) {
         if (useGlobalPnpmProperty != null) {
             useGlobalPnpm = useGlobalPnpmProperty
         }
+
+        // calculate processResourcesTaskName if not set by user
+        if (processResourcesTaskName == null) {
+            processResourcesTaskName = if (sourceSetName == "main") {
+                "processResources"
+            } else {
+                "process${sourceSetName.replaceFirstChar(Char::titlecase)}Resources"
+            }
+        }
+
+        // calculate dependencyScope if not set by user
+        if (dependencyScope == null) {
+            dependencyScope = if (sourceSetName == "main") {
+                "runtimeClasspath"
+            } else  {
+                sourceSetName + "RuntimeClasspath"
+            }
+        }
     }
 
     override fun toString(): String = "VaadinFlowPluginExtension(" +
@@ -283,10 +322,13 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "nodeDownloadRoot=$nodeDownloadRoot, " +
             "nodeAutoUpdate=$nodeAutoUpdate" +
             "resourceOutputDirectory=$resourceOutputDirectory" +
+            "sourceSetName=$sourceSetName, " +
+            "dependencyScope=$dependencyScope, " +
+            "processResourcesTaskName=$processResourcesTaskName" +
             ")"
 }
 
 internal val Project.buildResourcesDir: File get() {
     val sourceSets: SourceSetContainer = project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets
-    return sourceSets.getByName("main").output.resourcesDir!!
+    return sourceSets.getByName(extensions.getByType(VaadinFlowPluginExtension::class.java).sourceSetName).output.resourcesDir!!
 }

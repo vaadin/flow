@@ -48,10 +48,10 @@ public class VaadinPlugin : Plugin<Project> {
 
             // add a new source-set folder for generated stuff, by default `vaadin-generated`
             val sourceSets: SourceSetContainer = it.properties["sourceSets"] as SourceSetContainer
-            sourceSets.getByName("main").resources.srcDirs(extension.resourceOutputDirectory)
+            sourceSets.getByName(extension.sourceSetName).resources.srcDirs(extension.resourceOutputDirectory)
 
             // auto-activate tasks: https://github.com/vaadin/vaadin-gradle-plugin/issues/48
-            project.tasks.getByPath("processResources").dependsOn("vaadinPrepareFrontend")
+            project.tasks.getByPath(extension.processResourcesTaskName!!).dependsOn("vaadinPrepareFrontend")
             if (extension.productionMode) {
                 // this will also catch the War task since it extends from Jar
                 project.tasks.withType(Jar::class.java) { task: Jar ->
