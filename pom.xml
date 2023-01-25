@@ -108,7 +108,7 @@
         <maven.clean.plugin.version>3.2.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>9.0.0.alpha6</testbench.version>
-        <webdrivermanager.version>5.3.1</webdrivermanager.version>
+        <webdrivermanager.version>5.3.2</webdrivermanager.version>
         <jetty.version>11.0.13</jetty.version>
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
 
