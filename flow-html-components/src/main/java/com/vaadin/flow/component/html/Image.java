@@ -36,11 +36,9 @@ import com.vaadin.flow.server.StreamResource;
 public class Image extends HtmlContainer
         implements ClickNotifier<Image>, HasAriaLabel {
 
+    private static final String ALT_ATTRIBUTE = "alt";
     private static final PropertyDescriptor<String, String> srcDescriptor = PropertyDescriptors
             .attributeWithDefault("src", "");
-
-    private static final PropertyDescriptor<String, Optional<String>> altDescriptor = PropertyDescriptors
-            .optionalAttributeWithDefault("alt", "");
 
     /**
      * Creates a new empty image.
@@ -65,7 +63,7 @@ public class Image extends HtmlContainer
      */
     public Image(String src, String alt) {
         setSrc(src);
-        getElement().setProperty("alt", alt);
+        setAlt(alt);
     }
 
     /**
@@ -84,7 +82,7 @@ public class Image extends HtmlContainer
      */
     public Image(AbstractStreamResource src, String alt) {
         setSrc(src);
-        getElement().setProperty("alt", alt);
+        setAlt(alt);
     }
 
     /**
@@ -123,7 +121,12 @@ public class Image extends HtmlContainer
      *            the alternate text
      */
     public void setAlt(String alt) {
-        set(altDescriptor, alt);
+        if (alt == null) {
+            getElement().removeAttribute(ALT_ATTRIBUTE);
+        } else {
+            // Also an empty string should be set as alt
+            getElement().setAttribute(ALT_ATTRIBUTE, alt);
+        }
     }
 
     /**
@@ -133,6 +136,6 @@ public class Image extends HtmlContainer
      *         text has been set
      */
     public Optional<String> getAlt() {
-        return get(altDescriptor);
+        return Optional.ofNullable(getElement().getAttribute(ALT_ATTRIBUTE));
     }
 }
