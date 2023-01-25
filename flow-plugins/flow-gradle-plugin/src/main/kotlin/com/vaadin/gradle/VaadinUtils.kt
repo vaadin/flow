@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2022 Vaadin Ltd
+ *    Copyright 2000-2023 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.vaadin.gradle
 
 
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.file.FileCollection
 import com.vaadin.flow.function.SerializableSupplier
 import com.vaadin.flow.server.frontend.FrontendTools
@@ -73,12 +72,6 @@ internal fun VaadinFlowPluginExtension.createFrontendTools(): FrontendTools {
     settings.setNodeDownloadRoot(URI(nodeDownloadRoot))
     return FrontendTools(settings)
 }
-
-/**
- * Returns the "runtimeClasspath" file collection.
- */
-internal val ConfigurationContainer.runtimeClasspath: Configuration
-    get() = getByName("runtimeClasspath")
 
 /**
  * Returns only jar files from given file collection.
