@@ -272,7 +272,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
             processResourcesTaskName = if (sourceSetName == "main") {
                 "processResources"
             } else {
-                "process${sourceSetName.replaceFirstChar(Char::titlecase)}Resources"
+                "process${sourceSetName.capitalize()}Resources"
             }
         }
 
