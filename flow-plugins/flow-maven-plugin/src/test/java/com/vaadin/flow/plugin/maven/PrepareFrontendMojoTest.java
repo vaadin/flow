@@ -52,6 +52,7 @@ import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsP
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -154,7 +155,7 @@ public class PrepareFrontendMojoTest {
                 .readFileToString(tokenFile, "UTF-8");
         JsonObject buildInfo = JsonUtil.parse(json);
         Assert.assertNull("No devMode token should be available",
-                buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+                buildInfo.get(FRONTEND_HOTDEPLOY));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
     }
@@ -165,7 +166,7 @@ public class PrepareFrontendMojoTest {
 
         JsonObject initialBuildInfo = Json.createObject();
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
-        initialBuildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
+        initialBuildInfo.put(FRONTEND_HOTDEPLOY, false);
         org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
         org.apache.commons.io.FileUtils.write(tokenFile,
                 JsonUtil.stringify(initialBuildInfo, 2) + "\n", "UTF-8");
@@ -176,7 +177,7 @@ public class PrepareFrontendMojoTest {
                 .readFileToString(tokenFile, "UTF-8");
         JsonObject buildInfo = JsonUtil.parse(json);
         Assert.assertNull("No devMode token should be available",
-                buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+                buildInfo.get(FRONTEND_HOTDEPLOY));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
     }

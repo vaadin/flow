@@ -498,26 +498,25 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void externalStatsFileTrue_predefinedValuesAreNotOverridden()
+    public void externalStatsFileTrue_predefinedValuesAreNotOverridden_productionMode()
             throws Exception {
         // note that this situation shouldn't happen that the other
-        // settings
-        // would be against the external usage.
+        // settings would be against the external usage.
         FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"enableDevServer\": true,",
+                Arrays.asList("{", "\"frontend.hotdeploy\": true,",
                         // production mode can be
                         // altered even when external
-                        // stats
-                        // are used
+                        // stats are used
                         "\"productionMode\": true,",
                         "\"externalStatsFile\": true", "}"));
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
 
-        assertEquals(true, config.isProductionMode());
-        assertEquals(true, config.enableDevServer());
-        assertEquals(true, config.isStatsExternal());
+        assertTrue(config.isProductionMode());
+        assertFalse("Dev server should be default false due to stats",
+                config.enableDevServer());
+        assertTrue(config.isStatsExternal());
         assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL,
                 config.getExternalStatsUrl());
     }

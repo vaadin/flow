@@ -94,11 +94,11 @@ public class PropertyDeploymentConfigurationTest {
         Mockito.when(appConfig.enableDevServer()).thenReturn(false);
 
         Properties properties = new Properties();
-        properties.put(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER,
+        properties.put(InitParameters.FRONTEND_HOTDEPLOY,
                 Boolean.TRUE.toString());
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 properties);
-        Assert.assertFalse(config.enableDevServer());
+        Assert.assertTrue(config.enableDevServer());
         Assert.assertEquals(properties, config.getInitParameters());
     }
 
@@ -221,11 +221,11 @@ public class PropertyDeploymentConfigurationTest {
 
         // The property whose value is overridden above via API is different
         Mockito.when(appConfig.getPropertyNames())
-                .thenReturn(Collections.enumeration(Collections.singleton(
-                        InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER)));
+                .thenReturn(Collections.enumeration(Collections
+                        .singleton(InitParameters.FRONTEND_HOTDEPLOY)));
 
-        Mockito.when(appConfig.getStringProperty(
-                InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER, null))
+        Mockito.when(appConfig
+                .getStringProperty(InitParameters.FRONTEND_HOTDEPLOY, null))
                 .thenReturn(Boolean.FALSE.toString());
 
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
@@ -236,8 +236,8 @@ public class PropertyDeploymentConfigurationTest {
         // "getApplicationProperty" method checks the parent properties which
         // should not be taken into account here
         Assert.assertTrue(config.enableDevServer());
-        Assert.assertTrue(config.getInitParameters().containsKey(
-                InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+        Assert.assertTrue(config.getInitParameters()
+                .containsKey(InitParameters.FRONTEND_HOTDEPLOY));
     }
 
     @Test

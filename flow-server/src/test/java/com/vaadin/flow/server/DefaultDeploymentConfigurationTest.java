@@ -225,21 +225,16 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void enableDevServerParameter_expressBuildFeatureFlagIsON_resetsEnableDevServerToFalse() {
-        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
-        Mockito.when(featureFlags.isEnabled(FeatureFlags.EXPRESS_BUILD))
-                .thenReturn(true);
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                new Properties());
+        Assert.assertFalse("Expected dev server to be disabled by default",
+                config.enableDevServer());
 
-        try (MockedStatic<FeatureFlags> featureFlagsStatic = Mockito
-                .mockStatic(FeatureFlags.class)) {
-            featureFlagsStatic.when(() -> FeatureFlags.get(context))
-                    .thenReturn(featureFlags);
-            DefaultDeploymentConfiguration config = createDeploymentConfig(
-                    new Properties());
-            Assert.assertFalse(
-                    "Expected dev server to be disabled when the "
-                            + "Express Build feature flag is ON",
-                    config.enableDevServer());
-        }
+        Properties init = new Properties();
+        init.put(InitParameters.FRONTEND_HOTDEPLOY, "true");
+        config = createDeploymentConfig(init);
+        Assert.assertTrue("Expected dev server to be enabled when set true",
+                config.enableDevServer());
     }
 
     private DefaultDeploymentConfiguration createDeploymentConfig(

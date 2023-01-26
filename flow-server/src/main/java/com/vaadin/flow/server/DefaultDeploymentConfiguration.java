@@ -81,6 +81,8 @@ public class DefaultDeploymentConfiguration
 
     public static final boolean DEFAULT_SEND_URLS_AS_PARAMETERS = true;
 
+    public static final boolean DEFAULT_FRONTEND_HOTDEPLOY = false;
+
     private boolean productionMode;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
@@ -91,6 +93,7 @@ public class DefaultDeploymentConfiguration
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
+    private boolean enableDevServer;
 
     private static AtomicBoolean logging = new AtomicBoolean(true);
     private List<String> warnings = new ArrayList<>();
@@ -125,6 +128,7 @@ public class DefaultDeploymentConfiguration
         checkPushMode();
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
+        checkFrontendHotdeploy();
 
         if (log) {
             logMessages();
@@ -240,6 +244,11 @@ public class DefaultDeploymentConfiguration
     @Override
     public PushMode getPushMode() {
         return pushMode;
+    }
+
+    @Override
+    public boolean enableDevServer() {
+        return enableDevServer;
     }
 
     /**
@@ -371,6 +380,11 @@ public class DefaultDeploymentConfiguration
         sendUrlsAsParameters = getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 DEFAULT_SEND_URLS_AS_PARAMETERS);
+    }
+
+    private void checkFrontendHotdeploy() {
+        enableDevServer = getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY,
+                DEFAULT_FRONTEND_HOTDEPLOY);
     }
 
 }

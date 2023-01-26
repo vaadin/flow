@@ -14,7 +14,7 @@ public class MockDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
 
     private boolean productionMode = false;
-    private boolean enableDevServer = true;
+    private boolean enableDevServer = false;
     private boolean reuseDevServer = true;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;

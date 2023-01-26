@@ -41,7 +41,8 @@ public interface AbstractConfiguration extends Serializable {
     boolean isProductionMode();
 
     /**
-     * Get if the dev server should be enabled. True by default
+     * Get if the dev server should be enabled. false by default as express mode
+     * should be used.
      *
      * @return true if dev server should be used
      */
@@ -49,8 +50,7 @@ public interface AbstractConfiguration extends Serializable {
         if (isProductionMode()) {
             return false;
         }
-        return getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER, true);
+        return getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY, false);
     }
 
     /**
