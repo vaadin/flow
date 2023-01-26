@@ -515,7 +515,7 @@ public class DeploymentConfigurationFactoryTest {
 
         assertTrue(config.isProductionMode());
         assertFalse("Dev server should be default false due to stats",
-                config.enableDevServer());
+                config.frontendHotdeploy());
         assertTrue(config.isStatsExternal());
         assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL,
                 config.getExternalStatsUrl());
@@ -654,7 +654,7 @@ public class DeploymentConfigurationFactoryTest {
         VaadinContext context = new MockVaadinContext();
         ApplicationConfiguration configuration = Mockito
                 .mock(ApplicationConfiguration.class);
-        Mockito.when(configuration.enableDevServer()).thenReturn(true);
+        Mockito.when(configuration.frontendHotdeploy()).thenReturn(true);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         Mockito.when(configuration.getContext()).thenReturn(context);
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),

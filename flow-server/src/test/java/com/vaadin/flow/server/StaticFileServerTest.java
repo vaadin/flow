@@ -1175,7 +1175,7 @@ public class StaticFileServerTest implements Serializable {
         TestUtil.createStyleCssStubInFrontend(projectRootFolder, "my-theme",
                 styles);
 
-        Mockito.when(configuration.enableDevServer()).thenReturn(false);
+        Mockito.when(configuration.frontendHotdeploy()).thenReturn(false);
         Mockito.when(configuration.getProjectFolder())
                 .thenReturn(projectRootFolder);
 
@@ -1192,7 +1192,7 @@ public class StaticFileServerTest implements Serializable {
         TestUtil.createStylesCssStubInBundle(projectRootFolder, "my-theme",
                 styles);
 
-        Mockito.when(configuration.enableDevServer()).thenReturn(false);
+        Mockito.when(configuration.frontendHotdeploy()).thenReturn(false);
         Mockito.when(configuration.getProjectFolder())
                 .thenReturn(projectRootFolder);
 

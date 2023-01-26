@@ -15,19 +15,14 @@
  */
 package com.vaadin.flow.server;
 
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.junit.Assert.assertEquals;
@@ -224,17 +219,17 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void enableDevServerParameter_expressBuildFeatureFlagIsON_resetsEnableDevServerToFalse() {
+    public void frontendHotdeployParameter_expressBuildFeatureFlagIsON_resetsFrontendHotdeployToFalse() {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 new Properties());
         Assert.assertFalse("Expected dev server to be disabled by default",
-                config.enableDevServer());
+                config.frontendHotdeploy());
 
         Properties init = new Properties();
         init.put(InitParameters.FRONTEND_HOTDEPLOY, "true");
         config = createDeploymentConfig(init);
         Assert.assertTrue("Expected dev server to be enabled when set true",
-                config.enableDevServer());
+                config.frontendHotdeploy());
     }
 
     private DefaultDeploymentConfiguration createDeploymentConfig(

@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
-import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
@@ -86,7 +85,7 @@ public class VaadinServletService extends VaadinService {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
 
-        if (getDeploymentConfiguration().enableDevServer()) {
+        if (getDeploymentConfiguration().frontendHotdeploy()) {
             Optional<DevModeHandler> handlerManager = DevModeHandlerManager
                     .getDevModeHandler(this);
             if (handlerManager.isPresent()) {

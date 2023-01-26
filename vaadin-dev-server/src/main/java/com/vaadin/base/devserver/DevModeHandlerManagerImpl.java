@@ -33,7 +33,6 @@ import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
@@ -99,7 +98,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     private void startWatchingThemeFolder(VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
 
-        if (config.isProductionMode() || config.enableDevServer()) {
+        if (config.isProductionMode() || config.frontendHotdeploy()) {
             // Theme files are watched by Vite or app runs in prod mode
             return;
         }

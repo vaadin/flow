@@ -117,7 +117,7 @@ public abstract class AbstractDevModeTest {
     private void mockApplicationConfiguration(
             ApplicationConfiguration appConfig, boolean enablePnpm) {
         Mockito.when(appConfig.isProductionMode()).thenReturn(false);
-        Mockito.when(appConfig.enableDevServer()).thenReturn(true);
+        Mockito.when(appConfig.frontendHotdeploy()).thenReturn(true);
         Mockito.when(appConfig.isPnpmEnabled()).thenReturn(enablePnpm);
 
         Mockito.when(appConfig.getStringProperty(Mockito.anyString(),

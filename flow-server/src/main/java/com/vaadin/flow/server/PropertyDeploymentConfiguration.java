@@ -148,11 +148,11 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
-    public boolean enableDevServer() {
+    public boolean frontendHotdeploy() {
         if (isOwnProperty(FRONTEND_HOTDEPLOY)) {
             return getBooleanProperty(FRONTEND_HOTDEPLOY, false);
         }
-        return parentConfig.enableDevServer();
+        return parentConfig.frontendHotdeploy();
     }
 
     @Override
