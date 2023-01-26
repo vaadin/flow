@@ -70,6 +70,7 @@ import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -461,7 +462,8 @@ public class VaadinServletContextInitializer
                     "Search for subclasses and classes with annotations took {} ms",
                     ms);
 
-            if (ms > 10000 && appContext.getEnvironment()
+            Environment environment = appContext.getEnvironment();
+            if (ms > 10000 && environment
                     .getProperty("vaadin.whitelisted-packages") == null) {
                 getLogger().info(
                         "Due to slow search it is recommended to use the whitelisted-packages feature to make scanning faster.\n\n"
@@ -479,6 +481,11 @@ public class VaadinServletContextInitializer
             // notification to the user
             ServletDeployer.logAppStartupToConsole(event.getServletContext(),
                     true);
+
+            // Make live reload port available for index.html handler
+            event.getServletContext().setAttribute(
+                    IndexHtmlRequestHandler.LIVE_RELOAD_PORT_ATTR,
+                    environment.getProperty("spring.devtools.livereload.port"));
         }
 
         @Override
