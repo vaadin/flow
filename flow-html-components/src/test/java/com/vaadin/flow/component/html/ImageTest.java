@@ -26,7 +26,6 @@ public class ImageTest extends ComponentTest {
 
     @Override
     protected void addProperties() {
-        addOptionalStringProperty("alt");
         addStringProperty("src", "");
     }
 
