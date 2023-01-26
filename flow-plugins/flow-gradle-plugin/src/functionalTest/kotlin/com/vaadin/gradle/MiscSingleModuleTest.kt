@@ -65,7 +65,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
             plugins {
                 id 'war'
-                id 'org.gretty' version '3.0.1'
+                id 'org.gretty' version '3.0.5'
                 id("com.vaadin")
             }
             repositories {
@@ -99,7 +99,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
             plugins {
                 id 'war'
-                id 'org.gretty' version '3.0.1'
+                id 'org.gretty' version '3.0.5'
                 id("com.vaadin")
             }
             repositories {
@@ -314,7 +314,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
             plugins {
                 id 'war'
-                id 'org.gretty' version '3.0.1'
+                id 'org.gretty' version '3.0.5'
                 id("com.vaadin")
             }
             repositories {
@@ -562,7 +562,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         """.trimIndent()
         )
 
-        val build: BuildResult = testProject.build("-Pvaadin.productionMode", "build")
+        val build: BuildResult = testProject.build("build")
         build.expectTaskSucceded("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
