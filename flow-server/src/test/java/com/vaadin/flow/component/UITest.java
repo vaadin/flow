@@ -1492,6 +1492,28 @@ public class UITest {
         verifyInert(secondModal, false);
     }
 
+    @Test
+    public void getCurrentView_routingInitialized_getsCurrentRouteComponent()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+        Component currentRoute = ui.getCurrentView();
+        MatcherAssert.assertThat(currentRoute,
+                CoreMatchers.instanceOf(RootNavigationTarget.class));
+
+        ui.navigate("foo/bar");
+        currentRoute = ui.getCurrentView();
+        MatcherAssert.assertThat(currentRoute,
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void getCurrentView_routingNotInitialized_throws()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        Assert.assertThrows(IllegalStateException.class, ui::getCurrentView);
+    }
+
     private void verifyInert(Component component, boolean inert) {
         Assert.assertEquals("Invalid inert state", inert,
                 component.getElement().getNode().isInert());
