@@ -267,6 +267,21 @@ public class FrontendDependenciesTest {
 
     }
 
+    @Test
+    public void onlyThemeVariantDefined_getsLumoAsTheme_preserveVariant() {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.singleton(ThemeVariantOnly.class));
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+
+        Assert.assertEquals("Faulty default theme received", FakeLumo.class,
+                dependencies.getThemeDefinition().getTheme());
+        Assert.assertEquals("Faulty variant received", "dark",
+                dependencies.getThemeDefinition().getVariant());
+
+    }
+
     @Theme(FakeLumo.class)
     public static class MyApp extends Component {
     }
@@ -281,6 +296,10 @@ public class FrontendDependenciesTest {
 
     @Theme(themeFolder = "my-theme", value = MyLumoTheme.class)
     public static class OkClassExtension extends Component {
+    }
+
+    @Theme(variant = "dark")
+    public static class ThemeVariantOnly extends Component {
     }
 
     public static class MyComponent extends Component {

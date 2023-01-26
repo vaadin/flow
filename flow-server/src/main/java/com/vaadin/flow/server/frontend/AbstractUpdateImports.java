@@ -446,19 +446,32 @@ abstract class AbstractUpdateImports implements Runnable {
      */
     private File getImportedFrontendFile(String jsImport) {
         // file is in /frontend
-        File file = getFile(frontendDir, jsImport);
+        File file = getJsImportFile(frontendDir, jsImport);
         if (file.exists()) {
             return file;
         }
         // file is a flow resource e.g.
         // /node_modules/@vaadin/flow-frontend/gridConnector.js
-        file = getFile(new File(getNodeModulesDir(), NODE_MODULES),
-                FLOW_NPM_PACKAGE_NAME, jsImport);
+        file = getJsImportFile(
+                getFile(new File(getNodeModulesDir(), NODE_MODULES),
+                        FLOW_NPM_PACKAGE_NAME),
+                jsImport);
         return file.exists() ? file : null;
     }
 
     private File getNodeModulesDir() {
         return new File(npmDir, NODE_MODULES);
+    }
+
+    private File getJsImportFile(File base, String path) {
+        File file = getFile(base, path);
+
+        if (file.isDirectory()) {
+            // import './foo' seems to be valid according to tools when 'foo' is
+            // a directory. What is imported is 'foo/index.js'.
+            file = new File(file, "index.js");
+        }
+        return file;
     }
 
     private File getFile(File base, String... path) {
@@ -467,6 +480,11 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private boolean isFile(File base, String... path) {
         return getFile(base, path).isFile();
+    }
+
+    private boolean isFileOrDirectory(File base, String... path) {
+        File file = getFile(base, path);
+        return file.isFile() || file.isDirectory();
     }
 
     private boolean addCssLines(Collection<String> lines, CssData cssData,
@@ -505,7 +523,7 @@ abstract class AbstractUpdateImports implements Runnable {
     private String toValidBrowserImport(String jsImport) {
         if (jsImport.startsWith(NodeUpdater.GENERATED_PREFIX)) {
             return generatedResourcePathIntoRelativePath(jsImport);
-        } else if (isFile(frontendDir, jsImport)) {
+        } else if (isFileOrDirectory(frontendDir, jsImport)) {
             if (!jsImport.startsWith("./")) {
                 getLogger().warn(
                         "Use the './' prefix for files in the '{}' folder: '{}', please update your annotations.",
@@ -578,7 +596,11 @@ abstract class AbstractUpdateImports implements Runnable {
             return;
         }
         Path filePath = file.toPath();
-        visitedImports.add(filePath.normalize().toString().replace("\\", "/"));
+        String normalizedPath = filePath.normalize().toString().replace("\\",
+                "/");
+        if (!visitedImports.add(normalizedPath)) {
+            return;
+        }
         try {
             visitImportsRecursively(filePath, path, theme, imports,
                     visitedImports);
@@ -604,8 +626,13 @@ abstract class AbstractUpdateImports implements Runnable {
      */
     private String resolve(String importedPath, Path moduleFile, String path) {
         String pathPrefix = moduleFile.toString();
-        pathPrefix = pathPrefix.substring(0,
-                pathPrefix.length() - path.length());
+        int pathLength = path.length();
+        // path may have been resolved as `path/index.js`, if path points to a
+        // directory
+        if (!moduleFile.endsWith(path) && moduleFile.endsWith("index.js")) {
+            pathLength += 9;
+        }
+        pathPrefix = pathPrefix.substring(0, pathPrefix.length() - pathLength);
         try {
             String resolvedPath = moduleFile.getParent().resolve(importedPath)
                     .toString();
