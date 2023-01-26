@@ -45,10 +45,10 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
     override fun generatedTsFolder(): File = extension.generatedTsFolder
 
     override fun getClassFinder(): ClassFinder {
-        val runtimeClasspath: Configuration? = project.configurations.findByName("runtimeClasspath")
-        val runtimeClasspathJars: List<File> = if (runtimeClasspath != null) {
+        val dependencyConfiguration: Configuration? = project.configurations.findByName(extension.dependencyScope!!)
+        val dependencyConfigurationJars: List<File> = if (dependencyConfiguration != null) {
             var artifacts: List<ResolvedArtifact> =
-                runtimeClasspath.resolvedConfiguration.resolvedArtifacts.toList()
+                dependencyConfiguration.resolvedConfiguration.resolvedArtifacts.toList()
             val extension = VaadinFlowPluginExtension.get(project)
             val artifactFilter = extension.classpathFilter.toPredicate()
             artifacts = artifacts.filter { artifactFilter.test(it.moduleVersion.id.module) }
@@ -57,11 +57,11 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
 
         // we need to also analyze the project's classes
         val sourceSet: SourceSetContainer = project.properties["sourceSets"] as SourceSetContainer
-        val classesDirs: List<File> = sourceSet.getByName("main").output.classesDirs
+        val classesDirs: List<File> = sourceSet.getByName(extension.sourceSetName).output.classesDirs
             .toList()
             .filter { it.exists() }
 
-        val resourcesDir: List<File> = listOfNotNull(sourceSet.getByName("main").output.resourcesDir)
+        val resourcesDir: List<File> = listOfNotNull(sourceSet.getByName(extension.sourceSetName).output.resourcesDir)
                 .filter { it.exists() }
 
         // for Spring Boot project there is no "providedCompile" scope: the WAR plugin brings that in.
@@ -71,7 +71,7 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
             ?.toList()
             ?: listOf()
 
-        val apis: Set<File> = (runtimeClasspathJars + classesDirs + resourcesDir + servletJar).toSet()
+        val apis: Set<File> = (dependencyConfigurationJars + classesDirs + resourcesDir + servletJar).toSet()
 
         // eagerly check that all the files/folders exist, to avoid spamming the console later on
         // see https://github.com/vaadin/vaadin-gradle-plugin/issues/38 for more details
@@ -94,7 +94,7 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
     }
 
     override fun getJarFiles(): MutableSet<File> {
-        val jarFiles: Set<File> = project.configurations.runtimeClasspath.jars.toSet()
+        val jarFiles: Set<File> = project.configurations.getByName(extension.dependencyScope!!).jars.toSet()
         return jarFiles.toMutableSet()
     }
 

@@ -75,12 +75,6 @@ internal fun VaadinFlowPluginExtension.createFrontendTools(): FrontendTools {
 }
 
 /**
- * Returns the "runtimeClasspath" file collection.
- */
-internal val ConfigurationContainer.runtimeClasspath: Configuration
-    get() = getByName("runtimeClasspath")
-
-/**
  * Returns only jar files from given file collection.
  */
 internal val Configuration.jars: FileCollection
