@@ -516,7 +516,7 @@ public class DeploymentConfigurationFactoryTest {
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
 
         assertEquals(true, config.isProductionMode());
-        assertEquals(true, config.enableDevServer());
+        assertEquals(false, config.enableDevServer());
         assertEquals(true, config.isStatsExternal());
         assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL,
                 config.getExternalStatsUrl());
