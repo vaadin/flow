@@ -312,8 +312,7 @@ public class NavigationStateRendererTest {
                         "ROOT.123", new Location("preserved")).isPresent());
 
         // given the recently instantiated view
-        final Component view = (Component) ui1.getInternals()
-                .getActiveRouterTargetsChain().get(0);
+        final Component view = ui1.getCurrentView();
 
         // given a new UI with the same window name
         MockUI ui2 = new MockUI(session);

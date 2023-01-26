@@ -300,7 +300,8 @@ public class UITest {
         List<HasElement> chain = ui.getInternals()
                 .getActiveRouterTargetsChain();
         Assert.assertEquals(1, chain.size());
-        MatcherAssert.assertThat(chain.get(0),
+        Component currentRoute = ui.getCurrentView();
+        MatcherAssert.assertThat(currentRoute,
                 CoreMatchers.instanceOf(FooBarNavigationTarget.class));
     }
 
@@ -1489,6 +1490,28 @@ public class UITest {
         verifyInert(fixture.routingComponent, true);
         verifyInert(fixture.modalComponent, true);
         verifyInert(secondModal, false);
+    }
+
+    @Test
+    public void getCurrentView_routingInitialized_getsCurrentRouteComponent()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+        Component currentRoute = ui.getCurrentView();
+        MatcherAssert.assertThat(currentRoute,
+                CoreMatchers.instanceOf(RootNavigationTarget.class));
+
+        ui.navigate("foo/bar");
+        currentRoute = ui.getCurrentView();
+        MatcherAssert.assertThat(currentRoute,
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void getCurrentView_routingNotInitialized_throws()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        Assert.assertThrows(IllegalStateException.class, ui::getCurrentView);
     }
 
     private void verifyInert(Component component, boolean inert) {
