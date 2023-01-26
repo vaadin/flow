@@ -321,7 +321,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "nodeVersion=$nodeVersion, " +
             "nodeDownloadRoot=$nodeDownloadRoot, " +
             "nodeAutoUpdate=$nodeAutoUpdate" +
-            "resourceOutputDirectory=$resourceOutputDirectory" +
+            "resourceOutputDirectory=$resourceOutputDirectory, " +
             "sourceSetName=$sourceSetName, " +
             "dependencyScope=$dependencyScope, " +
             "processResourcesTaskName=$processResourcesTaskName" +

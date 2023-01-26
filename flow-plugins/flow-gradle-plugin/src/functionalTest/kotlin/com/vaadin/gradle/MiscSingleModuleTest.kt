@@ -221,7 +221,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     fun testSpringProjectProductionMode() {
 
         val springBootVersion = "2.2.4.RELEASE"
-        val springVersion = "17.0-SNAPSHOT"
+        val springVersion = "19.0-SNAPSHOT"
 
         testProject.buildFile.writeText(
             """
@@ -490,7 +490,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             plugins {
                 id 'java'
                 id 'org.springframework.boot' version '2.2.4.RELEASE'
-                id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+                id 'io.spring.dependency-management' version '1.0.9.RELEASE'
                 id("com.vaadin")
             }
             
@@ -524,6 +524,9 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             
             jar {
                 enabled = false
+            }
+            bootJar {
+                duplicatesStrategy = DuplicatesStrategy.EXCLUDE
             }
             """
         )
@@ -559,7 +562,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         """.trimIndent()
         )
 
-        val build: BuildResult = testProject.build("build")
+        val build: BuildResult = testProject.build("-Pvaadin.productionMode", "build")
         build.expectTaskSucceded("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
