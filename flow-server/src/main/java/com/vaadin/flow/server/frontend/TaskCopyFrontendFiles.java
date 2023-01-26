@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,6 +26,10 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
 
 /**
  * Copies JavaScript and CSS files from JAR files into a given folder.
@@ -87,6 +87,12 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                         .copyLocalResources(new File(location,
                                 COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT),
                                 targetDirectory));
+                // copies from resources, but excludes already copied from
+                // resources/frontend
+                handledFiles
+                        .addAll(TaskCopyLocalFrontendFiles.copyLocalResources(
+                                new File(location, RESOURCES_JAR_DEFAULT),
+                                targetDirectory, FrontendUtils.FRONTEND));
             } else {
                 handledFiles.addAll(jarContentsManager
                         .copyIncludedFilesFromJarTrimmingBasePath(location,
@@ -110,10 +116,12 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                 resourceLocations.size(), ms);
     }
 
-    static Set<String> getFilesInDirectory(File targetDirectory)
-            throws IOException {
+    static Set<String> getFilesInDirectory(File targetDirectory,
+            String... relativePathExclusions) throws IOException {
         try (Stream<Path> stream = Files.walk(targetDirectory.toPath())) {
-            return stream.filter(path -> path.toFile().isFile())
+            return stream.filter(path -> path.toFile().isFile()
+                    && TaskCopyLocalFrontendFiles.keepFile(targetDirectory,
+                            relativePathExclusions, path.toFile()))
                     .map(path -> targetDirectory.toPath().relativize(path)
                             .toString())
                     .collect(Collectors.toSet());

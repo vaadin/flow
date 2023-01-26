@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
@@ -33,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -643,7 +645,15 @@ public class FrontendUtils {
         }
     }
 
-    private static File getJarResourcesFolder(File frontendDirectory) {
+    /**
+     * Get the front-end resources folder. This is where the contents of JAR
+     * dependencies are copied to.
+     *
+     * @param frontendDirectory
+     *            project's frontend directory
+     * @return a {@link File} representing a folder with copied resources
+     */
+    public static File getJarResourcesFolder(File frontendDirectory) {
         return new File(getFrontendGeneratedFolder(frontendDirectory),
                 JAR_RESOURCES_FOLDER);
     }

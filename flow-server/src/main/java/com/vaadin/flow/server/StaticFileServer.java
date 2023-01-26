@@ -47,8 +47,10 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 
 /**
  * Handles sending of resources from the WAR root (web content) or
@@ -326,6 +328,15 @@ public class StaticFileServer implements StaticFileHandler {
         // themes/my-theme folder
         File frontendFolder = new File(projectFolder, FrontendUtils.FRONTEND);
         File assetInFrontendThemes = new File(frontendFolder, assetPath);
+        if (assetInFrontendThemes.exists()) {
+            return assetInFrontendThemes.toURI().toURL();
+        }
+
+        // Also look into jar-resources for a packaged theme
+        File jarResourcesFolder = FrontendUtils
+                .getJarResourcesFolder(frontendFolder);
+        assetInFrontendThemes = new File(jarResourcesFolder, assetPath);
+
         if (assetInFrontendThemes.exists()) {
             return assetInFrontendThemes.toURI().toURL();
         }
