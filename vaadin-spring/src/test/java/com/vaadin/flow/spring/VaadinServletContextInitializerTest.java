@@ -99,7 +99,7 @@ public class VaadinServletContextInitializerTest {
         Mockito.when(devModeHandlerManager.getHandlesTypes())
                 .thenReturn(new Class<?>[0]);
 
-        Mockito.when(appConfig.enableDevServer()).thenReturn(true);
+        Mockito.when(appConfig.frontendHotdeploy()).thenReturn(true);
 
         VaadinServletContextInitializer vaadinServletContextInitializer = getStubbedVaadinServletContextInitializer();
 
@@ -124,7 +124,7 @@ public class VaadinServletContextInitializerTest {
         Mockito.when(devModeHandlerManager.getHandlesTypes())
                 .thenReturn(new Class<?>[0]);
 
-        Mockito.when(appConfig.enableDevServer()).thenReturn(true);
+        Mockito.when(appConfig.frontendHotdeploy()).thenReturn(true);
 
         VaadinServletContextInitializer vaadinServletContextInitializer = getStubbedVaadinServletContextInitializer();
 
@@ -305,7 +305,7 @@ public class VaadinServletContextInitializerTest {
     private void mockDeploymentConfiguration() {
         Mockito.when(deploymentConfiguration.isProductionMode())
                 .thenReturn(false);
-        Mockito.when(deploymentConfiguration.enableDevServer())
+        Mockito.when(deploymentConfiguration.frontendHotdeploy())
                 .thenReturn(true);
     }
 

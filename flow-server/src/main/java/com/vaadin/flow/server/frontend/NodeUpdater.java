@@ -43,7 +43,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -487,7 +486,8 @@ public abstract class NodeUpdater implements FallibleCommand {
             throws IOException {
         String content = stringify(json, 2) + "\n";
         if (packageFile.exists() || options.productionMode
-                || options.isEnableDevServer() || options.isDevBundleBuild()) {
+                || options.isFrontendHotdeploy()
+                || options.isDevBundleBuild()) {
             log().debug("writing file {}.", packageFile.getAbsolutePath());
             FileUtils.forceMkdirParent(packageFile);
             FileUtils.writeStringToFile(packageFile, content, UTF_8.name());

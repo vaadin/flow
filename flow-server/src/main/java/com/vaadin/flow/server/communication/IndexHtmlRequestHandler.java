@@ -115,7 +115,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureHiddenElementStyles(indexDocument);
 
-        if (!config.enableDevServer()) {
+        if (!config.frontendHotdeploy()) {
             addStylesCssLink(config, indexDocument);
         }
 
@@ -413,7 +413,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (config.isProductionMode()) {
             // The index.html is fetched from the bundle so it includes the
             // entry point javascripts
-        } else if (!service.getDeploymentConfiguration().enableDevServer()) {
+        } else if (!service.getDeploymentConfiguration().frontendHotdeploy()) {
             // When running without a frontend server, the index.html comes
             // directly from the frontend folder and the JS entrypoint(s) need
             // to be added

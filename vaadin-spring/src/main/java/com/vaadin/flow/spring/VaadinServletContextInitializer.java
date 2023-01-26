@@ -427,7 +427,7 @@ public class VaadinServletContextInitializer
                 throw new RuntimeException(
                         "no DevModeHandlerManager implementation found but "
                                 + "but dev server enabled. Either disable by "
-                                + "setting vaadin.enableDevServer=false (and "
+                                + "setting vaadin.frontend.hotdeploy=false (and "
                                 + "run the build-frontend maven goal) or "
                                 + "include the vaadin-dev-server dependency");
             }

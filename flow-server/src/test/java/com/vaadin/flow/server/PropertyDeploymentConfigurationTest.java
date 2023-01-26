@@ -53,12 +53,12 @@ public class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void enableDevServer_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
+    public void frontendHotdeploy_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
-        Mockito.when(appConfig.enableDevServer()).thenReturn(true);
+        Mockito.when(appConfig.frontendHotdeploy()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 new Properties());
-        Assert.assertTrue(config.enableDevServer());
+        Assert.assertTrue(config.frontendHotdeploy());
         // there is no any property
         Assert.assertTrue(config.getInitParameters().isEmpty());
     }
@@ -89,16 +89,16 @@ public class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void enableDevServer_valueIsProvidedViaPropertiesAndParent_valueIsAlwaysTrueIfExpressBuildIsOFF() {
+    public void frontendHotdeploy_valueIsProvidedViaPropertiesAndParent_valueIsAlwaysTrueIfExpressBuildIsOFF() {
         ApplicationConfiguration appConfig = mockAppConfig();
-        Mockito.when(appConfig.enableDevServer()).thenReturn(false);
+        Mockito.when(appConfig.frontendHotdeploy()).thenReturn(false);
 
         Properties properties = new Properties();
         properties.put(InitParameters.FRONTEND_HOTDEPLOY,
                 Boolean.TRUE.toString());
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 properties);
-        Assert.assertTrue(config.enableDevServer());
+        Assert.assertTrue(config.frontendHotdeploy());
         Assert.assertEquals(properties, config.getInitParameters());
     }
 
@@ -213,11 +213,11 @@ public class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void enableDevServer_valueIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
+    public void frontendHotdeploy_valueIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
         ApplicationConfiguration appConfig = mockAppConfig();
 
         // The property value is provided via API
-        Mockito.when(appConfig.enableDevServer()).thenReturn(true);
+        Mockito.when(appConfig.frontendHotdeploy()).thenReturn(true);
 
         // The property whose value is overridden above via API is different
         Mockito.when(appConfig.getPropertyNames())
@@ -235,7 +235,7 @@ public class PropertyDeploymentConfigurationTest {
         // though its "getInitParameters" method returns the property. Also
         // "getApplicationProperty" method checks the parent properties which
         // should not be taken into account here
-        Assert.assertTrue(config.enableDevServer());
+        Assert.assertTrue(config.frontendHotdeploy());
         Assert.assertTrue(config.getInitParameters()
                 .containsKey(InitParameters.FRONTEND_HOTDEPLOY));
     }

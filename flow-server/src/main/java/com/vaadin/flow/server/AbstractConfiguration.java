@@ -46,7 +46,7 @@ public interface AbstractConfiguration extends Serializable {
      *
      * @return true if dev server should be used
      */
-    default boolean enableDevServer() {
+    default boolean frontendHotdeploy() {
         if (isProductionMode()) {
             return false;
         }

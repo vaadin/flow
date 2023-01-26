@@ -104,7 +104,7 @@ public class IndexHtmlRequestHandlerTest {
         responseOutput = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(responseOutput);
         deploymentConfiguration = mocks.getDeploymentConfiguration();
-        deploymentConfiguration.setEnableDevServer(false);
+        deploymentConfiguration.setFrontendHotdeploy(false);
         deploymentConfiguration.setProductionMode(true);
         indexHtmlRequestHandler = new IndexHtmlRequestHandler();
         context = Mockito.mock(VaadinServletContext.class);

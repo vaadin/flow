@@ -93,7 +93,7 @@ public class DefaultDeploymentConfiguration
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
-    private boolean enableDevServer;
+    private boolean frontendHotdeploy;
 
     private static AtomicBoolean logging = new AtomicBoolean(true);
     private List<String> warnings = new ArrayList<>();
@@ -247,8 +247,8 @@ public class DefaultDeploymentConfiguration
     }
 
     @Override
-    public boolean enableDevServer() {
-        return enableDevServer;
+    public boolean frontendHotdeploy() {
+        return frontendHotdeploy;
     }
 
     /**
@@ -383,8 +383,8 @@ public class DefaultDeploymentConfiguration
     }
 
     private void checkFrontendHotdeploy() {
-        enableDevServer = getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY,
-                DEFAULT_FRONTEND_HOTDEPLOY);
+        frontendHotdeploy = getBooleanProperty(
+                InitParameters.FRONTEND_HOTDEPLOY, DEFAULT_FRONTEND_HOTDEPLOY);
     }
 
 }

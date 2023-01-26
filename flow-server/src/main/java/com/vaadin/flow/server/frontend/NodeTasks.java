@@ -23,8 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -158,7 +156,7 @@ public class NodeTasks implements FallibleCommand {
             addGenerateServiceWorkerTask(options,
                     frontendDependencies.getPwaConfiguration());
 
-            if (options.productionMode || options.isEnableDevServer()
+            if (options.productionMode || options.isFrontendHotdeploy()
                     || options.isDevBundleBuild()) {
                 addGenerateTsConfigTask(options);
             }
@@ -207,7 +205,7 @@ public class NodeTasks implements FallibleCommand {
             pwa = new PwaConfiguration();
         }
         commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
-        if (options.productionMode || options.isEnableDevServer()
+        if (options.productionMode || options.isFrontendHotdeploy()
                 || options.isDevBundleBuild()) {
             commands.add(new TaskUpdateVite(options));
         }
@@ -230,7 +228,7 @@ public class NodeTasks implements FallibleCommand {
 
     private void addBootstrapTasks(Options options) {
         commands.add(new TaskGenerateIndexHtml(options));
-        if (options.productionMode || options.isEnableDevServer()
+        if (options.productionMode || options.isFrontendHotdeploy()
                 || options.isDevBundleBuild()) {
             commands.add(new TaskGenerateIndexTs(options));
             if (!options.productionMode) {

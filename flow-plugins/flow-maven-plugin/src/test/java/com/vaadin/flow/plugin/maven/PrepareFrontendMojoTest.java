@@ -161,7 +161,7 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
-    public void existingTokenFile_enableDevServerShouldBeRemoved()
+    public void existingTokenFile_frontendHotdeployShouldBeRemoved()
             throws IOException, MojoExecutionException, MojoFailureException {
 
         JsonObject initialBuildInfo = Json.createObject();
