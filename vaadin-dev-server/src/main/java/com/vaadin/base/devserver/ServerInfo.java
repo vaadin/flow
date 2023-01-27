@@ -19,6 +19,7 @@ import java.io.Serializable;
 
 import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.Version;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * Data for a info message to the debug window.
@@ -62,16 +63,7 @@ public class ServerInfo implements Serializable {
     }
 
     private String fetchProductName() {
-        try {
-            // This class belongs to fusion-endpoint and is not available in
-            // Flow projects. By checking for its availability, we can show the
-            // right project name in the Vaadin devmode gizmo
-            Class.forName("dev.hilla.EndpointController", false,
-                    getClass().getClassLoader());
-            return "Hilla";
-        } catch (ClassNotFoundException e) {
-            return "Vaadin";
-        }
+        return SharedUtil.includesHilla() ? "Hilla" : "Vaadin";
     }
 
     public String getFlowVersion() {

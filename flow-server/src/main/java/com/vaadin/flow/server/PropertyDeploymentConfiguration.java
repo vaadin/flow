@@ -26,6 +26,7 @@ import java.util.Properties;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
@@ -150,7 +151,8 @@ public class PropertyDeploymentConfiguration
     @Override
     public boolean frontendHotdeploy() {
         if (isOwnProperty(FRONTEND_HOTDEPLOY)) {
-            return getBooleanProperty(FRONTEND_HOTDEPLOY, false);
+            return getBooleanProperty(FRONTEND_HOTDEPLOY,
+                    SharedUtil.includesHilla());
         }
         return parentConfig.frontendHotdeploy();
     }

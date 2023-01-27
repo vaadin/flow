@@ -18,6 +18,8 @@ package com.vaadin.flow.shared.util;
 import java.io.Serializable;
 import java.util.Locale;
 
+import com.vaadin.flow.server.VaadinService;
+
 /**
  * Misc internal utility methods used by both the server and the client package.
  *
@@ -333,5 +335,23 @@ public class SharedUtil implements Serializable {
         }
 
         return prefix + url;
+    }
+
+    /**
+     * Shows whether the Hilla framework is used in the project.
+     *
+     * @return true if Hilla is used, false otherwise
+     */
+    public static boolean includesHilla() {
+        try {
+            // This class belongs to fusion-endpoint and is not available in
+            // Flow projects. By checking for its availability, we can show the
+            // right project name in the Vaadin devmode gizmo
+            Class.forName("dev.hilla.EndpointController", false,
+                    VaadinService.class.getClassLoader());
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 }
