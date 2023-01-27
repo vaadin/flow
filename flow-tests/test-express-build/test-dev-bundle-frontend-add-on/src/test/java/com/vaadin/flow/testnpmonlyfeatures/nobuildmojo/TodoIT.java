@@ -55,7 +55,7 @@ public class TodoIT extends ChromeBrowserTest {
 
         // should create a dev-bundle
         Assert.assertTrue("New devBundle should be generated",
-                new File(baseDir, "dev-bundle").exists());
+                new File(baseDir, "src/main/dev-bundle").exists());
         Assert.assertTrue("node_modules should be downloaded",
                 new File(baseDir, "node_modules").exists());
 
