@@ -110,15 +110,14 @@ public class TestUtil {
         String content = "{\"npmModules\": {}, "
                 + "\"entryScripts\": [\"foo.js\"], "
                 + "\"packageJsonHash\": \"42\"}";
-        createStubFile(projectRootFolder, "src/main/dev-bundle/config/stats.json",
-                content);
+        createStubFile(projectRootFolder,
+                "src/main/dev-bundle/config/stats.json", content);
     }
 
     public static void createStylesCssStubInBundle(File projectRootFolder,
             String themeName, String content) throws IOException {
-        createStubFile(projectRootFolder,
-                "src/main/dev-bundle/assets/themes/" + themeName + "/styles.css",
-                content);
+        createStubFile(projectRootFolder, "src/main/dev-bundle/assets/themes/"
+                + themeName + "/styles.css", content);
     }
 
     public static void createThemeJs(File projectRootFolder)

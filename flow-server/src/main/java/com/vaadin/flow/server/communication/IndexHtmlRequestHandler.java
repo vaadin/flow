@@ -421,8 +421,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     config.getProjectFolder(), "config/stats.json");
             if (statsJsonUrl == null) {
                 throw new IllegalStateException(
-                        "There is no dev-bundle in the project or on the classpath nor is there a default bundle included. " +
-                        "Verify that the dependency 'com.vaadin:vaadin-dev-bundle' is added to your project.");
+                        "There is no dev-bundle in the project or on the classpath nor is there a default bundle included. "
+                                + "Verify that the dependency 'com.vaadin:vaadin-dev-bundle' is added to your project.");
             }
             String statsJson = IOUtils.toString(statsJsonUrl,
                     StandardCharsets.UTF_8);
