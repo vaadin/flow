@@ -33,7 +33,7 @@ public class DefaultDevBundleThemeIT extends ChromeBrowserTest {
         waitForElementPresent(By.className("la-cat"));
 
         File baseDir = new File(System.getProperty("user.dir", "."));
-        File devBundle = new File(baseDir, "dev-bundle");
+        File devBundle = new File(baseDir, "src/main/dev-bundle");
 
         // shouldn't create a dev-bundle
         Assert.assertFalse(devBundle.exists());
