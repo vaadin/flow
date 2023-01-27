@@ -76,13 +76,18 @@ public class AtmospherePushConnectionTest {
 
         CountDownLatch latch = new CountDownLatch(1);
         CompletableFuture.runAsync(() -> {
-            connection.disconnect();
-            latch.countDown();
+            try {
+                vaadinSession.runWithLock(() -> {
+                    connection.push();
+                    return null;
+                });
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            } finally {
+                latch.countDown();
+            }
         });
-        vaadinSession.runWithLock(() -> {
-            connection.push();
-            return null;
-        });
+        connection.disconnect();
         Assert.assertTrue("AtmospherePushConnection not disconnected",
                 latch.await(2, TimeUnit.SECONDS));
         Assert.assertEquals(State.PUSH_PENDING, connection.getState());
