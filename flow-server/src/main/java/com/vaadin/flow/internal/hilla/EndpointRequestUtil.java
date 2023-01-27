@@ -19,6 +19,8 @@ package com.vaadin.flow.internal.hilla;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 
+import com.vaadin.flow.server.VaadinService;
+
 /**
  * A container for utility methods related with Hilla endpoints.
  * <p>
@@ -51,4 +53,22 @@ public interface EndpointRequestUtil extends Serializable {
      *         <code>false</code> otherwise
      */
     boolean isAnonymousEndpoint(HttpServletRequest request);
+
+    /**
+     * Shows whether the Hilla is used in the project.
+     *
+     * @return true if Hilla is used, false otherwise
+     */
+    static boolean isEndpointUsed() {
+        try {
+            // This class belongs to fusion-endpoint and is not available in
+            // Flow projects. By checking for its availability, we can show the
+            // right project name in the Vaadin devmode gizmo
+            Class.forName("dev.hilla.EndpointController", false,
+                    VaadinService.class.getClassLoader());
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
 }

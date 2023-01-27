@@ -17,9 +17,9 @@ package com.vaadin.base.devserver;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.Version;
-import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * Data for a info message to the debug window.
@@ -63,7 +63,7 @@ public class ServerInfo implements Serializable {
     }
 
     private String fetchProductName() {
-        return SharedUtil.includesHilla() ? "Hilla" : "Vaadin";
+        return EndpointRequestUtil.isEndpointUsed() ? "Hilla" : "Vaadin";
     }
 
     public String getFlowVersion() {

@@ -28,9 +28,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * The default implementation of {@link DeploymentConfiguration} based on a base
@@ -383,7 +383,8 @@ public class DefaultDeploymentConfiguration
 
     private void checkFrontendHotdeploy() {
         frontendHotdeploy = getBooleanProperty(
-                InitParameters.FRONTEND_HOTDEPLOY, SharedUtil.includesHilla());
+                InitParameters.FRONTEND_HOTDEPLOY,
+                EndpointRequestUtil.isEndpointUsed());
     }
 
 }
