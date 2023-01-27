@@ -1226,7 +1226,7 @@ public class FrontendUtils {
      * @return the bundle directory
      */
     public static File getDevBundleFolder(File projectDir) {
-        return new File(projectDir, "dev-bundle");
+        return new File(projectDir, "src/main/dev-bundle");
     }
 
     /**
@@ -1243,10 +1243,8 @@ public class FrontendUtils {
         URL statsJson = findBundleFile(projectDir, "config/stats.json");
         if (statsJson == null) {
             getLogger().warn(
-                    "The application is running in express mode but there is "
-                            + "no bundle found. There is no 'dev-bundle' directory in the "
-                            + "project (or it has an invalid content) or on the "
-                            + "classpath nor is there a default bundle included.");
+                    "There is no dev-bundle in the project or on the classpath nor is there a default bundle included. " +
+                    "Verify that the dependency 'com.vaadin:vaadin-dev-bundle' is added to your project.");
             return null;
         }
 
