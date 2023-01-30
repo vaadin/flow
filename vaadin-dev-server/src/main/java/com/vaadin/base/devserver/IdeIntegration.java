@@ -88,8 +88,7 @@ public final class IdeIntegration {
                 return;
             }
 
-            if (!OpenInCurrentIde.openFile(javaFile,
-                    location.lineNumber())) {
+            if (!OpenInCurrentIde.openFile(javaFile, location.lineNumber())) {
                 // Failed to open in IDE so print the file and line info.
                 // Either an IDE makes it clickable or you can copy the file
                 // info
