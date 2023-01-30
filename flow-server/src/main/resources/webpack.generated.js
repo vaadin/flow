@@ -163,6 +163,9 @@ module.exports = {
   stats: devMode && !statsSetViaCLI ? 'errors-warnings' : 'normal', // Unclutter output in dev mode
 
   devServer: {
+    devMiddleware: {
+       writeToDisk: true
+    },
     hot: false,     // disable HMR
     client: false,  // disable wds client as we handle reloads and errors better
     // webpack-dev-server serves ./ ,  webpack-generated,  and java webapp
@@ -332,5 +335,7 @@ module.exports = {
       to: `${build}/webcomponentsjs/`,
       ignore: ['*.md', '*.json']
     }]),
+
+    new BuildStatusPlugin()
   ]
 };
