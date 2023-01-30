@@ -26,18 +26,12 @@ public enum SortDirection {
     /**
      * Ascending (e.g. A-Z, 1..9) sort order
      */
-    ASCENDING(Constants.ASCENDING_OPPOSITE),
+    ASCENDING,
 
     /**
      * Descending (e.g. Z-A, 9..1) sort order
      */
-    DESCENDING(Constants.DESCENDING_OPPOSITE);
-
-    private final SortDirection opposite;
-
-    SortDirection(SortDirection opposite) {
-        this.opposite = opposite;
-    }
+    DESCENDING;
 
     /**
      * Get the sort direction that is the direct opposite to this one.
@@ -45,11 +39,6 @@ public enum SortDirection {
      * @return a sort direction value
      */
     public SortDirection getOpposite() {
-        return opposite;
-    }
-
-    private static class Constants {
-        public static final SortDirection ASCENDING_OPPOSITE = DESCENDING;
-        public static final SortDirection DESCENDING_OPPOSITE = ASCENDING;
+        return ASCENDING.equals(this) ? DESCENDING : ASCENDING;
     }
 }
