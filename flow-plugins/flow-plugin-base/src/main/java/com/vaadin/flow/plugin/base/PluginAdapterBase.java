@@ -281,4 +281,5 @@ public interface PluginAdapterBase {
      */
     List<String> postinstallPackages();
 
+    boolean isFrontendHotdeploy();
 }
