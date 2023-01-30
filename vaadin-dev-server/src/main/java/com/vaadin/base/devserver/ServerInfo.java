@@ -63,7 +63,7 @@ public class ServerInfo implements Serializable {
     }
 
     private String fetchProductName() {
-        return EndpointRequestUtil.isEndpointUsed() ? "Hilla" : "Vaadin";
+        return EndpointRequestUtil.isHillaAvailable() ? "Hilla" : "Vaadin";
     }
 
     public String getFlowVersion() {
