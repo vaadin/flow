@@ -76,8 +76,8 @@ public final class IdeIntegration {
             return;
         }
 
-        String cls = location.getClassName();
-        String filename = location.getFilename();
+        String cls = location.className();
+        String filename = location.filename();
 
         if (cls.endsWith(filename.replace(".java", ""))) {
             File src = configuration.getJavaSourceFolder();
@@ -89,7 +89,7 @@ public final class IdeIntegration {
             }
 
             if (!OpenInCurrentIde.openFile(javaFile,
-                    location.getLineNumber())) {
+                    location.lineNumber())) {
                 // Failed to open in IDE so print the file and line info.
                 // Either an IDE makes it clickable or you can copy the file
                 // info
@@ -101,9 +101,9 @@ public final class IdeIntegration {
     }
 
     private StackTraceElement toStackTraceElement(Location location) {
-        return new StackTraceElement("", "", "", location.getClassName(),
-                location.getMethodName(), location.getFilename(),
-                location.getLineNumber());
+        return new StackTraceElement("", "", "", location.className(),
+                location.methodName(), location.filename(),
+                location.lineNumber());
 
     }
 

@@ -53,10 +53,10 @@ public class ComponentTracker {
      * Represents a location in the source code.
      */
     public static class Location implements Serializable {
-        private String className;
-        private String filename;
-        private String methodName;
-        private int lineNumber;
+        private final String className;
+        private final String filename;
+        private final String methodName;
+        private final int lineNumber;
 
         public Location(String className, String filename, String methodName,
                 int lineNumber) {
@@ -66,36 +66,20 @@ public class ComponentTracker {
             this.lineNumber = lineNumber;
         }
 
-        public String getClassName() {
+        public String className() {
             return className;
         }
 
-        public void setClassName(String className) {
-            this.className = className;
-        }
-
-        public String getFilename() {
+        public String filename() {
             return filename;
         }
 
-        public void setFilename(String filename) {
-            this.filename = filename;
-        }
-
-        public String getMethodName() {
+        public String methodName() {
             return methodName;
         }
 
-        public void setMethodName(String methodName) {
-            this.methodName = methodName;
-        }
-
-        public int getLineNumber() {
+        public int lineNumber() {
             return lineNumber;
-        }
-
-        public void setLineNumber(int lineNumber) {
-            this.lineNumber = lineNumber;
         }
 
         @Override
@@ -198,7 +182,7 @@ public class ComponentTracker {
     }
 
     private static boolean isNavigatorCreate(Location location) {
-        return location.getClassName()
+        return location.className()
                 .equals(AbstractNavigationStateRenderer.class.getName());
     }
 
@@ -219,7 +203,7 @@ public class ComponentTracker {
         if (preferredClass != null) {
             Optional<StackTraceElement> preferredCandidate = candidates.stream()
                     .filter(e -> e.getClassName()
-                            .equals(preferredClass.getClassName()))
+                            .equals(preferredClass.className()))
                     .findFirst();
             if (preferredCandidate.isPresent()) {
                 return toLocation(preferredCandidate.get());

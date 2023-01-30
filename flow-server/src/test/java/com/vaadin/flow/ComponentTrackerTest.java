@@ -72,12 +72,12 @@ public class ComponentTrackerTest {
         c2 = new Component1();
 
         ComponentTracker.Location c1Location = ComponentTracker.findCreate(c1);
-        Assert.assertEquals(70, c1Location.getLineNumber());
-        Assert.assertEquals(getClass().getName(), c1Location.getClassName());
+        Assert.assertEquals(70, c1Location.lineNumber());
+        Assert.assertEquals(getClass().getName(), c1Location.className());
 
         ComponentTracker.Location c2Location = ComponentTracker.findCreate(c2);
-        Assert.assertEquals(72, c2Location.getLineNumber());
-        Assert.assertEquals(getClass().getName(), c2Location.getClassName());
+        Assert.assertEquals(72, c2Location.lineNumber());
+        Assert.assertEquals(getClass().getName(), c2Location.className());
     }
 
     @Test
@@ -89,14 +89,14 @@ public class ComponentTrackerTest {
         Layout layout = new Layout(c1);
 
         ComponentTracker.Location c1Location = ComponentTracker.findAttach(c1);
-        Assert.assertEquals(89, c1Location.getLineNumber());
-        Assert.assertEquals(getClass().getName(), c1Location.getClassName());
+        Assert.assertEquals(89, c1Location.lineNumber());
+        Assert.assertEquals(getClass().getName(), c1Location.className());
 
         layout.add(c2);
 
         ComponentTracker.Location c2Location = ComponentTracker.findAttach(c2);
-        Assert.assertEquals(95, c2Location.getLineNumber());
-        Assert.assertEquals(getClass().getName(), c2Location.getClassName());
+        Assert.assertEquals(95, c2Location.lineNumber());
+        Assert.assertEquals(getClass().getName(), c2Location.className());
 
         // Last attach is tracked
         layout.add(c3);
@@ -104,8 +104,8 @@ public class ComponentTrackerTest {
         layout.add(c3);
 
         ComponentTracker.Location c3Location = ComponentTracker.findAttach(c3);
-        Assert.assertEquals(104, c3Location.getLineNumber());
-        Assert.assertEquals(getClass().getName(), c3Location.getClassName());
+        Assert.assertEquals(104, c3Location.lineNumber());
+        Assert.assertEquals(getClass().getName(), c3Location.className());
     }
 
     @Test
