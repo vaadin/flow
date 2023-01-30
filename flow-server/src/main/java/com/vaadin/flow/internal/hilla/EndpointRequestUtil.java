@@ -55,9 +55,9 @@ public interface EndpointRequestUtil extends Serializable {
     boolean isAnonymousEndpoint(HttpServletRequest request);
 
     /**
-     * Shows whether the Hilla is used in the project.
+     * Checks if Hilla is available.
      *
-     * @return true if Hilla is used, false otherwise
+     * @return true if Hilla is available, false otherwise
      */
     static boolean isEndpointUsed() {
         try {
