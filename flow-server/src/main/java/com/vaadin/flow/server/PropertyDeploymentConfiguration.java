@@ -152,7 +152,7 @@ public class PropertyDeploymentConfiguration
     public boolean frontendHotdeploy() {
         if (isOwnProperty(FRONTEND_HOTDEPLOY)) {
             return getBooleanProperty(FRONTEND_HOTDEPLOY,
-                    EndpointRequestUtil.isEndpointUsed());
+                    EndpointRequestUtil.isHillaAvailable());
         }
         return parentConfig.frontendHotdeploy();
     }

@@ -384,7 +384,7 @@ public class DefaultDeploymentConfiguration
     private void checkFrontendHotdeploy() {
         frontendHotdeploy = getBooleanProperty(
                 InitParameters.FRONTEND_HOTDEPLOY,
-                EndpointRequestUtil.isEndpointUsed());
+                EndpointRequestUtil.isHillaAvailable());
     }
 
 }

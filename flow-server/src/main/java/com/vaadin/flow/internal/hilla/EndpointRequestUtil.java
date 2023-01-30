@@ -59,13 +59,9 @@ public interface EndpointRequestUtil extends Serializable {
      *
      * @return true if Hilla is used, false otherwise
      */
-    static boolean isEndpointUsed() {
+    static boolean isHillaAvailable() {
         try {
-            // This class belongs to fusion-endpoint and is not available in
-            // Flow projects. By checking for its availability, we can show the
-            // right project name in the Vaadin devmode gizmo
-            Class.forName("dev.hilla.EndpointController", false,
-                    VaadinService.class.getClassLoader());
+            Class.forName("dev.hilla.EndpointController");
             return true;
         } catch (ClassNotFoundException e) {
             return false;
