@@ -22,6 +22,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.stereotype.Component;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.VaadinContext;
@@ -37,6 +39,8 @@ import com.vaadin.flow.server.VaadinContext;
  * <p>
  * There is also {@link RouteAlias} annotation which may be declared in addition
  * to this annotation and may be used multiple times.
+ * <p>
+ * The annotated class is a Spring component, when used together with Spring.
  *
  * @see RouteAlias
  * @see RoutePrefix
@@ -48,6 +52,7 @@ import com.vaadin.flow.server.VaadinContext;
 @Target(ElementType.TYPE)
 @Inherited
 @Documented
+@Component
 public @interface Route {
 
     String NAMING_CONVENTION = "___NAMING_CONVENTION___";
