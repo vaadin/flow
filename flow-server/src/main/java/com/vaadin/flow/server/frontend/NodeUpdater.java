@@ -340,7 +340,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("raw-loader", "3.1.0");
         defaults.put("css-loader", "5.2.7");
 
-        defaults.put("typescript", "4.0.3");
+        defaults.put("typescript", "4.4.3");
         defaults.put("ts-loader", "8.0.12");
         defaults.put("file-loader", "6.1.0");
         defaults.put("extract-loader", "5.1.0");
