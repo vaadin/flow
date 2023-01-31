@@ -264,6 +264,12 @@ public final class Constants implements Serializable {
     public static final String DEV_BUNDLE_NAME = "vaadin-dev-bundle";
 
     /**
+     * The folder in the project where Flow generates Express Build mode
+     * application dev bundle.
+     */
+    public static final String DEV_BUNDLE_LOCATION = "src/main/dev-bundle";
+
+    /**
      * The path part where dev-bundle is located inside the jar.
      */
     public static final String DEV_BUNDLE_JAR_PATH = DEV_BUNDLE_NAME + "/";

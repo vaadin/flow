@@ -30,6 +30,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 @NotThreadSafe
@@ -49,7 +50,7 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
         themeAssetsInBundle = new File(baseDir,
-                "src/main/dev-bundle/assets/themes/my-theme");
+                Constants.DEV_BUNDLE_LOCATION + "/assets/themes/my-theme");
         final File themeFolder = new File(baseDir, THEME_FOLDER);
         fontFile = new File(themeFolder, "fonts/ostrich-sans-regular.ttf");
         stylesCss = new File(themeFolder, "styles.css");

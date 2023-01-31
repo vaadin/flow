@@ -21,6 +21,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class DefaultDevBundleThemeIT extends ChromeBrowserTest {
@@ -33,7 +34,7 @@ public class DefaultDevBundleThemeIT extends ChromeBrowserTest {
         waitForElementPresent(By.className("la-cat"));
 
         File baseDir = new File(System.getProperty("user.dir", "."));
-        File devBundle = new File(baseDir, "src/main/dev-bundle");
+        File devBundle = new File(baseDir, Constants.DEV_BUNDLE_LOCATION);
 
         // shouldn't create a dev-bundle
         Assert.assertFalse(devBundle.exists());
