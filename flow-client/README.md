@@ -30,7 +30,8 @@ Run `npm run debug` then point your browser to http://localhost:9000/__intern/ t
 
 ## Flow Express Build mode
 
-Since Vaadin 24.0, the Flow application can be run in so called Express Build mode, where the frontend files are pre-compiled and bundled into {project.root}/dev-bundle directory. To make your changes in `flow-client` module be included into the Flow test modules, you have to delete this directory, so the Flow will re-compile the bundle and take into account your changes in `flow-client`:
-   - remove dev-bundle in the current folder: `rm -rf dev-bundle`
+Since Vaadin 24.0, the Flow application can be run in so called Express 
+Build mode, where the frontend files are pre-compiled and bundled into {project.root}src/main/dev-bundle directory. To make your changes in `flow-client` module be included into the Flow test modules, you have to delete this directory, so the Flow will re-compile the bundle and take into account your changes in `flow-client`:
+   - remove dev-bundle in the current folder: `rm -rf src/main/dev-bundle`
    - remove dev-bundle in the sub-folders: find . -type d -name dev-bundle -delete
 

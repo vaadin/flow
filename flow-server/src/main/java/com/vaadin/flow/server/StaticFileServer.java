@@ -368,8 +368,8 @@ public class StaticFileServer implements StaticFileHandler {
                     assetPath.indexOf(themeName) + themeName.length());
             throw new IllegalStateException(String.format(
                     "Asset '%1$s' is not found in project frontend directory"
-                            + ", default Express Build bundle or in the application "
-                            + "bundle './dev-bundle/assets/'. \n"
+                            + ", default development bundle or in the application "
+                            + "bundle 'src/main/dev-bundle/assets/'. \n"
                             + "Verify that the asset is available in "
                             + "'frontend/themes/%2$s/' directory and is added into the "
                             + "'assets' block of the 'theme.json' file. \n"

@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -80,8 +81,6 @@ public class DefaultDeploymentConfiguration
     public static final boolean DEFAULT_SYNC_ID_CHECK = true;
 
     public static final boolean DEFAULT_SEND_URLS_AS_PARAMETERS = true;
-
-    public static final boolean DEFAULT_FRONTEND_HOTDEPLOY = false;
 
     private boolean productionMode;
     private boolean xsrfProtectionEnabled;
@@ -384,7 +383,8 @@ public class DefaultDeploymentConfiguration
 
     private void checkFrontendHotdeploy() {
         frontendHotdeploy = getBooleanProperty(
-                InitParameters.FRONTEND_HOTDEPLOY, DEFAULT_FRONTEND_HOTDEPLOY);
+                InitParameters.FRONTEND_HOTDEPLOY,
+                EndpointRequestUtil.isHillaAvailable());
     }
 
 }
