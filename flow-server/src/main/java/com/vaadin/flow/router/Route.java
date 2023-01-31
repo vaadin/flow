@@ -22,6 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.vaadin.flow.component.UI;
@@ -53,6 +54,7 @@ import com.vaadin.flow.server.VaadinContext;
 @Inherited
 @Documented
 @Component
+@Scope("prototype")
 public @interface Route {
 
     String NAMING_CONVENTION = "___NAMING_CONVENTION___";
