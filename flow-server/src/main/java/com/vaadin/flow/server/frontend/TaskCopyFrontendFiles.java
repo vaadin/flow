@@ -49,10 +49,8 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
     /**
      * Scans the jar files given defined by {@code resourcesToScan}.
      *
-     * @param targetDirectory
-     *            target directory for the discovered files
-     * @param resourcesToScan
-     *            folders and jar files to scan.
+     * @param options
+     *            build options
      */
     TaskCopyFrontendFiles(Options options) {
         this.options = options;
@@ -123,7 +121,7 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                     && TaskCopyLocalFrontendFiles.keepFile(targetDirectory,
                             relativePathExclusions, path.toFile()))
                     .map(path -> targetDirectory.toPath().relativize(path)
-                            .toString())
+                            .toString().replaceAll("\\\\", "/"))
                     .collect(Collectors.toSet());
         }
     }
