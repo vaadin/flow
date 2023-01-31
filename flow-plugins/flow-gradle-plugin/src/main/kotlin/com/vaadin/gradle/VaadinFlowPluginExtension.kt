@@ -210,6 +210,12 @@ public open class VaadinFlowPluginExtension(project: Project) {
      */
     public var processResourcesTaskName : String? = null
 
+    /**
+     * Parameter to control if frontend development server should be used in
+     * development mode or not.
+     */
+    public var frontendHotdeploy: Boolean = false
+
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>? = null): ClasspathFilter {
         if (block != null) {
             block.delegate = classpathFilter

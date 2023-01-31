@@ -146,7 +146,7 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
-    public void tokenFileShouldExist_noDevModeTokenVisible()
+    public void tokenFileShouldExist_noHotdeployTokenVisible()
             throws IOException, MojoExecutionException, MojoFailureException {
         mojo.execute();
         Assert.assertTrue("No token file could be found", tokenFile.exists());
@@ -154,19 +154,19 @@ public class PrepareFrontendMojoTest {
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
         JsonObject buildInfo = JsonUtil.parse(json);
-        Assert.assertNull("No devMode token should be available",
+        Assert.assertNull("Default HotDeploy token should not be available",
                 buildInfo.get(FRONTEND_HOTDEPLOY));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
     }
 
     @Test
-    public void existingTokenFile_frontendHotdeployShouldBeRemoved()
+    public void existingTokenFile_defaultFrontendHotdeployShouldBeRemoved()
             throws IOException, MojoExecutionException, MojoFailureException {
 
         JsonObject initialBuildInfo = Json.createObject();
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
-        initialBuildInfo.put(FRONTEND_HOTDEPLOY, false);
+        initialBuildInfo.put(FRONTEND_HOTDEPLOY, true);
         org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
         org.apache.commons.io.FileUtils.write(tokenFile,
                 JsonUtil.stringify(initialBuildInfo, 2) + "\n", "UTF-8");
@@ -176,7 +176,7 @@ public class PrepareFrontendMojoTest {
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
         JsonObject buildInfo = JsonUtil.parse(json);
-        Assert.assertNull("No devMode token should be available",
+        Assert.assertNull("Default hotdeploy should not be added",
                 buildInfo.get(FRONTEND_HOTDEPLOY));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));

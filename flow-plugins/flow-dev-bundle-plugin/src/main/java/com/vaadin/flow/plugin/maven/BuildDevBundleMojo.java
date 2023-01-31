@@ -140,7 +140,7 @@ public class BuildDevBundleMojo extends AbstractMojo
      * Whether vaadin home node executable usage is forced. If it's set to
      * {@code true} then vaadin home 'node' is checked and installed if it's
      * absent. Then it will be used instead of globally 'node' or locally
-     * installed installed 'node'.
+     * installed 'node'.
      */
     @Parameter(property = InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = ""
             + Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE)
@@ -398,4 +398,8 @@ public class BuildDevBundleMojo extends AbstractMojo
         return postinstallPackages;
     }
 
+    @Override
+    public boolean isFrontendHotdeploy() {
+        return false;
+    }
 }
