@@ -34,7 +34,7 @@ public class AddOnIT extends ChromeBrowserTest {
 
         // shouldn't create a dev-bundle
         Assert.assertFalse("No dev-bundle should be created",
-                new File(baseDir, "dev-bundle").exists());
+                new File(baseDir, "src/main/dev-bundle").exists());
         Assert.assertFalse("No node_modules should be created",
                 new File(baseDir, "node_modules").exists());
 
