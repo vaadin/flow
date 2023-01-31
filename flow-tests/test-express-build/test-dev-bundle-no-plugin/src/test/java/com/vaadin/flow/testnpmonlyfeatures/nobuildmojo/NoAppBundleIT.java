@@ -26,7 +26,7 @@ public class NoAppBundleIT extends ChromeBrowserTest {
 
         // shouldn't create a dev-bundle
         Assert.assertFalse("No dev-bundle should be created",
-                new File(baseDir, "src/main/dev-bundle").exists());
+                new File(baseDir, Constants.DEV_BUNDLE_LOCATION).exists());
         Assert.assertFalse("No node_modules should be created",
                 new File(baseDir, "node_modules").exists());
 
