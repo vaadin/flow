@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class NoAppBundleIT extends ChromeBrowserTest {
