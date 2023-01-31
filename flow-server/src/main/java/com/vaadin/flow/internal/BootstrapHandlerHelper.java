@@ -16,6 +16,7 @@
 package com.vaadin.flow.internal;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Optional;
 
 import jakarta.servlet.ServletConfig;
@@ -147,8 +148,12 @@ public final class BootstrapHandlerHelper implements Serializable {
             ServletConfig servletConfig) {
         String name = servletConfig.getServletName();
         if (name != null) {
-            return Optional.ofNullable(servletConfig.getServletContext()
-                    .getServletRegistrations().get(name));
+            Map<String, ? extends ServletRegistration> regs = servletConfig
+                    .getServletContext().getServletRegistrations();
+            if (regs != null) {
+                return Optional.ofNullable(servletConfig.getServletContext()
+                        .getServletRegistrations().get(name));
+            }
         }
         return Optional.empty();
     }
