@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -68,9 +68,6 @@ public class FeatureFlags implements Serializable {
             "Enforce client / constraint / binder validation",
             "enforceFieldValidation",
             "https://github.com/vaadin/platform/issues/3066", false, null);
-    public static final Feature EXPRESS_BUILD = new Feature(
-            "Express Build mode for Flow", "expressBuild",
-            "https://github.com/vaadin/platform/issues/3554", true, null);
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -92,7 +89,6 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(HILLA_ENGINE));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
         features.add(new Feature(ENFORCE_FIELD_VALIDATION));
-        features.add(new Feature(EXPRESS_BUILD));
         loadProperties();
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -212,34 +212,6 @@ public class FrontendTools {
     public FrontendTools(ApplicationConfiguration applicationConfiguration,
             File projectRoot) {
         this(createSettings(applicationConfiguration, projectRoot));
-    }
-
-    /**
-     * Creates an instance of the class using the {@code baseDir} as a base
-     * directory to locate the tools and the directory returned by the
-     * {@code alternativeDirGetter} as a directory to install tools if they are
-     * not found and use it as an alternative tools location.
-     * <p>
-     * If {@code alternativeDir} is {@code null} tools won't be installed.
-     *
-     *
-     * @param baseDir
-     *            the base directory to locate the tools, not {@code null}
-     * @param alternativeDirGetter
-     *            the getter for a directory where tools will be installed if
-     *            they are not found globally or in the {@code baseDir}, may be
-     *            {@code null}
-     * @deprecated use
-     *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
-     *             instead, as it simplifies configuring the frontend tools and
-     *             gives the default values to configuration parameters.
-     */
-    @Deprecated
-    public FrontendTools(String baseDir,
-            Supplier<String> alternativeDirGetter) {
-        this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
-                URI.create(Platform.guess().getNodeDownloadRoot()), false,
-                false);
     }
 
     /**
@@ -973,7 +945,6 @@ public class FrontendTools {
         returnCommand.add("--no-update-notifier");
         returnCommand.add("--no-audit");
         returnCommand.add("--scripts-prepend-node-path=true");
-        returnCommand.add("--legacy-peer-deps");
 
         if (removePnpmLock) {
             // remove pnpm-lock.yaml which contains pnpm as a dependency.

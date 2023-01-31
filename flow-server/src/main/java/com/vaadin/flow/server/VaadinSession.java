@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -76,12 +76,6 @@ import jakarta.servlet.http.HttpSessionBindingListener;
 public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private static final String SESSION_NOT_LOCKED_MESSAGE = "Cannot access state in VaadinSession or UI without locking the session.";
-
-    /**
-     * @deprecated Use {@link InitParameters#UI_PARAMETER} instead.
-     */
-    @Deprecated
-    public static final String UI_PARAMETER = InitParameters.UI_PARAMETER;
 
     volatile boolean sessionClosedExplicitly = false;
 

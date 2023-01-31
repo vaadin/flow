@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,7 +20,7 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinService;
@@ -31,8 +31,8 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
     @Override
     public void serviceInit(ServiceInitEvent event) {
         // just set a fake backend to trigger live-reload client-side
-        BrowserLiveReloadAccess liveReloadAccess = VaadinService.getCurrent()
-                .getInstantiator().getOrCreate(BrowserLiveReloadAccess.class);
+        BrowserLiveReloadAccessor liveReloadAccess = VaadinService.getCurrent()
+                .getInstantiator().getOrCreate(BrowserLiveReloadAccessor.class);
         BrowserLiveReload browserLiveReload = liveReloadAccess
                 .getLiveReload(VaadinService.getCurrent());
         browserLiveReload.setBackend(BrowserLiveReload.Backend.HOTSWAP_AGENT);

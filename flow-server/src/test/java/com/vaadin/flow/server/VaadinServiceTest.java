@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -296,7 +296,7 @@ public class VaadinServiceTest {
         VaadinService.setCurrent(null);
 
         Assert.assertEquals(1, availableRoutes.size());
-        Assert.assertEquals(availableRoutes.get(0).getUrl(), "test");
+        Assert.assertEquals(availableRoutes.get(0).getTemplate(), "test");
     }
 
     @Test
@@ -462,7 +462,6 @@ public class VaadinServiceTest {
         Mockito.when((factory.createInstantitor(Mockito.any())))
                 .thenReturn(instantiator);
 
-        Mockito.when(instantiator.init(Mockito.any())).thenReturn(true);
         return factory;
     }
 

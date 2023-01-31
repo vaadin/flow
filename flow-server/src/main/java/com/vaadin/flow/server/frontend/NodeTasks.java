@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,10 +23,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -102,6 +101,7 @@ public class NodeTasks implements FallibleCommand {
             // determine if we need a rebuild as the check happens immediately
             // and no update tasks are executed before it.
             if (!options.productionMode && options.isDevBundleBuild()) {
+                UsageStatistics.markAsUsed("flow/expressBuild", null);
                 if (TaskRunDevBundleBuild.needsBuild(options,
                         frontendDependencies, classFinder)) {
                     options.runNpmInstall(true);
@@ -156,7 +156,7 @@ public class NodeTasks implements FallibleCommand {
             addGenerateServiceWorkerTask(options,
                     frontendDependencies.getPwaConfiguration());
 
-            if (options.productionMode || options.isEnableDevServer()
+            if (options.productionMode || options.isFrontendHotdeploy()
                     || options.isDevBundleBuild()) {
                 addGenerateTsConfigTask(options);
             }
@@ -205,7 +205,7 @@ public class NodeTasks implements FallibleCommand {
             pwa = new PwaConfiguration();
         }
         commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
-        if (options.productionMode || options.isEnableDevServer()
+        if (options.productionMode || options.isFrontendHotdeploy()
                 || options.isDevBundleBuild()) {
             commands.add(new TaskUpdateVite(options));
         }
@@ -228,7 +228,7 @@ public class NodeTasks implements FallibleCommand {
 
     private void addBootstrapTasks(Options options) {
         commands.add(new TaskGenerateIndexHtml(options));
-        if (options.productionMode || options.isEnableDevServer()
+        if (options.productionMode || options.isFrontendHotdeploy()
                 || options.isDevBundleBuild()) {
             commands.add(new TaskGenerateIndexTs(options));
             if (!options.productionMode) {

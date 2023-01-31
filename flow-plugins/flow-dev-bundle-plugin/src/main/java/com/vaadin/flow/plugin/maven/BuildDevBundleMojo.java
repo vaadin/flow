@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -95,7 +95,7 @@ public class BuildDevBundleMojo extends AbstractMojo
      * Whether or not insert the initial Uidl object in the bootstrap index.html
      */
     @Parameter(defaultValue = "${vaadin."
-            + Constants.SERVLET_PARAMETER_INITIAL_UIDL + "}")
+            + InitParameters.SERVLET_PARAMETER_INITIAL_UIDL + "}")
     private boolean eagerServerLoad;
 
     /**
@@ -140,9 +140,9 @@ public class BuildDevBundleMojo extends AbstractMojo
      * Whether vaadin home node executable usage is forced. If it's set to
      * {@code true} then vaadin home 'node' is checked and installed if it's
      * absent. Then it will be used instead of globally 'node' or locally
-     * installed installed 'node'.
+     * installed 'node'.
      */
-    @Parameter(property = Constants.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = ""
+    @Parameter(property = InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = ""
             + Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE)
     private boolean requireHomeNodeExec;
 
@@ -398,4 +398,8 @@ public class BuildDevBundleMojo extends AbstractMojo
         return postinstallPackages;
     }
 
+    @Override
+    public boolean isFrontendHotdeploy() {
+        return false;
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,6 @@
  */
 package com.vaadin.client.flow.binding;
 
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -1316,11 +1315,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (sendNow) {
             // Send if there were not filters or at least one matched
 
-            // Flush all debounced events so that they don't happen
-            // in wrong order in the server-side
-            List<Consumer<String>> executedCommands = Debouncer.flushAll();
+            boolean commandAlreadyExecuted = false;
+            boolean flushPendingChanges = synchronizeProperties.isEmpty();
 
-            if (!executedCommands.contains(sendCommand)) {
+            if (flushPendingChanges) {
+                // Flush all debounced events so that they don't happen
+                // in wrong order in the server-side
+                commandAlreadyExecuted = Debouncer.flushAll()
+                        .contains(sendCommand);
+            }
+
+            if (!commandAlreadyExecuted) {
                 sendCommand.accept(null);
             }
         }

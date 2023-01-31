@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,6 @@ import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.AbstractPropertyConfiguration;
@@ -100,11 +99,6 @@ public class DefaultApplicationConfigurationFactory
                     false);
         }
 
-        @Override
-        public boolean enableDevServer() {
-            return !FeatureFlags.get(getContext())
-                    .isEnabled(FeatureFlags.EXPRESS_BUILD);
-        }
     }
 
     @Override

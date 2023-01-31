@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -47,8 +47,10 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 
 /**
  * Handles sending of resources from the WAR root (web content) or
@@ -262,7 +264,7 @@ public class StaticFileServer implements StaticFileHandler {
                     deploymentConfiguration.getProjectFolder(),
                     "webapp/" + filenameInsideBundle);
         } else if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
-            if (!deploymentConfiguration.enableDevServer()) {
+            if (!deploymentConfiguration.frontendHotdeploy()) {
                 resourceUrl = findAssetInFrontendThemesOrDevBundle(
                         vaadinService,
                         deploymentConfiguration.getProjectFolder(),
@@ -330,6 +332,15 @@ public class StaticFileServer implements StaticFileHandler {
             return assetInFrontendThemes.toURI().toURL();
         }
 
+        // Also look into jar-resources for a packaged theme
+        File jarResourcesFolder = FrontendUtils
+                .getJarResourcesFolder(frontendFolder);
+        assetInFrontendThemes = new File(jarResourcesFolder, assetPath);
+
+        if (assetInFrontendThemes.exists()) {
+            return assetInFrontendThemes.toURI().toURL();
+        }
+
         // Second, look into default dev bundle
         Matcher matcher = APP_THEME_PATTERN.matcher(assetPath);
         if (!matcher.find()) {
@@ -357,14 +368,14 @@ public class StaticFileServer implements StaticFileHandler {
                     assetPath.indexOf(themeName) + themeName.length());
             throw new IllegalStateException(String.format(
                     "Asset '%1$s' is not found in project frontend directory"
-                            + ", default Express Build bundle or in the application "
-                            + "bundle './dev-bundle/assets/'. \n"
+                            + ", default development bundle or in the application "
+                            + "bundle '%2$s/assets/'. \n"
                             + "Verify that the asset is available in "
-                            + "'frontend/themes/%2$s/' directory and is added into the "
+                            + "'frontend/themes/%3$s/' directory and is added into the "
                             + "'assets' block of the 'theme.json' file. \n"
                             + "Else verify that the dependency 'com.vaadin:vaadin-dev-bundle' "
                             + "is added to your project.",
-                    assetName, themeName));
+                    assetName, Constants.DEV_BUNDLE_LOCATION, themeName));
         }
         return assetInDevBundleUrl;
     }

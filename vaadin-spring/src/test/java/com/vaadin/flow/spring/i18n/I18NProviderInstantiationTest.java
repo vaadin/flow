@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,7 +34,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 
 @RunWith(SpringRunner.class)
@@ -88,7 +88,7 @@ public class I18NProviderInstantiationTest {
     public static Instantiator getInstantiator(ApplicationContext context)
             throws ServletException {
         Properties properties = new Properties();
-        properties.put(Constants.I18N_PROVIDER,
+        properties.put(InitParameters.I18N_PROVIDER,
                 DefaultI18NTestProvider.class.getName());
         return SpringInstantiatorTest.getService(context, properties)
                 .getInstantiator();

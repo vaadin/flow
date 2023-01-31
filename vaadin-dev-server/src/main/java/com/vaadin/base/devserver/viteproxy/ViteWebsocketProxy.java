@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -52,15 +52,15 @@ public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
     public ViteWebsocketProxy(Session browserSession, Integer vitePort)
             throws InterruptedException, ExecutionException {
         viteConnection = new ViteWebsocketConnection(vitePort,
-                browserSession.getNegotiatedSubprotocol(), msg -> {
-                    try {
-                        browserSession.getBasicRemote().sendText(msg);
-                        getLogger().debug("Message sent to browser: " + msg);
-                    } catch (Exception e) {
+                browserSession.getNegotiatedSubprotocol(),
+                msg -> browserSession.getAsyncRemote().sendText(msg, result -> {
+                    if (result.isOK()) {
+                        getLogger().debug("Message sent to browser: {}", msg);
+                    } else {
                         getLogger().debug("Error sending message to browser",
-                                e);
+                                result.getException());
                     }
-                }, () -> {
+                }), () -> {
                     try {
                         browserSession.close();
                     } catch (IOException e) {

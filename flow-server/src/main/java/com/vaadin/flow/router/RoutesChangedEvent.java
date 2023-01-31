@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -156,7 +156,7 @@ public class RoutesChangedEvent extends EventObject {
      */
     public List<String> getAddedURLs() {
         return Collections.unmodifiableList(added.stream()
-                .map(RouteBaseData::getUrl).collect(Collectors.toList()));
+                .map(RouteBaseData::getTemplate).collect(Collectors.toList()));
     }
 
     /**
@@ -166,12 +166,12 @@ public class RoutesChangedEvent extends EventObject {
      */
     public List<String> getRemovedURLs() {
         return Collections.unmodifiableList(removed.stream()
-                .map(RouteBaseData::getUrl).collect(Collectors.toList()));
+                .map(RouteBaseData::getTemplate).collect(Collectors.toList()));
     }
 
     private boolean checkIfRouteIsPresent(List<RouteBaseData<?>> routes,
             String path) {
-        return routes.stream().map(RouteBaseData::getUrl)
+        return routes.stream().map(RouteBaseData::getTemplate)
                 .anyMatch(url -> url.equals(path));
     }
 

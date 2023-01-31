@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,7 +26,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameters;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
@@ -289,25 +288,6 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     @Override
     public VaadinContext getContext() {
         return session.getService().getContext();
-    }
-
-    /**
-     * @deprecated instead use {@link #getNavigationRouteTarget(String)} and
-     *             retrieve the list of route layouts from the
-     *             {@link RouteTarget} contained in the
-     *             {@link NavigationRouteTarget}.
-     * @see RouteTarget#getParentLayouts()
-     */
-    @Override
-    @Deprecated
-    public List<Class<? extends RouterLayout>> getRouteLayouts(String path,
-            Class<? extends Component> navigationTarget) {
-        final NavigationRouteTarget navigationRouteTarget = getConfiguration()
-                .getNavigationRouteTarget(path);
-        if (navigationRouteTarget.hasTarget()) {
-            return navigationRouteTarget.getRouteTarget().getParentLayouts();
-        }
-        return getParentRegistry().getRouteLayouts(path, navigationTarget);
     }
 
     private RouteRegistry getParentRegistry() {

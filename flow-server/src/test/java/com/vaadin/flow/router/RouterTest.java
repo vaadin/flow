@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -58,7 +58,6 @@ import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Enter;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
 import com.vaadin.flow.router.internal.DefaultErrorHandler;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
-import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
@@ -67,7 +66,6 @@ import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 import static com.vaadin.flow.router.internal.RouteModelTest.parameters;
 import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
@@ -3295,8 +3293,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     private String resolve(Class<?> clazz) {
-        Route annotation = clazz.getAnnotation(Route.class);
-        return RouteUtil.resolve(clazz, annotation);
+        return new DefaultRoutePathProvider().getRoutePath(clazz);
     }
 
     @Test
@@ -3413,13 +3410,14 @@ public class RouterTest extends RoutingTestBase {
                 .setAnnotatedRoute(AliasLayout.class);
 
         List<Class<? extends RouterLayout>> parents = router.getRegistry()
-                .getRouteLayouts("noParent", AliasLayout.class);
+                .getNavigationRouteTarget("noParent").getRouteTarget()
+                .getParentLayouts();
 
         Assert.assertTrue("Main route should have no parents.",
                 parents.isEmpty());
 
-        parents = router.getRegistry().getRouteLayouts("twoParents",
-                AliasLayout.class);
+        parents = router.getRegistry().getNavigationRouteTarget("twoParents")
+                .getRouteTarget().getParentLayouts();
 
         Assert.assertEquals("Route alias should have two parents", 2,
                 parents.size());

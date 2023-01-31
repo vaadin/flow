@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,11 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 
 /**
  * Abstract base class for route and route alias data.
@@ -117,37 +114,12 @@ public abstract class RouteBaseData<T extends RouteBaseData>
     }
 
     /**
-     * Get the full route url of {@link Route}.
-     *
-     * @return route url
-     * @deprecated use {@link #getTemplate()} instead.
-     */
-    @Deprecated
-    public String getUrl() {
-        return template;
-    }
-
-    /**
      * Get the full route template of {@link Route}.
      *
      * @return route template.
      */
     public String getTemplate() {
         return template;
-    }
-
-    /**
-     * Get {@link Route} route parameters types if any.
-     *
-     * @return route parameters types.
-     * @deprecated use {@link #getRouteParameters()} instead.
-     */
-    @Deprecated
-    public List<Class<?>> getParameters() {
-        final List<String> parametersRegex = parameters.values().stream()
-                .map(RouteParameterData::getRegex).map(Optional::get)
-                .collect(Collectors.toList());
-        return HasUrlParameterFormat.getParameterTypes(parametersRegex);
     }
 
     /**

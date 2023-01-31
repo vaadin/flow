@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,7 +43,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -303,11 +302,11 @@ public abstract class NodeUpdater implements FallibleCommand {
         return result;
     }
 
-    Map<String, String> getDefaultDependencies() {
+    static Map<String, String> getDefaultDependencies() {
         return readDependencies("default", "dependencies");
     }
 
-    private Map<String, String> readDependencies(String id,
+    private static Map<String, String> readDependencies(String id,
             String packageJsonKey) {
         try {
             Map<String, String> map = new HashMap<>();
@@ -319,7 +318,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
             return map;
         } catch (IOException e) {
-            log().error(
+            LoggerFactory.getLogger(NodeUpdater.class).error(
                     "Unable to read " + packageJsonKey + " from '" + id + "'",
                     e);
             return new HashMap<>();
@@ -327,8 +326,8 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     }
 
-    private JsonObject readPackageJson(String id) throws IOException {
-        try (InputStream packageJson = getClass()
+    private static JsonObject readPackageJson(String id) throws IOException {
+        try (InputStream packageJson = NodeUpdater.class
                 .getResourceAsStream("dependencies/" + id + "/package.json")) {
             JsonObject content = Json.parse(
                     IOUtils.toString(packageJson, StandardCharsets.UTF_8));
@@ -487,7 +486,8 @@ public abstract class NodeUpdater implements FallibleCommand {
             throws IOException {
         String content = stringify(json, 2) + "\n";
         if (packageFile.exists() || options.productionMode
-                || options.isEnableDevServer() || options.isDevBundleBuild()) {
+                || options.isFrontendHotdeploy()
+                || options.isDevBundleBuild()) {
             log().debug("writing file {}.", packageFile.getAbsolutePath());
             FileUtils.forceMkdirParent(packageFile);
             FileUtils.writeStringToFile(packageFile, content, UTF_8.name());

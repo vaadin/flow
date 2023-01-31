@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -103,19 +103,6 @@ public class RouteConfiguration implements Serializable {
      */
     public List<RouteData> getAvailableRoutes() {
         return handledRegistry.getRegisteredRoutes();
-    }
-
-    /**
-     * Check if there is a registered target for the given path.
-     *
-     * @param path
-     *            path to check for route registration
-     * @return true if there exists a route for the given path
-     * @deprecated Use {@link #isPathAvailable(String)}
-     */
-    @Deprecated
-    public boolean isPathRegistered(String path) {
-        return isPathAvailable(path);
     }
 
     /**

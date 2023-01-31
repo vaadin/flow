@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,18 +30,23 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.ScrollOptions.Alignment;
+import com.vaadin.flow.component.ScrollOptions.Behavior;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.internal.DependencyList;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
@@ -1790,4 +1795,45 @@ public class ComponentTest {
                 stateChange.get());
         Assert.assertNull(child.getElement().getAttribute("disabled"));
     }
+
+    @Test
+    public void scrollIntoView() {
+        EnabledDiv div = new EnabledDiv();
+        ui.add(div);
+        div.scrollIntoView();
+
+        assertPendingJs("scrollIntoView()");
+    }
+
+    private void assertPendingJs(String expectedJs) {
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        Assert.assertEquals(1, pendingJs.size());
+        JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
+        MatcherAssert.assertThat(inv.getExpression(),
+                CoreMatchers.containsString(expectedJs));
+    }
+
+    @Test
+    public void scrollIntoViewSmooth() {
+        EnabledDiv div = new EnabledDiv();
+        ui.add(div);
+        div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH));
+
+        assertPendingJs("scrollIntoView({\"behavior\":\"smooth\"})");
+    }
+
+    @Test
+    public void scrollIntoViewAllParams() {
+        EnabledDiv div = new EnabledDiv();
+        ui.add(div);
+        div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH, Alignment.END,
+                Alignment.CENTER));
+
+        assertPendingJs(
+                "scrollIntoView({\"behavior\":\"smooth\",\"block\":\"end\",\"inline\":\"center\"})");
+    }
+
 }

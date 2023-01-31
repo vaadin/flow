@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -194,7 +194,7 @@ public class WebComponentBootstrapHandlerViteTest {
         session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
-        config.setEnableDevServer(false);
+        config.setFrontendHotdeploy(false);
         config.setProjectFolder(projectRootFolder);
 
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
@@ -228,7 +228,7 @@ public class WebComponentBootstrapHandlerViteTest {
         session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
-        config.setEnableDevServer(false);
+        config.setFrontendHotdeploy(false);
         config.setProjectFolder(projectRootFolder);
 
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
@@ -293,7 +293,7 @@ public class WebComponentBootstrapHandlerViteTest {
         session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
-        config.setEnableDevServer(false);
+        config.setFrontendHotdeploy(false);
         config.setProjectFolder(projectRootFolder);
 
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
@@ -329,7 +329,7 @@ public class WebComponentBootstrapHandlerViteTest {
                 .getDeploymentConfiguration();
         config.setApplicationOrSystemProperty(SERVLET_PARAMETER_STATISTICS_JSON,
                 VAADIN_SERVLET_RESOURCES + "config/stats_no_export.json");
-        config.setEnableDevServer(false);
+        config.setFrontendHotdeploy(false);
         config.setProjectFolder(projectRootFolder);
 
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);

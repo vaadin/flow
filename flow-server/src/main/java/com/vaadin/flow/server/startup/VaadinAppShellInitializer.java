@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,6 +35,7 @@ import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.Constants;
@@ -80,23 +81,6 @@ public class VaadinAppShellInitializer
     /**
      * Initializes the {@link AppShellRegistry} for the application.
      *
-     * @deprecated Use {@link #init(Set, VaadinContext)} instead by wrapping
-     *             {@link ServletContext} with {@link VaadinServletContext}.
-     *
-     * @param classes
-     *            a set of classes that matches the {@link HandlesTypes} set in
-     *            this class.
-     * @param context
-     *            the servlet context.
-     */
-    @Deprecated
-    public static void init(Set<Class<?>> classes, ServletContext context) {
-        init(classes, new VaadinServletContext(context));
-    }
-
-    /**
-     * Initializes the {@link AppShellRegistry} for the application.
-     *
      * @param classes
      *            a set of classes that matches the {@link HandlesTypes} set in
      *            this class.
@@ -118,13 +102,15 @@ public class VaadinAppShellInitializer
         }
 
         List<String> offendingAnnotations = new ArrayList<>();
+        AppShellPredicate predicate = context.getAttribute(Lookup.class)
+                .lookup(AppShellPredicate.class);
 
         classes.stream()
                 // sort classes by putting the app shell in first position
-                .sorted((a, b) -> registry.isShell(a) ? -1
-                        : registry.isShell(b) ? 1 : 0)
+                .sorted((a, b) -> predicate.isShell(a) ? -1
+                        : predicate.isShell(b) ? 1 : 0)
                 .forEach(clz -> {
-                    if (registry.isShell(clz)) {
+                    if (predicate.isShell(clz)) {
                         registry.setShell(
                                 (Class<? extends AppShellConfigurator>) clz);
                         getLogger().debug(

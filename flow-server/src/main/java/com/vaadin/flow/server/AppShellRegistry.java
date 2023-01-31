@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,7 +37,6 @@ import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.server.startup.AppShellPredicate;
 import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.getClassAnnotations;
@@ -56,12 +55,6 @@ public class AppShellRegistry implements Serializable {
 
     public static final String ERROR_HEADER_OFFENDING_PWA = "%n%nWe changed the way you configure PWAs, please see this link for more info:%n"
             + "https://vaadin.com/docs/latest/flow/advanced/modifying-the-bootstrap-page%n";
-
-    public static final String ERROR_HEADER_NO_APP_CONFIGURATOR = "%n%nThe `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."
-            + "%nPlease, create a class implementing `AppShellConfigurator`, and remove `PageConfigurator` from: %n  - %s%n";
-
-    public static final String ERROR_HEADER_OFFENDING_CONFIGURATOR = "%n%nThe `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."
-            + "%nPlease, configure the page in %s, and remove the `PageConfigurator` from: %n - %s%n";
 
     private static final String ERROR_LINE = "  - %s from %s";
     private static final String ERROR_MULTIPLE_SHELL = "%n%nMultiple classes implementing `AppShellConfigurator` were found. However, only a single class implementing `AppShellConfigurator` is allowed."
@@ -151,22 +144,6 @@ public class AppShellRegistry implements Serializable {
      */
     public Class<? extends AppShellConfigurator> getShell() {
         return appShellClass;
-    }
-
-    /**
-     * Checks whether the class is extending {@link AppShellConfigurator}.
-     *
-     * @param clz
-     *            the class to check.
-     * @return true if the class extends {@link AppShellConfigurator}.
-     * @deprecated use {@link AppShellPredicate} to test whether the class is an
-     *             {@link AppShellConfigurator} or not
-     */
-    @Deprecated
-    public boolean isShell(Class<?> clz) {
-        assert clz != null;
-        AppShellPredicate predicate = lookup.lookup(AppShellPredicate.class);
-        return predicate.isShell(clz);
     }
 
     /**

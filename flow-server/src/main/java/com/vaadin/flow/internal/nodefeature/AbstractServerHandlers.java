@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -216,22 +216,11 @@ public abstract class AbstractServerHandlers<T>
     }
 
     /**
-     * Gets the annotation which is used to mark methods as handlers.
-     *
-     * @return the handler marker annotation
-     * @deprecated Implement {@link #getHandlerAnnotationFqn()} instead
-     */
-    @Deprecated
-    protected abstract Class<? extends Annotation> getHandlerAnnotation();
-
-    /**
      * Gets the annotation FQN which is used to mark methods as handlers.
      *
      * @return the handler marker annotation
      */
-    protected String getHandlerAnnotationFqn() {
-        return getHandlerAnnotation().getName();
-    }
+    protected abstract String getHandlerAnnotationFqn();
 
     /**
      * Returns method's RPC communication mode from the client side to the

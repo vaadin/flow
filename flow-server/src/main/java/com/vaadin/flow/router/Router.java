@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -64,24 +64,6 @@ public class Router implements Serializable {
         assert registry != null;
         this.registry = registry;
         routeResolver = new DefaultRouteResolver();
-    }
-
-    /**
-     * Enables navigation for a new UI instance. This initializes the UI content
-     * based on the location used for loading the UI and sets up the UI to be
-     * updated when the user navigates to some other location.
-     *
-     * @param ui
-     *            the UI that navigation should be set up for
-     * @param initRequest
-     *            the Vaadin request that bootstraps the provided UI
-     * @deprecated use {@link #initializeUI(UI, Location)} instead
-     */
-    @Deprecated
-    public void initializeUI(UI ui, VaadinRequest initRequest) {
-        Location location = new Location(initRequest.getPathInfo(),
-                QueryParameters.full(initRequest.getParameterMap()));
-        initializeUI(ui, location);
     }
 
     /**

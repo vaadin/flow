@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandlerTest;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
@@ -110,14 +111,15 @@ public class TestUtil {
         String content = "{\"npmModules\": {}, "
                 + "\"entryScripts\": [\"foo.js\"], "
                 + "\"packageJsonHash\": \"42\"}";
-        createStubFile(projectRootFolder, "dev-bundle/config/stats.json",
-                content);
+        createStubFile(projectRootFolder,
+                Constants.DEV_BUNDLE_LOCATION + "/config/stats.json", content);
     }
 
     public static void createStylesCssStubInBundle(File projectRootFolder,
             String themeName, String content) throws IOException {
-        createStubFile(projectRootFolder,
-                "dev-bundle/assets/themes/" + themeName + "/styles.css",
+        createStubFile(
+                projectRootFolder, Constants.DEV_BUNDLE_LOCATION
+                        + "/assets/themes/" + themeName + "/styles.css",
                 content);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -199,10 +199,10 @@ public class LitTemplateParserImpl implements LitTemplateParser {
         }
         if (content == null) {
             // In express mode, template sources are stored in
-            // dev-bundle/config/templates
+            // src/main/dev-bundle/config/templates
             String pathWithoutPrefix = url.replaceFirst("^\\./", "");
-            Path subFolder = Path.of("dev-bundle", "config", "templates",
-                    pathWithoutPrefix);
+            Path subFolder = Path.of(Constants.DEV_BUNDLE_LOCATION, "config",
+                    "templates", pathWithoutPrefix);
             File templateFile = new File(
                     service.getDeploymentConfiguration().getProjectFolder(),
                     subFolder.toString());

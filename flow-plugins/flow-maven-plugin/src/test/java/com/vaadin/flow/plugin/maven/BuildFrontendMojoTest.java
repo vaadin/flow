@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -65,6 +65,7 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -101,6 +102,7 @@ public class BuildFrontendMojoTest {
     private File openApiJsonFile;
     private File generatedTsFolder;
     private File tokenFile;
+    private File jarResourcesSource;
 
     private final BuildFrontendMojo mojo = Mockito.spy(new BuildFrontendMojo());
     private Lookup lookup;
@@ -141,6 +143,9 @@ public class BuildFrontendMojoTest {
         webpackOutputDirectory = new File(projectBase, VAADIN_WEBAPP_RESOURCES);
         resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
+        jarResourcesSource = new File(projectBase,
+                "jar-resources-source/META-INF/frontend");
+        jarResourcesSource.mkdirs();
 
         projectFrontendResourcesDirectory = new File(npmFolder,
                 "flow_resources");
@@ -193,6 +198,8 @@ public class BuildFrontendMojoTest {
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
                 Paths.get(projectBase.toString(), "target").toString());
+        Mockito.when(mojo.getJarFiles()).thenReturn(
+                Set.of(jarResourcesSource.getParentFile().getParentFile()));
 
         generatedFolder.mkdirs();
 
@@ -501,7 +508,7 @@ public class BuildFrontendMojoTest {
         JsonObject buildInfo = JsonUtil.parse(json);
         Assert.assertNull(
                 "enable dev server token shouldn't be added " + "automatically",
-                buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+                buildInfo.get(FRONTEND_HOTDEPLOY));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
         Assert.assertNull("npmFolder should have been removed",
@@ -640,10 +647,16 @@ public class BuildFrontendMojoTest {
     private void createExpectedImports(File directoryWithImportsJs,
             File nodeModulesPath) throws IOException {
         for (String expectedImport : getExpectedImports()) {
-            File newFile = resolveImportFile(directoryWithImportsJs,
-                    nodeModulesPath, expectedImport);
-            newFile.getParentFile().mkdirs();
-            Assert.assertTrue(newFile.createNewFile());
+            if (expectedImport.startsWith("./generated/jar-resources/")) {
+                File newFile = new File(jarResourcesSource, expectedImport
+                        .substring("./generated/jar-resources/".length()));
+                Assert.assertTrue(newFile.createNewFile());
+            } else {
+                File newFile = resolveImportFile(directoryWithImportsJs,
+                        nodeModulesPath, expectedImport);
+                newFile.getParentFile().mkdirs();
+                Assert.assertTrue(newFile.createNewFile());
+            }
         }
     }
 
