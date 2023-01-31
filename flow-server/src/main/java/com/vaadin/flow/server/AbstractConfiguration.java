@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
@@ -50,7 +51,8 @@ public interface AbstractConfiguration extends Serializable {
         if (isProductionMode()) {
             return false;
         }
-        return getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY, false);
+        return getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY,
+                EndpointRequestUtil.isHillaAvailable());
     }
 
     /**
