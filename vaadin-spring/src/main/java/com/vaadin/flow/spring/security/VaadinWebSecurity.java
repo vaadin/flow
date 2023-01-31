@@ -24,7 +24,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -41,8 +41,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
@@ -64,13 +62,10 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
@@ -102,6 +97,7 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
  * </code>
  * </pre>
  */
+@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public abstract class VaadinWebSecurity {
 
     @Autowired
@@ -218,23 +214,6 @@ public abstract class VaadinWebSecurity {
 
         // Enable view access control
         viewAccessChecker.enable();
-    }
-
-    /**
-     * Registers {@link SecurityContextHolderStrategy} bean.
-     * <p>
-     * Beans of this type will automatically be used by
-     * {@link org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration}
-     * to configure the current {@link SecurityContextHolderStrategy}.
-     */
-    @Bean(name = "VaadinSecurityContextHolderStrategy")
-    public SecurityContextHolderStrategy securityContextHolderStrategy() {
-        VaadinAwareSecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy = new VaadinAwareSecurityContextHolderStrategy();
-        // Use a security context holder that can find the context from Vaadin
-        // specific classes
-        SecurityContextHolder.setContextHolderStrategy(
-                vaadinAwareSecurityContextHolderStrategy);
-        return vaadinAwareSecurityContextHolderStrategy;
     }
 
     /**
