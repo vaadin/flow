@@ -116,6 +116,11 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
+        public String getPushServletMapping() {
+            return "";
+        }
+
+        @Override
         public Properties getInitParameters() {
             return null;
         }

@@ -27,6 +27,7 @@ import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushConstants;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -188,16 +189,34 @@ public class AtmospherePushConnection implements PushConnection {
             }
 
         });
-        url = getPushConfiguration().getPushUrl();
-        // If a specific serviceUrl is defined, prepend pushUrl with it
-        String serviceUrl = registry.getApplicationConfiguration()
-                .getServiceUrl();
-        if (!serviceUrl.equals(".")) {
-            if (!serviceUrl.endsWith("/")) {
-                serviceUrl += "/";
+
+        String pushServletMapping = getPushConfiguration()
+                .getPushServletMapping();
+        if (pushServletMapping == null || pushServletMapping.trim().isEmpty()
+                || "/".equals(pushServletMapping)) {
+            // Handle null, empty and "/" mapping using just default push
+            // mapping and serviceUrl
+            url = Constants.PUSH_MAPPING;
+            // If a specific serviceUrl is defined, prepend pushUrl with it
+            String serviceUrl = registry.getApplicationConfiguration()
+                    .getServiceUrl();
+            if (!serviceUrl.equals(".")) {
+                if (!serviceUrl.endsWith("/")) {
+                    serviceUrl += "/";
+                }
+                url = serviceUrl + url;
             }
-            url = serviceUrl + url;
+        } else {
+            // Append specific mapping directly to context root URL
+            String contextRootUrl = registry.getApplicationConfiguration()
+                    .getContextRootUrl();
+            if (contextRootUrl.endsWith("/")
+                    && pushServletMapping.startsWith("/")) {
+                pushServletMapping = pushServletMapping.replaceFirst("/", "");
+            }
+            url = contextRootUrl + pushServletMapping + Constants.PUSH_MAPPING;
         }
+
         runWhenAtmosphereLoaded(
                 () -> Scheduler.get().scheduleDeferred(this::connect));
     }
@@ -263,7 +282,9 @@ public class AtmospherePushConnection implements PushConnection {
         }
         return true;
 
-    };
+    }
+
+    ;
 
     @Override
     public void push(JsonObject message) {
@@ -318,7 +339,6 @@ public class AtmospherePushConnection implements PushConnection {
      *
      * @param response
      *            the response
-     *
      */
     protected void onConnect(AtmosphereResponse response) {
         transport = response.getTransport();

@@ -124,6 +124,14 @@ public interface DeploymentConfiguration
     PushMode getPushMode();
 
     /**
+     * Returns the servlet mapping that bidirectional ("push") client-server
+     * communication should use.
+     *
+     * @return The push servlet mapping to use
+     */
+    String getPushServletMapping();
+
+    /**
      * Gets the properties configured for the deployment, e.g. as init
      * parameters to the servlet.
      *

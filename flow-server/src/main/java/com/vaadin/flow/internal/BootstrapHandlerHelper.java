@@ -16,10 +16,15 @@
 package com.vaadin.flow.internal;
 
 import java.io.Serializable;
+import java.util.Optional;
+
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletRegistration;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.VaadinUriResolver;
 
@@ -27,7 +32,6 @@ import com.vaadin.flow.shared.VaadinUriResolver;
  * Helper methods for use in bootstrapping.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- *
  */
 public final class BootstrapHandlerHelper implements Serializable {
 
@@ -67,7 +71,9 @@ public final class BootstrapHandlerHelper implements Serializable {
      */
     public static String getPushURL(VaadinSession vaadinSession,
             VaadinRequest vaadinRequest) {
-        String pushURL = Constants.PUSH_MAPPING;
+        String pushServletMapping = determinePushServletMapping(vaadinSession);
+
+        String pushURL = pushServletMapping + Constants.PUSH_MAPPING;
 
         String contextPath = vaadinRequest.getService()
                 .getContextRootRelativePath(vaadinRequest);
@@ -78,5 +84,88 @@ public final class BootstrapHandlerHelper implements Serializable {
             }
         }
         return new UriResolver().resolveVaadinUri(pushURL);
+    }
+
+    public static String determinePushServletMapping(
+            VaadinSession vaadinSession) {
+        String pushServletMapping = BootstrapHandlerHelper
+                .getCleanedPushServletMapping(vaadinSession.getConfiguration()
+                        .getPushServletMapping());
+        // If no explicit pushServletMapping is defined, check for potential
+        // multiple servlet mappings
+        if (pushServletMapping == null
+                && vaadinSession.getService() instanceof VaadinServletService) {
+            Optional<ServletRegistration> servletRegistration = BootstrapHandlerHelper
+                    .getServletRegistration(
+                            ((VaadinServletService) vaadinSession.getService())
+                                    .getServlet());
+            if (servletRegistration.isPresent()) {
+                pushServletMapping = BootstrapHandlerHelper
+                        .findFirstUrlMapping(servletRegistration.get());
+            }
+        }
+        return pushServletMapping;
+    }
+
+    /**
+     * Cleans up the given push servlet mapping value for proper use.
+     * Effectively makes sure it starts and ends with a '/', and removes
+     * possible '/*' at the end.
+     *
+     * @param pushServletMapping
+     *            Original pushServletMapping value
+     * @return cleaned-up value, or null if the original value is blank.
+     */
+    public static String getCleanedPushServletMapping(
+            String pushServletMapping) {
+        if (pushServletMapping == null || pushServletMapping.trim().isEmpty()) {
+            return null;
+        } else {
+            if (!pushServletMapping.startsWith("/")) {
+                pushServletMapping = "/" + pushServletMapping;
+            }
+            if (pushServletMapping.endsWith("/*")) {
+                pushServletMapping = pushServletMapping.replace("/*", "/");
+            }
+            if (!pushServletMapping.endsWith("/")) {
+                pushServletMapping += "/";
+            }
+            return pushServletMapping;
+        }
+    }
+
+    /**
+     * Returns a {@link ServletRegistration} for the given
+     * {@link ServletConfig}, if available.
+     *
+     * @param servletConfig
+     *            {@link ServletConfig} to find the registration for.
+     * @return an optional {@link ServletRegistration}, or an empty optional if
+     *         a registration is not available.
+     */
+    public static Optional<ServletRegistration> getServletRegistration(
+            ServletConfig servletConfig) {
+        String name = servletConfig.getServletName();
+        if (name != null) {
+            return Optional.ofNullable(servletConfig.getServletContext()
+                    .getServletRegistrations().get(name));
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the first of sorted URL mappings of the given
+     * {@link ServletRegistration}, ignoring '/VAADIN/*' mapping.
+     *
+     * @param registration
+     *            {@link ServletRegistration} from which to look up the
+     *            mappings.
+     * @return first URL mapping, ignoring '/VAADIN/*'
+     */
+    public static String findFirstUrlMapping(ServletRegistration registration) {
+        String firstMapping = registration.getMappings().stream()
+                .filter(mapping -> !mapping.equals("/VAADIN/*")).sorted()
+                .findFirst().orElse("/");
+        return firstMapping.replace("/*", "/");
     }
 }
