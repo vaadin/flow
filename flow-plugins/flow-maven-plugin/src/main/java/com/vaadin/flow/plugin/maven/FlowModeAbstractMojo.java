@@ -215,6 +215,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private List<String> postinstallPackages;
 
     /**
+     * Parameter to control if frontend development server should be used in
+     * development mode or not.
+     * <p>
+     * By default, the frontend server is not used.
+     */
+    @Parameter(property = InitParameters.FRONTEND_HOTDEPLOY, defaultValue = "false")
+    private boolean frontendHotdeploy;
+
+    /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
      * MavenProject.
      *
@@ -427,5 +436,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public List<String> postinstallPackages() {
         return postinstallPackages;
+    }
+
+    @Override
+    public boolean isFrontendHotdeploy() {
+        return frontendHotdeploy;
     }
 }

@@ -43,9 +43,9 @@ public class ReusingThemeIT extends ChromeBrowserTest {
     @Before
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
-        statsJson = new File(baseDir, "dev-bundle/config/stats.json");
+        statsJson = new File(baseDir, "src/main/dev-bundle/config/stats.json");
         themeAssetsInBundle = new File(baseDir,
-                "dev-bundle/assets/themes/reusable-theme");
+                "src/main/dev-bundle/assets/themes/reusable-theme");
     }
 
     @Test

@@ -90,7 +90,7 @@
                             <outputDirectory>${project.build.outputDirectory}/vaadin-dev-bundle</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>dev-bundle</directory>
+                                    <directory>src/main/dev-bundle</directory>
                                 </resource>
                             </resources>
                         </configuration>
@@ -103,7 +103,7 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>${project.basedir}/dev-bundle</directory>
+                            <directory>${project.basedir}/src/main/dev-bundle</directory>
                         </fileset>
                     </filesets>
                 </configuration>
