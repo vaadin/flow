@@ -1,4 +1,4 @@
-package com.vaadin.flow.spring;
+package com.vaadin.flow.spring.springnative;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,7 +26,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 
-class VaadinBeanFactoryInitializationAotProcessor
+public class VaadinBeanFactoryInitializationAotProcessor
         implements BeanFactoryInitializationAotProcessor {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());

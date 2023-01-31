@@ -1,4 +1,4 @@
-package com.vaadin.flow.spring;
+package com.vaadin.flow.spring.springnative;
 
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.ReflectionHints;
