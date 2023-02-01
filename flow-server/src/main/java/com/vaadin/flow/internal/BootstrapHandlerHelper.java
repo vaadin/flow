@@ -27,7 +27,6 @@ import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.shared.VaadinUriResolver;
 
 /**
  * Helper methods for use in bootstrapping.
@@ -79,12 +78,10 @@ public final class BootstrapHandlerHelper implements Serializable {
         String contextPath = vaadinRequest.getService()
                 .getContextRootRelativePath(vaadinRequest);
 
-        class UriResolver extends VaadinUriResolver {
-            public String resolveVaadinUri(String uri) {
-                return resolveVaadinUri(uri, contextPath);
-            }
+        if (contextPath.endsWith("/") && pushURL.startsWith("/")) {
+            pushURL = pushURL.substring(1);
         }
-        return new UriResolver().resolveVaadinUri(pushURL);
+        return contextPath + pushURL;
     }
 
     public static String determinePushServletMapping(
@@ -160,17 +157,19 @@ public final class BootstrapHandlerHelper implements Serializable {
 
     /**
      * Returns the first of sorted URL mappings of the given
-     * {@link ServletRegistration}, ignoring '/VAADIN/*' mapping.
+     * {@link ServletRegistration}, ignoring '/VAADIN/*' and '/vaadinServlet/*'
+     * mapping.
      *
      * @param registration
      *            {@link ServletRegistration} from which to look up the
      *            mappings.
-     * @return first URL mapping, ignoring '/VAADIN/*'
+     * @return first URL mapping, ignoring '/VAADIN/*' and '/vaadinServlet/*'
      */
     public static String findFirstUrlMapping(ServletRegistration registration) {
         String firstMapping = registration.getMappings().stream()
-                .filter(mapping -> !mapping.equals("/VAADIN/*")).sorted()
-                .findFirst().orElse("/");
+                .filter(mapping -> !mapping.equals("/VAADIN/*")
+                        && !mapping.equals("/vaadinServlet/*"))
+                .sorted().findFirst().orElse("/");
         return firstMapping.replace("/*", "/");
     }
 }
