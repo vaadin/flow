@@ -26,9 +26,11 @@ import org.springframework.security.authentication.AuthenticationTrustResolver;
 import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.SecurityContextConfigurer;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.oauth2.jose.jws.JwsAlgorithm;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -82,21 +84,16 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
 
     private SecretKeyConfigurer secretKeyConfigurer;
 
+    public void setSharedObjects(HttpSecurity http) {
+        JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
+                new SerializedJwtSplitCookieRepository());
+        http.setSharedObject(SecurityContextRepository.class,
+                jwtSecurityContextRepository);
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public void init(H http) {
-        JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
-                new SerializedJwtSplitCookieRepository());
-        SecurityContextConfigurer<H> securityContext = http
-                .getConfigurer(SecurityContextConfigurer.class);
-        if (securityContext != null) {
-            securityContext
-                    .securityContextRepository(jwtSecurityContextRepository);
-        } else {
-            http.setSharedObject(SecurityContextRepository.class,
-                    jwtSecurityContextRepository);
-        }
-
         CsrfConfigurer<H> csrf = http.getConfigurer(CsrfConfigurer.class);
         if (csrf != null) {
             // Use cookie for storing CSRF token, as it does not require a
@@ -112,7 +109,6 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void configure(H http) {
         SecurityContextRepository securityContextRepository = http
                 .getSharedObject(SecurityContextRepository.class);
