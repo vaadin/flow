@@ -29,6 +29,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.vaadin.servletdetector</groupId>
+            <artifactId>throw-if-servlet5</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+
 
         <!-- API DEPENDENCIES -->
 
