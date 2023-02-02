@@ -76,27 +76,36 @@ public class VaadinBeanFactoryInitializationAotProcessor
                     registerType(hints, c);
                     registerResources(hints, c);
                 }
-                for (var c : reflections.getSubTypesOf(Component.class)) {
-                    registerType(hints, c);
-                }
-                for (var c : reflections.getSubTypesOf(RouterLayout.class)) {
-                    registerType(hints, c);
-                }
-                for (var c : reflections
-                        .getSubTypesOf(HasErrorParameter.class)) {
-                    registerType(hints, c);
-                }
-                for (var c : reflections.getSubTypesOf(ComponentEvent.class)) {
-                    registerType(hints, c);
-                }
-                for (var c : reflections.getSubTypesOf(Converter.class)) {
-                    registerType(hints, c);
-                }
-                for (var c : reflections.getSubTypesOf(HasUrlParameter.class)) {
-                    registerType(hints, c);
-                }
+                registerSubTypes(hints, reflections, Component.class);
+                registerSubTypes(hints, reflections, RouterLayout.class);
+                registerSubTypes(hints, reflections, HasErrorParameter.class);
+                registerSubTypes(hints, reflections, ComponentEvent.class);
+                registerSubTypes(hints, reflections, HasUrlParameter.class);
+                registerSubTypes(hints, reflections,
+                        "com.vaadin.flow.data.converter.Converter");
             }
         };
+    }
+
+    private void registerSubTypes(RuntimeHints hints, Reflections reflections,
+            Class<?> cls) {
+        for (var c : reflections.getSubTypesOf(cls)) {
+            registerType(hints, c);
+        }
+    }
+
+    private void registerSubTypes(RuntimeHints hints, Reflections reflections,
+            String className) {
+        try {
+            Class<?> cls = Class.forName(className);
+            for (var c : reflections.getSubTypesOf(cls)) {
+                registerType(hints, c);
+            }
+        } catch (ClassNotFoundException | NoClassDefFoundError e) {
+            // Ignore. this happens for e.g. Converter in a Hilla project where
+            // you do not
+            // have flow-data
+        }
     }
 
     private static List<String> getPackagesWithRoutes(BeanFactory beanFactory) {
