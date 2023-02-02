@@ -19,6 +19,8 @@ package com.vaadin.flow.internal.hilla;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 
+import com.vaadin.flow.server.VaadinService;
+
 /**
  * A container for utility methods related with Hilla endpoints.
  * <p>
@@ -51,4 +53,18 @@ public interface EndpointRequestUtil extends Serializable {
      *         <code>false</code> otherwise
      */
     boolean isAnonymousEndpoint(HttpServletRequest request);
+
+    /**
+     * Checks if Hilla is available.
+     *
+     * @return true if Hilla is available, false otherwise
+     */
+    static boolean isHillaAvailable() {
+        try {
+            Class.forName("dev.hilla.EndpointController");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
 }

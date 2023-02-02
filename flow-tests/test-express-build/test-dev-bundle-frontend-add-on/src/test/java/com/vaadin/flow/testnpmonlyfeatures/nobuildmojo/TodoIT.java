@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -55,7 +56,7 @@ public class TodoIT extends ChromeBrowserTest {
 
         // should create a dev-bundle
         Assert.assertTrue("New devBundle should be generated",
-                new File(baseDir, "dev-bundle").exists());
+                new File(baseDir, Constants.DEV_BUNDLE_LOCATION).exists());
         Assert.assertTrue("node_modules should be downloaded",
                 new File(baseDir, "node_modules").exists());
 

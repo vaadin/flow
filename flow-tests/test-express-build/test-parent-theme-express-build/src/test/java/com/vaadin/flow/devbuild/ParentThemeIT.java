@@ -28,6 +28,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import elemental.json.Json;
@@ -44,9 +45,10 @@ public class ParentThemeIT extends ChromeBrowserTest {
     @Before
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
-        statsJson = new File(baseDir, "dev-bundle/config/stats.json");
-        themeAssetsInBundle = new File(baseDir,
-                "dev-bundle/assets/themes/reusable-theme");
+        statsJson = new File(baseDir,
+                Constants.DEV_BUNDLE_LOCATION + "/config/stats.json");
+        themeAssetsInBundle = new File(baseDir, Constants.DEV_BUNDLE_LOCATION
+                + "/assets/themes/reusable-theme");
     }
 
     @Test

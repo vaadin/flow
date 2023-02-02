@@ -26,27 +26,19 @@ public enum SortDirection {
     /**
      * Ascending (e.g. A-Z, 1..9) sort order
      */
-    ASCENDING {
-        @Override
-        public SortDirection getOpposite() {
-            return DESCENDING;
-        }
-    },
+    ASCENDING,
 
     /**
      * Descending (e.g. Z-A, 9..1) sort order
      */
-    DESCENDING {
-        @Override
-        public SortDirection getOpposite() {
-            return ASCENDING;
-        }
-    };
+    DESCENDING;
 
     /**
      * Get the sort direction that is the direct opposite to this one.
      *
      * @return a sort direction value
      */
-    public abstract SortDirection getOpposite();
+    public SortDirection getOpposite() {
+        return ASCENDING.equals(this) ? DESCENDING : ASCENDING;
+    }
 }
