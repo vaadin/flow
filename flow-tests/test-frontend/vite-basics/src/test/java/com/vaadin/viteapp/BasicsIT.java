@@ -1,12 +1,11 @@
 package com.vaadin.viteapp;
 
-import com.vaadin.flow.component.html.testbench.ParagraphElement;
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.vaadin.flow.testutil.DevToolsElement;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.viteapp.views.empty.MainView;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class BasicsIT extends ViteDevModeIT {
 
@@ -15,6 +14,15 @@ public class BasicsIT extends ViteDevModeIT {
         TestBenchElement header = $("h2").first();
         Assert.assertEquals("This place intentionally left empty",
                 header.getText());
+    }
+
+    @Test
+    public void noTypescriptErrors() throws Exception {
+        // Ensure the file was loaded
+        Assert.assertEquals("good", executeScript("return window.bad()"));
+        Thread.sleep(2000); // Checking is async so it sometimes needs some time
+        Assert.assertFalse("There should be no error overlay",
+                $("vite-plugin-checker-error-overlay").exists());
     }
 
     @Test
