@@ -22,6 +22,9 @@ import java.io.File;
  * the new Maven/Gradle plugin based generator.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @deprecated to be replaced with {@link TaskGenerateOpenAPI} and
+ *             {@link TaskGenerateEndpoint}
  */
 public interface TaskGenerateHilla extends FallibleCommand {
     /**
