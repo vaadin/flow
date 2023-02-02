@@ -34,12 +34,20 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
             hints.reflection().registerType(TypeReference.of(componentClass),
                     MemberCategory.values());
         }
-        hints.resources().registerResource(new ClassPathResource(
-                "com/vaadin/flow/component/login/i18n.json"));
+        registerResourceIfPresent(hints,
+                "com/vaadin/flow/component/login/i18n.json");
 
         // Flow server resources like BootstrapHandler.js and
         // RouteNotFoundError_prod.html
         hints.resources().registerPattern("com/vaadin/flow/server/*");
+    }
+
+    private void registerResourceIfPresent(RuntimeHints hints, String path) {
+        ClassPathResource res = new ClassPathResource(path);
+        if (res.exists()) {
+            hints.resources().registerResource(res);
+        }
+
     }
 
     // These should really go into the separate components but are here for now
