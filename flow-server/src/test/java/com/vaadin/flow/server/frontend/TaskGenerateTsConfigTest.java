@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -35,10 +37,8 @@ import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.ExecutionFailedException;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 public class TaskGenerateTsConfigTest {
-    static private String LATEST_VERSION = "23.3.0.1";
+    static private String LATEST_VERSION = "23.3.4";
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();

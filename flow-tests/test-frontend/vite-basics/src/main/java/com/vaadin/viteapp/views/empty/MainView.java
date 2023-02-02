@@ -20,6 +20,7 @@ import com.vaadin.flow.uitest.ui.dependencies.ThemableTextField;
 @JsModule("./testscopebuttonloader.js")
 @JsModule("./testscopemaploader.js")
 @JsModule("./importdir.js")
+@JsModule("./bad.ts")
 @CssImport(value = "./cssimport-textfield.css", themeFor = "vaadin-text-field")
 @CssImport(value = "./cssimport.css")
 public class MainView extends Div {
