@@ -511,6 +511,7 @@ public abstract class VaadinWebSecurity {
             SecretKey secretKey, String issuer, long expiresIn)
             throws Exception {
         VaadinStatelessSecurityConfigurer<HttpSecurity> vaadinStatelessSecurityConfigurer = new VaadinStatelessSecurityConfigurer<>();
+        vaadinStatelessSecurityConfigurer.setSharedObjects(http);
         http.apply(vaadinStatelessSecurityConfigurer);
 
         vaadinStatelessSecurityConfigurer.withSecretKey().secretKey(secretKey)
