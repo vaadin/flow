@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
@@ -49,6 +51,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -1572,6 +1575,31 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     protected static void setupPwa(Document document, VaadinService service) {
         setupPwa(document, service.getPwaRegistry());
+    }
+
+    protected static void addJavaScriptEntryPoints(
+            DeploymentConfiguration config, Document targetDocument)
+            throws IOException {
+        URL statsJsonUrl = FrontendUtils
+                .findBundleFile(config.getProjectFolder(), "config/stats.json");
+        Objects.requireNonNull(statsJsonUrl,
+                "Frontend development bundle is expected to be in the project"
+                        + " or on the classpath, but not found.");
+        String statsJson = IOUtils.toString(statsJsonUrl,
+                StandardCharsets.UTF_8);
+        addEntryScripts(targetDocument, Json.parse(statsJson));
+    }
+
+    protected static void addEntryScripts(Document targetDocument,
+            JsonObject statsJson) {
+        JsonArray entryScripts = statsJson.getArray("entryScripts");
+        for (int i = 0; i < entryScripts.length(); i++) {
+            String entryScript = entryScripts.getString(i);
+            Element elm = new Element(SCRIPT_TAG);
+            elm.attr("type", "module");
+            elm.attr("src", "VAADIN/dev-bundle/" + entryScript);
+            targetDocument.head().appendChild(elm);
+        }
     }
 
     private static void setupPwa(Document document, PwaRegistry registry) {

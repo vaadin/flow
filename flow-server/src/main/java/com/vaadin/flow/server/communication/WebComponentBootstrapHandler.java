@@ -138,6 +138,16 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                             getPushScript(context), true));
                 }
 
+                if (!service.getDeploymentConfiguration().frontendHotdeploy()) {
+                    // When running without a frontend server, the
+                    // web-component.html comes
+                    // directly from the frontend folder and the JS
+                    // entrypoint(s) need
+                    // to be added
+                    addJavaScriptEntryPoints(
+                            service.getDeploymentConfiguration(), document);
+                }
+
                 setupCss(head, context);
 
                 return document;
