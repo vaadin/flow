@@ -27,6 +27,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
+import org.atmosphere.cpr.BroadcastFilterAdapter;
 import org.atmosphere.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,7 +217,9 @@ public class AtmospherePushConnection implements PushConnection {
     protected void sendMessage(String message) {
         assert (isConnected());
         // "Broadcast" the changes to the single client only
-        outgoingMessage = getResource().getBroadcaster().broadcast(message,
+        outgoingMessage = getResource().getBroadcaster().broadcast(
+                new PushMessage(ui.getInternals().getServerSyncId() - 1,
+                        message),
                 getResource());
     }
 
@@ -412,4 +415,33 @@ public class AtmospherePushConnection implements PushConnection {
                         + " instead (i.e.: logback, log4j, etc)");
     }
 
+    static final class PushMessage implements Serializable {
+        final int serverSyncId;
+        final String message;
+
+        PushMessage(int serverSyncId, String message) {
+            this.serverSyncId = serverSyncId;
+            this.message = message;
+        }
+
+        boolean alreadySeen(int lastSeenOnClient) {
+            return serverSyncId <= lastSeenOnClient;
+        }
+    }
+
+    /**
+     * A {@link org.atmosphere.cpr.BroadcastFilter} that unwraps the message to
+     * be sent to the client from a {@link PushMessage} instance.
+     */
+    static final class PushMessageUnwrapFilter extends BroadcastFilterAdapter
+            implements Serializable {
+        @Override
+        public BroadcastAction filter(String broadcasterId,
+                AtmosphereResource r, Object originalMessage, Object message) {
+            if (message instanceof AtmospherePushConnection.PushMessage) {
+                message = ((PushMessage) message).message;
+            }
+            return new BroadcastAction(message);
+        }
+    }
 }
