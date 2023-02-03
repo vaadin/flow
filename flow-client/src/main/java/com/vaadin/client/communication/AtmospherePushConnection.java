@@ -212,7 +212,7 @@ public class AtmospherePushConnection implements PushConnection {
                     .getContextRootUrl();
             if (contextRootUrl.endsWith("/")
                     && pushServletMapping.startsWith("/")) {
-                pushServletMapping = pushServletMapping.replaceFirst("/", "");
+                pushServletMapping = pushServletMapping.substring(1);
             }
             url = contextRootUrl + pushServletMapping + Constants.PUSH_MAPPING;
         }
@@ -282,9 +282,7 @@ public class AtmospherePushConnection implements PushConnection {
         }
         return true;
 
-    }
-
-    ;
+    };
 
     @Override
     public void push(JsonObject message) {

@@ -86,20 +86,18 @@ public final class BootstrapHandlerHelper implements Serializable {
 
     public static String determinePushServletMapping(
             VaadinSession vaadinSession) {
-        String pushServletMapping = BootstrapHandlerHelper
-                .getCleanedPushServletMapping(vaadinSession.getConfiguration()
-                        .getPushServletMapping());
+        String pushServletMapping = getCleanedPushServletMapping(
+                vaadinSession.getConfiguration().getPushServletMapping());
         // If no explicit pushServletMapping is defined, check for potential
         // multiple servlet mappings
         if (pushServletMapping == null
                 && vaadinSession.getService() instanceof VaadinServletService) {
-            Optional<ServletRegistration> servletRegistration = BootstrapHandlerHelper
-                    .getServletRegistration(
-                            ((VaadinServletService) vaadinSession.getService())
-                                    .getServlet());
+            Optional<ServletRegistration> servletRegistration = getServletRegistration(
+                    ((VaadinServletService) vaadinSession.getService())
+                            .getServlet());
             if (servletRegistration.isPresent()) {
-                pushServletMapping = BootstrapHandlerHelper
-                        .findFirstUrlMapping(servletRegistration.get());
+                pushServletMapping = findFirstUrlMapping(
+                        servletRegistration.get());
             }
         }
         return pushServletMapping;

@@ -256,11 +256,6 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
-    public String getPushServletMapping() {
-        return "";
-    }
-
-    @Override
     public Properties getInitParameters() {
         return allProperties;
     }

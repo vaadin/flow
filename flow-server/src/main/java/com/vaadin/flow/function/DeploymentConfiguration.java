@@ -129,7 +129,9 @@ public interface DeploymentConfiguration
      *
      * @return The push servlet mapping to use
      */
-    String getPushServletMapping();
+    default String getPushServletMapping() {
+        return "";
+    }
 
     /**
      * Gets the properties configured for the deployment, e.g. as init
