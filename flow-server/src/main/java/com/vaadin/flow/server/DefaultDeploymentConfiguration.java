@@ -92,6 +92,7 @@ public class DefaultDeploymentConfiguration
     private int webComponentDisconnect;
     private boolean closeIdleSessions;
     private PushMode pushMode;
+    private String pushServletMapping;
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
@@ -128,6 +129,7 @@ public class DefaultDeploymentConfiguration
         checkWebComponentDisconnectTimeout();
         checkCloseIdleSessions();
         checkPushMode();
+        checkPushServletMapping();
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
 
@@ -253,6 +255,16 @@ public class DefaultDeploymentConfiguration
     @Override
     public PushMode getPushMode() {
         return pushMode;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The default mode is <code>""</code> which uses the service mapping.
+     */
+    @Override
+    public String getPushServletMapping() {
+        return pushServletMapping;
     }
 
     /**
@@ -390,6 +402,11 @@ public class DefaultDeploymentConfiguration
             warnings.add(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
         }
+    }
+
+    private void checkPushServletMapping() {
+        pushServletMapping = getStringProperty(
+                InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING, "");
     }
 
     private void checkSyncIdCheck() {
