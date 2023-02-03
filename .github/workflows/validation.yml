@@ -23,7 +23,7 @@ jobs:
       - name: Fail on external workflow triggering
         if: ${{ steps.checkUser.outputs.require-result != 'true' }}
         run: |
-          echo "🚫 **${{ github.actor }}** is an external contributor, a **${{github.repository}}** team member has to review this changes and re-run this build" \
+          echo "🚫 **${{ github.actor }}** is an external contributor, a **${{ github.repository }}** team member has to review this changes and re-run this build" \
             | tee -a $GITHUB_STEP_SUMMARY && exit 1
       - name: Check secrets
         run: |
