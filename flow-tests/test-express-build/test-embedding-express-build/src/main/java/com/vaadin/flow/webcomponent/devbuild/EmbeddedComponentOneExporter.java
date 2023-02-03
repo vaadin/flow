@@ -15,15 +15,20 @@
  */
 package com.vaadin.flow.webcomponent.devbuild;
 
-import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 
-public class ExportedComponent extends Div {
+public class EmbeddedComponentOneExporter
+        extends WebComponentExporter<ExportedComponentOne> {
 
-    public static final String INNER_COMPONENT_ID = "inner-component";
-    public static final String EXPORTED_ID = "exported-inner";
+    public EmbeddedComponentOneExporter() {
+        super("exported-component-one");
+    }
 
-    public ExportedComponent() {
-        setId(EXPORTED_ID);
-        add(new InnerComponent().withId(INNER_COMPONENT_ID));
+    @Override
+    public void configureInstance(
+            WebComponent<ExportedComponentOne> webComponent,
+            ExportedComponentOne component) {
+
     }
 }

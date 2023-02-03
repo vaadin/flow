@@ -30,7 +30,7 @@ public class TaskUpdateViteTest {
     public void generatedTemplate_correctSettingsPath() throws IOException {
         Options options = new Options(Mockito.mock(Lookup.class),
                 temporaryFolder.getRoot()).withBuildDirectory("build");
-        TaskUpdateVite task = new TaskUpdateVite(options);
+        TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();
 
         File configFile = new File(temporaryFolder.getRoot(),
@@ -52,7 +52,7 @@ public class TaskUpdateViteTest {
         Options options = new Options(Mockito.mock(Lookup.class),
                 temporaryFolder.getRoot()).withBuildDirectory("build");
 
-        new TaskUpdateVite(options).execute();
+        new TaskUpdateVite(options, null).execute();
 
         String template = IOUtils.toString(configFile.toURI(),
                 StandardCharsets.UTF_8);
@@ -73,7 +73,7 @@ public class TaskUpdateViteTest {
         Options options = new Options(Mockito.mock(Lookup.class),
                 temporaryFolder.getRoot()).withBuildDirectory("build");
 
-        new TaskUpdateVite(options).execute();
+        new TaskUpdateVite(options, null).execute();
 
         String template = IOUtils.toString(generatedConfigFile.toURI(),
                 StandardCharsets.UTF_8);
@@ -88,7 +88,7 @@ public class TaskUpdateViteTest {
         Options options = new Options(Mockito.mock(Lookup.class),
                 temporaryFolder.getRoot()).withBuildDirectory("build");
 
-        TaskUpdateVite task = new TaskUpdateVite(options);
+        TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();
 
         File generatedConfigFile = new File(temporaryFolder.getRoot(),

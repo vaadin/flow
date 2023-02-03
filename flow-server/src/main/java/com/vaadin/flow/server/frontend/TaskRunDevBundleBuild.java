@@ -25,8 +25,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -36,11 +38,15 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.flow.server.webcomponent.WebComponentExporterUtils;
+import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
@@ -48,6 +54,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
+import static com.vaadin.flow.server.webcomponent.WebComponentModulesWriter.getTag;
 
 /**
  * Compiles the dev mode bundle if it is out of date.
@@ -144,7 +151,63 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             return true;
         }
 
+        if (exportedWebComponents(statsJson, finder)) {
+            return true;
+        }
+
         return false;
+    }
+
+    private static boolean exportedWebComponents(JsonObject statsJson,
+            ClassFinder finder) {
+        try {
+            Set<Class<?>> exporterRelatedClasses = new HashSet<>();
+            finder.getSubTypesOf(WebComponentExporter.class.getName())
+                    .forEach(exporterRelatedClasses::add);
+            finder.getSubTypesOf(WebComponentExporterFactory.class.getName())
+                    .forEach(exporterRelatedClasses::add);
+
+            Set<String> webComponents = WebComponentExporterUtils
+                    .getFactories(exporterRelatedClasses).stream()
+                    .map(WebComponentModulesWriter::getTag)
+                    .collect(Collectors.toSet());
+
+            JsonArray webComponentsInStats = statsJson
+                    .getArray("webComponents");
+
+            if (webComponentsInStats == null) {
+                if (!webComponents.isEmpty()) {
+                    getLogger().info(
+                            "Found embedded web components not yet included "
+                                    + "into the dev bundle: {}",
+                            String.join(", ", webComponents));
+                    return true;
+                }
+                return false;
+            } else {
+                for (int index = 0; index < webComponentsInStats
+                        .length(); index++) {
+                    String webComponentInStats = webComponentsInStats
+                            .getString(index);
+                    webComponents.remove(webComponentInStats);
+                }
+            }
+
+            if (!webComponents.isEmpty()) {
+                getLogger().info(
+                        "Found newly added embedded web components not "
+                                + "yet included into the dev bundle: {}",
+                        String.join(", ", webComponents));
+                return true;
+            }
+
+            return false;
+
+        } catch (ClassNotFoundException e) {
+            getLogger()
+                    .error("Unable to locate embedded web component classes.");
+            return false;
+        }
     }
 
     private static boolean packagedThemeAddedOrUpdated(Options options,

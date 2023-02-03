@@ -15,14 +15,16 @@
  */
 package com.vaadin.flow.webcomponent.devbuild;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
+import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-import static com.vaadin.flow.webcomponent.devbuild.ExportedComponent.EXPORTED_ID;
-import static com.vaadin.flow.webcomponent.devbuild.ExportedComponent.INNER_COMPONENT_ID;
+import static com.vaadin.flow.webcomponent.devbuild.ExportedComponentOne.EXPORTED_ID_ONE;
+import static com.vaadin.flow.webcomponent.devbuild.ExportedComponentTwo.EXPORTED_ID_TWO;
 
 public class EmbeddedComponentDevBundleIT extends ChromeBrowserTest {
 
@@ -35,16 +37,26 @@ public class EmbeddedComponentDevBundleIT extends ChromeBrowserTest {
     public void embeddedComponent_expressBuild_componentRendered() {
         open();
 
-        waitUntil(driver -> {
-            TestBenchElement exportedOuterComponent = $("exported-component")
-                    .id("exported-outer");
-            TestBenchElement embeddedComponent = exportedOuterComponent
-                    .$(DivElement.class).id(EXPORTED_ID);
-            DivElement innerComponent = embeddedComponent.$(DivElement.class)
-                    .id(INNER_COMPONENT_ID);
-            return innerComponent != null && innerComponent.getText().equals(
-                    "This is a component inside embedded web component");
-        });
+        TestBenchElement exportedComponentOne = $("exported-component-one")
+                .waitForFirst();
+
+        TestBenchElement exportedComponentInner = exportedComponentOne
+                .$(DivElement.class).id(EXPORTED_ID_ONE);
+
+        TestBenchElement innerComponent = exportedComponentInner
+                .$("inner-component").waitForFirst();
+        Assert.assertTrue(innerComponent != null && innerComponent.getText()
+                .equals("This is a component inside embedded web component"));
+
+        TestBenchElement exportedComponentTwo = $("exported-component-two")
+                .waitForFirst();
+
+        TestBenchElement exportedComponentTwoInner = exportedComponentTwo
+                .$(DivElement.class).id(EXPORTED_ID_TWO);
+
+        TestBenchElement button = exportedComponentTwoInner
+                .$(NativeButtonElement.class).waitForFirst();
+        Assert.assertNotNull(button);
 
         checkLogsForErrors();
     }

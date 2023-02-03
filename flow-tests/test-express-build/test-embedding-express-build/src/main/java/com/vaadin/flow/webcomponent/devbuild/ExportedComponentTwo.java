@@ -15,15 +15,17 @@
  */
 package com.vaadin.flow.webcomponent.devbuild;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
 
-@Tag("inner-component")
-public class InnerComponent extends Div {
+public class ExportedComponentTwo extends Div {
 
-    public InnerComponent() {
-        setText("This is a component inside embedded web component");
+    public static final String EXPORTED_ID_TWO = "exported-inner-two";
+
+    public ExportedComponentTwo() {
+        setId(EXPORTED_ID_TWO);
+
+        NativeButton testButton = new NativeButton("Test Button");
+        add(testButton);
     }
-
 }

@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.BootstrapException;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -117,6 +118,21 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                         FrontendUtils.getWebComponentHtmlContent(service));
                 Element head = document.head();
 
+                DeploymentConfiguration deploymentConfiguration = service
+                        .getDeploymentConfiguration();
+
+                if (deploymentConfiguration.isProductionMode()) {
+                    // The web-component.html is fetched from the bundle so it
+                    // includes the entry point javascripts
+                } else if (!deploymentConfiguration.frontendHotdeploy()) {
+                    // When running without a frontend server, the
+                    // web-component.html comes
+                    // directly from the frontend folder and the JS
+                    // entrypoint(s) need
+                    // to be added
+                    addJavaScriptEntryPoints(deploymentConfiguration, document);
+                }
+
                 // Specify the application ID for scripts of the
                 // web-component.html
                 head.select("script[src]").attr("data-app-id",
@@ -136,16 +152,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 if (context.getPushMode().isEnabled()) {
                     head.prependChild(createJavaScriptModuleElement(
                             getPushScript(context), true));
-                }
-
-                if (!service.getDeploymentConfiguration().frontendHotdeploy()) {
-                    // When running without a frontend server, the
-                    // web-component.html comes
-                    // directly from the frontend folder and the JS
-                    // entrypoint(s) need
-                    // to be added
-                    addJavaScriptEntryPoints(
-                            service.getDeploymentConfiguration(), document);
                 }
 
                 setupCss(head, context);

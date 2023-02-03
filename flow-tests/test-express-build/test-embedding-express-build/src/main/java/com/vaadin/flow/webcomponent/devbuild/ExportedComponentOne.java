@@ -15,15 +15,13 @@
  */
 package com.vaadin.flow.webcomponent.devbuild;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
 
-@Tag("inner-component")
-public class InnerComponent extends Div {
+public class ExportedComponentOne extends Div {
+    public static final String EXPORTED_ID_ONE = "exported-inner-one";
 
-    public InnerComponent() {
-        setText("This is a component inside embedded web component");
+    public ExportedComponentOne() {
+        setId(EXPORTED_ID_ONE);
+        add(new InnerComponent());
     }
-
 }

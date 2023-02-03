@@ -1592,6 +1592,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     protected static void addEntryScripts(Document targetDocument,
             JsonObject statsJson) {
+        boolean addIndexHtml = true;
+        Element indexHtmlScript = null;
         JsonArray entryScripts = statsJson.getArray("entryScripts");
         for (int i = 0; i < entryScripts.length(); i++) {
             String entryScript = entryScripts.getString(i);
@@ -1599,6 +1601,20 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             elm.attr("type", "module");
             elm.attr("src", "VAADIN/dev-bundle/" + entryScript);
             targetDocument.head().appendChild(elm);
+
+            if (entryScript.contains("indexhtml")) {
+                indexHtmlScript = elm;
+            }
+
+            if (entryScript.contains("webcomponenthtml")) {
+                addIndexHtml = false;
+            }
+        }
+
+        // If a reference to webcomponenthtml is present, the embedded
+        // components are used, thus we don't need to serve indexhtml script
+        if (!addIndexHtml && indexHtmlScript != null) {
+            indexHtmlScript.remove();
         }
     }
 

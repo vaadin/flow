@@ -18,16 +18,17 @@ package com.vaadin.flow.webcomponent.devbuild;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
-public class EmbeddedComponentExporter
-        extends WebComponentExporter<ExportedComponent> {
+public class EmbeddedComponentTwoExporter
+        extends WebComponentExporter<ExportedComponentTwo> {
 
-    public EmbeddedComponentExporter() {
-        super("exported-component");
+    public EmbeddedComponentTwoExporter() {
+        super("exported-component-two");
     }
 
     @Override
-    public void configureInstance(WebComponent<ExportedComponent> webComponent,
-            ExportedComponent component) {
+    public void configureInstance(
+            WebComponent<ExportedComponentTwo> webComponent,
+            ExportedComponentTwo component) {
 
     }
 }

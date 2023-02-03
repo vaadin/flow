@@ -20,8 +20,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.io.FilenameUtils;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
@@ -88,6 +92,8 @@ public class NodeTasks implements FallibleCommand {
                 options.classFinder);
         FrontendDependenciesScanner frontendDependencies = null;
 
+        Set<String> webComponentTags = new HashSet<>();
+
         final FeatureFlags featureFlags = options.getFeatureFlags();
 
         if (options.enablePackagesUpdate || options.enableImportsUpdate
@@ -123,6 +129,10 @@ public class NodeTasks implements FallibleCommand {
                     commands.add(new TaskGenerateWebComponentHtml(options));
                     commands.add(
                             new TaskGenerateWebComponentBootstrap(options));
+                    webComponentTags = webComponents.stream().map(
+                            webComponentPath -> FilenameUtils.removeExtension(
+                                    webComponentPath.getName()))
+                            .collect(Collectors.toSet());
                 }
             }
 
@@ -207,7 +217,7 @@ public class NodeTasks implements FallibleCommand {
         commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
         if (options.productionMode || options.isFrontendHotdeploy()
                 || options.isDevBundleBuild()) {
-            commands.add(new TaskUpdateVite(options));
+            commands.add(new TaskUpdateVite(options, webComponentTags));
         }
 
         if (options.enableImportsUpdate) {
