@@ -1,4 +1,4 @@
-package com.vaadin.flow.spring;
+package com.vaadin.flow.spring.springnative;
 
 import java.util.Collection;
 import java.util.HashSet;
