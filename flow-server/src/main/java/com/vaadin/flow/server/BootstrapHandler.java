@@ -1590,7 +1590,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         addEntryScripts(targetDocument, Json.parse(statsJson));
     }
 
-    protected static void addEntryScripts(Document targetDocument,
+    private static void addEntryScripts(Document targetDocument,
             JsonObject statsJson) {
         boolean addIndexHtml = true;
         Element indexHtmlScript = null;

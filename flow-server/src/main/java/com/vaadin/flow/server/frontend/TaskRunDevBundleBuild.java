@@ -38,6 +38,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.internal.StringUtil;
@@ -45,8 +46,9 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.flow.server.webcomponent.WebComponentExporterTagExtractor;
 import com.vaadin.flow.server.webcomponent.WebComponentExporterUtils;
-import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
+
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
@@ -54,7 +56,6 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
-import static com.vaadin.flow.server.webcomponent.WebComponentModulesWriter.getTag;
 
 /**
  * Compiles the dev mode bundle if it is out of date.
@@ -169,7 +170,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
             Set<String> webComponents = WebComponentExporterUtils
                     .getFactories(exporterRelatedClasses).stream()
-                    .map(WebComponentModulesWriter::getTag)
+                    .map(TaskRunDevBundleBuild::getTag)
                     .collect(Collectors.toSet());
 
             JsonArray webComponentsInStats = statsJson
@@ -665,5 +666,11 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 process.destroyForcibly();
             }
         }
+    }
+
+    private static String getTag(
+            WebComponentExporterFactory<? extends Component> factory) {
+        WebComponentExporterTagExtractor exporterTagExtractor = new WebComponentExporterTagExtractor();
+        return exporterTagExtractor.apply(factory);
     }
 }

@@ -140,7 +140,7 @@ public final class WebComponentModulesWriter implements Serializable {
                 compatibilityMode, themeName);
     }
 
-    public static String getTag(
+    private static String getTag(
             WebComponentExporterFactory<? extends Component> factory) {
         WebComponentExporterTagExtractor exporterTagExtractor = new WebComponentExporterTagExtractor();
         return exporterTagExtractor.apply(factory);
