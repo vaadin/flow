@@ -7,6 +7,9 @@
 }
 
 body {
-    font-family: "Ostrich";
     background: rgba(255, 0, 0, 1);
+}
+
+p {
+    font-family: "Ostrich";
 }
