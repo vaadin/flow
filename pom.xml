@@ -92,8 +92,8 @@
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
         <slf4j.version>2.0.6</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
-        <jackson.version>2.14.1</jackson.version>
-        <jackson.databind.version>2.14.1</jackson.databind.version>
+        <jackson.version>2.14.2</jackson.version>
+        <jackson.databind.version>2.14.2</jackson.databind.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <jakarta.annotation.api.version>2.1.1</jakarta.annotation.api.version>
         <jaxb.version>4.0.1</jaxb.version>
@@ -107,7 +107,7 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.2.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>9.0.0.alpha6</testbench.version>
+        <testbench.version>9.0.0.beta1</testbench.version>
         <webdrivermanager.version>5.3.2</webdrivermanager.version>
         <jetty.version>11.0.13</jetty.version>
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
@@ -254,12 +254,12 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>5.0.0</version>
+                <version>5.1.1</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-inline</artifactId>
-                <version>5.0.0</version>
+                <version>5.1.1</version>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>

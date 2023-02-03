@@ -1226,7 +1226,7 @@ public class FrontendUtils {
      * @return the bundle directory
      */
     public static File getDevBundleFolder(File projectDir) {
-        return new File(projectDir, "src/main/dev-bundle");
+        return new File(projectDir, Constants.DEV_BUNDLE_LOCATION);
     }
 
     /**
