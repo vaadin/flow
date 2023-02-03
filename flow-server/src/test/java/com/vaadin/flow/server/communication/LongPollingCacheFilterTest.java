@@ -121,7 +121,7 @@ public class LongPollingCacheFilterTest {
         Assert.assertEquals("Expecting message not seen on client to be sent",
                 ACTION.CONTINUE, action.action());
         Assert.assertSame(
-                "Message should not be altered by filter when aborting",
+                "Message should not be altered by filter when continuing",
                 message, action.message());
         Mockito.verify(cache).addToCache(ArgumentMatchers.eq(broadcasterId),
                 ArgumentMatchers.eq(RESOURCE_UUID),
