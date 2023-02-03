@@ -18,7 +18,6 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
@@ -451,6 +450,10 @@ public class AtmospherePushConnection implements PushConnection {
         getConnectionStateHandler().pushReconnectPending(this);
     }
 
+    private int getLastSeenServerSyncId() {
+        return registry.getMessageHandler().getLastSeenServerSyncId();
+    }
+
     /**
      * JavaScriptObject class with some helper methods to set and get primitive
      * values.
@@ -665,6 +668,7 @@ public class AtmospherePushConnection implements PushConnection {
             trackMessageLength: true,
             enableProtocol: true,
             handleOnlineOffline: false,
+            executeCallbackBeforeReconnect: true,
             messageDelimiter: String.fromCharCode(@com.vaadin.flow.shared.communication.PushConstants::MESSAGE_DELIMITER)
         };
     }-*/;
@@ -699,6 +703,11 @@ public class AtmospherePushConnection implements PushConnection {
         config.onClientTimeout = $entry(function(request) {
             self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
         });
+        config.headers = {
+            'X-Vaadin-LastSeenServerSyncId': function() {
+                return self.@com.vaadin.client.communication.AtmospherePushConnection::getLastSeenServerSyncId(*)();
+            }
+        };
 
         return $wnd.vaadinPush.atmosphere.subscribe(config);
     }-*/;
