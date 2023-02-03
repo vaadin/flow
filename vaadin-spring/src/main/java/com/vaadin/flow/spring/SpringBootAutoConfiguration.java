@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.spring;
 
-import jakarta.servlet.MultipartConfigElement;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +36,9 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotProcessor;
+
+import jakarta.servlet.MultipartConfigElement;
 
 /**
  * Spring boot auto-configuration class for Flow.
