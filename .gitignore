@@ -72,3 +72,4 @@ flow-tests/test-express-build/test-dev-bundle/src/main/dev-bundle
 flow-tests/test-express-build/test-theme-dev-bundle/src/main/dev-bundle
 flow-tests/test-express-build/test-reusing-theme-express-build/src/main/dev-bundle
 flow-tests/test-express-build/test-parent-theme-express-build/src/main/dev-bundle
+flow-tests/test-express-build/test-embedding-express-build/src/main/dev-bundle

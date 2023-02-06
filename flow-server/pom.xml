@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>24.0-SNAPSHOT</version>
+        <version>24.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-server</artifactId>
     <name>Flow Server</name>
@@ -115,7 +115,7 @@
         <dependency>
             <groupId>com.helger</groupId>
             <artifactId>ph-css</artifactId>
-            <version>6.5.0</version>
+            <version>7.0.0</version>
         </dependency>
 
         <!-- Byte code generation -->

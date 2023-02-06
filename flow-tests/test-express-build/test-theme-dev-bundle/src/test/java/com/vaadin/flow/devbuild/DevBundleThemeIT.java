@@ -151,8 +151,8 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
 
     private boolean isCustomFont() {
         try {
-            final WebElement body = findElement(By.tagName("body"));
-            return "Ostrich".equals(body.getCssValue("font-family"));
+            final WebElement p = findElement(By.tagName("p"));
+            return "Ostrich".equals(p.getCssValue("font-family"));
         } catch (StaleElementReferenceException e) {
             return false;
         }

@@ -5,7 +5,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.0-SNAPSHOT</version>
+        <version>24.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -40,6 +40,7 @@
                 <module>test-dev-bundle-java-add-on</module>
                 <module>test-reusing-theme-express-build</module>
                 <module>test-parent-theme-express-build</module>
+                <module>test-embedding-express-build</module>
             </modules>
         </profile>
     </profiles>

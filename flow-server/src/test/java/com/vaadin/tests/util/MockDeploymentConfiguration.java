@@ -22,6 +22,7 @@ public class MockDeploymentConfiguration
     private int webComponentDisconnect = 300;
     private boolean closeIdleSessions = false;
     private PushMode pushMode = PushMode.DISABLED;
+    private String pushServletMapping = "";
     private Properties initParameters = new Properties();
     private Map<String, String> applicationOrSystemProperty = new HashMap<>();
     private boolean syncIdCheckEnabled = true;
@@ -127,6 +128,15 @@ public class MockDeploymentConfiguration
 
     public void setPushMode(PushMode pushMode) {
         this.pushMode = pushMode;
+    }
+
+    @Override
+    public String getPushServletMapping() {
+        return pushServletMapping;
+    }
+
+    public void setPushServletMapping(String pushServletMapping) {
+        this.pushServletMapping = pushServletMapping;
     }
 
     @Override
