@@ -71,19 +71,27 @@ function collectFolders(folderToCopy, logger) {
   const collection = { directories: [], files: [] };
   logger.trace('files in directory', readdirSync(folderToCopy));
   readdirSync(folderToCopy).forEach((file) => {
-    const fileToCopy = resolve(folderToCopy, file);
-    if (statSync(fileToCopy).isDirectory()) {
-      logger.debug('Going through directory', fileToCopy);
-      const result = collectFolders(fileToCopy, logger);
-      if (result.files.length > 0) {
-        collection.directories.push(fileToCopy);
-        logger.debug('Adding directory', fileToCopy);
-        collection.directories.push.apply(collection.directories, result.directories);
-        collection.files.push.apply(collection.files, result.files);
+    try {
+      const fileToCopy = resolve(folderToCopy, file);
+      if (statSync(fileToCopy).isDirectory()) {
+        logger.debug('Going through directory', fileToCopy);
+        const result = collectFolders(fileToCopy, logger);
+        if (result.files.length > 0) {
+          collection.directories.push(fileToCopy);
+          logger.debug('Adding directory', fileToCopy);
+          collection.directories.push.apply(collection.directories, result.directories);
+          collection.files.push.apply(collection.files, result.files);
+        }
+      } else if (!ignoredFileExtensions.includes(extname(fileToCopy))) {
+        logger.debug('Adding file', fileToCopy);
+        collection.files.push(fileToCopy);
       }
-    } else if (!ignoredFileExtensions.includes(extname(fileToCopy))) {
-      logger.debug('Adding file', fileToCopy);
-      collection.files.push(fileToCopy);
+    }catch(error) {
+      if(error.code === 'ENOENT') {
+        logger.warn('Ignoring missing file '+file);
+      }else{
+        throw(error);
+      }
     }
   });
   return collection;
