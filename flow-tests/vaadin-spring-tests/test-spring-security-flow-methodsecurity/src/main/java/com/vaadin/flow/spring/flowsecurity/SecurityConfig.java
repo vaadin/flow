@@ -60,10 +60,10 @@ public class SecurityConfig extends VaadinWebSecurity {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests()
+        http.authorizeRequests()
                 .requestMatchers(new AntPathRequestMatcher("/admin-only/**"))
                 .hasAnyRole(ROLE_ADMIN);
-        http.authorizeHttpRequests()
+        http.authorizeRequests()
                 .requestMatchers(new AntPathRequestMatcher("/public/**"))
                 .permitAll();
         super.configure(http);
