@@ -3,7 +3,7 @@ package com.vaadin.flow.spring.flowsecurity.service;
 import com.vaadin.flow.spring.flowsecurity.data.Account;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 
-import jakarta.annotation.security.RolesAllowed;
+import javax.annotation.security.RolesAllowed;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 

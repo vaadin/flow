@@ -2,7 +2,7 @@ package com.vaadin.flow.spring.flowsecurity;
 
 import java.util.stream.Collectors;
 
-import jakarta.servlet.ServletContext;
+import javax.servlet.ServletContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
