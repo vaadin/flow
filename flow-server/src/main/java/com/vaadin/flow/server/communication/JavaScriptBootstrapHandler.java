@@ -157,6 +157,8 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
         PushConfiguration pushConfiguration = context.getUI()
                 .getPushConfiguration();
+        pushConfiguration.setPushServletMapping(
+                BootstrapHandlerHelper.determinePushServletMapping(session));
 
         AppShellRegistry registry = AppShellRegistry
                 .getInstance(session.getService().getContext());

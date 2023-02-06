@@ -25,8 +25,10 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -118,6 +120,26 @@ public class DefaultDeploymentConfigurationTest {
 
         assertTrue("Empty boolean value should be interpreted as 'true'",
                 config.isSendUrlsAsParameters());
+    }
+
+    @Test
+    public void defaultPushServletMapping() {
+        Properties initParameters = new Properties();
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+        assertThat(config.getPushServletMapping(), is(""));
+    }
+
+    @Test
+    public void pushUrl() {
+        Properties initParameters = new Properties();
+        initParameters.setProperty(
+                InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING,
+                "/foo/*");
+
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+        assertThat(config.getPushServletMapping(), is("/foo/*"));
     }
 
     @Test(expected = IllegalArgumentException.class)
