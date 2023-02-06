@@ -67,6 +67,7 @@ const moduleWeights = {
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-contextpath': { pos: 5, weight: 4 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-urlmapping': { pos: 5, weight: 4 },
   'flow-tests/vaadin-spring-tests/test-spring': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow-methodsecurity': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints': { pos: 5, weight: 2 },
   'flow-tests/test-router-custom-context': { weight: 6 },
   'flow-tests/test-pwa-disabled-offline': { weight: 7 },

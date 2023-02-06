@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -86,6 +87,7 @@ public class MyWebSecurity extends VaadinWebSecurity {
 }
  * </code>
  */
+@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public abstract class VaadinWebSecurity {
 
     @Autowired
