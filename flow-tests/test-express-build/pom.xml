@@ -40,6 +40,7 @@
                 <module>test-dev-bundle-java-add-on</module>
                 <module>test-reusing-theme-express-build</module>
                 <module>test-parent-theme-express-build</module>
+                <module>test-embedding-express-build</module>
             </modules>
         </profile>
     </profiles>
