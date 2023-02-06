@@ -309,6 +309,7 @@
                 <module>test-spring-security-flow-contextpath</module>
                 <module>test-spring-security-flow-urlmapping</module>
                 <module>test-spring-security-flow-reverseproxy</module>
+                <module>test-spring-security-flow-methodsecurity</module>
 
                 <module>test-spring-boot-only-prepare</module>
                 <module>test-spring-white-list</module>
