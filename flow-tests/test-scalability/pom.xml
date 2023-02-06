@@ -77,7 +77,7 @@
                             <simulationClass>com.vaadin.flow.test.scalability.WarmupFlow</simulationClass>
                         </configuration>
                         <goals>
-                            <goal>execute</goal>
+                            <goal>test</goal>
                         </goals>
                     </execution>
                     <execution>
@@ -90,7 +90,7 @@
                             </jvmArgs>
                         </configuration>
                         <goals>
-                            <goal>execute</goal>
+                            <goal>test</goal>
                         </goals>
                     </execution>
                 </executions>
