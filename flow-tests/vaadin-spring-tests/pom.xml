@@ -17,6 +17,7 @@
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.failsafe.plugin.version>3.0.0-M1</maven.failsafe.plugin.version>
         <vaadin.version>23.2-SNAPSHOT</vaadin.version>
+        <component.version>23.2-SNAPSHOT</component.version>
     </properties>
 
     <dependencyManagement>

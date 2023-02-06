@@ -1,11 +1,12 @@
 package com.vaadin.flow.spring.flowsecurity.views;
 
+import javax.annotation.security.PermitAll;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.concurrent.Executor;
 
-import jakarta.annotation.security.PermitAll;
+import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickEvent;
@@ -28,8 +29,6 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 import com.vaadin.flow.spring.flowsecurity.service.BankService;
 
-import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
-
 @Route(value = "private", layout = MainView.class)
 @PageTitle("Private View")
 @PermitAll
@@ -50,9 +49,7 @@ public class PrivateView extends VerticalLayout {
         updateBalanceText();
         balanceSpan.setId("balanceText");
         add(balanceSpan);
-
-        Button applyForLoan = new Button("Apply for a loan",
-                this::applyForLoan);
+        Button applyForLoan = new Button("Apply for a loan", this::applyForLoan);
         applyForLoan.setId("applyForLoan");
         add(applyForLoan);
 

@@ -1,8 +1,9 @@
 package com.vaadin.flow.spring.flowsecurity;
 
+import javax.servlet.ServletContext;
+
 import java.util.stream.Collectors;
 
-import jakarta.servlet.ServletContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,10 +17,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.spring.RootMappedCondition;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
@@ -60,24 +58,11 @@ public class SecurityConfig extends VaadinWebSecurity {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests()
-                .requestMatchers(new AntPathRequestMatcher("/admin-only/**"))
+        http.authorizeRequests().antMatchers("/admin-only/**")
                 .hasAnyRole(ROLE_ADMIN);
-        http.authorizeHttpRequests()
-                .requestMatchers(new AntPathRequestMatcher("/public/**"))
-                .permitAll();
+        http.authorizeRequests().antMatchers("/public/**").permitAll();
         super.configure(http);
-        if (getLogoutSuccessUrl().equals("/")) {
-            // Test the default url with empty context path
-            setLoginView(http, LoginView.class);
-        } else {
-            setLoginView(http, LoginView.class, getLogoutSuccessUrl());
-        }
-        http.logout().addLogoutHandler((request, response, authentication) -> {
-            UI ui = UI.getCurrent();
-            ui.accessSynchronously(() -> ui.getPage().setLocation(UrlUtil
-                    .getServletPathRelative(getLogoutSuccessUrl(), request)));
-        });
+        setLoginView(http, LoginView.class, getLogoutSuccessUrl());
     }
 
     @Bean

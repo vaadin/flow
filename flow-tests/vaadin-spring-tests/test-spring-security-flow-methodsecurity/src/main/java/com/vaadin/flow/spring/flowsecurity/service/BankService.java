@@ -1,16 +1,15 @@
 package com.vaadin.flow.spring.flowsecurity.service;
 
+import javax.annotation.security.RolesAllowed;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import com.vaadin.flow.spring.flowsecurity.data.Account;
-import com.vaadin.flow.spring.security.AuthenticationContext;
-
-import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
+import com.vaadin.flow.spring.flowsecurity.data.Account;
 
 @Service
 public class BankService {
@@ -19,7 +18,7 @@ public class BankService {
     private AccountService accountService;
 
     @Autowired
-    private AuthenticationContext authenticationContext;
+    private SecurityUtils utils;
 
     @RolesAllowed("user") // jsr250Enabled
     public void applyForLoan() {
@@ -32,14 +31,9 @@ public class BankService {
     }
 
     private void applyForLoan(int amount) {
-        Optional<UserDetails> authenticatedUser = authenticationContext
-                .getAuthenticatedUser(UserDetails.class);
-        if (authenticatedUser.isEmpty()) {
-            return;
-        }
-        Optional<Account> acc = accountService
-                .findByOwner(authenticatedUser.get().getUsername());
-        if (acc.isEmpty()) {
+        String name = utils.getAuthenticatedUser().getUsername();
+        Optional<Account> acc = accountService.findByOwner(name);
+        if (!acc.isPresent()) {
             return;
         }
         Account account = acc.get();
@@ -48,13 +42,9 @@ public class BankService {
     }
 
     public BigDecimal getBalance() {
-        Optional<UserDetails> authenticatedUser = authenticationContext
-                .getAuthenticatedUser(UserDetails.class);
-        if (authenticatedUser.isEmpty()) {
-            return null;
-        }
-        return accountService.findByOwner(authenticatedUser.get().getUsername())
-                .map(Account::getBalance).orElse(null);
+        String name = utils.getAuthenticatedUser().getUsername();
+        return accountService.findByOwner(name).map(Account::getBalance)
+                .orElse(null);
     }
 
 }

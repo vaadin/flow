@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,10 +21,10 @@ import org.openqa.selenium.WebDriver;
 
 import com.vaadin.flow.component.login.testbench.LoginFormElement;
 import com.vaadin.flow.component.login.testbench.LoginOverlayElement;
-import com.vaadin.flow.spring.test.AbstractSpringTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public abstract class AbstractIT extends AbstractSpringTest {
+public abstract class AbstractIT extends ChromeBrowserTest {
 
     private static final String ROOT_PAGE_HEADER_TEXT = "Welcome to the Java Bank of Vaadin";
     private static final String ANOTHER_PUBLIC_PAGE_HEADER_TEXT = "Another public view for testing";
@@ -35,6 +35,11 @@ public abstract class AbstractIT extends AbstractSpringTest {
         return SERVER_PORT;
     }
 
+    @Override
+    protected String getRootURL() {
+        return super.getRootURL(); // + "/context";
+    }
+
     @After
     public void tearDown() {
         if (getDriver() != null) {
@@ -43,10 +48,10 @@ public abstract class AbstractIT extends AbstractSpringTest {
     }
 
     private void checkForBrowserErrors() {
-        checkLogsForErrors(msg -> msg.contains(
-                "admin-only/secret.txt - Failed to load resource: the server responded with a status of 403")
-                || msg.contains(
-                        "admin-only/secret.txt?continue - Failed to load resource: the server responded with a status of 403"));
+        checkLogsForErrors(msg -> {
+            return msg.contains(
+                    "admin-only/secret.txt - Failed to load resource: the server responded with a status of 403");
+        });
     }
 
     /**
@@ -130,33 +135,13 @@ public abstract class AbstractIT extends AbstractSpringTest {
     }
 
     protected void assertPathShown(String path) {
-
-        waitUntil(driver -> {
-            String url = driver.getCurrentUrl();
-            if (!url.startsWith(getRootURL())) {
-                throw new IllegalStateException("URL should start with "
-                        + getRootURL() + " but is " + url);
-            }
-            // HttpSessionRequestCache uses request parameter "continue",
-            // see HttpSessionRequestCache::setMatchingRequestParameterName
-            if (url.endsWith("continue")) {
-                url = url.substring(0, url.length() - 9);
-            }
-            return url.equals(
-                    getRootURL() + getUrlMappingBasePath() + "/" + path);
-        });
+        waitUntil(driver -> driver.getCurrentUrl()
+                .equals(getRootURL() + getUrlMappingBasePath() + "/" + path));
     }
 
     protected void assertResourceShown(String path) {
-        waitUntil(driver -> {
-            // HttpSessionRequestCache uses request parameter "continue",
-            // see HttpSessionRequestCache::setMatchingRequestParameterName
-            String url = driver.getCurrentUrl();
-            if (url.endsWith("continue")) {
-                url = url.substring(0, url.length() - 9);
-            }
-            return url.equals(getRootURL() + "/" + path);
-        });
+        waitUntil(driver -> driver.getCurrentUrl()
+                .equals(getRootURL() + "/" + path));
     }
 
 }
