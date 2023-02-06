@@ -322,6 +322,7 @@ public class DeploymentConfigurationFactoryTest {
                 InitParameters.UI_PARAMETER,
                 InitParameters.SERVLET_PARAMETER_REQUEST_TIMING,
                 InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+                InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING,
                 InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
                 InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
                 InitParameters.SERVLET_PARAMETER_STATISTICS_JSON,

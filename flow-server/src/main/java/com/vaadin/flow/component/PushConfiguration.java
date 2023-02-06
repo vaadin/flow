@@ -63,6 +63,28 @@ public interface PushConfiguration extends Serializable {
     void setPushMode(PushMode pushMode);
 
     /**
+     * Sets the servlet mapping to use for push requests.
+     * <p>
+     * This is only used when overriding the servlet mapping to use. Setting
+     * this to null (the default) will use the default URL.
+     *
+     * @param pushServletMapping
+     *            The servlet mapping to use for push
+     */
+    void setPushServletMapping(String pushServletMapping);
+
+    /**
+     * Returns the servlet mapping to use for push requests.
+     * <p>
+     * This is only used when overriding the servlet mapping to use. Returns
+     * null (the default) when the default URL is used.
+     *
+     * @return the servlet mapping to use for push requests, or null to use to
+     *         default
+     */
+    String getPushServletMapping();
+
+    /**
      * Returns the primary transport type for push.
      * <p>
      * Note that if you set the transport type using
@@ -176,6 +198,16 @@ class PushConfigurationImpl implements PushConfiguration {
     @Override
     public PushMode getPushMode() {
         return getPushConfigurationMap().getPushMode();
+    }
+
+    @Override
+    public void setPushServletMapping(String pushServletMapping) {
+        getPushConfigurationMap().setPushServletMapping(pushServletMapping);
+    }
+
+    @Override
+    public String getPushServletMapping() {
+        return getPushConfigurationMap().getPushServletMapping();
     }
 
     @Override
