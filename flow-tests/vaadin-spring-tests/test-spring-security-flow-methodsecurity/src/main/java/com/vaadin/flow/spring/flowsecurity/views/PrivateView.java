@@ -49,7 +49,8 @@ public class PrivateView extends VerticalLayout {
         updateBalanceText();
         balanceSpan.setId("balanceText");
         add(balanceSpan);
-        Button applyForLoan = new Button("Apply for a loan", this::applyForLoan);
+        Button applyForLoan = new Button("Apply for a loan",
+                this::applyForLoan);
         applyForLoan.setId("applyForLoan");
         add(applyForLoan);
 
