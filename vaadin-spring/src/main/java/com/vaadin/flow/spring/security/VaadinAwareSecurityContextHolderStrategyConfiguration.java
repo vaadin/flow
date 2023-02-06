@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring.security;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,7 +35,8 @@ public class VaadinAwareSecurityContextHolderStrategyConfiguration {
      * to configure the current {@link SecurityContextHolderStrategy}.
      */
     @Bean(name = "VaadinSecurityContextHolderStrategy")
-    public SecurityContextHolderStrategy securityContextHolderStrategy() {
+    @ConditionalOnMissingBean
+    public VaadinAwareSecurityContextHolderStrategy securityContextHolderStrategy() {
         VaadinAwareSecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy = new VaadinAwareSecurityContextHolderStrategy();
         // Use a security context holder that can find the context from Vaadin
         // specific classes
