@@ -125,7 +125,7 @@
                             </includes>
                         </fileset>
                         <fileset>
-                            <directory>${project.basedir}/dev-bundle</directory>
+                            <directory>${project.basedir}/src/main/dev-bundle</directory>
                             <includes>
                                 <include>**</include>
                             </includes>

@@ -23,14 +23,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -417,32 +414,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             // When running without a frontend server, the index.html comes
             // directly from the frontend folder and the JS entrypoint(s) need
             // to be added
-            URL statsJsonUrl = FrontendUtils.findBundleFile(
-                    config.getProjectFolder(), "config/stats.json");
-            if (statsJsonUrl == null) {
-                throw new IllegalStateException(
-                        "There is no dev-bundle in the project or on the classpath nor is there a default bundle included. "
-                                + "Verify that the dependency 'com.vaadin:vaadin-dev-bundle' is added to your project.");
-            }
-            String statsJson = IOUtils.toString(statsJsonUrl,
-                    StandardCharsets.UTF_8);
-            addBundleEntryPoints(indexHtmlDocument, config,
-                    Json.parse(statsJson));
+            addJavaScriptEntryPoints(config, indexHtmlDocument);
         }
         modifyIndexHtmlForVite(indexHtmlDocument);
         return indexHtmlDocument;
-    }
-
-    private static void addBundleEntryPoints(Document indexHtmlDocument,
-            DeploymentConfiguration config, JsonObject statsJson) {
-        JsonArray entryScripts = statsJson.getArray("entryScripts");
-        for (int i = 0; i < entryScripts.length(); i++) {
-            String entryScript = entryScripts.getString(i);
-            Element elm = new Element(SCRIPT);
-            elm.attr("type", "module");
-            elm.attr("src", "VAADIN/dev-bundle/" + entryScript);
-            indexHtmlDocument.head().appendChild(elm);
-        }
     }
 
     private static void modifyIndexHtmlForVite(Document indexHtmlDocument) {

@@ -43,6 +43,7 @@ import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.BootstrapException;
@@ -118,6 +119,21 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 Document document = Jsoup.parse(
                         FrontendUtils.getWebComponentHtmlContent(service));
                 Element head = document.head();
+
+                DeploymentConfiguration deploymentConfiguration = service
+                        .getDeploymentConfiguration();
+
+                if (deploymentConfiguration.isProductionMode()) {
+                    // The web-component.html is fetched from the bundle so it
+                    // includes the entry point javascripts
+                } else if (!deploymentConfiguration.frontendHotdeploy()) {
+                    // When running without a frontend server, the
+                    // web-component.html comes
+                    // directly from the frontend folder and the JS
+                    // entrypoint(s) need
+                    // to be added
+                    addJavaScriptEntryPoints(deploymentConfiguration, document);
+                }
 
                 // Specify the application ID for scripts of the
                 // web-component.html
