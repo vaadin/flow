@@ -180,8 +180,11 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
   if (existsSync(document)) {
     filename = basename(document);
     variable = camelCase(filename);
-    imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
-    globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n    `);
+
+    if (useDevServer) {
+      imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
+      globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n    `);
+    }
   }
 
   let i = 0;
