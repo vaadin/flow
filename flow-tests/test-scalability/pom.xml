@@ -15,11 +15,35 @@
         <!-- Skip scalability tests by default, explicitly enabled on build
             server -->
         <gatling.skip>true</gatling.skip>
-        <gatling.version>2.2.1</gatling.version>
+        <gatling.version>3.9.0</gatling.version>
+        <scala-maven-plugin.version>4.8.0</scala-maven-plugin.version>
     </properties>
 
     <!-- uses default ports 8888 and 8889 -->
     <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-dev-server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.gatling</groupId>
+            <artifactId>gatling-core-java</artifactId>
+            <version>${gatling.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.gatling</groupId>
+            <artifactId>gatling-http-java</artifactId>
+            <version>${gatling.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.gatling</groupId>
+            <artifactId>gatling-jdbc-java</artifactId>
+            <version>${gatling.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>io.gatling.highcharts</groupId>
             <artifactId>gatling-charts-highcharts</artifactId>
@@ -37,10 +61,27 @@
             <version>2.1.0-beta-6</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.14.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.14.2</version>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <configuration>
+                    <productionMode>false</productionMode>
+                </configuration>
+            </plugin>
             <!-- This module is mapped to default web context -->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
