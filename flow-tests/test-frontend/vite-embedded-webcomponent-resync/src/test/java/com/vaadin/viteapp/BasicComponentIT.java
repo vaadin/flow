@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -38,6 +38,8 @@ public class BasicComponentIT extends ChromeDeviceTest {
     private WebAppContext context;
 
     private String sessionId;
+
+    private String hotdeploy;
 
     @Before
     public void init() throws Exception {
@@ -98,6 +100,8 @@ public class BasicComponentIT extends ChromeDeviceTest {
     }
 
     public void setup(int port) throws Exception {
+        hotdeploy = System.getProperty("vaadin.frontend.hotdeploy");
+        System.setProperty("vaadin.frontend.hotdeploy", "true");
         server = new Server();
         try (ServerConnector connector = new ServerConnector(server)) {
             connector.setPort(port);
@@ -131,6 +135,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
             context = null;
         } finally {
             server.stop();
+            System.setProperty("vaadin.frontend.hotdeploy", hotdeploy);
         }
     }
 }

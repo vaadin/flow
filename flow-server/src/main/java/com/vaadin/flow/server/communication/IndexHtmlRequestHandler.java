@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,14 +23,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -53,6 +50,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -72,6 +70,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
+    public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -113,7 +112,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureHiddenElementStyles(indexDocument);
 
-        if (!config.enableDevServer()) {
+        if (!config.frontendHotdeploy()) {
             addStylesCssLink(config, indexDocument);
         }
 
@@ -184,9 +183,36 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return;
         }
 
+        // First check if project has a packaged themes and add a link if any
+        File frontendFolder = new File(config.getProjectFolder(),
+                FrontendUtils.FRONTEND);
+        File jarResourcesFolder = FrontendUtils
+                .getJarResourcesFolder(frontendFolder);
+        File packagedThemesFolder = new File(jarResourcesFolder,
+                Constants.APPLICATION_THEME_ROOT);
+
+        Collection<String> packagedThemeNames = new ArrayList<>();
+        if (packagedThemesFolder.exists()) {
+            for (File themeFolder : Objects.requireNonNull(
+                    packagedThemesFolder.listFiles(File::isDirectory),
+                    "Expected at least one theme in the front-end generated themes folder")) {
+                String packagedThemeName = themeFolder.getName();
+                packagedThemeNames.add(packagedThemeName);
+                createStylesCssLink(indexDocument, packagedThemeName);
+            }
+        }
+
+        // Secondly, add a link for the project's custom theme, if it exists
+        if (!packagedThemeNames.contains(themeName.get())) {
+            createStylesCssLink(indexDocument, themeName.get());
+        }
+    }
+
+    private static void createStylesCssLink(Document indexDocument,
+            String themeName) {
         Element element = new Element("link");
         element.attr("rel", "stylesheet");
-        element.attr("href", "themes/" + themeName.get() + "/styles.css");
+        element.attr("href", "themes/" + themeName + "/styles.css");
         indexDocument.head().appendChild(element);
     }
 
@@ -287,8 +313,17 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             if (backend != null) {
                 devTools.attr("backend", backend.toString());
             }
-            devTools.attr("springbootlivereloadport", Integer
-                    .toString(Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT));
+            String liveReloadPort = ""
+                    + Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT;
+            VaadinContext context = service.getContext();
+            if (context instanceof VaadinServletContext vaadinServletContext) {
+                String customPort = (String) vaadinServletContext.getContext()
+                        .getAttribute(LIVE_RELOAD_PORT_ATTR);
+                if (customPort != null) {
+                    liveReloadPort = customPort;
+                }
+            }
+            devTools.attr("springbootlivereloadport", liveReloadPort);
             indexDocument.body().appendChild(devTools);
         }
     }
@@ -375,35 +410,14 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (config.isProductionMode()) {
             // The index.html is fetched from the bundle so it includes the
             // entry point javascripts
-        } else if (!service.getDeploymentConfiguration().enableDevServer()) {
+        } else if (!service.getDeploymentConfiguration().frontendHotdeploy()) {
             // When running without a frontend server, the index.html comes
             // directly from the frontend folder and the JS entrypoint(s) need
             // to be added
-            URL statsJsonUrl = FrontendUtils.findBundleFile(
-                    config.getProjectFolder(), "config/stats.json");
-            if (statsJsonUrl == null) {
-                throw new IllegalStateException(
-                        "The application is running in express mode but there is no bundle found. There is no dev-bundle in the project or on the classpath nor is there a default bundle included");
-            }
-            String statsJson = IOUtils.toString(statsJsonUrl,
-                    StandardCharsets.UTF_8);
-            addBundleEntryPoints(indexHtmlDocument, config,
-                    Json.parse(statsJson));
+            addJavaScriptEntryPoints(config, indexHtmlDocument);
         }
         modifyIndexHtmlForVite(indexHtmlDocument);
         return indexHtmlDocument;
-    }
-
-    private static void addBundleEntryPoints(Document indexHtmlDocument,
-            DeploymentConfiguration config, JsonObject statsJson) {
-        JsonArray entryScripts = statsJson.getArray("entryScripts");
-        for (int i = 0; i < entryScripts.length(); i++) {
-            String entryScript = entryScripts.getString(i);
-            Element elm = new Element(SCRIPT);
-            elm.attr("type", "module");
-            elm.attr("src", "VAADIN/dev-bundle/" + entryScript);
-            indexHtmlDocument.head().appendChild(elm);
-        }
     }
 
     private static void modifyIndexHtmlForVite(Document indexHtmlDocument) {

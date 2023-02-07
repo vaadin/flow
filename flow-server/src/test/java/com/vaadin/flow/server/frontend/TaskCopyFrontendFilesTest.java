@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -66,6 +66,16 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     @Test
     public void should_collectJsAndCssFilesFromJars_modernResourceFolder()
             throws IOException {
+        should_collectJsAndCssFilesFromJars("jar-with-modern-frontend.jar",
+                "dir-with-modern-frontend");
+    }
+
+    @Test
+    public void should_collectJsAndCssFilesFromJars_removeExtraFiles()
+            throws IOException {
+        File dummy = new File(frontendDepsFolder, "dummy.ts");
+        frontendDepsFolder.mkdirs();
+        dummy.createNewFile();
         should_collectJsAndCssFilesFromJars("jar-with-modern-frontend.jar",
                 "dir-with-modern-frontend");
     }

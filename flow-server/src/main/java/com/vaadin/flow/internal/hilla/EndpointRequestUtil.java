@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,8 @@ package com.vaadin.flow.internal.hilla;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.Serializable;
+
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * A container for utility methods related with Hilla endpoints.
@@ -51,4 +53,18 @@ public interface EndpointRequestUtil extends Serializable {
      *         <code>false</code> otherwise
      */
     boolean isAnonymousEndpoint(HttpServletRequest request);
+
+    /**
+     * Checks if Hilla is available.
+     *
+     * @return true if Hilla is available, false otherwise
+     */
+    static boolean isHillaAvailable() {
+        try {
+            Class.forName("dev.hilla.EndpointController");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
 }

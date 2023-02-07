@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
@@ -51,7 +52,63 @@ public class ComponentTracker {
     /**
      * Represents a location in the source code.
      */
-    public record Location(String className, String filename, int lineNumber) implements Serializable {
+    public static class Location implements Serializable {
+        private final String className;
+        private final String filename;
+        private final String methodName;
+        private final int lineNumber;
+
+        public Location(String className, String filename, String methodName,
+                int lineNumber) {
+            this.className = className;
+            this.filename = filename;
+            this.methodName = methodName;
+            this.lineNumber = lineNumber;
+        }
+
+        public String className() {
+            return className;
+        }
+
+        public String filename() {
+            return filename;
+        }
+
+        public String methodName() {
+            return methodName;
+        }
+
+        public int lineNumber() {
+            return lineNumber;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+
+            Location location = (Location) o;
+
+            if (lineNumber != location.lineNumber)
+                return false;
+            if (!Objects.equals(className, location.className))
+                return false;
+            if (!Objects.equals(filename, location.filename))
+                return false;
+            return Objects.equals(methodName, location.methodName);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = className != null ? className.hashCode() : 0;
+            result = 31 * result + (filename != null ? filename.hashCode() : 0);
+            result = 31 * result
+                    + (methodName != null ? methodName.hashCode() : 0);
+            result = 31 * result + lineNumber;
+            return result;
+        }
     }
 
     /**
@@ -197,8 +254,9 @@ public class ComponentTracker {
 
         String className = stackTraceElement.getClassName();
         String fileName = stackTraceElement.getFileName();
+        String methodName = stackTraceElement.getMethodName();
         int lineNumber = stackTraceElement.getLineNumber();
-        return new Location(className, fileName, lineNumber);
+        return new Location(className, fileName, methodName, lineNumber);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,23 +15,20 @@
  */
 package com.vaadin.flow.server;
 
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -123,6 +120,26 @@ public class DefaultDeploymentConfigurationTest {
 
         assertTrue("Empty boolean value should be interpreted as 'true'",
                 config.isSendUrlsAsParameters());
+    }
+
+    @Test
+    public void defaultPushServletMapping() {
+        Properties initParameters = new Properties();
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+        assertThat(config.getPushServletMapping(), is(""));
+    }
+
+    @Test
+    public void pushUrl() {
+        Properties initParameters = new Properties();
+        initParameters.setProperty(
+                InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING,
+                "/foo/*");
+
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+        assertThat(config.getPushServletMapping(), is("/foo/*"));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -224,22 +241,17 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void enableDevServerParameter_expressBuildFeatureFlagIsON_resetsEnableDevServerToFalse() {
-        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
-        Mockito.when(featureFlags.isEnabled(FeatureFlags.EXPRESS_BUILD))
-                .thenReturn(true);
+    public void frontendHotdeployParameter_expressBuildFeatureFlagIsON_resetsFrontendHotdeployToFalse() {
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                new Properties());
+        Assert.assertFalse("Expected dev server to be disabled by default",
+                config.frontendHotdeploy());
 
-        try (MockedStatic<FeatureFlags> featureFlagsStatic = Mockito
-                .mockStatic(FeatureFlags.class)) {
-            featureFlagsStatic.when(() -> FeatureFlags.get(context))
-                    .thenReturn(featureFlags);
-            DefaultDeploymentConfiguration config = createDeploymentConfig(
-                    new Properties());
-            Assert.assertFalse(
-                    "Expected dev server to be disabled when the "
-                            + "Express Build feature flag is ON",
-                    config.enableDevServer());
-        }
+        Properties init = new Properties();
+        init.put(InitParameters.FRONTEND_HOTDEPLOY, "true");
+        config = createDeploymentConfig(init);
+        Assert.assertTrue("Expected dev server to be enabled when set true",
+                config.frontendHotdeploy());
     }
 
     private DefaultDeploymentConfiguration createDeploymentConfig(

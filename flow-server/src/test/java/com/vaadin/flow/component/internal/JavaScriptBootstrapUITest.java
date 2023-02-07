@@ -1,5 +1,6 @@
 package com.vaadin.flow.component.internal;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -507,17 +508,18 @@ public class JavaScriptBootstrapUITest {
         Mockito.when(stateTree.getRootNode()).thenReturn(stateNode);
 
         ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> execArg = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Serializable[]> execArg = ArgumentCaptor
+                .forClass(Serializable[].class);
 
         ui.navigate("clean/1");
         Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
 
         assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
 
-        final List<String> execValues = execArg.getAllValues();
-        assertEquals(2, execValues.size());
-        assertNull(execValues.get(0));
-        assertEquals("clean/1", execArg.getValue());
+        final Serializable[] execValues = execArg.getValue();
+        assertEquals(2, execValues.length);
+        assertNull(execValues[0]);
+        assertEquals("clean/1", execValues[1]);
     }
 
     @Test
@@ -548,7 +550,8 @@ public class JavaScriptBootstrapUITest {
         Page page = mockPage();
 
         ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> execArg = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Serializable[]> execArg = ArgumentCaptor
+                .forClass(Serializable[].class);
 
         // Dirty view is allowed after clean view
         ui.navigate("dirty");
@@ -558,10 +561,10 @@ public class JavaScriptBootstrapUITest {
 
         assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
 
-        final List<String> execValues = execArg.getAllValues();
-        assertEquals(2, execValues.size());
-        assertNull(execValues.get(0));
-        assertEquals("dirty", execArg.getValue());
+        final Serializable[] execValues = execArg.getValue();
+        assertEquals(2, execValues.length);
+        assertNull(execValues[0]);
+        assertEquals("dirty", execValues[1]);
     }
 
     @Test

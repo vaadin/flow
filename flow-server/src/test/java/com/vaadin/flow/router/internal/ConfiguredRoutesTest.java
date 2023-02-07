@@ -59,7 +59,8 @@ public class ConfiguredRoutesTest {
         Assert.assertEquals(
                 "Given parentLayouts should have been copied correctly",
                 Arrays.asList(SecondParentTarget.class, ParentTarget.class),
-                immutable.getParentLayouts("", BaseTarget.class));
+                immutable.getNavigationRouteTarget("").getRouteTarget()
+                        .getParentLayouts());
     }
 
     @Test

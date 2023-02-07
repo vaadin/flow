@@ -66,3 +66,10 @@ flow-tests/**/*.npmrc
 *.xml.versionsBackup
 
 flow-polymer2lit/**/frontend/generated
+flow-tests/test-express-build/test-dev-bundle-frontend-add-on/src/main/dev-bundle
+flow-tests/test-express-build/frontend-add-on/src/main/dev-bundle
+flow-tests/test-express-build/test-dev-bundle/src/main/dev-bundle
+flow-tests/test-express-build/test-theme-dev-bundle/src/main/dev-bundle
+flow-tests/test-express-build/test-reusing-theme-express-build/src/main/dev-bundle
+flow-tests/test-express-build/test-parent-theme-express-build/src/main/dev-bundle
+flow-tests/test-express-build/test-embedding-express-build/src/main/dev-bundle

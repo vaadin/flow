@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,8 @@
  */
 
 package com.vaadin.flow.component.webcomponent;
+
+import java.io.Serializable;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -164,6 +166,7 @@ public class WebComponentTest {
         // JsonValue has a different number of arguments
         webComponent.setProperty(jsonConfiguration, Json.create(true));
         verify(element, Mockito.times(5)).executeJs(
-                ArgumentMatchers.anyString(), ArgumentMatchers.any());
+                ArgumentMatchers.anyString(),
+                ArgumentMatchers.any(Serializable[].class));
     }
 }

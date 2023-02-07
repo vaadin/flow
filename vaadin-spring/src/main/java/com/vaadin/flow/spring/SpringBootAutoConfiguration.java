@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.spring;
 
-import jakarta.servlet.MultipartConfigElement;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +36,9 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotProcessor;
+
+import jakarta.servlet.MultipartConfigElement;
 
 /**
  * Spring boot auto-configuration class for Flow.

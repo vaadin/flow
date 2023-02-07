@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -155,16 +155,4 @@ public class NavigationState implements Serializable {
                 HasUrlParameterFormat.getParameterValues(getRouteParameters()));
     }
 
-    /**
-     * Set the list of strings that correspond to the raw string route
-     * parameters.
-     *
-     * @param parameters
-     *            the url parameters to set
-     * @deprecated use {@link #setRouteParameters(RouteParameters)} instead.
-     */
-    @Deprecated
-    public void setUrlParameters(List<String> parameters) {
-        setRouteParameters(HasUrlParameterFormat.getParameters(parameters));
-    }
 }

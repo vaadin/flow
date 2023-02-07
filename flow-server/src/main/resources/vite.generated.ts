@@ -5,7 +5,8 @@
  * This file will be overwritten on every run. Any custom changes should be made to vite.config.ts
  */
 import path from 'path';
-import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
+import { readdirSync, readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
+import { createHash } from 'crypto';
 import * as net from 'net';
 
 import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle.js';
@@ -36,6 +37,7 @@ const buildOutputFolder = devBundle ? devBundleFolder : frontendBundleFolder;
 const statsFolder = path.resolve(__dirname, devBundle ? settings.devBundleStatsOutput : settings.statsOutput);
 const statsFile = path.resolve(statsFolder, 'stats.json');
 const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
+const webComponentTags = '#webComponentTags#';
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
@@ -205,11 +207,53 @@ function statsExtracterPlugin(): PluginOption {
           .filter((line: string) => line.startsWith("import"))
           .map((line: string) => line.substring(line.indexOf("'")+1, line.lastIndexOf("'")));
 
+      const frontendFiles = { };
+      generatedImports.filter((line: string) => line.includes("generated/jar-resources")).forEach((line: string) => {
+        var filename;
+        if(line.includes('?')) {
+          filename = line.substring(line.indexOf("generated"), line.lastIndexOf('?'));
+        } else {
+          filename = line.substring(line.indexOf("generated"));
+        }
+        // \r\n from windows made files may be used ro remove to be only \n
+        const fileBuffer = readFileSync(path.resolve(frontendFolder, filename), {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+        const hash = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
+
+        const fileKey = line.substring(line.indexOf("jar-resources/") + 14);
+        // @ts-ignore
+        frontendFiles[`${fileKey}`] = hash;
+      });
+
+      const themeJsonHashes = { };
+      const themesFolder = path.resolve(jarResourcesFolder, "themes");
+      if (existsSync(themesFolder)) {
+        readdirSync(themesFolder).forEach((themeFolder) => {
+          const themeJson = path.resolve(themesFolder, themeFolder, "theme.json");
+          if (existsSync(themeJson)) {
+            const themeJsonContent = readFileSync(themeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+            const themeJsonContentAsJson = JSON.parse(themeJsonContent);
+            const assets = themeJsonContentAsJson.assets;
+            if (assets) {
+              const hash = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
+              themeJsonHashes[`${path.basename(themeFolder)}`] = hash;
+            }
+          }
+        });
+      }
+
+      let webComponents: string[] = [];
+      if (webComponentTags) {
+        webComponents = webComponentTags.split(";");
+      }
+
       const stats = {
         npmModules: projectPackageJson.dependencies,
         handledModules: npmModuleAndVersion,
         bundleImports: generatedImports,
+        frontendHashes: frontendFiles,
+        themeJsonHashes: themeJsonHashes,
         entryScripts,
+        webComponents,
         packageJsonHash: projectPackageJson?.vaadin?.hash
       };
       writeFileSync(statsFile, JSON.stringify(stats, null, 1));
@@ -494,18 +538,6 @@ const allowedFrontendFolders = [
   nodeModulesFolder
 ];
 
-function setHmrPortToServerPort(): PluginOption {
-  return {
-    name: 'set-hmr-port-to-server-port',
-    configResolved(config) {
-      if (config.server.strictPort && config.server.hmr !== false) {
-        if (config.server.hmr === true) config.server.hmr = {};
-        config.server.hmr = config.server.hmr || {};
-        config.server.hmr.clientPort = config.server.port;
-      }
-    }
-  };
-}
 function showRecompileReason(): PluginOption {
   return {
     name: 'vaadin:why-you-compile',
@@ -577,7 +609,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
     plugins: [
       !devMode && brotli(),
       devMode && vaadinBundlesPlugin(),
-      devMode && setHmrPortToServerPort(),
       devMode && showRecompileReason(),
       settings.offlineEnabled && buildSWPlugin({ devMode }),
       !devMode && statsExtracterPlugin(),

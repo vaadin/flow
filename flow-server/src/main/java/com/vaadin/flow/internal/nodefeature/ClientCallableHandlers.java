@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Locale;
 
@@ -48,8 +49,8 @@ public class ClientCallableHandlers extends AbstractServerHandlers<Component> {
     }
 
     @Override
-    protected Class<? extends ClientCallable> getHandlerAnnotation() {
-        return ClientCallable.class;
+    protected String getHandlerAnnotationFqn() {
+        return ClientCallable.class.getName();
     }
 
     @Override
@@ -71,7 +72,7 @@ public class ClientCallableHandlers extends AbstractServerHandlers<Component> {
                     "Only return types that can be used as Element.executeJs parameters are supported. "
                             + "Component '%s' has method '%s' annotated with '%s' whose return type is \"%s\"",
                     method.getDeclaringClass().getName(), method.getName(),
-                    getHandlerAnnotation().getName(),
+                    getHandlerAnnotationFqn(),
                     method.getReturnType().getSimpleName());
             throw new IllegalStateException(msg);
         }
@@ -79,6 +80,6 @@ public class ClientCallableHandlers extends AbstractServerHandlers<Component> {
 
     @Override
     protected DisabledUpdateMode getUpdateMode(Method method) {
-        return method.getAnnotation(getHandlerAnnotation()).value();
+        return method.getAnnotation(ClientCallable.class).value();
     }
 }

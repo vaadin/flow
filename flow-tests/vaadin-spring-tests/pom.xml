@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>24.0-SNAPSHOT</version>
+        <version>24.1-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-spring-tests</artifactId>
     <name>Vaadin Spring tests</name>
@@ -133,6 +133,12 @@
             <artifactId>jaxb-runtime</artifactId>
             <version>2.3.7</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.2.1</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -164,7 +170,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>3.2.1</version>
                     <dependencies>
                         <dependency>
                             <groupId>de.skuzzle.enforcer</groupId>
@@ -318,6 +324,7 @@
                 <module>test-spring-security-flow-contextpath</module>
                 <module>test-spring-security-flow-urlmapping</module>
                 <module>test-spring-security-flow-reverseproxy</module>
+                <module>test-spring-security-flow-methodsecurity</module>
 
                 <module>test-spring-boot-only-prepare</module>
                 <module>test-spring-white-list</module>

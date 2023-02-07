@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,11 +20,16 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.io.FilenameUtils;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -52,8 +57,6 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
-            TaskGenerateOpenAPI.class,
-            TaskGenerateEndpoint.class,
             TaskGenerateBootstrap.class,
             TaskGenerateWebComponentHtml.class,
             TaskGenerateWebComponentBootstrap.class,
@@ -61,6 +64,8 @@ public class NodeTasks implements FallibleCommand {
             TaskInstallFrontendBuildPlugins.class,
             TaskUpdatePackages.class,
             TaskRunNpmInstall.class,
+            TaskGenerateOpenAPI.class,
+            TaskGenerateEndpoint.class,
             TaskGenerateHilla.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
@@ -87,6 +92,8 @@ public class NodeTasks implements FallibleCommand {
                 options.classFinder);
         FrontendDependenciesScanner frontendDependencies = null;
 
+        Set<String> webComponentTags = new HashSet<>();
+
         final FeatureFlags featureFlags = options.getFeatureFlags();
 
         if (options.enablePackagesUpdate || options.enableImportsUpdate
@@ -100,6 +107,7 @@ public class NodeTasks implements FallibleCommand {
             // determine if we need a rebuild as the check happens immediately
             // and no update tasks are executed before it.
             if (!options.productionMode && options.isDevBundleBuild()) {
+                UsageStatistics.markAsUsed("flow/expressBuild", null);
                 if (TaskRunDevBundleBuild.needsBuild(options,
                         frontendDependencies, classFinder)) {
                     options.runNpmInstall(true);
@@ -121,6 +129,10 @@ public class NodeTasks implements FallibleCommand {
                     commands.add(new TaskGenerateWebComponentHtml(options));
                     commands.add(
                             new TaskGenerateWebComponentBootstrap(options));
+                    webComponentTags = webComponents.stream().map(
+                            webComponentPath -> FilenameUtils.removeExtension(
+                                    webComponentPath.getName()))
+                            .collect(Collectors.toSet());
                 }
             }
 
@@ -154,7 +166,7 @@ public class NodeTasks implements FallibleCommand {
             addGenerateServiceWorkerTask(options,
                     frontendDependencies.getPwaConfiguration());
 
-            if (options.productionMode || options.isEnableDevServer()
+            if (options.productionMode || options.isFrontendHotdeploy()
                     || options.isDevBundleBuild()) {
                 addGenerateTsConfigTask(options);
             }
@@ -203,9 +215,9 @@ public class NodeTasks implements FallibleCommand {
             pwa = new PwaConfiguration();
         }
         commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
-        if (options.productionMode || options.isEnableDevServer()
+        if (options.productionMode || options.isFrontendHotdeploy()
                 || options.isDevBundleBuild()) {
-            commands.add(new TaskUpdateVite(options));
+            commands.add(new TaskUpdateVite(options, webComponentTags));
         }
 
         if (options.enableImportsUpdate) {
@@ -226,7 +238,7 @@ public class NodeTasks implements FallibleCommand {
 
     private void addBootstrapTasks(Options options) {
         commands.add(new TaskGenerateIndexHtml(options));
-        if (options.productionMode || options.isEnableDevServer()
+        if (options.productionMode || options.isFrontendHotdeploy()
                 || options.isDevBundleBuild()) {
             commands.add(new TaskGenerateIndexTs(options));
             if (!options.productionMode) {

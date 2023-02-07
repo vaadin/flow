@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -108,7 +108,8 @@ public class PwaHandler implements RequestHandler {
         requestHandlerMap.put(
                 pwaRegistry.getPwaConfiguration().relManifestPath(),
                 (session, request, response) -> {
-                    response.setContentType("application/manifest+json");
+                    response.setContentType(
+                            "application/manifest+json;charset=utf-8");
                     try (PrintWriter writer = response.getWriter()) {
                         writer.write(pwaRegistry.getManifestJson());
                     }

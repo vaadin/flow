@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
@@ -35,9 +34,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.DevServerOutputTracker.Result;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
@@ -46,6 +46,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.NetworkUtil;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.HandlerHelper;
@@ -61,10 +62,9 @@ import com.vaadin.flow.server.frontend.TaskRunNpmInstall;
 import com.vaadin.flow.server.frontend.TaskRunNpmInstall.Stats;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Deals with most details of starting a frontend development server or
@@ -78,7 +78,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     private static final String START_FAILURE = "Couldn't start dev server because";
 
-    private static final String DEV_SERVER_HOST = "http://127.0.0.1";
+    public static final String DEV_SERVER_HOST = "http://127.0.0.1";
 
     private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. ------------------\n\n";
     private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------\n\n";
@@ -207,7 +207,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         watchDog.set(new DevServerWatchDog());
 
         // Look for a free port
-        port = getFreePort();
+        port = NetworkUtil.getFreePort();
         // save the port immediately before start a dev server, see #8981
         saveRunningDevServerPort();
 
@@ -500,21 +500,6 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      */
     private void removeRunningDevServerPort() {
         FileUtils.deleteQuietly(devServerPortFile);
-    }
-
-    /**
-     * Returns an available tcp port in the system.
-     *
-     * @return a port number which is not busy
-     */
-    static int getFreePort() {
-        try (ServerSocket s = new ServerSocket(0)) {
-            s.setReuseAddress(true);
-            return s.getLocalPort();
-        } catch (IOException e) {
-            throw new IllegalStateException(
-                    "Unable to find a free port for running the dev server", e);
-        }
     }
 
     @Override

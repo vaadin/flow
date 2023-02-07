@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,9 +39,12 @@ import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.BootstrapException;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -116,6 +119,21 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 Document document = Jsoup.parse(
                         FrontendUtils.getWebComponentHtmlContent(service));
                 Element head = document.head();
+
+                DeploymentConfiguration deploymentConfiguration = service
+                        .getDeploymentConfiguration();
+
+                if (deploymentConfiguration.isProductionMode()) {
+                    // The web-component.html is fetched from the bundle so it
+                    // includes the entry point javascripts
+                } else if (!deploymentConfiguration.frontendHotdeploy()) {
+                    // When running without a frontend server, the
+                    // web-component.html comes
+                    // directly from the frontend folder and the JS
+                    // entrypoint(s) need
+                    // to be added
+                    addJavaScriptEntryPoints(deploymentConfiguration, document);
+                }
 
                 // Specify the application ID for scripts of the
                 // web-component.html
@@ -216,6 +234,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         BootstrapContext context = super.createAndInitUI(WebComponentUI.class,
                 request, response, session);
         JsonObject config = context.getApplicationParameters();
+
+        PushConfiguration pushConfiguration = context.getUI()
+                .getPushConfiguration();
+        pushConfiguration.setPushServletMapping(
+                BootstrapHandlerHelper.determinePushServletMapping(session));
 
         assert serviceUrl.endsWith("/");
         config.put(ApplicationConstants.SERVICE_URL, serviceUrl);

@@ -1,16 +1,12 @@
 package com.vaadin.flow.test.scalability;
 
-import jakarta.servlet.annotation.WebInitParam;
-import jakarta.servlet.annotation.WebServlet;
-
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.router.Route;
 
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,25 +20,10 @@ import com.vaadin.flow.server.VaadinServlet;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+@Route("helloworld")
+public class HelloWorldUI extends Div {
 
-public class HelloWorldUI extends UI {
-
-    public static final String PATH = "/helloworld/";
-
-    public static final String HELLO_WORLD_UI = HelloWorldUI.class.getName();
-
-    /**
-     * The main servlet for the application.
-     */
-    @WebServlet(urlPatterns = PATH
-            + "*", name = "UIServlet", asyncSupported = true, initParams = {
-                    @WebInitParam(name = "ui", value = "com.vaadin.flow.test.scalability.HelloWorldUI"),
-                    @WebInitParam(name = "productionMode", value = "false") })
-    public static class Servlet extends VaadinServlet {
-    }
-
-    @Override
-    protected void init(VaadinRequest request) {
+    public HelloWorldUI() {
         NativeButton b = new NativeButton("Hello", e -> {
             add(new Text("Hello!"));
         });

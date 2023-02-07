@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -70,6 +70,7 @@ import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.base.devserver.stats.StatisticsSender;
 import com.vaadin.base.devserver.stats.StatisticsStorage;
+import com.vaadin.base.devserver.viteproxy.ViteWebsocketEndpoint;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandler;
@@ -323,7 +324,7 @@ public class DevModeInitializer implements Serializable {
                 .copyLocalResources(new File(baseDir,
                         Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                 .enableImportsUpdate(true)
-                .runNpmInstall(config.enableDevServer())
+                .runNpmInstall(config.frontendHotdeploy())
                 .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .useGlobalPnpm(useGlobalPnpm)
@@ -331,15 +332,15 @@ public class DevModeInitializer implements Serializable {
                 .withProductionMode(config.isProductionMode())
                 .withPostinstallPackages(
                         Arrays.asList(additionalPostinstallPackages))
-                .withEnableDevServer(config.enableDevServer())
+                .withFrontendHotdeploy(config.frontendHotdeploy())
                 .withDevBundleBuild(!config.isProductionMode()
-                        && !config.enableDevServer());
+                        && !config.frontendHotdeploy());
         ;
         NodeTasks tasks = new NodeTasks(options);
 
         Runnable runnable = () -> {
             runNodeTasks(context, tokenFileData, tasks);
-            if (config.enableDevServer()) {
+            if (config.frontendHotdeploy()) {
                 // For Vite, wait until a VaadinServlet is deployed so we know
                 // which frontend servlet path to use
                 if (VaadinServlet.getFrontendMapping() == null) {
@@ -361,12 +362,15 @@ public class DevModeInitializer implements Serializable {
                 Lookup.of(config, ApplicationConfiguration.class));
         int port = Integer
                 .parseInt(config.getStringProperty("devServerPort", "0"));
-        if (!config.enableDevServer()) {
+        if (!config.frontendHotdeploy()) {
             nodeTasksFuture.join();
             return null;
         } else {
-            return new ViteHandler(devServerLookup, port,
+            ViteHandler handler = new ViteHandler(devServerLookup, port,
                     options.getNpmFolder(), nodeTasksFuture);
+            VaadinServlet.whenFrontendMappingAvailable(
+                    () -> ViteWebsocketEndpoint.init(context, handler));
+            return handler;
         }
     }
 

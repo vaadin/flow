@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.spring.security;
 
-import javax.crypto.SecretKey;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Optional;
@@ -24,12 +24,13 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.crypto.SecretKey;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -39,8 +40,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextHolderStrategy;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
@@ -52,6 +52,7 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.savedrequest.RequestCache;
@@ -59,14 +60,20 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Provides basic Vaadin component-based security configuration for the project.
@@ -95,6 +102,7 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
  * </code>
  * </pre>
  */
+@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public abstract class VaadinWebSecurity {
 
     @Autowired
@@ -102,6 +110,9 @@ public abstract class VaadinWebSecurity {
 
     @Autowired
     private RequestUtil requestUtil;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Autowired
     private ViewAccessChecker viewAccessChecker;
@@ -208,23 +219,6 @@ public abstract class VaadinWebSecurity {
 
         // Enable view access control
         viewAccessChecker.enable();
-    }
-
-    /**
-     * Registers {@link SecurityContextHolderStrategy} bean.
-     * <p>
-     * Beans of this type will automatically be used by
-     * {@link org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration}
-     * to configure the current {@link SecurityContextHolderStrategy}.
-     */
-    @Bean(name = "VaadinSecurityContextHolderStrategy")
-    public SecurityContextHolderStrategy securityContextHolderStrategy() {
-        VaadinAwareSecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy = new VaadinAwareSecurityContextHolderStrategy();
-        // Use a security context holder that can find the context from Vaadin
-        // specific classes
-        SecurityContextHolder.setContextHolderStrategy(
-                vaadinAwareSecurityContextHolderStrategy);
-        return vaadinAwareSecurityContextHolderStrategy;
     }
 
     /**
@@ -415,7 +409,16 @@ public abstract class VaadinWebSecurity {
                             + flowLoginView.getName());
         }
 
-        String loginPath = RouteUtil.getRoutePath(flowLoginView, route.get());
+        if (!(applicationContext instanceof WebApplicationContext)) {
+            throw new RuntimeException(
+                    "VaadinWebSecurity cannot be used without WebApplicationContext.");
+        }
+
+        VaadinServletContext vaadinServletContext = new VaadinServletContext(
+                ((WebApplicationContext) applicationContext)
+                        .getServletContext());
+        String loginPath = RouteUtil.getRoutePath(vaadinServletContext,
+                flowLoginView);
         if (!loginPath.startsWith("/")) {
             loginPath = "/" + loginPath;
         }
@@ -492,7 +495,19 @@ public abstract class VaadinWebSecurity {
             SecretKey secretKey, String issuer, long expiresIn)
             throws Exception {
         VaadinStatelessSecurityConfigurer<HttpSecurity> vaadinStatelessSecurityConfigurer = new VaadinStatelessSecurityConfigurer<>();
+        vaadinStatelessSecurityConfigurer.setSharedObjects(http);
         http.apply(vaadinStatelessSecurityConfigurer);
+
+        // Workaround
+        // https://github.com/spring-projects/spring-security/issues/12579 until
+        // it is released
+        SessionManagementConfigurer sessionManagementConfigurer = http
+                .getConfigurer(SessionManagementConfigurer.class);
+        Field f = SessionManagementConfigurer.class
+                .getDeclaredField("sessionManagementSecurityContextRepository");
+        f.setAccessible(true);
+        f.set(sessionManagementConfigurer,
+                http.getSharedObject(SecurityContextRepository.class));
 
         vaadinStatelessSecurityConfigurer.withSecretKey().secretKey(secretKey)
                 .and().issuer(issuer).expiresIn(expiresIn);

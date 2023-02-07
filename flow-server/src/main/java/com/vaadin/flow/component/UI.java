@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,53 +28,53 @@ import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.internal.AllowInert;
-import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
-import com.vaadin.flow.component.page.History;
-import com.vaadin.flow.i18n.LocaleChangeEvent;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
-import com.vaadin.flow.router.ErrorNavigationEvent;
-import com.vaadin.flow.router.ErrorParameter;
-import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.router.NavigationState;
-import com.vaadin.flow.router.NavigationStateBuilder;
-import com.vaadin.flow.router.NotFoundException;
-import com.vaadin.flow.router.RouteNotFoundError;
-import com.vaadin.flow.router.RouteParameters;
-import com.vaadin.flow.router.internal.ErrorStateRenderer;
-import com.vaadin.flow.router.internal.ErrorTargetEntry;
-import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.internal.AllowInert;
+import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveListener;
+import com.vaadin.flow.router.ErrorNavigationEvent;
+import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.EventUtil;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.flow.router.NavigationState;
+import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.ErrorStateRenderer;
+import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.ErrorEvent;
@@ -1193,6 +1193,30 @@ public class UI extends Component
         // By default any UI supports navigation. Override this to return false
         // if navigation is not supported.
         return true;
+    }
+
+    /**
+     * Returns the currently active route aka navigation target shown in this
+     * UI.
+     * <p>
+     * Note, that certain UIs, like embedded apps, don't support routing and for
+     * those an exception will be thrown.
+     * <p>
+     * Also, the current route might not be initialized if this method is called
+     * while still building the view chain, for example in the constructor of
+     * layouts. Thus, consider postponing the usage of this method to for
+     * example AfterNavigationEvent.
+     *
+     * @return the currently active route instance if available
+     * @throws IllegalStateException
+     *             if current view is not yet available
+     */
+    public Component getCurrentView() {
+        if (getInternals().getActiveRouterTargetsChain().isEmpty()) {
+            throw new IllegalStateException(
+                    "Routing is not in use or not yet initialized. If you are not using embedded UI, try postponing the call to an onAttach method or to an AfterNavigationEvent listener.");
+        }
+        return (Component) getInternals().getActiveRouterTargetsChain().get(0);
     }
 
     /**

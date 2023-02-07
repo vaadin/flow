@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,7 +26,6 @@ public class ImageTest extends ComponentTest {
 
     @Override
     protected void addProperties() {
-        addOptionalStringProperty("alt");
         addStringProperty("src", "");
     }
 
@@ -35,15 +36,12 @@ public class ImageTest extends ComponentTest {
     }
 
     @Test
-    public void setEmptyAltInConstructor_altPropertExists() {
+    public void emptyAltKeepsAttribute() {
         Image img = new Image("test.png", "");
-        Assert.assertTrue(
-                "'alt' property should have been retained with constructor",
-                img.getElement().hasProperty("alt"));
-
-        img.setAlt("");
-
-        Assert.assertTrue("'alt' property should have been cleared with setAlt",
-                img.getElement().hasProperty("alt"));
+        Assert.assertEquals("", img.getAlt().get());
+        Assert.assertTrue(img.getElement().hasAttribute("alt"));
+        img.setAlt(null);
+        Assert.assertEquals(Optional.empty(), img.getAlt());
+        Assert.assertFalse(img.getElement().hasAttribute("alt"));
     }
 }

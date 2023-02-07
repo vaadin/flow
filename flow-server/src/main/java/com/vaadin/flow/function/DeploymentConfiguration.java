@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -122,6 +122,16 @@ public interface DeploymentConfiguration
      * @return The push mode in use.
      */
     PushMode getPushMode();
+
+    /**
+     * Returns the servlet mapping that bidirectional ("push") client-server
+     * communication should use.
+     *
+     * @return The push servlet mapping to use
+     */
+    default String getPushServletMapping() {
+        return "";
+    }
 
     /**
      * Gets the properties configured for the deployment, e.g. as init

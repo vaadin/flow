@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,7 +42,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_VERSION;
-import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;;
+import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.

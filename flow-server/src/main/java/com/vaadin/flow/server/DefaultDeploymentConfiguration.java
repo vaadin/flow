@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -88,9 +89,11 @@ public class DefaultDeploymentConfiguration
     private int webComponentDisconnect;
     private boolean closeIdleSessions;
     private PushMode pushMode;
+    private String pushServletMapping;
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
+    private boolean frontendHotdeploy;
 
     private static AtomicBoolean logging = new AtomicBoolean(true);
     private List<String> warnings = new ArrayList<>();
@@ -123,8 +126,10 @@ public class DefaultDeploymentConfiguration
         checkWebComponentDisconnectTimeout();
         checkCloseIdleSessions();
         checkPushMode();
+        checkPushServletMapping();
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
+        checkFrontendHotdeploy();
 
         if (log) {
             logMessages();
@@ -240,6 +245,21 @@ public class DefaultDeploymentConfiguration
     @Override
     public PushMode getPushMode() {
         return pushMode;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The default mode is <code>""</code> which uses the service mapping.
+     */
+    @Override
+    public String getPushServletMapping() {
+        return pushServletMapping;
+    }
+
+    @Override
+    public boolean frontendHotdeploy() {
+        return frontendHotdeploy;
     }
 
     /**
@@ -361,6 +381,11 @@ public class DefaultDeploymentConfiguration
         }
     }
 
+    private void checkPushServletMapping() {
+        pushServletMapping = getStringProperty(
+                InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING, "");
+    }
+
     private void checkSyncIdCheck() {
         syncIdCheck = getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_SYNC_ID_CHECK,
@@ -371,6 +396,12 @@ public class DefaultDeploymentConfiguration
         sendUrlsAsParameters = getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 DEFAULT_SEND_URLS_AS_PARAMETERS);
+    }
+
+    private void checkFrontendHotdeploy() {
+        frontendHotdeploy = getBooleanProperty(
+                InitParameters.FRONTEND_HOTDEPLOY,
+                EndpointRequestUtil.isHillaAvailable());
     }
 
 }

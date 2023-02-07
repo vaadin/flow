@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,22 +24,37 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
+import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.flow.server.webcomponent.WebComponentExporterTagExtractor;
+import com.vaadin.flow.server.webcomponent.WebComponentExporterUtils;
+
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
 /**
@@ -51,7 +66,10 @@ import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
  */
 public class TaskRunDevBundleBuild implements FallibleCommand {
 
-    private Options options;
+    private static final Pattern THEME_PATH_PATTERN = Pattern
+            .compile("themes\\/([\\s\\S]+?)\\/theme.json");
+
+    private final Options options;
 
     /**
      * Create an instance of the command.
@@ -101,12 +119,14 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         if (!FrontendUtils.getDevBundleFolder(npmFolder).exists()
                 && !hasJarBundle()) {
+            getLogger().info("No dev-bundle found.");
             return true;
         }
 
         String statsJsonContent = FrontendUtils.findBundleStatsJson(npmFolder);
         if (statsJsonContent == null) {
             // without stats.json in bundle we can not say if it is up to date
+            getLogger().info("No dev-bundle stats.json found for validation.");
             return true;
         }
 
@@ -126,6 +146,102 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         if (!frontendImportsFound(statsJson, options, finder,
                 frontendDependencies)) {
             return true;
+        }
+
+        if (packagedThemeAddedOrUpdated(options, statsJson)) {
+            return true;
+        }
+
+        if (exportedWebComponents(statsJson, finder)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean exportedWebComponents(JsonObject statsJson,
+            ClassFinder finder) {
+        try {
+            Set<Class<?>> exporterRelatedClasses = new HashSet<>();
+            finder.getSubTypesOf(WebComponentExporter.class.getName())
+                    .forEach(exporterRelatedClasses::add);
+            finder.getSubTypesOf(WebComponentExporterFactory.class.getName())
+                    .forEach(exporterRelatedClasses::add);
+
+            Set<String> webComponents = WebComponentExporterUtils
+                    .getFactories(exporterRelatedClasses).stream()
+                    .map(TaskRunDevBundleBuild::getTag)
+                    .collect(Collectors.toSet());
+
+            JsonArray webComponentsInStats = statsJson
+                    .getArray("webComponents");
+
+            if (webComponentsInStats == null) {
+                if (!webComponents.isEmpty()) {
+                    getLogger().info(
+                            "Found embedded web components not yet included "
+                                    + "into the dev bundle: {}",
+                            String.join(", ", webComponents));
+                    return true;
+                }
+                return false;
+            } else {
+                for (int index = 0; index < webComponentsInStats
+                        .length(); index++) {
+                    String webComponentInStats = webComponentsInStats
+                            .getString(index);
+                    webComponents.remove(webComponentInStats);
+                }
+            }
+
+            if (!webComponents.isEmpty()) {
+                getLogger().info(
+                        "Found newly added embedded web components not "
+                                + "yet included into the dev bundle: {}",
+                        String.join(", ", webComponents));
+                return true;
+            }
+
+            return false;
+
+        } catch (ClassNotFoundException e) {
+            getLogger()
+                    .error("Unable to locate embedded web component classes.");
+            return false;
+        }
+    }
+
+    private static boolean packagedThemeAddedOrUpdated(Options options,
+            JsonObject statsJson) {
+        Map<String, String> packagedThemeHashes = new HashMap<>(1);
+
+        if (options.jarFiles == null) {
+            return false;
+        }
+
+        options.jarFiles.stream().filter(File::exists)
+                .filter(file -> !file.isDirectory())
+                .forEach(jarFile -> calculateHashesForPackagedThemes(jarFile,
+                        packagedThemeHashes));
+
+        JsonObject hashesInStats = statsJson.getObject("themeJsonHashes");
+        if (hashesInStats == null && !packagedThemeHashes.isEmpty()) {
+            getLogger().info("Found newly added packaged custom themes.");
+            return true;
+        }
+        for (Map.Entry<String, String> themeHash : packagedThemeHashes
+                .entrySet()) {
+            if (!hashesInStats.hasKey(themeHash.getKey())) {
+                getLogger().info(
+                        "Found newly added packaged custom theme '{}'.",
+                        themeHash.getKey());
+                return true;
+            } else if (!hashesInStats.getString(themeHash.getKey())
+                    .equals(themeHash.getValue())) {
+                getLogger().info("Found updated package custom theme '{}'.",
+                        themeHash.getKey());
+                return true;
+            }
         }
 
         return false;
@@ -159,6 +275,44 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             return false;
         }
 
+        String resourcePath = "generated/jar-resources/";
+        final List<String> jarImports = imports.stream()
+                .filter(importString -> importString.contains(resourcePath))
+                .map(importString -> importString
+                        .substring(importString.indexOf(resourcePath)
+                                + resourcePath.length()))
+                .collect(Collectors.toList());
+
+        final JsonObject frontendHashes = statsJson.getObject("frontendHashes");
+        List<String> faultyContent = new ArrayList<>();
+        for (String jarImport : jarImports) {
+            final String jarResourceString = FrontendUtils
+                    .getJarResourceString(jarImport);
+            if (jarResourceString == null) {
+                getLogger().info("No file found for '{}'", jarImport);
+                return false;
+            }
+            String content = jarResourceString.replaceAll("\\r\\n", "\n");
+            final String contentHash = StringUtil.getHash(content,
+                    StandardCharsets.UTF_8);
+
+            if (frontendHashes.hasKey(jarImport) && !frontendHashes
+                    .getString(jarImport).equals(contentHash)) {
+                faultyContent.add(jarImport);
+            } else if (!frontendHashes.hasKey(jarImport)) {
+                getLogger().info("No hash info for '{}'", jarImport);
+                faultyContent.add(jarImport);
+            }
+        }
+        if (!faultyContent.isEmpty()) {
+            StringBuilder faulty = new StringBuilder();
+            for (String file : faultyContent) {
+                faulty.append(" - ").append(file).append("\n");
+            }
+            getLogger().info("Detected changed content for jar-resource:\n{}",
+                    faulty.toString());
+            return false;
+        }
         return true;
     }
 
@@ -198,7 +352,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         String bundlePackageJsonHash = getStatsHash(statsJson);
 
         if (packageJsonHash == null || packageJsonHash.isEmpty()) {
-            getLogger().warn("No hash found for 'package.json'.");
+            getLogger().error(
+                    "No hash found for 'package.json' even though one should always be generated!");
             return false;
         }
 
@@ -268,6 +423,20 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         return expectedVersion.isEqualTo(actualVersion);
     }
 
+    /**
+     * Get the package.json file from disk if available else generate in memory.
+     * <p>
+     * For the loaded file update versions as per in memory to get correct
+     * application versions.
+     *
+     * @param options
+     *            the task options
+     * @param frontendDependencies
+     *            frontend dependency scanner
+     * @param finder
+     *            classfinder
+     * @return package.json content as JsonObject
+     */
     private static JsonObject getPackageJson(Options options,
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder) {
@@ -275,14 +444,17 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         if (packageJsonFile.exists()) {
             try {
-                return Json.parse(FileUtils.readFileToString(packageJsonFile,
-                        StandardCharsets.UTF_8));
+                final JsonObject packageJson = Json
+                        .parse(FileUtils.readFileToString(packageJsonFile,
+                                StandardCharsets.UTF_8));
+                return getDefaultPackageJson(options, frontendDependencies,
+                        finder, packageJson);
             } catch (IOException e) {
                 getLogger().warn("Failed to read package.json", e);
             }
         } else {
             JsonObject packageJson = getDefaultPackageJson(options,
-                    frontendDependencies, finder);
+                    frontendDependencies, finder, null);
             if (packageJson != null) {
                 return packageJson;
             }
@@ -292,7 +464,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
     protected static JsonObject getDefaultPackageJson(Options options,
             FrontendDependenciesScanner frontendDependencies,
-            ClassFinder finder) {
+            ClassFinder finder, JsonObject packageJson) {
         NodeUpdater nodeUpdater = new NodeUpdater(finder, frontendDependencies,
                 options) {
             @Override
@@ -300,8 +472,22 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             }
         };
         try {
-            JsonObject packageJson = nodeUpdater.getPackageJson();
+            if (packageJson == null) {
+                packageJson = nodeUpdater.getPackageJson();
+            }
+            nodeUpdater.addVaadinDefaultsToJson(packageJson);
             nodeUpdater.updateDefaultDependencies(packageJson);
+
+            final Map<String, String> applicationDependencies = frontendDependencies
+                    .getPackages();
+
+            // Add application dependencies
+            for (Map.Entry<String, String> dep : applicationDependencies
+                    .entrySet()) {
+                nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES,
+                        dep.getKey(), dep.getValue());
+            }
+
             final String hash = TaskUpdatePackages
                     .generatePackageJsonHash(packageJson);
             packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
@@ -351,6 +537,36 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             return false;
         }
         return true;
+    }
+
+    private static void calculateHashesForPackagedThemes(File jarFileToLookup,
+            Map<String, String> packagedThemeHashes) {
+        JarContentsManager jarContentsManager = new JarContentsManager();
+        if (jarContentsManager.containsPath(jarFileToLookup,
+                Constants.RESOURCES_THEME_JAR_DEFAULT)) {
+            List<String> themeJsons = jarContentsManager.findFiles(
+                    jarFileToLookup, Constants.RESOURCES_THEME_JAR_DEFAULT,
+                    "theme.json");
+            for (String themeJson : themeJsons) {
+                byte[] byteContent = jarContentsManager
+                        .getFileContents(jarFileToLookup, themeJson);
+                String content = IOUtils.toString(byteContent, "UTF-8");
+                content = content.replaceAll("\\r\\n", "\n");
+
+                JsonObject themeJsonContent = Json.parse(content);
+                if (themeJsonContent.hasKey(Constants.ASSETS)) {
+                    Matcher matcher = THEME_PATH_PATTERN.matcher(themeJson);
+                    if (!matcher.find()) {
+                        throw new IllegalStateException(
+                                "Packaged theme folders structure is incorrect, should have META-INF/resources/themes/[theme-name]/");
+                    }
+                    String themeName = matcher.group(1);
+                    String hash = StringUtil.getHash(content,
+                            StandardCharsets.UTF_8);
+                    packagedThemeHashes.put(themeName, hash);
+                }
+            }
+        }
     }
 
     private static Logger getLogger() {
@@ -450,5 +666,11 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 process.destroyForcibly();
             }
         }
+    }
+
+    private static String getTag(
+            WebComponentExporterFactory<? extends Component> factory) {
+        WebComponentExporterTagExtractor exporterTagExtractor = new WebComponentExporterTagExtractor();
+        return exporterTagExtractor.apply(factory);
     }
 }

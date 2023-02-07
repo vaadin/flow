@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -67,7 +67,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * Whether or not insert the initial Uidl object in the bootstrap index.html
      */
     @Parameter(defaultValue = "${vaadin."
-            + Constants.SERVLET_PARAMETER_INITIAL_UIDL + "}")
+            + InitParameters.SERVLET_PARAMETER_INITIAL_UIDL + "}")
     private boolean eagerServerLoad;
 
     /**
@@ -179,7 +179,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * absent. Then it will be used instead of globally 'node' or locally
      * installed installed 'node'.
      */
-    @Parameter(property = Constants.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = ""
+    @Parameter(property = InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = ""
             + Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE)
     private boolean requireHomeNodeExec;
 
@@ -213,6 +213,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     @Parameter(property = "npm.postinstallPackages", defaultValue = "")
     private List<String> postinstallPackages;
+
+    /**
+     * Parameter to control if frontend development server should be used in
+     * development mode or not.
+     * <p>
+     * By default, the frontend server is not used.
+     */
+    @Parameter(property = InitParameters.FRONTEND_HOTDEPLOY, defaultValue = "false")
+    private boolean frontendHotdeploy;
 
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
@@ -427,5 +436,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public List<String> postinstallPackages() {
         return postinstallPackages;
+    }
+
+    @Override
+    public boolean isFrontendHotdeploy() {
+        return frontendHotdeploy;
     }
 }

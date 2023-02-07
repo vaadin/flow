@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,9 @@ import java.io.File;
  * the new Maven/Gradle plugin based generator.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ *
+ * @deprecated to be replaced with {@link TaskGenerateOpenAPI} and
+ *             {@link TaskGenerateEndpoint}
  */
 public interface TaskGenerateHilla extends FallibleCommand {
     /**

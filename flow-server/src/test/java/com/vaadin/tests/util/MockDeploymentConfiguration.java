@@ -14,7 +14,7 @@ public class MockDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
 
     private boolean productionMode = false;
-    private boolean enableDevServer = true;
+    private boolean frontendHotdeploy = false;
     private boolean reuseDevServer = true;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
@@ -22,6 +22,7 @@ public class MockDeploymentConfiguration
     private int webComponentDisconnect = 300;
     private boolean closeIdleSessions = false;
     private PushMode pushMode = PushMode.DISABLED;
+    private String pushServletMapping = "";
     private Properties initParameters = new Properties();
     private Map<String, String> applicationOrSystemProperty = new HashMap<>();
     private boolean syncIdCheckEnabled = true;
@@ -51,13 +52,13 @@ public class MockDeploymentConfiguration
         this.productionMode = productionMode;
     }
 
-    public void setEnableDevServer(boolean enableDevServer) {
-        this.enableDevServer = enableDevServer;
+    public void setFrontendHotdeploy(boolean frontendHotdeploy) {
+        this.frontendHotdeploy = frontendHotdeploy;
     }
 
     @Override
-    public boolean enableDevServer() {
-        return enableDevServer;
+    public boolean frontendHotdeploy() {
+        return frontendHotdeploy;
     }
 
     public void setReuseDevServer(boolean reuseDevServer) {
@@ -127,6 +128,15 @@ public class MockDeploymentConfiguration
 
     public void setPushMode(PushMode pushMode) {
         this.pushMode = pushMode;
+    }
+
+    @Override
+    public String getPushServletMapping() {
+        return pushServletMapping;
+    }
+
+    public void setPushServletMapping(String pushServletMapping) {
+        this.pushServletMapping = pushServletMapping;
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
 import com.vaadin.flow.component.internal.DeadlockDetectingCompletableFuture;
-import com.vaadin.flow.component.page.Page.ExecutionCanceler;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.server.VaadinSession;
@@ -43,8 +42,7 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  * @since 2.0
  */
-public interface PendingJavaScriptResult
-        extends Serializable, ExecutionCanceler {
+public interface PendingJavaScriptResult extends Serializable {
 
     /**
      * Exception used when a {@link CompletableFuture} returned from
@@ -70,7 +68,6 @@ public interface PendingJavaScriptResult
      * @return <code>true</code> if the execution was canceled,
      *         <code>false</code> if not
      */
-    @Override
     boolean cancelExecution();
 
     /**

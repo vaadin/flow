@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,11 +32,13 @@ import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereInterceptor;
 import org.atmosphere.cpr.AtmosphereRequestImpl;
 import org.atmosphere.cpr.AtmosphereResponseImpl;
+import org.atmosphere.cpr.BroadcasterConfig;
 import org.atmosphere.interceptor.HeartbeatInterceptor;
 import org.atmosphere.util.VoidAnnotationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
@@ -119,6 +121,11 @@ public class PushRequestHandler
                 // Map the (possibly pre-initialized) handler to the actual push
                 // handler
                 ((PushAtmosphereHandler) handler).setPushHandler(pushHandler);
+                BroadcasterConfig broadcasterConfig = handlerWrapper.broadcaster
+                        .getBroadcasterConfig();
+                broadcasterConfig.addFilter(new LongPollingCacheFilter());
+                broadcasterConfig.addFilter(
+                        new AtmospherePushConnection.PushMessageUnwrapFilter());
             }
 
         }
@@ -224,17 +231,29 @@ public class PushRequestHandler
         atmosphere.addInitParameter("org.atmosphere.cpr.showSupportMessage",
                 "false");
 
-        Optional<ServletRegistration> servletRegistration = getServletRegistration(
-                vaadinServletConfig);
-        if (servletRegistration.isPresent()) {
+        String pushServletMapping = BootstrapHandlerHelper
+                .getCleanedPushServletMapping(
+                        vaadinServletConfig.getInitParameter(
+                                InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING));
+
+        if (pushServletMapping != null) {
             atmosphere.addInitParameter(ApplicationConfig.JSR356_MAPPING_PATH,
-                    findFirstUrlMapping(servletRegistration.get())
-                            + Constants.PUSH_MAPPING);
+                    pushServletMapping + Constants.PUSH_MAPPING);
         } else {
-            getLogger().debug(
-                    "Unable to determine servlet registration for {}. "
-                            + "Using root mapping for push",
-                    vaadinServletConfig.getServletName());
+            Optional<ServletRegistration> servletRegistration = BootstrapHandlerHelper
+                    .getServletRegistration(vaadinServletConfig);
+            if (servletRegistration.isPresent()) {
+                atmosphere.addInitParameter(
+                        ApplicationConfig.JSR356_MAPPING_PATH,
+                        BootstrapHandlerHelper
+                                .findFirstUrlMapping(servletRegistration.get())
+                                + Constants.PUSH_MAPPING);
+            } else {
+                getLogger().debug(
+                        "Unable to determine servlet registration for {}. "
+                                + "Using root mapping for push",
+                        vaadinServletConfig.getServletName());
+            }
         }
 
         atmosphere.addInitParameter(
@@ -253,23 +272,6 @@ public class PushRequestHandler
             throw new RuntimeException("Atmosphere init failed", e);
         }
         return atmosphere;
-    }
-
-    private static Optional<ServletRegistration> getServletRegistration(
-            ServletConfig config) {
-        String name = config.getServletName();
-        if (name != null) {
-            return Optional.ofNullable(config.getServletContext()
-                    .getServletRegistrations().get(name));
-        }
-        return Optional.empty();
-    }
-
-    private static String findFirstUrlMapping(
-            ServletRegistration registration) {
-        String firstMapping = registration.getMappings().stream().sorted()
-                .findFirst().orElse("/");
-        return firstMapping.replace("/*", "/");
     }
 
     @Override

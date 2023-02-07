@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,7 +37,21 @@ public class DefaultRoutePathProvider implements RoutePathProvider {
         if (route == null) {
             return null;
         }
-        return RouteUtil.resolve(navigationTarget, route);
+
+        if (route.value().equals(Route.NAMING_CONVENTION)) {
+            String simpleName = navigationTarget.getSimpleName();
+            if ("MainView".equals(simpleName) || "Main".equals(simpleName)) {
+                return "";
+            }
+            if (simpleName.endsWith("View")) {
+                return simpleName
+                        .substring(0, simpleName.length() - "View".length())
+                        .toLowerCase();
+            }
+            return simpleName.toLowerCase();
+        }
+        return route.value();
+
     }
 
 }

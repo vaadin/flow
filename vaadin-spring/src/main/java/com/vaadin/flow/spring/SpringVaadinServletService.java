@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -78,7 +78,6 @@ public class SpringVaadinServletService extends VaadinServletService {
         Optional<Instantiator> spiInstantiator = super.loadInstantiators();
         List<Instantiator> springInstantiators = context
                 .getBeansOfType(Instantiator.class).values().stream()
-                .filter(instantiator -> instantiator.init(this))
                 .collect(Collectors.toList());
         if (spiInstantiator.isPresent() && !springInstantiators.isEmpty()) {
             throw new ServiceException(
@@ -91,7 +90,6 @@ public class SpringVaadinServletService extends VaadinServletService {
         if (!spiInstantiator.isPresent() && springInstantiators.isEmpty()) {
             Instantiator defaultInstantiator = new SpringInstantiator(this,
                     context);
-            defaultInstantiator.init(this);
             return Optional.of(defaultInstantiator);
         }
         return spiInstantiator.isPresent() ? spiInstantiator

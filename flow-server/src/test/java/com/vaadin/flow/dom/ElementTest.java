@@ -2442,7 +2442,7 @@ public class ElementTest extends AbstractNodeTest {
             }
         };
 
-        element.executeJavaScript("foo", 1, true);
+        element.executeJs("foo", 1, true);
 
         Assert.assertEquals("foo", invokedExpression.get());
         Assert.assertEquals(Integer.valueOf(1), invokedParams.get()[0]);
@@ -2469,7 +2469,7 @@ public class ElementTest extends AbstractNodeTest {
             }
         };
 
-        element.callFunction("foo", 1, true);
+        element.callJsFunction("foo", 1, true);
 
         Assert.assertEquals("foo", invokedFuction.get());
         Assert.assertEquals(Integer.valueOf(1), invokedParams.get()[0]);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,10 +24,12 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
+import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD;
@@ -147,8 +149,12 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
-    public boolean enableDevServer() {
-        return parentConfig.enableDevServer();
+    public boolean frontendHotdeploy() {
+        if (isOwnProperty(FRONTEND_HOTDEPLOY)) {
+            return getBooleanProperty(FRONTEND_HOTDEPLOY,
+                    EndpointRequestUtil.isHillaAvailable());
+        }
+        return parentConfig.frontendHotdeploy();
     }
 
     @Override

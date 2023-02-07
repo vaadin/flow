@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -70,6 +70,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.osgi\\.support\\..*",
                 "com\\.vaadin\\.flow\\.server\\.osgi\\..*",
                 "com\\.vaadin\\.base\\.devserver\\.DevServerOutputTracker.*",
+                "com\\.vaadin\\.base\\.devserver\\.viteproxy\\..*",
                 "com\\.vaadin\\.base\\.devserver\\.stats..*",
                 "com\\.vaadin\\.flow\\.internal\\.VaadinContextInitializer",
                 "com\\.vaadin\\.flow\\.internal\\.ApplicationClassLoaderAccess",
@@ -79,6 +80,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.base\\.devserver\\.DevModeHandlerManagerImpl",
                 "com\\.vaadin\\.base\\.devserver\\.DevServerWatchDog",
                 "com\\.vaadin\\.base\\.devserver\\.DevServerWatchDog\\$WatchDogServer",
+                "com\\.vaadin\\.base\\.devserver\\.IdeIntegration",
+                "com\\.vaadin\\.base\\.devserver\\.OpenInCurrentIde",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.BrowserLauncher",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.PortProber",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.FixedIANAPortRange",
@@ -142,7 +145,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.startup\\.LookupServletContainerInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication.JSR356WebsocketInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapHandler(\\$.*)?",
-                "com\\.vaadin\\.flow\\.server\\.BootstrapPageResponse",
                 "com\\.vaadin\\.flow\\.server\\.InlineTargets",
                 "com\\.vaadin\\.flow\\.server\\.AppShellSettings",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.IndexHtmlResponse",

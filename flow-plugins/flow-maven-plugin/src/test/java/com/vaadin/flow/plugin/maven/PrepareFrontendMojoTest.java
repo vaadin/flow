@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -52,6 +52,7 @@ import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsP
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -145,7 +146,7 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
-    public void tokenFileShouldExist_noDevModeTokenVisible()
+    public void tokenFileShouldExist_noHotdeployTokenVisible()
             throws IOException, MojoExecutionException, MojoFailureException {
         mojo.execute();
         Assert.assertTrue("No token file could be found", tokenFile.exists());
@@ -153,19 +154,19 @@ public class PrepareFrontendMojoTest {
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
         JsonObject buildInfo = JsonUtil.parse(json);
-        Assert.assertNull("No devMode token should be available",
-                buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+        Assert.assertNull("Default HotDeploy token should not be available",
+                buildInfo.get(FRONTEND_HOTDEPLOY));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
     }
 
     @Test
-    public void existingTokenFile_enableDevServerShouldBeRemoved()
+    public void existingTokenFile_defaultFrontendHotdeployShouldBeRemoved()
             throws IOException, MojoExecutionException, MojoFailureException {
 
         JsonObject initialBuildInfo = Json.createObject();
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
-        initialBuildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
+        initialBuildInfo.put(FRONTEND_HOTDEPLOY, true);
         org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
         org.apache.commons.io.FileUtils.write(tokenFile,
                 JsonUtil.stringify(initialBuildInfo, 2) + "\n", "UTF-8");
@@ -175,8 +176,8 @@ public class PrepareFrontendMojoTest {
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
         JsonObject buildInfo = JsonUtil.parse(json);
-        Assert.assertNull("No devMode token should be available",
-                buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+        Assert.assertNull("Default hotdeploy should not be added",
+                buildInfo.get(FRONTEND_HOTDEPLOY));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
     }

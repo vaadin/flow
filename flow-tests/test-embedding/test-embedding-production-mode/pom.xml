@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>test-embedding</artifactId>
-        <version>24.0-SNAPSHOT</version>
+        <version>24.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-embedding-production</artifactId>
     <name>Flow Embedding, production tests</name>
@@ -69,9 +69,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <productionMode>true</productionMode>
-                </configuration>
             </plugin>
         </plugins>
     </build>

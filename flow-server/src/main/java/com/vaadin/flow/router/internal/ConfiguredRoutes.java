@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouteParameters;
-import com.vaadin.flow.router.RouterLayout;
 
 /**
  * Route configuration class that is used as a value object.
@@ -398,29 +397,6 @@ public class ConfiguredRoutes implements Serializable {
      */
     public Map<Class<? extends Exception>, Class<? extends Component>> getExceptionHandlers() {
         return exceptionTargetMap;
-    }
-
-    /**
-     * Return the parent layout chain for given navigation target on the target
-     * path.
-     *
-     * @param path
-     *            path to get parent layout chain for.
-     * @param navigationTarget
-     *            navigation target on path to get parent layout chain for.
-     * @return list of parent layout chain.
-     * @deprecated use {@link #getNavigationRouteTarget(String)} instead.
-     */
-    @Deprecated
-    public List<Class<? extends RouterLayout>> getParentLayouts(String path,
-            Class<? extends Component> navigationTarget) {
-        final NavigationRouteTarget result = getNavigationRouteTarget(path);
-
-        if (result.hasTarget()) {
-            return result.getRouteTarget().getParentLayouts();
-        } else {
-            return Collections.emptyList();
-        }
     }
 
     /**

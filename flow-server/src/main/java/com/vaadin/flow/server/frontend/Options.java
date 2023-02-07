@@ -117,7 +117,7 @@ public class Options implements Serializable {
 
     private FeatureFlags featureFlags;
 
-    private boolean enableDevServer = true;
+    private boolean frontendHotdeploy = false;
 
     /**
      * Creates a new instance.
@@ -542,12 +542,12 @@ public class Options implements Serializable {
     /**
      * Whether to run with a dev server (when not in production mode).
      *
-     * @param enableDevServer
+     * @param frontendHotdeploy
      *            true to run with a dev server, false to run in express mode
      * @return this builder
      */
-    public Options withEnableDevServer(boolean enableDevServer) {
-        this.enableDevServer = enableDevServer;
+    public Options withFrontendHotdeploy(boolean frontendHotdeploy) {
+        this.frontendHotdeploy = frontendHotdeploy;
         return this;
     }
 
@@ -556,8 +556,8 @@ public class Options implements Serializable {
      *
      * @return true to run with a dev server, false to run in express mode
      */
-    public boolean isEnableDevServer() {
-        return enableDevServer;
+    public boolean isFrontendHotdeploy() {
+        return frontendHotdeploy;
     }
 
     /**

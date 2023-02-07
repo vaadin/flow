@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>24.0-SNAPSHOT</version>
+        <version>24.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-client</artifactId>
     <name>Flow Client</name>
@@ -257,7 +257,7 @@
                     <style>${gwt.module.style}</style>
                     <htmlunit>FF38</htmlunit>
                     <testTimeOut>300</testTimeOut>
-                    <extraJvmArgs>-Xmx512m -Dvaadin.enableDevServer=false</extraJvmArgs>
+                    <extraJvmArgs>-Xmx512m -Dvaadin.frontend.hotdeploy=false</extraJvmArgs>
                     <includes>${gwt.test.pattern}</includes>
                 </configuration>
             </plugin>

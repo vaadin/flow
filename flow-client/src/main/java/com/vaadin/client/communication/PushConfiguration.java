@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -89,12 +89,20 @@ public class PushConfiguration {
     }
 
     /**
-     * Gets the fixed push URL.
+     * Gets the push servlet mapping configured or determined on the server.
      *
-     * @return the fixed push URL (VAADIN/push)
+     * @return the push servlet mapping configured or determined on the server
+     *         or null if none has been configured
      */
-    public String getPushUrl() {
-        return Constants.PUSH_MAPPING;
+    public String getPushServletMapping() {
+        if (getConfigurationMap().hasPropertyValue(
+                PushConfigurationMap.PUSH_SERVLET_MAPPING_KEY)) {
+            return (String) getConfigurationMap()
+                    .getProperty(PushConfigurationMap.PUSH_SERVLET_MAPPING_KEY)
+                    .getValue();
+        }
+
+        return null;
     }
 
     /**

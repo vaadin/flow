@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -44,6 +44,7 @@ import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
+import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
@@ -125,8 +126,11 @@ public class AbstractConfigurationFactory implements Serializable {
         // These should be internal only so if there is a System
         // property override then the user probably knows what
         // they are doing.
-        if (buildInfo.hasKey(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
-            params.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, String.valueOf(
+        if (buildInfo.hasKey(FRONTEND_HOTDEPLOY)) {
+            params.put(FRONTEND_HOTDEPLOY,
+                    String.valueOf(buildInfo.getBoolean(FRONTEND_HOTDEPLOY)));
+        } else if (buildInfo.hasKey(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
+            params.put(FRONTEND_HOTDEPLOY, String.valueOf(
                     buildInfo.getBoolean(SERVLET_PARAMETER_ENABLE_DEV_SERVER)));
         }
         if (buildInfo.hasKey(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {

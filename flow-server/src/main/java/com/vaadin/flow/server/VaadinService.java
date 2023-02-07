@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -346,12 +346,8 @@ public abstract class VaadinService implements Serializable {
      * @see Instantiator
      */
     protected Instantiator createInstantiator() throws ServiceException {
-        return loadInstantiators().orElseGet(() -> {
-            DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
-                    this);
-            defaultInstantiator.init(this);
-            return defaultInstantiator;
-        });
+        return loadInstantiators()
+                .orElseGet(() -> new DefaultInstantiator(this));
     }
 
     /**
@@ -384,7 +380,7 @@ public abstract class VaadinService implements Serializable {
                 Instantiator instantiator = factory.createInstantitor(this);
                 // if the existing instantiator is converted to new API then
                 // let's respect its deprecated method
-                if (instantiator != null && instantiator.init(this)) {
+                if (instantiator != null) {
                     instantiators.add(instantiator);
                 }
             }
@@ -398,7 +394,6 @@ public abstract class VaadinService implements Serializable {
         StreamSupport
                 .stream(ServiceLoader.load(Instantiator.class, getClassLoader())
                         .spliterator(), false)
-                .filter(iterator -> iterator.init(this))
                 .forEach(instantiators::add);
         if (instantiators.size() > 1) {
             throw new ServiceException(

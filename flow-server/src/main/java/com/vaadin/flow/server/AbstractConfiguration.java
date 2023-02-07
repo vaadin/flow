@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
@@ -41,16 +42,17 @@ public interface AbstractConfiguration extends Serializable {
     boolean isProductionMode();
 
     /**
-     * Get if the dev server should be enabled. True by default
+     * Get if the dev server should be enabled. false by default as express mode
+     * should be used.
      *
      * @return true if dev server should be used
      */
-    default boolean enableDevServer() {
+    default boolean frontendHotdeploy() {
         if (isProductionMode()) {
             return false;
         }
-        return getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER, true);
+        return getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY,
+                EndpointRequestUtil.isHillaAvailable());
     }
 
     /**

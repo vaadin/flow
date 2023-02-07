@@ -322,6 +322,7 @@ public class DeploymentConfigurationFactoryTest {
                 InitParameters.UI_PARAMETER,
                 InitParameters.SERVLET_PARAMETER_REQUEST_TIMING,
                 InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+                InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING,
                 InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
                 InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
                 InitParameters.SERVLET_PARAMETER_STATISTICS_JSON,
@@ -498,26 +499,25 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void externalStatsFileTrue_predefinedValuesAreNotOverridden()
+    public void externalStatsFileTrue_predefinedValuesAreNotOverridden_productionMode()
             throws Exception {
         // note that this situation shouldn't happen that the other
-        // settings
-        // would be against the external usage.
+        // settings would be against the external usage.
         FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"enableDevServer\": true,",
+                Arrays.asList("{", "\"frontend.hotdeploy\": true,",
                         // production mode can be
                         // altered even when external
-                        // stats
-                        // are used
+                        // stats are used
                         "\"productionMode\": true,",
                         "\"externalStatsFile\": true", "}"));
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
 
-        assertEquals(true, config.isProductionMode());
-        assertEquals(true, config.enableDevServer());
-        assertEquals(true, config.isStatsExternal());
+        assertTrue(config.isProductionMode());
+        assertFalse("Dev server should be default false due to stats",
+                config.frontendHotdeploy());
+        assertTrue(config.isStatsExternal());
         assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL,
                 config.getExternalStatsUrl());
     }
@@ -655,7 +655,7 @@ public class DeploymentConfigurationFactoryTest {
         VaadinContext context = new MockVaadinContext();
         ApplicationConfiguration configuration = Mockito
                 .mock(ApplicationConfiguration.class);
-        Mockito.when(configuration.enableDevServer()).thenReturn(true);
+        Mockito.when(configuration.frontendHotdeploy()).thenReturn(true);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         Mockito.when(configuration.getContext()).thenReturn(context);
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),

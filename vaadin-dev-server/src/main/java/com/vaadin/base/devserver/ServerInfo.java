@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.base.devserver;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.Version;
 
@@ -62,16 +63,7 @@ public class ServerInfo implements Serializable {
     }
 
     private String fetchProductName() {
-        try {
-            // This class belongs to fusion-endpoint and is not available in
-            // Flow projects. By checking for its availability, we can show the
-            // right project name in the Vaadin devmode gizmo
-            Class.forName("dev.hilla.EndpointController", false,
-                    getClass().getClassLoader());
-            return "Hilla";
-        } catch (ClassNotFoundException e) {
-            return "Vaadin";
-        }
+        return EndpointRequestUtil.isHillaAvailable() ? "Hilla" : "Vaadin";
     }
 
     public String getFlowVersion() {

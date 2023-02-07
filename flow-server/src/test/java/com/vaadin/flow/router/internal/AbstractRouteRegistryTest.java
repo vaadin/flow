@@ -93,7 +93,7 @@ public class AbstractRouteRegistryTest {
                 removed.isEmpty());
 
         Assert.assertEquals(MyRoute.class, added.get(0).getNavigationTarget());
-        Assert.assertEquals("", added.get(0).getUrl());
+        Assert.assertEquals("", added.get(0).getTemplate());
         Assert.assertEquals(Collections.emptyList(),
                 added.get(0).getParentLayouts());
 
@@ -108,7 +108,7 @@ public class AbstractRouteRegistryTest {
 
         Assert.assertEquals(Secondary.class,
                 added.get(0).getNavigationTarget());
-        Assert.assertEquals("home", added.get(0).getUrl());
+        Assert.assertEquals("home", added.get(0).getTemplate());
 
         registry.removeRoute("home");
 
@@ -119,7 +119,7 @@ public class AbstractRouteRegistryTest {
         Assert.assertEquals(Secondary.class,
                 removed.get(0).getNavigationTarget());
         Assert.assertEquals("The 'home' route should have been removed", "home",
-                removed.get(0).getUrl());
+                removed.get(0).getTemplate());
     }
 
     @Test
@@ -148,7 +148,7 @@ public class AbstractRouteRegistryTest {
         Assert.assertFalse("", removed.isEmpty());
 
         for (RouteBaseData data : added) {
-            if (data.getUrl().equals("")) {
+            if (data.getTemplate().equals("")) {
                 Assert.assertEquals("MyRoute should have been added",
                         MyRoute.class, data.getNavigationTarget());
                 Assert.assertEquals(

@@ -47,8 +47,7 @@ public class VaadinServletContextTest {
         properties = new HashMap<>();
         properties.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
                 "true");
-        properties.put(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER,
-                "false");
+        properties.put(InitParameters.FRONTEND_HOTDEPLOY, "false");
 
         Mockito.when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.enumeration(properties.keySet()));

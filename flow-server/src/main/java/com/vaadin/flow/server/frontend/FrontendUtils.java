@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
@@ -31,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -615,7 +619,41 @@ public class FrontendUtils {
                 .filter(File::exists).findFirst().orElse(null);
     }
 
-    private static File getJarResourcesFolder(File frontendDirectory) {
+    /**
+     * Get resource from JAR package.
+     *
+     * @param jarImport
+     *            jar file to get (no resource folder should be added)
+     * @return resource as String or {@code null} if not found
+     */
+    public static String getJarResourceString(String jarImport) {
+        final ClassLoader classLoader = FrontendUtils.class.getClassLoader();
+        URL resource = classLoader
+                .getResource(RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
+        if (resource == null) {
+            resource = classLoader.getResource(
+                    COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
+        }
+
+        if (resource == null) {
+            return null;
+        }
+        try (InputStream frontendContent = resource.openStream()) {
+            return FrontendUtils.streamToString(frontendContent);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Get the front-end resources folder. This is where the contents of JAR
+     * dependencies are copied to.
+     *
+     * @param frontendDirectory
+     *            project's frontend directory
+     * @return a {@link File} representing a folder with copied resources
+     */
+    public static File getJarResourcesFolder(File frontendDirectory) {
         return new File(getFrontendGeneratedFolder(frontendDirectory),
                 JAR_RESOURCES_FOLDER);
     }
@@ -1188,7 +1226,7 @@ public class FrontendUtils {
      * @return the bundle directory
      */
     public static File getDevBundleFolder(File projectDir) {
-        return new File(projectDir, "dev-bundle");
+        return new File(projectDir, Constants.DEV_BUNDLE_LOCATION);
     }
 
     /**
@@ -1205,10 +1243,8 @@ public class FrontendUtils {
         URL statsJson = findBundleFile(projectDir, "config/stats.json");
         if (statsJson == null) {
             getLogger().warn(
-                    "The application is running in express mode but there is "
-                            + "no bundle found. There is no 'dev-bundle' directory in the "
-                            + "project (or it has an invalid content) or on the "
-                            + "classpath nor is there a default bundle included.");
+                    "There is no dev-bundle in the project or on the classpath nor is there a default bundle included. "
+                            + "Verify that the dependency 'com.vaadin:vaadin-dev-bundle' is added to your project.");
             return null;
         }
 

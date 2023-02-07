@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -312,8 +312,7 @@ public class NavigationStateRendererTest {
                         "ROOT.123", new Location("preserved")).isPresent());
 
         // given the recently instantiated view
-        final Component view = (Component) ui1.getInternals()
-                .getActiveRouterTargetsChain().get(0);
+        final Component view = ui1.getCurrentView();
 
         // given a new UI with the same window name
         MockUI ui2 = new MockUI(session);

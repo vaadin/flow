@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -56,6 +56,7 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
 
     public static final String TRANSPORT_KEY = "transport";
     public static final String FALLBACK_TRANSPORT_KEY = "fallbackTransport";
+    public static final String PUSH_SERVLET_MAPPING_KEY = "pushServletMapping";
     public static final String PUSHMODE_KEY = "pushMode";
     public static final String ALWAYS_USE_XHR_TO_SERVER = "alwaysXhrToServer";
     public static final String PARAMETERS_KEY = "parameters";
@@ -125,6 +126,16 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
 
         return Transport.getByIdentifier(
                 getParameters().get(FALLBACK_TRANSPORT_KEY).toString());
+    }
+
+    @Override
+    public void setPushServletMapping(String pushServletMapping) {
+        put(PUSH_SERVLET_MAPPING_KEY, pushServletMapping);
+    }
+
+    @Override
+    public String getPushServletMapping() {
+        return getOrDefault(PUSH_SERVLET_MAPPING_KEY, null);
     }
 
     @Override

@@ -17,11 +17,26 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.flow.testutil.TestUtils;
+
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 public class TaskRunDevBundleBuildTest {
 
+    public static final String BLANK_PACKAGE_JSON_WITH_HASH = "{\n \"dependencies\": {},"
+            + "\"vaadin\": { \"hash\": \"a5\"} \n}";
+
+    public static final String NPM_MODULES = "npmModules";
+    public static final String ENTRY_SCRIPTS = "entryScripts";
+    public static final String BUNDLE_IMPORTS = "bundleImports";
+    public static final String FRONTEND_HASHES = "frontendHashes";
+    public static final String THEME_JSON_HASHES = "themeJsonHashes";
+    public static final String PACKAGE_JSON_HASH = "packageJsonHash";
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -33,7 +48,34 @@ public class TaskRunDevBundleBuildTest {
     public void init() {
         options = new Options(Mockito.mock(Lookup.class),
                 temporaryFolder.getRoot()).withBuildDirectory("target");
+        options.copyResources(Collections.emptySet());
         finder = Mockito.mock(ClassFinder.class);
+    }
+
+    private JsonObject getBasicStats() {
+        JsonObject stats = Json.createObject();
+
+        JsonObject npmModules = Json.createObject();
+        JsonObject frontendHashes = Json.createObject();
+        JsonObject themeJsonHashes = Json.createObject();
+
+        JsonArray entryScripts = Json.createArray();
+        JsonArray bundleImports = Json.createArray();
+
+        stats.put(NPM_MODULES, npmModules);
+        stats.put(ENTRY_SCRIPTS, entryScripts);
+        stats.put(BUNDLE_IMPORTS, bundleImports);
+        stats.put(FRONTEND_HASHES, frontendHashes);
+        stats.put(THEME_JSON_HASHES, themeJsonHashes);
+        stats.put(PACKAGE_JSON_HASH, "aHash");
+
+        // Add default npmModules
+        for (Map.Entry<String, String> dependency : NodeUpdater
+                .getDefaultDependencies().entrySet()) {
+            npmModules.put(dependency.getKey(), dependency.getValue());
+        }
+
+        return stats;
     }
 
     @Test
@@ -71,9 +113,9 @@ public class TaskRunDevBundleBuildTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"1.7.4\"}, "
-                + "\"vaadin\": { \"hash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"} }",
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -81,19 +123,16 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.7.4");
+
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "  \"@vaadin/router\": \"1.7.4\",\n" + " },\n"
-                            + " \"entryScripts\": [\n"
-                            + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
-                            + " ],\n"
-                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
-                            + "}");
+                    .thenReturn(stats.toJson());
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -109,9 +148,9 @@ public class TaskRunDevBundleBuildTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"1.7.4\"}, "
-                + "\"vaadin\": { \"hash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"} }",
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -121,19 +160,16 @@ public class TaskRunDevBundleBuildTest {
         packages.put("@vaadin/text", "1.0.0");
         Mockito.when(depScanner.getPackages()).thenReturn(packages);
 
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.7.4");
+
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "  \"@vaadin/router\": \"1.7.4\",\n" + " },\n"
-                            + " \"entryScripts\": [\n"
-                            + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
-                            + " ],\n"
-                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
-                            + "}");
+                    .thenReturn(stats.toJson());
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -151,7 +187,7 @@ public class TaskRunDevBundleBuildTest {
 
         FileUtils.write(packageJson, "{\"dependencies\": {"
                 + "\"@vaadin/router\": \"1.7.4\", \"@vaadin/text\":\"1.0.0\"}, "
-                + "\"vaadin\": { \"hash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"} }",
+                + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -159,19 +195,16 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.7.4");
+
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "  \"@vaadin/router\": \"1.7.4\",\n" + " },\n"
-                            + " \"entryScripts\": [\n"
-                            + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
-                            + " ],\n"
-                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
-                            + "}");
+                    .thenReturn(stats.toJson());
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -187,9 +220,9 @@ public class TaskRunDevBundleBuildTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"1.7.4\"}, "
-                + "\"vaadin\": { \"hash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"} }",
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -197,25 +230,141 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.7.4");
+        stats.getObject(NPM_MODULES).put("@vaadin/text", "1.0.0");
+
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "  \"@vaadin/router\": \"1.7.4\",\n"
-                            + "  \"@vaadin/text\": \"1.0.0\",\n" + " },\n"
-                            + " \"entryScripts\": [\n"
-                            + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
-                            + " ],\n"
-                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
-                            + "}");
+                    .thenReturn(stats.toJson());
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
             Assert.assertFalse(
                     "Not missing npmPackage in stats.json should not require compilation",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void packageJsonContainsOldVersionsAfterVersionUpdate_updatedStatsMatches_noCompilationRequired()
+            throws IOException {
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\",\n"
+                        + "\"@vaadin/text\": \"1.0.0\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@vaadin/router", "1.9.2");
+        packages.put("@vaadin/text", "2.1.0");
+        Mockito.when(depScanner.getPackages()).thenReturn(packages);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.9.2");
+        stats.getObject(NPM_MODULES).put("@vaadin/text", "2.1.0");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            final boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Not missing npmPackage in stats.json should not require compilation",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void noPackageJsonHashAfterCleanFrontend_statsHasDefaultJsonPackages_noCompilationRequired()
+            throws IOException {
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson, "{\n" + "  \"name\": \"no-name\",\n"
+                + "  \"license\": \"UNLICENSED\",\n" + "  \"dependencies\": {\n"
+                + "    \"@vaadin/router\": \"1.7.4\"" + "  },\n"
+                + "  \"devDependencies\": {\n" + "  }\n" + "}",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages())
+                .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.7.4");
+        stats.getObject(NPM_MODULES).put("@vaadin/text", "1.0.0");
+        stats.put(PACKAGE_JSON_HASH,
+                "af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6");
+        stats.getArray(ENTRY_SCRIPTS).set(0,
+                "VAADIN/build/indexhtml-aa31f040.js");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            final boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Not missing npmPackage in stats.json should not require compilation",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void noPackageJsonHashAfterCleanFrontend_statsMissingDefaultJsonPackages_compilationRequired()
+            throws IOException {
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson, "{\n" + "  \"name\": \"no-name\",\n"
+                + "  \"license\": \"UNLICENSED\",\n" + "  \"dependencies\": {\n"
+                + "    \"@vaadin/router\": \"1.7.4\"" + "  },\n"
+                + "  \"devDependencies\": {\n" + "  }\n" + "}",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages())
+                .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.7.4");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            final boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Missing npmPackage in stats.json should require compilation",
                     needsBuild);
         }
     }
@@ -227,9 +376,9 @@ public class TaskRunDevBundleBuildTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"^1.7.4\"}, "
-                + "\"vaadin\": { \"hash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"} }",
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -237,16 +386,16 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.7.4");
+
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "  \"@vaadin/router\": \"1.7.4\"" + "},\n"
-                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
-                            + "}");
+                    .thenReturn(stats.toJson());
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -263,9 +412,9 @@ public class TaskRunDevBundleBuildTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"~1.7.4\"}, "
-                + "\"vaadin\": { \"hash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"} }",
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"~1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -273,16 +422,16 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.7.6");
+
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "  \"@vaadin/router\": \"1.7.6\"" + "},\n"
-                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
-                            + "}");
+                    .thenReturn(stats.toJson());
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -290,12 +439,10 @@ public class TaskRunDevBundleBuildTest {
                     "No compilation if tilde range only patch update",
                     needsBuild);
 
+            stats.getObject(NPM_MODULES).put("@vaadin/router", "1.8.1");
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "  \"@vaadin/router\": \"1.8.1\"" + "},\n"
-                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
-                            + "}");
+                    .thenReturn(stats.toJson());
 
             needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
                     depScanner, finder);
@@ -312,9 +459,9 @@ public class TaskRunDevBundleBuildTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"^1.7.4\"}, "
-                + "\"vaadin\": { \"hash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"} }",
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -322,16 +469,16 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.8.6");
+
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "  \"@vaadin/router\": \"1.8.6\"" + "},\n"
-                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
-                            + "}");
+                    .thenReturn(stats.toJson());
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -339,12 +486,10 @@ public class TaskRunDevBundleBuildTest {
                     "No compilation if caret range only minor version update",
                     needsBuild);
 
+            stats.getObject(NPM_MODULES).put("@vaadin/router", "2.0.0");
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "  \"@vaadin/router\": \"2.0.0\"" + "},\n"
-                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
-                            + "}");
+                    .thenReturn(stats.toJson());
 
             needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
                     depScanner, finder);
@@ -363,9 +508,14 @@ public class TaskRunDevBundleBuildTest {
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
         String defaultHash = TaskRunDevBundleBuild
-                .getDefaultPackageJson(options, depScanner, finder)
+                .getDefaultPackageJson(options, depScanner, finder, null)
                 .getObject(NodeUpdater.VAADIN_DEP_KEY)
                 .getString(NodeUpdater.HASH_KEY);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.7.4");
+        stats.getObject(NPM_MODULES).put("@vaadin/text", "1.0.0");
+        stats.put(PACKAGE_JSON_HASH, defaultHash);
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -373,17 +523,7 @@ public class TaskRunDevBundleBuildTest {
                     .thenReturn(temporaryFolder.getRoot());
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "    \"@polymer/polymer\": \"3.5.1\",\n"
-                            + "    \"@vaadin/common-frontend\": \"0.0.17\",\n"
-                            + "    \"@vaadin/router\": \"1.7.4\",\n"
-                            + "    \"construct-style-sheets-polyfill\": \"3.1.0\",\n"
-                            + "    \"lit\": \"2.5.0\",\n"
-                            + "    \"@vaadin/text\": \"1.0.0\"\n},\n"
-                            + " \"entryScripts\": [\n"
-                            + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
-                            + " ],\n" + " \"packageJsonHash\": \"" + defaultHash
-                            + "\"\n" + "}");
+                    .thenReturn(stats.toJson());
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -402,9 +542,13 @@ public class TaskRunDevBundleBuildTest {
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
         String defaultHash = TaskRunDevBundleBuild
-                .getDefaultPackageJson(options, depScanner, finder)
+                .getDefaultPackageJson(options, depScanner, finder, null)
                 .getObject(NodeUpdater.VAADIN_DEP_KEY)
                 .getString(NodeUpdater.HASH_KEY);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.7.4");
+        stats.put(PACKAGE_JSON_HASH, defaultHash);
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -412,16 +556,7 @@ public class TaskRunDevBundleBuildTest {
                     .thenReturn(temporaryFolder.getRoot());
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "    \"@polymer/polymer\": \"3.5.1\",\n"
-                            + "    \"@vaadin/common-frontend\": \"0.0.17\",\n"
-                            + "    \"@vaadin/router\": \"1.7.4\",\n"
-                            + "    \"construct-style-sheets-polyfill\": \"3.1.0\",\n"
-                            + "    \"lit\": \"2.4.1\"\n" + " },\n"
-                            + " \"entryScripts\": [\n"
-                            + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
-                            + " ],\n" + " \"packageJsonHash\": \"" + defaultHash
-                            + "\"\n" + "}");
+                    .thenReturn(stats.toJson());
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -440,9 +575,13 @@ public class TaskRunDevBundleBuildTest {
                 .thenReturn(Collections.emptyMap());
 
         String defaultHash = TaskRunDevBundleBuild
-                .getDefaultPackageJson(options, depScanner, finder)
+                .getDefaultPackageJson(options, depScanner, finder, null)
                 .getObject(NodeUpdater.VAADIN_DEP_KEY)
                 .getString(NodeUpdater.HASH_KEY);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.7.4");
+        stats.put(PACKAGE_JSON_HASH, defaultHash);
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -450,16 +589,7 @@ public class TaskRunDevBundleBuildTest {
                     .thenReturn(temporaryFolder.getRoot());
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "    \"@polymer/polymer\": \"3.5.1\",\n"
-                            + "    \"@vaadin/common-frontend\": \"0.0.17\",\n"
-                            + "    \"@vaadin/router\": \"1.7.4\",\n"
-                            + "    \"construct-style-sheets-polyfill\": \"3.1.0\",\n"
-                            + "    \"lit\": \"2.5.0\"\n" + " },\n"
-                            + " \"entryScripts\": [\n"
-                            + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
-                            + " ],\n" + " \"packageJsonHash\": \"" + defaultHash
-                            + "\"\n" + "}");
+                    .thenReturn(stats.toJson());
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -476,9 +606,9 @@ public class TaskRunDevBundleBuildTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"^1.7.4\"}, "
-                + "\"vaadin\": { \"hash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"} }",
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -488,21 +618,21 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getModules()).thenReturn(Collections
                 .singletonList("@polymer/paper-checkbox/paper-checkbox.js"));
 
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.8.6");
+        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
+        bundleImports.set(0,
+                "@Frontend/generated/jar-resources/dndConnector-es6.js");
+        bundleImports.set(1, "@polymer/paper-input/paper-input.js");
+        bundleImports.set(2, "@vaadin/common-frontend/ConnectionIndicator.js");
+
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "  \"@vaadin/router\": \"1.8.6\"" + "},\n"
-                            + " \"bundleImports\": [\n"
-                            + "  \"@polymer/paper-input/paper-input.js\",\n"
-                            + "  \"@vaadin/common-frontend/ConnectionIndicator.js\",\n"
-                            + "  \"Frontend/generated/jar-resources/dndConnector-es6.js\"\n"
-                            + " ],\n"
-                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
-                            + "}");
+                    .thenReturn(stats.toJson());
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -520,9 +650,9 @@ public class TaskRunDevBundleBuildTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"^1.7.4\"}, "
-                + "\"vaadin\": { \"hash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"} }",
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -532,22 +662,22 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getModules()).thenReturn(Collections
                 .singletonList("@polymer/paper-checkbox/paper-checkbox.js"));
 
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.8.6");
+        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
+        bundleImports.set(0, "@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.set(1, "@polymer/paper-input/paper-input.js");
+        bundleImports.set(2, "@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports.set(3,
+                "Frontend/generated/jar-resources/dndConnector-es6.js");
+
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "  \"@vaadin/router\": \"1.8.6\"" + "},\n"
-                            + " \"bundleImports\": [\n"
-                            + "  \"@polymer/paper-checkbox/paper-checkbox.js\",\n"
-                            + "  \"@polymer/paper-input/paper-input.js\",\n"
-                            + "  \"@vaadin/common-frontend/ConnectionIndicator.js\",\n"
-                            + "  \"Frontend/generated/jar-resources/dndConnector-es6.js\"\n"
-                            + " ],\n"
-                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
-                            + "}");
+                    .thenReturn(stats.toJson());
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -564,9 +694,9 @@ public class TaskRunDevBundleBuildTest {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
-        FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"^1.7.4\"}, "
-                + "\"vaadin\": { \"hash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"} }",
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -578,22 +708,22 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getTheme())
                 .thenReturn(new NodeTestComponents.LumoTest());
 
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.8.6");
+        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
+        bundleImports.set(0, "@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.set(1, "@polymer/paper-input/paper-input.js");
+        bundleImports.set(2, "@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports.set(3,
+                "Frontend/generated/jar-resources/dndConnector-es6.js");
+
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "  \"@vaadin/router\": \"1.8.6\"" + "},\n"
-                            + " \"bundleImports\": [\n"
-                            + "  \"@polymer/paper-checkbox/paper-checkbox.js\",\n"
-                            + "  \"@polymer/paper-input/paper-input.js\",\n"
-                            + "  \"@vaadin/grid/theme/lumo/vaadin-grid.js\",\n"
-                            + "  \"Frontend/generated/jar-resources/dndConnector-es6.js\"\n"
-                            + " ],\n"
-                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
-                            + "}");
+                    .thenReturn(stats.toJson());
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -602,5 +732,350 @@ public class TaskRunDevBundleBuildTest {
                     needsBuild);
         }
 
+    }
+
+    @Test
+    public void frontendFileHashMatches_noBundleRebuild() throws IOException {
+        String fileContent = "TodoContent";
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getModules())
+                .thenReturn(Collections.singletonList(
+                        "Frontend/generated/jar-resources/TodoTemplate.js"));
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.8.6");
+        stats.getArray(BUNDLE_IMPORTS).set(0,
+                "Frontend/generated/jar-resources/TodoTemplate.js");
+        stats.getObject(FRONTEND_HASHES).put("TodoTemplate.js",
+                "dea5180dd21d2f18d1472074cd5305f60b824e557dae480fb66cdf3ea73edc65");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(
+                    () -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
+                    .thenReturn(fileContent);
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse("Jar fronted file content hash should match.",
+                    needsBuild);
+        }
+
+    }
+
+    @Test
+    public void noFrontendFileHash_bundleRebuild() throws IOException {
+        String fileContent = "TodoContent";
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getModules())
+                .thenReturn(Collections.singletonList(
+                        "Frontend/generated/jar-resources/TodoTemplate.js"));
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.8.6");
+        stats.getArray(BUNDLE_IMPORTS).set(0,
+                "Frontend/generated/jar-resources/TodoTemplate.js");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(
+                    () -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
+                    .thenReturn(fileContent);
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue("Content should not have been validated.",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void frontendFileHashMissmatch_bundleRebuild() throws IOException {
+        String fileContent = "TodoContent2";
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getModules())
+                .thenReturn(Collections.singletonList(
+                        "Frontend/generated/jar-resources/TodoTemplate.js"));
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.8.6");
+        stats.getArray(BUNDLE_IMPORTS).set(0,
+                "Frontend/generated/jar-resources/TodoTemplate.js");
+        stats.getObject(FRONTEND_HASHES).put("TodoTemplate.js",
+                "dea5180dd21d2f18d1472074cd5305f60b824e557dae480fb66cdf3ea73edc65");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(
+                    () -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
+                    .thenReturn(fileContent);
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Jar fronted file content hash should not be a match.",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void reusedTheme_noReusedThemes_noBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject basicStats = getBasicStats();
+        basicStats.remove(THEME_JSON_HASHES);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(basicStats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Shouldn't rebuild the bundle if no reused themes",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void reusedTheme_newlyAddedTheme_noThemeJson_noBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        File jarWithTheme = TestUtils.getTestJar("jar-with-no-theme-json.jar");
+        options.copyResources(Collections.singleton(jarWithTheme));
+
+        // create custom-theme folder with no theme.json
+        File jarResourcesFolder = new File(temporaryFolder.getRoot(),
+                "frontend/generated/jar-resources/themes/custom-theme");
+        boolean created = jarResourcesFolder.mkdirs();
+        Assert.assertTrue(created);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(getBasicStats().toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Should not trigger a bundle rebuild when the new theme has no theme.json",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void reusedTheme_newlyAddedTheme_noAssets_noBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        File jarWithTheme = TestUtils.getTestJar("jar-with-no-assets.jar");
+        options.copyResources(Collections.singleton(jarWithTheme));
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(getBasicStats().toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Should not trigger a bundle rebuild when the new theme has no assets",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void reusedTheme_noPreviouslyAddedThemes_justAddedNewTheme_bundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        File jarWithTheme = TestUtils
+                .getTestJar("jar-with-theme-json-and-assets.jar");
+        options.copyResources(Collections.singleton(jarWithTheme));
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(getBasicStats().toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Should trigger a bundle rebuild when a new reusable theme is added",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void reusedTheme_previouslyAddedThemes_justAddedNewTheme_bundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        File jarWithTheme = TestUtils
+                .getTestJar("jar-with-theme-json-and-assets.jar");
+        options.copyResources(Collections.singleton(jarWithTheme));
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        JsonObject stats = getBasicStats();
+        stats.getObject(THEME_JSON_HASHES).put("other-theme",
+                "other-theme-hash");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Should trigger a bundle rebuild when a new reusable theme is added",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void reusedTheme_previouslyAddedThemes_assetsUpdate_bundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        File jarWithTheme = TestUtils
+                .getTestJar("jar-with-theme-json-and-assets.jar");
+        options.copyResources(Collections.singleton(jarWithTheme));
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            JsonObject stats = getBasicStats();
+            stats.getObject(THEME_JSON_HASHES).put("reusable-theme",
+                    "theme-old-hash");
+
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Should trigger a bundle rebuild when the assets updated",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void reusedTheme_previouslyAddedThemes_noUpdates_noBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        File jarWithTheme = TestUtils
+                .getTestJar("jar-with-theme-json-and-assets.jar");
+        options.copyResources(Collections.singleton(jarWithTheme));
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            JsonObject stats = getBasicStats();
+            stats.getObject(THEME_JSON_HASHES).put("reusable-theme",
+                    "8a7121398c0c3871458fffcaa62f70f90fdd9714aded63b553ba9068e5fb3b71");
+
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Should not trigger a bundle rebuild when the themes not changed",
+                    needsBuild);
+        }
+    }
+
+    private void createPackageJsonStub(String content) throws IOException {
+        File packageJson = new File(temporaryFolder.getRoot(),
+                Constants.PACKAGE_JSON);
+        boolean created = packageJson.createNewFile();
+        Assert.assertTrue(created);
+        FileUtils.write(packageJson, content, StandardCharsets.UTF_8);
     }
 }

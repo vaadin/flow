@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -279,6 +279,9 @@ public class FrontendUtilsTest {
 
         File symbolic = new File(npmFolder, "symbolic");
         symbolic.mkdir();
+        File symbolicPackageJson = new File(symbolic, "package.json");
+        FileUtils.writeStringToFile(symbolicPackageJson, "{}",
+                StandardCharsets.UTF_8);
         File linkFolderFile = new File(symbolic, "symbol.txt");
         linkFolderFile.createNewFile();
 
