@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -37,8 +38,11 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private final Options options;
 
-    TaskUpdateVite(Options options) {
+    private final Set<String> webComponentTags;
+
+    TaskUpdateVite(Options options, Set<String> webComponentTags) {
         this.options = options;
+        this.webComponentTags = webComponentTags;
     }
 
     @Override
@@ -80,7 +84,11 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                         "./" + options.getBuildDirectoryName() + "/"
                                 + TaskUpdateSettingsFile.DEV_SETTINGS_FILE)
                 .replace("#buildFolder#",
-                        "./" + options.getBuildDirectoryName());
+                        "./" + options.getBuildDirectoryName())
+                .replace("#webComponentTags#",
+                        webComponentTags == null || webComponentTags.isEmpty()
+                                ? ""
+                                : String.join(";", webComponentTags));
         FileUtils.write(generatedConfigFile, template, StandardCharsets.UTF_8);
         log().debug("Created vite generated configuration file: '{}'",
                 generatedConfigFile);

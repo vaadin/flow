@@ -18,7 +18,6 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
@@ -27,6 +26,7 @@ import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushConstants;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -188,16 +188,34 @@ public class AtmospherePushConnection implements PushConnection {
             }
 
         });
-        url = getPushConfiguration().getPushUrl();
-        // If a specific serviceUrl is defined, prepend pushUrl with it
-        String serviceUrl = registry.getApplicationConfiguration()
-                .getServiceUrl();
-        if (!serviceUrl.equals(".")) {
-            if (!serviceUrl.endsWith("/")) {
-                serviceUrl += "/";
+
+        String pushServletMapping = getPushConfiguration()
+                .getPushServletMapping();
+        if (pushServletMapping == null || pushServletMapping.trim().isEmpty()
+                || "/".equals(pushServletMapping)) {
+            // Handle null, empty and "/" mapping using just default push
+            // mapping and serviceUrl
+            url = Constants.PUSH_MAPPING;
+            // If a specific serviceUrl is defined, prepend pushUrl with it
+            String serviceUrl = registry.getApplicationConfiguration()
+                    .getServiceUrl();
+            if (!serviceUrl.equals(".")) {
+                if (!serviceUrl.endsWith("/")) {
+                    serviceUrl += "/";
+                }
+                url = serviceUrl + url;
             }
-            url = serviceUrl + url;
+        } else {
+            // Append specific mapping directly to context root URL
+            String contextRootUrl = registry.getApplicationConfiguration()
+                    .getContextRootUrl();
+            if (contextRootUrl.endsWith("/")
+                    && pushServletMapping.startsWith("/")) {
+                pushServletMapping = pushServletMapping.substring(1);
+            }
+            url = contextRootUrl + pushServletMapping + Constants.PUSH_MAPPING;
         }
+
         runWhenAtmosphereLoaded(
                 () -> Scheduler.get().scheduleDeferred(this::connect));
     }
@@ -318,7 +336,6 @@ public class AtmospherePushConnection implements PushConnection {
      *
      * @param response
      *            the response
-     *
      */
     protected void onConnect(AtmosphereResponse response) {
         transport = response.getTransport();
@@ -454,6 +471,10 @@ public class AtmospherePushConnection implements PushConnection {
             state = State.CONNECT_PENDING;
         }
         getConnectionStateHandler().pushReconnectPending(this);
+    }
+
+    private int getLastSeenServerSyncId() {
+        return registry.getMessageHandler().getLastSeenServerSyncId();
     }
 
     /**
@@ -670,6 +691,7 @@ public class AtmospherePushConnection implements PushConnection {
             trackMessageLength: true,
             enableProtocol: true,
             handleOnlineOffline: false,
+            executeCallbackBeforeReconnect: true,
             messageDelimiter: String.fromCharCode(@com.vaadin.flow.shared.communication.PushConstants::MESSAGE_DELIMITER)
         };
     }-*/;
@@ -704,6 +726,11 @@ public class AtmospherePushConnection implements PushConnection {
         config.onClientTimeout = $entry(function(request) {
             self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
         });
+        config.headers = {
+            'X-Vaadin-LastSeenServerSyncId': function() {
+                return self.@com.vaadin.client.communication.AtmospherePushConnection::getLastSeenServerSyncId(*)();
+            }
+        };
 
         return $wnd.vaadinPush.atmosphere.subscribe(config);
     }-*/;

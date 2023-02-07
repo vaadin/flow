@@ -37,6 +37,7 @@ const buildOutputFolder = devBundle ? devBundleFolder : frontendBundleFolder;
 const statsFolder = path.resolve(__dirname, devBundle ? settings.devBundleStatsOutput : settings.statsOutput);
 const statsFile = path.resolve(statsFolder, 'stats.json');
 const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
+const webComponentTags = '#webComponentTags#';
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
@@ -240,6 +241,11 @@ function statsExtracterPlugin(): PluginOption {
         });
       }
 
+      let webComponents: string[] = [];
+      if (webComponentTags) {
+        webComponents = webComponentTags.split(";");
+      }
+
       const stats = {
         npmModules: projectPackageJson.dependencies,
         handledModules: npmModuleAndVersion,
@@ -247,6 +253,7 @@ function statsExtracterPlugin(): PluginOption {
         frontendHashes: frontendFiles,
         themeJsonHashes: themeJsonHashes,
         entryScripts,
+        webComponents,
         packageJsonHash: projectPackageJson?.vaadin?.hash
       };
       writeFileSync(statsFile, JSON.stringify(stats, null, 1));
