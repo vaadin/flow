@@ -108,7 +108,6 @@ export const injectGlobalCss = (css, target, first) => {
  */
 function generateThemeFile(themeFolder, themeName, themeProperties, options) {
   const productionMode = !options.devMode;
-  const useDevServer = !options.useDevBundle;
   const styles = resolve(themeFolder, stylesCssFile);
   const document = resolve(themeFolder, documentCssFile);
   const autoInjectComponents = themeProperties.autoInjectComponents ?? true;
@@ -159,9 +158,9 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
   // styles.css will always be available as we write one if it doesn't exist.
   let filename = basename(styles);
   let variable = camelCase(filename);
-  if (useDevServer) {
-    imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
-  }
+
+  imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
+
   /* Lumo must be first so that custom styles override Lumo styles */
   const lumoImports = themeProperties.lumoImports || ['color', 'typography'];
   if (lumoImports && lumoImports.length > 0) {
@@ -174,9 +173,8 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
     });
   }
 
-  if (useDevServer) {
-    globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n    `);
-  }
+  globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n    `);
+
   if (existsSync(document)) {
     filename = basename(document);
     variable = camelCase(filename);
