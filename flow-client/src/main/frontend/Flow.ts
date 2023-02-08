@@ -7,6 +7,7 @@ import {
 
 export interface FlowConfig {
   imports?: () => void;
+  offlineMode?: boolean;
 }
 
 class FlowUiInitializationError extends Error {}
@@ -146,7 +147,7 @@ export class Flow {
       // Store last action pathname so as we can check it in events
       this.pathname = params.pathname;
 
-      if ($wnd.Vaadin.connectionState.online) {
+      if (this.config.offlineMode || $wnd.Vaadin.connectionState.online) {
         try {
           await this.flowInit();
         } catch (error) {
