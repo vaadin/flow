@@ -1630,7 +1630,7 @@ public class UI extends Component
     @AllowInert
     public void connectClient(String clientElementTag, String clientElementId,
             String flowRoutePath, String flowRouteQuery, String appShellTitle,
-            JsonValue historyState) {
+            JsonValue historyState, String trigger) {
 
         if (appShellTitle != null && !appShellTitle.isEmpty()) {
             getInternals().setAppShellTitle(appShellTitle);
@@ -1643,7 +1643,16 @@ public class UI extends Component
         }
         final Location location = new Location(trimmedRoute,
                 QueryParameters.fromString(flowRouteQuery));
-
+        NavigationTrigger navigationTrigger;
+        if (trigger.isEmpty()) {
+            navigationTrigger = NavigationTrigger.PAGE_LOAD;
+        } else if (trigger.equalsIgnoreCase(NavigationTrigger.HISTORY.name())) {
+            navigationTrigger = NavigationTrigger.HISTORY;
+        } else if (trigger.equals("link")) {
+            navigationTrigger = NavigationTrigger.ROUTER_LINK;
+        } else {
+            navigationTrigger = NavigationTrigger.CLIENT_SIDE;
+        }
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
             wrapperElement = new Element(clientElementTag);
@@ -1655,16 +1664,16 @@ public class UI extends Component
 
             getPage().getHistory().setHistoryStateChangeHandler(
                     event -> renderViewForRoute(event.getLocation(),
-                            NavigationTrigger.CLIENT_SIDE));
+                            event.getTrigger()));
 
             // Render the flow view that the user wants to navigate to.
-            renderViewForRoute(location, NavigationTrigger.CLIENT_SIDE);
+            renderViewForRoute(location, navigationTrigger);
         } else {
             History.HistoryStateChangeHandler handler = getPage().getHistory()
                     .getHistoryStateChangeHandler();
-            handler.onHistoryStateChange(new History.HistoryStateChangeEvent(
-                    getPage().getHistory(), historyState, location,
-                    NavigationTrigger.CLIENT_SIDE));
+            handler.onHistoryStateChange(
+                    new History.HistoryStateChangeEvent(getPage().getHistory(),
+                            historyState, location, navigationTrigger));
         }
 
         // true if the target is client-view and the push mode is disable
