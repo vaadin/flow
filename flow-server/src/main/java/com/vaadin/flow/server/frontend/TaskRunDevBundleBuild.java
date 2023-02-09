@@ -357,7 +357,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             return false;
         }
 
-        JsonObject bundleModules = statsJson.getObject("npmModules");
+        JsonObject bundleModules = statsJson
+                .getObject("packageJsonDependencies");
 
         // Check that bundle modules contains all package dependencies
         if (packageJsonHash.equals(bundlePackageJsonHash)) {
