@@ -18,10 +18,12 @@
  * This file handles the generation of the '[theme-name].js' to
  * the themes/[theme-name] folder according to properties from 'theme.json'.
  */
-import { sync } from 'glob';
+import glob from 'glob';
 import { resolve, basename } from 'path';
 import { existsSync, writeFileSync } from 'fs';
-import { checkModules } from './theme-copy';
+import { checkModules } from './theme-copy.js';
+
+const { sync } = glob;
 
 // Special folder inside a theme for component themes that go inside the component shadow root
 const themeComponentsFolder = 'components';
