@@ -20,8 +20,8 @@
  */
 import { existsSync, writeFileSync, readFileSync } from 'fs';
 import { resolve } from 'path';
-import { generateThemeFile } from './theme-generator';
-import { copyStaticAssets, copyThemeResources } from './theme-copy';
+import { generateThemeFile } from './theme-generator.js';
+import { copyStaticAssets, copyThemeResources } from './theme-copy.js';
 
 // matches theme name in './theme-my-theme.generated.js'
 const nameRegex = /theme-(.*)\.generated\.js/;
