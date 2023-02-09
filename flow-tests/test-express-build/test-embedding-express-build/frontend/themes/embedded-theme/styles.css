@@ -15,6 +15,6 @@ span {
     color: green;
 }
 
-vaadin-text-field::part("input-field") {
+vaadin-text-field::part(input-field) {
     background: red;
 }
