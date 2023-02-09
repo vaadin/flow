@@ -1613,16 +1613,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     protected static Collection<Element> getTagForTheme(
             DeploymentConfiguration config, String fileName)
             throws IOException {
+        Collection<Element> tags = new ArrayList<>();
+
         Optional<String> themeName = FrontendUtils
                 .getThemeName(config.getProjectFolder());
 
         if (themeName.isEmpty()) {
             getLogger().debug("Found no custom theme in the project. "
                     + "Skipping adding a link tag for styles.css");
-            return Collections.emptyList();
+            return tags;
         }
-
-        Collection<Element> tags = new ArrayList<>();
 
         // First check if project has a packaged themes and add a link if any
         File frontendFolder = new File(config.getProjectFolder(),
