@@ -89,12 +89,20 @@ public class PushConfiguration {
     }
 
     /**
-     * Gets the fixed push URL.
+     * Gets the push servlet mapping configured or determined on the server.
      *
-     * @return the fixed push URL (VAADIN/push)
+     * @return the push servlet mapping configured or determined on the server
+     *         or null if none has been configured
      */
-    public String getPushUrl() {
-        return Constants.PUSH_MAPPING;
+    public String getPushServletMapping() {
+        if (getConfigurationMap().hasPropertyValue(
+                PushConfigurationMap.PUSH_SERVLET_MAPPING_KEY)) {
+            return (String) getConfigurationMap()
+                    .getProperty(PushConfigurationMap.PUSH_SERVLET_MAPPING_KEY)
+                    .getValue();
+        }
+
+        return null;
     }
 
     /**
