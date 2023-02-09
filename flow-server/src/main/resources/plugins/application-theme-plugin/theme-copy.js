@@ -20,8 +20,11 @@
 
 import { readdirSync, statSync, mkdirSync, existsSync, copyFileSync } from 'fs';
 import { resolve, basename, relative, extname } from 'path';
-import { sync } from 'glob';
-import { sync as mkdirpSync } from 'mkdirp';
+import glob from 'glob';
+import mkdirp from 'mkdirp';
+
+const { sync } = glob;
+const { sync: mkdirpSync } = mkdirp;
 
 const ignoredFileExtensions = ['.css', '.js', '.json'];
 
