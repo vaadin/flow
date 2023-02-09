@@ -10,6 +10,7 @@ import org.atmosphere.config.managed.ManagedServiceInterceptor;
 import org.atmosphere.config.service.AtmosphereHandlerService;
 import org.atmosphere.container.JSR356AsyncSupport;
 import org.atmosphere.cpr.AsyncSupportListener;
+import org.atmosphere.cpr.AsyncSupportListenerAdapter;
 import org.atmosphere.cpr.AtmosphereFramework;
 import org.atmosphere.cpr.AtmosphereFrameworkListener;
 import org.atmosphere.cpr.AtmosphereInterceptor;
@@ -17,6 +18,7 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEventListener;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.BroadcastFilter;
+import org.atmosphere.cpr.DefaultAnnotationProcessor;
 import org.atmosphere.cpr.DefaultAtmosphereResourceFactory;
 import org.atmosphere.cpr.DefaultAtmosphereResourceSessionFactory;
 import org.atmosphere.cpr.DefaultBroadcaster;
@@ -54,7 +56,9 @@ class AtmosphereHintsRegistrar implements RuntimeHintsRegistrar {
     }
 
     private Collection<? extends Class<?>> getAtmosphereClasses() {
-        var all = new HashSet<>(Set.of(DefaultAtmosphereResourceFactory.class,
+        var all = new HashSet<>(Set.of(AsyncSupportListenerAdapter.class,
+                AtmosphereFramework.class, DefaultAnnotationProcessor.class,
+                DefaultAtmosphereResourceFactory.class,
                 SimpleHttpProtocol.class,
                 AtmosphereResourceLifecycleInterceptor.class,
                 TrackMessageSizeInterceptor.class,
