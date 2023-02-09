@@ -32,6 +32,7 @@ public class TaskRunDevBundleBuildTest {
             + "\"vaadin\": { \"hash\": \"a5\"} \n}";
 
     public static final String PACKAGE_JSON_DEPENDENCIES = "packageJsonDependencies";
+    public static final String NPM_MODULES = "npmModules";
     public static final String ENTRY_SCRIPTS = "entryScripts";
     public static final String BUNDLE_IMPORTS = "bundleImports";
     public static final String FRONTEND_HASHES = "frontendHashes";
@@ -58,6 +59,7 @@ public class TaskRunDevBundleBuildTest {
         JsonObject packageJsonDependencies = Json.createObject();
         JsonObject frontendHashes = Json.createObject();
         JsonObject themeJsonHashes = Json.createObject();
+        JsonObject npmModules = Json.createObject();
 
         JsonArray entryScripts = Json.createArray();
         JsonArray bundleImports = Json.createArray();
@@ -65,6 +67,7 @@ public class TaskRunDevBundleBuildTest {
         stats.put(PACKAGE_JSON_DEPENDENCIES, packageJsonDependencies);
         stats.put(ENTRY_SCRIPTS, entryScripts);
         stats.put(BUNDLE_IMPORTS, bundleImports);
+        stats.put(NPM_MODULES, npmModules);
         stats.put(FRONTEND_HASHES, frontendHashes);
         stats.put(THEME_JSON_HASHES, themeJsonHashes);
         stats.put(PACKAGE_JSON_HASH, "aHash");
@@ -178,6 +181,156 @@ public class TaskRunDevBundleBuildTest {
                     .needsBuildInternal(options, depScanner, finder);
             Assert.assertTrue("Missing npmPackage should require bundling",
                     needsBuild);
+        }
+    }
+
+    @Test
+    public void hashesMatch_statsPackageMissingNpmPackagesNpmModulesContain_noCompilationRequired()
+            throws IOException {
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@vaadin/router", "1.7.4");
+        packages.put("@vaadin/text", "1.0.0");
+        Mockito.when(depScanner.getPackages()).thenReturn(packages);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
+                "1.7.4");
+        stats.getObject(NPM_MODULES).put("@vaadin/text", "1.0.0");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            final boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse("No bundling should be required", needsBuild);
+        }
+    }
+
+    @Test
+    public void hashesMatch_npmModulesContainPackages_noCompilationRequired()
+            throws IOException {
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@vaadin/router", "1.7.4");
+        packages.put("@vaadin/text", "1.0.0");
+        Mockito.when(depScanner.getPackages()).thenReturn(packages);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.7.4");
+        stats.getObject(NPM_MODULES).put("@vaadin/text", "1.0.0");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            final boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse("No bundling should be required", needsBuild);
+        }
+    }
+
+    @Test
+    public void packagesContainsVaadinBundles_noBundlesInStats_noCompilationRequired()
+            throws IOException {
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson, "{\"dependencies\": {"
+                + "\"@vaadin/router\": \"1.7.4\", \"@vaadin/bundles\": \"24.0.0\"}, "
+                + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@vaadin/router", "1.7.4");
+        packages.put("@vaadin/text", "1.0.0");
+        Mockito.when(depScanner.getPackages()).thenReturn(packages);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.7.4");
+        stats.getObject(NPM_MODULES).put("@vaadin/text", "1.0.0");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            final boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse("No bundling should be required", needsBuild);
+        }
+    }
+
+    @Test
+    public void dependenciesContainsVaadinBundles_noBundlesInStats_noCompilationRequired()
+            throws IOException {
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@vaadin/router", "1.7.4");
+        packages.put("@vaadin/text", "1.0.0");
+        packages.put("@vaadin/bundles", "24.0.0");
+        Mockito.when(depScanner.getPackages()).thenReturn(packages);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(NPM_MODULES).put("@vaadin/router", "1.7.4");
+        stats.getObject(NPM_MODULES).put("@vaadin/text", "1.0.0");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            final boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse("No bundling should be required", needsBuild);
         }
     }
 

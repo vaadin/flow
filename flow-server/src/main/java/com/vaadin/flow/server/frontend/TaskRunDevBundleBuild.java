@@ -68,6 +68,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
     private static final Pattern THEME_PATH_PATTERN = Pattern
             .compile("themes\\/([\\s\\S]+?)\\/theme.json");
+    private static final List<String> ignoredPackages = Arrays
+            .asList("@vaadin/bundles");
 
     private final Options options;
 
@@ -135,8 +137,10 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         JsonObject statsJson = Json.parse(statsJsonContent);
 
         // Get scanned @NpmPackage annotations
-        final Map<String, String> npmPackages = frontendDependencies
-                .getPackages();
+        final Map<String, String> npmPackages = new HashMap<>(
+                frontendDependencies.getPackages());
+        // Drop un-wanted frontend dev server packages.
+        cleanUnwantedPackages(npmPackages);
 
         if (!hashAndBundleModulesEqual(statsJson, packageJson, npmPackages)) {
             // Hash in the project doesn't match the bundle hash or NpmPackages
@@ -357,8 +361,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             return false;
         }
 
-        JsonObject bundleModules = statsJson
-                .getObject("packageJsonDependencies");
+        JsonObject bundleModules = collectBuildModules(statsJson);
 
         // Check that bundle modules contains all package dependencies
         if (packageJsonHash.equals(bundlePackageJsonHash)) {
@@ -398,6 +401,27 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
 
         return true;
+    }
+
+    /**
+     * Collect package.json and vite handled modules used for bundle generation
+     * to compare requirements against. Vite handled modules override any
+     * package.json dependencies as vite versions are more exact.
+     *
+     * @param statsJson
+     *            bundle config stats.json
+     * @return all handled npm pakcages and modules
+     */
+    private static JsonObject collectBuildModules(JsonObject statsJson) {
+        JsonObject bundleModules = statsJson
+                .getObject("packageJsonDependencies");
+        JsonObject viteDependencies = statsJson.getObject("npmModules");
+
+        for (String key : viteDependencies.keys()) {
+            bundleModules.put(key, viteDependencies.getString(key));
+        }
+
+        return bundleModules;
     }
 
     private static boolean versionAccepted(String expected, String actual) {
@@ -493,11 +517,29 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                     .generatePackageJsonHash(packageJson);
             packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
                     .put(NodeUpdater.HASH_KEY, hash);
+
+            // Drop un-wanted frontend dev server packages.
+            cleanUnwantedPackages(packageJson);
             return packageJson;
         } catch (IOException e) {
             getLogger().warn("Failed to generate package.json", e);
         }
         return null;
+    }
+
+    private static void cleanUnwantedPackages(JsonObject json) {
+        final JsonObject dependencies = json
+                .getObject(NodeUpdater.DEPENDENCIES);
+        for (String pkg : ignoredPackages) {
+            dependencies.remove(pkg);
+        }
+    }
+
+    private static void cleanUnwantedPackages(
+            Map<String, String> dependencies) {
+        for (String pkg : ignoredPackages) {
+            dependencies.remove(pkg);
+        }
     }
 
     private static String getStatsHash(JsonObject statsJson) {
