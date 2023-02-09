@@ -29,9 +29,13 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Stack;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,6 +71,13 @@ public class ResponseWriter implements Serializable {
      * Maximum number of overlapping ranges allowed. The request will be denied if above this threshold.
      */
     private static final int MAX_OVERLAPPING_RANGE_COUNT = 2;
+
+    private static final ConcurrentHashMap<String, Integer> utf8EncodingByDefault = new ConcurrentHashMap<>();
+    static {
+        utf8EncodingByDefault.put("application/json", 1);
+        utf8EncodingByDefault.put("application/javascript", 1);
+        utf8EncodingByDefault.put("application/xml", 1);
+    }
 
     private final int bufferSize;
     private final boolean brotliEnabled;
@@ -527,6 +538,14 @@ public class ResponseWriter implements Serializable {
                 .getMimeType(filenameWithPath);
         if (mimetype != null) {
             response.setContentType(mimetype);
+            String lowerCaseMimeType = mimetype.toLowerCase(Locale.ENGLISH);
+            if (!lowerCaseMimeType.contains("charset=")) {
+                if (lowerCaseMimeType.startsWith("text/")
+                        || utf8EncodingByDefault
+                                .containsKey(lowerCaseMimeType)) {
+                    response.setCharacterEncoding("utf-8");
+                }
+            }
         }
     }
 
