@@ -247,8 +247,8 @@ function statsExtracterPlugin(): PluginOption {
       }
 
       const stats = {
-        npmModules: projectPackageJson.dependencies,
-        handledModules: npmModuleAndVersion,
+        packageJsonDependencies: projectPackageJson.dependencies,
+        npmModules: npmModuleAndVersion,
         bundleImports: generatedImports,
         frontendHashes: frontendFiles,
         themeJsonHashes: themeJsonHashes,
