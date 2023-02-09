@@ -96,7 +96,7 @@
         <jackson.databind.version>2.14.2</jackson.databind.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <jakarta.annotation.api.version>2.1.1</jakarta.annotation.api.version>
-        <jaxb.version>4.0.1</jaxb.version>
+        <jaxb.version>4.0.2</jaxb.version>
 
         <!-- Plugins -->
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
