@@ -1613,7 +1613,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     protected static Collection<Element> getTagForTheme(
             DeploymentConfiguration config, String fileName)
             throws IOException {
-        Collection<Element> tags = new ArrayList<>();
+        List<Element> tags = new ArrayList<>();
 
         Optional<String> themeName = FrontendUtils
                 .getThemeName(config.getProjectFolder());
@@ -1632,13 +1632,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         File packagedThemesFolder = new File(jarResourcesFolder,
                 Constants.APPLICATION_THEME_ROOT);
 
-        Collection<String> packagedThemeNames = new ArrayList<>();
+        boolean projectCustomThemeAdded = false;
         if (packagedThemesFolder.exists()) {
             for (File themeFolder : Objects.requireNonNull(
                     packagedThemesFolder.listFiles(File::isDirectory),
                     "Expected at least one theme in the front-end generated themes folder")) {
                 String packagedThemeName = themeFolder.getName();
-                packagedThemeNames.add(packagedThemeName);
+                projectCustomThemeAdded = projectCustomThemeAdded
+                        || packagedThemeName.equals(themeName.get());
                 Element tag = getLinkTagWithStyleRef(packagedThemeName,
                         fileName);
                 tags.add(tag);
@@ -1646,7 +1647,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         // Secondly, add a link for the project's custom theme, if it exists
-        if (!packagedThemeNames.contains(themeName.get())) {
+        // and not yet added by the packaged themes loop
+        if (!projectCustomThemeAdded) {
             Element tag = getLinkTagWithStyleRef(themeName.get(), fileName);
             tags.add(tag);
         }
