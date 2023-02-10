@@ -869,8 +869,7 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
 
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
         Elements linkElements = document.head().getElementsByTag("link");
@@ -878,6 +877,23 @@ public class IndexHtmlRequestHandlerTest {
         assertEquals("stylesheet", linkElements.get(0).attr("rel"));
         assertEquals("themes/my-theme/styles.css",
                 linkElements.get(0).attr("href"));
+    }
+
+    @Test
+    public void servingStylesCss_productionMode_noLinkTagAdded()
+            throws IOException {
+        File projectRootFolder = temporaryFolder.newFolder();
+        deploymentConfiguration.setProductionMode(true);
+        deploymentConfiguration.setProjectFolder(projectRootFolder);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements linkElements = document.head().getElementsByTag("link");
+        assertEquals(0, linkElements.size());
     }
 
     private VaadinRequest createVaadinRequestWithSpringCsrfToken() {
