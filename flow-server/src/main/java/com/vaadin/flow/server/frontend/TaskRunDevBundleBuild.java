@@ -249,7 +249,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
     private static boolean frontendImportsFound(JsonObject statsJson,
             Options options, ClassFinder finder,
-            FrontendDependenciesScanner frontendDependencies) {
+            FrontendDependenciesScanner frontendDependencies)
+            throws IOException {
 
         // Validate frontend requirements in flow-generated-imports.js
         final GenerateMainImports generateMainImports = new GenerateMainImports(
@@ -313,6 +314,25 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                     faulty.toString());
             return false;
         }
+
+        File indexTs = new File(options.getFrontendDirectory(),
+                FrontendUtils.INDEX_TS);
+        if (indexTs.exists()) {
+            if (!frontendHashes.hasKey(FrontendUtils.INDEX_TS)) {
+                return false;
+            }
+            String content = FileUtils
+                    .readFileToString(indexTs, StandardCharsets.UTF_8)
+                    .replaceAll("\\r\\n", "\n");
+            final String contentHash = StringUtil.getHash(content,
+                    StandardCharsets.UTF_8);
+            if (!frontendHashes.getString(FrontendUtils.INDEX_TS)
+                    .equals(contentHash)) {
+                getLogger().info("'index.ts' is not up to date");
+                return false;
+            }
+        }
+
         return true;
     }
 
