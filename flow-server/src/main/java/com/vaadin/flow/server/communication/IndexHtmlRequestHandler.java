@@ -112,7 +112,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureHiddenElementStyles(indexDocument);
 
-        if (!config.frontendHotdeploy()) {
+        if (!config.isProductionMode() && !config.frontendHotdeploy()) {
             addStylesCssLink(config, indexDocument);
         }
 
