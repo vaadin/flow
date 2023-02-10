@@ -36,6 +36,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -66,11 +67,18 @@ public class WebComponentBootstrapHandlerViteTest {
 
     private File projectRootFolder;
 
+    private DeploymentConfiguration deploymentConfiguration;
+
+    private VaadinService vaadinService;
+
     @Before
     public void init() throws IOException {
         projectRootFolder = temporaryFolder.newFolder();
         TestUtil.createWebComponentHtmlStub(projectRootFolder);
         TestUtil.createStatsJsonStub(projectRootFolder);
+        deploymentConfiguration = Mockito.mock();
+        Mockito.when(deploymentConfiguration.isProductionMode())
+                .thenReturn(true);
     }
 
     private static class TestWebComponentBootstrapHandler
@@ -397,6 +405,8 @@ public class WebComponentBootstrapHandlerViteTest {
         Mockito.when(response.getOutputStream()).thenReturn(stream);
         Mockito.when(response.getService()).thenReturn(service);
         Mockito.when(service.getContext()).thenReturn(context);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(deploymentConfiguration);
         Mockito.when(context.getAttribute(
                 eq(WebComponentConfigurationRegistry.class), any())).thenReturn(
                         Mockito.mock(WebComponentConfigurationRegistry.class));
