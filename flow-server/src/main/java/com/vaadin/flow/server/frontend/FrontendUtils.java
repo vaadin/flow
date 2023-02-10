@@ -15,12 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
-import static java.lang.String.format;
-
 import jakarta.servlet.ServletContext;
 
 import java.io.File;
@@ -40,6 +34,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -52,6 +48,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
@@ -60,6 +57,12 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
+import static java.lang.String.format;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -874,16 +877,52 @@ public class FrontendUtils {
         try {
             Process process = FrontendUtils.createProcessBuilder(command)
                     .start();
+
+            CompletableFuture<Pair<String, String>> streamConsumer = consumeProcessStreams(
+                    process);
             int exitCode = process.waitFor();
+            Pair<String, String> outputs = streamConsumer.get();
             if (exitCode != 0) {
                 throw new CommandExecutionException(exitCode,
-                        streamToString(process.getInputStream()),
-                        streamToString(process.getErrorStream()));
+                        outputs.getFirst(), outputs.getSecond());
             }
-            return streamToString(process.getInputStream());
+            return outputs.getFirst();
+        } catch (ExecutionException e) {
+            throw new CommandExecutionException(e.getCause());
         } catch (IOException | InterruptedException e) {
             throw new CommandExecutionException(e);
         }
+    }
+
+    /**
+     * Reads input and error stream from the give process asynchronously.
+     *
+     * The method returns a {@link CompletableFuture} that is completed when
+     * both the streams are consumed.
+     *
+     * Streams are converted into strings and wrapped into a {@link Pair},
+     * mapping input stream into {@link Pair#getFirst()} and error stream into
+     * {@link Pair#getSecond()}.
+     *
+     * This method should be mainly used to avoid that {@link Process#waitFor()}
+     * hangs indefinitely on some operating systems because process streams are
+     * not consumed. See https://github.com/vaadin/flow/issues/15339 for an
+     * example case.
+     *
+     * @param process
+     *            the process whose streams should be read
+     * @return a {@link CompletableFuture} that return the string contents of
+     *         the process input and error streams when both are consumed,
+     *         wrapped into a {@link Pair}.
+     */
+    public static CompletableFuture<Pair<String, String>> consumeProcessStreams(
+            Process process) {
+        CompletableFuture<String> stdOut = CompletableFuture
+                .supplyAsync(() -> streamToString(process.getInputStream()));
+        CompletableFuture<String> stdErr = CompletableFuture
+                .supplyAsync(() -> streamToString(process.getErrorStream()));
+        return CompletableFuture.allOf(stdOut, stdErr).thenApply(
+                unused -> new Pair<>(stdOut.getNow(""), stdErr.getNow("")));
     }
 
     /**
