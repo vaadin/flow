@@ -264,8 +264,8 @@ public class StaticFileServer implements StaticFileHandler {
                     deploymentConfiguration.getProjectFolder(),
                     "webapp/" + filenameInsideBundle);
         } else if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
-            if (!deploymentConfiguration.isProductionMode() &&
-                    !deploymentConfiguration.frontendHotdeploy()) {
+            if (!deploymentConfiguration.isProductionMode()
+                    && !deploymentConfiguration.frontendHotdeploy()) {
                 resourceUrl = findAssetInFrontendThemesOrDevBundle(
                         vaadinService,
                         deploymentConfiguration.getProjectFolder(),
