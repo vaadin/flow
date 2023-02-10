@@ -75,18 +75,22 @@ function collectFolders(folderToCopy, logger) {
   logger.trace('files in directory', readdirSync(folderToCopy));
   readdirSync(folderToCopy).forEach((file) => {
     const fileToCopy = resolve(folderToCopy, file);
-    if (statSync(fileToCopy).isDirectory()) {
-      logger.debug('Going through directory', fileToCopy);
-      const result = collectFolders(fileToCopy, logger);
-      if (result.files.length > 0) {
-        collection.directories.push(fileToCopy);
-        logger.debug('Adding directory', fileToCopy);
-        collection.directories.push.apply(collection.directories, result.directories);
-        collection.files.push.apply(collection.files, result.files);
+    try {
+      if (statSync(fileToCopy).isDirectory()) {
+        logger.debug('Going through directory', fileToCopy);
+        const result = collectFolders(fileToCopy, logger);
+        if (result.files.length > 0) {
+          collection.directories.push(fileToCopy);
+          logger.debug('Adding directory', fileToCopy);
+          collection.directories.push.apply(collection.directories, result.directories);
+          collection.files.push.apply(collection.files, result.files);
+        }
+      } else if (!ignoredFileExtensions.includes(extname(fileToCopy))) {
+        logger.debug('Adding file', fileToCopy);
+        collection.files.push(fileToCopy);
       }
-    } else if (!ignoredFileExtensions.includes(extname(fileToCopy))) {
-      logger.debug('Adding file', fileToCopy);
-      collection.files.push(fileToCopy);
+    } catch (error) {
+      handleNoSuchFileError(fileToCopy, error, logger);
     }
   });
   return collection;
@@ -177,10 +181,26 @@ function checkModules(modules) {
  * @param {object} logger plugin logger
  */
 function copyFileIfAbsentOrNewer(fileToCopy, copyTarget, logger) {
-  if (!existsSync(copyTarget) || statSync(copyTarget).mtime < statSync(fileToCopy).mtime) {
-    logger.trace('Copying: ', fileToCopy, '=>', copyTarget);
-    copyFileSync(fileToCopy, copyTarget);
+  try {
+    if (!existsSync(copyTarget) || statSync(copyTarget).mtime < statSync(fileToCopy).mtime) {
+      logger.trace('Copying: ', fileToCopy, '=>', copyTarget);
+      copyFileSync(fileToCopy, copyTarget);
+    }
+  } catch (error) {
+    handleNoSuchFileError(fileToCopy, error, logger);
   }
 }
 
-export { checkModules, copyStaticAssets, copyThemeResources };
+// Ignores errors due to files missing during theme processing
+// This may happen for example when an IDE creates a temporary files
+// and then immediately deletes it
+function handleNoSuchFileError(file, error, logger) {
+    if (error.code === 'ENOENT') {
+        logger.warn('Ignoring not existing file ' + file +
+            '. File may have been deleted during theme processing.');
+    } else {
+        throw error;
+    }
+}
+
+export {checkModules, copyStaticAssets, copyThemeResources};
