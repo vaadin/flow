@@ -328,7 +328,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                     StandardCharsets.UTF_8);
             if (!frontendHashes.getString(FrontendUtils.INDEX_TS)
                     .equals(contentHash)) {
-                System.out.println(contentHash);
                 getLogger().info("'index.ts' is not up to date");
                 return false;
             }
