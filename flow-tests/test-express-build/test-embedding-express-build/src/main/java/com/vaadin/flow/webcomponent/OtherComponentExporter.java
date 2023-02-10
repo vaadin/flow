@@ -13,22 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.webcomponent.devbuild;
+package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
-public class EmbeddedComponentOneExporter
-        extends WebComponentExporter<ExportedComponentOne> {
+public class OtherComponentExporter
+        extends WebComponentExporter<OtherExportedComponent> {
 
-    public EmbeddedComponentOneExporter() {
-        super("exported-component-one");
+    public OtherComponentExporter() {
+        super("exported-component-other");
     }
 
     @Override
     public void configureInstance(
-            WebComponent<ExportedComponentOne> webComponent,
-            ExportedComponentOne component) {
+            WebComponent<OtherExportedComponent> webComponent,
+            OtherExportedComponent component) {
 
     }
 }

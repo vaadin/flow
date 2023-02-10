@@ -13,22 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.webcomponent.devbuild;
+package com.vaadin.flow.webcomponent.servlets;
 
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponent;
+import jakarta.servlet.annotation.WebServlet;
 
-public class EmbeddedComponentTwoExporter
-        extends WebComponentExporter<ExportedComponentTwo> {
+import com.vaadin.flow.server.VaadinServlet;
 
-    public EmbeddedComponentTwoExporter() {
-        super("exported-component-two");
-    }
-
-    @Override
-    public void configureInstance(
-            WebComponent<ExportedComponentTwo> webComponent,
-            ExportedComponentTwo component) {
-
-    }
+@WebServlet(urlPatterns = { "/*", "/vaadin/*" }, asyncSupported = true)
+public class EmbeddedServlet extends VaadinServlet {
 }
