@@ -16,7 +16,9 @@
 package com.vaadin.flow.server.communication;
 
 import static com.vaadin.flow.component.UI.SERVER_ROUTING;
+import static com.vaadin.flow.server.Constants.DEV_BUNDLE_LOCATION;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -36,6 +38,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
@@ -56,6 +59,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -844,13 +848,27 @@ public class IndexHtmlRequestHandlerTest {
             throws IOException {
         File projectRootFolder = temporaryFolder.newFolder();
         TestUtil.createThemeJs(projectRootFolder);
+        File indexHtmlFile = new File(projectRootFolder, FRONTEND + INDEX_HTML);
+        FileUtils.write(indexHtmlFile,
+                "<html><head></head><body></body></html>",
+                StandardCharsets.UTF_8);
+        File devBundlePath = new File(projectRootFolder, DEV_BUNDLE_LOCATION);
+        File statsJson = new File(devBundlePath, "config/stats.json");
+        String content = "{" + " \"npmModules\": {},"
+                + " \"packageJsonDependencies\": {},"
+                + " \"bundleImports\": []," + " \"frontendHashes\": {},"
+                + " \"themeJsonHashes\": {}," + " \"entryScripts\": [],"
+                + " \"webComponents\": []," + " \"packageJsonHash\": \"hash\""
+                + "}";
+        FileUtils.forceMkdirParent(statsJson);
+        FileUtils.write(statsJson, content, StandardCharsets.UTF_8);
+        deploymentConfiguration.setProductionMode(false);
         deploymentConfiguration.setProjectFolder(projectRootFolder);
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
 
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
         Elements linkElements = document.head().getElementsByTag("link");
@@ -858,6 +876,23 @@ public class IndexHtmlRequestHandlerTest {
         assertEquals("stylesheet", linkElements.get(0).attr("rel"));
         assertEquals("themes/my-theme/styles.css",
                 linkElements.get(0).attr("href"));
+    }
+
+    @Test
+    public void servingStylesCss_productionMode_noLinkTagAdded()
+            throws IOException {
+        File projectRootFolder = temporaryFolder.newFolder();
+        deploymentConfiguration.setProductionMode(true);
+        deploymentConfiguration.setProjectFolder(projectRootFolder);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements linkElements = document.head().getElementsByTag("link");
+        assertEquals(0, linkElements.size());
     }
 
     private VaadinRequest createVaadinRequestWithSpringCsrfToken() {
