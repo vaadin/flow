@@ -399,9 +399,13 @@ public class DefaultDeploymentConfiguration
     }
 
     private void checkFrontendHotdeploy() {
-        frontendHotdeploy = getBooleanProperty(
-                InitParameters.FRONTEND_HOTDEPLOY,
-                EndpointRequestUtil.isHillaAvailable());
+        if (isProductionMode()) {
+            frontendHotdeploy = false;
+        } else {
+            frontendHotdeploy = getBooleanProperty(
+                    InitParameters.FRONTEND_HOTDEPLOY,
+                    EndpointRequestUtil.isHillaAvailable());
+        }
     }
 
 }

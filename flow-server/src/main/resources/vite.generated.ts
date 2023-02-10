@@ -223,6 +223,13 @@ function statsExtracterPlugin(): PluginOption {
         // @ts-ignore
         frontendFiles[`${fileKey}`] = hash;
       });
+      // If a index.ts exists hash it to be able to see if it changes.
+      if (existsSync(path.resolve(frontendFolder, "index.ts"))) {
+        const fileBuffer = readFileSync(path.resolve(frontendFolder, "index.ts"), {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+        const hash = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
+        // @ts-ignore
+        frontendFiles[`index.ts`] = hash;
+      }
 
       const themeJsonHashes = { };
       const themesFolder = path.resolve(jarResourcesFolder, "themes");

@@ -16,9 +16,7 @@
 package com.vaadin.flow.server.communication;
 
 import static com.vaadin.flow.component.UI.SERVER_ROUTING;
-import static com.vaadin.flow.server.Constants.DEV_BUNDLE_LOCATION;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -67,6 +65,7 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.AppShellWithPWA;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -848,11 +847,13 @@ public class IndexHtmlRequestHandlerTest {
             throws IOException {
         File projectRootFolder = temporaryFolder.newFolder();
         TestUtil.createThemeJs(projectRootFolder);
-        File indexHtmlFile = new File(projectRootFolder, FRONTEND + INDEX_HTML);
+        File indexHtmlFile = new File(projectRootFolder,
+                FrontendUtils.FRONTEND + FrontendUtils.INDEX_HTML);
         FileUtils.write(indexHtmlFile,
                 "<html><head></head><body></body></html>",
                 StandardCharsets.UTF_8);
-        File devBundlePath = new File(projectRootFolder, DEV_BUNDLE_LOCATION);
+        File devBundlePath = new File(projectRootFolder,
+                Constants.DEV_BUNDLE_LOCATION);
         File statsJson = new File(devBundlePath, "config/stats.json");
         String content = "{" + " \"npmModules\": {},"
                 + " \"packageJsonDependencies\": {},"
