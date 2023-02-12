@@ -9,7 +9,7 @@ public class CustomBrowserTooOldPageIT extends ChromeBrowserTest {
 
     @Test
     public void customPageUsed() {
-        getDriver().get("/view/?v-r=browser-too-old");
+        getDriver().get(getRootURL() + "/view/?v-r=browser-too-old");
         Assert.assertTrue(getDriver().getPageSource()
                 .contains("You so old you cannot view this page"));
     }
