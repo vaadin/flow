@@ -20,31 +20,33 @@ package com.vaadin.flow.server;
  * Contains the system messages used to notify the user about various critical
  * situations that can occur.
  * <p>
- * Vaadin gets the SystemMessages from your application by calling a static
- * getSystemMessages() method. By default the Application.getSystemMessages() is
- * used. You can customize this by defining a static
- * MyApplication.getSystemMessages() and returning CustomizedSystemMessages.
- * Note that getSystemMessages() is static - changing the system messages will
- * by default change the message for all users of the application.
+ * Vaadin gets the SystemMessages from the {@link SystemMessagesProvider}
+ * configured in {@link VaadinService}. You can customize this by creating a
+ * {@link VaadinServiceInitListener} that sets an instance on
+ * {@link SystemMessagesProvider} to
+ * {@link VaadinService#setSystemMessagesProvider(SystemMessagesProvider)}, that
+ * in turns creates instances of CustomizedSystemMessages.
  * <p>
- * The default behavior is to show a notification, and restart the application
- * the user clicks the message.<br>
- * Instead of restarting the application, you can set a specific URL that the
- * user is taken to.<br>
- * Setting both caption and message to null will restart the application (or go
- * to the specified URL) without displaying a notification.
+ * The default behavior is to show a notification, and reload the browser page
+ * once the user clicks the message.<br>
+ * However, only for session expiration, that default is to reload the page
+ * without any notification. Instead of reloading the page, you can set a
+ * specific URL that the user is taken to.<br>
+ * Setting both caption and message to null will reload the page (or go to the
+ * specified URL) without displaying a notification.
  * set*NotificationEnabled(false) will achieve the same thing.
  * <p>
  * The situations are:
  * <ul>
  * <li>Session expired: the user session has expired, usually due to inactivity.
- * <li>Communication error: the client failed to contact the server, or the
- * server returned an invalid response.
+ * <li>Cookies disabled: the cookie support is disabled in the browser.
  * <li>Internal error: unhandled critical server error (e.g out of memory,
  * database crash)
  * </ul>
  *
  * @since 1.0
+ * @see SystemMessagesProvider
+ * @see VaadinService#setSystemMessagesProvider(SystemMessagesProvider)
  */
 public class CustomizedSystemMessages extends SystemMessages {
 
