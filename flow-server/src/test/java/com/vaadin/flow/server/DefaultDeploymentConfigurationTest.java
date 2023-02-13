@@ -254,6 +254,21 @@ public class DefaultDeploymentConfigurationTest {
                 config.frontendHotdeploy());
     }
 
+    @Test
+    public void productionModeTrue_frontendHotdeployTrue_frontendHotdeployReturnsFalse() {
+        Properties init = new Properties();
+        init.put(InitParameters.FRONTEND_HOTDEPLOY, "true");
+        init.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
+
+        DefaultDeploymentConfiguration config = createDeploymentConfig(init);
+
+        Assert.assertTrue("ProductionMode should be enabled",
+                config.isProductionMode());
+        Assert.assertFalse(
+                "Frontend hotdeploy should return false in production mode",
+                config.frontendHotdeploy());
+    }
+
     private DefaultDeploymentConfiguration createDeploymentConfig(
             Properties initParameters) {
         ApplicationConfiguration appConfig = setupAppConfig();
