@@ -10,10 +10,13 @@ public class CustomBrowserTooOldPageIT extends ChromeBrowserTest {
 
     @Test
     public void customPageUsed() {
+        // There needs to be a session for the "too old page" to be shown
+        getDriver().get(getRootURL() + "/view/");
         getDriver().get(getRootURL() + "/view/?v-r="
                 + RequestType.BROWSER_TOO_OLD.getIdentifier());
-        Assert.assertTrue(getDriver().getPageSource()
-                .contains("You so old you cannot view this page"));
+        String pageSource = getDriver().getPageSource();
+        Assert.assertTrue(
+                pageSource.contains("You so old you cannot view this page"));
     }
 
 }
