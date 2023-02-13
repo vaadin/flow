@@ -22,6 +22,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,6 +33,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -1593,6 +1595,74 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         String statsJson = IOUtils.toString(statsJsonUrl,
                 StandardCharsets.UTF_8);
         addEntryScripts(targetDocument, Json.parse(statsJson));
+    }
+
+    /**
+     * Gives a link tag for referencing the custom theme stylesheet files
+     * (typically styles.css or document.css), which is served in express build
+     * mode by static file server directly from frontend/themes folder.
+     *
+     * @param config
+     *            deployment configuration
+     * @param fileName
+     *            the stylesheet file name to add a reference to
+     * @return the collection of link tag elements to be added to the page
+     * @throws IOException
+     *             if theme name cannot be extracted from file
+     */
+    protected static Collection<Element> getTagForTheme(
+            DeploymentConfiguration config, String fileName)
+            throws IOException {
+        List<Element> tags = new ArrayList<>();
+
+        Optional<String> themeName = FrontendUtils
+                .getThemeName(config.getProjectFolder());
+
+        if (themeName.isEmpty()) {
+            getLogger().debug("Found no custom theme in the project. "
+                    + "Skipping adding a link tag for styles.css");
+            return tags;
+        }
+
+        // First check if project has a packaged themes and add a link if any
+        File frontendFolder = new File(config.getProjectFolder(),
+                FrontendUtils.FRONTEND);
+        File jarResourcesFolder = FrontendUtils
+                .getJarResourcesFolder(frontendFolder);
+        File packagedThemesFolder = new File(jarResourcesFolder,
+                Constants.APPLICATION_THEME_ROOT);
+
+        boolean projectCustomThemeAdded = false;
+        if (packagedThemesFolder.exists()) {
+            for (File themeFolder : Objects.requireNonNull(
+                    packagedThemesFolder.listFiles(File::isDirectory),
+                    "Expected at least one theme in the front-end generated themes folder")) {
+                String packagedThemeName = themeFolder.getName();
+                projectCustomThemeAdded = projectCustomThemeAdded
+                        || packagedThemeName.equals(themeName.get());
+                Element tag = getLinkTagWithStyleRef(packagedThemeName,
+                        fileName);
+                tags.add(tag);
+            }
+        }
+
+        // Secondly, add a link for the project's custom theme, if it exists
+        // and not yet added by the packaged themes loop
+        if (!projectCustomThemeAdded) {
+            Element tag = getLinkTagWithStyleRef(themeName.get(), fileName);
+            tags.add(tag);
+        }
+
+        return tags;
+    }
+
+    private static Element getLinkTagWithStyleRef(String themeName,
+            String fileName) {
+        Element element = new Element("link");
+        element.attr("rel", "stylesheet");
+        element.attr("type", "text/css");
+        element.attr("href", "themes/" + themeName + "/" + fileName);
+        return element;
     }
 
     private static void addEntryScripts(Document targetDocument,

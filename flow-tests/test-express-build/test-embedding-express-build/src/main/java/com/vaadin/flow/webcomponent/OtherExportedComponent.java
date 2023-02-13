@@ -13,12 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.webcomponent.devbuild.servlets;
+package com.vaadin.flow.webcomponent;
 
-import jakarta.servlet.annotation.WebServlet;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
 
-import com.vaadin.flow.server.VaadinServlet;
+public class OtherExportedComponent extends Div {
 
-@WebServlet(urlPatterns = { "/*", "/vaadin/*" }, asyncSupported = true)
-public class EmbeddedServlet extends VaadinServlet {
+    public static final String EXPORTED_ID_TWO = "exported-inner-other";
+
+    public OtherExportedComponent() {
+        setId(EXPORTED_ID_TWO);
+
+        NativeButton testButton = new NativeButton("Test Button");
+        add(testButton);
+    }
 }
