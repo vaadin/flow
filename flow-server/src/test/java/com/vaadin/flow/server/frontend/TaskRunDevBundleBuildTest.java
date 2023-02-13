@@ -1093,6 +1093,49 @@ public class TaskRunDevBundleBuildTest {
         }
     }
 
+    @Test
+    public void changeInIndexTs_rebuildRequired() throws IOException {
+        createPackageJsonStub("{\"dependencies\": {}, "
+                + "\"vaadin\": { \"hash\": \"aHash\"} }");
+        File frontendFolder = temporaryFolder.newFolder(FrontendUtils.FRONTEND);
+
+        File indexTs = new File(frontendFolder, FrontendUtils.INDEX_TS);
+        indexTs.createNewFile();
+
+        FileUtils.write(indexTs, "window.alert('');", StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(FRONTEND_HASHES).put(FrontendUtils.INDEX_TS,
+                "15931fa8c20e3c060c8ea491831e95cc8463962700a9bfb82c8e3844cf608f04");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "'index.ts' equal content should not require bundling",
+                    needsBuild);
+
+            FileUtils.write(indexTs, "window.alert('hello');",
+                    StandardCharsets.UTF_8);
+
+            needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                    depScanner, finder);
+            Assert.assertTrue(
+                    "changed content for 'index.ts' should require bundling",
+                    needsBuild);
+        }
+    }
+
     private void createPackageJsonStub(String content) throws IOException {
         File packageJson = new File(temporaryFolder.getRoot(),
                 Constants.PACKAGE_JSON);
