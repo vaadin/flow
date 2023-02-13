@@ -1176,6 +1176,7 @@ public class StaticFileServerTest implements Serializable {
                 styles);
 
         Mockito.when(configuration.frontendHotdeploy()).thenReturn(false);
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(configuration.getProjectFolder())
                 .thenReturn(projectRootFolder);
 
@@ -1193,12 +1194,30 @@ public class StaticFileServerTest implements Serializable {
                 styles);
 
         Mockito.when(configuration.frontendHotdeploy()).thenReturn(false);
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(configuration.getProjectFolder())
                 .thenReturn(projectRootFolder);
 
         setupRequestURI("", "", "/themes/my-theme/styles.css");
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(styles, out.getOutputString());
+    }
+
+    @Test
+    public void serveStaticResource_themeResourceRequest_productionMode_notServeFromBundleNorFromFrontend()
+            throws IOException {
+        File projectRootFolder = temporaryFolder.newFolder();
+        final String styles = "body { background: black; }";
+        TestUtil.createStylesCssStubInBundle(projectRootFolder, "my-theme",
+                styles);
+
+        Mockito.when(configuration.frontendHotdeploy()).thenReturn(false);
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(configuration.getProjectFolder())
+                .thenReturn(projectRootFolder);
+
+        setupRequestURI("", "", "/themes/my-theme/styles.css");
+        Assert.assertFalse(fileServer.serveStaticResource(request, response));
     }
 
     private static class CapturingServletOutputStream
