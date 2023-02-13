@@ -158,6 +158,15 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
                 setupCss(head, context);
 
+                if (!deploymentConfiguration.isProductionMode()
+                        && !deploymentConfiguration.frontendHotdeploy()) {
+                    BootstrapHandler
+                            .getTagForTheme(deploymentConfiguration,
+                                    "document.css")
+                            .forEach(element -> document.head()
+                                    .appendChild(element));
+                }
+
                 return document;
             } catch (IOException e) {
                 throw new BootstrapException(
@@ -383,6 +392,14 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 }
             }
             writer.append("})();");
+        }
+
+        DeploymentConfiguration config = response.getService()
+                .getDeploymentConfiguration();
+        if (!config.isProductionMode() && !config.frontendHotdeploy()) {
+            BootstrapHandler.getTagForTheme(config, "styles.css")
+                    .forEach(element -> ElementUtil.fromJsoup(element)
+                            .ifPresent(elementsForShadows::add));
         }
 
         WebComponentConfigurationRegistry

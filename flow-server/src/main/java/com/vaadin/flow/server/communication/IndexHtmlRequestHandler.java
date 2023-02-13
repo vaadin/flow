@@ -19,13 +19,9 @@ import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.jsoup.Jsoup;
@@ -112,8 +108,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureHiddenElementStyles(indexDocument);
 
-        if (!config.frontendHotdeploy()) {
-            addStylesCssLink(config, indexDocument);
+        if (!config.isProductionMode() && !config.frontendHotdeploy()) {
+            BootstrapHandler.getTagForTheme(config, "styles.css").forEach(
+                    element -> indexDocument.head().appendChild(element));
         }
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
@@ -156,64 +153,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
-    }
-
-    /**
-     * Adds a link tag to the page head for the themes/my-theme/styles.css,
-     * which is served in express build mode by static file server directly from
-     * frontend/themes folder.
-     * </p>
-     * Example: <link rel="stylesheet" href="themes/my-theme/styles.css">
-     *
-     * @param config
-     *            deployment configuration
-     * @param indexDocument
-     *            the page document to add the tag to
-     * @throws IOException
-     *             if theme name cannot be extracted from file
-     */
-    private void addStylesCssLink(DeploymentConfiguration config,
-            Document indexDocument) throws IOException {
-        Optional<String> themeName = FrontendUtils
-                .getThemeName(config.getProjectFolder());
-
-        if (themeName.isEmpty()) {
-            getLogger().debug("Found no custom theme in the project. "
-                    + "Skipping adding a link tag for styles.css");
-            return;
-        }
-
-        // First check if project has a packaged themes and add a link if any
-        File frontendFolder = new File(config.getProjectFolder(),
-                FrontendUtils.FRONTEND);
-        File jarResourcesFolder = FrontendUtils
-                .getJarResourcesFolder(frontendFolder);
-        File packagedThemesFolder = new File(jarResourcesFolder,
-                Constants.APPLICATION_THEME_ROOT);
-
-        Collection<String> packagedThemeNames = new ArrayList<>();
-        if (packagedThemesFolder.exists()) {
-            for (File themeFolder : Objects.requireNonNull(
-                    packagedThemesFolder.listFiles(File::isDirectory),
-                    "Expected at least one theme in the front-end generated themes folder")) {
-                String packagedThemeName = themeFolder.getName();
-                packagedThemeNames.add(packagedThemeName);
-                createStylesCssLink(indexDocument, packagedThemeName);
-            }
-        }
-
-        // Secondly, add a link for the project's custom theme, if it exists
-        if (!packagedThemeNames.contains(themeName.get())) {
-            createStylesCssLink(indexDocument, themeName.get());
-        }
-    }
-
-    private static void createStylesCssLink(Document indexDocument,
-            String themeName) {
-        Element element = new Element("link");
-        element.attr("rel", "stylesheet");
-        element.attr("href", "themes/" + themeName + "/styles.css");
-        indexDocument.head().appendChild(element);
     }
 
     private void catchErrorsInDevMode(Document indexDocument) {
