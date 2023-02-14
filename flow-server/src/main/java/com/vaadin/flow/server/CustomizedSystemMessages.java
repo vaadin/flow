@@ -54,6 +54,8 @@ public class CustomizedSystemMessages extends SystemMessages {
      * Sets the URL the user will be redirected to after dismissing a "session
      * expired" message.
      *
+     * Default value is {@literal null}.
+     *
      * @param sessionExpiredURL
      *            the URL to redirect to, or null to refresh the page
      */
@@ -65,6 +67,8 @@ public class CustomizedSystemMessages extends SystemMessages {
      * Sets whether a "session expired" notification should be shown to the end
      * user. If the notification is disabled the user will be immediately
      * redirected to the URL returned by {@link #getSessionExpiredURL()}.
+     *
+     * By default, the "session expired" notification" is disabled.
      *
      * @param sessionExpiredNotificationEnabled
      *            {@code true} to show the notification to the end user,
@@ -109,6 +113,8 @@ public class CustomizedSystemMessages extends SystemMessages {
      * Sets the URL the user will be redirected to after dismissing an "internal
      * error" message.
      *
+     * Default value is {@literal null}.
+     *
      * @param internalErrorURL
      *            the URL to redirect to, or null to refresh the page
      */
@@ -120,6 +126,9 @@ public class CustomizedSystemMessages extends SystemMessages {
      * Sets whether an "internal error" notification should be shown to the end
      * user. If the notification is disabled the user will be immediately
      * redirected to the URL returned by {@link #getInternalErrorURL()}.
+     *
+     * By default, the "internal error" notification" is enabled.
+     *
      *
      * @param internalErrorNotificationEnabled
      *            {@code true} to show the notification to the end user,
@@ -154,6 +163,8 @@ public class CustomizedSystemMessages extends SystemMessages {
      * Sets the URL the user will be redirected to after dismissing a "cookies
      * disabled" message.
      *
+     * Default value is {@literal null}.
+     *
      * @param cookiesDisabledURL
      *            the URL to redirect to, or null to refresh the page
      */
@@ -165,6 +176,8 @@ public class CustomizedSystemMessages extends SystemMessages {
      * Sets whether a "cookies disabled" notification should be shown to the end
      * user. If the notification is disabled the user will be immediately
      * redirected to the URL returned by {@link #getCookiesDisabledURL()}.
+     *
+     * By default, the "cookies disabled" notification" is enabled.
      *
      * @param cookiesDisabledNotificationEnabled
      *            {@code true} to show the notification to the end user,
