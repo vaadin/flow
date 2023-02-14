@@ -320,7 +320,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         return removed;
     }
 
-    private boolean pinPlatformDependency(JsonObject packageJson,
+    protected static boolean pinPlatformDependency(JsonObject packageJson,
             JsonObject platformPinnedVersions, String pkg) {
         final FrontendVersion platformPinnedVersion = FrontendUtils
                 .getPackageVersionFromJson(platformPinnedVersions, pkg,

@@ -513,6 +513,19 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                     .generatePackageJsonHash(packageJson);
             packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
                     .put(NodeUpdater.HASH_KEY, hash);
+
+            final JsonObject platformPinnedDependencies = nodeUpdater
+                    .getPlatformPinnedDependencies();
+            for (String key : platformPinnedDependencies.keys()) {
+                // need to double check that not overriding a scanned
+                // dependency since add-ons should be able to downgrade
+                // version through exclusion
+                if (!applicationDependencies.containsKey(key)) {
+                    TaskUpdatePackages.pinPlatformDependency(packageJson,
+                            platformPinnedDependencies, key);
+                }
+            }
+
             return packageJson;
         } catch (IOException e) {
             getLogger().warn("Failed to generate package.json", e);
