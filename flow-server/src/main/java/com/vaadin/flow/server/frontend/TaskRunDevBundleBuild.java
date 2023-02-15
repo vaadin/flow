@@ -380,6 +380,13 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         JsonObject bundleModules = statsJson
                 .getObject("packageJsonDependencies");
 
+        if (bundleModules == null) {
+            getLogger().error(
+                    "Dev bundle did not contain package json dependencies to validate.\n"
+                            + "Rebuild of bundle needed.");
+            return false;
+        }
+
         // Check that bundle modules contains all package dependencies
         if (packageJsonHash.equals(bundlePackageJsonHash)) {
             if (!dependenciesContainsAllPackages(npmPackages, bundleModules)) {
