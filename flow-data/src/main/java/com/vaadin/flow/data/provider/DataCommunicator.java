@@ -31,6 +31,9 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
@@ -46,9 +49,6 @@ import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -968,8 +968,19 @@ public class DataCommunicator<T> implements Serializable {
                 int page = 0;
                 do {
                     final int newOffset = offset + page * pageSize;
-                    doFetchFromDataProvider(newOffset, pageSize)
-                            .forEach(addItemAndCheckConsumer);
+                    Stream<T> dataProviderStream = doFetchFromDataProvider(
+                            newOffset, pageSize);
+                    // Stream.Builder is not thread safe, so for parallel stream
+                    // we need to first collect items before adding them
+                    if (dataProviderStream.isParallel()) {
+                        getLogger().debug(
+                                "Data provider {} has returned parallel stream on 'fetch' call",
+                                getDataProvider().getClass());
+                        dataProviderStream.collect(Collectors.toList())
+                                .forEach(addItemAndCheckConsumer);
+                    } else {
+                        dataProviderStream.forEach(addItemAndCheckConsumer);
+                    }
                     page++;
                 } while (page < pages
                         && fetchedPerPage.getAndSet(0) == pageSize);
