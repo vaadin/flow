@@ -79,7 +79,7 @@ public class StaticFileServer implements StaticFileHandler {
 
     // Matcher to match string starting with '/themes/[theme-name]/'
     public static final Pattern APP_THEME_PATTERN = Pattern
-            .compile("^\\/themes\\/([\\s\\S]+?)\\/");
+            .compile("^(?:\\/VAADIN)?\\/themes\\/([\\s\\S]+?)\\/");
 
     // Mapped uri is for the jar file
     static final Map<URI, Integer> openFileSystems = new HashMap<>();
@@ -323,11 +323,17 @@ public class StaticFileServer implements StaticFileHandler {
     }
 
     private static URL findAssetInFrontendThemesOrDevBundle(
-            VaadinService vaadinService, File projectFolder, String assetPath)
-            throws IOException {
+            VaadinService vaadinService, File projectFolder,
+            String fileNameWithPath) throws IOException {
         // First, look for the theme assets in the {project.root}/frontend/
         // themes/my-theme folder
         File frontendFolder = new File(projectFolder, FrontendUtils.FRONTEND);
+        String assetPath = fileNameWithPath;
+        if (fileNameWithPath.startsWith("/" + VAADIN_MAPPING)) {
+            int themesPathIndex = fileNameWithPath
+                    .indexOf("/" + Constants.APPLICATION_THEME_ROOT);
+            assetPath = fileNameWithPath.substring(themesPathIndex);
+        }
         File assetInFrontendThemes = new File(frontendFolder, assetPath);
         if (assetInFrontendThemes.exists()) {
             return assetInFrontendThemes.toURI().toURL();
