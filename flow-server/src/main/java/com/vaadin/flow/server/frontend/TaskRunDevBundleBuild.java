@@ -380,6 +380,13 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         JsonObject bundleModules = statsJson
                 .getObject("packageJsonDependencies");
 
+        if (bundleModules == null) {
+            getLogger().error(
+                    "Dev bundle did not contain package json dependencies to validate.\n"
+                            + "Rebuild of bundle needed.");
+            return false;
+        }
+
         // Check that bundle modules contains all package dependencies
         if (packageJsonHash.equals(bundlePackageJsonHash)) {
             if (!dependenciesContainsAllPackages(npmPackages, bundleModules)) {
@@ -513,6 +520,19 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                     .generatePackageJsonHash(packageJson);
             packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
                     .put(NodeUpdater.HASH_KEY, hash);
+
+            final JsonObject platformPinnedDependencies = nodeUpdater
+                    .getPlatformPinnedDependencies();
+            for (String key : platformPinnedDependencies.keys()) {
+                // need to double check that not overriding a scanned
+                // dependency since add-ons should be able to downgrade
+                // version through exclusion
+                if (!applicationDependencies.containsKey(key)) {
+                    TaskUpdatePackages.pinPlatformDependency(packageJson,
+                            platformPinnedDependencies, key);
+                }
+            }
+
             return packageJson;
         } catch (IOException e) {
             getLogger().warn("Failed to generate package.json", e);
