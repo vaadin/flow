@@ -631,13 +631,13 @@ export const vaadinConfig: UserConfigFn = (env) => {
       themePlugin({devMode}),
       lenientLitImportPlugin(),
       postcssLit({
-        include: ['**/*.css', '**/*.css\\?*'],
+        include: ['**/*.css', /.*\/.*\.css\?.*/],
         exclude: [
           `${themeFolder}/**/*.css`,
-          `${themeFolder}/**/*.css\\?*`,
+          new RegExp(`${themeFolder}/.*/.*\\.css\\?.*`),
           `${themeResourceFolder}/**/*.css`,
-          `${themeResourceFolder}/**/*.css\\?*`,
-          '**/*\?html-proxy*'
+          new RegExp(`${themeResourceFolder}/.*/.*\\.css\\?.*`),
+          new RegExp(".*/.*\\?html-proxy.*")
         ]
       }),
       {
