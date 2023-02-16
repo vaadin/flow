@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -178,5 +179,10 @@ public class ChromeDeviceTest extends ViewOrUITest {
                                 + "  navigator.serviceWorker.ready,"
                                 + "  timeout])"
                                 + ".then(result => done(!!result));"));
+    }
+
+    @After
+    public void tearDown(){
+        driver.quit();
     }
 }
