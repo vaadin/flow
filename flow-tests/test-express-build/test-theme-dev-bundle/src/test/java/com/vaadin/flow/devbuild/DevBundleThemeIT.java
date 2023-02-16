@@ -19,6 +19,7 @@ package com.vaadin.flow.devbuild;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
@@ -58,8 +59,10 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
 
     @After
     public void cleanUp() {
-        doActionAndWaitUntilLiveReloadComplete(
-                () -> changeBackgroundColor(GREEN_COLOR, RED_COLOR));
+        if (isCustomBackGroundColor()) {
+            doActionAndWaitUntilLiveReloadComplete(
+                    () -> changeBackgroundColor(GREEN_COLOR, RED_COLOR));
+        }
     }
 
     @Test
@@ -88,6 +91,26 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
         waitUntilImportedFrontendStyles();
 
         checkLogsForErrors();
+    }
+
+    @Test
+    public void noVaadinSegmentInTheURL_notFound() {
+        getDriver().get(getRootURL() + "/themes/my-theme/styles.css");
+        Assert.assertTrue("Theme requests without /VAADIN should not be served",
+                driver.getPageSource().contains("Error 404 Not Found"));
+    }
+
+    @Test
+    public void stylesCssLinkAddedToHead() {
+        open();
+
+        final WebElement documentHead = getDriver()
+                .findElement(By.xpath("/html/head"));
+        final List<WebElement> links = documentHead
+                .findElements(By.tagName("link"));
+        Assert.assertEquals(1, links.size());
+        Assert.assertTrue(links.get(0).getAttribute("href")
+                .contains("VAADIN/themes/my-theme/styles.css"));
     }
 
     private void waitUntilImportedFrontendStyles() {
