@@ -1180,7 +1180,7 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(configuration.getProjectFolder())
                 .thenReturn(projectRootFolder);
 
-        setupRequestURI("", "", "/themes/my-theme/styles.css");
+        setupRequestURI("", "", "/VAADIN/themes/my-theme/styles.css");
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(styles, out.getOutputString());
     }
@@ -1198,7 +1198,7 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(configuration.getProjectFolder())
                 .thenReturn(projectRootFolder);
 
-        setupRequestURI("", "", "/themes/my-theme/styles.css");
+        setupRequestURI("", "", "/VAADIN/themes/my-theme/styles.css");
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(styles, out.getOutputString());
     }

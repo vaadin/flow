@@ -681,7 +681,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
 
         // Redirect theme source request
-        if (StaticFileServer.APP_THEME_PATTERN.matcher(requestFilename)
+        if (StaticFileServer.APP_THEME_ASSETS_PATTERN.matcher(requestFilename)
                 .find()) {
             requestFilename = "/VAADIN/static" + requestFilename;
         }
