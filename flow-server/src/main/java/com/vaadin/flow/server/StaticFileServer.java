@@ -47,10 +47,8 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 
 /**
  * Handles sending of resources from the WAR root (web content) or
@@ -77,8 +75,14 @@ public class StaticFileServer implements StaticFileHandler {
     private DeploymentConfiguration deploymentConfiguration;
     private DevModeHandler devModeHandler;
 
-    // Matcher to match string starting with '/themes/[theme-name]/'
-    public static final Pattern APP_THEME_PATTERN = Pattern
+    // Matches paths to theme files referenced from link tags (e.g. styles
+    // .css or document.css)
+    private static final Pattern APP_THEME_PATTERN = Pattern
+            .compile("^\\/VAADIN\\/themes\\/([\\s\\S]+?)\\/");
+
+    // Matches paths to theme asset files referenced from CSS as an url() or
+    // from Java (e.g. new Image("themes/my-theme/...")
+    public static final Pattern APP_THEME_ASSETS_PATTERN = Pattern
             .compile("^\\/themes\\/([\\s\\S]+?)\\/");
 
     // Mapped uri is for the jar file
@@ -255,26 +259,28 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         URL resourceUrl = null;
-        if (!deploymentConfiguration.isProductionMode() && filenameWithPath
-                .startsWith(EXPRESS_MODE_BUNDLE_PATH_PREFIX)) {
-            // Express mode bundle file
-            String filenameInsideBundle = filenameWithPath
-                    .substring(EXPRESS_MODE_BUNDLE_PATH_PREFIX.length());
-            resourceUrl = FrontendUtils.findBundleFile(
-                    deploymentConfiguration.getProjectFolder(),
-                    "webapp/" + filenameInsideBundle);
-        } else if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
-            if (!deploymentConfiguration.isProductionMode()
-                    && !deploymentConfiguration.frontendHotdeploy()) {
+        if (!deploymentConfiguration.isProductionMode()
+                && !deploymentConfiguration.frontendHotdeploy()) {
+            if (filenameWithPath.startsWith(EXPRESS_MODE_BUNDLE_PATH_PREFIX)) {
+                // Express mode bundle file
+                String filenameInsideBundle = filenameWithPath
+                        .substring(EXPRESS_MODE_BUNDLE_PATH_PREFIX.length());
+                resourceUrl = FrontendUtils.findBundleFile(
+                        deploymentConfiguration.getProjectFolder(),
+                        "webapp/" + filenameInsideBundle);
+            } else if (APP_THEME_PATTERN.matcher(filenameWithPath).find()
+                    || APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath)
+                            .find()) {
+                // Express mode theme file request
                 resourceUrl = findAssetInFrontendThemesOrDevBundle(
                         vaadinService,
                         deploymentConfiguration.getProjectFolder(),
-                        filenameWithPath);
-            } else {
-                resourceUrl = vaadinService.getClassLoader()
-                        .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
-                                + filenameWithPath.replaceFirst("^/", ""));
+                        filenameWithPath.replace(VAADIN_MAPPING, ""));
             }
+        } else if (APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath).find()) {
+            resourceUrl = vaadinService.getClassLoader()
+                    .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
+                            + filenameWithPath.replaceFirst("^/", ""));
         } else if (!"/index.html".equals(filenameWithPath)) {
             // index.html needs to be handled by IndexHtmlRequestHandler
             resourceUrl = vaadinService.getClassLoader()
@@ -343,7 +349,7 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         // Second, look into default dev bundle
-        Matcher matcher = APP_THEME_PATTERN.matcher(assetPath);
+        Matcher matcher = APP_THEME_ASSETS_PATTERN.matcher(assetPath);
         if (!matcher.find()) {
             throw new IllegalStateException(
                     "Asset path should match the theme pattern");
@@ -530,7 +536,8 @@ public class StaticFileServer implements StaticFileHandler {
         if (request.getPathInfo() == null) {
             return request.getServletPath();
         } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)
-                || APP_THEME_PATTERN.matcher(request.getPathInfo()).find()
+                || APP_THEME_ASSETS_PATTERN.matcher(request.getPathInfo())
+                        .find()
                 || request.getPathInfo().startsWith("/sw.js")) {
             return request.getPathInfo();
         }

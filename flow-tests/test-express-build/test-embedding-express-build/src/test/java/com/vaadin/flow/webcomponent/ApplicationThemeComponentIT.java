@@ -107,16 +107,18 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 "Embedded style should not match external component",
                 "rgba(0, 0, 255, 1)",
                 $(SpanElement.class).id("overflow").getCssValue("color"));
-        getDriver().get(getRootURL() + "/themes/embedded-theme/img/bg.jpg");
+        getDriver()
+                .get(getRootURL() + "/VAADIN/themes/embedded-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
-                driver.getPageSource().contains("Could not navigate"));
+                driver.getPageSource().contains("Could not navigate") || driver
+                        .getPageSource().contains("Error 404 Not Found"));
     }
 
     private void validateEmbeddedComponent(TestBenchElement themedComponent,
             String target) {
         String imageUrl = themedComponent.getCssValue("background-image");
         Assert.assertTrue(target + " didn't contain the background image",
-                imageUrl.contains("/themes/embedded-theme/img/bg.jpg"));
+                imageUrl.contains("VAADIN/themes/embedded-theme/img/bg.jpg"));
 
         final TestBenchElement embeddedComponent = themedComponent
                 .$(DivElement.class).id(EMBEDDED_ID);
@@ -136,7 +138,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         List<TestBenchElement> links = themedComponent.$("link").all();
         Assert.assertEquals(1, links.size());
         Assert.assertTrue(links.get(0).getAttribute("href")
-                .contains("/themes/embedded-theme/styles.css"));
+                .contains("VAADIN/themes/embedded-theme/styles.css"));
     }
 
     @Test
@@ -213,7 +215,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 .findElements(By.tagName("link"));
         Assert.assertEquals(1, links.size());
         Assert.assertTrue(links.get(0).getAttribute("href")
-                .contains("/themes/embedded-theme/document.css"));
+                .contains("VAADIN/themes/embedded-theme/document.css"));
     }
 
 }

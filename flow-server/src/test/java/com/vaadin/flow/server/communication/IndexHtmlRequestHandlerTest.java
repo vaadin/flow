@@ -877,7 +877,7 @@ public class IndexHtmlRequestHandlerTest {
         Elements linkElements = document.head().getElementsByTag("link");
         assertEquals(1, linkElements.size());
         assertEquals("stylesheet", linkElements.get(0).attr("rel"));
-        assertEquals("themes/my-theme/styles.css",
+        assertEquals("VAADIN/themes/my-theme/styles.css",
                 linkElements.get(0).attr("href"));
     }
 
