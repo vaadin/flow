@@ -1057,7 +1057,9 @@ export class VaadinDevTools extends LitElement {
       } else if (message?.command === 'featureFlags') {
         this.features = message.data.features as Feature[];
       } else if (message?.command === 'vaadin-dev-tools-code-ok') {
-        this.tabs.push({ id: 'code', title: 'Code', render: this.renderCode });
+        if ((window as any).Vaadin.Flow) {
+          this.tabs.push({ id: 'code', title: 'Code', render: this.renderCode });
+        }
       } else {
         // eslint-disable-next-line no-console
         console.error('Unknown message from front-end connection:', JSON.stringify(message));
