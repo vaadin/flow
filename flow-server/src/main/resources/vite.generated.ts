@@ -637,7 +637,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
           `${themeFolder}/**/*.css\\?*`,
           `${themeResourceFolder}/**/*.css`,
           `${themeResourceFolder}/**/*.css\\?*`,
-          '**/*\\?html-proxy*'
+          '**/*\?html-proxy*'
         ]
       }),
       {
