@@ -592,9 +592,18 @@ export const vaadinConfig: UserConfigFn = (env) => {
         input: {
           indexhtml: path.resolve(frontendFolder, 'index.html'),
 
-          ...hasExportedWebComponents
-            ? { webcomponenthtml: path.resolve(frontendFolder, 'web-component.html') }
-            : {}
+          ...(hasExportedWebComponents ? { webcomponenthtml: path.resolve(frontendFolder, 'web-component.html') } : {})
+        },
+        onwarn: (warning: rollup.RollupWarning, defaultHandler: rollup.WarningHandler) => {
+          const ignoreEvalWarning = [
+            'generated/jar-resources/FlowClient.js',
+            'generated/jar-resources/vaadin-spreadsheet/spreadsheet-export.js',
+            '@vaadin/charts/src/helpers.js'
+          ];
+          if (warning.code === 'EVAL' && warning.id && !!ignoreEvalWarning.find((id) => warning.id.endsWith(id))) {
+            return;
+          }
+          defaultHandler(warning);
         }
       }
     },
