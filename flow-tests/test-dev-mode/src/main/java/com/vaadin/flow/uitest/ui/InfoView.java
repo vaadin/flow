@@ -83,9 +83,6 @@ public class InfoView extends Div {
 
         info("Browser", browser.stream().collect(Collectors.joining(", ")));
 
-        if (webBrowser.isTooOldToFunctionProperly()) {
-            header("Browser is too old to function properly");
-        }
         info("User-agent", webBrowser.getBrowserApplication());
         info("Browser major", webBrowser.getBrowserMajorVersion());
         info("Browser minor", webBrowser.getBrowserMinorVersion());

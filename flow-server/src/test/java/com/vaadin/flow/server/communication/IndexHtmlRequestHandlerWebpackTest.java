@@ -95,7 +95,7 @@ public class IndexHtmlRequestHandlerWebpackTest {
     private String springTokenHeaderName = "x-CSRF-TOKEN";
     private String springTokenParamName = SPRING_CSRF_ATTRIBUTE_IN_SESSION;
 
-    private int expectedScriptsTagsOnBootstrapPage = 3;
+    private int expectedScriptsTagsOnBootstrapPage = 4;
 
     @Before
     public void setUp() throws Exception {
