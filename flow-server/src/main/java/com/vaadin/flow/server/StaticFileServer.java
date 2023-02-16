@@ -65,9 +65,6 @@ import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
  */
 public class StaticFileServer implements StaticFileHandler {
     private static final String EXPRESS_MODE_BUNDLE_PATH_PREFIX = "/VAADIN/dev-bundle/";
-
-    private static final String APP_THEME_PATTERN = "/"
-            + Constants.VAADIN_MAPPING + Constants.APPLICATION_THEME_ROOT;
     static final String PROPERTY_FIX_INCORRECT_WEBJAR_PATHS = Constants.VAADIN_PREFIX
             + "fixIncorrectWebjarPaths";
     private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern
@@ -78,7 +75,13 @@ public class StaticFileServer implements StaticFileHandler {
     private DeploymentConfiguration deploymentConfiguration;
     private DevModeHandler devModeHandler;
 
-    // Matcher to match string starting with '/themes/[theme-name]/'
+    // Matches paths to theme files referenced from link tags (e.g. styles
+    // .css or document.css)
+    private static final Pattern APP_THEME_PATTERN = Pattern
+            .compile("^\\/VAADIN\\/themes\\/([\\s\\S]+?)\\/");
+
+    // Matches paths to theme asset files referenced from CSS as an url() or
+    // from Java (e.g. new Image("themes/my-theme/...")
     public static final Pattern APP_THEME_ASSETS_PATTERN = Pattern
             .compile("^\\/themes\\/([\\s\\S]+?)\\/");
 
@@ -265,7 +268,9 @@ public class StaticFileServer implements StaticFileHandler {
                 resourceUrl = FrontendUtils.findBundleFile(
                         deploymentConfiguration.getProjectFolder(),
                         "webapp/" + filenameInsideBundle);
-            } else if (filenameWithPath.startsWith(APP_THEME_PATTERN)) {
+            } else if (APP_THEME_PATTERN.matcher(filenameWithPath).find()
+                    || APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath)
+                            .find()) {
                 // Express mode theme file request
                 resourceUrl = findAssetInFrontendThemesOrDevBundle(
                         vaadinService,
