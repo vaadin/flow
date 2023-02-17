@@ -475,17 +475,15 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 final JsonObject packageJson = Json
                         .parse(FileUtils.readFileToString(packageJsonFile,
                                 StandardCharsets.UTF_8));
+                cleanOldPlatformDependencies(packageJson);
                 return getDefaultPackageJson(options, frontendDependencies,
                         finder, packageJson);
             } catch (IOException e) {
                 getLogger().warn("Failed to read package.json", e);
             }
         } else {
-            JsonObject packageJson = getDefaultPackageJson(options,
-                    frontendDependencies, finder, null);
-            if (packageJson != null) {
-                return packageJson;
-            }
+            return getDefaultPackageJson(options, frontendDependencies, finder,
+                    null);
         }
         return null;
     }
@@ -707,6 +705,52 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 process.destroyForcibly();
             }
         }
+    }
+
+    /**
+     * Removes Vaadin managed dependencies found under "vaadin:dependencies"
+     * from "dependencies" block if the package name and version match. Needed
+     * for cases when Vaadin provided dependencies are not a part of the
+     * platform anymore, so these dependencies are not treated as a developer
+     * provided dependencies and, thus, a new bundle generation is not triggered
+     * erroneously.
+     * <p>
+     * Examples: polymer iron-list dependencies or Vaadin web components with a
+     * deprecated "vaadin-" prefix that are not a part of platform 24.0 anymore.
+     *
+     * @param packageJson
+     *            content of the package.json content red from a file
+     */
+    private static void cleanOldPlatformDependencies(JsonObject packageJson) {
+        if (packageJson == null
+                || !hasFrameworkDependencyObjects(packageJson)) {
+            return;
+        }
+
+        JsonObject dependencies = packageJson
+                .getObject(NodeUpdater.DEPENDENCIES);
+        JsonObject vaadinDependencies = packageJson
+                .getObject(NodeUpdater.VAADIN_DEP_KEY)
+                .getObject(NodeUpdater.DEPENDENCIES);
+
+        for (String vaadinDependency : vaadinDependencies.keys()) {
+            String version = vaadinDependencies.getString(vaadinDependency);
+            if (dependencies.hasKey(vaadinDependency) && version
+                    .equals(dependencies.getString(vaadinDependency))) {
+                dependencies.remove(vaadinDependency);
+                getLogger().debug(
+                        "Old Vaadin provided dependency '{}':'{}' has been removed from package.json",
+                        vaadinDependency, version);
+            }
+        }
+    }
+
+    private static boolean hasFrameworkDependencyObjects(
+            JsonObject packageJson) {
+        return packageJson.hasKey(NodeUpdater.VAADIN_DEP_KEY)
+                && packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
+                        .hasKey(NodeUpdater.DEPENDENCIES)
+                && packageJson.hasKey(NodeUpdater.DEPENDENCIES);
     }
 
     private static String getTag(
