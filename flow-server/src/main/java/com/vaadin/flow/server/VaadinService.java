@@ -1304,7 +1304,8 @@ public abstract class VaadinService implements Serializable {
             if (session.getState() == VaadinSessionState.OPEN) {
                 closeSession(session);
                 if (session.getSession() != null) {
-                    getLogger().debug("Closing inactive session {}",
+                    getLogger().debug(
+                            "Closing inactive Vaadin session bound to HTTP session {}",
                             session.getSession().getId());
                 }
             }
