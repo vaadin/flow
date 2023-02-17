@@ -722,31 +722,35 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
      *            content of the package.json content red from a file
      */
     private static void cleanOldPlatformDependencies(JsonObject packageJson) {
-        if (packageJson == null) {
+        if (packageJson == null
+                || !hasFrameworkDependencyObjects(packageJson)) {
             return;
         }
 
-        JsonObject vaadinDepObject = packageJson
-                .getObject(NodeUpdater.VAADIN_DEP_KEY);
-
         JsonObject dependencies = packageJson
                 .getObject(NodeUpdater.DEPENDENCIES);
+        JsonObject vaadinDependencies = packageJson
+                .getObject(NodeUpdater.VAADIN_DEP_KEY)
+                .getObject(NodeUpdater.DEPENDENCIES);
 
-        if (dependencies != null && vaadinDepObject != null
-                && vaadinDepObject.hasKey(NodeUpdater.DEPENDENCIES)) {
-            JsonObject vaadinDependencies = vaadinDepObject
-                    .getObject(NodeUpdater.DEPENDENCIES);
-            for (String vaadinDependency : vaadinDependencies.keys()) {
-                String version = vaadinDependencies.getString(vaadinDependency);
-                if (dependencies.hasKey(vaadinDependency) && version
-                        .equals(dependencies.getString(vaadinDependency))) {
-                    dependencies.remove(vaadinDependency);
-                    getLogger().debug(
-                            "Old Vaadin provided dependency '{}':'{}' has been removed from package.json",
-                            vaadinDependency, version);
-                }
+        for (String vaadinDependency : vaadinDependencies.keys()) {
+            String version = vaadinDependencies.getString(vaadinDependency);
+            if (dependencies.hasKey(vaadinDependency) && version
+                    .equals(dependencies.getString(vaadinDependency))) {
+                dependencies.remove(vaadinDependency);
+                getLogger().debug(
+                        "Old Vaadin provided dependency '{}':'{}' has been removed from package.json",
+                        vaadinDependency, version);
             }
         }
+    }
+
+    private static boolean hasFrameworkDependencyObjects(
+            JsonObject packageJson) {
+        return packageJson.hasKey(NodeUpdater.VAADIN_DEP_KEY)
+                && packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
+                        .hasKey(NodeUpdater.DEPENDENCIES)
+                && packageJson.hasKey(NodeUpdater.DEPENDENCIES);
     }
 
     private static String getTag(
