@@ -68,7 +68,7 @@ public class CustomizedSystemMessages extends SystemMessages {
      * user. If the notification is disabled the user will be immediately
      * redirected to the URL returned by {@link #getSessionExpiredURL()}.
      *
-     * By default, the "session expired" notification" is disabled.
+     * By default, the "session expired" notification is disabled.
      *
      * @param sessionExpiredNotificationEnabled
      *            {@code true} to show the notification to the end user,
@@ -127,7 +127,7 @@ public class CustomizedSystemMessages extends SystemMessages {
      * user. If the notification is disabled the user will be immediately
      * redirected to the URL returned by {@link #getInternalErrorURL()}.
      *
-     * By default, the "internal error" notification" is enabled.
+     * By default, the "internal error" notification is enabled.
      *
      *
      * @param internalErrorNotificationEnabled
@@ -177,7 +177,7 @@ public class CustomizedSystemMessages extends SystemMessages {
      * user. If the notification is disabled the user will be immediately
      * redirected to the URL returned by {@link #getCookiesDisabledURL()}.
      *
-     * By default, the "cookies disabled" notification" is enabled.
+     * By default, the "cookies disabled" notification is enabled.
      *
      * @param cookiesDisabledNotificationEnabled
      *            {@code true} to show the notification to the end user,
