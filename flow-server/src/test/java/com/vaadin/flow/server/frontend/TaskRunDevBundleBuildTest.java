@@ -567,6 +567,47 @@ public class TaskRunDevBundleBuildTest {
     }
 
     @Test
+    public void packageJsonHasOldPlatformDependencies_statsDoesNotHaveThem_noCompilationRequired()
+            throws IOException {
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {\"@polymer/iron-list\": \"3.1.0\", "
+                        + "\"@vaadin/vaadin-accordion\": \"23.3.7\"}, "
+                        + "\"vaadin\": { \"dependencies\": {"
+                        + "\"@polymer/iron-list\": \"3.1.0\", "
+                        + "\"@vaadin/vaadin-accordion\": \"23.3.7\"}, "
+                        + "\"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages())
+                .thenReturn(Collections.emptyMap());
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/accordion",
+                "24.0.0.beta2");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse("No compilation expected if package.json has "
+                    + "only dependencies from older Vaadin version not "
+                    + "presenting in a newer version", needsBuild);
+        }
+    }
+
+    @Test
     public void noPackageJson_defaultPackagesAndModulesInStats_noBuildNeeded()
             throws IOException {
         final FrontendDependenciesScanner depScanner = Mockito
