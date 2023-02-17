@@ -13,8 +13,8 @@
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/polymer-legacy-adapter": "24.0.0-alpha13",
     "@vaadin/router": "1.7.4",
-    "@vaadin/vaadin-lumo-styles": "24.0.0-alpha13",
     "@vaadin/text-field": "24.0.0-alpha13",
+    "@vaadin/vaadin-lumo-styles": "24.0.0-alpha13",
     "@vaadin/vaadin-themable-mixin": "24.0.0-alpha13",
     "construct-style-sheets-polyfill": "3.1.0",
     "copy-to-clipboard": "^3.3.1",
@@ -62,8 +62,8 @@
       "@vaadin/common-frontend": "0.0.17",
       "@vaadin/polymer-legacy-adapter": "24.0.0-alpha13",
       "@vaadin/router": "1.7.4",
-      "@vaadin/vaadin-lumo-styles": "24.0.0-alpha13",
       "@vaadin/text-field": "24.0.0-alpha13",
+      "@vaadin/vaadin-lumo-styles": "24.0.0-alpha13",
       "@vaadin/vaadin-themable-mixin": "24.0.0-alpha13",
       "construct-style-sheets-polyfill": "3.1.0",
       "lit": "2.6.1"
@@ -84,6 +84,6 @@
       "workbox-core": "6.5.4",
       "workbox-precaching": "6.5.4"
     },
-    "hash": "1dcb4cd20949590f5059908b48b415dc7a387bf0044f84e8eaf230d0fc54535a"
+    "hash": "71ad11f74c0dd81054d720a7e5f7ececa67687defacf26f4c15e5755831296fe"
   }
 }
