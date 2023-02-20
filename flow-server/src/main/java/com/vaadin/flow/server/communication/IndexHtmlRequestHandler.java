@@ -135,6 +135,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // a server-side route that doesn't have a title
         storeAppShellTitleToUI(indexDocument);
 
+        redirectToOldBrowserPageWhenNeeded(indexDocument);
+
         // modify the page based on registered IndexHtmlRequestListener:s
         service.modifyIndexHtmlResponse(indexHtmlResponse);
 
@@ -153,6 +155,14 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    private void redirectToOldBrowserPageWhenNeeded(Document indexDocument) {
+        addScript(indexDocument, """
+                if (!('CSSLayerBlockRule' in window)) {
+                    window.location.search='v-r=oldbrowser';
+                }
+                """);
     }
 
     private void catchErrorsInDevMode(Document indexDocument) {

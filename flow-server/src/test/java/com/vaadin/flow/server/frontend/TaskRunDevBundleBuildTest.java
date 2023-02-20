@@ -256,6 +256,60 @@ public class TaskRunDevBundleBuildTest {
     }
 
     @Test
+    public void packageJsonContainsOldVersion_versionsJsonUpdates_noCompilation()
+            throws IOException {
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        File versions = new File(temporaryFolder.getRoot(),
+                Constants.VAADIN_CORE_VERSIONS_JSON);
+        versions.createNewFile();
+        // @formatter:off
+        FileUtils.write(versions, "{"
+                + "  \"core\": {\n"
+                + "    \"vaadin-router\": {\n"
+                + "      \"jsVersion\": \"2.0.3\",\n"
+                + "      \"npmName\": \"@vaadin/router\",\n"
+                + "      \"releasenotes\": true\n"
+                + "    },"
+                + "  },"
+                + "  \"platform\": \"123-SNAPSHOT\""
+                + "}");
+        // @formatter:on
+
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(versions.toURI().toURL());
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
+                "2.0.3");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            final boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "vaadin-core-versions.json should have updated version to expected.",
+                    needsBuild);
+        }
+    }
+
+    @Test
     public void packageJsonContainsOldVersionsAfterVersionUpdate_updatedStatsMatches_noCompilationRequired()
             throws IOException {
 
@@ -509,6 +563,47 @@ public class TaskRunDevBundleBuildTest {
             Assert.assertTrue(
                     "Compilation required if major version change for caret range",
                     needsBuild);
+        }
+    }
+
+    @Test
+    public void packageJsonHasOldPlatformDependencies_statsDoesNotHaveThem_noCompilationRequired()
+            throws IOException {
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {\"@polymer/iron-list\": \"3.1.0\", "
+                        + "\"@vaadin/vaadin-accordion\": \"23.3.7\"}, "
+                        + "\"vaadin\": { \"dependencies\": {"
+                        + "\"@polymer/iron-list\": \"3.1.0\", "
+                        + "\"@vaadin/vaadin-accordion\": \"23.3.7\"}, "
+                        + "\"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages())
+                .thenReturn(Collections.emptyMap());
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/accordion",
+                "24.0.0.beta2");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse("No compilation expected if package.json has "
+                    + "only dependencies from older Vaadin version not "
+                    + "presenting in a newer version", needsBuild);
         }
     }
 

@@ -1661,7 +1661,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         Element element = new Element("link");
         element.attr("rel", "stylesheet");
         element.attr("type", "text/css");
-        element.attr("href", "themes/" + themeName + "/" + fileName);
+        element.attr("href",
+                Constants.VAADIN_MAPPING + Constants.APPLICATION_THEME_ROOT
+                        + "/" + themeName + "/" + fileName);
         return element;
     }
 
