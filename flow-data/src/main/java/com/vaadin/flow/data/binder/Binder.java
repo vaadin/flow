@@ -415,7 +415,7 @@ public class Binder<BEAN> implements Serializable {
          * Nested property, when supported, can be referenced using the bean
          * path, starting from the root class, for example 'address.streetName'.
          * All intermediate getters must exist (e.g. {@code getAddress()}), and
-         * should never return {@literal null}, otherwise binding wil fail.
+         * should never return {@literal null}, otherwise binding will fail.
          *
          * <p>
          * <strong>Note:</strong> when the binding is <i>read-only</i> the field
@@ -454,7 +454,7 @@ public class Binder<BEAN> implements Serializable {
          * Nested property, when supported, can be referenced using the bean
          * path, starting from the root class, for example 'address.streetName'.
          * All intermediate getters must exist (e.g. {@code getAddress()}), and
-         * should never return {@literal null}, otherwise binding wil fail.
+         * should never return {@literal null}, otherwise binding will fail.
          *
          * <p>
          * <strong>Note:</strong> the field will be marked as readonly by
@@ -2023,7 +2023,7 @@ public class Binder<BEAN> implements Serializable {
      * referenced using the bean path, starting from the root class, for example
      * 'address.streetName'. All intermediate getters must exist (e.g.
      * {@code getAddress()}), and should never return {@literal null}, otherwise
-     * binding wil fail.
+     * binding will fail.
      *
      * @param <FIELDVALUE>
      *            the value type of the field to bind
@@ -2066,7 +2066,7 @@ public class Binder<BEAN> implements Serializable {
      * referenced using the bean path, starting from the root class, for example
      * 'address.streetName'. All intermediate getters must exist (e.g.
      * {@code getAddress()}), and should never return {@literal null}, otherwise
-     * binding wil fail.
+     * binding will fail.
      *
      * @param <FIELDVALUE>
      *            the value type of the field to bind
