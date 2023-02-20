@@ -368,6 +368,11 @@ public class Binder<BEAN> implements Serializable {
          * an accessible setter; in that case the property value is never
          * updated and the binding is said to be <i>read-only</i>.
          *
+         * Nested property, when supported, can be referenced using the bean
+         * path, starting from the root class, for example 'address.streetName'.
+         * All intermediate getters must exist (e.g. {@code getAddress()}), and
+         * should never return {@literal null}, otherwise binding will fail.
+         *
          * <p>
          * <strong>Note:</strong> when the binding is <i>read-only</i> the field
          * will be marked as readonly by invoking {@link HasValue#setReadOnly}.
@@ -1572,6 +1577,8 @@ public class Binder<BEAN> implements Serializable {
      * Creates a new binder that uses reflection based on the provided bean type
      * to resolve bean properties.
      *
+     * Nested properties are resolved lazily, when bound to a field.
+     *
      * @param beanType
      *            the bean type to use, not <code>null</code>
      */
@@ -1609,6 +1616,10 @@ public class Binder<BEAN> implements Serializable {
     /**
      * Creates a new binder that uses reflection based on the provided bean type
      * to resolve bean properties.
+     *
+     * If {@code scanNestedDefinitions} is true, nested properties are detected
+     * eagerly. Otherwise, they will be discovered lazily when the property is
+     * bound to a field.
      *
      * @param beanType
      *            the bean type to use, not {@code null}
@@ -1811,6 +1822,14 @@ public class Binder<BEAN> implements Serializable {
      * The property must have an accessible getter method. It need not have an
      * accessible setter; in that case the property value is never updated and
      * the binding is said to be <i>read-only</i>.
+     *
+     * Nested properties support depends on the {@link PropertySet} type used to
+     * build the {@code Binder}. If support is available, for example using the
+     * default {@link BeanPropertySet}, nested property are supported and can be
+     * referenced using the bean path, starting from the root class, for example
+     * 'address.streetName'. All intermediate getters must exist (e.g.
+     * {@code getAddress()}), and should never return {@literal null}, otherwise
+     * binding will fail.
      *
      * @param <FIELDVALUE>
      *            the value type of the field to bind
@@ -2989,8 +3008,8 @@ public class Binder<BEAN> implements Serializable {
         boolean compatibleTypes = propertyType.equals(erasedValueType);
         Converter automaticConverter = compatibleTypes ? null
                 : getConverterFactory()
-                .newInstance(erasedValueType, propertyType)
-                .orElse(null);
+                        .newInstance(erasedValueType, propertyType)
+                        .orElse(null);
         if (compatibleTypes || automaticConverter != null) {
             HasValue<?, ?> field;
             // Get the field from the object
@@ -3015,12 +3034,12 @@ public class Binder<BEAN> implements Serializable {
                 // 'bindInstanceFields' states that it doesn't override existing
                 // bindings and that incomplete bindings may be completed also
                 // after method call
-                LoggerFactory.getLogger(Binder.class.getName()).debug(
-                        "Binding for member '{}' of class '{}' will not be automatically "
+                LoggerFactory.getLogger(Binder.class.getName())
+                        .debug("Binding for member '{}' of class '{}' will not be automatically "
                                 + "created because a custom binding has been started "
                                 + "but not yet finalized with 'bind()' invocation.",
-                        memberField.getName(),
-                        objectWithMemberFields.getClass().getName());
+                                memberField.getName(),
+                                objectWithMemberFields.getClass().getName());
                 return false;
             }
             BindingBuilder<BEAN, ?> bindingBuilder = forField(field);
