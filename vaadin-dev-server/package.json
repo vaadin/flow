@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "start": "web-dev-server --node-resolve",
+    "patch-app": "node patch-application.js"
+  },
+  "devDependencies": {
+    "@koa/cors": "^4.0.0",
+    "@open-wc/dev-server-hmr": "^0.1.2-next.0",
+    "@web/dev-server": "^0.1.35",
+    "@web/dev-server-esbuild": "^0.3.3"
+  },
+  "dependencies": {
+    "lit": "^2.6.1"
+  }
+}
