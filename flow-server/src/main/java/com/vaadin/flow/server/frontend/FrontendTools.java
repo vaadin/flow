@@ -62,7 +62,7 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v14.21.1";
+    public static final String DEFAULT_NODE_VERSION = "v14.21.3";
 
     public static final String DEFAULT_PNPM_VERSION = "5";
 
