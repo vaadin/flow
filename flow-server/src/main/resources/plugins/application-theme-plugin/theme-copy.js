@@ -191,8 +191,8 @@ function copyFileIfAbsentOrNewer(fileToCopy, copyTarget, logger) {
   }
 }
 
-// Ignores errors due to files missing during theme processing
-// This may happen for example when an IDE creates a temporary files
+// Ignores errors due to file missing during theme processing
+// This may happen for example when an IDE creates a temporary file
 // and then immediately deletes it
 function handleNoSuchFileError(file, error, logger) {
     if (error.code === 'ENOENT') {
