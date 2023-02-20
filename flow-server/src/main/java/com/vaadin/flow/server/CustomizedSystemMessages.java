@@ -22,7 +22,7 @@ package com.vaadin.flow.server;
  * <p>
  * Vaadin gets the SystemMessages from the {@link SystemMessagesProvider}
  * configured in {@link VaadinService}. You can customize this by creating a
- * {@link VaadinServiceInitListener} that sets an instance on
+ * {@link VaadinServiceInitListener} that sets an instance of
  * {@link SystemMessagesProvider} to
  * {@link VaadinService#setSystemMessagesProvider(SystemMessagesProvider)}, that
  * in turns creates instances of CustomizedSystemMessages.
