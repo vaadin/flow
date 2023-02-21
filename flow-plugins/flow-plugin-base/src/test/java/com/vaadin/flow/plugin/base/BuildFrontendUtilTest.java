@@ -53,6 +53,8 @@ public class BuildFrontendUtilTest {
 
         adapter = Mockito.mock(PluginAdapterBuild.class);
         Mockito.when(adapter.npmFolder()).thenReturn(baseDir);
+        Mockito.when(adapter.generatedTsFolder())
+                .thenReturn(new File(baseDir, "frontend/generated"));
         Mockito.when(adapter.projectBaseDirectory())
                 .thenReturn(tmpDir.getRoot().toPath());
         ClassFinder classFinder = Mockito.mock(ClassFinder.class);
@@ -87,8 +89,7 @@ public class BuildFrontendUtilTest {
 
         BuildFrontendUtil.prepareFrontend(adapter);
 
-        Mockito.verify(lookup, Mockito.never())
-                .lookup(EndpointGeneratorTaskFactory.class);
+        Mockito.verify(lookup).lookup(EndpointGeneratorTaskFactory.class);
         Mockito.verify(lookup, Mockito.never())
                 .lookup(TaskGenerateOpenAPI.class);
         Mockito.verify(lookup, Mockito.never())
@@ -104,23 +105,29 @@ public class BuildFrontendUtilTest {
         MockedConstruction<TaskRunNpmInstall> construction = Mockito
                 .mockConstruction(TaskRunNpmInstall.class);
 
+        final EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = Mockito
+                .mock(EndpointGeneratorTaskFactory.class);
+        Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
+                .lookup(EndpointGeneratorTaskFactory.class);
+
         final TaskGenerateOpenAPI taskGenerateOpenAPI = Mockito
                 .mock(TaskGenerateOpenAPI.class);
-        Mockito.doReturn(taskGenerateOpenAPI).when(lookup)
-                .lookup(TaskGenerateOpenAPI.class);
+        Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
+                .createTaskGenerateOpenAPI(Mockito.any());
+
         final TaskGenerateEndpoint taskGenerateEndpoint = Mockito
                 .mock(TaskGenerateEndpoint.class);
-        Mockito.doReturn(taskGenerateEndpoint).when(lookup)
-                .lookup(TaskGenerateEndpoint.class);
+        Mockito.doReturn(taskGenerateEndpoint)
+                .when(endpointGeneratorTaskFactory)
+                .createTaskGenerateEndpoint(Mockito.any());
 
         BuildFrontendUtil.runNodeUpdater(adapter);
 
+        Mockito.verify(lookup).lookup(EndpointGeneratorTaskFactory.class);
         Mockito.verify(lookup, Mockito.never())
-                .lookup(EndpointGeneratorTaskFactory.class);
-        Mockito.verify(lookup).lookup(TaskGenerateOpenAPI.class);
-        Mockito.verify(lookup).lookup(TaskGenerateEndpoint.class);
-        Mockito.verify(taskGenerateOpenAPI).execute();
-        Mockito.verify(taskGenerateEndpoint).execute();
+                .lookup(TaskGenerateOpenAPI.class);
+        Mockito.verify(lookup, Mockito.never())
+                .lookup(TaskGenerateEndpoint.class);
 
         // Hilla Engine requires npm install, the order of execution is critical
         final TaskRunNpmInstall taskRunNpmInstall = construction.constructed()
