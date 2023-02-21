@@ -70,6 +70,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private IdeIntegration ideIntegration;
 
+    private ThemeModifier themeModifier;
+
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
                 "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener"));
@@ -89,6 +91,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         this.context = context;
         this.ideIntegration = new IdeIntegration(
                 ApplicationConfiguration.get(context));
+        this.themeModifier = new ThemeModifier(context);
     }
 
     @Override
@@ -239,6 +242,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
                             "Only component locations are tracked. The given node id refers to an element and not a component");
                 }
             });
+        } else if ("themeEditorSetRule".equals(command)) {
+            themeModifier.handleDebugMessageData(data);
         } else {
             getLogger().info("Unknown command from the browser: " + command);
         }
