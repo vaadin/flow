@@ -99,38 +99,16 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
     }
 
     @Test
-    public void should_generateOpenApi_when_EndpointPresents()
-            throws Exception {
+    public void should_generateOpenApi() throws Exception {
         File generatedOpenApiJson = Paths
                 .get(baseDir, TARGET, "classes/dev/hilla/openapi.json")
                 .toFile();
-        File src = new File(
-                getClass().getClassLoader().getResource("java").getFile());
-        Mockito.when(appConfig.getStringProperty(
-                Mockito.eq(CONNECT_JAVA_SOURCE_FOLDER_TOKEN),
-                Mockito.anyString())).thenReturn(src.getAbsolutePath());
 
         Assert.assertFalse(generatedOpenApiJson.exists());
         devModeStartupListener.onStartup(classes, servletContext);
         handler = getDevModeHandler();
         waitForDevServer();
         Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.",
-                generatedOpenApiJson.exists());
-    }
-
-    @Test
-    public void should_notGenerateOpenApi_when_EndpointIsNotUsed()
-            throws Exception {
-        File generatedOpenApiJson = Paths
-                .get(baseDir, TARGET, "classes/dev/hilla/openapi.json")
-                .toFile();
-
-        Assert.assertFalse(generatedOpenApiJson.exists());
-        devModeStartupListener.onStartup(classes, servletContext);
-        handler = getDevModeHandler();
-        waitForDevServer();
-        Assert.assertFalse(
-                "Should not generate OpenAPI spec if Endpoint is not used.",
                 generatedOpenApiJson.exists());
     }
 
