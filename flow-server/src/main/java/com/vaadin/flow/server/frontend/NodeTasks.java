@@ -66,7 +66,6 @@ public class NodeTasks implements FallibleCommand {
             TaskRunNpmInstall.class,
             TaskGenerateOpenAPI.class,
             TaskGenerateEndpoint.class,
-            TaskGenerateHilla.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
             TaskUpdateSettingsFile.class,

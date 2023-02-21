@@ -65,12 +65,6 @@ public class Options implements Serializable {
 
     boolean useGlobalPnpm = false;
 
-    File endpointSourceFolder;
-
-    File endpointGeneratedOpenAPIFile;
-
-    File applicationProperties;
-
     File frontendGeneratedFolder;
 
     boolean requireHomeNodeExec;
@@ -354,70 +348,6 @@ public class Options implements Serializable {
      */
     public File getFrontendGeneratedFolder() {
         return frontendGeneratedFolder;
-    }
-
-    /**
-     * Set application properties file for Spring project.
-     *
-     * @param applicationProperties
-     *            application properties file.
-     * @return this builder, for chaining
-     */
-    public Options withApplicationProperties(File applicationProperties) {
-        this.applicationProperties = applicationProperties;
-        return this;
-    }
-
-    /**
-     * Get application properties file for Spring project.
-     *
-     * @return application properties file
-     **/
-    public File getApplicationProperties() {
-        return applicationProperties;
-    }
-
-    /**
-     * Set output location for the generated OpenAPI file.
-     *
-     * @param endpointGeneratedOpenAPIFile
-     *            the generated output file.
-     * @return the builder, for chaining
-     */
-    public Options withEndpointGeneratedOpenAPIFile(
-            File endpointGeneratedOpenAPIFile) {
-        this.endpointGeneratedOpenAPIFile = endpointGeneratedOpenAPIFile;
-        return this;
-    }
-
-    /**
-     * Gets the output location for the generated OpenAPI file. .
-     *
-     * @return the generated output file
-     */
-    public File getEndpointGeneratedOpenAPIFile() {
-        return endpointGeneratedOpenAPIFile;
-    }
-
-    /**
-     * Set source paths that OpenAPI generator searches for endpoints.
-     *
-     * @param endpointSourceFolder
-     *            java source folder
-     * @return the builder, for chaining
-     */
-    public Options withEndpointSourceFolder(File endpointSourceFolder) {
-        this.endpointSourceFolder = endpointSourceFolder;
-        return this;
-    }
-
-    /**
-     * Gets the source paths that OpenAPI generator searches for endpoints.
-     *
-     * @return java source folder
-     */
-    public File getEndpointSourceFolder() {
-        return endpointSourceFolder;
     }
 
     /**
