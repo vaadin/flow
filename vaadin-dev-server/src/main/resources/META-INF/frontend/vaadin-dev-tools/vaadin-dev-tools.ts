@@ -1,4 +1,4 @@
-import { css, html, LitElement, nothing } from 'lit';
+import {css, html, LitElement, nothing, TemplateResult} from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ComponentReference } from './component-util';
@@ -26,7 +26,7 @@ interface Feature {
 interface Tab {
   id: 'log' | 'info' | 'features' | 'code';
   title: string;
-  render: () => unknown;
+  render: () => TemplateResult;
   activate?: () => void;
 }
 
@@ -211,11 +211,6 @@ export const popupStyles = css`
   }
 `;
 export class VaadinDevTools extends LitElement {
-  static BLUE_HSL = css`206, 100%, 70%`;
-  static GREEN_HSL = css`145, 80%, 42%`;
-  static GREY_HSL = css`0, 0%, 50%`;
-  static YELLOW_HSL = css`38, 98%, 64%`;
-  static RED_HSL = css`355, 100%, 68%`;
   static MAX_LOG_ROWS = 1000;
 
   static get styles() {
@@ -242,15 +237,15 @@ export class VaadinDevTools extends LitElement {
           --dev-tools-border-radius: 0.5rem;
           --dev-tools-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
 
-          --dev-tools-blue-hsl: ${this.BLUE_HSL};
+          --dev-tools-blue-hsl: 206, 100%, 70%;
           --dev-tools-blue-color: hsl(var(--dev-tools-blue-hsl));
-          --dev-tools-green-hsl: ${this.GREEN_HSL};
+          --dev-tools-green-hsl: 145, 80%, 42%;
           --dev-tools-green-color: hsl(var(--dev-tools-green-hsl));
-          --dev-tools-grey-hsl: ${this.GREY_HSL};
+          --dev-tools-grey-hsl: 0, 0%, 50%;
           --dev-tools-grey-color: hsl(var(--dev-tools-grey-hsl));
-          --dev-tools-yellow-hsl: ${this.YELLOW_HSL};
+          --dev-tools-yellow-hsl: 38, 98%, 64%;
           --dev-tools-yellow-color: hsl(var(--dev-tools-yellow-hsl));
-          --dev-tools-red-hsl: ${this.RED_HSL};
+          --dev-tools-red-hsl: 355, 100%, 68%;
           --dev-tools-red-color: hsl(var(--dev-tools-red-hsl));
 
           /* Needs to be in ms, used in JavaScript as well */
@@ -963,9 +958,9 @@ export class VaadinDevTools extends LitElement {
 
   @state()
   private tabs: Tab[] = [
-    { id: 'log', title: 'Log', render: this.renderLog, activate: this.activateLog },
-    { id: 'info', title: 'Info', render: this.renderInfo },
-    { id: 'features', title: 'Feature Flags', render: this.renderFeatures }
+    { id: 'log', title: 'Log', render: () => this.renderLog(), activate: this.activateLog },
+    { id: 'info', title: 'Info', render: () => this.renderInfo() },
+    { id: 'features', title: 'Feature Flags', render: () => this.renderFeatures() }
   ];
 
   @state()
@@ -1058,7 +1053,7 @@ export class VaadinDevTools extends LitElement {
         this.features = message.data.features as Feature[];
       } else if (message?.command === 'vaadin-dev-tools-code-ok') {
         if ((window as any).Vaadin.Flow) {
-          this.tabs.push({ id: 'code', title: 'Code', render: this.renderCode });
+          this.tabs.push({ id: 'code', title: 'Code', render: () => this.renderCode() });
         }
       } else {
         // eslint-disable-next-line no-console
@@ -1358,15 +1353,15 @@ export class VaadinDevTools extends LitElement {
 
   getStatusColor(status: ConnectionStatus | undefined) {
     if (status === ConnectionStatus.ACTIVE) {
-      return css`hsl(${VaadinDevTools.GREEN_HSL})`;
+      return 'var(--dev-tools-green-color)';
     } else if (status === ConnectionStatus.INACTIVE) {
-      return css`hsl(${VaadinDevTools.GREY_HSL})`;
+      return 'var(--dev-tools-grey-color)';
     } else if (status === ConnectionStatus.UNAVAILABLE) {
-      return css`hsl(${VaadinDevTools.YELLOW_HSL})`;
+      return 'var(--dev-tools-yellow-hsl)';
     } else if (status === ConnectionStatus.ERROR) {
-      return css`hsl(${VaadinDevTools.RED_HSL})`;
+      return 'var(--dev-tools-red-color)';
     } else {
-      return css`none`;
+      return 'none';
     }
   }
 
@@ -1439,7 +1434,7 @@ export class VaadinDevTools extends LitElement {
             </svg>
           </button>
         </div>
-        ${this.tabs.map((tab) => (this.activeTab === tab.id ? tab.render.call(this) : nothing))}
+        ${this.tabs.map((tab) => (this.activeTab === tab.id ? tab.render() : nothing))}
       </div>
 
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
