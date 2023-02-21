@@ -1,7 +1,9 @@
 package com.vaadin.base.devserver;
 
 import com.helger.css.ECSSVersion;
-import com.helger.css.decl.*;
+import com.helger.css.decl.CSSImportRule;
+import com.helger.css.decl.CSSStyleRule;
+import com.helger.css.decl.CascadingStyleSheet;
 import com.helger.css.reader.CSSReader;
 import com.helger.css.writer.CSSWriter;
 import com.vaadin.flow.server.VaadinContext;
@@ -9,11 +11,15 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ThemeModifier {
 
@@ -23,6 +29,8 @@ public class ThemeModifier {
             + "manual changes may be overwritten while using ThemeEditor";
 
     private VaadinContext context;
+
+    private boolean importPresent;
 
     public ThemeModifier(VaadinContext context) {
         this.context = context;
@@ -63,6 +71,11 @@ public class ThemeModifier {
         CascadingStyleSheet styleSheet = CSSReader.readFromFile(styles,
                 StandardCharsets.UTF_8, ECSSVersion.LATEST);
 
+        if (!importPresent) {
+            insertImportIfNotExists();
+            importPresent = true;
+        }
+
         CSSStyleRule rule = parseStyleRule(selector, property, value);
         removeRuleIfExists(styleSheet, rule);
 
@@ -77,12 +90,41 @@ public class ThemeModifier {
         }
     }
 
-    private CSSStyleRule parseStyleRule(String selector, String property,
+    protected CSSStyleRule parseStyleRule(String selector, String property,
             String value) {
         return CSSReader
                 .readFromString(selector + "{" + property + ": " + value + "}",
                         StandardCharsets.UTF_8, ECSSVersion.LATEST)
                 .getStyleRuleAtIndex(0);
+    }
+
+    protected void insertImportIfNotExists() {
+        File themes = new File(getFrontendFolder(), "themes");
+        String themeName = getThemeName(themes);
+        File theme = new File(themes, themeName);
+        File themeStyles = new File(theme, "styles.css");
+
+        CascadingStyleSheet styleSheet = CSSReader.readFromFile(themeStyles,
+                StandardCharsets.UTF_8, ECSSVersion.LATEST);
+
+        CSSImportRule expectedRule = new CSSImportRule(THEME_EDITOR_CSS);
+        if (!styleSheet.getAllImportRules().contains(expectedRule)) {
+            FileWriter writer = null;
+            try {
+                List<String> lines = new ArrayList<>();
+                lines.add("@import \"" + THEME_EDITOR_CSS + "\";");
+                lines.addAll(IOUtils.readLines(new FileReader(themeStyles)));
+                themeStyles.delete();
+                themeStyles.createNewFile();
+                writer = new FileWriter(themeStyles);
+                IOUtils.writeLines(lines, System.lineSeparator(), writer);
+            } catch (IOException e) {
+                throw new RuntimeException(
+                        "Cannot insert theme-editor.css @import", e);
+            } finally {
+                IOUtils.closeQuietly(writer);
+            }
+        }
     }
 
     protected void removeRuleIfExists(CascadingStyleSheet styleSheet,
@@ -111,8 +153,6 @@ public class ThemeModifier {
     }
 
     public void handleDebugMessageData(JsonObject data) {
-        // int uiId = (int) data.getNumber("uiId");
-        // int nodeId = (int) data.getNumber("nodeId");
         JsonArray rules = data.getArray("rules");
         for (int i = 0; i < rules.length(); ++i) {
             JsonObject rule = rules.getObject(i);

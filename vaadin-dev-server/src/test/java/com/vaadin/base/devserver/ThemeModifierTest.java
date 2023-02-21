@@ -30,13 +30,45 @@ public class ThemeModifierTest {
     }
 
     @Before
-    public void removeThemeEditorCss() {
+    public void prepareFiles() throws IOException {
         File themeFolder = TestUtils
                 .getTestFolder(FRONTEND_FOLDER + "/themes/my-theme");
+        File stylesCss = new File(themeFolder, "styles.css");
+        if (stylesCss.exists()) {
+            stylesCss.delete();
+        }
+        stylesCss.createNewFile();
         File themeEditorCss = new File(themeFolder, "theme-editor.css");
         if (themeEditorCss.exists()) {
             themeEditorCss.delete();
         }
+    }
+
+    @Test
+    public void noImport_importPresent() {
+        String string = "@import \"theme-editor.css\";";
+        Assert.assertTrue(
+                getFileLines("styles.css").stream().noneMatch(string::equals));
+
+        ThemeModifier modifier = new TestThemeModifier();
+        modifier.setCssRule(SELECTOR_WITH_PART, "color", "red");
+
+        Assert.assertTrue(
+                getFileLines("styles.css").stream().anyMatch(string::equals));
+    }
+
+    @Test
+    public void multipleRulesAdded_singleImportPresent() {
+        String string = "@import \"theme-editor.css\";";
+        Assert.assertTrue(
+                getFileLines("styles.css").stream().noneMatch(string::equals));
+
+        ThemeModifier modifier = new TestThemeModifier();
+        modifier.setCssRule(SELECTOR_WITH_PART, "color", "red");
+        modifier.setCssRule(SELECTOR_WITH_PART, "font-family", "serif");
+
+        Assert.assertTrue(getFileLines("styles.css").stream()
+                .filter(string::equals).count() == 1);
     }
 
     @Test
@@ -68,19 +100,19 @@ public class ThemeModifierTest {
     }
 
     private void assertThemeEditorCssNotContains(String string) {
-        Assert.assertTrue(
-                getThemeEditorCssLines().stream().noneMatch(string::equals));
+        Assert.assertTrue(getFileLines("theme-editor.css").stream()
+                .noneMatch(string::equals));
     }
 
     private void assertThemeEditorCssContains(String string) {
-        Assert.assertTrue(
-                getThemeEditorCssLines().stream().anyMatch(string::equals));
+        Assert.assertTrue(getFileLines("theme-editor.css").stream()
+                .anyMatch(string::equals));
     }
 
-    private List<String> getThemeEditorCssLines() {
+    private List<String> getFileLines(String file) {
         File themeFolder = TestUtils
                 .getTestFolder(FRONTEND_FOLDER + "/themes/my-theme");
-        File themeEditorCss = new File(themeFolder, "theme-editor.css");
+        File themeEditorCss = new File(themeFolder, file);
         try {
             return IOUtils.readLines(new FileReader(themeEditorCss));
         } catch (IOException e) {
