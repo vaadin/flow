@@ -1,4 +1,4 @@
-import { css, html, LitElement, nothing } from 'lit';
+import {css, html, LitElement, nothing, TemplateResult} from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ComponentReference } from './component-util';
@@ -26,7 +26,7 @@ interface Feature {
 interface Tab {
   id: 'log' | 'info' | 'features' | 'code';
   title: string;
-  render: () => unknown;
+  render: () => TemplateResult;
   activate?: () => void;
 }
 
@@ -963,9 +963,9 @@ export class VaadinDevTools extends LitElement {
 
   @state()
   private tabs: Tab[] = [
-    { id: 'log', title: 'Log', render: this.renderLog, activate: this.activateLog },
-    { id: 'info', title: 'Info', render: this.renderInfo },
-    { id: 'features', title: 'Feature Flags', render: this.renderFeatures }
+    { id: 'log', title: 'Log', render: () => this.renderLog(), activate: this.activateLog },
+    { id: 'info', title: 'Info', render: () => this.renderInfo() },
+    { id: 'features', title: 'Feature Flags', render: () => this.renderFeatures() }
   ];
 
   @state()
@@ -1058,7 +1058,7 @@ export class VaadinDevTools extends LitElement {
         this.features = message.data.features as Feature[];
       } else if (message?.command === 'vaadin-dev-tools-code-ok') {
         if ((window as any).Vaadin.Flow) {
-          this.tabs.push({ id: 'code', title: 'Code', render: this.renderCode });
+          this.tabs.push({ id: 'code', title: 'Code', render: () => this.renderCode() });
         }
       } else {
         // eslint-disable-next-line no-console
@@ -1439,7 +1439,7 @@ export class VaadinDevTools extends LitElement {
             </svg>
           </button>
         </div>
-        ${this.tabs.map((tab) => (this.activeTab === tab.id ? tab.render.call(this) : nothing))}
+        ${this.tabs.map((tab) => (this.activeTab === tab.id ? tab.render() : nothing))}
       </div>
 
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
