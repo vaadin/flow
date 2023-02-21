@@ -18,7 +18,6 @@ import org.mockito.InOrder;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -41,8 +40,6 @@ public class BuildFrontendUtilTest {
 
     private PluginAdapterBuild adapter;
 
-    private FrontendTools tools;
-
     private Lookup lookup;
 
     private File statsJson;
@@ -61,8 +58,6 @@ public class BuildFrontendUtilTest {
         lookup = Mockito.spy(new LookupImpl(classFinder));
         Mockito.when(adapter.createLookup(Mockito.any())).thenReturn(lookup);
         Mockito.doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
-
-        tools = Mockito.mock(FrontendTools.class);
 
         // setup: mock a vite executable
         File viteBin = new File(baseDir, "node_modules/vite/bin");
@@ -86,7 +81,7 @@ public class BuildFrontendUtilTest {
         setupPluginAdapterDefaults();
 
         File openApiJsonFile = new File(new File(baseDir, Constants.TARGET),
-                FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE);
+                "classes/dev/hilla/openapi.json");
         Mockito.when(adapter.openApiJsonFile()).thenReturn(openApiJsonFile);
 
         BuildFrontendUtil.prepareFrontend(adapter);
@@ -120,12 +115,6 @@ public class BuildFrontendUtilTest {
                 .mock(TaskGenerateHilla.class);
         Mockito.doReturn(taskGenerateHilla).when(lookup)
                 .lookup(TaskGenerateHilla.class);
-
-        FileUtils.write(
-                new File(adapter.javaResourceFolder(),
-                        FeatureFlags.PROPERTIES_FILENAME),
-                "com.vaadin.experimental.hillaEngine=true\n",
-                StandardCharsets.UTF_8);
 
         BuildFrontendUtil.runNodeUpdater(adapter);
 
@@ -193,8 +182,7 @@ public class BuildFrontendUtilTest {
                 FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR));
         Mockito.when(adapter.buildFolder()).thenReturn(Constants.TARGET);
         Mockito.when(adapter.npmFolder()).thenReturn(baseDir);
-        File javaSourceFolder = new File(baseDir,
-                FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER);
+        File javaSourceFolder = new File(baseDir, "src/main/java");
         Assert.assertTrue(javaSourceFolder.mkdirs());
         Mockito.when(adapter.javaSourceFolder()).thenReturn(javaSourceFolder);
         File javaResourceFolder = new File(baseDir, "src/main/resources");
@@ -203,7 +191,7 @@ public class BuildFrontendUtilTest {
                 .thenReturn(javaResourceFolder);
         Mockito.when(adapter.openApiJsonFile())
                 .thenReturn(new File(new File(baseDir, Constants.TARGET),
-                        FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE));
+                        "classes/dev/hilla/openapi.json"));
         Mockito.when(adapter.getClassFinder())
                 .thenReturn(new ClassFinder.DefaultClassFinder(
                         this.getClass().getClassLoader()));

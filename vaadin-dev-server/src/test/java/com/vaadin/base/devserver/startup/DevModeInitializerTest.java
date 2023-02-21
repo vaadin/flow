@@ -5,7 +5,6 @@ import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_THEME_JAR_DEFAULT;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.never;
@@ -332,7 +331,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         String originalJavaSourceFolder = null;
         File generatedOpenApiJson = Paths
-                .get(baseDir, TARGET, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                .get(baseDir, TARGET, "classes/dev/hilla/openapi.json")
                 .toFile();
         try {
             originalJavaSourceFolder = System
@@ -368,7 +367,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         String originalJavaSourceFolder = null;
         File generatedOpenApiJson = Paths
-                .get(baseDir, TARGET, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                .get(baseDir, TARGET, "classes/dev/hilla/openapi.json")
                 .toFile();
         try {
             originalJavaSourceFolder = System

@@ -2,8 +2,6 @@ package com.vaadin.base.devserver;
 
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
@@ -95,8 +93,7 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
         Mockito.when(servletContext.getClassLoader())
                 .thenReturn(this.getClass().getClassLoader());
 
-        FileUtils.forceMkdir(
-                new File(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER));
+        FileUtils.forceMkdir(new File(baseDir, "src/main/java"));
 
         devModeStartupListener = new DevModeStartupListener();
     }
@@ -105,7 +102,7 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
     public void should_generateOpenApi_when_EndpointPresents()
             throws Exception {
         File generatedOpenApiJson = Paths
-                .get(baseDir, TARGET, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                .get(baseDir, TARGET, "classes/dev/hilla/openapi.json")
                 .toFile();
         File src = new File(
                 getClass().getClassLoader().getResource("java").getFile());
@@ -125,7 +122,7 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
     public void should_notGenerateOpenApi_when_EndpointIsNotUsed()
             throws Exception {
         File generatedOpenApiJson = Paths
-                .get(baseDir, TARGET, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                .get(baseDir, TARGET, "classes/dev/hilla/openapi.json")
                 .toFile();
 
         Assert.assertFalse(generatedOpenApiJson.exists());
