@@ -88,7 +88,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void applicationTheme_GlobalCss_isUsedOnlyInEmbeddeComponent() {
+    public void applicationTheme_GlobalCss_isUsedOnlyInEmbeddedComponent() {
         open();
         checkLogsForErrors();
 
@@ -101,7 +101,11 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         Assert.assertEquals("background-image should not be applied to body",
                 "none", background);
 
+        // font-family from web component doesn't leak to the document
         Assert.assertNotEquals("Ostrich", body.getCssValue("font-family"));
+
+        // font-family of the document is applied and not overridden by Lumo
+        Assert.assertEquals("IBM Plex Mono", body.getCssValue("font-family"));
 
         Assert.assertEquals(
                 "Embedded style should not match external component",
