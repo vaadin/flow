@@ -1,7 +1,7 @@
 import { css, html, LitElement, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { ComponentReference } from './component-util';
+import {ComponentReference, ThemeEditorData} from './component-util';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
@@ -24,7 +24,7 @@ interface Feature {
 }
 
 interface Tab {
-  id: 'log' | 'info' | 'features' | 'code';
+  id: 'log' | 'info' | 'features' | 'code' | 'themeEditor';
   title: string;
   render: () => unknown;
   activate?: () => void;
@@ -164,6 +164,9 @@ export class Connection extends Object {
   }
   sendShowComponentAttachLocation(component: ComponentReference) {
     this.send('showComponentAttachLocation', component);
+  }
+  sendThemeEditorSave(data: ThemeEditorData) {
+    this.send('themeEditorSave', data);
   }
 }
 
@@ -965,7 +968,8 @@ export class VaadinDevTools extends LitElement {
   private tabs: Tab[] = [
     { id: 'log', title: 'Log', render: this.renderLog, activate: this.activateLog },
     { id: 'info', title: 'Info', render: this.renderInfo },
-    { id: 'features', title: 'Feature Flags', render: this.renderFeatures }
+    { id: 'features', title: 'Feature Flags', render: this.renderFeatures },
+    { id: 'themeEditor', title: 'Theme Editor', render: this.renderThemeEditor }
   ];
 
   @state()
@@ -991,6 +995,8 @@ export class VaadinDevTools extends LitElement {
 
   @state()
   componentPickActive: boolean = false;
+
+  componentPickCallback: Function = (e: CustomEvent) => {};
 
   private javaConnection?: Connection;
   private frontendConnection?: Connection;
@@ -1445,16 +1451,7 @@ export class VaadinDevTools extends LitElement {
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
       <vaadin-dev-tools-component-picker
         .active=${this.componentPickActive}
-        @component-picker-pick=${(e: CustomEvent) => {
-          const component: ComponentReference = e.detail.component;
-          const locationType = (this.renderRoot.querySelector('#locationType') as HTMLSelectElement).value;
-          if (locationType === 'create') {
-            this.frontendConnection!.sendShowComponentCreateLocation(component);
-          } else {
-            this.frontendConnection!.sendShowComponentAttachLocation(component);
-          }
-          this.componentPickActive = false;
-        }}
+        @component-picker-pick=${this.componentPickCallback}
         @component-picker-abort=${(_e: CustomEvent) => {
           this.componentPickActive = false;
         }}
@@ -1536,6 +1533,16 @@ export class VaadinDevTools extends LitElement {
         <button
           class="button pick"
           @click=${() => {
+            this.componentPickCallback = (e: CustomEvent) => {
+              const component: ComponentReference = e.detail.component;
+              const locationType = (this.renderRoot.querySelector('#locationType') as HTMLSelectElement).value;
+              if (locationType === 'create') {
+                this.frontendConnection!.sendShowComponentCreateLocation(component);
+              } else {
+                this.frontendConnection!.sendShowComponentAttachLocation(component);
+              }
+              this.componentPickActive = false;
+            }
             this.componentPickActive = true;
             import('./component-picker.js');
           }}
@@ -1607,6 +1614,37 @@ export class VaadinDevTools extends LitElement {
         </div>`
       )}
     </div>`;
+  }
+
+  private renderThemeEditor() {
+    return html`<div class="info-tray">Test
+      <vaadin-icon icon="vaadin:crosshairs" @click=${() => {
+        this.componentPickCallback = (e: CustomEvent) => {
+          const component: ComponentReference = e.detail.component;
+          console.log(component);
+        }
+        this.componentPickActive = true;
+        import('./component-picker.js');
+      }}></vaadin-icon>
+      <a href="#" @click=${() => {
+        var data = {
+          uiId: 0,
+          rules: [
+            {
+              selector: 'vaadin-button::part(label)',
+              property: 'color',
+              value: '#'+(0x1000000+Math.random()*0xffffff).toString(16).substr(1,6)
+            },
+            {
+              selector: 'vaadin-text-field::part(label)',
+              property: 'color',
+              value: '#'+(0x1000000+Math.random()*0xffffff).toString(16).substr(1,6)
+            }
+          ]
+        }
+        this.frontendConnection!.sendThemeEditorSave(data);
+      }}>Save</a>
+      </div>`;
   }
 
   copyInfoToClipboard() {

@@ -4,6 +4,17 @@ export type ComponentReference = {
   element?: HTMLElement;
 };
 
+export type ThemeEditorData = {
+  uiId: number;
+  rules: CssRule[];
+}
+
+export type CssRule = {
+  selector: string;
+  property: string;
+  value: string;
+}
+
 export function getComponents(element: HTMLElement): ComponentReference[] {
   // Find all elements that are components
   const components = [];

@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
+import com.vaadin.base.devserver.theme.ThemeModifier;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,7 @@ import com.vaadin.pro.licensechecker.LocalProKey;
 import com.vaadin.pro.licensechecker.Product;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
@@ -239,6 +241,16 @@ public class DebugWindowConnection implements BrowserLiveReload {
                             "Only component locations are tracked. The given node id refers to an element and not a component");
                 }
             });
+        } else if ("themeEditorSave".equals(command)) {
+            ThemeModifier modifier = new ThemeModifier(context);
+            getLogger().info("Theme editor save: " + command);
+            // int uiId = (int) data.getNumber("uiId");
+            JsonArray rules = data.getArray("rules");
+            for (int i = 0; i < rules.length(); ++i) {
+                JsonObject rule = rules.getObject(i);
+                modifier.setCssRule(rule.getString("selector"),
+                        rule.getString("property"), rule.getString("value"));
+            }
         } else {
             getLogger().info("Unknown command from the browser: " + command);
         }

@@ -144,7 +144,7 @@ export class ComponentPicker extends LitElement {
     }
     this.dispatchEvent(
       new CustomEvent('component-picker-pick', {
-        detail: { component: { nodeId: component.nodeId, uiId: component.uiId } }
+        detail: { component: component }
       })
     );
   }
