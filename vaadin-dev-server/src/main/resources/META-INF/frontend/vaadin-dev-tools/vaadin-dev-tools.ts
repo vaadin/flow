@@ -1,6 +1,7 @@
 import {css, html, LitElement, nothing, TemplateResult} from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { ComponentPicker } from "./component-picker";
 import { ComponentReference } from './component-util';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -984,6 +985,9 @@ export class VaadinDevTools extends LitElement {
   @query('.window')
   private root!: HTMLElement;
 
+  @query('vaadin-dev-tools-component-picker')
+  private componentPicker!: ComponentPicker;
+
   @state()
   componentPickActive: boolean = false;
 
@@ -1440,17 +1444,10 @@ export class VaadinDevTools extends LitElement {
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
       <vaadin-dev-tools-component-picker
         .active=${this.componentPickActive}
-        @component-picker-pick=${(e: CustomEvent) => {
-          const component: ComponentReference = e.detail.component;
-          const locationType = (this.renderRoot.querySelector('#locationType') as HTMLSelectElement).value;
-          if (locationType === 'create') {
-            this.frontendConnection!.sendShowComponentCreateLocation(component);
-          } else {
-            this.frontendConnection!.sendShowComponentAttachLocation(component);
-          }
-          this.componentPickActive = false;
+        @component-picker-opened=${() => {
+          this.componentPickActive = true;
         }}
-        @component-picker-abort=${(_e: CustomEvent) => {
+        @component-picker-closed=${() => {
           this.componentPickActive = false;
         }}
       ></vaadin-dev-tools-component-picker>
@@ -1530,9 +1527,30 @@ export class VaadinDevTools extends LitElement {
         </select>
         <button
           class="button pick"
-          @click=${() => {
-            this.componentPickActive = true;
-            import('./component-picker.js');
+          @click=${async () => {
+            await import('./component-picker.js');
+            this.componentPicker.open({
+              infoTemplate: html`
+                    <div>
+                      <h3>Locate a component in source code</h3>
+                      <p>Use the mouse cursor to highlight components in the UI.</p>
+                      <p>Use arrow down/up to cycle through and highlight specific components under the cursor.</p>
+                      <p>
+                        Click the primary mouse button to open the corresponding source code line of the highlighted component in
+                        your IDE.
+                      </p>
+                    </div>
+                  `,
+              pickCallback: (component) => {
+                const serializableComponentRef: ComponentReference = { nodeId: component.nodeId, uiId: component.uiId };
+                const locationType = (this.renderRoot.querySelector('#locationType') as HTMLSelectElement).value;
+                if (locationType === 'create') {
+                  this.frontendConnection!.sendShowComponentCreateLocation(serializableComponentRef);
+                } else {
+                  this.frontendConnection!.sendShowComponentAttachLocation(serializableComponentRef);
+                }
+              }
+            });
           }}
         >
           Find component in code
