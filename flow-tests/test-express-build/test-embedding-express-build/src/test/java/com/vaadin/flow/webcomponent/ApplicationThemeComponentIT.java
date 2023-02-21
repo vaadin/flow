@@ -102,10 +102,11 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 "none", background);
 
         // font-family from web component doesn't leak to the document
-        Assert.assertNotEquals("Ostrich", body.getCssValue("font-family"));
+        Assert.assertFalse(body.getCssValue("font-family").contains("Ostrich"));
 
         // font-family of the document is applied and not overridden by Lumo
-        Assert.assertEquals("IBM Plex Mono", body.getCssValue("font-family"));
+        Assert.assertTrue(
+                body.getCssValue("font-family").contains("IBM Plex Mono"));
 
         Assert.assertEquals(
                 "Embedded style should not match external component",

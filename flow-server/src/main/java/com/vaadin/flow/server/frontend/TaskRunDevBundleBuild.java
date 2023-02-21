@@ -628,18 +628,15 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 String content = IOUtils.toString(byteContent, "UTF-8");
                 content = content.replaceAll("\\r\\n", "\n");
 
-                JsonObject themeJsonContent = Json.parse(content);
-                if (themeJsonContent.hasKey(Constants.ASSETS)) {
-                    Matcher matcher = THEME_PATH_PATTERN.matcher(themeJson);
-                    if (!matcher.find()) {
-                        throw new IllegalStateException(
-                                "Packaged theme folders structure is incorrect, should have META-INF/resources/themes/[theme-name]/");
-                    }
-                    String themeName = matcher.group(1);
-                    String hash = StringUtil.getHash(content,
-                            StandardCharsets.UTF_8);
-                    packagedThemeHashes.put(themeName, hash);
+                Matcher matcher = THEME_PATH_PATTERN.matcher(themeJson);
+                if (!matcher.find()) {
+                    throw new IllegalStateException(
+                            "Packaged theme folders structure is incorrect, should have META-INF/resources/themes/[theme-name]/");
                 }
+                String themeName = matcher.group(1);
+                String hash = StringUtil.getHash(content,
+                        StandardCharsets.UTF_8);
+                packagedThemeHashes.put(themeName, hash);
             }
         }
     }
