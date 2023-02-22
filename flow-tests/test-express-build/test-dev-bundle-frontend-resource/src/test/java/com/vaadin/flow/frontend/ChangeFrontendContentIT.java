@@ -44,7 +44,8 @@ public class ChangeFrontendContentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void litTemplateWebComponentAdded_newBundleCreated_hashCalculated() throws IOException {
+    public void litTemplateWebComponentAdded_newBundleCreated_hashCalculated()
+            throws IOException {
         waitForElementPresent(By.tagName("lit-view"));
 
         File baseDir = new File(System.getProperty("user.dir", "."));
