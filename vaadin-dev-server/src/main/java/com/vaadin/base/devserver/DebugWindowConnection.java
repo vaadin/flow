@@ -145,8 +145,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
         }
 
         if (themeModifier.isEnabled()) {
-            send(resource, "themeEditorState", "{state: "
-                    + themeModifier.getState().name().toLowerCase() + "}");
+            send(resource, "themeEditorState",
+                    themeModifier.getState().name().toLowerCase());
         }
     }
 
