@@ -66,7 +66,6 @@ public class NodeTasks implements FallibleCommand {
             TaskRunNpmInstall.class,
             TaskGenerateOpenAPI.class,
             TaskGenerateEndpoint.class,
-            TaskGenerateHilla.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
             TaskUpdateSettingsFile.class,
@@ -174,21 +173,9 @@ public class NodeTasks implements FallibleCommand {
 
         addBootstrapTasks(options);
 
-        // use the new Hilla generator if enabled, otherwise use the old
-        // generator.
-        TaskGenerateHilla hillaTask;
-        if (options.endpointGeneratedOpenAPIFile != null
-                && featureFlags.isEnabled(FeatureFlags.HILLA_ENGINE)
-                && (hillaTask = options.lookup
-                        .lookup(TaskGenerateHilla.class)) != null) {
-            hillaTask.configure(options.getNpmFolder(),
-                    options.getBuildDirectoryName());
-            commands.add(hillaTask);
-        } else if (options.endpointGeneratedOpenAPIFile != null
-                && options.endpointSourceFolder != null
-                && options.endpointSourceFolder.exists()) {
-            addEndpointServicesTasks(options);
-        }
+        // Add Hilla generator tasks (the called method will verify if Hilla is
+        // available)
+        addEndpointServicesTasks(options);
 
         commands.add(new TaskGenerateBootstrap(frontendDependencies, options));
 
