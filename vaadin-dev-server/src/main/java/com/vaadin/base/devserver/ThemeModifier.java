@@ -35,7 +35,7 @@ public class ThemeModifier {
 
     private static final String THEME_EDITOR_CSS = "theme-editor.css";
 
-    private static final String DEFUALT_THEME = "my-theme";
+    private static final String DEFAULT_THEME = "my-theme";
 
     private static final String HEADER_TEXT = "This file has been created by Vaadin, please be concerned that\n"
             + "manual changes may be overwritten while using ThemeEditor";
@@ -105,7 +105,7 @@ public class ThemeModifier {
     }
 
     public boolean createDefaultTheme() {
-        File theme = new File(getFrontendFolder(), "themes/" + DEFUALT_THEME);
+        File theme = new File(getFrontendFolder(), "themes/" + DEFAULT_THEME);
         if (!theme.exists()) {
             theme.mkdirs();
         }
@@ -154,10 +154,8 @@ public class ThemeModifier {
             importPresent = true;
         }
 
-        CSSStyleRule newRule = parseStyleRule(selector, property, "inherit"); // value
-                                                                              // does
-                                                                              // not
-                                                                              // matter
+        // value not considered
+        CSSStyleRule newRule = parseStyleRule(selector, property, "inherit");
         Optional<CSSStyleRule> optRule = findRuleBySelector(styleSheet,
                 newRule);
         if (optRule.isPresent()) {
@@ -268,17 +266,6 @@ public class ThemeModifier {
                 IOUtils.closeQuietly(writer);
             }
         }
-    }
-
-    protected void removeRuleIfExists(CascadingStyleSheet styleSheet,
-            CSSStyleRule rule) {
-        String propertyName = rule.getDeclarationAtIndex(0).getProperty();
-        styleSheet.getAllStyleRules().stream()
-                .filter(r -> r.getAllSelectors()
-                        .containsAll(rule.getAllSelectors()))
-                .filter(r -> r
-                        .getDeclarationOfPropertyName(propertyName) != null)
-                .findFirst().ifPresent(styleSheet::removeRule);
     }
 
     private String getThemeName(File themes) {
