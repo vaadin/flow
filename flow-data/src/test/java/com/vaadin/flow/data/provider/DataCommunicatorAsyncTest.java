@@ -1,5 +1,7 @@
 package com.vaadin.flow.data.provider;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -12,6 +14,8 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -27,6 +31,7 @@ import com.vaadin.flow.shared.communication.PushMode;
 
 import elemental.json.JsonValue;
 
+@RunWith(Parameterized.class)
 public class DataCommunicatorAsyncTest {
 
     /**
@@ -84,6 +89,18 @@ public class DataCommunicatorAsyncTest {
     public Range lastClear = null;
     public Range lastSet = null;
     public int lastUpdateId = -1;
+
+    private final boolean dataProviderWithParallelStream;
+
+    public DataCommunicatorAsyncTest(boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
+    }
+
+    @Parameterized.Parameters
+    public static Collection<Boolean> testParameters() {
+        // Runs tests with both sequential and parallel data provider streams
+        return Arrays.asList(false, true);
+    }
 
     @Before
     public void init() {
@@ -197,12 +214,18 @@ public class DataCommunicatorAsyncTest {
                 // setting lastSet here
                 lastSet = Range.withLength(query.getOffset(), query.getLimit());
                 latch.countDown();
-                return IntStream
-                        .range(query.getOffset(),
-                                query.getLimit() + query.getOffset())
+                return asParallelIfRequired(IntStream.range(query.getOffset(),
+                        query.getLimit() + query.getOffset()))
                         .mapToObj(Item::new);
             }
         };
+    }
+
+    private IntStream asParallelIfRequired(IntStream stream) {
+        if (dataProviderWithParallelStream) {
+            return stream.parallel();
+        }
+        return stream;
     }
 
     private void fakeClientCommunication() {
