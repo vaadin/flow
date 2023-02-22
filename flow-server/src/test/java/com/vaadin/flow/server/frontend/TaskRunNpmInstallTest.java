@@ -28,13 +28,17 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -73,7 +77,7 @@ public class TaskRunNpmInstallTest {
 
     protected ClassFinder finder;
 
-    private Logger logger = Mockito
+    protected Logger logger = Mockito
             .spy(LoggerFactory.getLogger(NodeUpdater.class));
     protected File generatedPath;
 
@@ -126,6 +130,42 @@ public class TaskRunNpmInstallTest {
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    @Test
+    public void runNpmInstallAndCi_emptyDir_npmInstallAndCiIsExecuted()
+            throws ExecutionFailedException, IOException {
+        Assume.assumeTrue(getClass().equals(TaskRunNpmInstallTest.class));
+
+        File nodeModules = options.getNodeModulesFolder();
+        nodeModules.mkdir();
+        getNodeUpdater().modified = false;
+
+        ensurePackageJson();
+
+        task.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+
+        deleteDirectory(nodeModules);
+
+        options.ciBuild(true);
+        task.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    @Test
+    public void runNpmCi_emptyDir_npmCiFails() throws IOException {
+        Assume.assumeTrue(getClass().equals(TaskRunNpmInstallTest.class));
+
+        File nodeModules = options.getNodeModulesFolder();
+        nodeModules.mkdir();
+        getNodeUpdater().modified = false;
+
+        ensurePackageJson();
+
+        options.ciBuild(true);
+
+        Assert.assertThrows(ExecutionFailedException.class, task::execute);
     }
 
     @Test
@@ -215,12 +255,12 @@ public class TaskRunNpmInstallTest {
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         Mockito.verify(logger).info(captor.capture(),
-                Mockito.matches(getToolName()),
+                Mockito.matches(getToolName()), Mockito.matches(getCommand()),
                 Mockito.matches(nodeModules.getAbsolutePath().replaceAll("\\\\",
                         "\\\\\\\\")),
                 Mockito.any(), Mockito.matches(Constants.PACKAGE_JSON));
         Assert.assertEquals(
-                "Skipping `{} install` because the frontend packages are already installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
+                "Skipping `{} {}` because the frontend packages are already installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
                 captor.getValue());
     }
 
@@ -478,10 +518,23 @@ public class TaskRunNpmInstallTest {
         }
     }
 
-    private String getRunningMsg() {
-        return "Running `" + getToolName() + " install` to "
+    protected String getRunningMsg() {
+
+        return "Running `" + getToolName() + " " + getCommand() + "` to "
                 + "resolve and optionally download frontend dependencies. "
                 + "This may take a moment, please stand by...";
+    }
+
+    private String getCommand() {
+        String command = "install";
+        if (options.ciBuild) {
+            if ("pnpm".equals(getToolName())) {
+                command += " --frozen-lockfile";
+            } else {
+                command = "ci";
+            }
+        }
+        return command;
     }
 
     protected NodeUpdater getNodeUpdater() {
@@ -503,6 +556,11 @@ public class TaskRunNpmInstallTest {
             getNodeUpdater().writePackageFile(packageJson);
         }
         return file;
+    }
+
+    void deleteDirectory(File dir) throws IOException {
+        Files.walk(dir.toPath()).sorted(Comparator.reverseOrder())
+                .map(Path::toFile).forEach(File::delete);
     }
 
 }

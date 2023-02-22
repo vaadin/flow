@@ -63,6 +63,8 @@ public class Options implements Serializable {
 
     boolean enablePnpm = Constants.ENABLE_PNPM_DEFAULT;
 
+    boolean ciBuild;
+
     boolean useGlobalPnpm = false;
 
     File endpointSourceFolder;
@@ -470,6 +472,21 @@ public class Options implements Serializable {
      */
     public Options enablePnpm(boolean enable) {
         enablePnpm = enable;
+        return this;
+    }
+
+    /**
+     * Enables ci build.
+     * <p>
+     * "npm ci" will be used instead of "npm install". "--frozen-lockfile" will
+     * be used if pnpm is used instead of npm.
+     *
+     * @param ciBuild
+     *            true to enable ci build
+     * @return the builder, for chaining
+     */
+    public Options ciBuild(boolean ciBuild) {
+        this.ciBuild = ciBuild;
         return this;
     }
 

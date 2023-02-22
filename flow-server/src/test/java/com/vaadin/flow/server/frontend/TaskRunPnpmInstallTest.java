@@ -634,6 +634,25 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                         "postinstall-file.txt").exists());
     }
 
+    @Test
+    public void runPnpmInstallAndCi_emptyDir_pnpmInstallAndCiIsExecuted()
+            throws ExecutionFailedException, IOException {
+        TaskRunNpmInstall task = createTask();
+
+        File nodeModules = options.getNodeModulesFolder();
+        nodeModules.mkdir();
+        getNodeUpdater().modified = false;
+
+        task.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+
+        deleteDirectory(nodeModules);
+
+        TaskRunNpmInstall ciTask = createCiTask();
+        ciTask.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
     @Override
     protected String getToolName() {
         return "pnpm";
@@ -641,6 +660,17 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     protected TaskRunNpmInstall createTask() {
         return createTask(new ArrayList<>());
+    }
+
+    private TaskRunNpmInstall createCiTask() {
+        NodeUpdater updater = getNodeUpdater();
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder);
+        options.enablePnpm(true)
+                .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                .withNodeDownloadRoot(
+                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT))
+                .ciBuild(true);
+        return new TaskRunNpmInstall(updater, options);
     }
 
     @Override

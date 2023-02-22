@@ -138,8 +138,18 @@ public class TaskRunNpmInstall implements FallibleCommand {
     @Override
     public void execute() throws ExecutionFailedException {
         String toolName = options.enablePnpm ? "pnpm" : "npm";
+        String command = "install";
+        if (options.ciBuild) {
+            if (options.enablePnpm) {
+                command += " --frozen-lockfile";
+            } else {
+                command = "ci";
+            }
+        }
+
         if (packageUpdater.modified || shouldRunNpmInstall()) {
-            packageUpdater.log().info("Running `" + toolName + " install` to "
+            packageUpdater.log().info("Running `" + toolName + " " + command
+                    + "` to "
                     + "resolve and optionally download frontend dependencies. "
                     + "This may take a moment, please stand by...");
             runNpmInstall();
@@ -147,9 +157,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
             updateLocalHash();
         } else {
             packageUpdater.log().info(
-                    "Skipping `{} install` because the frontend packages are already "
+                    "Skipping `{} {}` because the frontend packages are already "
                             + "installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
-                    toolName, options.getNodeModulesFolder().getAbsolutePath(),
+                    toolName, command,
+                    options.getNodeModulesFolder().getAbsolutePath(),
                     packageUpdater.getVaadinJsonFile().getAbsolutePath(),
                     Constants.PACKAGE_JSON);
 
@@ -275,7 +286,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 createNpmRcFile();
             } catch (IOException exception) {
                 logger.warn(".npmrc generation failed; pnpm "
-                        + "package installation may require manaually passing "
+                        + "package installation may require manually passing "
                         + "the --shamefully-hoist flag", exception);
             }
         }
@@ -305,7 +316,17 @@ public class TaskRunNpmInstall implements FallibleCommand {
         }
 
         npmInstallCommand.add("--ignore-scripts");
-        npmInstallCommand.add("install");
+
+        if (options.ciBuild) {
+            if (options.enablePnpm) {
+                npmInstallCommand.add("install");
+                npmInstallCommand.add("--frozen-lockfile");
+            } else {
+                npmInstallCommand.add("ci");
+            }
+        } else {
+            npmInstallCommand.add("install");
+        }
 
         postinstallCommand.add("run");
         postinstallCommand.add("postinstall");

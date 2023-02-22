@@ -205,4 +205,9 @@ public class InitParameters implements Serializable {
      * development server instead of using an application bundle.
      */
     public static final String FRONTEND_HOTDEPLOY = "frontend.hotdeploy";
+
+    /**
+     * Configuration name for enabling ci build for npm/pnpm.
+     */
+    public static final String CI_BUILD = "ci.build";
 }
