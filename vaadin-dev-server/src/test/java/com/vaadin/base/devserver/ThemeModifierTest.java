@@ -1,16 +1,20 @@
 package com.vaadin.base.devserver;
 
+import com.helger.css.ECSSVersion;
+import com.helger.css.decl.CSSStyleRule;
+import com.helger.css.decl.CascadingStyleSheet;
+import com.helger.css.reader.CSSReader;
 import com.vaadin.flow.testutil.TestUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+
+import static org.junit.Assert.*;
 
 public class ThemeModifierTest {
 
@@ -66,8 +70,7 @@ public class ThemeModifierTest {
     @Test
     public void themeFolderPresent_stateEnabled() {
         ThemeModifier themeModifier = new TestThemeModifier();
-        Assert.assertEquals(ThemeModifier.State.ENABLED,
-                themeModifier.getState());
+        assertEquals(ThemeModifier.State.ENABLED, themeModifier.getState());
     }
 
     @Test
@@ -78,7 +81,7 @@ public class ThemeModifierTest {
                 return TestUtils.getTestFolder(FRONTEND_NO_THEME_FOLDER);
             }
         };
-        Assert.assertEquals(ThemeModifier.State.MISSING_THEME,
+        assertEquals(ThemeModifier.State.MISSING_THEME,
                 themeModifier.getState());
     }
 
@@ -90,7 +93,7 @@ public class ThemeModifierTest {
                 return TestUtils.getTestFolder(FRONTEND_NO_THEME_FOLDER);
             }
         };
-        Assert.assertEquals(ThemeModifier.State.MISSING_THEME,
+        assertEquals(ThemeModifier.State.MISSING_THEME,
                 themeModifier.getState());
 
         themeModifier.createDefaultTheme();
@@ -100,8 +103,7 @@ public class ThemeModifierTest {
                 return TestUtils.getTestFolder(FRONTEND_NO_THEME_FOLDER);
             }
         };
-        Assert.assertEquals(ThemeModifier.State.ENABLED,
-                themeModifier.getState());
+        assertEquals(ThemeModifier.State.ENABLED, themeModifier.getState());
     }
 
     @Test
@@ -109,130 +111,182 @@ public class ThemeModifierTest {
         System.getProperties()
                 .remove(ThemeModifier.THEME_EDITOR_ENABLED_PROPERTY);
         ThemeModifier themeModifier = new TestThemeModifier();
-        Assert.assertEquals(ThemeModifier.State.DISABLED,
-                themeModifier.getState());
+        assertEquals(ThemeModifier.State.DISABLED, themeModifier.getState());
     }
 
     @Test
-    public void noImport_importPresent() {
-        String string = "@import \"theme-editor.css\";";
-        Assert.assertTrue(
-                getFileLines("styles.css").stream().noneMatch(string::equals));
+    public void noImport_propertyAdded_importPresent() {
+        CascadingStyleSheet styleSheet = getStylesheet("styles.css");
+        assertTrue(styleSheet.getAllImportRules().isEmpty());
 
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssRule(SELECTOR_WITH_PART, "color", "red");
+        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
 
-        Assert.assertTrue(
-                getFileLines("styles.css").stream().anyMatch(string::equals));
+        styleSheet = getStylesheet("styles.css");
+        assertEquals(1, styleSheet.getAllImportRules().size());
+        assertEquals("theme-editor.css",
+                styleSheet.getImportRuleAtIndex(0).getLocationString());
     }
 
     @Test
     public void multipleRulesAdded_singleImportPresent() {
-        String string = "@import \"theme-editor.css\";";
-        Assert.assertTrue(
-                getFileLines("styles.css").stream().noneMatch(string::equals));
+        CascadingStyleSheet styleSheet = getStylesheet("styles.css");
+        assertTrue(styleSheet.getAllImportRules().isEmpty());
 
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssRule(SELECTOR_WITH_PART, "color", "red");
-        modifier.setCssRule(SELECTOR_WITH_PART, "font-family", "serif");
+        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
+        modifier.setCssProperty(SELECTOR_WITH_PART, "font-family", "serif");
 
-        Assert.assertTrue(getFileLines("styles.css").stream()
-                .filter(string::equals).count() == 1);
+        styleSheet = getStylesheet("styles.css");
+        assertEquals(1, styleSheet.getImportRuleCount());
+        assertEquals("theme-editor.css",
+                styleSheet.getImportRuleAtIndex(0).getLocationString());
     }
 
     @Test
     public void ruleAdded_ruleIsPresent() {
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssRule(SELECTOR_WITH_PART, "color", "red");
-        assertThemeEditorCssContains(SELECTOR_WITH_PART + " { color:red; }");
+        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
+
+        CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
+        assertEquals(1, styleSheet.getStyleRuleCount());
+
+        CSSStyleRule expected = modifier.createStyleRule(SELECTOR_WITH_PART,
+                "color", "red");
+        assertTrue(styleSheet.getAllStyleRules().contains(expected));
     }
 
     @Test
     public void ruleExists_ruleIsUpdated() {
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssRule(SELECTOR_WITH_PART, "color", "red");
-        modifier.setCssRule(SELECTOR_WITH_PART, "color", "blue");
-        assertThemeEditorCssNotContains(SELECTOR_WITH_PART + " { color:red; }");
-        assertThemeEditorCssContains(SELECTOR_WITH_PART + " { color:blue; }");
+        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
+        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "blue");
+
+        CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
+        assertEquals(1, styleSheet.getStyleRuleCount());
+
+        CSSStyleRule notExpected = modifier.createStyleRule(SELECTOR_WITH_PART,
+                "color", "red");
+        assertFalse(styleSheet.getAllStyleRules().contains(notExpected));
+
+        CSSStyleRule expected = modifier.createStyleRule(SELECTOR_WITH_PART,
+                "color", "blue");
+        assertTrue(styleSheet.getAllStyleRules().contains(expected));
     }
 
     @Test
     public void rulesWithSameSelectorExists_rulesAreGrouped() {
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssRule(SELECTOR_WITH_PART, "color", "red");
-        modifier.setCssRule(SELECTOR_WITH_PART, "font-family", "serif");
-        assertThemeEditorCssContains(SELECTOR_WITH_PART + " {");
-        assertThemeEditorCssContains("color:red;");
-        assertThemeEditorCssContains("font-family:serif;");
+        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
+        modifier.setCssProperty(SELECTOR_WITH_PART, "font-family", "serif");
+
+        CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
+        assertEquals(1, styleSheet.getStyleRuleCount());
+
+        CSSStyleRule expected = modifier.createStyleRule(SELECTOR_WITH_PART,
+                "color", "");
+        Optional<CSSStyleRule> foundOpt = modifier
+                .findRuleBySelector(styleSheet, expected);
+        assertTrue(foundOpt.isPresent());
+
+        CSSStyleRule found = foundOpt.get();
+        assertEquals(2, found.getDeclarationCount());
+        assertEquals("red", found.getDeclarationOfPropertyName("color")
+                .getExpressionAsCSSString());
+        assertEquals("serif", found.getDeclarationOfPropertyName("font-family")
+                .getExpressionAsCSSString());
     }
 
     @Test
     public void rulesAreAddedRandomly_rulesAreGroupedAndSorted() {
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssRule("vaadin-button::part(label)", "color", "red");
-        modifier.setCssRule("vaadin-button", "font-family", "serif");
-        modifier.setCssRule("vaadin-button", "color", "brown");
-        modifier.setCssRule("vaadin-button::part(label)", "border",
+        modifier.setCssProperty("vaadin-button::part(label)", "color", "red");
+        modifier.setCssProperty("vaadin-button", "font-family", "serif");
+        modifier.setCssProperty("vaadin-button", "color", "brown");
+        modifier.setCssProperty("vaadin-button::part(label)", "border",
                 "1px solid red");
-        List<String> lines = getFileLines("theme-editor.css");
-        Assert.assertEquals("vaadin-button {", lines.get(4));
-        Assert.assertEquals("  color:brown;", lines.get(5));
-        Assert.assertEquals("  font-family:serif;", lines.get(6));
-        Assert.assertEquals("}", lines.get(7));
-        Assert.assertEquals("vaadin-button::part(label) {", lines.get(9));
-        Assert.assertEquals("  border:1px solid red;", lines.get(10));
-        Assert.assertEquals("  color:red;", lines.get(11));
-        Assert.assertEquals("}", lines.get(12));
+
+        CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
+        assertEquals(2, styleSheet.getStyleRuleCount());
+
+        CSSStyleRule expectedFirst = styleSheet.getStyleRuleAtIndex(0);
+        assertEquals("vaadin-button",
+                expectedFirst.getSelectorAtIndex(0).getAsCSSString());
+        assertEquals("color:brown",
+                expectedFirst.getDeclarationAtIndex(0).getAsCSSString());
+        assertEquals("font-family:serif",
+                expectedFirst.getDeclarationAtIndex(1).getAsCSSString());
+
+        CSSStyleRule expectedSecond = styleSheet.getStyleRuleAtIndex(1);
+        assertEquals("vaadin-button::part(label)",
+                expectedSecond.getSelectorAtIndex(0).getAsCSSString());
+        assertEquals("border:1px solid red",
+                expectedSecond.getDeclarationAtIndex(0).getAsCSSString());
+        assertEquals("color:red",
+                expectedSecond.getDeclarationAtIndex(1).getAsCSSString());
     }
 
     @Test
     public void rulesWithSameSelectorExists_ruleIsUpdated() {
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssRule(SELECTOR_WITH_PART, "color", "red");
-        modifier.setCssRule(SELECTOR_WITH_PART, "font-family", "serif");
-        modifier.setCssRule(SELECTOR_WITH_PART, "color", "blue");
-        assertThemeEditorCssNotContains("color:red;");
-        assertThemeEditorCssContains("color:blue;");
+        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
+        modifier.setCssProperty(SELECTOR_WITH_PART, "font-family", "serif");
+        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "blue");
+
+        CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
+        assertEquals(1, styleSheet.getStyleRuleCount());
+
+        CSSStyleRule found = styleSheet.getStyleRuleAtIndex(0);
+        assertEquals(2, found.getDeclarationCount());
+        assertEquals("blue", found.getDeclarationOfPropertyName("color")
+                .getExpressionAsCSSString());
     }
 
     @Test
     public void ruleIsRemoved_rulesUpdated() {
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssRule(SELECTOR_WITH_PART, "color", "red");
-        modifier.setCssRule(SELECTOR_WITH_PART, "font-family", "serif");
-        modifier.removeCssRule(SELECTOR_WITH_PART, "color");
-        assertThemeEditorCssNotContains("color:red;");
+        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
+        modifier.setCssProperty(SELECTOR_WITH_PART, "font-family", "serif");
+
+        CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
+        assertEquals(1, styleSheet.getStyleRuleCount());
+        assertEquals(2,
+                styleSheet.getStyleRuleAtIndex(0).getDeclarationCount());
+
+        modifier.removeCssProperty(SELECTOR_WITH_PART, "color");
+
+        styleSheet = getStylesheet("theme-editor.css");
+        assertEquals(1, styleSheet.getStyleRuleCount());
+        assertEquals(1,
+                styleSheet.getStyleRuleAtIndex(0).getDeclarationCount());
+        assertNull(styleSheet.getStyleRuleAtIndex(0)
+                .getDeclarationOfPropertyName("color"));
     }
 
     @Test
     public void allRulesAreRemoved_ruleIsNotPresent() {
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssRule(SELECTOR_WITH_PART, "color", "red");
-        modifier.setCssRule(SELECTOR_WITH_PART, "font-family", "serif");
-        modifier.removeCssRule(SELECTOR_WITH_PART, "color");
-        modifier.removeCssRule(SELECTOR_WITH_PART, "font-family");
-        assertThemeEditorCssNotContains(SELECTOR_WITH_PART);
+        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
+        modifier.setCssProperty(SELECTOR_WITH_PART, "font-family", "serif");
+
+        CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
+        assertEquals(1, styleSheet.getStyleRuleCount());
+        assertEquals(2,
+                styleSheet.getStyleRuleAtIndex(0).getDeclarationCount());
+
+        modifier.removeCssProperty(SELECTOR_WITH_PART, "color");
+        modifier.removeCssProperty(SELECTOR_WITH_PART, "font-family");
+
+        styleSheet = getStylesheet("theme-editor.css");
+        assertEquals(0, styleSheet.getStyleRuleCount());
     }
 
-    private void assertThemeEditorCssNotContains(String string) {
-        Assert.assertTrue(getFileLines("theme-editor.css").stream()
-                .noneMatch(line -> line.contains(string)));
-    }
-
-    private void assertThemeEditorCssContains(String string) {
-        Assert.assertTrue(getFileLines("theme-editor.css").stream()
-                .anyMatch(line -> line.contains(string)));
-    }
-
-    private List<String> getFileLines(String file) {
+    private CascadingStyleSheet getStylesheet(String fileName) {
         File themeFolder = TestUtils
                 .getTestFolder(FRONTEND_FOLDER + "/themes/my-theme");
-        File themeEditorCss = new File(themeFolder, file);
-        try {
-            return IOUtils.readLines(new FileReader(themeEditorCss));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        File themeEditorCss = new File(themeFolder, fileName);
+        return CSSReader.readFromFile(themeEditorCss, StandardCharsets.UTF_8,
+                ECSSVersion.LATEST);
     }
 
 }

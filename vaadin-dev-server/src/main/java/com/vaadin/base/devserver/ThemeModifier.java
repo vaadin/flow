@@ -19,6 +19,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -37,8 +38,8 @@ public class ThemeModifier {
 
     private static final String DEFAULT_THEME = "my-theme";
 
-    private static final String HEADER_TEXT = "This file has been created by Vaadin, please be concerned that\n"
-            + "manual changes may be overwritten while using ThemeEditor";
+    private static final String HEADER_TEXT = "This file has been created by the Vaadin Theme Editor. Please note that\n"
+            + "manual changes to individual CSS properties may be overwritten by the theme editor.";
 
     private final State state;
 
@@ -105,7 +106,9 @@ public class ThemeModifier {
     }
 
     public boolean createDefaultTheme() {
-        File theme = new File(getFrontendFolder(), "themes/" + DEFAULT_THEME);
+        File theme = Path
+                .of(getFrontendFolder().getPath(), "themes", DEFAULT_THEME)
+                .toFile();
         if (!theme.exists()) {
             theme.mkdirs();
         }
@@ -118,10 +121,17 @@ public class ThemeModifier {
     }
 
     /**
-     * Sets CSS rule in theme-editor.css. If rule is already present -
-     * overwrites it.
+     * Updates CSS rule by setting given property. If rule is not present,
+     * creates new rule with given selector and property.
+     *
+     * @param selector
+     *            CSS rule selector
+     * @param property
+     *            CSS property
+     * @param value
+     *            CSS property value
      */
-    public void setCssRule(String selector, String property, String value) {
+    public void setCssProperty(String selector, String property, String value) {
         File styles = getThemeEditorStyleSheet();
         CascadingStyleSheet styleSheet = CSSReader.readFromFile(styles,
                 StandardCharsets.UTF_8, ECSSVersion.LATEST);
@@ -131,7 +141,7 @@ public class ThemeModifier {
             importPresent = true;
         }
 
-        CSSStyleRule newRule = parseStyleRule(selector, property, value);
+        CSSStyleRule newRule = createStyleRule(selector, property, value);
         findRuleBySelector(styleSheet, newRule).ifPresentOrElse(
                 existingRule -> addOrUpdateProperty(existingRule, newRule),
                 () -> styleSheet.addRule(newRule));
@@ -141,10 +151,15 @@ public class ThemeModifier {
     }
 
     /**
-     * Removes CSS rule property and removes CSS rule itself if no more
-     * properties are left.
+     * Removes property from given CSS rule. If no more properties are present
+     * within given rule, rule itself is also removed from the style sheet.
+     *
+     * @param selector
+     *            CSS rule selector
+     * @param property
+     *            CSS property
      */
-    public void removeCssRule(String selector, String property) {
+    public void removeCssProperty(String selector, String property) {
         File styles = getThemeEditorStyleSheet();
         CascadingStyleSheet styleSheet = CSSReader.readFromFile(styles,
                 StandardCharsets.UTF_8, ECSSVersion.LATEST);
@@ -155,7 +170,7 @@ public class ThemeModifier {
         }
 
         // value not considered
-        CSSStyleRule newRule = parseStyleRule(selector, property, "inherit");
+        CSSStyleRule newRule = createStyleRule(selector, property, "inherit");
         Optional<CSSStyleRule> optRule = findRuleBySelector(styleSheet,
                 newRule);
         if (optRule.isPresent()) {
@@ -200,7 +215,7 @@ public class ThemeModifier {
         sortedRules.forEach(styleSheet::addRule);
     }
 
-    protected CSSStyleRule parseStyleRule(String selector, String property,
+    protected CSSStyleRule createStyleRule(String selector, String property,
             String value) {
         return CSSReader
                 .readFromString(selector + "{" + property + ": " + value + "}",
@@ -287,7 +302,7 @@ public class ThemeModifier {
         if (rules != null) {
             for (int i = 0; i < rules.length(); ++i) {
                 JsonObject rule = rules.getObject(i);
-                setCssRule(rule.getString("selector"),
+                setCssProperty(rule.getString("selector"),
                         rule.getString("property"), rule.getString("value"));
             }
         }
@@ -295,7 +310,7 @@ public class ThemeModifier {
         if (rules != null) {
             for (int i = 0; i < rules.length(); ++i) {
                 JsonObject rule = rules.getObject(i);
-                removeCssRule(rule.getString("selector"),
+                removeCssProperty(rule.getString("selector"),
                         rule.getString("property"));
             }
         }
