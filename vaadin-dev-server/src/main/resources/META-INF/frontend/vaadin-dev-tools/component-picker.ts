@@ -72,9 +72,7 @@ export class ComponentPicker extends LitElement {
         @shim-mousemove=${this.shimMove}
         @shim-keydown=${this.shimKeydown}
       ></vaadin-dev-tools-shim>
-      <div class="window popup component-picker-info">
-        ${this.options?.infoTemplate}
-      </div>
+      <div class="window popup component-picker-info">${this.options?.infoTemplate}</div>
       <div class="window popup component-picker-components-info">
         <div>
           ${this.components.map(
