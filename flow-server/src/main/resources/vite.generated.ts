@@ -208,18 +208,28 @@ function statsExtracterPlugin(): PluginOption {
           .map((line: string) => line.substring(line.indexOf("'")+1, line.lastIndexOf("'")));
 
       const frontendFiles = { };
-      generatedImports.filter((line: string) => line.includes("generated/jar-resources")).forEach((line: string) => {
-        var filename;
-        if(line.includes('?')) {
-          filename = line.substring(line.indexOf("generated"), line.lastIndexOf('?'));
+      generatedImports.filter((line: string) => line.startsWith("Frontend/")).forEach((line: string) => {
+        let filePath;
+
+        // remove 'Frontend/'
+        if (line.includes('?')) {
+          filePath = line.substring(9, line.lastIndexOf('?'));
         } else {
-          filename = line.substring(line.indexOf("generated"));
+          filePath = line.substring(9);
         }
         // \r\n from windows made files may be used ro remove to be only \n
-        const fileBuffer = readFileSync(path.resolve(frontendFolder, filename), {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+        const fileBuffer = readFileSync(path.resolve(frontendFolder, filePath), {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
         const hash = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
 
-        const fileKey = line.substring(line.indexOf("jar-resources/") + 14);
+        let fileKey;
+        if (filePath.startsWith("generated/jar-resources/")) {
+          // file is in frontend/generated/jar-resources/
+          // remove 'generated/jar-resources/' part
+          fileKey = filePath.substring(line.indexOf("jar-resources/") + 14);
+        } else {
+          // file is somewhere else in frontend/
+          fileKey = filePath;
+        }
         // @ts-ignore
         frontendFiles[`${fileKey}`] = hash;
       });

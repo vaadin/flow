@@ -284,8 +284,17 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                                 + resourcePath.length()))
                 .collect(Collectors.toList());
 
+        final List<String> projectImports = imports.stream()
+                .filter(importString -> importString
+                        .startsWith(FrontendUtils.FRONTEND_FOLDER_ALIAS)
+                        && !importString.contains(resourcePath))
+                .map(importString -> importString.substring(
+                        FrontendUtils.FRONTEND_FOLDER_ALIAS.length()))
+                .collect(Collectors.toList());
+
         final JsonObject frontendHashes = statsJson.getObject("frontendHashes");
         List<String> faultyContent = new ArrayList<>();
+
         for (String jarImport : jarImports) {
             final String jarResourceString = FrontendUtils
                     .getJarResourceString(jarImport);
@@ -293,25 +302,30 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 getLogger().info("No file found for '{}'", jarImport);
                 return false;
             }
-            String content = jarResourceString.replaceAll("\\r\\n", "\n");
-            final String contentHash = StringUtil.getHash(content,
-                    StandardCharsets.UTF_8);
-
-            if (frontendHashes.hasKey(jarImport) && !frontendHashes
-                    .getString(jarImport).equals(contentHash)) {
-                faultyContent.add(jarImport);
-            } else if (!frontendHashes.hasKey(jarImport)) {
-                getLogger().info("No hash info for '{}'", jarImport);
-                faultyContent.add(jarImport);
-            }
+            compareFrontendHashes(frontendHashes, faultyContent, jarImport,
+                    jarResourceString);
         }
+
+        for (String projectImport : projectImports) {
+            File frontendFile = new File(options.getFrontendDirectory(),
+                    projectImport);
+            if (!frontendFile.exists()) {
+                getLogger().info("No file found for '{}'", projectImport);
+                return false;
+            }
+            String frontendFileContent = FileUtils
+                    .readFileToString(frontendFile, StandardCharsets.UTF_8);
+            compareFrontendHashes(frontendHashes, faultyContent, projectImport,
+                    frontendFileContent);
+        }
+
         if (!faultyContent.isEmpty()) {
             StringBuilder faulty = new StringBuilder();
             for (String file : faultyContent) {
                 faulty.append(" - ").append(file).append("\n");
             }
-            getLogger().info("Detected changed content for jar-resource:\n{}",
-                    faulty.toString());
+            getLogger().info("Detected changed content for frontend files:\n{}",
+                    faulty);
             return false;
         }
 
@@ -321,11 +335,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             if (!frontendHashes.hasKey(FrontendUtils.INDEX_TS)) {
                 return false;
             }
-            String content = FileUtils
-                    .readFileToString(indexTs, StandardCharsets.UTF_8)
-                    .replaceAll("\\r\\n", "\n");
-            final String contentHash = StringUtil.getHash(content,
-                    StandardCharsets.UTF_8);
+            final String contentHash = calculateHash(FileUtils
+                    .readFileToString(indexTs, StandardCharsets.UTF_8));
             if (!frontendHashes.getString(FrontendUtils.INDEX_TS)
                     .equals(contentHash)) {
                 getLogger().info("'index.ts' is not up to date");
@@ -334,6 +345,24 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
 
         return true;
+    }
+
+    private static void compareFrontendHashes(JsonObject frontendHashes,
+            List<String> faultyContent, String frontendFilePath,
+            String frontendFileContent) {
+        final String contentHash = calculateHash(frontendFileContent);
+        if (frontendHashes.hasKey(frontendFilePath) && !frontendHashes
+                .getString(frontendFilePath).equals(contentHash)) {
+            faultyContent.add(frontendFilePath);
+        } else if (!frontendHashes.hasKey(frontendFilePath)) {
+            getLogger().info("No hash info for '{}'", frontendFilePath);
+            faultyContent.add(frontendFilePath);
+        }
+    }
+
+    private static String calculateHash(String fileContent) {
+        String content = fileContent.replaceAll("\\r\\n", "\n");
+        return StringUtil.getHash(content, StandardCharsets.UTF_8);
     }
 
     private static boolean arrayContainsString(JsonArray array, String string) {
@@ -590,7 +619,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 byte[] byteContent = jarContentsManager
                         .getFileContents(jarFileToLookup, themeJson);
                 String content = IOUtils.toString(byteContent, "UTF-8");
-                content = content.replaceAll("\\r\\n", "\n");
 
                 JsonObject themeJsonContent = Json.parse(content);
                 if (themeJsonContent.hasKey(Constants.ASSETS)) {
@@ -600,8 +628,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                                 "Packaged theme folders structure is incorrect, should have META-INF/resources/themes/[theme-name]/");
                     }
                     String themeName = matcher.group(1);
-                    String hash = StringUtil.getHash(content,
-                            StandardCharsets.UTF_8);
+                    String hash = calculateHash(content);
                     packagedThemeHashes.put(themeName, hash);
                 }
             }
