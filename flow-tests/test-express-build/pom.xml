@@ -41,6 +41,7 @@
                 <module>test-reusing-theme-express-build</module>
                 <module>test-parent-theme-express-build</module>
                 <module>test-embedding-express-build</module>
+                <module>test-dev-bundle-frontend-resource</module>
             </modules>
         </profile>
     </profiles>

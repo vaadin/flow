@@ -295,17 +295,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         final JsonObject frontendHashes = statsJson.getObject("frontendHashes");
         List<String> faultyContent = new ArrayList<>();
 
-        List<String> expectedFrontendFiles = new ArrayList<>(
-                Arrays.asList(frontendHashes.keys()));
-        expectedFrontendFiles.removeAll(jarImports);
-        expectedFrontendFiles.removeAll(projectImports);
-
-        if (!expectedFrontendFiles.isEmpty()) {
-            logChangedFiles(expectedFrontendFiles,
-                    "Detected removed frontend files:\n{}");
-            return false;
-        }
-
         for (String jarImport : jarImports) {
             final String jarResourceString = FrontendUtils
                     .getJarResourceString(jarImport);
@@ -349,6 +338,21 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 getLogger().info("'index.ts' is not up to date");
                 return false;
             }
+        } else if (frontendHashes.hasKey(FrontendUtils.INDEX_TS)) {
+            getLogger().info("'index.ts' has been deleted");
+            return false;
+        }
+
+        List<String> expectedFrontendFiles = new ArrayList<>(
+                Arrays.asList(frontendHashes.keys()));
+        expectedFrontendFiles.removeAll(jarImports);
+        expectedFrontendFiles.removeAll(projectImports);
+        expectedFrontendFiles.remove(FrontendUtils.INDEX_TS);
+
+        if (!expectedFrontendFiles.isEmpty()) {
+            logChangedFiles(expectedFrontendFiles,
+                    "Detected deleted frontend files:\n{}");
+            return false;
         }
 
         return true;
