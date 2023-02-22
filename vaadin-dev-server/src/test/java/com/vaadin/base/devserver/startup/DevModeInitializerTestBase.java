@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.server.frontend.TaskGenerateHilla;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -32,7 +31,6 @@ import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_CONFIG;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
@@ -54,7 +52,6 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     EndpointGeneratorTaskFactory endpointGeneratorTaskFactory;
     TaskGenerateEndpoint taskGenerateEndpoint;
     TaskGenerateOpenAPI taskGenerateOpenAPI;
-    TaskGenerateHilla taskGenerateHilla;
 
     @Rule
     public final TemporaryFolder javaSourceFolder = new TemporaryFolder();
@@ -90,9 +87,6 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
                 .createTaskGenerateEndpoint(any());
         Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateOpenAPI(any());
-        taskGenerateHilla = Mockito.mock(TaskGenerateHilla.class);
-        Mockito.doReturn(taskGenerateHilla).when(lookup)
-                .lookup(TaskGenerateHilla.class);
 
         classes = new HashSet<>();
         classes.add(this.getClass());
@@ -121,8 +115,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         FileUtils.write(mainPackageFile, getInitalPackageJson().toJson(),
                 "UTF-8");
         devServerConfigFile.createNewFile();
-        FileUtils.forceMkdir(
-                new File(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER));
+        FileUtils.forceMkdir(new File(baseDir, "src/main/java"));
 
         devModeStartupListener = new DevModeStartupListener();
     }
