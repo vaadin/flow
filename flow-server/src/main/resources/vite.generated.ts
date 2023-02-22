@@ -80,7 +80,7 @@ function injectManifestToSWPlugin(): rollup.Plugin {
     async transform(code, id) {
       if (/sw\.(ts|js)$/.test(id)) {
         const { manifestEntries } = await getManifest({
-          globDirectory: frontendBundleFolder,
+          globDirectory: buildOutputFolder,
           globPatterns: ['**/*'],
           globIgnores: ['**/*.br'],
           manifestTransforms: [rewriteManifestIndexHtmlUrl],
@@ -130,7 +130,7 @@ function buildSWPlugin(opts): PluginOption {
 
     try {
       return await bundle[action]({
-        file: path.resolve(frontendBundleFolder, 'sw.js'),
+        file: path.resolve(buildOutputFolder, 'sw.js'),
         format: 'es',
         exports: 'none',
         sourcemap: config.command === 'serve' || config.build.sourcemap,
