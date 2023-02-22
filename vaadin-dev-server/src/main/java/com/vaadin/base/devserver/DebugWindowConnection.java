@@ -143,6 +143,11 @@ public class DebugWindowConnection implements BrowserLiveReload {
         if (LocalProKey.get() != null) {
             send(resource, "vaadin-dev-tools-code-ok", null);
         }
+
+        if (themeModifier.isEnabled()) {
+            send(resource, "themeEditorState", "{state: "
+                    + themeModifier.getState().name().toLowerCase() + "}");
+        }
     }
 
     private void send(AtmosphereResource resource, String command,
@@ -242,8 +247,10 @@ public class DebugWindowConnection implements BrowserLiveReload {
                             "Only component locations are tracked. The given node id refers to an element and not a component");
                 }
             });
-        } else if ("themeEditorSetRule".equals(command)) {
+        } else if ("themeEditorRules".equals(command)) {
             themeModifier.handleDebugMessageData(data);
+        } else if ("themeEditorCreateDefaultTheme".equals(command)) {
+            themeModifier.createDefaultTheme();
         } else {
             getLogger().info("Unknown command from the browser: " + command);
         }
