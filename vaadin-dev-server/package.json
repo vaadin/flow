@@ -1,13 +1,15 @@
 {
   "scripts": {
     "start": "web-dev-server --node-resolve",
-    "patch-app": "node patch-application.js"
+    "patch-app": "node patch-application.js",
+    "prettier": "prettier --write src/main/resources/META-INF/frontend/**/*.ts"
   },
   "devDependencies": {
     "@koa/cors": "^4.0.0",
     "@open-wc/dev-server-hmr": "^0.1.2-next.0",
     "@web/dev-server": "^0.1.35",
-    "@web/dev-server-esbuild": "^0.3.3"
+    "@web/dev-server-esbuild": "^0.3.3",
+    "prettier": "^2.8.4"
   },
   "dependencies": {
     "lit": "^2.6.1"
