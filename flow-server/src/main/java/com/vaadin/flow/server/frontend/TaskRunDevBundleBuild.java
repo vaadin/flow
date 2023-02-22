@@ -295,6 +295,17 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         final JsonObject frontendHashes = statsJson.getObject("frontendHashes");
         List<String> faultyContent = new ArrayList<>();
 
+        List<String> expectedFrontendFiles = new ArrayList<>(
+                Arrays.asList(frontendHashes.keys()));
+        expectedFrontendFiles.removeAll(jarImports);
+        expectedFrontendFiles.removeAll(projectImports);
+
+        if (!expectedFrontendFiles.isEmpty()) {
+            logChangedFiles(expectedFrontendFiles,
+                    "Detected removed frontend files:\n{}");
+            return false;
+        }
+
         for (String jarImport : jarImports) {
             final String jarResourceString = FrontendUtils
                     .getJarResourceString(jarImport);
@@ -320,12 +331,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
 
         if (!faultyContent.isEmpty()) {
-            StringBuilder faulty = new StringBuilder();
-            for (String file : faultyContent) {
-                faulty.append(" - ").append(file).append("\n");
-            }
-            getLogger().info("Detected changed content for frontend files:\n{}",
-                    faulty);
+            logChangedFiles(faultyContent,
+                    "Detected changed content for frontend files:\n{}");
             return false;
         }
 
@@ -345,6 +352,15 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
 
         return true;
+    }
+
+    private static void logChangedFiles(List<String> expectedFrontendFiles,
+            String s) {
+        StringBuilder removedFiles = new StringBuilder();
+        for (String file : expectedFrontendFiles) {
+            removedFiles.append(" - ").append(file).append("\n");
+        }
+        getLogger().info(s, removedFiles);
     }
 
     private static void compareFrontendHashes(JsonObject frontendHashes,

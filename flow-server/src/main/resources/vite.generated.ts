@@ -225,7 +225,7 @@ function statsExtracterPlugin(): PluginOption {
         if (filePath.startsWith("generated/jar-resources/")) {
           // file is in frontend/generated/jar-resources/
           // remove 'generated/jar-resources/' part
-          fileKey = filePath.substring(line.indexOf("jar-resources/") + 14);
+          fileKey = filePath.substring(24);
         } else {
           // file is somewhere else in frontend/
           fileKey = filePath;
