@@ -261,13 +261,14 @@ public class StaticFileServer implements StaticFileHandler {
         URL resourceUrl = null;
         if (!deploymentConfiguration.isProductionMode()
                 && !deploymentConfiguration.frontendHotdeploy()) {
-            if (filenameWithPath.startsWith(EXPRESS_MODE_BUNDLE_PATH_PREFIX)) {
+            if (filenameWithPath.startsWith(EXPRESS_MODE_BUNDLE_PATH_PREFIX)
+                    || filenameWithPath.startsWith("/sw.js")) {
                 // Express mode bundle file
                 String filenameInsideBundle = filenameWithPath
-                        .substring(EXPRESS_MODE_BUNDLE_PATH_PREFIX.length());
+                        .replaceFirst(EXPRESS_MODE_BUNDLE_PATH_PREFIX, "/");
                 resourceUrl = FrontendUtils.findBundleFile(
                         deploymentConfiguration.getProjectFolder(),
-                        "webapp/" + filenameInsideBundle);
+                        "webapp" + filenameInsideBundle);
             } else if (APP_THEME_PATTERN.matcher(filenameWithPath).find()
                     || APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath)
                             .find()) {
