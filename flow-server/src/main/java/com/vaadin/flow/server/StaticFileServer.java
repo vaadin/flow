@@ -64,7 +64,7 @@ import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
  * @since 1.0
  */
 public class StaticFileServer implements StaticFileHandler {
-    private static final String EXPRESS_MODE_BUNDLE_PATH_PREFIX = "/VAADIN/dev-bundle/";
+    private static final String EXPRESS_MODE_BUNDLE_PATH_PREFIX = "/VAADIN/dev-bundle";
     static final String PROPERTY_FIX_INCORRECT_WEBJAR_PATHS = Constants.VAADIN_PREFIX
             + "fixIncorrectWebjarPaths";
     private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern
@@ -261,13 +261,14 @@ public class StaticFileServer implements StaticFileHandler {
         URL resourceUrl = null;
         if (!deploymentConfiguration.isProductionMode()
                 && !deploymentConfiguration.frontendHotdeploy()) {
-            if (filenameWithPath.startsWith(EXPRESS_MODE_BUNDLE_PATH_PREFIX)) {
+            if (filenameWithPath.startsWith(EXPRESS_MODE_BUNDLE_PATH_PREFIX)
+                    || filenameWithPath.startsWith("/sw.js")) {
                 // Express mode bundle file
                 String filenameInsideBundle = filenameWithPath
-                        .substring(EXPRESS_MODE_BUNDLE_PATH_PREFIX.length());
+                        .replaceFirst(EXPRESS_MODE_BUNDLE_PATH_PREFIX, "");
                 resourceUrl = FrontendUtils.findBundleFile(
                         deploymentConfiguration.getProjectFolder(),
-                        "webapp/" + filenameInsideBundle);
+                        "webapp" + filenameInsideBundle);
             } else if (APP_THEME_PATTERN.matcher(filenameWithPath).find()
                     || APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath)
                             .find()) {
