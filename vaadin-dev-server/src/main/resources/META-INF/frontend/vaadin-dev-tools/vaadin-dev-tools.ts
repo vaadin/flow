@@ -3,10 +3,12 @@ import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ComponentPicker } from './component-picker';
 import { ComponentReference } from './component-util';
+import './theme-editor/editor';
+import { ThemeEditorState } from './theme-editor/model';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
-import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product, licenseInit } from './License';
+import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, licenseInit, Product } from './License';
 
 interface ServerInfo {
   vaadinVersion: string;
@@ -25,7 +27,7 @@ interface Feature {
 }
 
 interface Tab {
-  id: 'log' | 'info' | 'features' | 'code';
+  id: 'log' | 'info' | 'features' | 'code' | 'theme-editor';
   title: string;
   render: () => TemplateResult;
   activate?: () => void;
@@ -991,6 +993,9 @@ export class VaadinDevTools extends LitElement {
   @state()
   componentPickActive: boolean = false;
 
+  @state()
+  themeEditorState: ThemeEditorState = ThemeEditorState.disabled;
+
   private javaConnection?: Connection;
   private frontendConnection?: Connection;
 
@@ -1050,20 +1055,7 @@ export class VaadinDevTools extends LitElement {
     frontendConnection.onStatusChange = (status: ConnectionStatus) => {
       this.frontendStatus = status;
     };
-    frontendConnection.onMessage = (message: any) => {
-      if (message?.command === 'serverInfo') {
-        this.serverInfo = message.data as ServerInfo;
-      } else if (message?.command === 'featureFlags') {
-        this.features = message.data.features as Feature[];
-      } else if (message?.command === 'vaadin-dev-tools-code-ok') {
-        if ((window as any).Vaadin.Flow) {
-          this.tabs.push({ id: 'code', title: 'Code', render: () => this.renderCode() });
-        }
-      } else {
-        // eslint-disable-next-line no-console
-        console.error('Unknown message from front-end connection:', JSON.stringify(message));
-      }
-    };
+    frontendConnection.onMessage = (message: any) => this.handleFrontendMessage(message);
     this.frontendConnection = frontendConnection;
 
     let javaConnection: Connection;
@@ -1106,6 +1098,27 @@ export class VaadinDevTools extends LitElement {
         'https://vaadin.com/docs/latest/flow/configuration/live-reload',
         'liveReloadUnavailable'
       );
+    }
+  }
+
+  handleFrontendMessage(message: any) {
+    if (message?.command === 'serverInfo') {
+      this.serverInfo = message.data as ServerInfo;
+    } else if (message?.command === 'featureFlags') {
+      this.features = message.data.features as Feature[];
+    } else if (message?.command === 'vaadin-dev-tools-code-ok') {
+      if ((window as any).Vaadin.Flow) {
+        this.tabs.push({ id: 'code', title: 'Code', render: () => this.renderCode() });
+      }
+    } else if (message?.command === 'themeEditorState') {
+      this.themeEditorState = message.data;
+      if (this.themeEditorState !== ThemeEditorState.disabled) {
+        this.tabs.push({ id: 'theme-editor', title: 'Theme Editor', render: () => this.renderThemeEditor() });
+        this.requestUpdate();
+      }
+    } else {
+      // eslint-disable-next-line no-console
+      console.error('Unknown message from front-end connection:', JSON.stringify(message));
     }
   }
 
@@ -1620,6 +1633,12 @@ export class VaadinDevTools extends LitElement {
         </div>`
       )}
     </div>`;
+  }
+
+  renderThemeEditor() {
+    return html` <vaadin-dev-tools-theme-editor
+      .pickerProvider=${() => this.componentPicker}
+    ></vaadin-dev-tools-theme-editor>`;
   }
 
   copyInfoToClipboard() {
