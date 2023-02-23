@@ -1637,6 +1637,7 @@ export class VaadinDevTools extends LitElement {
 
   renderThemeEditor() {
     return html` <vaadin-dev-tools-theme-editor
+      .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
     ></vaadin-dev-tools-theme-editor>`;
   }
