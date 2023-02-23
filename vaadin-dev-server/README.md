@@ -2,6 +2,18 @@
 
 ## Development
 
+### Frontend
+
+To install NPM dependencies:
+```shell
+npm install
+```
+
+To format code using Prettier:
+```shell
+npm run prettier
+```
+
 ### Using the local dev tool files in a Flow application
 
 In order to work iteratively on the dev tool UI, this project contains a frontend dev server setup that allows to use the local version of the dev tool files within an actual Flow app.

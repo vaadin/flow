@@ -1,17 +1,24 @@
-import { css, html, LitElement, PropertyValues } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { css, html, LitElement, PropertyValues, TemplateResult } from 'lit';
+import { customElement, query, state } from 'lit/decorators.js';
 import { ComponentReference, getComponents } from './component-util.js';
 import './shim.js';
 import { Shim } from './shim.js';
 import { popupStyles } from './vaadin-dev-tools.js';
+
+export interface PickerOptions {
+  infoTemplate: TemplateResult;
+  pickCallback: (component: ComponentReference) => void;
+}
 
 /**
  * When active, shows a component picker that allows the user to select an element with a server side counterpart.
  */
 @customElement('vaadin-dev-tools-component-picker')
 export class ComponentPicker extends LitElement {
-  @property({ type: Boolean })
+  @state()
   active: boolean = false;
+
+  options?: PickerOptions;
 
   @state()
   components: ComponentReference[] = [];
@@ -53,25 +60,19 @@ export class ComponentPicker extends LitElement {
     document.adoptedStyleSheets = [...document.adoptedStyleSheets, globalStyles];
   }
   render() {
-    this.style.display = this.active ? 'block' : 'none';
+    if (!this.active) {
+      this.style.display = 'none';
+      return null;
+    }
 
+    this.style.display = 'block';
     return html`
       <vaadin-dev-tools-shim
         @shim-click=${this.shimClick}
         @shim-mousemove=${this.shimMove}
         @shim-keydown=${this.shimKeydown}
       ></vaadin-dev-tools-shim>
-      <div class="window popup component-picker-info">
-        <div>
-          <h3>Locate a component in source code</h3>
-          <p>Use the mouse cursor to highligh components in the UI.</p>
-          <p>Use arrow down/up to cycle through and highlight specific components under the cursor.</p>
-          <p>
-            Click the primary mouse button to open the corresponding source code line of the highlighted component in
-            your IDE.
-          </p>
-        </div>
-      </div>
+      <div class="window popup component-picker-info">${this.options?.infoTemplate}</div>
       <div class="window popup component-picker-components-info">
         <div>
           ${this.components.map(
@@ -83,6 +84,17 @@ export class ComponentPicker extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  open(options: PickerOptions) {
+    this.options = options;
+    this.active = true;
+    this.dispatchEvent(new CustomEvent('component-picker-opened', {}));
+  }
+
+  close() {
+    this.active = false;
+    this.dispatchEvent(new CustomEvent('component-picker-closed', {}));
   }
 
   update(changedProperties: PropertyValues): void {
@@ -105,7 +117,7 @@ export class ComponentPicker extends LitElement {
   shimKeydown(e: CustomEvent) {
     const keyEvent: KeyboardEvent = e.detail.originalEvent;
     if (keyEvent.key === 'Escape') {
-      this.abort();
+      this.close();
       e.stopPropagation();
       e.preventDefault();
     } else if (keyEvent.key === 'ArrowUp') {
@@ -132,21 +144,17 @@ export class ComponentPicker extends LitElement {
     this.pickSelectedComponent();
   }
 
-  abort() {
-    this.dispatchEvent(new CustomEvent('component-picker-abort', {}));
-  }
-
   pickSelectedComponent() {
     const component = this.components[this.selected];
-    if (!component) {
-      this.abort();
-      return;
+    if (component && this.options) {
+      // Make sure picker closes even if callback fails
+      try {
+        this.options.pickCallback(component);
+      } catch (error) {
+        console.error('Pick callback failed', error);
+      }
     }
-    this.dispatchEvent(
-      new CustomEvent('component-picker-pick', {
-        detail: { component: { nodeId: component.nodeId, uiId: component.uiId } }
-      })
-    );
+    this.close();
   }
 
   highlight(element: HTMLElement | undefined) {

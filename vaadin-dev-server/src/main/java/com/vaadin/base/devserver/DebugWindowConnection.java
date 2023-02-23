@@ -70,6 +70,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private IdeIntegration ideIntegration;
 
+    private ThemeModifier themeModifier;
+
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
                 "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener"));
@@ -89,6 +91,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         this.context = context;
         this.ideIntegration = new IdeIntegration(
                 ApplicationConfiguration.get(context));
+        this.themeModifier = new ThemeModifier(context);
     }
 
     @Override
@@ -139,6 +142,11 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
         if (LocalProKey.get() != null) {
             send(resource, "vaadin-dev-tools-code-ok", null);
+        }
+
+        if (themeModifier.isEnabled()) {
+            send(resource, "themeEditorState",
+                    themeModifier.getState().name().toLowerCase());
         }
     }
 
@@ -239,6 +247,10 @@ public class DebugWindowConnection implements BrowserLiveReload {
                             "Only component locations are tracked. The given node id refers to an element and not a component");
                 }
             });
+        } else if ("themeEditorRules".equals(command)) {
+            themeModifier.handleDebugMessageData(data);
+        } else if ("themeEditorCreateDefaultTheme".equals(command)) {
+            themeModifier.createDefaultTheme();
         } else {
             getLogger().info("Unknown command from the browser: " + command);
         }

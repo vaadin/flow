@@ -43,4 +43,13 @@ public class NoAppBundleIT extends ChromeBrowserTest {
         Assert.assertFalse("No tsconfig should be created",
                 new File(baseDir, "tsconfig.json").exists());
     }
+
+    @Test
+    public void serviceWorkerIsIncludedAndServed() {
+        getDriver().get(getRootURL() + "/view/sw.js");
+        String pageSource = driver.getPageSource();
+        Assert.assertFalse("Service Worker is not served properly",
+                pageSource.contains("Error 404 Not Found")
+                        || pageSource.contains("Could not navigate to"));
+    }
 }

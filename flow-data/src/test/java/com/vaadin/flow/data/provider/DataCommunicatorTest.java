@@ -16,6 +16,8 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,6 +27,19 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import org.hamcrest.CoreMatchers;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -39,19 +54,10 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 import elemental.json.JsonValue;
 
+@RunWith(Parameterized.class)
 public class DataCommunicatorTest {
     /**
      * Test item that uses id for identity.
@@ -109,6 +115,18 @@ public class DataCommunicatorTest {
     public Range lastSet = null;
     public int lastUpdateId = -1;
     private int pageSize;
+
+    private final boolean dataProviderWithParallelStream;
+
+    public DataCommunicatorTest(boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
+    }
+
+    @Parameterized.Parameters
+    public static Collection<Boolean> testParameters() {
+        // Runs tests with both sequential and parallel data provider streams
+        return Arrays.asList(false, true);
+    }
 
     @Before
     public void init() {
@@ -1655,7 +1673,8 @@ public class DataCommunicatorTest {
                     count -= delta;
                     modifiedCount = true;
                 }
-                return IntStream.range(query.getOffset(), count)
+                return asParallelIfRequired(
+                        IntStream.range(query.getOffset(), count))
                         .mapToObj(Item::new);
             }
         };
@@ -1675,9 +1694,8 @@ public class DataCommunicatorTest {
 
             @Override
             public Stream<Item> fetch(Query<Item, Object> query) {
-                return IntStream
-                        .range(query.getOffset(),
-                                query.getLimit() + query.getOffset())
+                return asParallelIfRequired(IntStream.range(query.getOffset(),
+                        query.getLimit() + query.getOffset()))
                         .mapToObj(Item::new);
             }
         };
@@ -1698,10 +1716,18 @@ public class DataCommunicatorTest {
             @Override
             public Stream<Item> fetch(Query<Item, Object> query) {
                 int end = Math.min(query.getRequestedRangeEnd(), size);
-                return IntStream.range(query.getOffset(), end)
+                return asParallelIfRequired(
+                        IntStream.range(query.getOffset(), end))
                         .mapToObj(Item::new);
             }
         };
+    }
+
+    private IntStream asParallelIfRequired(IntStream stream) {
+        if (dataProviderWithParallelStream) {
+            return stream.parallel();
+        }
+        return stream;
     }
 
     public static class MockUI extends UI {
