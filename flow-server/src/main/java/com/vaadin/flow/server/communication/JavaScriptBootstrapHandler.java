@@ -17,12 +17,14 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.util.Optional;
 import java.util.function.Function;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
@@ -166,6 +168,8 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
         config.put("requestURL", requestURL);
 
+        addLinkTagForTheme(session);
+
         return context;
     }
 
@@ -300,5 +304,25 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         initial.put("errors", getErrors(request.getService()));
 
         return initial;
+    }
+
+    private static void addLinkTagForTheme(VaadinSession session) {
+        DeploymentConfiguration deploymentConfiguration = session
+                .getConfiguration();
+        if (!deploymentConfiguration.isProductionMode()
+                && !deploymentConfiguration.frontendHotdeploy()) {
+            try {
+                BootstrapHandler
+                        .getStylesheetLinks(deploymentConfiguration,
+                                "styles.css")
+                        .forEach(link -> UI.getCurrent().getPage().executeJs(
+                                BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG,
+                                link));
+            } catch (IOException e) {
+                throw new UncheckedIOException(
+                        "Failed to add a link tag for 'styles.css' to the document",
+                        e);
+            }
+        }
     }
 }
