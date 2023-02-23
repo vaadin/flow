@@ -1608,7 +1608,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     /**
-     * Gives a link tags for referencing the custom theme stylesheet files
+     * Gives link tags for referencing the custom theme stylesheet files
      * (typically styles.css or document.css), which are served in express build
      * mode by static file server directly from frontend/themes folder.
      *
@@ -1644,7 +1644,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             DeploymentConfiguration config, String fileName)
             throws IOException {
         return getStylesheetReferences(config, fileName,
-                BootstrapHandler::getStylesheetLink);
+                BootstrapHandler::getThemeFilePath);
     }
 
     private static <T> Collection<T> getStylesheetReferences(
@@ -1694,7 +1694,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return references;
     }
 
-    private static String getStylesheetLink(String themeName, String fileName) {
+    private static String getThemeFilePath(String themeName, String fileName) {
         return Constants.VAADIN_MAPPING + Constants.APPLICATION_THEME_ROOT + "/"
                 + themeName + "/" + fileName;
     }
@@ -1704,7 +1704,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         Element element = new Element("link");
         element.attr("rel", "stylesheet");
         element.attr("type", "text/css");
-        element.attr("href", getStylesheetLink(themeName, fileName));
+        element.attr("href", getThemeFilePath(themeName, fileName));
         return element;
     }
 
