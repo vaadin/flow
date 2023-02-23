@@ -108,11 +108,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureHiddenElementStyles(indexDocument);
 
-        if (!config.isProductionMode() && !config.frontendHotdeploy()) {
-            BootstrapHandler.getTagForTheme(config, "styles.css").forEach(
-                    element -> indexDocument.head().appendChild(element));
-        }
-
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         VaadinContext context = session.getService().getContext();
