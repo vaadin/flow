@@ -195,74 +195,84 @@ function statsExtracterPlugin(): PluginOption {
         })
         .sort()
         .filter((value, index, self) => self.indexOf(value) === index);
-      const npmModuleAndVersion = Object.fromEntries(npmModules.map((module) => [module, getVersion(module)]));
+
+      let stats;
+
+      if (!devBundle) {
+        // production mode: no hashes are needed
+        stats = { npmModules };
+      } else {
+        // express build mode: calculate hashes for frontend resources to
+        // decide if a new dev bundle is needed before next start-up of the app
+        const npmModuleAndVersion = Object.fromEntries(npmModules.map((module) => [module, getVersion(module)]));
+        const projectPackageJson = JSON.parse(readFileSync(projectPackageJsonFile, { encoding: 'utf-8' }));
+
+        const entryScripts = Object.values(bundle).filter(bundle => bundle.isEntry).map(bundle => bundle.fileName);
+        //After dev-bundle build add used Flow frontend imports JsModule/JavaScript/CssImport
+        const generatedImports = readFileSync(path.resolve(generatedFlowImportsFolder, "generated-flow-imports.js"), {encoding: 'utf-8'})
+            .split("\n")
+            .filter((line: string) => line.startsWith("import"))
+            .map((line: string) => line.substring(line.indexOf("'")+1, line.lastIndexOf("'")));
+
+        const frontendFiles = { };
+        generatedImports.filter((line: string) => line.includes("generated/jar-resources")).forEach((line: string) => {
+          var filename;
+          if(line.includes('?')) {
+            filename = line.substring(line.indexOf("generated"), line.lastIndexOf('?'));
+          } else {
+            filename = line.substring(line.indexOf("generated"));
+          }
+          // \r\n from windows made files may be used ro remove to be only \n
+          const fileBuffer = readFileSync(path.resolve(frontendFolder, filename), {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+          const hash = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
+
+          const fileKey = line.substring(line.indexOf("jar-resources/") + 14);
+          // @ts-ignore
+          frontendFiles[`${fileKey}`] = hash;
+        });
+        // If a index.ts exists hash it to be able to see if it changes.
+        if (existsSync(path.resolve(frontendFolder, "index.ts"))) {
+          const fileBuffer = readFileSync(path.resolve(frontendFolder, "index.ts"), {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+          const hash = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
+          // @ts-ignore
+          frontendFiles[`index.ts`] = hash;
+        }
+
+        const themeJsonHashes = { };
+        const themesFolder = path.resolve(jarResourcesFolder, "themes");
+        if (existsSync(themesFolder)) {
+          readdirSync(themesFolder).forEach((themeFolder) => {
+            const themeJson = path.resolve(themesFolder, themeFolder, "theme.json");
+            if (existsSync(themeJson)) {
+              const themeJsonContent = readFileSync(themeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+              const themeJsonContentAsJson = JSON.parse(themeJsonContent);
+              const assets = themeJsonContentAsJson.assets;
+              if (assets) {
+                const hash = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
+                themeJsonHashes[`${path.basename(themeFolder)}`] = hash;
+              }
+            }
+          });
+        }
+
+        let webComponents: string[] = [];
+        if (webComponentTags) {
+          webComponents = webComponentTags.split(";");
+        }
+
+        stats = {
+          packageJsonDependencies: projectPackageJson.dependencies,
+          npmModules: npmModuleAndVersion,
+          bundleImports: generatedImports,
+          frontendHashes: frontendFiles,
+          themeJsonHashes: themeJsonHashes,
+          entryScripts,
+          webComponents,
+          packageJsonHash: projectPackageJson?.vaadin?.hash
+        };
+      }
 
       mkdirSync(path.dirname(statsFile), { recursive: true });
-      const projectPackageJson = JSON.parse(readFileSync(projectPackageJsonFile, { encoding: 'utf-8' }));
-
-      const entryScripts = Object.values(bundle).filter(bundle => bundle.isEntry).map(bundle => bundle.fileName);
-      //After dev-bundle build add used Flow frontend imports JsModule/JavaScript/CssImport
-      const generatedImports = readFileSync(path.resolve(generatedFlowImportsFolder, "generated-flow-imports.js"), {encoding: 'utf-8'})
-          .split("\n")
-          .filter((line: string) => line.startsWith("import"))
-          .map((line: string) => line.substring(line.indexOf("'")+1, line.lastIndexOf("'")));
-
-      const frontendFiles = { };
-      generatedImports.filter((line: string) => line.includes("generated/jar-resources")).forEach((line: string) => {
-        var filename;
-        if(line.includes('?')) {
-          filename = line.substring(line.indexOf("generated"), line.lastIndexOf('?'));
-        } else {
-          filename = line.substring(line.indexOf("generated"));
-        }
-        // \r\n from windows made files may be used ro remove to be only \n
-        const fileBuffer = readFileSync(path.resolve(frontendFolder, filename), {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
-        const hash = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
-
-        const fileKey = line.substring(line.indexOf("jar-resources/") + 14);
-        // @ts-ignore
-        frontendFiles[`${fileKey}`] = hash;
-      });
-      // If a index.ts exists hash it to be able to see if it changes.
-      if (existsSync(path.resolve(frontendFolder, "index.ts"))) {
-        const fileBuffer = readFileSync(path.resolve(frontendFolder, "index.ts"), {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
-        const hash = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
-        // @ts-ignore
-        frontendFiles[`index.ts`] = hash;
-      }
-
-      const themeJsonHashes = { };
-      const themesFolder = path.resolve(jarResourcesFolder, "themes");
-      if (existsSync(themesFolder)) {
-        readdirSync(themesFolder).forEach((themeFolder) => {
-          const themeJson = path.resolve(themesFolder, themeFolder, "theme.json");
-          if (existsSync(themeJson)) {
-            const themeJsonContent = readFileSync(themeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
-            const themeJsonContentAsJson = JSON.parse(themeJsonContent);
-            const assets = themeJsonContentAsJson.assets;
-            if (assets) {
-              const hash = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
-              themeJsonHashes[`${path.basename(themeFolder)}`] = hash;
-            }
-          }
-        });
-      }
-
-      let webComponents: string[] = [];
-      if (webComponentTags) {
-        webComponents = webComponentTags.split(";");
-      }
-
-      const stats = {
-        packageJsonDependencies: projectPackageJson.dependencies,
-        npmModules: npmModuleAndVersion,
-        bundleImports: generatedImports,
-        frontendHashes: frontendFiles,
-        themeJsonHashes: themeJsonHashes,
-        entryScripts,
-        webComponents,
-        packageJsonHash: projectPackageJson?.vaadin?.hash
-      };
       writeFileSync(statsFile, JSON.stringify(stats, null, 1));
     }
   };
