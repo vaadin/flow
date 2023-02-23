@@ -48,11 +48,12 @@ import org.apache.commons.io.output.DeferredFileOutputStream;
  * <p>
  * After retrieving an instance of this class from a {@link DiskFileItemFactory}
  * instance (see
- * {@link com.vaadin.external.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload#parseRequest(jakarta.servlet.http.HttpServletRequest)}),
- * you may either request all contents of file at once using {@link #get()} or
- * request an {@link java.io.InputStream InputStream} with
- * {@link #getInputStream()} and process the file without attempting to load it
- * into memory, which may come handy with large files.
+ * {@link com.vaadin.external.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload
+ * #parseRequest(jakarta.servlet.http.HttpServletRequest)}), you may either
+ * request all contents of file at once using {@link #get()} or request an
+ * {@link java.io.InputStream InputStream} with {@link #getInputStream()} and
+ * process the file without attempting to load it into memory, which may come
+ * handy with large files.
  *
  * <p>
  * Temporary files, which are created for file items, should be deleted later
@@ -69,7 +70,7 @@ import org.apache.commons.io.output.DeferredFileOutputStream;
  * guide of commons-fileupload.
  * </p>
  *
- * @since FileUpload 1.1
+ * @since 1.1
  */
 public class DiskFileItem implements FileItem {
 
@@ -442,7 +443,7 @@ public class DiskFileItem implements FileItem {
      *
      * @return The name of the form field.
      *
-     * @see #setFieldName(java.lang.String)
+     * @see #setFieldName(String)
      *
      */
     @Override
