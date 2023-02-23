@@ -218,7 +218,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             JsonObject statsJson,
             FrontendDependenciesScanner frontendDependencies)
             throws IOException {
-        Map<String, String> themeJsonHashes = new HashMap<>(1);
+        Map<String, String> themeJsonHashes = new HashMap<>();
 
         if (options.jarFiles == null) {
             return false;
