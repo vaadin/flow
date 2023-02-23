@@ -7,12 +7,15 @@ import com.helger.css.decl.CSSStyleRule;
 import com.helger.css.decl.CascadingStyleSheet;
 import com.helger.css.reader.CSSReader;
 import com.helger.css.writer.CSSWriter;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileReader;
@@ -20,10 +23,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class ThemeModifier {
@@ -31,8 +32,6 @@ public class ThemeModifier {
     public enum State {
         ENABLED, DISABLED, MISSING_THEME
     }
-
-    protected static final String THEME_EDITOR_ENABLED_PROPERTY = "vaadin.themeEditor.enable";
 
     private static final String THEME_EDITOR_CSS = "theme-editor.css";
 
@@ -43,6 +42,8 @@ public class ThemeModifier {
 
     private final State state;
 
+    private final Map<String, Consumer<JsonObject>> commandHandlers;
+
     private VaadinContext context;
 
     private boolean importPresent;
@@ -50,6 +51,10 @@ public class ThemeModifier {
     public ThemeModifier(VaadinContext context) {
         this.context = context;
         this.state = init();
+        this.commandHandlers = Map.of("themeEditorRules",
+                ThemeModifier.this::handleRulesCommand,
+                "themeEditorCreateDefaultTheme",
+                ThemeModifier.this::handleCreateDefaultThemeCommand);
     }
 
     public boolean isEnabled() {
@@ -62,7 +67,7 @@ public class ThemeModifier {
 
     protected State init() {
         // for development purposes only
-        if (System.getProperty(THEME_EDITOR_ENABLED_PROPERTY) == null) {
+        if (!FeatureFlags.get(context).isEnabled(FeatureFlags.THEME_EDITOR)) {
             return State.DISABLED;
         }
 
@@ -103,21 +108,6 @@ public class ThemeModifier {
         }
 
         return themeEditorStyles;
-    }
-
-    public boolean createDefaultTheme() {
-        File theme = Path
-                .of(getFrontendFolder().getPath(), "themes", DEFAULT_THEME)
-                .toFile();
-        if (!theme.exists()) {
-            theme.mkdirs();
-        }
-        try {
-            new File(theme, "styles.css").createNewFile();
-        } catch (IOException e) {
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -297,7 +287,16 @@ public class ThemeModifier {
         return themeFolders[0];
     }
 
-    public void handleDebugMessageData(JsonObject data) {
+    public boolean handleDebugMessageData(String command, JsonObject data) {
+        if (!commandHandlers.containsKey(command)) {
+            return false;
+        }
+
+        commandHandlers.get(command).accept(data);
+        return true;
+    }
+
+    protected void handleRulesCommand(JsonObject data) {
         JsonArray rules = data.getArray("add");
         if (rules != null) {
             for (int i = 0; i < rules.length(); ++i) {
@@ -314,6 +313,25 @@ public class ThemeModifier {
                         rule.getString("property"));
             }
         }
+    }
+
+    protected void handleCreateDefaultThemeCommand(JsonObject data) {
+        File theme = Path
+                .of(getFrontendFolder().getPath(), "themes", DEFAULT_THEME)
+                .toFile();
+        if (!theme.exists()) {
+            theme.mkdirs();
+        }
+        try {
+            new File(theme, "styles.css").createNewFile();
+        } catch (IOException e) {
+            getLogger().error("Cannot create styles.css in " + theme.getPath(),
+                    e);
+        }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ThemeModifier.class.getName());
     }
 
 }

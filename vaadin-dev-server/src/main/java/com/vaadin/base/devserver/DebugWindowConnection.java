@@ -247,10 +247,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
                             "Only component locations are tracked. The given node id refers to an element and not a component");
                 }
             });
-        } else if ("themeEditorRules".equals(command)) {
-            themeModifier.handleDebugMessageData(data);
-        } else if ("themeEditorCreateDefaultTheme".equals(command)) {
-            themeModifier.createDefaultTheme();
+        } else if (themeModifier.handleDebugMessageData(command, data)) {
+            // nop
         } else {
             getLogger().info("Unknown command from the browser: " + command);
         }
