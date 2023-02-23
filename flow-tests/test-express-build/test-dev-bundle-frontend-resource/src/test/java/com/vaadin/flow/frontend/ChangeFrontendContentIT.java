@@ -70,7 +70,7 @@ public class ChangeFrontendContentIT extends ChromeBrowserTest {
         Assert.assertTrue("Lit template content hash is expected",
                 frontendHashes.hasKey("views/lit-view.ts"));
         Assert.assertEquals("Unexpected Lit template content hash",
-                "b1773c54fd31c71d2ae454262c900a224e9ee72090d1f582d981b5727a43a391",
+                "cc72482201437bd68b6d3529c7ecb9e5bb7d7ddb9267ef8e4936486732b8a41e",
                 frontendHashes.getString("views/lit-view.ts"));
     }
 }
