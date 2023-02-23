@@ -21,6 +21,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +36,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -284,13 +289,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                                 + resourcePath.length()))
                 .collect(Collectors.toList());
 
-        final List<String> projectImports = imports.stream()
-                .filter(importString -> importString
-                        .startsWith(FrontendUtils.FRONTEND_FOLDER_ALIAS)
-                        && !importString.contains(resourcePath))
-                .map(importString -> importString.substring(
-                        FrontendUtils.FRONTEND_FOLDER_ALIAS.length()))
-                .collect(Collectors.toList());
+        final List<String> projectImports = getProjectFrontendFiles(options);
 
         final JsonObject frontendHashes = statsJson.getObject("frontendHashes");
         List<String> faultyContent = new ArrayList<>();
@@ -325,29 +324,10 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             return false;
         }
 
-        File indexTs = new File(options.getFrontendDirectory(),
-                FrontendUtils.INDEX_TS);
-        if (indexTs.exists()) {
-            if (!frontendHashes.hasKey(FrontendUtils.INDEX_TS)) {
-                return false;
-            }
-            final String contentHash = calculateHash(FileUtils
-                    .readFileToString(indexTs, StandardCharsets.UTF_8));
-            if (!frontendHashes.getString(FrontendUtils.INDEX_TS)
-                    .equals(contentHash)) {
-                getLogger().info("'index.ts' is not up to date");
-                return false;
-            }
-        } else if (frontendHashes.hasKey(FrontendUtils.INDEX_TS)) {
-            getLogger().info("'index.ts' has been deleted");
-            return false;
-        }
-
         List<String> expectedFrontendFiles = new ArrayList<>(
                 Arrays.asList(frontendHashes.keys()));
         expectedFrontendFiles.removeAll(jarImports);
         expectedFrontendFiles.removeAll(projectImports);
-        expectedFrontendFiles.remove(FrontendUtils.INDEX_TS);
 
         if (!expectedFrontendFiles.isEmpty()) {
             logChangedFiles(expectedFrontendFiles,
@@ -356,6 +336,26 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
 
         return true;
+    }
+
+    private static List<String> getProjectFrontendFiles(Options options)
+            throws IOException {
+        File frontendDirectory = options.getFrontendDirectory();
+        File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
+
+        PathMatcher matcher = FileSystems.getDefault()
+                .getPathMatcher("glob:**/*.{js,js.map,ts,ts.map,tsx,tsx.map}");
+
+        try (Stream<Path> walk = Files.walk(frontendDirectory.toPath())) {
+            return walk.filter(Files::isRegularFile).filter(matcher::matches)
+                    .filter(path -> !path.toAbsolutePath().toString().contains(
+                            frontendGeneratedFolder.getAbsolutePath()))
+                    .filter(path -> !path.toString()
+                            .contains(Constants.APPLICATION_THEME_ROOT))
+                    .map(path -> path.toAbsolutePath().toString()
+                            .replace(frontendDirectory.getAbsolutePath(), ""))
+                    .collect(Collectors.toList());
+        }
     }
 
     private static void logChangedFiles(List<String> expectedFrontendFiles,

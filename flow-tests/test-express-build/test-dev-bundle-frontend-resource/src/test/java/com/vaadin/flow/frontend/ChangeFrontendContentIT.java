@@ -27,6 +27,7 @@ import org.openqa.selenium.By;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -46,7 +47,10 @@ public class ChangeFrontendContentIT extends ChromeBrowserTest {
     @Test
     public void litTemplateWebComponentAdded_newBundleCreated_hashCalculated()
             throws IOException {
-        waitForElementPresent(By.tagName("lit-view"));
+        TestBenchElement paragraph = $("lit-view").waitForFirst().$("p")
+                .waitForFirst();
+        Assert.assertEquals("Greetings from test web component: Hello John Doe",
+                paragraph.getText());
 
         File baseDir = new File(System.getProperty("user.dir", "."));
 
@@ -69,8 +73,13 @@ public class ChangeFrontendContentIT extends ChromeBrowserTest {
                 frontendHashes);
         Assert.assertTrue("Lit template content hash is expected",
                 frontendHashes.hasKey("views/lit-view.ts"));
+        Assert.assertTrue("Imported TS file content hash is expected",
+                frontendHashes.hasKey("views/another.ts"));
         Assert.assertEquals("Unexpected Lit template content hash",
-                "cc72482201437bd68b6d3529c7ecb9e5bb7d7ddb9267ef8e4936486732b8a41e",
+                "c1ce265100215245a5264dd124c4d890a7f66acbb5ceddf79dcdec2d914e6c30",
                 frontendHashes.getString("views/lit-view.ts"));
+        Assert.assertEquals("Unexpected imported file content hash",
+                "84951a8a4f324bd4f4a4d39c9913b139af094a0b425773fb8b8d43bb7cd61f10",
+                frontendHashes.getString("views/another.ts"));
     }
 }
