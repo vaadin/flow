@@ -1,4 +1,4 @@
-import { expect } from '@esm-bundle/chai';
+import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import { MetadataRegistry } from './registry';
 import { ComponentReference } from '../../component-util';
