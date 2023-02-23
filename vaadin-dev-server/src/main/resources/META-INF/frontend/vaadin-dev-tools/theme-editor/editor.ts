@@ -7,7 +7,7 @@ import { icons } from './icons';
 import './property-list';
 
 @customElement('vaadin-dev-tools-theme-editor')
-export class Editor extends LitElement {
+export class ThemeEditor extends LitElement {
   @property({})
   public pickerProvider!: PickerProvider;
 
@@ -64,7 +64,7 @@ export class Editor extends LitElement {
   }
 
   private async pickComponent() {
-    // Ensure component picker component is loaded
+    // Ensure component picker module is loaded
     await import('../component-picker.js');
 
     this.pickerProvider().open({
