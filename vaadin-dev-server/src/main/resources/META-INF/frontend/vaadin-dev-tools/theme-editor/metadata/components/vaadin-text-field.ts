@@ -5,7 +5,7 @@ export default {
   displayName: 'TextField',
   parts: [
     {
-      selector: '::part(label)',
+      partName: 'label',
       displayName: 'Label',
       properties: [
         {
@@ -23,7 +23,7 @@ export default {
       ]
     },
     {
-      selector: '::part(input-field)',
+      partName: 'input-field',
       displayName: 'Input field',
       properties: [
         {
@@ -41,7 +41,7 @@ export default {
       ]
     },
     {
-      selector: '::part(helper-text)',
+      partName: 'helper-text',
       displayName: 'Helper text',
       properties: [
         {
@@ -59,7 +59,7 @@ export default {
       ]
     },
     {
-      selector: '::part(error-message)',
+      partName: 'error-message',
       displayName: 'Error message',
       properties: [
         {

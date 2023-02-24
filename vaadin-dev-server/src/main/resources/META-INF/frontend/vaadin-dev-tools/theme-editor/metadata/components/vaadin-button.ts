@@ -5,7 +5,7 @@ export default {
   displayName: 'Button',
   parts: [
     {
-      selector: '::part(label)',
+      partName: 'label',
       displayName: 'Label',
       properties: [
         {
@@ -23,7 +23,7 @@ export default {
       ]
     },
     {
-      selector: '::part(prefix)',
+      partName: 'prefix',
       displayName: 'Prefix',
       properties: [
         {
@@ -41,7 +41,7 @@ export default {
       ]
     },
     {
-      selector: '::part(suffix)',
+      partName: 'suffix',
       displayName: 'Suffix',
       properties: [
         {

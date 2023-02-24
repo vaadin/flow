@@ -5,7 +5,8 @@ import { ComponentMetadata } from './metadata/model';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
 import './property-list';
-import { ThemeEditorState } from './model';
+import { ComponentTheme, ThemeEditorState } from './model';
+import { detectStyles } from './style-detector';
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
@@ -16,6 +17,8 @@ export class ThemeEditor extends LitElement {
 
   @state()
   private selectedComponentMetadata: ComponentMetadata | null = null;
+  @state()
+  private componentTheme: ComponentTheme | null = null;
 
   static get styles() {
     return css`
@@ -73,6 +76,7 @@ export class ThemeEditor extends LitElement {
       ${this.selectedComponentMetadata
         ? html` <vaadin-dev-tools-theme-property-list
             .metadata=${this.selectedComponentMetadata}
+            .theme=${this.componentTheme}
           ></vaadin-dev-tools-theme-property-list>`
         : null}
     `;
@@ -106,6 +110,7 @@ export class ThemeEditor extends LitElement {
       `,
       pickCallback: async (component) => {
         this.selectedComponentMetadata = await metadataRegistry.getMetadata(component);
+        this.componentTheme = this.selectedComponentMetadata ? detectStyles(this.selectedComponentMetadata) : null;
       }
     });
   }

@@ -4,7 +4,7 @@
     "test": "web-test-runner --node-resolve",
     "test-watch": "web-test-runner --node-resolve --watch",
     "patch-app": "node patch-application.js",
-    "prettier": "prettier --write src/main/resources/META-INF/frontend/**/*.ts"
+    "prettier": "prettier --write src/main/resources/META-INF/frontend"
   },
   "devDependencies": {
     "@koa/cors": "^4.0.0",
