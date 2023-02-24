@@ -82,6 +82,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.base\\.devserver\\.DevServerWatchDog\\$WatchDogServer",
                 "com\\.vaadin\\.base\\.devserver\\.IdeIntegration",
                 "com\\.vaadin\\.base\\.devserver\\.OpenInCurrentIde",
+                "com\\.vaadin\\.base\\.devserver\\.ThemeModifier(\\$.*)?",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.BrowserLauncher",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.PortProber",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.FixedIANAPortRange",

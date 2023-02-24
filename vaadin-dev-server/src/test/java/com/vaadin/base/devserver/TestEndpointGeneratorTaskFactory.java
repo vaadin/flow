@@ -119,10 +119,8 @@ public class TestEndpointGeneratorTaskFactory
 
         @Override
         public void execute() {
-            if (Objects.requireNonNull(
-                    options.getEndpointSourceFolder().listFiles()).length > 0) {
-                writeFile(options.getEndpointGeneratedOpenAPIFile(), "{}");
-            }
+            writeFile(new File(options.getBuildDirectory(),
+                    "classes/dev/hilla/openapi.json"), "{}");
         }
     }
 

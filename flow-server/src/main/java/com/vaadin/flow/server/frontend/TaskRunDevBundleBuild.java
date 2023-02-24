@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,6 +51,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentExporterTagExtractor;
 import com.vaadin.flow.server.webcomponent.WebComponentExporterUtils;
 
 import com.vaadin.flow.shared.util.SharedUtil;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -148,7 +150,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             return true;
         }
 
-        if (packagedThemeAddedOrUpdated(options, statsJson)) {
+        if (themeConfigurationChanged(options, statsJson,
+                frontendDependencies)) {
             return true;
         }
 
@@ -211,9 +214,11 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
     }
 
-    private static boolean packagedThemeAddedOrUpdated(Options options,
-            JsonObject statsJson) {
-        Map<String, String> packagedThemeHashes = new HashMap<>(1);
+    private static boolean themeConfigurationChanged(Options options,
+            JsonObject statsJson,
+            FrontendDependenciesScanner frontendDependencies)
+            throws IOException {
+        Map<String, String> themeJsonHashes = new HashMap<>();
 
         if (options.jarFiles == null) {
             return false;
@@ -221,24 +226,55 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         options.jarFiles.stream().filter(File::exists)
                 .filter(file -> !file.isDirectory())
-                .forEach(jarFile -> calculateHashesForPackagedThemes(jarFile,
-                        packagedThemeHashes));
+                .forEach(jarFile -> calculateHashesForPackagedThemeJson(jarFile,
+                        themeJsonHashes));
+
+        ThemeDefinition themeDefinition = frontendDependencies
+                .getThemeDefinition();
+        Optional<String> projectThemeJsonHash = getHashForProjectThemeJson(
+                options, themeDefinition);
 
         JsonObject hashesInStats = statsJson.getObject("themeJsonHashes");
-        if (hashesInStats == null && !packagedThemeHashes.isEmpty()) {
-            getLogger().info("Found newly added packaged custom themes.");
+        if (hashesInStats == null && (!themeJsonHashes.isEmpty()
+                || projectThemeJsonHash.isPresent())) {
+            getLogger().info(
+                    "Found newly added theme configurations in 'theme.json'.");
             return true;
         }
-        for (Map.Entry<String, String> themeHash : packagedThemeHashes
-                .entrySet()) {
+
+        if (projectThemeJsonHash.isPresent()) {
+            String projectThemeName = themeDefinition.getName();
+            String key;
+            if (hashesInStats.hasKey(projectThemeName)) {
+                key = projectThemeName;
+            } else if (hashesInStats.hasKey(Constants.DEV_BUNDLE_NAME)) {
+                key = Constants.DEV_BUNDLE_NAME;
+            } else {
+                getLogger().info(
+                        "Found newly added configuration for project theme '{}' in 'theme.json'.",
+                        projectThemeName);
+                return true;
+            }
+
+            if (!hashesInStats.getString(key)
+                    .equals(projectThemeJsonHash.get())) {
+                getLogger().info(
+                        "Found new configuration for project theme '{}' in 'theme.json'.",
+                        projectThemeName);
+                return true;
+            }
+        }
+
+        for (Map.Entry<String, String> themeHash : themeJsonHashes.entrySet()) {
             if (!hashesInStats.hasKey(themeHash.getKey())) {
                 getLogger().info(
-                        "Found newly added packaged custom theme '{}'.",
+                        "Found new configuration for theme '{}' in 'theme.json'.",
                         themeHash.getKey());
                 return true;
             } else if (!hashesInStats.getString(themeHash.getKey())
                     .equals(themeHash.getValue())) {
-                getLogger().info("Found updated package custom theme '{}'.",
+                getLogger().info(
+                        "Found updated configuration for theme '{}' in 'theme.json'.",
                         themeHash.getKey());
                 return true;
             }
@@ -578,8 +614,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         return true;
     }
 
-    private static void calculateHashesForPackagedThemes(File jarFileToLookup,
-            Map<String, String> packagedThemeHashes) {
+    private static void calculateHashesForPackagedThemeJson(
+            File jarFileToLookup, Map<String, String> packagedThemeHashes) {
         JarContentsManager jarContentsManager = new JarContentsManager();
         if (jarContentsManager.containsPath(jarFileToLookup,
                 Constants.RESOURCES_THEME_JAR_DEFAULT)) {
@@ -592,20 +628,35 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 String content = IOUtils.toString(byteContent, "UTF-8");
                 content = content.replaceAll("\\r\\n", "\n");
 
-                JsonObject themeJsonContent = Json.parse(content);
-                if (themeJsonContent.hasKey(Constants.ASSETS)) {
-                    Matcher matcher = THEME_PATH_PATTERN.matcher(themeJson);
-                    if (!matcher.find()) {
-                        throw new IllegalStateException(
-                                "Packaged theme folders structure is incorrect, should have META-INF/resources/themes/[theme-name]/");
-                    }
-                    String themeName = matcher.group(1);
-                    String hash = StringUtil.getHash(content,
-                            StandardCharsets.UTF_8);
-                    packagedThemeHashes.put(themeName, hash);
+                Matcher matcher = THEME_PATH_PATTERN.matcher(themeJson);
+                if (!matcher.find()) {
+                    throw new IllegalStateException(
+                            "Packaged theme folders structure is incorrect, should have META-INF/resources/themes/[theme-name]/");
                 }
+                String themeName = matcher.group(1);
+                String hash = StringUtil.getHash(content,
+                        StandardCharsets.UTF_8);
+                packagedThemeHashes.put(themeName, hash);
             }
         }
+    }
+
+    private static Optional<String> getHashForProjectThemeJson(Options options,
+            ThemeDefinition themeDefinition) throws IOException {
+        if (themeDefinition != null) {
+            String themeName = themeDefinition.getName();
+            File projectThemeJson = new File(options.getFrontendDirectory(),
+                    Constants.APPLICATION_THEME_ROOT + "/" + themeName + "/"
+                            + "theme.json");
+            if (projectThemeJson.exists()) {
+                String content = FileUtils.readFileToString(projectThemeJson,
+                        StandardCharsets.UTF_8);
+                content = content.replaceAll("\\r\\n", "\n");
+                return Optional.of(
+                        StringUtil.getHash(content, StandardCharsets.UTF_8));
+            }
+        }
+        return Optional.empty();
     }
 
     private static Logger getLogger() {

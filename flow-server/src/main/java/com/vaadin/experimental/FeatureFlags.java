@@ -54,12 +54,6 @@ public class FeatureFlags implements Serializable {
             "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004",
             false,
             "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");
-    public static final Feature HILLA_PUSH = new Feature(
-            "Push support in Hilla", "hillaPush",
-            "https://github.com/vaadin/hilla/issues/56", true, null);
-    public static final Feature HILLA_ENGINE = new Feature(
-            "Multi-module engine in Hilla", "hillaEngine",
-            "https://github.com/vaadin/flow/issues/9010", true, null);
     public static final Feature COLLABORATION_ENGINE_BACKEND = new Feature(
             "Collaboration Engine backend for clustering support",
             "collaborationEngineBackend",
@@ -68,6 +62,8 @@ public class FeatureFlags implements Serializable {
             "Enforce client / constraint / binder validation",
             "enforceFieldValidation",
             "https://github.com/vaadin/platform/issues/3066", false, null);
+    public static final Feature THEME_EDITOR = new Feature("Theme Editor",
+            "themeEditor", null, false, null);
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -85,10 +81,9 @@ public class FeatureFlags implements Serializable {
     public FeatureFlags(Lookup lookup) {
         this.lookup = lookup;
         features.add(new Feature(EXAMPLE));
-        features.add(new Feature(HILLA_PUSH));
-        features.add(new Feature(HILLA_ENGINE));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
         features.add(new Feature(ENFORCE_FIELD_VALIDATION));
+        features.add(new Feature(THEME_EDITOR));
         loadProperties();
     }
 

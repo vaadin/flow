@@ -18,14 +18,14 @@ import org.mockito.InOrder;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.TaskGenerateHilla;
+import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
+import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 import com.vaadin.flow.server.frontend.TaskRunNpmInstall;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -41,8 +41,6 @@ public class BuildFrontendUtilTest {
 
     private PluginAdapterBuild adapter;
 
-    private FrontendTools tools;
-
     private Lookup lookup;
 
     private File statsJson;
@@ -55,14 +53,14 @@ public class BuildFrontendUtilTest {
 
         adapter = Mockito.mock(PluginAdapterBuild.class);
         Mockito.when(adapter.npmFolder()).thenReturn(baseDir);
+        Mockito.when(adapter.generatedTsFolder())
+                .thenReturn(new File(baseDir, "frontend/generated"));
         Mockito.when(adapter.projectBaseDirectory())
                 .thenReturn(tmpDir.getRoot().toPath());
         ClassFinder classFinder = Mockito.mock(ClassFinder.class);
         lookup = Mockito.spy(new LookupImpl(classFinder));
         Mockito.when(adapter.createLookup(Mockito.any())).thenReturn(lookup);
         Mockito.doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
-
-        tools = Mockito.mock(FrontendTools.class);
 
         // setup: mock a vite executable
         File viteBin = new File(baseDir, "node_modules/vite/bin");
@@ -86,26 +84,17 @@ public class BuildFrontendUtilTest {
         setupPluginAdapterDefaults();
 
         File openApiJsonFile = new File(new File(baseDir, Constants.TARGET),
-                FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE);
+                "classes/dev/hilla/openapi.json");
         Mockito.when(adapter.openApiJsonFile()).thenReturn(openApiJsonFile);
 
         BuildFrontendUtil.prepareFrontend(adapter);
 
-        Mockito.verify(lookup, Mockito.never())
-                .lookup(EndpointGeneratorTaskFactory.class);
-        Mockito.verify(lookup, Mockito.never()).lookup(TaskGenerateHilla.class);
-        Mockito.verify(adapter, Mockito.never()).openApiJsonFile();
-    }
-
-    @Test
-    public void should_useOldEndpointGenerator_withNodeUpdater()
-            throws URISyntaxException, ExecutionFailedException {
-        setupPluginAdapterDefaults();
-
-        BuildFrontendUtil.runNodeUpdater(adapter);
-
         Mockito.verify(lookup).lookup(EndpointGeneratorTaskFactory.class);
-        Mockito.verify(lookup, Mockito.never()).lookup(TaskGenerateHilla.class);
+        Mockito.verify(lookup, Mockito.never())
+                .lookup(TaskGenerateOpenAPI.class);
+        Mockito.verify(lookup, Mockito.never())
+                .lookup(TaskGenerateEndpoint.class);
+        Mockito.verify(adapter, Mockito.never()).openApiJsonFile();
     }
 
     @Test
@@ -116,31 +105,38 @@ public class BuildFrontendUtilTest {
         MockedConstruction<TaskRunNpmInstall> construction = Mockito
                 .mockConstruction(TaskRunNpmInstall.class);
 
-        final TaskGenerateHilla taskGenerateHilla = Mockito
-                .mock(TaskGenerateHilla.class);
-        Mockito.doReturn(taskGenerateHilla).when(lookup)
-                .lookup(TaskGenerateHilla.class);
+        final EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = Mockito
+                .mock(EndpointGeneratorTaskFactory.class);
+        Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
+                .lookup(EndpointGeneratorTaskFactory.class);
 
-        FileUtils.write(
-                new File(adapter.javaResourceFolder(),
-                        FeatureFlags.PROPERTIES_FILENAME),
-                "com.vaadin.experimental.hillaEngine=true\n",
-                StandardCharsets.UTF_8);
+        final TaskGenerateOpenAPI taskGenerateOpenAPI = Mockito
+                .mock(TaskGenerateOpenAPI.class);
+        Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
+                .createTaskGenerateOpenAPI(Mockito.any());
+
+        final TaskGenerateEndpoint taskGenerateEndpoint = Mockito
+                .mock(TaskGenerateEndpoint.class);
+        Mockito.doReturn(taskGenerateEndpoint)
+                .when(endpointGeneratorTaskFactory)
+                .createTaskGenerateEndpoint(Mockito.any());
 
         BuildFrontendUtil.runNodeUpdater(adapter);
 
+        Mockito.verify(lookup).lookup(EndpointGeneratorTaskFactory.class);
         Mockito.verify(lookup, Mockito.never())
-                .lookup(EndpointGeneratorTaskFactory.class);
-        Mockito.verify(lookup).lookup(TaskGenerateHilla.class);
-        Mockito.verify(taskGenerateHilla).configure(adapter.npmFolder(),
-                adapter.buildFolder());
+                .lookup(TaskGenerateOpenAPI.class);
+        Mockito.verify(lookup, Mockito.never())
+                .lookup(TaskGenerateEndpoint.class);
 
         // Hilla Engine requires npm install, the order of execution is critical
         final TaskRunNpmInstall taskRunNpmInstall = construction.constructed()
                 .get(0);
-        InOrder inOrder = Mockito.inOrder(taskRunNpmInstall, taskGenerateHilla);
+        InOrder inOrder = Mockito.inOrder(taskRunNpmInstall,
+                taskGenerateOpenAPI, taskGenerateEndpoint);
         inOrder.verify(taskRunNpmInstall).execute();
-        inOrder.verify(taskGenerateHilla).execute();
+        inOrder.verify(taskGenerateOpenAPI).execute();
+        inOrder.verify(taskGenerateEndpoint).execute();
     }
 
     @Test
@@ -193,8 +189,7 @@ public class BuildFrontendUtilTest {
                 FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR));
         Mockito.when(adapter.buildFolder()).thenReturn(Constants.TARGET);
         Mockito.when(adapter.npmFolder()).thenReturn(baseDir);
-        File javaSourceFolder = new File(baseDir,
-                FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER);
+        File javaSourceFolder = new File(baseDir, "src/main/java");
         Assert.assertTrue(javaSourceFolder.mkdirs());
         Mockito.when(adapter.javaSourceFolder()).thenReturn(javaSourceFolder);
         File javaResourceFolder = new File(baseDir, "src/main/resources");
@@ -203,7 +198,7 @@ public class BuildFrontendUtilTest {
                 .thenReturn(javaResourceFolder);
         Mockito.when(adapter.openApiJsonFile())
                 .thenReturn(new File(new File(baseDir, Constants.TARGET),
-                        FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE));
+                        "classes/dev/hilla/openapi.json"));
         Mockito.when(adapter.getClassFinder())
                 .thenReturn(new ClassFinder.DefaultClassFinder(
                         this.getClass().getClassLoader()));
