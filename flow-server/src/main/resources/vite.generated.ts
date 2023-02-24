@@ -207,7 +207,7 @@ function statsExtracterPlugin(): PluginOption {
           .filter((line: string) => line.startsWith("import"))
           .map((line: string) => line.substring(line.indexOf("'")+1, line.lastIndexOf("'")));
 
-      const frontendFiles = { };
+      const frontendFiles: Record<string, string> = { };
 
       const projectFileExtensions = ['.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map'];
 
@@ -221,16 +221,13 @@ function statsExtracterPlugin(): PluginOption {
         const filePath = resolve(frontendFolder, line);
         if (projectFileExtensions.includes(extname(filePath))) {
           const fileBuffer = readFileSync(filePath, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
-          const hash = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
-
-          // @ts-ignore
-          frontendFiles[`${line}`] = hash;
+          frontendFiles[line] = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
         }
       });
 
       // collects frontend resources from the JARs
       generatedImports.filter((line: string) => line.includes("generated/jar-resources")).forEach((line: string) => {
-        var filename;
+        let filename;
         if(line.includes('?')) {
           filename = line.substring(line.indexOf("generated"), line.lastIndexOf('?'));
         } else {
@@ -241,11 +238,10 @@ function statsExtracterPlugin(): PluginOption {
         const hash = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
 
         const fileKey = line.substring(line.indexOf("jar-resources/") + 14);
-        // @ts-ignore
-        frontendFiles[`${fileKey}`] = hash;
+        frontendFiles[fileKey] = hash;
       });
 
-      const themeJsonHashes = { };
+      const themeJsonHashes: Record<string, string> = { };
       const themesFolder = resolve(jarResourcesFolder, "themes");
       if (existsSync(themesFolder)) {
         readdirSync(themesFolder).forEach((themeFolder) => {
@@ -255,8 +251,7 @@ function statsExtracterPlugin(): PluginOption {
             const themeJsonContentAsJson = JSON.parse(themeJsonContent);
             const assets = themeJsonContentAsJson.assets;
             if (assets) {
-              const hash = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
-              themeJsonHashes[`${basename(themeFolder)}`] = hash;
+              themeJsonHashes[basename(themeFolder)] = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
             }
           }
         });
