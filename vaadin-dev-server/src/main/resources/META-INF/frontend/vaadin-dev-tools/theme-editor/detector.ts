@@ -1,7 +1,7 @@
 import { ComponentTheme } from './model';
 import { ComponentMetadata } from './metadata/model';
 
-export function detectStyles(metadata: ComponentMetadata): ComponentTheme {
+export function detectTheme(metadata: ComponentMetadata): ComponentTheme {
   const componentTheme = new ComponentTheme(metadata);
   const element = document.createElement(metadata.tagName);
   element.style.display = 'hidden';

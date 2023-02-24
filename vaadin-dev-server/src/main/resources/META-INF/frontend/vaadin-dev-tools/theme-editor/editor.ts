@@ -6,7 +6,7 @@ import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
 import './property-list';
 import { combineThemes, ComponentTheme, generateRules, ThemeEditorState } from './model';
-import { detectStyles } from './style-detector';
+import { detectStyles } from './detector';
 import { ThemePropertyValueChangeEvent } from './events';
 import { themePreview } from './preview';
 import { Connection } from '../vaadin-dev-tools';
