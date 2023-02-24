@@ -30,7 +30,7 @@
  * {@link com.vaadin.external.apache.commons.fileupload2.FileUpload FileUpload}
  * implementation such as
  * {@link com.vaadin.external.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload
- * JakSrvltFileUpload}.
+ * ServletFileUpload} or .
  * </p>
  * <p>
  * The following code fragment demonstrates this usage.
