@@ -1,12 +1,16 @@
 import { ComponentTheme } from './model';
 
 class ThemePreview {
-  private stylesheet: CSSStyleSheet;
+  private _stylesheet: CSSStyleSheet;
 
   constructor() {
-    this.stylesheet = new CSSStyleSheet();
-    this.stylesheet.replaceSync('');
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, this.stylesheet];
+    this._stylesheet = new CSSStyleSheet();
+    this._stylesheet.replaceSync('');
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, this._stylesheet];
+  }
+
+  get stylesheet(): CSSStyleSheet {
+    return this._stylesheet;
   }
 
   update(theme: ComponentTheme) {
@@ -22,7 +26,7 @@ class ThemePreview {
     });
 
     const themeCss = rules.join('\n');
-    this.stylesheet.replaceSync(themeCss);
+    this._stylesheet.replaceSync(themeCss);
   }
 }
 
