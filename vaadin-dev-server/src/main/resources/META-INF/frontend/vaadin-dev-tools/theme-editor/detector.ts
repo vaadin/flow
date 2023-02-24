@@ -4,7 +4,7 @@ import { ComponentMetadata } from './metadata/model';
 export function detectTheme(metadata: ComponentMetadata): ComponentTheme {
   const componentTheme = new ComponentTheme(metadata);
   const element = document.createElement(metadata.tagName);
-  element.style.display = 'hidden';
+  element.style.visibility = 'hidden';
   document.body.append(element);
 
   try {
