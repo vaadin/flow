@@ -29,7 +29,7 @@
  * {@link com.vaadin.external.apache.commons.fileupload2.FileUpload FileUpload}
  * such as
  * {@link com.vaadin.external.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload
- * JakSrvltFileUpload} together with a factory for
+ * ServletFileUpload} or , together with a factory for
  * {@link com.vaadin.external.apache.commons.fileupload2.FileItem FileItem}
  * instances, such as
  * {@link com.vaadin.external.apache.commons.fileupload2.disk.DiskFileItemFactory
