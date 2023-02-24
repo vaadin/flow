@@ -160,8 +160,8 @@ public class ConvertPolymerCommand implements AutoCloseable {
 
         Files.walkFileTree(baseDir, new SimpleFileVisitor<Path>() {
             @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-                    throws IOException {
+            public FileVisitResult preVisitDirectory(Path dir,
+                    BasicFileAttributes attrs) throws IOException {
                 if (dir.toString().contains("node_modules")) {
                     return FileVisitResult.SKIP_SUBTREE;
                 }
@@ -170,8 +170,8 @@ public class ConvertPolymerCommand implements AutoCloseable {
             }
 
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                    throws IOException {
+            public FileVisitResult visitFile(Path file,
+                    BasicFileAttributes attrs) throws IOException {
                 if (matcher.matches(file)) {
                     matchingPaths.add(file);
                 }
