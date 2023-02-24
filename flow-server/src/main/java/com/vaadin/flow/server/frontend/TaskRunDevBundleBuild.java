@@ -318,6 +318,10 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 .map(importString -> importString
                         .substring(importString.indexOf(resourcePath)
                                 + resourcePath.length()))
+                .map(importString -> importString.contains("?")
+                        ? importString.substring(0,
+                                importString.lastIndexOf("?"))
+                        : importString)
                 .collect(Collectors.toList());
 
         final JsonObject frontendHashes = statsJson.getObject("frontendHashes");
