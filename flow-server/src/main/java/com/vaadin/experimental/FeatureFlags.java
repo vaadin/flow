@@ -62,6 +62,8 @@ public class FeatureFlags implements Serializable {
             "Enforce client / constraint / binder validation",
             "enforceFieldValidation",
             "https://github.com/vaadin/platform/issues/3066", false, null);
+    public static final Feature THEME_EDITOR = new Feature("Theme Editor",
+            "themeEditor", null, false, null);
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -81,6 +83,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
         features.add(new Feature(ENFORCE_FIELD_VALIDATION));
+        features.add(new Feature(THEME_EDITOR));
         loadProperties();
     }
 

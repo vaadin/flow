@@ -248,14 +248,19 @@ function statsExtracterPlugin(): PluginOption {
           const themeJson = resolve(themesFolder, themeFolder, "theme.json");
           if (existsSync(themeJson)) {
             const themeJsonContent = readFileSync(themeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
-            const themeJsonContentAsJson = JSON.parse(themeJsonContent);
-            const assets = themeJsonContentAsJson.assets;
-            if (assets) {
-              themeJsonHashes[basename(themeFolder)] = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
-            }
+            themeJsonHashes[basename(themeFolder)] = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
           }
         });
       }
+
+      const projectThemeJson = path.resolve(frontendFolder, settings.themeFolder, settings.themeName, "theme.json")
+      if (existsSync(projectThemeJson)) {
+        const themeJsonContent = readFileSync(projectThemeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+        const hash = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
+        // @ts-ignore
+        themeJsonHashes[`${settings.themeName}`] = hash;
+      }
+
 
       let webComponents: string[] = [];
       if (webComponentTags) {
