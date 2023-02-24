@@ -87,7 +87,7 @@
         <spring.version>6.0.4</spring.version>
         <spring.boot.version>3.0.2</spring.boot.version>
         <spring.security.version>6.0.1</spring.security.version>
-        <spring.security.oauth2.authorization.server.version>1.0.0</spring.security.oauth2.authorization.server.version>
+        <spring.security.oauth2.authorization.server.version>1.0.1</spring.security.oauth2.authorization.server.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
         <slf4j.version>2.0.6</slf4j.version>
