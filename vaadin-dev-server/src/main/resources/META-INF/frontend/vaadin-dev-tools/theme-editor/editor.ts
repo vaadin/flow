@@ -5,9 +5,12 @@ import { ComponentMetadata } from './metadata/model';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
 import './property-list';
+import { ThemeEditorState } from './model';
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
+  @property({})
+  public themeEditorState: ThemeEditorState = ThemeEditorState.enabled;
   @property({})
   public pickerProvider!: PickerProvider;
 
@@ -19,6 +22,14 @@ export class ThemeEditor extends LitElement {
       :host {
         animation: fade-in var(--dev-tools-transition-duration) ease-in;
         --theme-editor-section-horizontal-padding: 0.75rem;
+      }
+
+      .missing-theme {
+        padding: var(--theme-editor-section-horizontal-padding);
+      }
+
+      .missing-theme a {
+        color: var(--dev-tools-text-color-emphasis);
       }
 
       .picker {
@@ -48,6 +59,10 @@ export class ThemeEditor extends LitElement {
   }
 
   render() {
+    if (this.themeEditorState === ThemeEditorState.missing_theme) {
+      return this.renderMissingThemeNotice();
+    }
+
     return html`
       <div class="picker">
         <button class="button" @click=${this.pickComponent}>${icons.crosshair}</button>
@@ -60,6 +75,19 @@ export class ThemeEditor extends LitElement {
             .metadata=${this.selectedComponentMetadata}
           ></vaadin-dev-tools-theme-property-list>`
         : null}
+    `;
+  }
+
+  renderMissingThemeNotice() {
+    return html`
+      <div class="missing-theme">
+        It looks like you have not set up a custom theme yet. Theme editor requires an existing theme to work with.
+        Please check our
+        <a href="https://vaadin.com/docs/latest/styling/custom-theme/creating-custom-theme" target="_blank"
+          >documentation</a
+        >
+        on how to set up a custom theme.
+      </div>
     `;
   }
 

@@ -963,7 +963,8 @@ export class VaadinDevTools extends LitElement {
   private tabs: Tab[] = [
     { id: 'log', title: 'Log', render: () => this.renderLog(), activate: this.activateLog },
     { id: 'info', title: 'Info', render: () => this.renderInfo() },
-    { id: 'features', title: 'Feature Flags', render: () => this.renderFeatures() }
+    { id: 'features', title: 'Feature Flags', render: () => this.renderFeatures() },
+    { id: 'code', title: 'Code', render: () => this.renderCode() }
   ];
 
   @state()
@@ -1106,10 +1107,6 @@ export class VaadinDevTools extends LitElement {
       this.serverInfo = message.data as ServerInfo;
     } else if (message?.command === 'featureFlags') {
       this.features = message.data.features as Feature[];
-    } else if (message?.command === 'vaadin-dev-tools-code-ok') {
-      if ((window as any).Vaadin.Flow) {
-        this.tabs.push({ id: 'code', title: 'Code', render: () => this.renderCode() });
-      }
     } else if (message?.command === 'themeEditorState') {
       this.themeEditorState = message.data;
       if (this.themeEditorState !== ThemeEditorState.disabled) {
@@ -1637,6 +1634,7 @@ export class VaadinDevTools extends LitElement {
 
   renderThemeEditor() {
     return html` <vaadin-dev-tools-theme-editor
+      .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
     ></vaadin-dev-tools-theme-editor>`;
   }
