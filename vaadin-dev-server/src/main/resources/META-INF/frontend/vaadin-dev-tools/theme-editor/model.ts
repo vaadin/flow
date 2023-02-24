@@ -6,6 +6,12 @@ export enum ThemeEditorState {
   missing_theme = 'missing_theme'
 }
 
+export interface ThemeEditorRule {
+  selector: string;
+  property: string;
+  value: string;
+}
+
 export interface ThemePropertyValue {
   partName: string | null;
   propertyName: string;
@@ -72,4 +78,18 @@ export function combineThemes(...themes: ComponentTheme[]): ComponentTheme {
   themes.forEach((theme) => resultTheme.addPropertyValues(theme.properties));
 
   return resultTheme;
+}
+
+export function generateRules(theme: ComponentTheme): ThemeEditorRule[] {
+  return theme.properties.map((propertyValue) => {
+    const selector = propertyValue.partName
+      ? `${theme.metadata.tagName}::part(${propertyValue.partName})`
+      : theme.metadata.tagName;
+
+    return {
+      selector,
+      property: propertyValue.propertyName,
+      value: propertyValue.value
+    };
+  });
 }

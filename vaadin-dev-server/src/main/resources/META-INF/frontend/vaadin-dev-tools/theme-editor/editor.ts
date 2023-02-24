@@ -5,10 +5,11 @@ import { ComponentMetadata } from './metadata/model';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
 import './property-list';
-import { combineThemes, ComponentTheme, ThemeEditorState } from './model';
+import { combineThemes, ComponentTheme, generateRules, ThemeEditorState } from './model';
 import { detectStyles } from './style-detector';
 import { ThemePropertyValueChangeEvent } from './events';
 import { themePreview } from './preview';
+import { Connection } from '../vaadin-dev-tools';
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
@@ -16,6 +17,8 @@ export class ThemeEditor extends LitElement {
   public themeEditorState: ThemeEditorState = ThemeEditorState.enabled;
   @property({})
   public pickerProvider!: PickerProvider;
+  @property({})
+  public connection!: Connection;
 
   @state()
   private selectedComponentMetadata: ComponentMetadata | null = null;
@@ -25,12 +28,17 @@ export class ThemeEditor extends LitElement {
   private editedTheme: ComponentTheme | null = null;
   @state()
   private effectiveTheme: ComponentTheme | null = null;
+  @state()
+  private hasModifications: boolean = false;
 
   static get styles() {
     return css`
       :host {
         animation: fade-in var(--dev-tools-transition-duration) ease-in;
         --theme-editor-section-horizontal-padding: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        max-height: 400px;
       }
 
       .missing-theme {
@@ -42,6 +50,7 @@ export class ThemeEditor extends LitElement {
       }
 
       .picker {
+        flex: 0 0 auto;
         display: flex;
         align-items: center;
         padding: var(--theme-editor-section-horizontal-padding);
@@ -64,6 +73,42 @@ export class ThemeEditor extends LitElement {
       .picker .no-selection {
         font-style: italic;
       }
+
+      .property-list {
+        flex: 1 1 auto;
+        overflow-y: auto;
+      }
+
+      .modifications-actions {
+        flex: 0 0 auto;
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem var(--theme-editor-section-horizontal-padding);
+        border-top: solid 1px rgba(0, 0, 0, 0.2);
+      }
+
+      .modifications-actions button {
+        all: initial;
+        font-family: inherit;
+        font-size: var(--dev-tools-font-size-small);
+        line-height: 1;
+        white-space: nowrap;
+        background-color: rgba(0, 0, 0, 0.2);
+        color: inherit;
+        font-weight: 600;
+        padding: 0.25rem 0.375rem;
+        border-radius: 0.25rem;
+      }
+
+      .modifications-actions button.discard {
+        color: var(--dev-tools-text-color-emphasis);
+        background-color: var(--dev-tools-red-color);
+      }
+
+      .modifications-actions button.apply {
+        color: var(--dev-tools-text-color-emphasis);
+        background-color: var(--dev-tools-green-color);
+      }
     `;
   }
 
@@ -81,10 +126,19 @@ export class ThemeEditor extends LitElement {
       </div>
       ${this.selectedComponentMetadata
         ? html` <vaadin-dev-tools-theme-property-list
+            class="property-list"
             .metadata=${this.selectedComponentMetadata}
             .theme=${this.effectiveTheme}
             @theme-property-value-change=${this.handlePropertyChange}
           ></vaadin-dev-tools-theme-property-list>`
+        : null}
+      ${this.hasModifications
+        ? html`
+            <div class="modifications-actions">
+              <button class="discard" @click=${this.discardChanges}>Discard</button>
+              <button class="apply" @click=${this.applyChanges}>Apply changes</button>
+            </div>
+          `
         : null}
     `;
   }
@@ -117,12 +171,10 @@ export class ThemeEditor extends LitElement {
       `,
       pickCallback: async (component) => {
         this.selectedComponentMetadata = await metadataRegistry.getMetadata(component);
+        this.hasModifications = false;
         if (this.selectedComponentMetadata) {
-          // Detect existing styles from loaded CSS
           this.defaultTheme = detectStyles(this.selectedComponentMetadata);
-          // Create empty edited theme
           this.editedTheme = new ComponentTheme(this.selectedComponentMetadata);
-          // Calculate effective theme from both
           this.effectiveTheme = combineThemes(this.defaultTheme, this.editedTheme);
         } else {
           this.defaultTheme = null;
@@ -138,11 +190,30 @@ export class ThemeEditor extends LitElement {
       return;
     }
     const { part, property, value } = e.detail;
-    // Update edited theme with new value
+    this.hasModifications = true;
     this.editedTheme.updatePropertyValue(part.partName, property.propertyName, value);
-    // Update effective theme
     this.effectiveTheme = combineThemes(this.defaultTheme, this.editedTheme);
-    // Update preview with edited theme
     themePreview.update(this.editedTheme);
+  }
+
+  private discardChanges() {
+    if (!this.selectedComponentMetadata || !this.defaultTheme) {
+      return;
+    }
+    this.hasModifications = false;
+    this.editedTheme = new ComponentTheme(this.selectedComponentMetadata);
+    this.effectiveTheme = combineThemes(this.defaultTheme, this.editedTheme);
+    themePreview.update(this.editedTheme);
+  }
+
+  private applyChanges() {
+    if (!this.editedTheme) {
+      return;
+    }
+
+    const rules = generateRules(this.editedTheme);
+    this.connection.sendThemeEditorRules(rules);
+
+    // Assume that page gets reloaded at this point, so no need to update theme states
   }
 }

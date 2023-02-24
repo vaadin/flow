@@ -8,11 +8,6 @@ import { ComponentTheme } from './model';
 export class PropertyList extends LitElement {
   static get styles() {
     return css`
-      .part-list {
-        max-height: 350px;
-        overflow-y: auto;
-      }
-
       .part .header {
         padding: 0.4rem var(--theme-editor-section-horizontal-padding);
         color: var(--dev-tools-text-color-emphasis);
