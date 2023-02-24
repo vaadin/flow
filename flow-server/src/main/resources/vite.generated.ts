@@ -253,7 +253,7 @@ function statsExtracterPlugin(): PluginOption {
         });
       }
 
-      const projectThemeJson = path.resolve(frontendFolder, settings.themeFolder, settings.themeName, "theme.json")
+      const projectThemeJson = resolve(frontendFolder, settings.themeFolder, settings.themeName, "theme.json")
       if (existsSync(projectThemeJson)) {
         const themeJsonContent = readFileSync(projectThemeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
         const hash = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
