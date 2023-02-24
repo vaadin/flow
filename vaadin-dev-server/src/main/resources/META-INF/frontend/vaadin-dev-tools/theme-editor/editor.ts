@@ -6,7 +6,7 @@ import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
 import './property-list';
 import { combineThemes, ComponentTheme, generateRules, ThemeEditorState } from './model';
-import { detectStyles } from './detector';
+import { detectTheme } from './detector';
 import { ThemePropertyValueChangeEvent } from './events';
 import { themePreview } from './preview';
 import { Connection } from '../vaadin-dev-tools';
@@ -173,7 +173,7 @@ export class ThemeEditor extends LitElement {
         this.selectedComponentMetadata = await metadataRegistry.getMetadata(component);
         this.hasModifications = false;
         if (this.selectedComponentMetadata) {
-          this.defaultTheme = detectStyles(this.selectedComponentMetadata);
+          this.defaultTheme = detectTheme(this.selectedComponentMetadata);
           this.editedTheme = new ComponentTheme(this.selectedComponentMetadata);
           this.effectiveTheme = combineThemes(this.defaultTheme, this.editedTheme);
         } else {

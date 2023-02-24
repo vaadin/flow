@@ -41,7 +41,7 @@ export class ComponentTheme {
   }
 
   public getPropertyValue(partName: string | null, propertyName: string): ThemePropertyValue {
-    return this._properties[propertyKey(partName, propertyName)];
+    return this._properties[propertyKey(partName, propertyName)] || null;
   }
 
   public updatePropertyValue(partName: string | null, propertyName: string, value: string) {
