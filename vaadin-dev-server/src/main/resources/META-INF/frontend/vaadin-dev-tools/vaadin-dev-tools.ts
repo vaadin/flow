@@ -965,7 +965,8 @@ export class VaadinDevTools extends LitElement {
   private tabs: Tab[] = [
     { id: 'log', title: 'Log', render: this.renderLog, activate: this.activateLog },
     { id: 'info', title: 'Info', render: this.renderInfo },
-    { id: 'features', title: 'Feature Flags', render: this.renderFeatures }
+    { id: 'features', title: 'Feature Flags', render: this.renderFeatures },
+    { id: 'code', title: 'Code', render: this.renderCode }
   ];
 
   @state()
@@ -1056,10 +1057,6 @@ export class VaadinDevTools extends LitElement {
         this.serverInfo = message.data as ServerInfo;
       } else if (message?.command === 'featureFlags') {
         this.features = message.data.features as Feature[];
-      } else if (message?.command === 'vaadin-dev-tools-code-ok') {
-        if ((window as any).Vaadin.Flow) {
-          this.tabs.push({ id: 'code', title: 'Code', render: this.renderCode });
-        }
       } else {
         // eslint-disable-next-line no-console
         console.error('Unknown message from front-end connection:', JSON.stringify(message));
