@@ -40,7 +40,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
-import com.vaadin.pro.licensechecker.LocalProKey;
 import com.vaadin.pro.licensechecker.Product;
 
 import elemental.json.Json;
@@ -139,10 +138,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 .get(context).getFeatures().stream()
                 .filter(feature -> !feature.equals(FeatureFlags.EXAMPLE))
                 .collect(Collectors.toList())));
-
-        if (LocalProKey.get() != null) {
-            send(resource, "vaadin-dev-tools-code-ok", null);
-        }
 
         if (themeModifier.isEnabled()) {
             send(resource, "themeEditorState",
@@ -247,10 +242,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
                             "Only component locations are tracked. The given node id refers to an element and not a component");
                 }
             });
-        } else if ("themeEditorRules".equals(command)) {
-            themeModifier.handleDebugMessageData(data);
-        } else if ("themeEditorCreateDefaultTheme".equals(command)) {
-            themeModifier.createDefaultTheme();
+        } else if (themeModifier.handleDebugMessageData(command, data)) {
+            // nop
         } else {
             getLogger().info("Unknown command from the browser: " + command);
         }

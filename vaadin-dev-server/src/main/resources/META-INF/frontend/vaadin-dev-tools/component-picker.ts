@@ -10,6 +10,8 @@ export interface PickerOptions {
   pickCallback: (component: ComponentReference) => void;
 }
 
+export type PickerProvider = () => ComponentPicker;
+
 /**
  * When active, shows a component picker that allows the user to select an element with a server side counterpart.
  */

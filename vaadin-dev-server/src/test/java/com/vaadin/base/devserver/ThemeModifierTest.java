@@ -4,13 +4,20 @@ import com.helger.css.ECSSVersion;
 import com.helger.css.decl.CSSStyleRule;
 import com.helger.css.decl.CascadingStyleSheet;
 import com.helger.css.reader.CSSReader;
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.testutil.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
@@ -24,10 +31,12 @@ public class ThemeModifierTest {
 
     private String SELECTOR_WITH_PART = "vaadin-text-field::part(label)";
 
+    private VaadinContext mockContext = new MockVaadinContext();
+
     private class TestThemeModifier extends ThemeModifier {
 
         public TestThemeModifier() {
-            super(new MockVaadinContext());
+            super(mockContext);
         }
 
         @Override
@@ -37,9 +46,7 @@ public class ThemeModifierTest {
     }
 
     @Before
-    public void prepareFiles() throws IOException {
-        System.getProperties().put(ThemeModifier.THEME_EDITOR_ENABLED_PROPERTY,
-                "true");
+    public void prepareFiles() throws IOException, URISyntaxException {
         File themeFolder = TestUtils
                 .getTestFolder(FRONTEND_FOLDER + "/themes/my-theme");
         File stylesCss = new File(themeFolder, "styles.css");
@@ -51,12 +58,29 @@ public class ThemeModifierTest {
         if (themeEditorCss.exists()) {
             themeEditorCss.delete();
         }
+
+        Lookup lookup = Mockito.mock(Lookup.class);
+        mockContext.setAttribute(Lookup.class, lookup);
+
+        ApplicationConfiguration configuration = Mockito
+                .mock(ApplicationConfiguration.class);
+        ApplicationConfigurationFactory factory = Mockito
+                .mock(ApplicationConfigurationFactory.class);
+
+        Mockito.when(lookup.lookup(ApplicationConfigurationFactory.class))
+                .thenReturn(factory);
+        Mockito.when(factory.create(Mockito.any())).thenReturn(configuration);
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        Mockito.when(configuration.getJavaResourceFolder())
+                .thenReturn(new File("src/test/resources"));
+
+        FeatureFlags.get(mockContext)
+                .setEnabled(FeatureFlags.THEME_EDITOR.getId(), true);
+
     }
 
     @After
     public void cleanup() {
-        System.getProperties()
-                .remove(ThemeModifier.THEME_EDITOR_ENABLED_PROPERTY);
         File themeFolder = new File(
                 TestUtils.getTestFolder(FRONTEND_NO_THEME_FOLDER), "themes");
         if (themeFolder.exists()) {
@@ -96,7 +120,7 @@ public class ThemeModifierTest {
         assertEquals(ThemeModifier.State.MISSING_THEME,
                 themeModifier.getState());
 
-        themeModifier.createDefaultTheme();
+        themeModifier.handleCreateDefaultThemeCommand(null);
         themeModifier = new TestThemeModifier() {
             @Override
             protected File getFrontendFolder() {
@@ -108,8 +132,8 @@ public class ThemeModifierTest {
 
     @Test
     public void themeEditorPropertyNotSet_stateDisabled() {
-        System.getProperties()
-                .remove(ThemeModifier.THEME_EDITOR_ENABLED_PROPERTY);
+        FeatureFlags.get(mockContext)
+                .setEnabled(FeatureFlags.THEME_EDITOR.getId(), false);
         ThemeModifier themeModifier = new TestThemeModifier();
         assertEquals(ThemeModifier.State.DISABLED, themeModifier.getState());
     }

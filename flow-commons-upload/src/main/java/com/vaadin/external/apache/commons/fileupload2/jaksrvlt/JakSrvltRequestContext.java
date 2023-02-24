@@ -32,7 +32,7 @@ import com.vaadin.external.apache.commons.fileupload2.UploadContext;
  * HTTP servlet.
  * </p>
  *
- * @since FileUpload 1.1
+ * @since 1.1
  */
 public class JakSrvltRequestContext implements UploadContext {
 
