@@ -32,11 +32,12 @@ import java.io.UnsupportedEncodingException;
  * After retrieving an instance of this class from a
  * {@link com.vaadin.external.apache.commons.fileupload2.FileUpload FileUpload}
  * instance (see
- * {@link com.vaadin.external.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload#parseRequest(jakarta.servlet.http.HttpServletRequest)}),
- * you may either request all contents of the file at once using {@link #get()}
- * or request an {@link java.io.InputStream InputStream} with
- * {@link #getInputStream()} and process the file without attempting to load it
- * into memory, which may come handy with large files.
+ * {@link com.vaadin.external.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload
+ * #parseRequest(jakarta.servlet.http.HttpServletRequest)}), you may either
+ * request all contents of the file at once using {@link #get()} or request an
+ * {@link java.io.InputStream InputStream} with {@link #getInputStream()} and
+ * process the file without attempting to load it into memory, which may come
+ * handy with large files.
  *
  * <p>
  * While this interface does not extend {@code javax.activation.DataSource} per
