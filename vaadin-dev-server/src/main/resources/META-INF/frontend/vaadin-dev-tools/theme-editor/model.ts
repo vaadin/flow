@@ -1,3 +1,5 @@
+import { ComponentMetadata } from './metadata/model';
+
 export enum ThemeEditorState {
   disabled = 'disabled',
   enabled = 'enabled',
@@ -17,19 +19,23 @@ function propertyKey(partName: string | null, propertyName: string) {
 }
 
 export class ComponentTheme {
-  private _tagName: string;
-  private properties: PropertyValueMap = {};
+  private _metadata: ComponentMetadata;
+  private _properties: PropertyValueMap = {};
 
-  constructor(tagName: string) {
-    this._tagName = tagName;
+  constructor(metadata: ComponentMetadata) {
+    this._metadata = metadata;
   }
 
-  get tagName(): string {
-    return this._tagName;
+  get metadata(): ComponentMetadata {
+    return this._metadata;
+  }
+
+  get properties(): ThemePropertyValue[] {
+    return Object.values(this._properties);
   }
 
   public getPropertyValue(partName: string | null, propertyName: string): ThemePropertyValue {
-    return this.properties[propertyKey(partName, propertyName)];
+    return this._properties[propertyKey(partName, propertyName)];
   }
 
   public updatePropertyValue(partName: string | null, propertyName: string, value: string) {
@@ -40,7 +46,7 @@ export class ComponentTheme {
         propertyName,
         value
       };
-      this.properties[propertyKey(partName, propertyName)] = propertyValue;
+      this._properties[propertyKey(partName, propertyName)] = propertyValue;
     } else {
       propertyValue.value = value;
     }
@@ -51,4 +57,19 @@ export class ComponentTheme {
       this.updatePropertyValue(value.partName, value.propertyName, value.value);
     });
   }
+
+  public getPropertyValuesForPart(partName: string | null) {
+    return this.properties.filter((property) => property.partName === partName);
+  }
+}
+
+export function combineThemes(...themes: ComponentTheme[]): ComponentTheme {
+  if (themes.length < 2) {
+    throw new Error('Must provide at least two themes');
+  }
+
+  const resultTheme = new ComponentTheme(themes[0].metadata);
+  themes.forEach((theme) => resultTheme.addPropertyValues(theme.properties));
+
+  return resultTheme;
 }
