@@ -726,7 +726,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                             "Packaged theme folders structure is incorrect, should have META-INF/resources/themes/[theme-name]/");
                 }
                 String themeName = matcher.group(1);
-                    String hash = calculateHash(content);
+                String hash = calculateHash(content);
                 packagedThemeHashes.put(themeName, hash);
             }
         }
