@@ -80,7 +80,7 @@ function injectManifestToSWPlugin(): rollup.Plugin {
     async transform(code, id) {
       if (/sw\.(ts|js)$/.test(id)) {
         const { manifestEntries } = await getManifest({
-          globDirectory: frontendBundleFolder,
+          globDirectory: buildOutputFolder,
           globPatterns: ['**/*'],
           globIgnores: ['**/*.br'],
           manifestTransforms: [rewriteManifestIndexHtmlUrl],
@@ -130,7 +130,7 @@ function buildSWPlugin(opts): PluginOption {
 
     try {
       return await bundle[action]({
-        file: path.resolve(frontendBundleFolder, 'sw.js'),
+        file: path.resolve(buildOutputFolder, 'sw.js'),
         format: 'es',
         exports: 'none',
         sourcemap: config.command === 'serve' || config.build.sourcemap,
@@ -238,15 +238,21 @@ function statsExtracterPlugin(): PluginOption {
           const themeJson = path.resolve(themesFolder, themeFolder, "theme.json");
           if (existsSync(themeJson)) {
             const themeJsonContent = readFileSync(themeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
-            const themeJsonContentAsJson = JSON.parse(themeJsonContent);
-            const assets = themeJsonContentAsJson.assets;
-            if (assets) {
-              const hash = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
-              themeJsonHashes[`${path.basename(themeFolder)}`] = hash;
-            }
+            const hash = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
+            // @ts-ignore
+            themeJsonHashes[`${path.basename(themeFolder)}`] = hash;
           }
         });
       }
+
+      const projectThemeJson = path.resolve(frontendFolder, settings.themeFolder, settings.themeName, "theme.json")
+      if (existsSync(projectThemeJson)) {
+        const themeJsonContent = readFileSync(projectThemeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+        const hash = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
+        // @ts-ignore
+        themeJsonHashes[`${settings.themeName}`] = hash;
+      }
+
 
       let webComponents: string[] = [];
       if (webComponentTags) {

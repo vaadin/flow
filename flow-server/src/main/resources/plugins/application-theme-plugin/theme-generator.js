@@ -99,6 +99,20 @@ export const injectGlobalCss = (css, target, first) => {
 };
 `;
 
+const addLumoImportStyleTag = `
+const addLumoImportStyleTag = (lumoStyles, target) => {
+  const styleTag = document.createElement('style');
+  styleTag.type = 'text/css';
+  styleTag.appendChild(document.createTextNode(lumoStyles));
+  // For target document append to head else append to target
+  if (target === document) {
+    document.head.appendChild(styleTag);
+  } else {
+    target.appendChild(styleTag);
+  }
+};
+`;
+
 /**
  * Generate the [themeName].js file for themeFolder which collects all required information from the folder.
  *
@@ -135,6 +149,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
 
   themeFile += createLinkReferences;
   themeFile += injectGlobalCssMethod;
+  themeFile += addLumoImportStyleTag;
 
   const imports = [];
   const globalCssCode = [];
@@ -171,9 +186,15 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
       imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles/${lumoImport}.js';\n`);
     });
 
-    lumoImports.forEach((lumoImport) => {
-      lumoCssCode.push(`injectGlobalCss(${lumoImport}.cssText, target, true);\n`);
-    });
+    if (useDevServer) {
+      lumoImports.forEach((lumoImport) => {
+        lumoCssCode.push(`injectGlobalCss(${lumoImport}.cssText, target, true);\n`);
+      });
+    } else {
+      lumoImports.forEach((lumoImport) => {
+        lumoCssCode.push(`addLumoImportStyleTag(${lumoImport}.cssText, target);\n`);
+      });
+    }
   }
 
   if (useDevServer) {

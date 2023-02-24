@@ -82,5 +82,16 @@
 
     </dependencies>
 
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <!-- Exclude all frontend tests -->
+                    <exclude>META-INF/frontend/vaadin-dev-tools/**/*.test.ts</exclude>
+                </excludes>
+            </resource>
+        </resources>
+    </build>
 
 </project>
