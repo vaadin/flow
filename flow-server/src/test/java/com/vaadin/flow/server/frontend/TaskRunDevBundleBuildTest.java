@@ -982,6 +982,38 @@ public class TaskRunDevBundleBuildTest {
     }
 
     @Test
+    public void cssImportWithInline_statsAndImportsMatchAndNoBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getModules()).thenReturn(
+                Collections.singletonList("Frontend/my-styles.css?inline"));
+
+        JsonObject stats = getBasicStats();
+        stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/my-styles.css");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(
+                    () -> FrontendUtils.getJarResourceString("my-styles.css"))
+                    .thenReturn("body{color:yellow}");
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "CSS 'inline' suffix should be ignored for imports checking",
+                    needsBuild);
+        }
+    }
+
+    @Test
     public void reusedTheme_noReusedThemes_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);

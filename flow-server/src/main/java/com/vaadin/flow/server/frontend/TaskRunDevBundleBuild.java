@@ -296,6 +296,10 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 .filter(line -> line.startsWith("import"))
                 .map(line -> line.substring(line.indexOf('\'') + 1,
                         line.lastIndexOf('\'')))
+                .map(importString -> importString.contains("?")
+                        ? importString.substring(0,
+                                importString.lastIndexOf("?"))
+                        : importString)
                 .collect(Collectors.toList());
         JsonArray statsBundle = statsJson.hasKey("bundleImports")
                 ? statsJson.getArray("bundleImports")
