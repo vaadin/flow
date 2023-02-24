@@ -209,7 +209,7 @@ function statsExtracterPlugin(): PluginOption {
 
       const frontendFiles: Record<string, string> = { };
 
-      const projectFileExtensions = ['.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map'];
+      const projectFileExtensions = ['.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map', '.css', '.css.map'];
 
       // collects project's frontend resources in frontend folder, excluding
       // 'generated' sub-folder
