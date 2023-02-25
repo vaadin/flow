@@ -7,6 +7,7 @@ import { PickerOptions, PickerProvider } from '../component-picker';
 import { metadataRegistry } from './metadata/registry';
 import buttonMetadata from './metadata/components/vaadin-button';
 import sinon from 'sinon';
+import {themePreview} from "./preview";
 
 describe('theme-editor', () => {
   let editor: ThemeEditor;
@@ -80,6 +81,7 @@ describe('theme-editor', () => {
   });
 
   beforeEach(async () => {
+    themePreview.reset();
     button = await fixture(html` <vaadin-button></vaadin-button>`);
     defaultButtonLabelStyles = getComputedStyle(button.shadowRoot!.querySelector('[part="label"]')!);
     const fixtureResult = await editorFixture();
