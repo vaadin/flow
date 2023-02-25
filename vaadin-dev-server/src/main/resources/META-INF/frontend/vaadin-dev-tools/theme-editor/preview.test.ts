@@ -62,14 +62,14 @@ describe('theme-preview', () => {
     expect(buttonStyles.suffix.color).to.equal(colors.red);
   });
 
-  it('should clear theme preview', () => {
+  it('should reset theme preview', () => {
     const theme = new ComponentTheme(buttonMetadata);
     theme.updatePropertyValue('label', 'color', colors.red);
     theme.updatePropertyValue('prefix', 'color', colors.green);
     theme.updatePropertyValue('suffix', 'color', colors.blue);
     themePreview.update(theme);
 
-    themePreview.update(new ComponentTheme(buttonMetadata));
+    themePreview.reset();
 
     let buttonStyles = getButtonStyles();
     expect(buttonStyles.label.color).to.not.equal(colors.red);

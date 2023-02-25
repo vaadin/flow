@@ -28,6 +28,10 @@ class ThemePreview {
     const themeCss = rules.join('\n');
     this._stylesheet.replaceSync(themeCss);
   }
+
+  reset() {
+    this._stylesheet.replaceSync('');
+  }
 }
 
 export const themePreview = new ThemePreview();

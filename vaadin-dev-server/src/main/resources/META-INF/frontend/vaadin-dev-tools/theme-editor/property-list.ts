@@ -38,11 +38,12 @@ export class PropertyList extends LitElement {
         .partMetadata=${part}
         .propertyMetadata=${property}
         .theme=${this.theme}
+        data-testid=${property.propertyName}
       ></vaadin-dev-tools-theme-property-editor>`;
     });
 
     return html`
-      <div class="part">
+      <div class="part" data-testid=${part.partName}>
         <div class="header">${part.displayName}</div>
         <div class="property-list">${properties}</div>
       </div>

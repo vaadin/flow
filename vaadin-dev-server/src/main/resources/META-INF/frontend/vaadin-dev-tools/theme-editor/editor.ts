@@ -172,6 +172,7 @@ export class ThemeEditor extends LitElement {
       pickCallback: async (component) => {
         this.selectedComponentMetadata = await metadataRegistry.getMetadata(component);
         this.hasModifications = false;
+        themePreview.reset();
         if (this.selectedComponentMetadata) {
           this.defaultTheme = detectTheme(this.selectedComponentMetadata);
           this.editedTheme = new ComponentTheme(this.selectedComponentMetadata);
@@ -203,7 +204,7 @@ export class ThemeEditor extends LitElement {
     this.hasModifications = false;
     this.editedTheme = new ComponentTheme(this.selectedComponentMetadata);
     this.effectiveTheme = combineThemes(this.defaultTheme, this.editedTheme);
-    themePreview.update(this.editedTheme);
+    themePreview.reset();
   }
 
   private applyChanges() {
