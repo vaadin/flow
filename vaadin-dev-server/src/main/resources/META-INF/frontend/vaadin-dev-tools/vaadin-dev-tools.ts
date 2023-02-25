@@ -963,8 +963,7 @@ export class VaadinDevTools extends LitElement {
   private tabs: Tab[] = [
     { id: 'log', title: 'Log', render: () => this.renderLog(), activate: this.activateLog },
     { id: 'info', title: 'Info', render: () => this.renderInfo() },
-    { id: 'features', title: 'Feature Flags', render: () => this.renderFeatures() },
-    { id: 'code', title: 'Code', render: () => this.renderCode() }
+    { id: 'features', title: 'Feature Flags', render: () => this.renderFeatures() }
   ];
 
   @state()
@@ -1151,6 +1150,13 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
+  constructor() {
+    super();
+
+    if ((window as any).Vaadin.Flow) {
+      this.tabs.push({ id: 'code', title: 'Code', render: () => this.renderCode() });
+    }
+  }
   connectedCallback() {
     super.connectedCallback();
     this.catchErrors();
