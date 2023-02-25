@@ -176,7 +176,7 @@ describe('theme-editor', () => {
       });
     });
 
-    it('should initialize property editors with default theme values', async () => {
+    it('should initialize property editors with base theme values', async () => {
       await pickComponent();
 
       const propertyEditor = findPropertyEditor('label', 'color');

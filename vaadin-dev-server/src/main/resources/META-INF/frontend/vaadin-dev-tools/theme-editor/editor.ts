@@ -23,7 +23,7 @@ export class ThemeEditor extends LitElement {
   @state()
   private selectedComponentMetadata: ComponentMetadata | null = null;
   @state()
-  private defaultTheme: ComponentTheme | null = null;
+  private baseTheme: ComponentTheme | null = null;
   @state()
   private editedTheme: ComponentTheme | null = null;
   @state()
@@ -174,11 +174,11 @@ export class ThemeEditor extends LitElement {
         this.hasModifications = false;
         themePreview.reset();
         if (this.selectedComponentMetadata) {
-          this.defaultTheme = detectTheme(this.selectedComponentMetadata);
+          this.baseTheme = detectTheme(this.selectedComponentMetadata);
           this.editedTheme = new ComponentTheme(this.selectedComponentMetadata);
-          this.effectiveTheme = combineThemes(this.defaultTheme, this.editedTheme);
+          this.effectiveTheme = combineThemes(this.baseTheme, this.editedTheme);
         } else {
-          this.defaultTheme = null;
+          this.baseTheme = null;
           this.editedTheme = null;
           this.effectiveTheme = null;
         }
@@ -187,23 +187,23 @@ export class ThemeEditor extends LitElement {
   }
 
   private handlePropertyChange(e: ThemePropertyValueChangeEvent) {
-    if (!this.editedTheme || !this.defaultTheme) {
+    if (!this.editedTheme || !this.baseTheme) {
       return;
     }
     const { part, property, value } = e.detail;
     this.hasModifications = true;
     this.editedTheme.updatePropertyValue(part.partName, property.propertyName, value);
-    this.effectiveTheme = combineThemes(this.defaultTheme, this.editedTheme);
+    this.effectiveTheme = combineThemes(this.baseTheme, this.editedTheme);
     themePreview.update(this.editedTheme);
   }
 
   private discardChanges() {
-    if (!this.selectedComponentMetadata || !this.defaultTheme) {
+    if (!this.selectedComponentMetadata || !this.baseTheme) {
       return;
     }
     this.hasModifications = false;
     this.editedTheme = new ComponentTheme(this.selectedComponentMetadata);
-    this.effectiveTheme = combineThemes(this.defaultTheme, this.editedTheme);
+    this.effectiveTheme = combineThemes(this.baseTheme, this.editedTheme);
     themePreview.reset();
   }
 
@@ -215,6 +215,6 @@ export class ThemeEditor extends LitElement {
     const rules = generateRules(this.editedTheme);
     this.connection.sendThemeEditorRules(rules);
 
-    // Assume that page gets reloaded at this point, so no need to update theme states
+    // Assume that page gets reloaded at this point, so no need to update component state
   }
 }
