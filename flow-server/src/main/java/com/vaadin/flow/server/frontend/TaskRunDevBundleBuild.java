@@ -220,11 +220,11 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             throws IOException {
         Map<String, String> themeJsonHashes = new HashMap<>();
 
-        if (options.jarFiles == null) {
+        if (options.getJarFiles() == null) {
             return false;
         }
 
-        options.jarFiles.stream().filter(File::exists)
+        options.getJarFiles().stream().filter(File::exists)
                 .filter(file -> !file.isDirectory())
                 .forEach(jarFile -> calculateHashesForPackagedThemeJson(jarFile,
                         themeJsonHashes));
@@ -761,11 +761,11 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         FrontendToolsSettings settings = new FrontendToolsSettings(
                 options.getNpmFolder().getAbsolutePath(),
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
-        settings.setNodeDownloadRoot(options.nodeDownloadRoot);
-        settings.setForceAlternativeNode(options.requireHomeNodeExec);
-        settings.setUseGlobalPnpm(options.useGlobalPnpm);
-        settings.setAutoUpdate(options.nodeAutoUpdate);
-        settings.setNodeVersion(options.nodeVersion);
+        settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
+        settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
+        settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
+        settings.setAutoUpdate(options.isNodeAutoUpdate());
+        settings.setNodeVersion(options.getNodeVersion());
         FrontendTools frontendTools = new FrontendTools(settings);
 
         File buildExecutable = new File(options.getNpmFolder(),
@@ -778,7 +778,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
 
         String nodePath;
-        if (options.requireHomeNodeExec) {
+        if (options.isRequireHomeNodeExec()) {
             nodePath = frontendTools.forceAlternativeNodeExecutable();
         } else {
             nodePath = frontendTools.getNodeExecutable();

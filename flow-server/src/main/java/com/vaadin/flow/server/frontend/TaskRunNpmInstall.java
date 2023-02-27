@@ -137,7 +137,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        String toolName = options.enablePnpm ? "pnpm" : "npm";
+        String toolName = options.isEnablePnpm() ? "pnpm" : "npm";
         if (packageUpdater.modified || shouldRunNpmInstall()) {
             packageUpdater.log().info("Running `" + toolName + " install` to "
                     + "resolve and optionally download frontend dependencies. "
@@ -252,15 +252,15 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         FrontendToolsSettings settings = new FrontendToolsSettings(baseDir,
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
-        settings.setNodeDownloadRoot(options.nodeDownloadRoot);
-        settings.setForceAlternativeNode(options.requireHomeNodeExec);
-        settings.setUseGlobalPnpm(options.useGlobalPnpm);
-        settings.setAutoUpdate(options.nodeAutoUpdate);
-        settings.setNodeVersion(options.nodeVersion);
+        settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
+        settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
+        settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
+        settings.setAutoUpdate(options.isNodeAutoUpdate());
+        settings.setNodeVersion(options.getNodeVersion());
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
 
-        if (options.enablePnpm) {
+        if (options.isEnablePnpm()) {
             try {
                 createPnpmFile(packageUpdater.versionsPath, tools);
             } catch (IOException exception) {
@@ -285,10 +285,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
         List<String> postinstallCommand;
 
         try {
-            if (options.requireHomeNodeExec) {
+            if (options.isRequireHomeNodeExec()) {
                 tools.forceAlternativeNodeExecutable();
             }
-            if (options.enablePnpm) {
+            if (options.isEnablePnpm()) {
                 validateInstalledNpm(tools);
                 npmExecutable = tools.getPnpmExecutable();
             } else {
@@ -316,7 +316,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                             npmInstallCommand));
         }
 
-        String toolName = options.enablePnpm ? "pnpm" : "npm";
+        String toolName = options.isEnablePnpm() ? "pnpm" : "npm";
 
         String commandString = npmInstallCommand.stream()
                 .collect(Collectors.joining(" "));
@@ -328,7 +328,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         // missing as "npm install" in this case can take minutes
         // https://github.com/vaadin/flow/issues/12825
         File packageLockFile = packageUpdater.getPackageLockFile();
-        if (!options.enablePnpm && !packageLockFile.exists()) {
+        if (!options.isEnablePnpm() && !packageLockFile.exists()) {
             packageUpdater.log().warn("package-lock.json is missing from this "
                     + "project. This may cause the npm package installation to "
                     + "take several minutes. It is recommended to keep the "
@@ -389,7 +389,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         postinstallPackages.add(".");
         postinstallPackages.add("esbuild");
         postinstallPackages.add("@vaadin/vaadin-usage-statistics");
-        postinstallPackages.addAll(options.postinstallPackages);
+        postinstallPackages.addAll(options.getPostinstallPackages());
 
         for (String postinstallPackage : postinstallPackages) {
             File packageJsonFile = getPackageJsonForModule(postinstallPackage);
@@ -430,7 +430,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
         }
         lastInstallStats.installTimeMs = System.currentTimeMillis() - startTime;
-        lastInstallStats.packageManager = options.enablePnpm ? "pnpm" : "npm";
+        lastInstallStats.packageManager = options.isEnablePnpm() ? "pnpm"
+                : "npm";
 
     }
 
@@ -581,9 +582,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
         File modulesYaml = new File(options.getNodeModulesFolder(),
                 MODULES_YAML);
         boolean hasModulesYaml = modulesYaml.exists() && modulesYaml.isFile();
-        if (!options.enablePnpm && hasModulesYaml) {
+        if (!options.isEnablePnpm() && hasModulesYaml) {
             deleteNodeModules(options.getNodeModulesFolder());
-        } else if (options.enablePnpm && !hasModulesYaml) {
+        } else if (options.isEnablePnpm() && !hasModulesYaml) {
             // presence of .staging dir with a "pnpm-*" folder means that pnpm
             // download is in progress, don't remove anything in this case
             File staging = new File(options.getNodeModulesFolder(), ".staging");
