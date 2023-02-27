@@ -361,47 +361,56 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         if (!faultyContent.isEmpty()) {
             logChangedFiles(faultyContent,
-                    "Detected changed content for frontend files:\n{}");
+                    "Detected changed content for frontend files:");
             return false;
         }
 
-        for (String indexFileName : Arrays.asList(FrontendUtils.INDEX_TS,
-                FrontendUtils.INDEX_TSX, FrontendUtils.INDEX_JS)) {
-            if (indexTsChanged(options, frontendHashes, indexFileName)) {
-                return false;
-            }
-        }
+        Map<String, String> remainingImports = getRemainingImports(jarImports,
+                projectImports, frontendHashes);
 
-        if (newOrDeletedFrontendFiles(options, frontendHashes, jarImports,
-                projectImports)) {
+        if (newOrDeletedFrontendFiles(options.getFrontendDirectory(),
+                remainingImports)) {
             return false;
         }
 
         return true;
     }
 
-    private static boolean newOrDeletedFrontendFiles(Options options,
-            JsonObject frontendHashes, List<String> jarImports,
-            List<String> projectImports) throws IOException {
-        List<String> expectedFrontendFiles = new ArrayList<>(
+    private static Map<String, String> getRemainingImports(
+            List<String> jarImports, List<String> projectImports,
+            JsonObject frontendHashes) {
+        Map<String, String> remainingImportEntries = new HashMap<>();
+        List<String> remainingKeys = new ArrayList<>(
                 Arrays.asList(frontendHashes.keys()));
-        expectedFrontendFiles.removeAll(jarImports);
-        expectedFrontendFiles.removeAll(projectImports);
-        expectedFrontendFiles.remove(FrontendUtils.INDEX_TS);
-        expectedFrontendFiles.remove(FrontendUtils.INDEX_JS);
-        expectedFrontendFiles.remove(FrontendUtils.INDEX_TSX);
 
-        if (!expectedFrontendFiles.isEmpty()) {
+        remainingKeys.removeAll(jarImports);
+        remainingKeys.removeAll(projectImports);
+
+        if (!remainingKeys.isEmpty()) {
+            for (String key : remainingKeys) {
+                remainingImportEntries.put(key, frontendHashes.getString(key));
+            }
+            return remainingImportEntries;
+        }
+
+        return Collections.emptyMap();
+    }
+
+    private static boolean newOrDeletedFrontendFiles(File frontendDirectory,
+            Map<String, String> remainingImports) throws IOException {
+        if (!remainingImports.isEmpty()) {
             List<String> deleted = new ArrayList<>();
             List<String> changed = new ArrayList<>();
-            for (String filePath : expectedFrontendFiles) {
-                File frontendFile = new File(options.getFrontendDirectory(),
-                        filePath);
+            for (Map.Entry<String, String> importEntry : remainingImports
+                    .entrySet()) {
+                String filePath = importEntry.getKey();
+                String expectedHash = importEntry.getValue();
+                File frontendFile = new File(frontendDirectory, filePath);
                 if (frontendFile.exists()) {
                     final String hash = calculateHash(
                             FileUtils.readFileToString(frontendFile,
                                     StandardCharsets.UTF_8));
-                    if (!frontendHashes.getString(filePath).equals(hash)) {
+                    if (!expectedHash.equals(hash)) {
                         changed.add(filePath);
                     }
                 } else {
@@ -409,46 +418,32 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 }
             }
             if (!changed.isEmpty()) {
-                logChangedFiles(changed,
-                        "Detected changed frontend files:\n{}");
+                logChangedFiles(changed, "Detected changed frontend files:");
             }
             if (!deleted.isEmpty()) {
-                logChangedFiles(deleted,
-                        "Detected deleted frontend files:\n{}");
+                logChangedFiles(deleted, "Detected deleted frontend files:");
             }
             return !changed.isEmpty() || !deleted.isEmpty();
         }
         return false;
     }
 
-    private static boolean indexTsChanged(Options options,
-            JsonObject frontendHashes, String fileName) throws IOException {
-        File indexTs = new File(options.getFrontendDirectory(), fileName);
-        if (indexTs.exists()) {
-            if (!frontendHashes.hasKey(fileName)) {
-                getLogger().info("'{}' added to the project", fileName);
-                return true;
-            }
-            final String contentHash = calculateHash(FileUtils
-                    .readFileToString(indexTs, StandardCharsets.UTF_8));
-            if (!frontendHashes.getString(fileName).equals(contentHash)) {
-                getLogger().info("'{}' is not up to date", fileName);
-                return true;
-            }
-        } else if (frontendHashes.hasKey(fileName)) {
-            getLogger().info("'{}' has been deleted", fileName);
-            return true;
-        }
-        return false;
-    }
-
     private static void logChangedFiles(List<String> frontendFiles,
             String message) {
-        StringBuilder removedFiles = new StringBuilder();
-        for (String file : frontendFiles) {
-            removedFiles.append(" - ").append(file).append("\n");
+        if (message == null || message.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Changed files message cannot be empty");
         }
-        getLogger().info(message, removedFiles);
+        if (message.contains("{}")) {
+            throw new IllegalArgumentException(
+                    "Changed files message shouldn't include '{}' placeholder");
+        }
+        message += "\n{}";
+        StringBuilder handledFiles = new StringBuilder();
+        for (String file : frontendFiles) {
+            handledFiles.append(" - ").append(file).append("\n");
+        }
+        getLogger().info(message, handledFiles);
     }
 
     private static void compareFrontendHashes(JsonObject frontendHashes,
