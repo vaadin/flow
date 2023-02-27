@@ -185,8 +185,7 @@ public final class OpenInCurrentIde {
         if (cmd.isPresent()) {
             String lowerCmd = cmd.get().toLowerCase(Locale.ENGLISH);
             // Eclipse has a lot of other products like Temurin and Adoptium so
-            // we
-            // cannot check with "contains"
+            // we cannot check with "contains"
             return lowerCmd.endsWith("eclipse")
                     || lowerCmd.endsWith("eclipse.exe");
         }
