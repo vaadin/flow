@@ -4,7 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { ComponentPicker } from './component-picker';
 import { ComponentReference } from './component-util';
 import './theme-editor/editor';
-import { ThemeEditorState } from './theme-editor/model';
+import { ThemeEditorState, ThemeEditorRule } from './theme-editor/model';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
@@ -167,6 +167,10 @@ export class Connection extends Object {
   }
   sendShowComponentAttachLocation(component: ComponentReference) {
     this.send('showComponentAttachLocation', component);
+  }
+
+  sendThemeEditorRules(rules: ThemeEditorRule[]) {
+    this.send('themeEditorRules', { add: rules });
   }
 }
 
@@ -1106,10 +1110,6 @@ export class VaadinDevTools extends LitElement {
       this.serverInfo = message.data as ServerInfo;
     } else if (message?.command === 'featureFlags') {
       this.features = message.data.features as Feature[];
-    } else if (message?.command === 'vaadin-dev-tools-code-ok') {
-      if ((window as any).Vaadin.Flow) {
-        this.tabs.push({ id: 'code', title: 'Code', render: () => this.renderCode() });
-      }
     } else if (message?.command === 'themeEditorState') {
       this.themeEditorState = message.data;
       if (this.themeEditorState !== ThemeEditorState.disabled) {
@@ -1154,6 +1154,13 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
+  constructor() {
+    super();
+
+    if ((window as any).Vaadin.Flow) {
+      this.tabs.push({ id: 'code', title: 'Code', render: () => this.renderCode() });
+    }
+  }
   connectedCallback() {
     super.connectedCallback();
     this.catchErrors();
@@ -1637,7 +1644,9 @@ export class VaadinDevTools extends LitElement {
 
   renderThemeEditor() {
     return html` <vaadin-dev-tools-theme-editor
+      .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
+      .connection=${this.frontendConnection}
     ></vaadin-dev-tools-theme-editor>`;
   }
 

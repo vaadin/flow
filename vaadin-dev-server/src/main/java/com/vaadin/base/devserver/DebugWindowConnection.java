@@ -41,7 +41,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
-import com.vaadin.pro.licensechecker.LocalProKey;
 import com.vaadin.pro.licensechecker.Product;
 
 import elemental.json.Json;
@@ -140,10 +139,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 .get(context).getFeatures().stream()
                 .filter(feature -> !feature.equals(FeatureFlags.EXAMPLE))
                 .collect(Collectors.toList())));
-
-        if (LocalProKey.get() != null) {
-            send(resource, "vaadin-dev-tools-code-ok", null);
-        }
 
         if (themeEditorMessageHandler.isEnabled()) {
             send(resource, "themeEditorState",

@@ -112,13 +112,13 @@ function buildSWPlugin(opts): PluginOption {
       return includedPluginNames.includes(p.name)
     });
     plugins.push(
-      replace({
-        values: {
-          'process.env.NODE_ENV': JSON.stringify(config.mode),
-          ...config.define,
-        },
-        preventAssignment: true
-      })
+        replace({
+          values: {
+            'process.env.NODE_ENV': JSON.stringify(config.mode),
+            ...config.define,
+          },
+          preventAssignment: true
+        })
     );
     if (additionalPlugins) {
       plugins.push(...additionalPlugins);
@@ -184,17 +184,17 @@ function statsExtracterPlugin(): PluginOption {
           .filter((id) => id.startsWith(nodeModulesFolder.replace(/\\/g, '/')))
           .map(id => id.substring(nodeModulesFolder.length + 1));
       const npmModules = nodeModulesFolders
-        .map((id) => id.replace(/\\/g, '/'))
-        .map((id) => {
-          const parts = id.split('/');
-          if (id.startsWith('@')) {
-            return parts[0] + '/' + parts[1];
-          } else {
-            return parts[0];
-          }
-        })
-        .sort()
-        .filter((value, index, self) => self.indexOf(value) === index);
+          .map((id) => id.replace(/\\/g, '/'))
+          .map((id) => {
+            const parts = id.split('/');
+            if (id.startsWith('@')) {
+              return parts[0] + '/' + parts[1];
+            } else {
+              return parts[0];
+            }
+          })
+          .sort()
+          .filter((value, index, self) => self.indexOf(value) === index);
       const npmModuleAndVersion = Object.fromEntries(npmModules.map((module) => [module, getVersion(module)]));
 
       mkdirSync(path.dirname(statsFile), { recursive: true });
@@ -207,9 +207,27 @@ function statsExtracterPlugin(): PluginOption {
           .filter((line: string) => line.startsWith("import"))
           .map((line: string) => line.substring(line.indexOf("'")+1, line.lastIndexOf("'")));
 
-      const frontendFiles = { };
+      const frontendFiles: Record<string, string> = { };
+
+      const projectFileExtensions = ['.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map', '.css', '.css.map'];
+
+      // collects project's frontend resources in frontend folder, excluding
+      // 'generated' sub-folder
+      modules.map((id) => id.replace(/\\/g, '/'))
+          .filter((id) => id.startsWith(frontendFolder.replace(/\\/g, '/')))
+          .filter((id) => !id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/')))
+          .map(id => id.substring(frontendFolder.length + 1)).forEach((line: string) => {
+        // \r\n from windows made files may be used so change to \n
+        const filePath = path.resolve(frontendFolder, line);
+        if (projectFileExtensions.includes(path.extname(filePath))) {
+          const fileBuffer = readFileSync(filePath, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+          frontendFiles[line] = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
+        }
+      });
+
+      // collects frontend resources from the JARs
       generatedImports.filter((line: string) => line.includes("generated/jar-resources")).forEach((line: string) => {
-        var filename;
+        let filename;
         if(line.includes('?')) {
           filename = line.substring(line.indexOf("generated"), line.lastIndexOf('?'));
         } else {
@@ -220,8 +238,7 @@ function statsExtracterPlugin(): PluginOption {
         const hash = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
 
         const fileKey = line.substring(line.indexOf("jar-resources/") + 14);
-        // @ts-ignore
-        frontendFiles[`${fileKey}`] = hash;
+        frontendFiles[fileKey] = hash;
       });
       // If a index.ts exists hash it to be able to see if it changes.
       if (existsSync(path.resolve(frontendFolder, "index.ts"))) {
@@ -231,16 +248,14 @@ function statsExtracterPlugin(): PluginOption {
         frontendFiles[`index.ts`] = hash;
       }
 
-      const themeJsonHashes = { };
+      const themeJsonHashes: Record<string, string> = { };
       const themesFolder = path.resolve(jarResourcesFolder, "themes");
       if (existsSync(themesFolder)) {
         readdirSync(themesFolder).forEach((themeFolder) => {
           const themeJson = path.resolve(themesFolder, themeFolder, "theme.json");
           if (existsSync(themeJson)) {
             const themeJsonContent = readFileSync(themeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
-            const hash = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
-            // @ts-ignore
-            themeJsonHashes[`${path.basename(themeFolder)}`] = hash;
+            themeJsonHashes[path.basename(themeFolder)] = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
           }
         });
       }
@@ -275,11 +290,11 @@ function statsExtracterPlugin(): PluginOption {
 }
 function vaadinBundlesPlugin(): PluginOption {
   type ExportInfo =
-    | string
-    | {
-        namespace?: string;
-        source: string;
-      };
+      | string
+      | {
+    namespace?: string;
+    source: string;
+  };
 
   type ExposeInfo = {
     exports: ExportInfo[];
@@ -395,16 +410,16 @@ function vaadinBundlesPlugin(): PluginOption {
     },
     async config(config) {
       return mergeConfig(
-        {
-          optimizeDeps: {
-            exclude: [
-              // Vaadin bundle
-              '@vaadin/bundles',
-              ...Object.keys(vaadinBundleJson.packages)
-            ]
-          }
-        },
-        config
+          {
+            optimizeDeps: {
+              exclude: [
+                // Vaadin bundle
+                '@vaadin/bundles',
+                ...Object.keys(vaadinBundleJson.packages)
+              ]
+            }
+          },
+          config
       );
     },
     load(rawId) {
@@ -462,10 +477,10 @@ function themePlugin(opts): PluginOption {
       // this may happen for example during Java hot reload when updating
       // @Theme annotation value
       if (path.resolve(themeOptions.frontendGeneratedFolder, "theme.js") === importer &&
-            !existsSync(path.resolve(themeOptions.frontendGeneratedFolder, id))) {
-          console.debug('Generate theme file ' + id + ' not existing. Processing theme resource');
-          processThemeResources(fullThemeOptions, console);
-          return;
+          !existsSync(path.resolve(themeOptions.frontendGeneratedFolder, id))) {
+        console.debug('Generate theme file ' + id + ' not existing. Processing theme resource');
+        processThemeResources(fullThemeOptions, console);
+        return;
       }
       if (!id.startsWith(settings.themeFolder)) {
         return;
@@ -506,7 +521,7 @@ function lenientLitImportPlugin(): PluginOption {
         let decoratorMatch;
         while ((decoratorMatch = code.match(decoratorImport))) {
           console.warn(
-            `Warning: the file ${id} imports from '${decoratorMatch[3]}' when it should import from '${decoratorMatch[3]}.js'`
+              `Warning: the file ${id} imports from '${decoratorMatch[3]}' when it should import from '${decoratorMatch[3]}.js'`
           );
           code = code.replace(decoratorImport, 'import $1 from $2$3.js$4');
         }
@@ -516,7 +531,7 @@ function lenientLitImportPlugin(): PluginOption {
         let directiveMatch;
         while ((directiveMatch = code.match(directiveImport))) {
           console.warn(
-            `Warning: the file ${id} imports from '${directiveMatch[3]}${directiveMatch[4]}' when it should import from '${directiveMatch[3]}${directiveMatch[4]}.js'`
+              `Warning: the file ${id} imports from '${directiveMatch[3]}${directiveMatch[4]}' when it should import from '${directiveMatch[3]}${directiveMatch[4]}.js'`
           );
           code = code.replace(directiveImport, 'import $1 from $2$3$4.js$5');
         }

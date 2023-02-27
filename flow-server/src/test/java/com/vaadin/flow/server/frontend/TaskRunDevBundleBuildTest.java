@@ -982,6 +982,140 @@ public class TaskRunDevBundleBuildTest {
     }
 
     @Test
+    public void cssImportWithInline_statsAndImportsMatchAndNoBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        File stylesheetFile = new File(temporaryFolder.getRoot(),
+                "frontend/my-styles.css");
+        FileUtils.forceMkdir(stylesheetFile.getParentFile());
+        boolean created = stylesheetFile.createNewFile();
+        Assert.assertTrue(created);
+        FileUtils.write(stylesheetFile, "body{color:yellow}",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getModules()).thenReturn(
+                Collections.singletonList("Frontend/my-styles.css?inline"));
+
+        JsonObject stats = getBasicStats();
+        stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/my-styles.css");
+        stats.getObject(FRONTEND_HASHES).put("my-styles.css",
+                "0d94fe659d24e1e56872b47fc98d9f09227e19816c62a3db709bad347fbd0cdd");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(
+                    () -> FrontendUtils.getJarResourceString("my-styles.css"))
+                    .thenReturn("body{color:yellow}");
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "CSS 'inline' suffix should be ignored for imports checking",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void projectFrontendFileChange_bundleRebuild() throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectFrontendFileStub();
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getModules()).thenReturn(
+                Collections.singletonList("Frontend/views/lit-view.ts"));
+
+        JsonObject stats = getBasicStats();
+        stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/views/lit-view.ts");
+        stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts", "old_hash");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Project frontend file change should trigger rebuild",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void projectFrontendFileNotChanged_noBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectFrontendFileStub();
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getModules()).thenReturn(
+                Collections.singletonList("Frontend/views/lit-view.ts"));
+
+        JsonObject stats = getBasicStats();
+        stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/views/lit-view.ts");
+        stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts",
+                "eaf04adbc43cb363f6b58c45c6e0e8151084941247abac9493beed8d29f08add");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "No bundle rebuild expected when no changes in frontend file",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void projectFrontendFileDeleted_bundleRebuild() throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getModules()).thenReturn(
+                Collections.singletonList("Frontend/views/lit-view.ts"));
+
+        JsonObject stats = getBasicStats();
+        stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/views/lit-view.ts");
+        stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts",
+                "eaf04adbc43cb363f6b58c45c6e0e8151084941247abac9493beed8d29f08add");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Project frontend file delete should trigger rebuild",
+                    needsBuild);
+        }
+    }
+
+    @Test
     public void reusedTheme_noReusedThemes_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
@@ -1375,6 +1509,32 @@ public class TaskRunDevBundleBuildTest {
         }
     }
 
+    @Test
+    public void indexTsDeleted_rebuildRequired() throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(FRONTEND_HASHES).put(FrontendUtils.INDEX_TS,
+                "15931fa8c20e3c060c8ea491831e95cc8463962700a9bfb82c8e3844cf608f04");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue("'index.ts' delete should require re-bundling",
+                    needsBuild);
+        }
+    }
+
     private void createPackageJsonStub(String content) throws IOException {
         File packageJson = new File(temporaryFolder.getRoot(),
                 Constants.PACKAGE_JSON);
@@ -1391,5 +1551,14 @@ public class TaskRunDevBundleBuildTest {
         Assert.assertTrue(created);
         FileUtils.write(themeJson, "{\"lumoImports\": [\"typography\"]}",
                 StandardCharsets.UTF_8);
+    }
+
+    private void createProjectFrontendFileStub() throws IOException {
+        File frontendFile = new File(temporaryFolder.getRoot(),
+                "frontend/views/lit-view.ts");
+        FileUtils.forceMkdir(frontendFile.getParentFile());
+        boolean created = frontendFile.createNewFile();
+        Assert.assertTrue(created);
+        FileUtils.write(frontendFile, "Some codes", StandardCharsets.UTF_8);
     }
 }
