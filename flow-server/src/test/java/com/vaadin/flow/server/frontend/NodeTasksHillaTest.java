@@ -91,7 +91,7 @@ public class NodeTasksHillaTest {
                 .when(lookup).lookup(ClassFinder.class);
         return new Options(lookup, new File(userDir)).withBuildDirectory(TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+                .withRunNpmInstall(false).withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(new File(userDir,
                         FrontendUtils.GENERATED
                                 + FrontendUtils.JAR_RESOURCES_FOLDER))
@@ -108,7 +108,7 @@ public class NodeTasksHillaTest {
         Mockito.doReturn(taskGenerateEndpoint)
                 .when(endpointGeneratorTaskFactory)
                 .createTaskGenerateEndpoint(any());
-        Mockito.doReturn(endpointGeneratorTaskFactory).when(options.lookup)
+        Mockito.doReturn(endpointGeneratorTaskFactory).when(options.getLookup())
                 .lookup(EndpointGeneratorTaskFactory.class);
 
         new NodeTasks(options).execute();
