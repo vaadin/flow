@@ -650,10 +650,20 @@ public class Options implements Serializable {
         return featureFlags;
     }
 
+    /**
+     * Gets the folder to which frontend resources from add-on jars are copied.
+     *
+     * @return the jar resource folder
+     */
     public File getJarFrontendResourcesFolder() {
         return jarFrontendResourcesFolder;
     }
 
+    /**
+     * Gets the used class finder.
+     *
+     * @return the class finder
+     */
     public ClassFinder getClassFinder() {
         return classFinder;
     }
@@ -742,14 +752,31 @@ public class Options implements Serializable {
         return nodeAutoUpdate;
     }
 
+    /**
+     * Gets the lookup instance to use for internal lookups.
+     *
+     * @return the lookup instance
+     */
     public Lookup getLookup() {
         return lookup;
     }
 
+    /**
+     * Gets the production mode.
+     *
+     * @return <code>true</code> if production mode is enabled, otherwise
+     *         <code>false</code>
+     */
     public boolean isProductionMode() {
         return productionMode;
     }
 
+    /**
+     * Gets the folder containing java resources, typically
+     * {@literal src/main/resources} in a Maven project.
+     *
+     * @return the java resource folder
+     */
     public File getJavaResourceFolder() {
         return javaResourceFolder;
     }
