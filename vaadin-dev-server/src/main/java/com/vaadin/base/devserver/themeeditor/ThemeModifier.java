@@ -1,4 +1,4 @@
-package com.vaadin.base.devserver;
+package com.vaadin.base.devserver.themeeditor;
 
 import com.helger.css.ECSSVersion;
 import com.helger.css.decl.CSSDeclaration;
@@ -11,11 +11,7 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileReader;
@@ -23,14 +19,20 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ThemeModifier {
 
     public enum State {
         ENABLED, DISABLED, MISSING_THEME
+    }
+
+    public record CssRuleProperty(String selector, String property,
+            String value) {
     }
 
     private static final String THEME_EDITOR_CSS = "theme-editor.css";
@@ -42,8 +44,6 @@ public class ThemeModifier {
 
     private final State state;
 
-    private final Map<String, Consumer<JsonObject>> commandHandlers;
-
     private VaadinContext context;
 
     private boolean importPresent;
@@ -51,10 +51,6 @@ public class ThemeModifier {
     public ThemeModifier(VaadinContext context) {
         this.context = context;
         this.state = init();
-        this.commandHandlers = Map.of("themeEditorRules",
-                ThemeModifier.this::handleRulesCommand,
-                "themeEditorCreateDefaultTheme",
-                ThemeModifier.this::handleCreateDefaultThemeCommand);
     }
 
     public boolean isEnabled() {
@@ -65,6 +61,68 @@ public class ThemeModifier {
         return state;
     }
 
+    /**
+     * Performs update of CSS file setting (adding or updating) given lists of
+     * {@link CssRuleProperty}.
+     *
+     * @param properties
+     *            list of {@link CssRuleProperty} to be added or updated
+     */
+    public void setThemeProperties(List<CssRuleProperty> properties) {
+        assert properties != null;
+        CascadingStyleSheet styleSheet = getCascadingStyleSheet();
+        properties.forEach(cssProp -> setCssProperty(styleSheet, cssProp));
+        sortStylesheet(styleSheet);
+        writeStylesheet(styleSheet);
+    }
+
+    /**
+     * Performs update of CSS file setting and removing given lists of
+     * {@link CssRuleProperty}.
+     *
+     * @param properties
+     *            list of {@link CssRuleProperty} to be added or updated
+     */
+    public void removeThemeProperties(List<CssRuleProperty> properties) {
+        assert properties != null;
+        CascadingStyleSheet styleSheet = getCascadingStyleSheet();
+        properties.forEach(cssProp -> removeCssProperty(styleSheet, cssProp));
+        sortStylesheet(styleSheet);
+        writeStylesheet(styleSheet);
+    }
+
+    /**
+     * Creates default theme folder structure within frontend resources. Creates
+     * styles.css with import of ThemeEditor default stylesheet. Does not
+     * add @Theme annotation to AppShell configuration, to do so use
+     * {@link JavaSourceModifier#addThemeAnnotation()}.
+     */
+    public void createDefaultTheme() {
+        File theme = Path.of(getFrontendFolder().getPath(), "themes",
+                getDefaultThemeName()).toFile();
+        if (!theme.exists()) {
+            theme.mkdirs();
+        }
+        try {
+            new File(theme, "styles.css").createNewFile();
+        } catch (IOException e) {
+            throw new ModifierException(
+                    "Cannot create styles.css in " + theme.getPath(), e);
+        }
+    }
+
+    protected String getCssFileName() {
+        return THEME_EDITOR_CSS;
+    }
+
+    protected String getDefaultThemeName() {
+        return DEFAULT_THEME;
+    }
+
+    protected String getHeaderText() {
+        return HEADER_TEXT;
+    }
+
     protected State init() {
         // for development purposes only
         if (!FeatureFlags.get(context).isEnabled(FeatureFlags.THEME_EDITOR)) {
@@ -72,7 +130,7 @@ public class ThemeModifier {
         }
 
         try {
-            getThemeEditorStyleSheet();
+            getStyleSheetFile();
         } catch (Exception ex) {
             return State.MISSING_THEME;
         }
@@ -84,11 +142,11 @@ public class ThemeModifier {
                 FrontendUtils.PROJECT_BASEDIR, null), "frontend");
     }
 
-    protected File getThemeEditorStyleSheet() {
+    protected File getStyleSheetFile() {
         File themes = new File(getFrontendFolder(), "themes");
         String themeName = getThemeName(themes);
         File theme = new File(themes, themeName);
-        File themeEditorStyles = new File(theme, THEME_EDITOR_CSS);
+        File themeEditorStyles = new File(theme, getCssFileName());
 
         if (!themeEditorStyles.exists()) {
             try {
@@ -110,19 +168,8 @@ public class ThemeModifier {
         return themeEditorStyles;
     }
 
-    /**
-     * Updates CSS rule by setting given property. If rule is not present,
-     * creates new rule with given selector and property.
-     *
-     * @param selector
-     *            CSS rule selector
-     * @param property
-     *            CSS property
-     * @param value
-     *            CSS property value
-     */
-    public void setCssProperty(String selector, String property, String value) {
-        File styles = getThemeEditorStyleSheet();
+    protected CascadingStyleSheet getCascadingStyleSheet() {
+        File styles = getStyleSheetFile();
         CascadingStyleSheet styleSheet = CSSReader.readFromFile(styles,
                 StandardCharsets.UTF_8, ECSSVersion.LATEST);
 
@@ -131,36 +178,23 @@ public class ThemeModifier {
             importPresent = true;
         }
 
-        CSSStyleRule newRule = createStyleRule(selector, property, value);
+        return styleSheet;
+    }
+
+    protected void setCssProperty(CascadingStyleSheet styleSheet,
+            CssRuleProperty css) {
+        CSSStyleRule newRule = createStyleRule(css.selector, css.property,
+                css.value);
         findRuleBySelector(styleSheet, newRule).ifPresentOrElse(
                 existingRule -> addOrUpdateProperty(existingRule, newRule),
                 () -> styleSheet.addRule(newRule));
-
-        sortStylesheet(styleSheet);
-        writeStylesheet(styleSheet, styles);
     }
 
-    /**
-     * Removes property from given CSS rule. If no more properties are present
-     * within given rule, rule itself is also removed from the style sheet.
-     *
-     * @param selector
-     *            CSS rule selector
-     * @param property
-     *            CSS property
-     */
-    public void removeCssProperty(String selector, String property) {
-        File styles = getThemeEditorStyleSheet();
-        CascadingStyleSheet styleSheet = CSSReader.readFromFile(styles,
-                StandardCharsets.UTF_8, ECSSVersion.LATEST);
-
-        if (!importPresent) {
-            insertImportIfNotExists();
-            importPresent = true;
-        }
-
+    protected void removeCssProperty(CascadingStyleSheet styleSheet,
+            CssRuleProperty css) {
         // value not considered
-        CSSStyleRule newRule = createStyleRule(selector, property, "inherit");
+        CSSStyleRule newRule = createStyleRule(css.selector, css.property,
+                "inherit");
         Optional<CSSStyleRule> optRule = findRuleBySelector(styleSheet,
                 newRule);
         if (optRule.isPresent()) {
@@ -170,15 +204,13 @@ public class ThemeModifier {
                 styleSheet.removeRule(existingRule);
             }
         }
-
-        writeStylesheet(styleSheet, styles);
     }
 
-    protected void writeStylesheet(CascadingStyleSheet styleSheet,
-            File styles) {
+    protected void writeStylesheet(CascadingStyleSheet styleSheet) {
+        File styles = getStyleSheetFile();
         try {
             CSSWriter writer = new CSSWriter().setWriteHeaderText(true)
-                    .setHeaderText(HEADER_TEXT);
+                    .setHeaderText(getHeaderText());
             writer.getSettings().setOptimizedOutput(false);
             writer.writeCSS(styleSheet, new FileWriter(styles));
         } catch (IOException e) {
@@ -253,12 +285,12 @@ public class ThemeModifier {
         CascadingStyleSheet styleSheet = CSSReader.readFromFile(themeStyles,
                 StandardCharsets.UTF_8, ECSSVersion.LATEST);
 
-        CSSImportRule expectedRule = new CSSImportRule(THEME_EDITOR_CSS);
+        CSSImportRule expectedRule = new CSSImportRule(getCssFileName());
         if (!styleSheet.getAllImportRules().contains(expectedRule)) {
             FileWriter writer = null;
             try {
                 List<String> lines = new ArrayList<>();
-                lines.add("@import \"" + THEME_EDITOR_CSS + "\";");
+                lines.add("@import \"" + getCssFileName() + "\";");
                 lines.addAll(IOUtils.readLines(new FileReader(themeStyles)));
                 themeStyles.delete();
                 themeStyles.createNewFile();
@@ -273,7 +305,7 @@ public class ThemeModifier {
         }
     }
 
-    private String getThemeName(File themes) {
+    protected String getThemeName(File themes) {
         String[] themeFolders = themes.list();
         if (themeFolders == null || themeFolders.length == 0) {
             throw new IllegalStateException(
@@ -285,53 +317,6 @@ public class ThemeModifier {
         }
 
         return themeFolders[0];
-    }
-
-    public boolean handleDebugMessageData(String command, JsonObject data) {
-        if (!commandHandlers.containsKey(command)) {
-            return false;
-        }
-
-        commandHandlers.get(command).accept(data);
-        return true;
-    }
-
-    protected void handleRulesCommand(JsonObject data) {
-        JsonArray rules = data.getArray("add");
-        if (rules != null) {
-            for (int i = 0; i < rules.length(); ++i) {
-                JsonObject rule = rules.getObject(i);
-                setCssProperty(rule.getString("selector"),
-                        rule.getString("property"), rule.getString("value"));
-            }
-        }
-        rules = data.getArray("remove");
-        if (rules != null) {
-            for (int i = 0; i < rules.length(); ++i) {
-                JsonObject rule = rules.getObject(i);
-                removeCssProperty(rule.getString("selector"),
-                        rule.getString("property"));
-            }
-        }
-    }
-
-    protected void handleCreateDefaultThemeCommand(JsonObject data) {
-        File theme = Path
-                .of(getFrontendFolder().getPath(), "themes", DEFAULT_THEME)
-                .toFile();
-        if (!theme.exists()) {
-            theme.mkdirs();
-        }
-        try {
-            new File(theme, "styles.css").createNewFile();
-        } catch (IOException e) {
-            getLogger().error("Cannot create styles.css in " + theme.getPath(),
-                    e);
-        }
-    }
-
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(ThemeModifier.class.getName());
     }
 
 }

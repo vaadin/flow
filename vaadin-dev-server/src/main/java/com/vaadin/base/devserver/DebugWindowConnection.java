@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
+import com.vaadin.base.devserver.themeeditor.ThemeEditorMessageHandler;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
@@ -70,7 +71,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private IdeIntegration ideIntegration;
 
-    private ThemeModifier themeModifier;
+    private ThemeEditorMessageHandler themeEditorMessageHandler;
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
@@ -91,7 +92,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         this.context = context;
         this.ideIntegration = new IdeIntegration(
                 ApplicationConfiguration.get(context));
-        this.themeModifier = new ThemeModifier(context);
+        this.themeEditorMessageHandler = new ThemeEditorMessageHandler(context);
     }
 
     @Override
@@ -144,9 +145,9 @@ public class DebugWindowConnection implements BrowserLiveReload {
             send(resource, "vaadin-dev-tools-code-ok", null);
         }
 
-        if (themeModifier.isEnabled()) {
+        if (themeEditorMessageHandler.isEnabled()) {
             send(resource, "themeEditorState",
-                    themeModifier.getState().name().toLowerCase());
+                    themeEditorMessageHandler.getState());
         }
     }
 
@@ -247,7 +248,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
                             "Only component locations are tracked. The given node id refers to an element and not a component");
                 }
             });
-        } else if (themeModifier.handleDebugMessageData(command, data)) {
+        } else if (themeEditorMessageHandler.handleDebugMessageData(command,
+                data)) {
             // nop
         } else {
             getLogger().info("Unknown command from the browser: " + command);
