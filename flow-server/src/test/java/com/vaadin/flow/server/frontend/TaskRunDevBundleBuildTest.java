@@ -986,6 +986,14 @@ public class TaskRunDevBundleBuildTest {
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
+        File stylesheetFile = new File(temporaryFolder.getRoot(),
+                "frontend/my-styles.css");
+        FileUtils.forceMkdir(stylesheetFile.getParentFile());
+        boolean created = stylesheetFile.createNewFile();
+        Assert.assertTrue(created);
+        FileUtils.write(stylesheetFile, "body{color:yellow}",
+                StandardCharsets.UTF_8);
+
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getModules()).thenReturn(
@@ -993,6 +1001,8 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/my-styles.css");
+        stats.getObject(FRONTEND_HASHES).put("my-styles.css",
+                "0d94fe659d24e1e56872b47fc98d9f09227e19816c62a3db709bad347fbd0cdd");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
