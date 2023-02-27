@@ -66,6 +66,13 @@
             <artifactId>test-dev-bundle</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-lit-template</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -131,7 +138,7 @@
                             </includes>
                         </fileset>
                         <fileset>
-                            <directory>${project.basedir}/frontend</directory>
+                            <directory>${project.basedir}/frontend/generated</directory>
                             <includes>
                                 <include>**</include>
                             </includes>
