@@ -5,21 +5,41 @@
  * This file will be overwritten on every run. Any custom changes should be made to vite.config.ts
  */
 import path from 'path';
-import { readdirSync, readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
-import { createHash } from 'crypto';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync
+} from 'fs';
+import {createHash} from 'crypto';
 import * as net from 'net';
 
-import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle.js';
-import { rewriteCssUrls } from '#buildFolder#/plugins/theme-loader/theme-loader-utils.js';
+import {
+  processThemeResources
+} from '#buildFolder#/plugins/application-theme-plugin/theme-handle.js';
+import {
+  rewriteCssUrls
+} from '#buildFolder#/plugins/theme-loader/theme-loader-utils.js';
 import settings from '#settingsImport#';
-import { defineConfig, mergeConfig, PluginOption, ResolvedConfig, UserConfigFn, OutputOptions, AssetInfo, ChunkInfo } from 'vite';
-import { getManifest } from 'workbox-build';
+import {
+  AssetInfo,
+  ChunkInfo,
+  defineConfig,
+  mergeConfig,
+  OutputOptions,
+  PluginOption,
+  ResolvedConfig,
+  UserConfigFn
+} from 'vite';
+import {getManifest} from 'workbox-build';
 
 import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
 import replace from '@rollup/plugin-replace';
 import checker from 'vite-plugin-checker';
-import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
+import postcssLit
+  from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 
 const appShellUrl = '.';
 
@@ -248,24 +268,20 @@ function statsExtracterPlugin(): PluginOption {
         frontendFiles[`index.ts`] = hash;
       }
 
-      const themeJsonHashes: Record<string, string> = { };
+      const themeJsonContents: Record<string, string> = { };
       const themesFolder = path.resolve(jarResourcesFolder, "themes");
       if (existsSync(themesFolder)) {
         readdirSync(themesFolder).forEach((themeFolder) => {
           const themeJson = path.resolve(themesFolder, themeFolder, "theme.json");
           if (existsSync(themeJson)) {
-            const themeJsonContent = readFileSync(themeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
-            themeJsonHashes[path.basename(themeFolder)] = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
+            themeJsonContents[path.basename(themeFolder)] = readFileSync(themeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
           }
         });
       }
 
       const projectThemeJson = path.resolve(frontendFolder, settings.themeFolder, settings.themeName, "theme.json")
       if (existsSync(projectThemeJson)) {
-        const themeJsonContent = readFileSync(projectThemeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
-        const hash = createHash('sha256').update(themeJsonContent, 'utf8').digest("hex");
-        // @ts-ignore
-        themeJsonHashes[`${settings.themeName}`] = hash;
+        themeJsonContents[settings.themeName] = readFileSync(projectThemeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
       }
 
 
@@ -279,7 +295,7 @@ function statsExtracterPlugin(): PluginOption {
         npmModules: npmModuleAndVersion,
         bundleImports: generatedImports,
         frontendHashes: frontendFiles,
-        themeJsonHashes: themeJsonHashes,
+        themeJsonContents: themeJsonContents,
         entryScripts,
         webComponents,
         packageJsonHash: projectPackageJson?.vaadin?.hash

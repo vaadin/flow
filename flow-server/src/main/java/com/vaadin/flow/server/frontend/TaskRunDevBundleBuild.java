@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -57,6 +58,8 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
+import elemental.json.JsonValue;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
@@ -219,7 +222,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             JsonObject statsJson,
             FrontendDependenciesScanner frontendDependencies)
             throws IOException {
-        Map<String, String> themeJsonHashes = new HashMap<>();
+        Map<String, JsonObject> themeJsonContents = new HashMap<>();
 
         if (options.getJarFiles() == null) {
             return false;
@@ -227,28 +230,28 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         options.getJarFiles().stream().filter(File::exists)
                 .filter(file -> !file.isDirectory())
-                .forEach(jarFile -> calculateHashesForPackagedThemeJson(jarFile,
-                        themeJsonHashes));
+                .forEach(jarFile -> getPackagedThemeJsonContents(jarFile,
+                        themeJsonContents));
 
         ThemeDefinition themeDefinition = frontendDependencies
                 .getThemeDefinition();
-        Optional<String> projectThemeJsonHash = getHashForProjectThemeJson(
+        Optional<JsonObject> projectThemeJson = getContentForProjectThemeJson(
                 options, themeDefinition);
 
-        JsonObject hashesInStats = statsJson.getObject("themeJsonHashes");
-        if (hashesInStats == null && (!themeJsonHashes.isEmpty()
-                || projectThemeJsonHash.isPresent())) {
+        JsonObject contentsInStats = statsJson.getObject("themeJsonContents");
+        if (contentsInStats == null && (!themeJsonContents.isEmpty()
+                || projectThemeJson.isPresent())) {
             getLogger().info(
                     "Found newly added theme configurations in 'theme.json'.");
             return true;
         }
 
-        if (projectThemeJsonHash.isPresent()) {
+        if (projectThemeJson.isPresent()) {
             String projectThemeName = themeDefinition.getName();
             String key;
-            if (hashesInStats.hasKey(projectThemeName)) {
+            if (contentsInStats.hasKey(projectThemeName)) {
                 key = projectThemeName;
-            } else if (hashesInStats.hasKey(Constants.DEV_BUNDLE_NAME)) {
+            } else if (contentsInStats.hasKey(Constants.DEV_BUNDLE_NAME)) {
                 key = Constants.DEV_BUNDLE_NAME;
             } else {
                 getLogger().info(
@@ -257,31 +260,78 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 return true;
             }
 
-            if (!hashesInStats.getString(key)
-                    .equals(projectThemeJsonHash.get())) {
-                getLogger().info(
-                        "Found new configuration for project theme '{}' in 'theme.json'.",
+            List<String> missedKeys = new ArrayList<>();
+            JsonObject content = Json.parse(contentsInStats.getString(key));
+            if (!objectIncludesEntry(content, projectThemeJson.get(),
+                    missedKeys)) {
+                getLogger().info("Project custom theme '{}' sets entries in "
+                        + "theme.json configuration missing in the " + "bundle",
                         projectThemeName);
+                Collections.reverse(missedKeys);
+                logChangedFiles(missedKeys, "Detected missed entries:");
                 return true;
             }
         }
 
-        for (Map.Entry<String, String> themeHash : themeJsonHashes.entrySet()) {
-            if (!hashesInStats.hasKey(themeHash.getKey())) {
+        for (Map.Entry<String, JsonObject> themeContent : themeJsonContents
+                .entrySet()) {
+            if (!contentsInStats.hasKey(themeContent.getKey())) {
                 getLogger().info(
                         "Found new configuration for theme '{}' in 'theme.json'.",
-                        themeHash.getKey());
+                        themeContent.getKey());
                 return true;
-            } else if (!hashesInStats.getString(themeHash.getKey())
-                    .equals(themeHash.getValue())) {
-                getLogger().info(
-                        "Found updated configuration for theme '{}' in 'theme.json'.",
-                        themeHash.getKey());
-                return true;
+            } else {
+                List<String> missedKeys = new ArrayList<>();
+                JsonObject content = Json.parse(
+                        contentsInStats.getString(themeContent.getKey()));
+                if (!objectIncludesEntry(content, themeContent.getValue(),
+                        missedKeys)) {
+                    getLogger().info(
+                            "Packaged custom theme '{}' sets entries"
+                                    + " in the theme.json configuration "
+                                    + "missing in the bundle",
+                            themeContent.getKey());
+                    return true;
+                }
             }
         }
 
         return false;
+    }
+
+    private static boolean objectIncludesEntry(JsonValue jsonFromBundle,
+            JsonValue projectJson, Collection<String> missedKeys) {
+        JsonType bundleJsonType = jsonFromBundle.getType();
+        JsonType projectJsonObjectTypeType = projectJson.getType();
+        assert bundleJsonType.equals(projectJsonObjectTypeType);
+
+        if (bundleJsonType == JsonType.NULL) {
+            return true;
+        } else if (bundleJsonType == JsonType.BOOLEAN) {
+            return JsonUtils.booleanEqual(jsonFromBundle, projectJson);
+        } else if (bundleJsonType == JsonType.NUMBER) {
+            return JsonUtils.numbersEqual(jsonFromBundle, projectJson);
+        } else if (bundleJsonType == JsonType.STRING) {
+            // ignore parent theme, because having a parent theme doesn't
+            // need a new bundle per se
+            if (projectJson.toJson().equals("parent")) {
+                return true;
+            }
+            return JsonUtils.stringEqual(jsonFromBundle, projectJson);
+        } else if (bundleJsonType == JsonType.ARRAY) {
+            JsonArray jsonArrayFromBundle = (JsonArray) jsonFromBundle;
+            JsonArray projectJsonArray = (JsonArray) projectJson;
+            return compareArrays(missedKeys, jsonArrayFromBundle,
+                    projectJsonArray);
+        } else if (bundleJsonType == JsonType.OBJECT) {
+            JsonObject jsonObjectFromBundle = (JsonObject) jsonFromBundle;
+            JsonObject projectJsonObject = (JsonObject) projectJson;
+            return compareObjects(missedKeys, jsonObjectFromBundle,
+                    projectJsonObject);
+        } else {
+            throw new IllegalArgumentException(
+                    "Unsupported JsonType: " + bundleJsonType);
+        }
     }
 
     private static boolean frontendImportsFound(JsonObject statsJson,
@@ -735,8 +785,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         return true;
     }
 
-    private static void calculateHashesForPackagedThemeJson(
-            File jarFileToLookup, Map<String, String> packagedThemeHashes) {
+    private static void getPackagedThemeJsonContents(File jarFileToLookup,
+            Map<String, JsonObject> packagedThemeHashes) {
         JarContentsManager jarContentsManager = new JarContentsManager();
         if (jarContentsManager.containsPath(jarFileToLookup,
                 Constants.RESOURCES_THEME_JAR_DEFAULT)) {
@@ -747,6 +797,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 byte[] byteContent = jarContentsManager
                         .getFileContents(jarFileToLookup, themeJson);
                 String content = IOUtils.toString(byteContent, "UTF-8");
+                content = content.replaceAll("\\r\\n", "\n");
 
                 Matcher matcher = THEME_PATH_PATTERN.matcher(themeJson);
                 if (!matcher.find()) {
@@ -754,14 +805,15 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                             "Packaged theme folders structure is incorrect, should have META-INF/resources/themes/[theme-name]/");
                 }
                 String themeName = matcher.group(1);
-                String hash = calculateHash(content);
-                packagedThemeHashes.put(themeName, hash);
+                JsonObject jsonContent = Json.parse(content);
+                packagedThemeHashes.put(themeName, jsonContent);
             }
         }
     }
 
-    private static Optional<String> getHashForProjectThemeJson(Options options,
-            ThemeDefinition themeDefinition) throws IOException {
+    private static Optional<JsonObject> getContentForProjectThemeJson(
+            Options options, ThemeDefinition themeDefinition)
+            throws IOException {
         if (themeDefinition != null) {
             String themeName = themeDefinition.getName();
             File projectThemeJson = new File(options.getFrontendDirectory(),
@@ -771,8 +823,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 String content = FileUtils.readFileToString(projectThemeJson,
                         StandardCharsets.UTF_8);
                 content = content.replaceAll("\\r\\n", "\n");
-                return Optional.of(
-                        StringUtil.getHash(content, StandardCharsets.UTF_8));
+                return Optional.of(Json.parse(content));
             }
         }
         return Optional.empty();
@@ -927,5 +978,58 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             WebComponentExporterFactory<? extends Component> factory) {
         WebComponentExporterTagExtractor exporterTagExtractor = new WebComponentExporterTagExtractor();
         return exporterTagExtractor.apply(factory);
+    }
+
+    private static boolean compareObjects(Collection<String> missedKeys,
+            JsonObject jsonObjectFromBundle, JsonObject projectJsonObject) {
+        boolean allEntriesFound = true;
+
+        for (String projectEntryKey : projectJsonObject.keys()) {
+            JsonValue projectEntry = projectJsonObject.get(projectEntryKey);
+            boolean entryFound = false;
+            for (String bundleEntryKey : jsonObjectFromBundle.keys()) {
+                JsonValue bundleEntry = jsonObjectFromBundle
+                        .get(bundleEntryKey);
+                if (bundleEntry.getType() == projectEntry.getType()
+                        && objectIncludesEntry(bundleEntry, projectEntry,
+                                missedKeys)) {
+                    entryFound = true;
+                    break;
+                }
+            }
+            if (!entryFound) {
+                missedKeys.add(projectEntryKey);
+            }
+            allEntriesFound = allEntriesFound & entryFound;
+        }
+        return allEntriesFound;
+    }
+
+    private static boolean compareArrays(Collection<String> missedKeys,
+            JsonArray jsonArrayFromBundle, JsonArray projectJsonArray) {
+        boolean allEntriesFound = true;
+
+        for (int projectArrayIndex = 0; projectArrayIndex < projectJsonArray
+                .length(); projectArrayIndex++) {
+            JsonValue projectArrayEntry = projectJsonArray
+                    .get(projectArrayIndex);
+            boolean entryFound = false;
+            for (int bundleArrayIndex = 0; bundleArrayIndex < jsonArrayFromBundle
+                    .length(); bundleArrayIndex++) {
+                JsonValue bundleArrayEntry = jsonArrayFromBundle
+                        .get(bundleArrayIndex);
+                if (bundleArrayEntry.getType() == projectArrayEntry.getType()
+                        && objectIncludesEntry(bundleArrayEntry,
+                                projectArrayEntry, missedKeys)) {
+                    entryFound = true;
+                    break;
+                }
+            }
+            if (!entryFound) {
+                missedKeys.add(projectArrayEntry.toJson());
+            }
+            allEntriesFound = allEntriesFound & entryFound;
+        }
+        return allEntriesFound;
     }
 }
