@@ -54,7 +54,7 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
      */
     TaskCopyFrontendFiles(Options options) {
         this.options = options;
-        resourceLocations = options.jarFiles.stream().filter(File::exists)
+        resourceLocations = options.getJarFiles().stream().filter(File::exists)
                 .collect(Collectors.toSet());
     }
 

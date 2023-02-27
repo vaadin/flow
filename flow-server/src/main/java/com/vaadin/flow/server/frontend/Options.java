@@ -25,51 +25,51 @@ public class Options implements Serializable {
 
     private String buildDirectoryName;
 
-    ClassFinder classFinder;
+    private ClassFinder classFinder;
 
     private File frontendDirectory;
 
-    File webappResourcesDirectory = null;
+    private File webappResourcesDirectory = null;
 
-    File resourceOutputDirectory = null;
+    private File resourceOutputDirectory = null;
 
-    boolean enablePackagesUpdate = false;
+    private boolean enablePackagesUpdate = false;
 
-    boolean createMissingPackageJson = false;
+    private boolean createMissingPackageJson = false;
 
-    boolean enableImportsUpdate = false;
+    private boolean enableImportsUpdate = false;
 
-    boolean enableWebpackConfigUpdate = false;
+    private boolean enableWebpackConfigUpdate = false;
 
-    boolean runNpmInstall = false;
+    private boolean runNpmInstall = false;
 
     private boolean devBundleBuild = false;
 
-    Set<File> jarFiles = null;
+    private Set<File> jarFiles = null;
 
-    boolean generateEmbeddableWebComponents = true;
+    private boolean generateEmbeddableWebComponents = true;
 
-    boolean cleanNpmFiles = false;
+    private boolean cleanNpmFiles = false;
 
-    File jarFrontendResourcesFolder = null;
+    private File jarFrontendResourcesFolder = null;
 
-    File localResourcesFolder = null;
+    private File localResourcesFolder = null;
 
-    boolean useByteCodeScanner = false;
+    private boolean useByteCodeScanner = false;
 
-    JsonObject tokenFileData;
+    private JsonObject tokenFileData;
 
-    File tokenFile;
+    private File tokenFile;
 
-    boolean enablePnpm = Constants.ENABLE_PNPM_DEFAULT;
+    private boolean enablePnpm = Constants.ENABLE_PNPM_DEFAULT;
 
-    boolean useGlobalPnpm = false;
+    private boolean useGlobalPnpm = false;
 
-    File frontendGeneratedFolder;
+    private File frontendGeneratedFolder;
 
-    boolean requireHomeNodeExec;
+    private boolean requireHomeNodeExec;
 
-    boolean copyTemplates = false;
+    private boolean copyTemplates = false;
 
     private File npmFolder;
 
@@ -80,34 +80,35 @@ public class Options implements Serializable {
      * Vaadin, for example <code>"v16.0.0"</code>. Defaults to
      * {@value FrontendTools#DEFAULT_NODE_VERSION}.
      */
-    String nodeVersion = FrontendTools.DEFAULT_NODE_VERSION;
+    private String nodeVersion = FrontendTools.DEFAULT_NODE_VERSION;
 
     /**
      * Download node.js from this URL. Handy in heavily firewalled corporate
      * environments where the node.js download can be provided from an intranet
      * mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      */
-    URI nodeDownloadRoot = URI.create(Platform.guess().getNodeDownloadRoot());
+    private URI nodeDownloadRoot = URI
+            .create(Platform.guess().getNodeDownloadRoot());
 
-    boolean nodeAutoUpdate = false;
+    private boolean nodeAutoUpdate = false;
 
-    Lookup lookup;
+    private Lookup lookup;
 
     /**
      * Default is true here so we do not accidentally include development stuff
      * into production.
      */
-    boolean productionMode = true;
+    private boolean productionMode = true;
 
     /**
      * The resource folder for java resources.
      */
-    File javaResourceFolder;
+    private File javaResourceFolder;
 
     /**
      * Additional npm packages to run postinstall for.
      */
-    List<String> postinstallPackages = new ArrayList<>();
+    private List<String> postinstallPackages = new ArrayList<>();
 
     private FeatureFlags featureFlags;
 
@@ -241,7 +242,7 @@ public class Options implements Serializable {
      *            run npm install. Default is <code>false</code>
      * @return the builder
      */
-    public Options runNpmInstall(boolean runNpmInstall) {
+    public Options withRunNpmInstall(boolean runNpmInstall) {
         this.runNpmInstall = runNpmInstall;
         return this;
     }
@@ -286,7 +287,7 @@ public class Options implements Serializable {
      *
      * @return the builder
      */
-    public Options copyTemplates(boolean copyTemplates) {
+    public Options withCopyTemplates(boolean copyTemplates) {
         this.copyTemplates = copyTemplates;
         return this;
     }
@@ -398,7 +399,7 @@ public class Options implements Serializable {
      *            enables pnpm.
      * @return the builder, for chaining
      */
-    public Options enablePnpm(boolean enable) {
+    public Options withEnablePnpm(boolean enable) {
         enablePnpm = enable;
         return this;
     }
@@ -625,6 +626,11 @@ public class Options implements Serializable {
         return buildDirectoryName;
     }
 
+    /**
+     * Gets the directory used for the build output.
+     *
+     * @return the build directory
+     */
     public File getBuildDirectory() {
         return new File(npmFolder, getBuildDirectoryName());
     }
@@ -655,4 +661,101 @@ public class Options implements Serializable {
     public File getNodeModulesFolder() {
         return new File(getNpmFolder(), FrontendUtils.NODE_MODULES);
     }
+
+    public File getResourceOutputDirectory() {
+        return resourceOutputDirectory;
+    }
+
+    public boolean isEnablePackagesUpdate() {
+        return enablePackagesUpdate;
+    }
+
+    public boolean isCreateMissingPackageJson() {
+        return createMissingPackageJson;
+    }
+
+    public boolean isEnableImportsUpdate() {
+        return enableImportsUpdate;
+    }
+
+    public boolean isEnableWebpackConfigUpdate() {
+        return enableWebpackConfigUpdate;
+    }
+
+    public boolean isRunNpmInstall() {
+        return runNpmInstall;
+    }
+
+    public Set<File> getJarFiles() {
+        return jarFiles;
+    }
+
+    public boolean isGenerateEmbeddableWebComponents() {
+        return generateEmbeddableWebComponents;
+    }
+
+    public boolean isCleanNpmFiles() {
+        return cleanNpmFiles;
+    }
+
+    public File getLocalResourcesFolder() {
+        return localResourcesFolder;
+    }
+
+    public boolean isUseByteCodeScanner() {
+        return useByteCodeScanner;
+    }
+
+    public JsonObject getTokenFileData() {
+        return tokenFileData;
+    }
+
+    public File getTokenFile() {
+        return tokenFile;
+    }
+
+    public boolean isEnablePnpm() {
+        return enablePnpm;
+    }
+
+    public boolean isUseGlobalPnpm() {
+        return useGlobalPnpm;
+    }
+
+    public boolean isRequireHomeNodeExec() {
+        return requireHomeNodeExec;
+    }
+
+    public boolean isCopyTemplates() {
+        return copyTemplates;
+    }
+
+    public String getNodeVersion() {
+        return nodeVersion;
+    }
+
+    public URI getNodeDownloadRoot() {
+        return nodeDownloadRoot;
+    }
+
+    public boolean isNodeAutoUpdate() {
+        return nodeAutoUpdate;
+    }
+
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    public boolean isProductionMode() {
+        return productionMode;
+    }
+
+    public File getJavaResourceFolder() {
+        return javaResourceFolder;
+    }
+
+    public List<String> getPostinstallPackages() {
+        return postinstallPackages;
+    }
+
 }
