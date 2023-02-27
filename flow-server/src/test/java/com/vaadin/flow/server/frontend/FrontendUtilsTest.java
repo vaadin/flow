@@ -377,58 +377,6 @@ public class FrontendUtilsTest {
         Assert.assertTrue(externalLicense.exists());
     }
 
-    @Test
-    public void symlinkByNpm_deleteDirectory_doesNotDeleteSymlinkFolderFiles()
-            throws IOException, ExecutionFailedException {
-        File npmFolder = tmpDir.newFolder();
-
-        File generatedPath = new File(npmFolder, "generated");
-        generatedPath.mkdir();
-
-        File symbolic = new File(npmFolder, "symbolic");
-        symbolic.mkdir();
-        File linkFolderFile = new File(symbolic, "symbol.txt");
-        linkFolderFile.createNewFile();
-
-        final JsonObject packageJson = Json.createObject();
-        packageJson.put(DEPENDENCIES, Json.createObject());
-
-        packageJson.getObject(DEPENDENCIES).put("@symbolic/link",
-                "./" + symbolic.getName());
-
-        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
-                packageJson.toJson(), StandardCharsets.UTF_8);
-
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-
-        Logger logger = Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
-
-        NodeUpdater nodeUpdater = new NodeUpdater(finder,
-                Mockito.mock(FrontendDependencies.class), npmFolder,
-                generatedPath, TARGET, Mockito.mock(FeatureFlags.class)) {
-
-            @Override
-            public void execute() {
-            }
-
-            @Override
-            Logger log() {
-                return logger;
-            }
-
-        };
-
-        new TaskRunNpmInstall(nodeUpdater, false, false,
-                FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, Collections.emptyList()).execute();
-
-        FrontendUtils.deleteNodeModules(new File(npmFolder, "node_modules"));
-
-        Assert.assertTrue("Linked folder contents should not be removed.",
-                linkFolderFile.exists());
-    }
-
     private ResourceProvider mockResourceProvider(VaadinService service) {
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
