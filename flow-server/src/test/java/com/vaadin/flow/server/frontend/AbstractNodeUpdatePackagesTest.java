@@ -159,7 +159,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Files.write(packageJson.toPath(),
                 Collections.singletonList(json.toJson()));
 
-        options.enablePnpm(true);
+        options.withEnablePnpm(true);
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), options);
         packageUpdater.execute();
@@ -185,7 +185,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Files.write(packageJson.toPath(),
                 Collections.singletonList(json.toJson()));
 
-        options.enablePnpm(true);
+        options.withEnablePnpm(true);
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), options);
         packageUpdater.execute();
@@ -205,7 +205,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Files.write(packageLock.toPath(), Collections.singletonList("{}"));
 
-        options.enablePnpm(true);
+        options.withEnablePnpm(true);
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), options);
@@ -217,7 +217,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     @Test
     public void pnpmIsInUse_packageJsonModified_removePnpmLock()
             throws IOException {
-        options.enablePnpm(true);
+        options.withEnablePnpm(true);
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), options);
@@ -363,7 +363,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     @Test
     public void versionsDoNotMatch_inVaadinJson_cleanUpPnpm()
             throws IOException {
-        options.enablePnpm(true);
+        options.withEnablePnpm(true);
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 Mockito.mock(FrontendDependencies.class), options);
@@ -664,7 +664,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Files.write(packageJson.toPath(),
                 Collections.singletonList(legacyPackageContent));
-        options.enablePnpm(true);
+        options.withEnablePnpm(true);
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), options);

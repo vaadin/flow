@@ -295,9 +295,9 @@ public class DevModeInitializer implements Serializable {
                 .copyLocalResources(new File(baseDir,
                         Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                 .enableImportsUpdate(true)
-                .runNpmInstall(config.frontendHotdeploy())
+                .withRunNpmInstall(config.frontendHotdeploy())
                 .populateTokenFileData(tokenFileData)
-                .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
+                .withEmbeddableWebComponents(true).withEnablePnpm(enablePnpm)
                 .useGlobalPnpm(useGlobalPnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
                 .withProductionMode(config.isProductionMode())
