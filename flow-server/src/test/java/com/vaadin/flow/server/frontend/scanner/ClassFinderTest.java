@@ -1,5 +1,6 @@
 package com.vaadin.flow.server.frontend.scanner;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,6 +23,27 @@ public class ClassFinderTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
+
+    private final class FakeClassLoader extends ClassLoader {
+        private final ClassLoader realClassLoader;
+
+        private FakeClassLoader(ClassLoader realClassLoader) {
+            super(null);
+            this.realClassLoader = realClassLoader;
+        }
+
+        protected Class<?> findClass(String name)
+                throws ClassNotFoundException {
+            try {
+                byte[] bytes = IOUtils
+                        .toByteArray(realClassLoader.getResourceAsStream(
+                                name.replace(".", "/") + ".class"));
+                return defineClass(name, bytes, 0, bytes.length);
+            } catch (IOException e) {
+                throw new ClassNotFoundException("Failed", e);
+            }
+        }
+    }
 
     private static class TestList extends ArrayList<String> {
 
@@ -91,4 +114,28 @@ public class ClassFinderTest {
         expected.add(NodeTestComponents.VaadinBowerComponent.class);
         Assert.assertEquals(expected, allClasses);
     }
+
+    public static class TestClass1 {
+
+    }
+
+    @Test
+    public void defaultsToContextClassLoader() throws Exception {
+        ClassLoader contextClassLoader = Thread.currentThread()
+                .getContextClassLoader();
+
+        ClassLoader loader1 = new FakeClassLoader(contextClassLoader);
+        ClassLoader loader2 = new FakeClassLoader(contextClassLoader);
+        Class<?> cls1 = loader1.loadClass(
+                "com.vaadin.flow.server.frontend.scanner.ClassFinderTest$TestClass1");
+        Class<?> cls2 = loader2.loadClass(
+                "com.vaadin.flow.server.frontend.scanner.ClassFinderTest$TestClass1");
+
+        Assert.assertEquals(loader1, cls1.getClassLoader());
+        Assert.assertEquals(loader2, cls2.getClassLoader());
+
+        DefaultClassFinder finder = new DefaultClassFinder(Set.of(cls1, cls2));
+        Assert.assertEquals(contextClassLoader, finder.getClassLoader());
+    }
+
 }
