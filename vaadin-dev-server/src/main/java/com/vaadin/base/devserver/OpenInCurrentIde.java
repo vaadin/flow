@@ -164,7 +164,7 @@ public final class OpenInCurrentIde {
     }
 
     private static String getCommandAndArguments(Info info) {
-        return info.commandLine().get();
+        return info.commandLine().orElse(null);
     }
 
     private static List<ProcessHandle> getParentProcesses() {
@@ -178,13 +178,16 @@ public final class OpenInCurrentIde {
     }
 
     static boolean isEclipse(Info info) {
-        String lowerCase = info.command().get().toLowerCase(Locale.ENGLISH);
-        // Eclipse has a lot of other products like Temurin and Adoptium so we
-        // cannot
-        // check with "contains"
-        return lowerCase.endsWith("eclipse")
-                || lowerCase.endsWith("eclipse.exe");
+        Optional<String> cmd = info.command();
+        if (cmd.isPresent()) {
+            String lowerCmd = cmd.get().toLowerCase(Locale.ENGLISH);
+            // Eclipse has a lot of other products like Temurin and Adoptium so
+            // we cannot check with "contains"
+            return lowerCmd.endsWith("eclipse")
+                    || lowerCmd.endsWith("eclipse.exe");
+        }
 
+        return false;
     }
 
     static boolean isIdea(Info info) {
@@ -193,7 +196,8 @@ public final class OpenInCurrentIde {
 
     private static String getIdeaBinary(Info info) {
         String commandAndArguments = getCommandAndArguments(info);
-        if (commandAndArguments.contains("idea_rt.jar")) {
+        if (commandAndArguments != null
+                && commandAndArguments.contains("idea_rt.jar")) {
             String replaced = commandAndArguments
                     .replaceFirst(".*[:;]([^:;]*)(idea_rt.jar).*", "$1$2");
             if (!replaced.equals(commandAndArguments)) {
@@ -208,10 +212,7 @@ public final class OpenInCurrentIde {
                 }
             }
         }
-        if (info.command().get().contains("idea")) {
-            return info.command().get();
-        }
-        return null;
+        return info.command().filter(cmd -> cmd.contains("idea")).orElse(null);
     }
 
     static boolean isVSCode(Info info) {
@@ -220,11 +221,14 @@ public final class OpenInCurrentIde {
             return true;
         }
 
-        String cmd = getCommandAndArguments(info).toLowerCase(Locale.ENGLISH);
-        if (cmd.contains("vscode") || cmd.contains("vs code")
-                || cmd.contains("code helper")
-                || cmd.contains("visual studio code")) {
-            return true;
+        String cmd = getCommandAndArguments(info);
+        if (cmd != null) {
+            String cmdLower = cmd.toLowerCase(Locale.ENGLISH);
+            if (cmdLower.contains("vscode") || cmdLower.contains("vs code")
+                    || cmdLower.contains("code helper")
+                    || cmdLower.contains("visual studio code")) {
+                return true;
+            }
         }
 
         return false;
