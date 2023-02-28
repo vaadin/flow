@@ -997,7 +997,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             if (!entryFound) {
                 missedKeys.add(projectEntryKey);
             }
-            allEntriesFound = allEntriesFound & entryFound;
+            allEntriesFound = allEntriesFound && entryFound;
         }
         return allEntriesFound;
     }
@@ -1025,7 +1025,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             if (!entryFound) {
                 missedKeys.add(projectArrayEntry.toJson());
             }
-            allEntriesFound = allEntriesFound & entryFound;
+            allEntriesFound = allEntriesFound && entryFound;
         }
         return allEntriesFound;
     }
