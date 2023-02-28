@@ -1375,6 +1375,14 @@ export class VaadinDevTools extends LitElement {
     window.sessionStorage.setItem(VaadinDevTools.ACTIVE_KEY_IN_SESSION_STORAGE, yes ? 'true' : 'false');
   }
 
+  disableLiveReloadTemporarily() {
+    if (!VaadinDevTools.isActive) {
+      return;
+    }
+    this.setActive(false);
+    setTimeout(() => this.setActive(true), 5000);
+  }
+
   getStatusColor(status: ConnectionStatus | undefined) {
     if (status === ConnectionStatus.ACTIVE) {
       return 'var(--dev-tools-green-color)';
@@ -1647,6 +1655,7 @@ export class VaadinDevTools extends LitElement {
       .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
       .connection=${this.frontendConnection}
+      @before-save=${this.disableLiveReloadTemporarily}
     ></vaadin-dev-tools-theme-editor>`;
   }
 
