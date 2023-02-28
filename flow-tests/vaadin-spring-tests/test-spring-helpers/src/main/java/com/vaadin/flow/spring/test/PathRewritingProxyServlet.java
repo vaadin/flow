@@ -4,12 +4,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
 
+import org.eclipse.jetty.client.Response;
+import org.eclipse.jetty.ee10.proxy.ProxyServlet.Transparent;
+
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-
-import org.eclipse.jetty.client.api.Response;
-import org.eclipse.jetty.proxy.ProxyServlet.Transparent;
 
 public class PathRewritingProxyServlet extends Transparent {
 

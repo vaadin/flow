@@ -17,9 +17,9 @@ package com.vaadin.viteapp;
 
 import java.io.File;
 
+import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

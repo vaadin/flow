@@ -75,8 +75,8 @@
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->
             <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
+                <groupId>org.eclipse.jetty.ee10</groupId>
+                <artifactId>jetty-ee10-maven-plugin</artifactId>
                 <configuration>
                     <webApp>
                         <!-- We deploy the app with a context in the servlet
@@ -103,8 +103,8 @@
                         </configuration>
                     </plugin>
                     <plugin>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-maven-plugin</artifactId>
+                        <groupId>org.eclipse.jetty.ee10</groupId>
+                        <artifactId>jetty-ee10-maven-plugin</artifactId>
                         <configuration>
                             <skip>false</skip>
                         </configuration>
