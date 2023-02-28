@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -75,7 +76,8 @@ public class JavaSourceModifier {
             classNames.forEach(className -> {
                 ExpressionStmt methodCall = createMethodCallExprStmt(
                         variableName, "addClassName", className);
-                if (!parentBlock.getStatements().contains(methodCall)) {
+                if (findExpressionStmtInBlockStmt(parentBlock, methodCall)
+                        .isEmpty()) {
                     parentBlock.addStatement(index.incrementAndGet(),
                             methodCall);
                 }
@@ -119,10 +121,7 @@ public class JavaSourceModifier {
             classNames.forEach(className -> {
                 ExpressionStmt methodCall = createMethodCallExprStmt(
                         variableName, "addClassName", className);
-                parentBlock.getStatements().stream()
-                        .filter(s -> simpleMethodCallExprStmtFilter(s,
-                                methodCall))
-                        .findFirst()
+                findExpressionStmtInBlockStmt(parentBlock, methodCall)
                         .ifPresent(parentBlock.getStatements()::remove);
             });
 
@@ -180,35 +179,17 @@ public class JavaSourceModifier {
         }
     }
 
-    public void addThemeAnnotation() {
-
-    }
-
     protected VaadinSession getSession() {
         return VaadinSession.getCurrent();
     }
 
-    // Compares two MethodCalls statements comparing scope, name and arguments
-    protected boolean simpleMethodCallExprStmtFilter(Statement e1,
-            Statement e2) {
-        if (!e1.getClass().equals(e2.getClass())) {
-            return false;
-        }
-
-        if (e1 instanceof ExpressionStmt exprE1
-                && e2 instanceof ExpressionStmt exprE2) {
-            if (exprE1.getExpression() instanceof MethodCallExpr mcExpr1
-                    && exprE2
-                            .getExpression() instanceof MethodCallExpr mcExpr2) {
-                return mcExpr1.getScope()
-                        .filter(mcExpr2.getScope().get()::equals).isPresent()
-                        && mcExpr1.getName().equals(mcExpr2.getName())
-                        && mcExpr1.getArguments()
-                                .equals(mcExpr2.getArguments());
-            }
-        }
-
-        return false;
+    protected Optional<ExpressionStmt> findExpressionStmtInBlockStmt(
+            BlockStmt n, ExpressionStmt stmt) {
+        return n.getStatements().stream()
+                .filter(ExpressionStmt.class::isInstance)
+                .map(ExpressionStmt.class::cast).filter(e -> Objects
+                        .equals(e.getExpression(), stmt.getExpression()))
+                .findFirst();
     }
 
     protected File getSourceFolder(ComponentTracker.Location location) {

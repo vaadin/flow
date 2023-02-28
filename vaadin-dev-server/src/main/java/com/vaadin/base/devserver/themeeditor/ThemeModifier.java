@@ -94,8 +94,7 @@ public class ThemeModifier {
     /**
      * Creates default theme folder structure within frontend resources. Creates
      * styles.css with import of ThemeEditor default stylesheet. Does not
-     * add @Theme annotation to AppShell configuration, to do so use
-     * {@link JavaSourceModifier#addThemeAnnotation()}.
+     * add @Theme annotation to AppShell configuration.
      */
     public void createDefaultTheme() {
         File theme = Path.of(getFrontendFolder().getPath(), "themes",

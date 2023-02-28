@@ -3,7 +3,6 @@ package com.vaadin.base.devserver.themeeditor;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
-import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.utils.SourceRoot;
 import com.vaadin.base.devserver.MockVaadinContext;
 import com.vaadin.experimental.FeatureFlags;
@@ -26,10 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Map;
@@ -76,15 +72,8 @@ public class JavaSourceModifierTest {
     }
 
     @Before
-    public void prepareFiles() throws IOException {
-        File javaFolder = TestUtils.getTestFolder("java/org/vaadin/example");
-        File testViewClean = new File(javaFolder, "TestView_clean.java");
-        File testView = new File(javaFolder, "TestView.java");
-        FileReader reader = new FileReader(testViewClean);
-        FileWriter writer = new FileWriter(testView);
-        IOUtils.copy(reader, writer);
-        IOUtils.closeQuietly(writer, reader);
-
+    public void prepare() {
+        copy("TestView_clean.java", "TestView.java");
         Lookup lookup = Mockito.mock(Lookup.class);
         mockContext.setAttribute(Lookup.class, lookup);
 
@@ -109,7 +98,6 @@ public class JavaSourceModifierTest {
 
         FeatureFlags.get(mockContext)
                 .setEnabled(FeatureFlags.THEME_EDITOR.getId(), true);
-
     }
 
     @After
@@ -121,15 +109,35 @@ public class JavaSourceModifierTest {
         }
     }
 
+    private void copy(String from, String to) {
+        try {
+            File javaFolder = TestUtils
+                    .getTestFolder("java/org/vaadin/example");
+            File testViewClean = new File(javaFolder, from);
+            File testView = new File(javaFolder, to);
+            FileReader reader = new FileReader(testViewClean);
+            FileWriter writer = new FileWriter(testView);
+            IOUtils.copy(reader, writer);
+            IOUtils.closeQuietly(writer, reader);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Test
-    public void classNameAdd_javaUpdated() {
-        prepareComponentTracker(22);
+    public void classNameAdd_javaUpdated_clean() {
+        classNameAdd_javaUpdated(22, 23, 24);
+    }
+
+    public void classNameAdd_javaUpdated(int declarationLine, int expectedLine1,
+            int expectedLine2) {
+        prepareComponentTracker(declarationLine);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
         modifier.setClassNames(0, 0, Arrays.asList("bold", "beautiful"));
 
         CompilationUnit cu = getCompilationUnit();
-        Node n1 = cu.accept(new LineNumberVisitor(), 23);
-        Node n2 = cu.accept(new LineNumberVisitor(), 24);
+        Node n1 = cu.accept(new LineNumberVisitor(), expectedLine1);
+        Node n2 = cu.accept(new LineNumberVisitor(), expectedLine2);
 
         Assert.assertTrue(n1 instanceof ExpressionStmt);
         Assert.assertTrue(n2 instanceof ExpressionStmt);
@@ -165,19 +173,26 @@ public class JavaSourceModifierTest {
 
     @Test
     public void classNameRemove_javaUpdated() {
-        prepareComponentTracker(22);
+        classNameRemove_javaUpdated(22, 42);
+    }
+
+    public void classNameRemove_javaUpdated(int declarationLine,
+            int methodCallLine) {
+        prepareComponentTracker(declarationLine);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
 
         // check if statement exists
-        Node n1 = getCompilationUnit().accept(new LineNumberVisitor(), 42);
+        Node n1 = getCompilationUnit().accept(new LineNumberVisitor(),
+                methodCallLine);
         ExpressionStmt expr1 = modifier.createMethodCallExprStmt("textField",
                 "addClassName", "ugly");
-        Assert.assertTrue(
-                modifier.simpleMethodCallExprStmtFilter(expr1, (Statement) n1));
+        Assert.assertEquals(((ExpressionStmt) n1).getExpression(),
+                expr1.getExpression());
 
         modifier.removeClassNames(0, 0, Arrays.asList("ugly"));
 
-        n1 = getCompilationUnit().accept(new LineNumberVisitor(), 42);
+        n1 = getCompilationUnit().accept(new LineNumberVisitor(),
+                methodCallLine);
         Assert.assertNull(n1);
     }
 
@@ -200,7 +215,24 @@ public class JavaSourceModifierTest {
         prepareComponentTracker(44);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
         modifier.setClassNames(0, 0, Arrays.asList("bold", "beautiful"));
+    }
 
+    @Test
+    public void messedFileModified_structurePreserved() {
+        copy("TestView_messed.java", "TestView.java");
+        classNameRemove_javaUpdated(25, 47);
+        classNameAdd_javaUpdated(25, 27, 28);
+        try {
+            File javaFolder = TestUtils
+                    .getTestFolder("java/org/vaadin/example");
+            Reader fileReader1 = new FileReader(
+                    new File(javaFolder, "TestView.java"));
+            Reader fileReader2 = new FileReader(
+                    new File(javaFolder, "TestView_messedExpected.java"));
+            Assert.assertTrue(IOUtils.contentEquals(fileReader1, fileReader2));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void prepareComponentTracker(int line) {
