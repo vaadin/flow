@@ -23,6 +23,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -365,15 +366,36 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             return false;
         }
 
+        if (indexFileAddedOrDeleted(options, frontendHashes)) {
+            return false;
+        }
+
         Map<String, String> remainingImports = getRemainingImports(jarImports,
                 projectImports, frontendHashes);
 
-        if (newOrDeletedFrontendFiles(options.getFrontendDirectory(),
+        if (importedFrontendFilesChanged(options.getFrontendDirectory(),
                 remainingImports)) {
             return false;
         }
 
         return true;
+    }
+
+    private static boolean indexFileAddedOrDeleted(Options options,
+            JsonObject frontendHashes) {
+        Collection<String> indexFiles = Arrays.asList(FrontendUtils.INDEX_TS,
+                FrontendUtils.INDEX_JS, FrontendUtils.INDEX_TSX);
+        for (String indexFile : indexFiles) {
+            File file = new File(options.getFrontendDirectory(), indexFile);
+            if (file.exists() && !frontendHashes.hasKey(indexFile)) {
+                getLogger().info("Detected added {} file", indexFile);
+                return true;
+            } else if (!file.exists() && frontendHashes.hasKey(indexFile)) {
+                getLogger().info("Detected deleted {} file", indexFile);
+                return true;
+            }
+        }
+        return false;
     }
 
     private static Map<String, String> getRemainingImports(
@@ -396,10 +418,22 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         return Collections.emptyMap();
     }
 
-    private static boolean newOrDeletedFrontendFiles(File frontendDirectory,
+    /**
+     * Checks for possible changes in TS/JS files in frontend folder which are
+     * referenced from other TS/JS files with 'import {foo} from 'Frontend/bar'.
+     *
+     * @param frontendDirectory
+     *            folder with frontend resources in the project
+     * @param remainingImports
+     *            frontend resource imports listed in the bundle, but not found
+     *            with class scanner.
+     * @return true if changes detected, false otherwise
+     * @throws IOException
+     *             if exception is thrown while reading files content
+     */
+    private static boolean importedFrontendFilesChanged(File frontendDirectory,
             Map<String, String> remainingImports) throws IOException {
         if (!remainingImports.isEmpty()) {
-            List<String> deleted = new ArrayList<>();
             List<String> changed = new ArrayList<>();
             for (Map.Entry<String, String> importEntry : remainingImports
                     .entrySet()) {
@@ -413,17 +447,12 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                     if (!expectedHash.equals(hash)) {
                         changed.add(filePath);
                     }
-                } else {
-                    deleted.add(filePath);
                 }
             }
             if (!changed.isEmpty()) {
                 logChangedFiles(changed, "Detected changed frontend files:");
+                return true;
             }
-            if (!deleted.isEmpty()) {
-                logChangedFiles(deleted, "Detected deleted frontend files:");
-            }
-            return !changed.isEmpty() || !deleted.isEmpty();
         }
         return false;
     }
