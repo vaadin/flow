@@ -218,8 +218,9 @@ export class ThemeEditor extends LitElement {
       return;
     }
     const { part, property, value } = e.detail;
+    const partName = part?.partName || null;
     this.hasModifications = true;
-    this.editedComponentTheme.updatePropertyValue(part.partName, property.propertyName, value);
+    this.editedComponentTheme.updatePropertyValue(partName, property.propertyName, value);
     this.effectiveComponentTheme = ComponentTheme.combine(
       this.baseComponentTheme,
       this.modifiedComponentTheme,

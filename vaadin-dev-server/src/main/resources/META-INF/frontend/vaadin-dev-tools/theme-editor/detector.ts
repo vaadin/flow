@@ -8,6 +8,15 @@ export function detectTheme(metadata: ComponentMetadata): ComponentTheme {
   document.body.append(element);
 
   try {
+    // Host
+    const hostStyles = getComputedStyle(element);
+
+    metadata.properties.forEach((property) => {
+      const propertyValue = getPropertyValue(hostStyles, property.propertyName);
+      componentTheme.updatePropertyValue(null, property.propertyName, propertyValue);
+    });
+
+    // Parts
     metadata.parts.forEach((part) => {
       const partElement = element.shadowRoot?.querySelector(`[part~="${part.partName}"]`);
       if (!partElement) {
@@ -16,11 +25,8 @@ export function detectTheme(metadata: ComponentMetadata): ComponentTheme {
       const partStyles = getComputedStyle(partElement);
 
       part.properties.forEach((property) => {
-        componentTheme.updatePropertyValue(
-          part.partName,
-          property.propertyName,
-          partStyles[property.propertyName as any]
-        );
+        const propertyValue = getPropertyValue(partStyles, property.propertyName);
+        componentTheme.updatePropertyValue(part.partName, property.propertyName, propertyValue);
       });
     });
   } finally {
@@ -28,4 +34,8 @@ export function detectTheme(metadata: ComponentMetadata): ComponentTheme {
   }
 
   return componentTheme;
+}
+
+function getPropertyValue(styles: CSSStyleDeclaration, propertyName: string) {
+  return propertyName.indexOf('--') === 0 ? styles.getPropertyValue(propertyName) : styles[propertyName as any];
 }

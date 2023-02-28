@@ -1,62 +1,31 @@
-import { ComponentMetadata } from '../model';
+import { ComponentMetadata, CssPropertyEditorType } from '../model';
 
 export default {
   tagName: 'vaadin-button',
   displayName: 'Button',
-  parts: [
+  properties: [
     {
-      partName: 'label',
-      displayName: 'Label',
-      properties: [
-        {
-          propertyName: 'color',
-          displayName: 'Text color'
-        },
-        {
-          propertyName: 'font-size',
-          displayName: 'Font size'
-        },
-        {
-          propertyName: 'background',
-          displayName: 'Background'
-        }
-      ]
+      propertyName: 'background-color',
+      displayName: 'Background color',
+      editor: CssPropertyEditorType.colorPicker
     },
     {
-      partName: 'prefix',
-      displayName: 'Prefix',
-      properties: [
-        {
-          propertyName: 'color',
-          displayName: 'Text color'
-        },
-        {
-          propertyName: 'font-size',
-          displayName: 'Font size'
-        },
-        {
-          propertyName: 'background',
-          displayName: 'Background'
-        }
-      ]
+      propertyName: 'color',
+      displayName: 'Text color',
+      editor: CssPropertyEditorType.colorPicker
     },
     {
-      partName: 'suffix',
-      displayName: 'Suffix',
-      properties: [
-        {
-          propertyName: 'color',
-          displayName: 'Text color'
-        },
-        {
-          propertyName: 'font-size',
-          displayName: 'Font size'
-        },
-        {
-          propertyName: 'background',
-          displayName: 'Background'
-        }
-      ]
+      propertyName: '--lumo-button-size',
+      displayName: 'Size',
+      editor: CssPropertyEditorType.slider,
+      preferredValues: ['--lumo-size-xs', '--lumo-size-s', '--lumo-size-m', '--lumo-size-l', '--lumo-size-xl']
+    },
+    {
+      propertyName: 'padding-inline',
+      displayName: 'Padding',
+      editor: CssPropertyEditorType.slider,
+      preferredValues: ['--lumo-space-xs', '--lumo-space-s', '--lumo-space-m', '--lumo-space-l', '--lumo-space-xl']
     }
-  ]
+  ],
+  parts: []
 } as ComponentMetadata;

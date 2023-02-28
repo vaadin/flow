@@ -1,6 +1,6 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { ComponentMetadata, ComponentPartMetadata } from './metadata/model';
+import { ComponentMetadata, ComponentPartMetadata, CssPropertyMetadata } from './metadata/model';
 import './property-editor';
 import { ComponentTheme } from './model';
 
@@ -8,13 +8,13 @@ import { ComponentTheme } from './model';
 export class PropertyList extends LitElement {
   static get styles() {
     return css`
-      .part .header {
+      .section .header {
         padding: 0.4rem var(--theme-editor-section-horizontal-padding);
         color: var(--dev-tools-text-color-emphasis);
         background-color: rgba(0, 0, 0, 0.2);
       }
 
-      .part .property-list .property-editor:not(:last-child) {
+      .section .property-list .property-editor:not(:last-child) {
         border-bottom: solid 1px rgba(0, 0, 0, 0.2);
       }
     `;
@@ -26,13 +26,16 @@ export class PropertyList extends LitElement {
   public theme!: ComponentTheme;
 
   render() {
-    const partSections = this.metadata.parts.map((part) => this.renderPartSection(part));
+    const partSections = [
+      this.renderPartSection(null, this.metadata.properties),
+      ...this.metadata.parts.map((part) => this.renderPartSection(part, part.properties))
+    ];
 
     return html` <div class="part-list">${partSections}</div> `;
   }
 
-  private renderPartSection(part: ComponentPartMetadata) {
-    const properties = part.properties.map((property) => {
+  private renderPartSection(part: ComponentPartMetadata | null, properties: CssPropertyMetadata[]) {
+    const propertiesList = properties.map((property) => {
       return html` <vaadin-dev-tools-theme-property-editor
         class="property-editor"
         .partMetadata=${part}
@@ -43,9 +46,9 @@ export class PropertyList extends LitElement {
     });
 
     return html`
-      <div class="part" data-testid=${part.partName}>
-        <div class="header">${part.displayName}</div>
-        <div class="property-list">${properties}</div>
+      <div class="section" data-testid=${part?.partName || 'host'}>
+        ${part ? html` <div class="header">${part.displayName}</div>` : null}
+        <div class="property-list">${propertiesList}</div>
       </div>
     `;
   }

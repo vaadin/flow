@@ -1,7 +1,15 @@
+export enum CssPropertyEditorType {
+  text,
+  colorPicker,
+  slider
+}
+
 export interface CssPropertyMetadata {
   propertyName: string;
   displayName: string;
   description?: string;
+  preferredValues?: string[]
+  editor?: CssPropertyEditorType
 }
 
 export interface ComponentPartMetadata {
@@ -16,4 +24,5 @@ export interface ComponentMetadata {
   displayName: string;
   description?: string;
   parts: ComponentPartMetadata[];
+  properties: CssPropertyMetadata[];
 }
