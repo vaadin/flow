@@ -351,6 +351,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         // check out https://github.com/babel/babel/issues/11488
         defaults.put("chokidar", "^3.5.0");
 
+        defaults.put("@types/node", "18.14.0");
         return defaults;
     }
 
