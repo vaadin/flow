@@ -81,7 +81,7 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
                 } else {
 
                     templateDirectory = new File(
-                            options.resourceOutputDirectory,
+                            options.getResourceOutputDirectory(),
                             Constants.TEMPLATE_DIRECTORY);
                 }
                 File target = new File(templateDirectory, path).getParentFile();
