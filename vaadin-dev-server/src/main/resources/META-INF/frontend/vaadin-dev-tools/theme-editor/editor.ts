@@ -212,9 +212,12 @@ export class ThemeEditor extends LitElement {
       return;
     }
 
+    // Notify dev tools that we are about to save CSS, so that it can disable
+    // live reload temporarily
+    this.dispatchEvent(new CustomEvent("before-save"));
+
     const rules = generateRules(this.editedTheme);
     this.connection.sendThemeEditorRules(rules);
-
-    // Assume that page gets reloaded at this point, so no need to update component state
+    this.hasModifications = false;
   }
 }

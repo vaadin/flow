@@ -239,5 +239,16 @@ describe('theme-editor', () => {
       expect(connectionMock.sendThemeEditorRules.called);
       expect(connectionMock.sendThemeEditorRules.args[0][0]).to.deep.equal(expectedRules);
     });
+
+    it('should dispatch event before saving changes', async () => {
+      const beforeSaveSpy = sinon.spy();
+      editor.addEventListener('before-save', beforeSaveSpy);
+
+      await pickComponent();
+      await editProperty('label', 'color', 'red');
+      findApplyButton().click();
+
+      expect(beforeSaveSpy.calledOnce).to.be.true;
+    });
   });
 });
