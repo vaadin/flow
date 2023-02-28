@@ -1,9 +1,10 @@
-package com.vaadin.base.devserver;
+package com.vaadin.base.devserver.themeeditor;
 
 import com.helger.css.ECSSVersion;
 import com.helger.css.decl.CSSStyleRule;
 import com.helger.css.decl.CascadingStyleSheet;
 import com.helger.css.reader.CSSReader;
+import com.vaadin.base.devserver.MockVaadinContext;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinContext;
@@ -19,6 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
@@ -46,7 +50,7 @@ public class ThemeModifierTest {
     }
 
     @Before
-    public void prepareFiles() throws IOException, URISyntaxException {
+    public void prepareFiles() throws IOException {
         File themeFolder = TestUtils
                 .getTestFolder(FRONTEND_FOLDER + "/themes/my-theme");
         File stylesCss = new File(themeFolder, "styles.css");
@@ -120,7 +124,7 @@ public class ThemeModifierTest {
         assertEquals(ThemeModifier.State.MISSING_THEME,
                 themeModifier.getState());
 
-        themeModifier.handleCreateDefaultThemeCommand(null);
+        themeModifier.createDefaultTheme();
         themeModifier = new TestThemeModifier() {
             @Override
             protected File getFrontendFolder() {
@@ -144,7 +148,9 @@ public class ThemeModifierTest {
         assertTrue(styleSheet.getAllImportRules().isEmpty());
 
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
+        modifier.setThemeProperties(
+                Collections.singletonList(new ThemeModifier.CssRuleProperty(
+                        SELECTOR_WITH_PART, "color", "red")));
 
         styleSheet = getStylesheet("styles.css");
         assertEquals(1, styleSheet.getAllImportRules().size());
@@ -158,8 +164,12 @@ public class ThemeModifierTest {
         assertTrue(styleSheet.getAllImportRules().isEmpty());
 
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
-        modifier.setCssProperty(SELECTOR_WITH_PART, "font-family", "serif");
+        List<ThemeModifier.CssRuleProperty> toBeAdded = new ArrayList<>();
+        toBeAdded.add(new ThemeModifier.CssRuleProperty(SELECTOR_WITH_PART,
+                "color", "red"));
+        toBeAdded.add(new ThemeModifier.CssRuleProperty(SELECTOR_WITH_PART,
+                "font-family", "serif"));
+        modifier.setThemeProperties(toBeAdded);
 
         styleSheet = getStylesheet("styles.css");
         assertEquals(1, styleSheet.getImportRuleCount());
@@ -170,7 +180,9 @@ public class ThemeModifierTest {
     @Test
     public void ruleAdded_ruleIsPresent() {
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
+        modifier.setThemeProperties(
+                Collections.singletonList(new ThemeModifier.CssRuleProperty(
+                        SELECTOR_WITH_PART, "color", "red")));
 
         CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
         assertEquals(1, styleSheet.getStyleRuleCount());
@@ -183,8 +195,12 @@ public class ThemeModifierTest {
     @Test
     public void ruleExists_ruleIsUpdated() {
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
-        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "blue");
+        List<ThemeModifier.CssRuleProperty> toBeAdded = new ArrayList<>();
+        toBeAdded.add(new ThemeModifier.CssRuleProperty(SELECTOR_WITH_PART,
+                "color", "red"));
+        toBeAdded.add(new ThemeModifier.CssRuleProperty(SELECTOR_WITH_PART,
+                "color", "blue"));
+        modifier.setThemeProperties(toBeAdded);
 
         CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
         assertEquals(1, styleSheet.getStyleRuleCount());
@@ -201,8 +217,12 @@ public class ThemeModifierTest {
     @Test
     public void rulesWithSameSelectorExists_rulesAreGrouped() {
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
-        modifier.setCssProperty(SELECTOR_WITH_PART, "font-family", "serif");
+        List<ThemeModifier.CssRuleProperty> toBeAdded = new ArrayList<>();
+        toBeAdded.add(new ThemeModifier.CssRuleProperty(SELECTOR_WITH_PART,
+                "color", "red"));
+        toBeAdded.add(new ThemeModifier.CssRuleProperty(SELECTOR_WITH_PART,
+                "font-family", "serif"));
+        modifier.setThemeProperties(toBeAdded);
 
         CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
         assertEquals(1, styleSheet.getStyleRuleCount());
@@ -224,11 +244,16 @@ public class ThemeModifierTest {
     @Test
     public void rulesAreAddedRandomly_rulesAreGroupedAndSorted() {
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssProperty("vaadin-button::part(label)", "color", "red");
-        modifier.setCssProperty("vaadin-button", "font-family", "serif");
-        modifier.setCssProperty("vaadin-button", "color", "brown");
-        modifier.setCssProperty("vaadin-button::part(label)", "border",
-                "1px solid red");
+        List<ThemeModifier.CssRuleProperty> toBeAdded = new ArrayList<>();
+        toBeAdded.add(new ThemeModifier.CssRuleProperty(
+                "vaadin-button::part(label)", "color", "red"));
+        toBeAdded.add(new ThemeModifier.CssRuleProperty("vaadin-button",
+                "font-family", "serif"));
+        toBeAdded.add(new ThemeModifier.CssRuleProperty("vaadin-button",
+                "color", "brown"));
+        toBeAdded.add(new ThemeModifier.CssRuleProperty(
+                "vaadin-button::part(label)", "border", "1px solid red"));
+        modifier.setThemeProperties(toBeAdded);
 
         CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
         assertEquals(2, styleSheet.getStyleRuleCount());
@@ -253,9 +278,14 @@ public class ThemeModifierTest {
     @Test
     public void rulesWithSameSelectorExists_ruleIsUpdated() {
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
-        modifier.setCssProperty(SELECTOR_WITH_PART, "font-family", "serif");
-        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "blue");
+        List<ThemeModifier.CssRuleProperty> toBeAdded = new ArrayList<>();
+        toBeAdded.add(new ThemeModifier.CssRuleProperty(SELECTOR_WITH_PART,
+                "color", "red"));
+        toBeAdded.add(new ThemeModifier.CssRuleProperty(SELECTOR_WITH_PART,
+                "font-family", "serif"));
+        toBeAdded.add(new ThemeModifier.CssRuleProperty(SELECTOR_WITH_PART,
+                "color", "blue"));
+        modifier.setThemeProperties(toBeAdded);
 
         CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
         assertEquals(1, styleSheet.getStyleRuleCount());
@@ -269,15 +299,21 @@ public class ThemeModifierTest {
     @Test
     public void ruleIsRemoved_rulesUpdated() {
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
-        modifier.setCssProperty(SELECTOR_WITH_PART, "font-family", "serif");
+        List<ThemeModifier.CssRuleProperty> toBeAdded = new ArrayList<>();
+        toBeAdded.add(new ThemeModifier.CssRuleProperty(SELECTOR_WITH_PART,
+                "color", "red"));
+        toBeAdded.add(new ThemeModifier.CssRuleProperty(SELECTOR_WITH_PART,
+                "font-family", "serif"));
+        modifier.setThemeProperties(toBeAdded);
 
         CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
         assertEquals(1, styleSheet.getStyleRuleCount());
         assertEquals(2,
                 styleSheet.getStyleRuleAtIndex(0).getDeclarationCount());
 
-        modifier.removeCssProperty(SELECTOR_WITH_PART, "color");
+        modifier.removeThemeProperties(
+                Collections.singletonList(new ThemeModifier.CssRuleProperty(
+                        SELECTOR_WITH_PART, "color", "")));
 
         styleSheet = getStylesheet("theme-editor.css");
         assertEquals(1, styleSheet.getStyleRuleCount());
@@ -290,16 +326,24 @@ public class ThemeModifierTest {
     @Test
     public void allRulesAreRemoved_ruleIsNotPresent() {
         ThemeModifier modifier = new TestThemeModifier();
-        modifier.setCssProperty(SELECTOR_WITH_PART, "color", "red");
-        modifier.setCssProperty(SELECTOR_WITH_PART, "font-family", "serif");
+        List<ThemeModifier.CssRuleProperty> toBeAdded = new ArrayList<>();
+        toBeAdded.add(new ThemeModifier.CssRuleProperty(SELECTOR_WITH_PART,
+                "color", "red"));
+        toBeAdded.add(new ThemeModifier.CssRuleProperty(SELECTOR_WITH_PART,
+                "font-family", "serif"));
+        modifier.setThemeProperties(toBeAdded);
 
         CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
         assertEquals(1, styleSheet.getStyleRuleCount());
         assertEquals(2,
                 styleSheet.getStyleRuleAtIndex(0).getDeclarationCount());
 
-        modifier.removeCssProperty(SELECTOR_WITH_PART, "color");
-        modifier.removeCssProperty(SELECTOR_WITH_PART, "font-family");
+        List<ThemeModifier.CssRuleProperty> toBeRemoved = new ArrayList<>();
+        toBeRemoved.add(new ThemeModifier.CssRuleProperty(SELECTOR_WITH_PART,
+                "font-family", ""));
+        toBeRemoved.add(new ThemeModifier.CssRuleProperty(SELECTOR_WITH_PART,
+                "color", ""));
+        modifier.removeThemeProperties(toBeRemoved);
 
         styleSheet = getStylesheet("theme-editor.css");
         assertEquals(0, styleSheet.getStyleRuleCount());
