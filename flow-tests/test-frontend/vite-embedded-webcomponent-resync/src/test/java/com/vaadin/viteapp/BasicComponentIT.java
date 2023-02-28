@@ -17,8 +17,6 @@ package com.vaadin.viteapp;
 
 import java.io.File;
 
-import jakarta.servlet.http.HttpSessionEvent;
-import jakarta.servlet.http.HttpSessionListener;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -29,17 +27,24 @@ import org.junit.Test;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.StaleElementReferenceException;
 
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionListener;
+
 public class BasicComponentIT extends ChromeDeviceTest {
+
+    private static final String HOTDEPLOY_PROPERTY = "vaadin." + InitParameters.FRONTEND_HOTDEPLOY;
 
     private Server server;
 
     private WebAppContext context;
 
-    private String sessionId;
-
     private String hotdeploy;
+
+    protected HttpSession session;
 
     @Before
     public void init() throws Exception {
@@ -58,7 +63,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
                 getAuthenticationResult());
 
         // simulate expired session by invalidating current session
-        context.getSessionHandler().getSession(sessionId).invalidate();
+        session.invalidate();
 
         // init request to resynchronize expired session and recreate components
         clickButton();
@@ -100,8 +105,8 @@ public class BasicComponentIT extends ChromeDeviceTest {
     }
 
     public void setup(int port) throws Exception {
-        hotdeploy = System.getProperty("vaadin.frontend.hotdeploy");
-        System.setProperty("vaadin.frontend.hotdeploy", "true");
+        hotdeploy = System.getProperty(HOTDEPLOY_PROPERTY);
+        System.setProperty(HOTDEPLOY_PROPERTY, "true");
         server = new Server();
         try (ServerConnector connector = new ServerConnector(server)) {
             connector.setPort(port);
@@ -119,7 +124,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
         context.getSessionHandler().addEventListener(new HttpSessionListener() {
             @Override
             public void sessionCreated(HttpSessionEvent httpSessionEvent) {
-                sessionId = httpSessionEvent.getSession().getId();
+                session = httpSessionEvent.getSession();
             }
         });
 
@@ -135,7 +140,11 @@ public class BasicComponentIT extends ChromeDeviceTest {
             context = null;
         } finally {
             server.stop();
-            System.setProperty("vaadin.frontend.hotdeploy", hotdeploy);
+            if (hotdeploy == null) {
+                System.clearProperty(HOTDEPLOY_PROPERTY);
+            } else {
+                System.setProperty(HOTDEPLOY_PROPERTY, hotdeploy);
+            }
         }
     }
 }
