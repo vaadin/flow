@@ -1,4 +1,4 @@
-import { ComponentTheme } from './model';
+import { Theme } from './model';
 
 class ThemePreview {
   private _stylesheet: CSSStyleSheet;
@@ -13,16 +13,19 @@ class ThemePreview {
     return this._stylesheet;
   }
 
-  update(theme: ComponentTheme) {
+  update(theme: Theme) {
     const rules: string[] = [];
-    const uniquePartNames = theme.metadata.parts.map((part) => part.partName);
 
-    uniquePartNames.forEach((partName) => {
-      const selector = `${theme.metadata.tagName}::part(${partName})`;
-      const propertyValues = theme.getPropertyValuesForPart(partName);
-      const propertyDeclarations = propertyValues.map((value) => `${value.propertyName}: ${value.value}`).join(';');
-      const rule = `${selector} { ${propertyDeclarations} }`;
-      rules.push(rule);
+    theme.componentThemes.forEach((componentTheme) => {
+      componentTheme.metadata.parts
+        .map((part) => part.partName)
+        .forEach((partName) => {
+          const selector = `${componentTheme.metadata.tagName}::part(${partName})`;
+          const propertyValues = componentTheme.getPropertyValuesForPart(partName);
+          const propertyDeclarations = propertyValues.map((value) => `${value.propertyName}: ${value.value}`).join(';');
+          const rule = `${selector} { ${propertyDeclarations} }`;
+          rules.push(rule);
+        });
     });
 
     const themeCss = rules.join('\n');

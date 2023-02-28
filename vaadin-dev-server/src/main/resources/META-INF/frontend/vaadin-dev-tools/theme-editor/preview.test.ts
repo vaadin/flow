@@ -2,7 +2,7 @@ import { expect, fixture, html } from '@open-wc/testing';
 import '@vaadin/button';
 import buttonMetadata from './metadata/components/vaadin-button';
 import { themePreview } from './preview';
-import { ComponentTheme } from './model';
+import {ComponentTheme, Theme} from './model';
 
 describe('theme-preview', () => {
   const colors = {
@@ -32,10 +32,12 @@ describe('theme-preview', () => {
     expect(buttonStyles.suffix.color).to.not.equal(colors.green);
     expect(buttonStyles.prefix.color).to.not.equal(colors.blue);
 
-    const theme = new ComponentTheme(buttonMetadata);
-    theme.updatePropertyValue('label', 'color', colors.red);
-    theme.updatePropertyValue('prefix', 'color', colors.green);
-    theme.updatePropertyValue('suffix', 'color', colors.blue);
+    const theme = new Theme();
+    const buttonTheme = new ComponentTheme(buttonMetadata);
+    buttonTheme.updatePropertyValue('label', 'color', colors.red);
+    buttonTheme.updatePropertyValue('prefix', 'color', colors.green);
+    buttonTheme.updatePropertyValue('suffix', 'color', colors.blue);
+    theme.updateComponentTheme(buttonTheme);
     themePreview.update(theme);
 
     buttonStyles = getButtonStyles();
@@ -45,15 +47,18 @@ describe('theme-preview', () => {
   });
 
   it('should update theme preview', () => {
-    const theme = new ComponentTheme(buttonMetadata);
-    theme.updatePropertyValue('label', 'color', colors.red);
-    theme.updatePropertyValue('prefix', 'color', colors.green);
-    theme.updatePropertyValue('suffix', 'color', colors.blue);
+    const theme = new Theme();
+    const buttonTheme = new ComponentTheme(buttonMetadata);
+    buttonTheme.updatePropertyValue('label', 'color', colors.red);
+    buttonTheme.updatePropertyValue('prefix', 'color', colors.green);
+    buttonTheme.updatePropertyValue('suffix', 'color', colors.blue);
+    theme.updateComponentTheme(buttonTheme);
     themePreview.update(theme);
 
-    theme.updatePropertyValue('label', 'color', colors.red);
-    theme.updatePropertyValue('prefix', 'color', colors.red);
-    theme.updatePropertyValue('suffix', 'color', colors.red);
+    buttonTheme.updatePropertyValue('label', 'color', colors.red);
+    buttonTheme.updatePropertyValue('prefix', 'color', colors.red);
+    buttonTheme.updatePropertyValue('suffix', 'color', colors.red);
+    theme.updateComponentTheme(buttonTheme);
     themePreview.update(theme);
 
     let buttonStyles = getButtonStyles();
@@ -63,10 +68,12 @@ describe('theme-preview', () => {
   });
 
   it('should reset theme preview', () => {
-    const theme = new ComponentTheme(buttonMetadata);
-    theme.updatePropertyValue('label', 'color', colors.red);
-    theme.updatePropertyValue('prefix', 'color', colors.green);
-    theme.updatePropertyValue('suffix', 'color', colors.blue);
+    const theme = new Theme();
+    const buttonTheme = new ComponentTheme(buttonMetadata);
+    buttonTheme.updatePropertyValue('label', 'color', colors.red);
+    buttonTheme.updatePropertyValue('prefix', 'color', colors.green);
+    buttonTheme.updatePropertyValue('suffix', 'color', colors.blue);
+    theme.updateComponentTheme(buttonTheme)
     themePreview.update(theme);
 
     themePreview.reset();
