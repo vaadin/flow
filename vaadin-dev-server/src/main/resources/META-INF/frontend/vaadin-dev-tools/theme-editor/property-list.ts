@@ -26,15 +26,15 @@ export class PropertyList extends LitElement {
   public theme!: ComponentTheme;
 
   render() {
-    const partSections = [
-      this.renderPartSection(null, this.metadata.properties),
-      ...this.metadata.parts.map((part) => this.renderPartSection(part, part.properties))
+    const sections = [
+      this.renderSection(null, this.metadata.properties),
+      ...this.metadata.parts.map((part) => this.renderSection(part, part.properties))
     ];
 
-    return html` <div class="part-list">${partSections}</div> `;
+    return html` <div>${sections}</div> `;
   }
 
-  private renderPartSection(part: ComponentPartMetadata | null, properties: CssPropertyMetadata[]) {
+  private renderSection(part: ComponentPartMetadata | null, properties: CssPropertyMetadata[]) {
     const propertiesList = properties.map((property) => {
       return html` <vaadin-dev-tools-theme-property-editor
         class="property-editor"
