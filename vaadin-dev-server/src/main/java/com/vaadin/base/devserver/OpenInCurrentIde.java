@@ -164,10 +164,7 @@ public final class OpenInCurrentIde {
     }
 
     private static String getCommandAndArguments(Info info) {
-        if (info.commandLine().isPresent()) {
-            return info.commandLine().get();
-        }
-        return null;
+        return info.commandLine().orElse(null);
     }
 
     private static List<ProcessHandle> getParentProcesses() {
@@ -215,11 +212,7 @@ public final class OpenInCurrentIde {
                 }
             }
         }
-        if (info.command().isPresent()
-                && info.command().get().contains("idea")) {
-            return info.command().get();
-        }
-        return null;
+        return info.command().filter(cmd -> cmd.contains("idea")).orElse(null);
     }
 
     static boolean isVSCode(Info info) {
