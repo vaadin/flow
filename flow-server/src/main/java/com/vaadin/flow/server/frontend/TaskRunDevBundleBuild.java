@@ -264,8 +264,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             JsonObject content = Json.parse(contentsInStats.getString(key));
             if (!objectIncludesEntry(content, projectThemeJson.get(),
                     missedKeys)) {
-                getLogger().info("Project custom theme '{}' sets entries in "
-                        + "theme.json configuration missing in the " + "bundle",
+                getLogger().info("Project custom theme '{}' has imports/assets in 'theme.json' not present in the bundle",
                         projectThemeName);
                 Collections.reverse(missedKeys);
                 logChangedFiles(missedKeys, "Detected missed entries:");
@@ -287,9 +286,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 if (!objectIncludesEntry(content, themeContent.getValue(),
                         missedKeys)) {
                     getLogger().info(
-                            "Packaged custom theme '{}' sets entries"
-                                    + " in the theme.json configuration "
-                                    + "missing in the bundle",
+                            "Packaged custom theme '{}' has imports/assets in 'theme.json' not present in the bundle",
                             themeContent.getKey());
                     return true;
                 }
