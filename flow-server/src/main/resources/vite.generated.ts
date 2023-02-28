@@ -281,7 +281,7 @@ function statsExtracterPlugin(): PluginOption {
 
       const projectThemeJson = path.resolve(frontendFolder, settings.themeFolder, settings.themeName, "theme.json")
       if (existsSync(projectThemeJson)) {
-        themeJsonContents[settings.themeName] = readFileSync(projectThemeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+        themeJsonContents[ settings.themeName ] = readFileSync(projectThemeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
       }
 
 
