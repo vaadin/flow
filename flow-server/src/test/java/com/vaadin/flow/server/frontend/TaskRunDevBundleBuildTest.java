@@ -1467,6 +1467,37 @@ public class TaskRunDevBundleBuildTest {
     }
 
     @Test
+    public void indexTsAdded_rebuildRequired() throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        File frontendFolder = temporaryFolder.newFolder(FrontendUtils.FRONTEND);
+
+        File indexTs = new File(frontendFolder, FrontendUtils.INDEX_TS);
+        indexTs.createNewFile();
+
+        FileUtils.write(indexTs, "window.alert('');", StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue("Adding 'index.ts' should require bundling",
+                    needsBuild);
+        }
+    }
+
+    @Test
     public void changeInIndexTs_rebuildRequired() throws IOException {
         createPackageJsonStub("{\"dependencies\": {}, "
                 + "\"vaadin\": { \"hash\": \"aHash\"} }");
@@ -1531,6 +1562,37 @@ public class TaskRunDevBundleBuildTest {
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
             Assert.assertTrue("'index.ts' delete should require re-bundling",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void standardVaadinComponent_notAddedToProjectAsJar_noRebuildRequired()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+        stats.getArray(BUNDLE_IMPORTS).set(0,
+                "Frontend/generated/jar-resources/vaadin-spreadsheet/vaadin-spreadsheet.js");
+        stats.getObject(FRONTEND_HASHES).put(
+                "vaadin-spreadsheet/vaadin-spreadsheet.js",
+                "e545ad23a2d1d4b3a3370a0305dd71c15bbfc645216f50c6e327bd818b7484c4");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Should not require bundling if component JS is missing in jar-resources",
                     needsBuild);
         }
     }
