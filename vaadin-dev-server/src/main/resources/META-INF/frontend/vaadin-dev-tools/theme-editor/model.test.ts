@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { combineThemes, ComponentTheme, generateRules, ThemeEditorRule, ThemePropertyValue } from './model';
+import { ComponentTheme, generateRules, Theme, ThemeEditorRule, ThemePropertyValue } from './model';
 import buttonMetadata from './metadata/components/vaadin-button';
 import { ComponentMetadata } from './metadata/model';
 
@@ -97,12 +97,12 @@ describe('model', () => {
     });
   });
 
-  describe('combineThemes', () => {
+  describe('combine', () => {
     it('should return new theme instance', () => {
       const theme1 = new ComponentTheme(buttonMetadata);
       const theme2 = new ComponentTheme(buttonMetadata);
 
-      const result = combineThemes(theme1, theme2);
+      const result = ComponentTheme.combine(theme1, theme2);
       expect(result).to.not.equal(theme1);
       expect(result).to.not.equal(theme2);
     });
@@ -117,7 +117,7 @@ describe('model', () => {
       theme2.updatePropertyValue('label', 'color', 'red');
       theme2.updatePropertyValue('label', 'font-size', '20px');
 
-      const result = combineThemes(theme1, theme2);
+      const result = ComponentTheme.combine(theme1, theme2);
       const expectedValues = [
         { partName: null, propertyName: 'background', value: 'cornflowerblue' },
         { partName: 'label', propertyName: 'color', value: 'red' },
@@ -129,8 +129,8 @@ describe('model', () => {
     });
 
     it('should throw when less than two themes are provided', () => {
-      expect(() => combineThemes()).to.throw;
-      expect(() => combineThemes(new ComponentTheme(buttonMetadata))).to.throw;
+      expect(() => ComponentTheme.combine()).to.throw;
+      expect(() => ComponentTheme.combine(new ComponentTheme(buttonMetadata))).to.throw;
     });
 
     it('should adopt metadata from first theme', () => {
@@ -141,7 +141,7 @@ describe('model', () => {
       };
       const buttonTheme = new ComponentTheme(buttonMetadata);
       const fooTheme = new ComponentTheme(fooMetadata);
-      const result = combineThemes(buttonTheme, fooTheme);
+      const result = ComponentTheme.combine(buttonTheme, fooTheme);
 
       expect(result.metadata).to.equal(buttonMetadata);
     });
@@ -171,5 +171,70 @@ describe('model', () => {
       const rules = generateRules(theme);
       expect(rules).to.deep.equal(expectedRules);
     });
+  });
+
+  describe('Theme', () => {
+    let theme: Theme;
+
+    beforeEach(() => {
+      theme = new Theme();
+    });
+
+    it('should return null for non-existing component themes', () => {
+      expect(theme.getComponentTheme('vaadin-button')).to.be.null;
+    });
+
+    it('should add and return component themes', () => {
+      const buttonTheme = new ComponentTheme(buttonMetadata);
+      buttonTheme.updatePropertyValue(null, 'background', 'cornflowerblue');
+      buttonTheme.updatePropertyValue('label', 'color', 'white');
+
+      theme.updateComponentTheme(buttonTheme);
+
+      const storedTheme = theme.getComponentTheme('vaadin-button');
+      expect(storedTheme).to.deep.equal(buttonTheme);
+      expect(theme.componentThemes).to.deep.equal([buttonTheme]);
+    });
+
+    it('should update component themes', () => {
+      const buttonTheme = new ComponentTheme(buttonMetadata);
+      buttonTheme.updatePropertyValue(null, 'background', 'cornflowerblue');
+      buttonTheme.updatePropertyValue('label', 'color', 'white');
+      theme.updateComponentTheme(buttonTheme);
+
+      const updatedTheme = new ComponentTheme(buttonMetadata);
+      updatedTheme.updatePropertyValue(null, 'padding', '3px');
+      updatedTheme.updatePropertyValue('label', 'color', 'red');
+      updatedTheme.updatePropertyValue('label', 'font-size', '20px');
+      theme.updateComponentTheme(updatedTheme);
+
+      const expectedTheme = new ComponentTheme(buttonMetadata);
+      expectedTheme.updatePropertyValue(null, 'background', 'cornflowerblue');
+      expectedTheme.updatePropertyValue(null, 'padding', '3px');
+      expectedTheme.updatePropertyValue('label', 'color', 'red');
+      expectedTheme.updatePropertyValue('label', 'font-size', '20px');
+
+      const storedTheme = theme.getComponentTheme('vaadin-button');
+      expect(storedTheme).to.deep.equal(expectedTheme);
+    });
+
+    it('should not store references to passed component themes', () => {
+      const buttonTheme = new ComponentTheme(buttonMetadata);
+      theme.updateComponentTheme(buttonTheme);
+
+      const storedTheme = theme.getComponentTheme('vaadin-button');
+      expect(storedTheme).to.not.equal(buttonTheme);
+    });
+
+    it('should clone theme', () => {
+      const buttonTheme = new ComponentTheme(buttonMetadata);
+      buttonTheme.updatePropertyValue(null, 'background', 'cornflowerblue');
+      buttonTheme.updatePropertyValue('label', 'color', 'white');
+      theme.updateComponentTheme(buttonTheme);
+
+      const clonedTheme = theme.clone();
+      expect(clonedTheme).to.not.equal(theme);
+      expect(clonedTheme).to.deep.equal(theme);
+    })
   });
 });

@@ -67,17 +67,17 @@ export class ComponentTheme {
   public getPropertyValuesForPart(partName: string | null) {
     return this.properties.filter((property) => property.partName === partName);
   }
-}
 
-export function combineThemes(...themes: ComponentTheme[]): ComponentTheme {
-  if (themes.length < 2) {
-    throw new Error('Must provide at least two themes');
+  static combine(...themes: ComponentTheme[]) {
+    if (themes.length < 2) {
+      throw new Error('Must provide at least two themes');
+    }
+
+    const resultTheme = new ComponentTheme(themes[0].metadata);
+    themes.forEach((theme) => resultTheme.addPropertyValues(theme.properties));
+
+    return resultTheme;
   }
-
-  const resultTheme = new ComponentTheme(themes[0].metadata);
-  themes.forEach((theme) => resultTheme.addPropertyValues(theme.properties));
-
-  return resultTheme;
 }
 
 export function generateRules(theme: ComponentTheme): ThemeEditorRule[] {
@@ -92,4 +92,33 @@ export function generateRules(theme: ComponentTheme): ThemeEditorRule[] {
       value: propertyValue.value
     };
   });
+}
+
+type ComponentThemeMap = { [key: string]: ComponentTheme };
+
+export class Theme {
+  private _componentThemes: ComponentThemeMap = {};
+
+  get componentThemes(): ComponentTheme[] {
+    return Object.values(this._componentThemes);
+  }
+
+  getComponentTheme(tagName: string) {
+    return this._componentThemes[tagName] || null;
+  }
+
+  updateComponentTheme(updatedTheme: ComponentTheme) {
+    let existingTheme = this.getComponentTheme(updatedTheme.metadata.tagName);
+    if (!existingTheme) {
+      existingTheme = new ComponentTheme(updatedTheme.metadata);
+      this._componentThemes[existingTheme.metadata.tagName] = existingTheme;
+    }
+    existingTheme.addPropertyValues(updatedTheme.properties);
+  }
+
+  clone() {
+    const resultTheme = new Theme();
+    this.componentThemes.forEach((componentTheme) => resultTheme.updateComponentTheme(componentTheme));
+    return resultTheme;
+  }
 }

@@ -5,7 +5,7 @@ import { ComponentMetadata } from './metadata/model';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
 import './property-list';
-import { combineThemes, ComponentTheme, generateRules, ThemeEditorState } from './model';
+import { ComponentTheme, generateRules, Theme, ThemeEditorState } from './model';
 import { detectTheme } from './detector';
 import { ThemePropertyValueChangeEvent } from './events';
 import { themePreview } from './preview';
@@ -20,14 +20,36 @@ export class ThemeEditor extends LitElement {
   @property({})
   public connection!: Connection;
 
+  /**
+   * Metadata for the selected / picked component
+   */
   @state()
   private selectedComponentMetadata: ComponentMetadata | null = null;
+  /**
+   * Theme modifications for all components, containing all changes since the
+   * last reload
+   */
+  private theme: Theme = new Theme();
+  /**
+   * Base theme detected from existing CSS files for the selected component
+   */
+  private baseComponentTheme: ComponentTheme | null = null;
+  /**
+   * Previously saved theme modifications for the selected component since the
+   * last reload
+   */
+  private modifiedComponentTheme: ComponentTheme | null = null;
+  /**
+   * Pending theme modifications for the selected component that have not been
+   * saved yet
+   */
+  private editedComponentTheme: ComponentTheme | null = null;
+  /**
+   * The effective theme for the selected component, including base theme,
+   * previously saved modifications and pending modifications
+   */
   @state()
-  private baseTheme: ComponentTheme | null = null;
-  @state()
-  private editedTheme: ComponentTheme | null = null;
-  @state()
-  private effectiveTheme: ComponentTheme | null = null;
+  private effectiveComponentTheme: ComponentTheme | null = null;
   @state()
   private hasModifications: boolean = false;
 
@@ -128,7 +150,7 @@ export class ThemeEditor extends LitElement {
         ? html` <vaadin-dev-tools-theme-property-list
             class="property-list"
             .metadata=${this.selectedComponentMetadata}
-            .theme=${this.effectiveTheme}
+            .theme=${this.effectiveComponentTheme}
             @theme-property-value-change=${this.handlePropertyChange}
           ></vaadin-dev-tools-theme-property-list>`
         : null}
@@ -172,52 +194,74 @@ export class ThemeEditor extends LitElement {
       pickCallback: async (component) => {
         this.selectedComponentMetadata = await metadataRegistry.getMetadata(component);
         this.hasModifications = false;
-        themePreview.reset();
         if (this.selectedComponentMetadata) {
-          this.baseTheme = detectTheme(this.selectedComponentMetadata);
-          this.editedTheme = new ComponentTheme(this.selectedComponentMetadata);
-          this.effectiveTheme = combineThemes(this.baseTheme, this.editedTheme);
+          themePreview.reset();
+          this.baseComponentTheme = detectTheme(this.selectedComponentMetadata);
+          this.modifiedComponentTheme =
+            this.theme.getComponentTheme(this.selectedComponentMetadata.tagName) ||
+            new ComponentTheme(this.selectedComponentMetadata);
+          this.editedComponentTheme = new ComponentTheme(this.selectedComponentMetadata);
+          this.effectiveComponentTheme = ComponentTheme.combine(this.baseComponentTheme, this.modifiedComponentTheme);
         } else {
-          this.baseTheme = null;
-          this.editedTheme = null;
-          this.effectiveTheme = null;
+          this.baseComponentTheme = null;
+          this.modifiedComponentTheme = null;
+          this.editedComponentTheme = null;
+          this.effectiveComponentTheme = null;
         }
+        this.updateThemePreview();
       }
     });
   }
 
   private handlePropertyChange(e: ThemePropertyValueChangeEvent) {
-    if (!this.editedTheme || !this.baseTheme) {
+    if (!this.editedComponentTheme || !this.baseComponentTheme || !this.modifiedComponentTheme) {
       return;
     }
     const { part, property, value } = e.detail;
     this.hasModifications = true;
-    this.editedTheme.updatePropertyValue(part.partName, property.propertyName, value);
-    this.effectiveTheme = combineThemes(this.baseTheme, this.editedTheme);
-    themePreview.update(this.editedTheme);
+    this.editedComponentTheme.updatePropertyValue(part.partName, property.propertyName, value);
+    this.effectiveComponentTheme = ComponentTheme.combine(
+      this.baseComponentTheme,
+      this.modifiedComponentTheme,
+      this.editedComponentTheme
+    );
+    this.updateThemePreview();
   }
 
   private discardChanges() {
-    if (!this.selectedComponentMetadata || !this.baseTheme) {
+    if (!this.selectedComponentMetadata || !this.baseComponentTheme || !this.modifiedComponentTheme) {
       return;
     }
     this.hasModifications = false;
-    this.editedTheme = new ComponentTheme(this.selectedComponentMetadata);
-    this.effectiveTheme = combineThemes(this.baseTheme, this.editedTheme);
-    themePreview.reset();
+    this.editedComponentTheme = new ComponentTheme(this.selectedComponentMetadata);
+    this.effectiveComponentTheme = ComponentTheme.combine(this.baseComponentTheme, this.modifiedComponentTheme);
+    this.updateThemePreview();
   }
 
   private applyChanges() {
-    if (!this.editedTheme) {
+    if (!this.editedComponentTheme || !this.selectedComponentMetadata || !this.baseComponentTheme) {
       return;
     }
 
     // Notify dev tools that we are about to save CSS, so that it can disable
     // live reload temporarily
-    this.dispatchEvent(new CustomEvent("before-save"));
+    this.dispatchEvent(new CustomEvent('before-save'));
 
-    const rules = generateRules(this.editedTheme);
+    const rules = generateRules(this.editedComponentTheme);
     this.connection.sendThemeEditorRules(rules);
+
     this.hasModifications = false;
+    this.theme.updateComponentTheme(this.editedComponentTheme);
+    this.modifiedComponentTheme = this.theme.getComponentTheme(this.selectedComponentMetadata.tagName);
+    this.editedComponentTheme = new ComponentTheme(this.selectedComponentMetadata);
+    this.effectiveComponentTheme = ComponentTheme.combine(this.baseComponentTheme, this.modifiedComponentTheme);
+  }
+
+  private updateThemePreview() {
+    const previewTheme = this.theme.clone();
+    if (this.editedComponentTheme) {
+      previewTheme.updateComponentTheme(this.editedComponentTheme);
+    }
+    themePreview.update(previewTheme);
   }
 }
