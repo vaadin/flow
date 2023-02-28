@@ -125,7 +125,6 @@ describe('theme-editor', () => {
 
     it('should be modified after changing a property', async () => {
       await pickComponent();
-      debugger;
       await editProperty('label', 'color', 'red');
 
       expect(findDiscardButton()).to.exist;
