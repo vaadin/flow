@@ -64,7 +64,7 @@ public interface HasAriaLabel extends HasElement {
      *            the aria-label text to set or {@code null} to clear
      */
     default void setAriaLabel(String ariaLabel) {
-        getElement().setProperty(ElementConstants.ARIA_LABEL_PROPERTY_NAME,
+        getElement().setAttribute(ElementConstants.ARIA_LABEL_ATTRIBUTE_NAME,
                 ariaLabel);
     }
 
@@ -76,7 +76,7 @@ public interface HasAriaLabel extends HasElement {
      */
     default Optional<String> getAriaLabel() {
         return Optional.ofNullable(getElement()
-                .getProperty(ElementConstants.ARIA_LABEL_PROPERTY_NAME, null));
+                .getAttribute(ElementConstants.ARIA_LABEL_ATTRIBUTE_NAME));
     }
 
     /**
@@ -85,7 +85,7 @@ public interface HasAriaLabel extends HasElement {
      * <b>must</b> be in the same DOM scope of the component, otherwise screen
      * readers may fail to announce the label content properly.
      * <p>
-     * This method should not be used if {@link #setAriaLabelledBy(String)} is
+     * This method should not be used if {@link #setAriaLabel(String)} is
      * also used. If both attributes are present, aria-labelledby will take
      * precedence over aria-label.
      *
@@ -94,7 +94,7 @@ public interface HasAriaLabel extends HasElement {
      *            label or {@code null} to clear
      */
     default void setAriaLabelledBy(String ariaLabelledBy) {
-        getElement().setProperty(ElementConstants.ARIA_LABELLEDBY_PROPERTY_NAME,
+        getElement().setAttribute(ElementConstants.ARIA_LABELLEDBY_ATTRIBUTE_NAME,
                 ariaLabelledBy);
     }
 
@@ -105,7 +105,7 @@ public interface HasAriaLabel extends HasElement {
      *         aria-labelledby has been set
      */
     default Optional<String> getAriaLabelledBy() {
-        return Optional.ofNullable(getElement().getProperty(
-                ElementConstants.ARIA_LABELLEDBY_PROPERTY_NAME, null));
+        return Optional.ofNullable(getElement().getAttribute(
+                ElementConstants.ARIA_LABELLEDBY_ATTRIBUTE_NAME));
     }
 }
