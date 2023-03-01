@@ -85,8 +85,8 @@ public interface HasAriaLabel extends HasElement {
      * <b>must</b> be in the same DOM scope of the component, otherwise screen
      * readers may fail to announce the label content properly.
      * <p>
-     * This method should not be used if {@link #setAriaLabel(String)} is
-     * also used. If both attributes are present, aria-labelledby will take
+     * This method should not be used if {@link #setAriaLabel(String)} is also
+     * used. If both attributes are present, aria-labelledby will take
      * precedence over aria-label.
      *
      * @param ariaLabelledBy
@@ -94,7 +94,8 @@ public interface HasAriaLabel extends HasElement {
      *            label or {@code null} to clear
      */
     default void setAriaLabelledBy(String ariaLabelledBy) {
-        getElement().setAttribute(ElementConstants.ARIA_LABELLEDBY_ATTRIBUTE_NAME,
+        getElement().setAttribute(
+                ElementConstants.ARIA_LABELLEDBY_ATTRIBUTE_NAME,
                 ariaLabelledBy);
     }
 
@@ -105,7 +106,7 @@ public interface HasAriaLabel extends HasElement {
      *         aria-labelledby has been set
      */
     default Optional<String> getAriaLabelledBy() {
-        return Optional.ofNullable(getElement().getAttribute(
-                ElementConstants.ARIA_LABELLEDBY_ATTRIBUTE_NAME));
+        return Optional.ofNullable(getElement()
+                .getAttribute(ElementConstants.ARIA_LABELLEDBY_ATTRIBUTE_NAME));
     }
 }
