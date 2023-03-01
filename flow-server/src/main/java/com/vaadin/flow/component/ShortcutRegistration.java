@@ -527,6 +527,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     private String filterText() {
+        // Put here the logic:
         return generateEventKeyFilter(primaryKey) + " && "
                 + generateEventModifierFilter(modifiers);
     }
@@ -621,6 +622,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                 if (!allowEventPropagation) {
                     filterText += " && (event.stopPropagation() || true)";
                 }
+                // Or here add the handling
                 listenerRegistration.setFilter(filterText);
 
                 shortcutActive = true;
@@ -755,6 +757,7 @@ public class ShortcutRegistration implements Registration, Serializable {
         return Arrays.stream(KeyModifier.values()).map(modifier -> {
             boolean modifierRequired = realMods.stream()
                     .anyMatch(mod -> mod.matches(modifier.getKeys().get(0)));
+            //Alt could be handled here maybe?:
             return (modifierRequired ? "" : "!") + "event.getModifierState('"
                     + modifier.getKeys().get(0) + "')";
         }).collect(Collectors.joining(" && "));
