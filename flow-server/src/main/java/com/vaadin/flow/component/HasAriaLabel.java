@@ -21,10 +21,10 @@ import com.vaadin.flow.dom.ElementConstants;
 
 /**
  * A generic interface for components and other user interface objects that may
- * have an aria-label and aria-labelledby properties to set the accessible name
- * of the component.
+ * have an aria-label and an aria-labelledby DOM attributes to set the
+ * accessible name of the component.
  * <p>
- * The default implementations set the aria-label and aria-labelledby of the
+ * The default implementation set the aria-label and aria-labelledby of the
  * component to the given {@link #getElement()}. Override all methods in this
  * interface if the aria-label and aria-labelledby should be added to some other
  * element.
@@ -45,7 +45,7 @@ import com.vaadin.flow.dom.ElementConstants;
  * <p>
  * See: https://www.w3.org/TR/wai-aria/#aria-labelledby
  * <p>
- * Note: The aria-label and aria-labelledby properties are not valid on every
+ * Note: The aria-label and aria-labelledby attributes are not valid on every
  * component, see https://www.w3.org/TR/using-aria/#label-support for more
  * details.
  *
@@ -80,8 +80,10 @@ public interface HasAriaLabel extends HasElement {
     }
 
     /**
-     * Set the aria-labelledby of the component. The value must be a valid id of
-     * another element that labels the component.
+     * Set the aria-labelledby of the component. The value must be a valid id
+     * attribute of another element that labels the component. The label element
+     * <b>must</b> be in the same DOM scope of the component, otherwise screen
+     * readers may fail to announce the label content properly.
      * <p>
      * This method should not be used if {@link #setAriaLabelledBy(String)} is
      * also used. If both attributes are present, aria-labelledby will take
