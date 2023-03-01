@@ -757,7 +757,7 @@ public class ShortcutRegistration implements Registration, Serializable {
         return Arrays.stream(KeyModifier.values()).map(modifier -> {
             boolean modifierRequired = realMods.stream()
                     .anyMatch(mod -> mod.matches(modifier.getKeys().get(0)));
-            //Alt could be handled here maybe?:
+            // Alt could be handled here maybe?:
             return (modifierRequired ? "" : "!") + "event.getModifierState('"
                     + modifier.getKeys().get(0) + "')";
         }).collect(Collectors.joining(" && "));

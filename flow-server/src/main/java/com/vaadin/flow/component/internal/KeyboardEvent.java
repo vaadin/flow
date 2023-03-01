@@ -96,7 +96,8 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
             modifiers.add(KeyModifier.SHIFT);
         }
         if (altKey) {
-            // Alt key is also browser specific (one fix is to check the altKey attribute not Modifier)
+            // Alt key is also browser specific (one fix is to check the altKey
+            // attribute not Modifier)
             modifiers.add(KeyModifier.ALT);
         }
         if (metaKey) {
