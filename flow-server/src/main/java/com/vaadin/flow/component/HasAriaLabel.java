@@ -21,24 +21,33 @@ import com.vaadin.flow.dom.ElementConstants;
 
 /**
  * A generic interface for components and other user interface objects that may
- * have an aria-label property to set the accessible name of the component.
+ * have an aria-label and aria-labelledby properties to set the accessible name
+ * of the component.
  * <p>
- * The default implementations set the aria-label of the component to the given
- * {@link #getElement()}. Override all methods in this interface if the
- * aria-label should be added to some other element.
+ * The default implementations set the aria-label and aria-labelledby of the
+ * component to the given {@link #getElement()}. Override all methods in this
+ * interface if the aria-label and aria-labelledby should be added to some other
+ * element.
  * <p>
  * The purpose of aria-label is to provide the user with a recognizable name of
- * the component. If the label text is visible on screen, aria-label should not
- * be used. There may be instances where the name of an element cannot be
- * determined programmatically from the content of the element, and there are
- * cases where providing a visible label is not the desired user experience. In
- * the cases where a visible label or visible tooltip is undesirable, aria-label
- * may be used to set the accessible name of the component.
+ * the component. If the label text is visible on screen, aria-labelledby
+ * <b>should</b> be used and aria-label <b>should not</b> be used. There may be
+ * instances where the name of an element cannot be determined programmatically
+ * from the content of the element, and there are cases where providing a
+ * visible label is not the desired user experience. In the cases where a
+ * visible label or visible tooltip is undesirable, aria-label may be used to
+ * set the accessible name of the component.
+ * <p>
+ * <b>Don't include both</b>. If both are present on the same element,
+ * aria-labelledby will take precedence over aria-label.
  * <p>
  * See: https://www.w3.org/TR/wai-aria/#aria-label
  * <p>
- * Note: The aria-label property is not valid on every component, see
- * https://www.w3.org/TR/using-aria/#label-support for more details.
+ * See: https://www.w3.org/TR/wai-aria/#aria-labelledby
+ * <p>
+ * Note: The aria-label and aria-labelledby properties are not valid on every
+ * component, see https://www.w3.org/TR/using-aria/#label-support for more
+ * details.
  *
  * @author Vaadin Ltd
  * @since
@@ -46,6 +55,10 @@ import com.vaadin.flow.dom.ElementConstants;
 public interface HasAriaLabel extends HasElement {
     /**
      * Set the aria-label of the component to the given text.
+     * <p>
+     * This method should not be used if {@link #setAriaLabelledBy(String)} is
+     * also used. If both attributes are present, aria-labelledby will take
+     * precedence over aria-label.
      *
      * @param ariaLabel
      *            the aria-label text to set or {@code null} to clear
@@ -64,5 +77,33 @@ public interface HasAriaLabel extends HasElement {
     default Optional<String> getAriaLabel() {
         return Optional.ofNullable(getElement()
                 .getProperty(ElementConstants.ARIA_LABEL_PROPERTY_NAME, null));
+    }
+
+    /**
+     * Set the aria-labelledby of the component. The value must be a valid id of
+     * another element that labels the component.
+     * <p>
+     * This method should not be used if {@link #setAriaLabelledBy(String)} is
+     * also used. If both attributes are present, aria-labelledby will take
+     * precedence over aria-label.
+     *
+     * @param ariaLabelledBy
+     *            the string with the id of the element that will be used as
+     *            label or {@code null} to clear
+     */
+    default void setAriaLabelledBy(String ariaLabelledBy) {
+        getElement().setProperty(ElementConstants.ARIA_LABELLEDBY_PROPERTY_NAME,
+                ariaLabelledBy);
+    }
+
+    /**
+     * Gets the aria-labelledby of the component
+     *
+     * @return an optional aria-labelledby of the component if no
+     *         aria-labelledby has been set
+     */
+    default Optional<String> getAriaLabelledBy() {
+        return Optional.ofNullable(getElement().getProperty(
+                ElementConstants.ARIA_LABELLEDBY_PROPERTY_NAME, null));
     }
 }
