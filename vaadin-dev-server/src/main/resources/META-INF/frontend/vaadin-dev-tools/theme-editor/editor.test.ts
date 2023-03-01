@@ -1,21 +1,20 @@
 import { aTimeout, elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import '@vaadin/button';
 import { ThemeEditorRule, ThemeEditorState } from './model';
 import { ThemeEditor } from './editor';
 import './editor';
 import { PickerOptions, PickerProvider } from '../component-picker';
 import { metadataRegistry } from './metadata/registry';
-import buttonMetadata from './metadata/components/vaadin-button';
 import sinon from 'sinon';
 import { themePreview } from './preview';
+import { testElementMetadata } from './tests/utils';
 
 describe('theme-editor', () => {
   let editor: ThemeEditor;
-  let button: HTMLElement;
-  let defaultButtonLabelStyles: CSSStyleDeclaration;
+  let testElement: HTMLElement;
   let connectionMock: {
     sendThemeEditorRules: sinon.SinonSpy;
   };
+  let getMetadataStub: sinon.SinonStub;
 
   async function editorFixture() {
     connectionMock = {
@@ -23,7 +22,7 @@ describe('theme-editor', () => {
     };
     const pickerMock = {
       open: (options: PickerOptions) => {
-        options.pickCallback({ nodeId: 1, uiId: 1, element: button });
+        options.pickCallback({ nodeId: 1, uiId: 1, element: testElement });
       }
     };
     const pickerProvider: PickerProvider = () => pickerMock as any;
@@ -45,10 +44,11 @@ describe('theme-editor', () => {
     await aTimeout(50);
   }
 
-  function findPropertyEditor(partName: string, propertyName: string) {
+  function findPropertyEditor(partName: string | null, propertyName: string) {
+    const partTestId = partName || 'host';
     return editor
       .shadowRoot!.querySelector('.property-list')
-      ?.shadowRoot!.querySelector(`.part[data-testid="${partName}"] .property-editor[data-testid="${propertyName}"]`)!;
+      ?.shadowRoot!.querySelector(`.section[data-testid="${partTestId}"] .property-editor[data-testid="${propertyName}"]`)!;
   }
 
   async function editProperty(partName: string, propertyName: string, value: string) {
@@ -80,24 +80,24 @@ describe('theme-editor', () => {
     return editor.shadowRoot!.querySelector('.modifications-actions button.apply') as HTMLElement;
   }
 
-  function getButtonStyles() {
+  function getTestElementStyles() {
     return {
-      label: getComputedStyle(button.shadowRoot!.querySelector('[part="label"]')!),
-      prefix: getComputedStyle(button.shadowRoot!.querySelector('[part="prefix"]')!),
-      suffix: getComputedStyle(button.shadowRoot!.querySelector('[part="suffix"]')!)
+      host: getComputedStyle(testElement),
+      label: getComputedStyle(testElement.shadowRoot!.querySelector('[part="label"]')!)
     };
   }
 
   before(async () => {
-    // Pre-cache button metadata
-    const button = document.createElement('vaadin-button');
-    await metadataRegistry.getMetadata({ nodeId: 1, uiId: 1, element: button });
+    getMetadataStub = sinon.stub(metadataRegistry, 'getMetadata').returns(Promise.resolve(testElementMetadata));
+  });
+
+  after(() => {
+    getMetadataStub.restore();
   });
 
   beforeEach(async () => {
     themePreview.reset();
-    button = await fixture(html` <vaadin-button></vaadin-button>`);
-    defaultButtonLabelStyles = getComputedStyle(button.shadowRoot!.querySelector('[part="label"]')!);
+    testElement = await fixture(html` <test-element></test-element>`);
     const fixtureResult = await editorFixture();
     editor = fixtureResult.editor;
   });
@@ -166,7 +166,7 @@ describe('theme-editor', () => {
       await pickComponent();
       await editProperty('label', 'color', 'red');
 
-      expect(getButtonStyles().label.color).to.equal('rgb(255, 0, 0)');
+      expect(getTestElementStyles().label.color).to.equal('rgb(255, 0, 0)');
     });
 
     it('should reset theme preview after discarding changes', async () => {
@@ -176,7 +176,7 @@ describe('theme-editor', () => {
       findDiscardButton().click();
       await elementUpdated(editor);
 
-      expect(getButtonStyles().label.color).to.equal(defaultButtonLabelStyles.color);
+      expect(getTestElementStyles().label.color).to.equal('rgb(0, 0, 0)');
     });
 
     it('should reset theme preview after picking another component', async () => {
@@ -185,27 +185,33 @@ describe('theme-editor', () => {
 
       await pickComponent();
 
-      expect(getButtonStyles().label.color).to.equal(defaultButtonLabelStyles.color);
+      expect(getTestElementStyles().label.color).to.equal('rgb(0, 0, 0)');
     });
 
     it('should keep saved modifications in theme preview', async () => {
       await pickComponent();
       await editProperty('label', 'color', 'red');
       findApplyButton().click();
-      expect(getButtonStyles().label.color).to.equal('rgb(255, 0, 0)');
+      expect(getTestElementStyles().label.color).to.equal('rgb(255, 0, 0)');
 
       await pickComponent();
-      expect(getButtonStyles().label.color).to.equal('rgb(255, 0, 0)');
+      expect(getTestElementStyles().label.color).to.equal('rgb(255, 0, 0)');
 
       await editProperty('label', 'color', 'green');
       findDiscardButton().click();
-      expect(getButtonStyles().label.color).to.equal('rgb(255, 0, 0)');
+      expect(getTestElementStyles().label.color).to.equal('rgb(255, 0, 0)');
     });
 
     it('should show property editors for picked component', async () => {
       await pickComponent();
 
-      buttonMetadata.parts.forEach((part) => {
+      // Host properties
+      testElementMetadata.properties.forEach(property => {
+        const propertyEditor = findPropertyEditor(null, property.propertyName);
+        expect(propertyEditor).to.exist;
+      })
+      // Part properties
+      testElementMetadata.parts.forEach((part) => {
         part.properties.forEach((property) => {
           const propertyEditor = findPropertyEditor(part.partName, property.propertyName);
           expect(propertyEditor).to.exist;
@@ -216,20 +222,14 @@ describe('theme-editor', () => {
     it('should initialize property editors with base theme values', async () => {
       await pickComponent();
 
-      const propertyEditor = findPropertyEditor('label', 'color');
-      const input = propertyEditor.shadowRoot!.querySelector('input')! as HTMLInputElement;
-
-      expect(input.value).to.equal(defaultButtonLabelStyles.color);
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(0, 0, 0)');
     });
 
     it('should update property editors with edited theme values', async () => {
       await pickComponent();
       await editProperty('label', 'color', 'red');
 
-      const propertyEditor = findPropertyEditor('label', 'color');
-      const input = propertyEditor.shadowRoot!.querySelector('input')! as HTMLInputElement;
-
-      expect(input.value).to.equal('red');
+      expect(getPropertyValue('label', 'color')).to.equal('red');
     });
 
     it('should reset property editors after discarding changes', async () => {
@@ -239,7 +239,7 @@ describe('theme-editor', () => {
       findDiscardButton().click();
       await elementUpdated(editor);
 
-      expect(getPropertyValue('label', 'color')).to.equal(defaultButtonLabelStyles.color);
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(0, 0, 0)');
     });
 
     it('should reset property editors after picking another component', async () => {
@@ -248,7 +248,7 @@ describe('theme-editor', () => {
 
       await pickComponent();
 
-      expect(getPropertyValue('label', 'color')).to.equal(defaultButtonLabelStyles.color);
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(0, 0, 0)');
     });
 
     it('should keep previously saved theme modifications', async () => {
@@ -275,7 +275,7 @@ describe('theme-editor', () => {
 
       const expectedRules: ThemeEditorRule[] = [
         {
-          selector: 'vaadin-button::part(label)',
+          selector: 'test-element::part(label)',
           property: 'color',
           value: 'red'
         }

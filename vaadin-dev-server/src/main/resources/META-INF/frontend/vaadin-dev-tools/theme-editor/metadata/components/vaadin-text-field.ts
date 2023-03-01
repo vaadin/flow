@@ -3,6 +3,7 @@ import { ComponentMetadata } from '../model';
 export default {
   tagName: 'vaadin-text-field',
   displayName: 'TextField',
+  properties: [],
   parts: [
     {
       partName: 'label',
