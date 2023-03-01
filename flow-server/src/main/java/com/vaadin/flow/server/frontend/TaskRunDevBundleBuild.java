@@ -83,7 +83,24 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             "- CSS, JavaScript or TypeScript files are added with @CssImport, @JsModule or @JavaScript\n" +
             "- Vaadin add-on with front-end customizations is added\n" +
             "- Custom theme imports/assets added into 'theme.json' file\n" +
-            "- Exported web component is added\n\n" +
+            "- Exported web component is added.\n\n" +
+            "If your project development needs a hot deployment of the frontend changes, \n" +
+            "you can switch Flow to use Vite development server (default in Vaadin 23.3 and earlier versions):\n" +
+            "- set `vaadin.frontend.hotdeploy=true` in `application.properties`\n" +
+            "- configure `vaadin-maven-plugin`:\n" +
+            "```\n" +
+            "   <configuration>\n" +
+            "       <frontendHotdeploy>true</frontendHotdeploy>\n" +
+            "   </configuration>\n" +
+            "```\n" +
+            "- configure `jetty-maven-plugin`:\n" +
+            "```\n" +
+            "   <configuration>\n" +
+            "       <systemProperties>\n" +
+            "           <vaadin.frontend.hotdeploy>true</vaadin.frontend.hotdeploy>\n" +
+            "       </systemProperties>\n" +
+            "   </configuration>\n" +
+            "```\n\n" +
             "Read more [about Vaadin development mode](https://vaadin.com/docs/next/configuration/development-mode/#pre-compiled-front-end-bundle-for-faster-start-up).";
     //@formatter:on
 
