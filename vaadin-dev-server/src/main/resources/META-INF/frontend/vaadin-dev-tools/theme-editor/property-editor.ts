@@ -7,7 +7,7 @@ import { ThemePropertyValueChangeEvent } from './events';
 @customElement('vaadin-dev-tools-theme-property-editor')
 export class PropertyEditor extends LitElement {
   @property({})
-  public partMetadata!: ComponentPartMetadata;
+  public partMetadata?: ComponentPartMetadata;
   @property({})
   public propertyMetadata!: CssPropertyMetadata;
   @property({})
@@ -51,11 +51,12 @@ export class PropertyEditor extends LitElement {
 
   handleInputChange(e: Event) {
     const input = e.target as HTMLInputElement;
-    this.dispatchEvent(new ThemePropertyValueChangeEvent(this.partMetadata, this.propertyMetadata, input.value));
+    this.dispatchEvent(new ThemePropertyValueChangeEvent(this.partMetadata || null, this.propertyMetadata, input.value));
   }
 
   render() {
-    const propertyValue = this.theme.getPropertyValue(this.partMetadata.partName, this.propertyMetadata.propertyName);
+    const partName = this.partMetadata?.partName || null;
+    const propertyValue = this.theme.getPropertyValue(partName, this.propertyMetadata.propertyName);
 
     return html`
       <div class="property">

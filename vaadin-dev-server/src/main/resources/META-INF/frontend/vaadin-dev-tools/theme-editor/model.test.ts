@@ -137,7 +137,8 @@ describe('model', () => {
       const fooMetadata: ComponentMetadata = {
         tagName: 'foo-component',
         displayName: 'Foo',
-        parts: []
+        properties: [],
+        parts: [],
       };
       const buttonTheme = new ComponentTheme(buttonMetadata);
       const fooTheme = new ComponentTheme(fooMetadata);
