@@ -93,8 +93,9 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <excludes>
-                    <!-- Exclude all frontend tests -->
+                    <!-- Exclude all frontend tests and utils -->
                     <exclude>META-INF/frontend/vaadin-dev-tools/**/*.test.ts</exclude>
+                    <exclude>META-INF/frontend/vaadin-dev-tools/theme-editor/tests/*.*</exclude>
                 </excludes>
             </resource>
         </resources>

@@ -15,5 +15,6 @@ export interface ComponentMetadata {
   tagName: string;
   displayName: string;
   description?: string;
+  properties: CssPropertyMetadata[];
   parts: ComponentPartMetadata[];
 }

@@ -230,7 +230,6 @@ jobs:
         with:
           junit_files: "**/target/*-reports/TEST*.xml"
           check_run_annotations: all tests, skipped tests
-          check_run_annotations_branch: master, 9.0
       - uses: geekyeggo/delete-artifact@v2
         with:
           name: |

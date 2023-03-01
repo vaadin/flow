@@ -1,86 +1,66 @@
 import { expect, fixture, html } from '@open-wc/testing';
-import '@vaadin/button';
-import buttonMetadata from './metadata/components/vaadin-button';
 import { themePreview } from './preview';
-import {ComponentTheme, Theme} from './model';
+import { ComponentTheme, Theme } from './model';
+import { testElementMetadata } from './tests/utils';
 
 describe('theme-preview', () => {
-  const colors = {
-    red: 'rgb(255, 0, 0)',
-    green: 'rgb(0, 255, 0)',
-    blue: 'rgb(0, 0, 255)'
-  };
+  let element: HTMLElement;
 
-  let button: HTMLElement;
-
-  function getButtonStyles() {
+  function getElementStyles() {
     return {
-      label: getComputedStyle(button.shadowRoot!.querySelector('[part="label"]')!),
-      prefix: getComputedStyle(button.shadowRoot!.querySelector('[part="prefix"]')!),
-      suffix: getComputedStyle(button.shadowRoot!.querySelector('[part="suffix"]')!)
+      host: getComputedStyle(element),
+      label: getComputedStyle(element.shadowRoot!.querySelector('[part="label"]')!)
     };
   }
 
   beforeEach(async () => {
     themePreview.stylesheet.replaceSync('');
-    button = await fixture(html` <vaadin-button></vaadin-button>`);
+    element = await fixture(html` <test-element></test-element>`);
   });
 
   it('should apply theme preview', () => {
-    let buttonStyles = getButtonStyles();
-    expect(buttonStyles.label.color).to.not.equal(colors.red);
-    expect(buttonStyles.suffix.color).to.not.equal(colors.green);
-    expect(buttonStyles.prefix.color).to.not.equal(colors.blue);
-
     const theme = new Theme();
-    const buttonTheme = new ComponentTheme(buttonMetadata);
-    buttonTheme.updatePropertyValue('label', 'color', colors.red);
-    buttonTheme.updatePropertyValue('prefix', 'color', colors.green);
-    buttonTheme.updatePropertyValue('suffix', 'color', colors.blue);
-    theme.updateComponentTheme(buttonTheme);
+    const componentTheme = new ComponentTheme(testElementMetadata);
+    componentTheme.updatePropertyValue(null, 'padding', '20px');
+    componentTheme.updatePropertyValue('label', 'color', 'red');
+    theme.updateComponentTheme(componentTheme);
     themePreview.update(theme);
 
-    buttonStyles = getButtonStyles();
-    expect(buttonStyles.label.color).to.equal(colors.red);
-    expect(buttonStyles.prefix.color).to.equal(colors.green);
-    expect(buttonStyles.suffix.color).to.equal(colors.blue);
+    const elementStyles = getElementStyles();
+    expect(elementStyles.host.padding).to.equal('20px');
+    expect(elementStyles.label.color).to.equal('rgb(255, 0, 0)');
   });
 
   it('should update theme preview', () => {
     const theme = new Theme();
-    const buttonTheme = new ComponentTheme(buttonMetadata);
-    buttonTheme.updatePropertyValue('label', 'color', colors.red);
-    buttonTheme.updatePropertyValue('prefix', 'color', colors.green);
-    buttonTheme.updatePropertyValue('suffix', 'color', colors.blue);
-    theme.updateComponentTheme(buttonTheme);
+    const componentTheme = new ComponentTheme(testElementMetadata);
+    componentTheme.updatePropertyValue(null, 'padding', '20px');
+    componentTheme.updatePropertyValue('label', 'color', 'red');
+    theme.updateComponentTheme(componentTheme);
     themePreview.update(theme);
 
-    buttonTheme.updatePropertyValue('label', 'color', colors.red);
-    buttonTheme.updatePropertyValue('prefix', 'color', colors.red);
-    buttonTheme.updatePropertyValue('suffix', 'color', colors.red);
-    theme.updateComponentTheme(buttonTheme);
+    componentTheme.updatePropertyValue(null, 'padding', '30px');
+    componentTheme.updatePropertyValue('label', 'color', 'green');
+    theme.updateComponentTheme(componentTheme);
     themePreview.update(theme);
 
-    let buttonStyles = getButtonStyles();
-    expect(buttonStyles.label.color).to.equal(colors.red);
-    expect(buttonStyles.prefix.color).to.equal(colors.red);
-    expect(buttonStyles.suffix.color).to.equal(colors.red);
+    const elementStyles = getElementStyles();
+    expect(elementStyles.host.padding).to.equal('30px');
+    expect(elementStyles.label.color).to.equal('rgb(0, 128, 0)');
   });
 
   it('should reset theme preview', () => {
     const theme = new Theme();
-    const buttonTheme = new ComponentTheme(buttonMetadata);
-    buttonTheme.updatePropertyValue('label', 'color', colors.red);
-    buttonTheme.updatePropertyValue('prefix', 'color', colors.green);
-    buttonTheme.updatePropertyValue('suffix', 'color', colors.blue);
-    theme.updateComponentTheme(buttonTheme)
+    const componentTheme = new ComponentTheme(testElementMetadata);
+    componentTheme.updatePropertyValue(null, 'padding', '20px');
+    componentTheme.updatePropertyValue('label', 'color', 'red');
+    theme.updateComponentTheme(componentTheme);
     themePreview.update(theme);
 
     themePreview.reset();
 
-    let buttonStyles = getButtonStyles();
-    expect(buttonStyles.label.color).to.not.equal(colors.red);
-    expect(buttonStyles.suffix.color).to.not.equal(colors.green);
-    expect(buttonStyles.prefix.color).to.not.equal(colors.blue);
+    const elementStyles = getElementStyles();
+    expect(elementStyles.host.padding).to.equal('10px');
+    expect(elementStyles.label.color).to.equal('rgb(0, 0, 0)');
   });
 });
