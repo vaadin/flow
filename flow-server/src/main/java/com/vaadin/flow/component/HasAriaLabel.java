@@ -64,8 +64,13 @@ public interface HasAriaLabel extends HasElement {
      *            the aria-label text to set or {@code null} to clear
      */
     default void setAriaLabel(String ariaLabel) {
-        getElement().setAttribute(ElementConstants.ARIA_LABEL_ATTRIBUTE_NAME,
-                ariaLabel);
+        if (ariaLabel != null) {
+            getElement().setAttribute(
+                    ElementConstants.ARIA_LABEL_ATTRIBUTE_NAME, ariaLabel);
+        } else {
+            getElement().removeAttribute(
+                    ElementConstants.ARIA_LABEL_ATTRIBUTE_NAME);
+        }
     }
 
     /**
@@ -94,9 +99,14 @@ public interface HasAriaLabel extends HasElement {
      *            label or {@code null} to clear
      */
     default void setAriaLabelledBy(String ariaLabelledBy) {
-        getElement().setAttribute(
-                ElementConstants.ARIA_LABELLEDBY_ATTRIBUTE_NAME,
-                ariaLabelledBy);
+        if (ariaLabelledBy != null) {
+            getElement().setAttribute(
+                    ElementConstants.ARIA_LABELLEDBY_ATTRIBUTE_NAME,
+                    ariaLabelledBy);
+        } else {
+            getElement().removeAttribute(
+                    ElementConstants.ARIA_LABELLEDBY_ATTRIBUTE_NAME);
+        }
     }
 
     /**
