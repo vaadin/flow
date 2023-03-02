@@ -15,7 +15,7 @@
   "suites": "target/frontend-tests/*.spec.js",
   "tunnelOptions": {
     "drivers": [
-      {"name": "chrome", "version": "${internJsonChromeDriverVersion}"}
+      { "name": "chrome", "version": "2.36" }
     ]
   },
   "plugins": {
