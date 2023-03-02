@@ -25,12 +25,16 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
+import com.vaadin.base.devserver.themeeditor.messages.ErrorResponse;
+import com.vaadin.base.devserver.themeeditor.messages.GenericResponse;
+import com.vaadin.flow.internal.JsonUtils;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
+import com.vaadin.base.devserver.themeeditor.ThemeEditorException;
 import com.vaadin.base.devserver.themeeditor.ThemeEditorMessageHandler;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
@@ -243,9 +247,18 @@ public class DebugWindowConnection implements BrowserLiveReload {
                             "Only component locations are tracked. The given node id refers to an element and not a component");
                 }
             });
-        } else if (themeEditorMessageHandler.handleDebugMessageData(command,
-                data)) {
-            // nop
+        } else if (themeEditorMessageHandler.canHandle(command, data)) {
+            try {
+                JsonObject resultData = themeEditorMessageHandler
+                        .handleDebugMessageData(command, data);
+                send(resource, GenericResponse.COMMAND_NAME, resultData);
+            } catch (ThemeEditorException ex) {
+                getLogger().error(ex.getMessage(), ex);
+                ErrorResponse response = new ErrorResponse(
+                        data.getString("requestId"), ex.getMessage());
+                send(resource, ErrorResponse.COMMAND_NAME,
+                        JsonUtils.beanToJson(response));
+            }
         } else {
             getLogger().info("Unknown command from the browser: " + command);
         }

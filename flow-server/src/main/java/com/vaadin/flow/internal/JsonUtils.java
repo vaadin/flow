@@ -53,6 +53,8 @@ public final class JsonUtils {
 
     private static final String CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT = "Cannot convert null to JSON";
 
+    private static final String CANNOT_CONVERT_NULL_JSON_TO_OBJECT = "Cannot convert null JSON object to Java object";
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -351,6 +353,27 @@ public final class JsonUtils {
             return Json.instance().parse(objectMapper.writeValueAsString(map));
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error converting map to JSON", e);
+        }
+    }
+
+    /**
+     * Converts JsonObject into Java object of given type.
+     *
+     * @param jsonObject
+     *            JSON object to convert, not {@code null}
+     * @param tClass
+     *            class of converted object instance
+     * @return converted object instance
+     * @param <T>
+     *            type of result instance
+     */
+    public static <T> T readToObject(JsonObject jsonObject, Class<T> tClass) {
+        Objects.requireNonNull(jsonObject, CANNOT_CONVERT_NULL_JSON_TO_OBJECT);
+        try {
+            return objectMapper.readValue(jsonObject.toJson(), tClass);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(
+                    "Error converting JsonObject to " + tClass.getName(), e);
         }
     }
 }
