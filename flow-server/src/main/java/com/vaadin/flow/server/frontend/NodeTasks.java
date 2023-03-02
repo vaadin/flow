@@ -66,7 +66,6 @@ public class NodeTasks implements FallibleCommand {
             TaskRunNpmInstall.class,
             TaskGenerateOpenAPI.class,
             TaskGenerateEndpoint.class,
-            TaskGenerateHilla.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
             TaskUpdateSettingsFile.class,
@@ -89,36 +88,36 @@ public class NodeTasks implements FallibleCommand {
     public NodeTasks(Options options) {
 
         ClassFinder classFinder = new ClassFinder.CachedClassFinder(
-                options.classFinder);
+                options.getClassFinder());
         FrontendDependenciesScanner frontendDependencies = null;
 
         Set<String> webComponentTags = new HashSet<>();
 
         final FeatureFlags featureFlags = options.getFeatureFlags();
 
-        if (options.enablePackagesUpdate || options.enableImportsUpdate
-                || options.enableWebpackConfigUpdate) {
+        if (options.isEnablePackagesUpdate() || options.isEnableImportsUpdate()
+                || options.isEnableWebpackConfigUpdate()) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                    .createScanner(!options.useByteCodeScanner, classFinder,
-                            options.generateEmbeddableWebComponents,
+                    .createScanner(!options.isUseByteCodeScanner(), classFinder,
+                            options.isGenerateEmbeddableWebComponents(),
                             featureFlags);
 
             // The dev bundle check needs the frontendDependencies to be able to
             // determine if we need a rebuild as the check happens immediately
             // and no update tasks are executed before it.
-            if (!options.productionMode && options.isDevBundleBuild()) {
+            if (!options.isProductionMode() && options.isDevBundleBuild()) {
                 UsageStatistics.markAsUsed("flow/expressBuild", null);
                 if (TaskRunDevBundleBuild.needsBuild(options,
                         frontendDependencies, classFinder)) {
-                    options.runNpmInstall(true);
-                    options.copyTemplates(true);
+                    options.withRunNpmInstall(true);
+                    options.withCopyTemplates(true);
                 } else {
                     // A dev bundle build is not needed after all, skip it
                     options.withDevBundleBuild(false);
                 }
             }
 
-            if (options.generateEmbeddableWebComponents) {
+            if (options.isGenerateEmbeddableWebComponents()) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
                         classFinder);
                 Set<File> webComponents = generator.generateWebComponents(
@@ -137,14 +136,14 @@ public class NodeTasks implements FallibleCommand {
             }
 
             TaskUpdatePackages packageUpdater = null;
-            if (options.enablePackagesUpdate
-                    && options.jarFrontendResourcesFolder != null) {
+            if (options.isEnablePackagesUpdate()
+                    && options.getJarFrontendResourcesFolder() != null) {
                 packageUpdater = new TaskUpdatePackages(classFinder,
                         frontendDependencies, options);
                 commands.add(packageUpdater);
             }
 
-            if (packageUpdater != null && options.runNpmInstall) {
+            if (packageUpdater != null && options.isRunNpmInstall()) {
                 commands.add(new TaskRunNpmInstall(packageUpdater, options));
 
                 commands.add(new TaskInstallFrontendBuildPlugins(options));
@@ -156,7 +155,7 @@ public class NodeTasks implements FallibleCommand {
 
         }
 
-        if (options.createMissingPackageJson) {
+        if (options.isCreateMissingPackageJson()) {
             TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
                     options);
             commands.add(packageCreator);
@@ -166,7 +165,7 @@ public class NodeTasks implements FallibleCommand {
             addGenerateServiceWorkerTask(options,
                     frontendDependencies.getPwaConfiguration());
 
-            if (options.productionMode || options.isFrontendHotdeploy()
+            if (options.isProductionMode() || options.isFrontendHotdeploy()
                     || options.isDevBundleBuild()) {
                 addGenerateTsConfigTask(options);
             }
@@ -174,33 +173,21 @@ public class NodeTasks implements FallibleCommand {
 
         addBootstrapTasks(options);
 
-        // use the new Hilla generator if enabled, otherwise use the old
-        // generator.
-        TaskGenerateHilla hillaTask;
-        if (options.endpointGeneratedOpenAPIFile != null
-                && featureFlags.isEnabled(FeatureFlags.HILLA_ENGINE)
-                && (hillaTask = options.lookup
-                        .lookup(TaskGenerateHilla.class)) != null) {
-            hillaTask.configure(options.getNpmFolder(),
-                    options.getBuildDirectoryName());
-            commands.add(hillaTask);
-        } else if (options.endpointGeneratedOpenAPIFile != null
-                && options.endpointSourceFolder != null
-                && options.endpointSourceFolder.exists()) {
-            addEndpointServicesTasks(options);
-        }
+        // Add Hilla generator tasks (the called method will verify if Hilla is
+        // available)
+        addEndpointServicesTasks(options);
 
         commands.add(new TaskGenerateBootstrap(frontendDependencies, options));
 
         commands.add(new TaskGenerateFeatureFlags(options));
 
-        if (options.jarFiles != null
-                && options.jarFrontendResourcesFolder != null) {
+        if (options.getJarFiles() != null
+                && options.getJarFrontendResourcesFolder() != null) {
             commands.add(new TaskCopyFrontendFiles(options));
         }
 
-        if (options.localResourcesFolder != null
-                && options.jarFrontendResourcesFolder != null) {
+        if (options.getLocalResourcesFolder() != null
+                && options.getJarFrontendResourcesFolder() != null) {
             commands.add(new TaskCopyLocalFrontendFiles(options));
         }
 
@@ -215,12 +202,12 @@ public class NodeTasks implements FallibleCommand {
             pwa = new PwaConfiguration();
         }
         commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
-        if (options.productionMode || options.isFrontendHotdeploy()
+        if (options.isProductionMode() || options.isFrontendHotdeploy()
                 || options.isDevBundleBuild()) {
             commands.add(new TaskUpdateVite(options, webComponentTags));
         }
 
-        if (options.enableImportsUpdate) {
+        if (options.isEnableImportsUpdate()) {
             commands.add(new TaskUpdateImports(classFinder,
                     frontendDependencies,
                     finder -> getFallbackScanner(options, finder, featureFlags),
@@ -230,7 +217,7 @@ public class NodeTasks implements FallibleCommand {
                     frontendDependencies.getThemeDefinition(), options));
         }
 
-        if (options.copyTemplates) {
+        if (options.isCopyTemplates()) {
             commands.add(new TaskCopyTemplateFiles(classFinder, options));
 
         }
@@ -238,10 +225,10 @@ public class NodeTasks implements FallibleCommand {
 
     private void addBootstrapTasks(Options options) {
         commands.add(new TaskGenerateIndexHtml(options));
-        if (options.productionMode || options.isFrontendHotdeploy()
+        if (options.isProductionMode() || options.isFrontendHotdeploy()
                 || options.isDevBundleBuild()) {
             commands.add(new TaskGenerateIndexTs(options));
-            if (!options.productionMode) {
+            if (!options.isProductionMode()) {
                 commands.add(new TaskGenerateViteDevMode(options));
             }
         }
@@ -266,7 +253,7 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addEndpointServicesTasks(Options options) {
-        Lookup lookup = options.lookup;
+        Lookup lookup = options.getLookup();
         EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
                 .lookup(EndpointGeneratorTaskFactory.class);
 
@@ -275,7 +262,7 @@ public class NodeTasks implements FallibleCommand {
                     .createTaskGenerateOpenAPI(options);
             commands.add(taskGenerateOpenAPI);
 
-            if (options.frontendGeneratedFolder != null) {
+            if (options.getFrontendGeneratedFolder() != null) {
                 TaskGenerateEndpoint taskGenerateEndpoint = endpointGeneratorTaskFactory
                         .createTaskGenerateEndpoint(options);
                 commands.add(taskGenerateEndpoint);
@@ -285,10 +272,10 @@ public class NodeTasks implements FallibleCommand {
 
     private FrontendDependenciesScanner getFallbackScanner(Options options,
             ClassFinder finder, FeatureFlags featureFlags) {
-        if (options.useByteCodeScanner) {
+        if (options.isUseByteCodeScanner()) {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(true, finder,
-                            options.generateEmbeddableWebComponents,
+                            options.isGenerateEmbeddableWebComponents(),
                             featureFlags, true);
         } else {
             return null;

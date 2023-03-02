@@ -57,7 +57,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         List<String> lines = new ArrayList<>();
         lines.add(String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
         lines.add(String.format("import '%s';%n", getIndexTsEntryPath()));
-        if (!options.productionMode) {
+        if (!options.isProductionMode()) {
             lines.add(DEV_TOOLS_IMPORT);
         }
         lines.addAll(getThemeLines());

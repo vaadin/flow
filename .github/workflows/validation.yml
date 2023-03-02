@@ -1,7 +1,7 @@
 name: Flow Validation
 on:
   push:
-    branches: [main, '23.3', '23.2',  '23.1', '9.0']
+    branches: [main, '24.0', '23.3', '23.2',  '23.1', '9.0']
   workflow_dispatch:
   pull_request_target:
     types: [opened, synchronize, reopened, edited]
@@ -230,7 +230,6 @@ jobs:
         with:
           junit_files: "**/target/*-reports/TEST*.xml"
           check_run_annotations: all tests, skipped tests
-          check_run_annotations_branch: master, 9.0
       - uses: geekyeggo/delete-artifact@v2
         with:
           name: |

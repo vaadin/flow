@@ -1,0 +1,25 @@
+{
+  "scripts": {
+    "start": "web-dev-server --node-resolve",
+    "test": "web-test-runner --node-resolve",
+    "test-watch": "web-test-runner --node-resolve --watch",
+    "patch-app": "node patch-application.js",
+    "prettier": "prettier --write src/main/resources/META-INF/frontend"
+  },
+  "devDependencies": {
+    "@koa/cors": "^4.0.0",
+    "@open-wc/dev-server-hmr": "^0.1.2-next.0",
+    "@open-wc/testing": "^3.1.7",
+    "@types/chai": "^4.3.4",
+    "@types/sinon": "^10.0.13",
+    "@web/dev-server": "^0.1.35",
+    "@web/dev-server-esbuild": "^0.3.3",
+    "@web/test-runner": "^0.15.0",
+    "prettier": "^2.8.4",
+    "sinon": "^15.0.1"
+  },
+  "dependencies": {
+    "@vaadin/button": "24.0.0-rc1",
+    "lit": "^2.6.1"
+  }
+}

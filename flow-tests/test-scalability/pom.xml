@@ -15,7 +15,7 @@
         <!-- Skip scalability tests by default, explicitly enabled on build
             server -->
         <gatling.skip>true</gatling.skip>
-        <gatling.version>3.9.0</gatling.version>
+        <gatling.version>3.9.2</gatling.version>
         <scala-maven-plugin.version>4.8.0</scala-maven-plugin.version>
     </properties>
 
@@ -109,7 +109,7 @@
             <plugin>
                 <groupId>io.gatling</groupId>
                 <artifactId>gatling-maven-plugin</artifactId>
-                <version>4.2.9</version>
+                <version>4.3.0</version>
                 <executions>
                     <!-- Warmup for Jetty -->
                     <execution>

@@ -21,6 +21,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.testutil.TestUtils;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -35,7 +36,7 @@ public class TaskRunDevBundleBuildTest {
     public static final String ENTRY_SCRIPTS = "entryScripts";
     public static final String BUNDLE_IMPORTS = "bundleImports";
     public static final String FRONTEND_HASHES = "frontendHashes";
-    public static final String THEME_JSON_HASHES = "themeJsonHashes";
+    public static final String THEME_JSON_CONTENTS = "themeJsonContents";
     public static final String PACKAGE_JSON_HASH = "packageJsonHash";
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -57,7 +58,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject packageJsonDependencies = Json.createObject();
         JsonObject frontendHashes = Json.createObject();
-        JsonObject themeJsonHashes = Json.createObject();
+        JsonObject themeJsonContents = Json.createObject();
 
         JsonArray entryScripts = Json.createArray();
         JsonArray bundleImports = Json.createArray();
@@ -66,7 +67,7 @@ public class TaskRunDevBundleBuildTest {
         stats.put(ENTRY_SCRIPTS, entryScripts);
         stats.put(BUNDLE_IMPORTS, bundleImports);
         stats.put(FRONTEND_HASHES, frontendHashes);
-        stats.put(THEME_JSON_HASHES, themeJsonHashes);
+        stats.put(THEME_JSON_CONTENTS, themeJsonContents);
         stats.put(PACKAGE_JSON_HASH, "aHash");
 
         // Add default packageJson dependencies
@@ -981,6 +982,140 @@ public class TaskRunDevBundleBuildTest {
     }
 
     @Test
+    public void cssImportWithInline_statsAndImportsMatchAndNoBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        File stylesheetFile = new File(temporaryFolder.getRoot(),
+                "frontend/my-styles.css");
+        FileUtils.forceMkdir(stylesheetFile.getParentFile());
+        boolean created = stylesheetFile.createNewFile();
+        Assert.assertTrue(created);
+        FileUtils.write(stylesheetFile, "body{color:yellow}",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getModules()).thenReturn(
+                Collections.singletonList("Frontend/my-styles.css?inline"));
+
+        JsonObject stats = getBasicStats();
+        stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/my-styles.css");
+        stats.getObject(FRONTEND_HASHES).put("my-styles.css",
+                "0d94fe659d24e1e56872b47fc98d9f09227e19816c62a3db709bad347fbd0cdd");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(
+                    () -> FrontendUtils.getJarResourceString("my-styles.css"))
+                    .thenReturn("body{color:yellow}");
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "CSS 'inline' suffix should be ignored for imports checking",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void projectFrontendFileChange_bundleRebuild() throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectFrontendFileStub();
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getModules()).thenReturn(
+                Collections.singletonList("Frontend/views/lit-view.ts"));
+
+        JsonObject stats = getBasicStats();
+        stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/views/lit-view.ts");
+        stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts", "old_hash");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Project frontend file change should trigger rebuild",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void projectFrontendFileNotChanged_noBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectFrontendFileStub();
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getModules()).thenReturn(
+                Collections.singletonList("Frontend/views/lit-view.ts"));
+
+        JsonObject stats = getBasicStats();
+        stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/views/lit-view.ts");
+        stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts",
+                "eaf04adbc43cb363f6b58c45c6e0e8151084941247abac9493beed8d29f08add");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "No bundle rebuild expected when no changes in frontend file",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void projectFrontendFileDeleted_bundleRebuild() throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getModules()).thenReturn(
+                Collections.singletonList("Frontend/views/lit-view.ts"));
+
+        JsonObject stats = getBasicStats();
+        stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/views/lit-view.ts");
+        stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts",
+                "eaf04adbc43cb363f6b58c45c6e0e8151084941247abac9493beed8d29f08add");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Project frontend file delete should trigger rebuild",
+                    needsBuild);
+        }
+    }
+
+    @Test
     public void reusedTheme_noReusedThemes_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
@@ -989,7 +1124,7 @@ public class TaskRunDevBundleBuildTest {
                 .mock(FrontendDependenciesScanner.class);
 
         JsonObject basicStats = getBasicStats();
-        basicStats.remove(THEME_JSON_HASHES);
+        basicStats.remove(THEME_JSON_CONTENTS);
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -1040,32 +1175,6 @@ public class TaskRunDevBundleBuildTest {
     }
 
     @Test
-    public void reusedTheme_newlyAddedTheme_noAssets_noBundleRebuild()
-            throws IOException {
-        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        File jarWithTheme = TestUtils.getTestJar("jar-with-no-assets.jar");
-        options.copyResources(Collections.singleton(jarWithTheme));
-
-        final FrontendDependenciesScanner depScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(getBasicStats().toJson());
-
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Should not trigger a bundle rebuild when the new theme has no assets",
-                    needsBuild);
-        }
-    }
-
-    @Test
     public void reusedTheme_noPreviouslyAddedThemes_justAddedNewTheme_bundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
@@ -1105,7 +1214,7 @@ public class TaskRunDevBundleBuildTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         JsonObject stats = getBasicStats();
-        stats.getObject(THEME_JSON_HASHES).put("other-theme",
+        stats.getObject(THEME_JSON_CONTENTS).put("other-theme",
                 "other-theme-hash");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
@@ -1129,6 +1238,7 @@ public class TaskRunDevBundleBuildTest {
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
+        // Jar with 'line-awesome' assets
         File jarWithTheme = TestUtils
                 .getTestJar("jar-with-theme-json-and-assets.jar");
         options.copyResources(Collections.singleton(jarWithTheme));
@@ -1139,8 +1249,13 @@ public class TaskRunDevBundleBuildTest {
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             JsonObject stats = getBasicStats();
-            stats.getObject(THEME_JSON_HASHES).put("reusable-theme",
-                    "theme-old-hash");
+            stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme", "{\n"
+                    + "  \"importCss\": [\"@fortawesome/fontawesome-free/css/all.min.css\"],\n"
+                    + "  \"assets\": {\n"
+                    + "    \"@fortawesome/fontawesome-free\": {\n"
+                    + "      \"svgs/brands/**\": \"fontawesome/svgs/brands\",\n"
+                    + "      \"webfonts/**\": \"webfonts\"\n" + "    }\n"
+                    + "  }\n" + "}");
 
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
@@ -1171,8 +1286,16 @@ public class TaskRunDevBundleBuildTest {
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             JsonObject stats = getBasicStats();
-            stats.getObject(THEME_JSON_HASHES).put("reusable-theme",
-                    "8a7121398c0c3871458fffcaa62f70f90fdd9714aded63b553ba9068e5fb3b71");
+            stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme", "{\n"
+                    + "  \"importCss\": [\"@fortawesome/fontawesome-free/css/all.min.css\"],\n"
+                    + "  \"assets\": {\n"
+                    + "    \"@fortawesome/fontawesome-free\": {\n"
+                    + "      \"svgs/brands/**\": \"fontawesome/svgs/brands\",\n"
+                    + "      \"webfonts/**\": \"webfonts\"\n" + "    },\n"
+                    + "    \"line-awesome\": {\n"
+                    + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
+                    + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
+                    + "    }\n" + "  }\n" + "}\n");
 
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
@@ -1184,6 +1307,262 @@ public class TaskRunDevBundleBuildTest {
                     .needsBuildInternal(options, depScanner, finder);
             Assert.assertFalse(
                     "Should not trigger a bundle rebuild when the themes not changed",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void themeJsonUpdates_statsHasNoThemeJson_projectHasThemeJson_bundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        final ThemeDefinition themeDefinition = Mockito
+                .mock(ThemeDefinition.class);
+        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
+        Mockito.when(depScanner.getThemeDefinition())
+                .thenReturn(themeDefinition);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            JsonObject stats = getBasicStats();
+            stats.remove(THEME_JSON_CONTENTS);
+
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Should trigger a bundle rebuild when no themeJsonContents, but project has theme.json",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void themeJsonUpdates_statsHasThemeJson_projectHasNoThemeJson_noBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        final ThemeDefinition themeDefinition = Mockito
+                .mock(ThemeDefinition.class);
+        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
+        Mockito.when(depScanner.getThemeDefinition())
+                .thenReturn(themeDefinition);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            JsonObject stats = getBasicStats();
+            stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle",
+                    "{\"lumoImports\": [\"typography\"]}");
+
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Should not trigger a bundle rebuild when project has no theme.json",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void themeJsonUpdates_statsAndProjectThemeJsonEquals_noBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectThemeJsonStub("{\n" + "  \"boolean-property\": true,\n"
+                + "  \"numeric-property\": 42.42,\n"
+                + "  \"string-property\": \"foo\",\n"
+                + "  \"array-property\": [\"one\", \"two\"],\n"
+                + "  \"object-property\": { \"foo\": \"bar\" }\n" + "}");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        final ThemeDefinition themeDefinition = Mockito
+                .mock(ThemeDefinition.class);
+        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
+        Mockito.when(depScanner.getThemeDefinition())
+                .thenReturn(themeDefinition);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            JsonObject stats = getBasicStats();
+            stats.getObject(THEME_JSON_CONTENTS).put("my-theme",
+                    "{\n\n\n\n\n\n" + "  \"boolean-property\": true,\n"
+                            + "  \"numeric-property\": 42.42,\n"
+                            + "  \"string-property\": \"foo\",\n"
+                            + "  \"array-property\": [\"one\", \"two\"],\n"
+                            + "  \"object-property\": { \"foo\": \"bar\" }\n"
+                            + "}");
+
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Should not trigger a bundle rebuild when project theme.json has the same content as in the bundle",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void themeJsonUpdates_bundleMissesSomeEntries_bundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectThemeJsonStub("{\n"
+                + "  \"importCss\": [\"@fortawesome/fontawesome-free/css/all.css\"],"
+                + "  \"assets\": {\n" + "    \"line-awesome\": {\n"
+                + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
+                + "    }\n" + "  }\n" + "}");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        final ThemeDefinition themeDefinition = Mockito
+                .mock(ThemeDefinition.class);
+        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
+        Mockito.when(depScanner.getThemeDefinition())
+                .thenReturn(themeDefinition);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            JsonObject stats = getBasicStats();
+            stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle", "{\n"
+                    + "  \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"],\n"
+                    + "  \"assets\": {\n" + "    \"line-awesome\": {\n"
+                    + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
+                    + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
+                    + "    }\n" + "  }\n" + "}");
+
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Should rebuild when project theme.json adds extra entries",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void themeJsonUpdates_bundleHaveAllEntriesAndMore_noBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectThemeJsonStub("{\n"
+                + "  \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"]\n"
+                + "}");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        final ThemeDefinition themeDefinition = Mockito
+                .mock(ThemeDefinition.class);
+        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
+        Mockito.when(depScanner.getThemeDefinition())
+                .thenReturn(themeDefinition);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            JsonObject stats = getBasicStats();
+            stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle", "{\n"
+                    + "  \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"],\n"
+                    + "  \"assets\": {\n" + "    \"line-awesome\": {\n"
+                    + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
+                    + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
+                    + "    }\n" + "  }\n" + "}");
+
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Shouldn't re-bundle when the dev bundle already have all"
+                            + " the entries defined in the project's theme.json",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void themeJsonUpdates_noProjectThemeHashInStats_bundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        final ThemeDefinition themeDefinition = Mockito
+                .mock(ThemeDefinition.class);
+        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
+        Mockito.when(depScanner.getThemeDefinition())
+                .thenReturn(themeDefinition);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            JsonObject stats = getBasicStats();
+
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Should trigger a bundle rebuild when project has theme"
+                            + ".json but stats doesn't",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void indexTsAdded_rebuildRequired() throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        File frontendFolder = temporaryFolder.newFolder(FrontendUtils.FRONTEND);
+
+        File indexTs = new File(frontendFolder, FrontendUtils.INDEX_TS);
+        indexTs.createNewFile();
+
+        FileUtils.write(indexTs, "window.alert('');", StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue("Adding 'index.ts' should require bundling",
                     needsBuild);
         }
     }
@@ -1231,11 +1610,86 @@ public class TaskRunDevBundleBuildTest {
         }
     }
 
+    @Test
+    public void indexTsDeleted_rebuildRequired() throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(FRONTEND_HASHES).put(FrontendUtils.INDEX_TS,
+                "15931fa8c20e3c060c8ea491831e95cc8463962700a9bfb82c8e3844cf608f04");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue("'index.ts' delete should require re-bundling",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void standardVaadinComponent_notAddedToProjectAsJar_noRebuildRequired()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+        stats.getArray(BUNDLE_IMPORTS).set(0,
+                "Frontend/generated/jar-resources/vaadin-spreadsheet/vaadin-spreadsheet.js");
+        stats.getObject(FRONTEND_HASHES).put(
+                "vaadin-spreadsheet/vaadin-spreadsheet.js",
+                "e545ad23a2d1d4b3a3370a0305dd71c15bbfc645216f50c6e327bd818b7484c4");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Should not require bundling if component JS is missing in jar-resources",
+                    needsBuild);
+        }
+    }
+
     private void createPackageJsonStub(String content) throws IOException {
         File packageJson = new File(temporaryFolder.getRoot(),
                 Constants.PACKAGE_JSON);
         boolean created = packageJson.createNewFile();
         Assert.assertTrue(created);
         FileUtils.write(packageJson, content, StandardCharsets.UTF_8);
+    }
+
+    private void createProjectThemeJsonStub(String content) throws IOException {
+        File themeJson = new File(temporaryFolder.getRoot(),
+                "frontend/themes/my-theme/theme.json");
+        FileUtils.forceMkdir(themeJson.getParentFile());
+        boolean created = themeJson.createNewFile();
+        Assert.assertTrue(created);
+        FileUtils.write(themeJson, content, StandardCharsets.UTF_8);
+    }
+
+    private void createProjectFrontendFileStub() throws IOException {
+        File frontendFile = new File(temporaryFolder.getRoot(),
+                "frontend/views/lit-view.ts");
+        FileUtils.forceMkdir(frontendFile.getParentFile());
+        boolean created = frontendFile.createNewFile();
+        Assert.assertTrue(created);
+        FileUtils.write(frontendFile, "Some codes", StandardCharsets.UTF_8);
     }
 }

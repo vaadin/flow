@@ -1,11 +1,14 @@
-import { css, html, LitElement, nothing } from 'lit';
+import { css, html, LitElement, nothing, TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { ComponentPicker } from './component-picker';
 import { ComponentReference } from './component-util';
+import './theme-editor/editor';
+import { ThemeEditorState, ThemeEditorRule } from './theme-editor/model';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
-import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product, licenseInit } from './License';
+import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, licenseInit, Product } from './License';
 
 interface ServerInfo {
   vaadinVersion: string;
@@ -24,9 +27,9 @@ interface Feature {
 }
 
 interface Tab {
-  id: 'log' | 'info' | 'features' | 'code';
+  id: 'log' | 'info' | 'features' | 'code' | 'theme-editor';
   title: string;
-  render: () => unknown;
+  render: () => TemplateResult;
   activate?: () => void;
 }
 
@@ -165,6 +168,10 @@ export class Connection extends Object {
   sendShowComponentAttachLocation(component: ComponentReference) {
     this.send('showComponentAttachLocation', component);
   }
+
+  sendThemeEditorRules(rules: ThemeEditorRule[]) {
+    this.send('themeEditorRules', { add: rules });
+  }
 }
 
 enum MessageType {
@@ -211,11 +218,6 @@ export const popupStyles = css`
   }
 `;
 export class VaadinDevTools extends LitElement {
-  static BLUE_HSL = css`206, 100%, 70%`;
-  static GREEN_HSL = css`145, 80%, 42%`;
-  static GREY_HSL = css`0, 0%, 50%`;
-  static YELLOW_HSL = css`38, 98%, 64%`;
-  static RED_HSL = css`355, 100%, 68%`;
   static MAX_LOG_ROWS = 1000;
 
   static get styles() {
@@ -242,15 +244,15 @@ export class VaadinDevTools extends LitElement {
           --dev-tools-border-radius: 0.5rem;
           --dev-tools-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
 
-          --dev-tools-blue-hsl: ${this.BLUE_HSL};
+          --dev-tools-blue-hsl: 206, 100%, 70%;
           --dev-tools-blue-color: hsl(var(--dev-tools-blue-hsl));
-          --dev-tools-green-hsl: ${this.GREEN_HSL};
+          --dev-tools-green-hsl: 145, 80%, 42%;
           --dev-tools-green-color: hsl(var(--dev-tools-green-hsl));
-          --dev-tools-grey-hsl: ${this.GREY_HSL};
+          --dev-tools-grey-hsl: 0, 0%, 50%;
           --dev-tools-grey-color: hsl(var(--dev-tools-grey-hsl));
-          --dev-tools-yellow-hsl: ${this.YELLOW_HSL};
+          --dev-tools-yellow-hsl: 38, 98%, 64%;
           --dev-tools-yellow-color: hsl(var(--dev-tools-yellow-hsl));
-          --dev-tools-red-hsl: ${this.RED_HSL};
+          --dev-tools-red-hsl: 355, 100%, 68%;
           --dev-tools-red-color: hsl(var(--dev-tools-red-hsl));
 
           /* Needs to be in ms, used in JavaScript as well */
@@ -963,9 +965,9 @@ export class VaadinDevTools extends LitElement {
 
   @state()
   private tabs: Tab[] = [
-    { id: 'log', title: 'Log', render: this.renderLog, activate: this.activateLog },
-    { id: 'info', title: 'Info', render: this.renderInfo },
-    { id: 'features', title: 'Feature Flags', render: this.renderFeatures }
+    { id: 'log', title: 'Log', render: () => this.renderLog(), activate: this.activateLog },
+    { id: 'info', title: 'Info', render: () => this.renderInfo() },
+    { id: 'features', title: 'Feature Flags', render: () => this.renderFeatures() }
   ];
 
   @state()
@@ -989,8 +991,14 @@ export class VaadinDevTools extends LitElement {
   @query('.window')
   private root!: HTMLElement;
 
+  @query('vaadin-dev-tools-component-picker')
+  private componentPicker!: ComponentPicker;
+
   @state()
   componentPickActive: boolean = false;
+
+  @state()
+  themeEditorState: ThemeEditorState = ThemeEditorState.disabled;
 
   private javaConnection?: Connection;
   private frontendConnection?: Connection;
@@ -1051,20 +1059,7 @@ export class VaadinDevTools extends LitElement {
     frontendConnection.onStatusChange = (status: ConnectionStatus) => {
       this.frontendStatus = status;
     };
-    frontendConnection.onMessage = (message: any) => {
-      if (message?.command === 'serverInfo') {
-        this.serverInfo = message.data as ServerInfo;
-      } else if (message?.command === 'featureFlags') {
-        this.features = message.data.features as Feature[];
-      } else if (message?.command === 'vaadin-dev-tools-code-ok') {
-        if ((window as any).Vaadin.Flow) {
-          this.tabs.push({ id: 'code', title: 'Code', render: this.renderCode });
-        }
-      } else {
-        // eslint-disable-next-line no-console
-        console.error('Unknown message from front-end connection:', JSON.stringify(message));
-      }
-    };
+    frontendConnection.onMessage = (message: any) => this.handleFrontendMessage(message);
     this.frontendConnection = frontendConnection;
 
     let javaConnection: Connection;
@@ -1110,6 +1105,23 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
+  handleFrontendMessage(message: any) {
+    if (message?.command === 'serverInfo') {
+      this.serverInfo = message.data as ServerInfo;
+    } else if (message?.command === 'featureFlags') {
+      this.features = message.data.features as Feature[];
+    } else if (message?.command === 'themeEditorState') {
+      this.themeEditorState = message.data;
+      if (this.themeEditorState !== ThemeEditorState.disabled) {
+        this.tabs.push({ id: 'theme-editor', title: 'Theme Editor', render: () => this.renderThemeEditor() });
+        this.requestUpdate();
+      }
+    } else {
+      // eslint-disable-next-line no-console
+      console.error('Unknown message from front-end connection:', JSON.stringify(message));
+    }
+  }
+
   getDedicatedWebSocketUrl(): string | undefined {
     function getAbsoluteUrl(relative: string) {
       // Use innerHTML to obtain an absolute URL
@@ -1142,6 +1154,13 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
+  constructor() {
+    super();
+
+    if ((window as any).Vaadin.Flow) {
+      this.tabs.push({ id: 'code', title: 'Code', render: () => this.renderCode() });
+    }
+  }
   connectedCallback() {
     super.connectedCallback();
     this.catchErrors();
@@ -1356,17 +1375,25 @@ export class VaadinDevTools extends LitElement {
     window.sessionStorage.setItem(VaadinDevTools.ACTIVE_KEY_IN_SESSION_STORAGE, yes ? 'true' : 'false');
   }
 
+  disableLiveReloadTemporarily() {
+    if (!VaadinDevTools.isActive) {
+      return;
+    }
+    this.setActive(false);
+    setTimeout(() => this.setActive(true), 5000);
+  }
+
   getStatusColor(status: ConnectionStatus | undefined) {
     if (status === ConnectionStatus.ACTIVE) {
-      return css`hsl(${VaadinDevTools.GREEN_HSL})`;
+      return 'var(--dev-tools-green-color)';
     } else if (status === ConnectionStatus.INACTIVE) {
-      return css`hsl(${VaadinDevTools.GREY_HSL})`;
+      return 'var(--dev-tools-grey-color)';
     } else if (status === ConnectionStatus.UNAVAILABLE) {
-      return css`hsl(${VaadinDevTools.YELLOW_HSL})`;
+      return 'var(--dev-tools-yellow-hsl)';
     } else if (status === ConnectionStatus.ERROR) {
-      return css`hsl(${VaadinDevTools.RED_HSL})`;
+      return 'var(--dev-tools-red-color)';
     } else {
-      return css`none`;
+      return 'none';
     }
   }
 
@@ -1439,23 +1466,16 @@ export class VaadinDevTools extends LitElement {
             </svg>
           </button>
         </div>
-        ${this.tabs.map((tab) => (this.activeTab === tab.id ? tab.render.call(this) : nothing))}
+        ${this.tabs.map((tab) => (this.activeTab === tab.id ? tab.render() : nothing))}
       </div>
 
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
       <vaadin-dev-tools-component-picker
         .active=${this.componentPickActive}
-        @component-picker-pick=${(e: CustomEvent) => {
-          const component: ComponentReference = e.detail.component;
-          const locationType = (this.renderRoot.querySelector('#locationType') as HTMLSelectElement).value;
-          if (locationType === 'create') {
-            this.frontendConnection!.sendShowComponentCreateLocation(component);
-          } else {
-            this.frontendConnection!.sendShowComponentAttachLocation(component);
-          }
-          this.componentPickActive = false;
+        @component-picker-opened=${() => {
+          this.componentPickActive = true;
         }}
-        @component-picker-abort=${(_e: CustomEvent) => {
+        @component-picker-closed=${() => {
           this.componentPickActive = false;
         }}
       ></vaadin-dev-tools-component-picker>
@@ -1535,9 +1555,30 @@ export class VaadinDevTools extends LitElement {
         </select>
         <button
           class="button pick"
-          @click=${() => {
-            this.componentPickActive = true;
-            import('./component-picker.js');
+          @click=${async () => {
+            await import('./component-picker.js');
+            this.componentPicker.open({
+              infoTemplate: html`
+                <div>
+                  <h3>Locate a component in source code</h3>
+                  <p>Use the mouse cursor to highlight components in the UI.</p>
+                  <p>Use arrow down/up to cycle through and highlight specific components under the cursor.</p>
+                  <p>
+                    Click the primary mouse button to open the corresponding source code line of the highlighted
+                    component in your IDE.
+                  </p>
+                </div>
+              `,
+              pickCallback: (component) => {
+                const serializableComponentRef: ComponentReference = { nodeId: component.nodeId, uiId: component.uiId };
+                const locationType = (this.renderRoot.querySelector('#locationType') as HTMLSelectElement).value;
+                if (locationType === 'create') {
+                  this.frontendConnection!.sendShowComponentCreateLocation(serializableComponentRef);
+                } else {
+                  this.frontendConnection!.sendShowComponentAttachLocation(serializableComponentRef);
+                }
+              }
+            });
           }}
         >
           Find component in code
@@ -1607,6 +1648,15 @@ export class VaadinDevTools extends LitElement {
         </div>`
       )}
     </div>`;
+  }
+
+  renderThemeEditor() {
+    return html` <vaadin-dev-tools-theme-editor
+      .themeEditorState=${this.themeEditorState}
+      .pickerProvider=${() => this.componentPicker}
+      .connection=${this.frontendConnection}
+      @before-save=${this.disableLiveReloadTemporarily}
+    ></vaadin-dev-tools-theme-editor>`;
   }
 
   copyInfoToClipboard() {

@@ -15,17 +15,11 @@
  */
 package com.vaadin.base.devserver.startup;
 
-import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_APPLICATION_PROPERTIES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
@@ -79,7 +73,6 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
@@ -257,28 +250,6 @@ public class DevModeInitializer implements Serializable {
                 Paths.get(target.getPath(), "classes", VAADIN_SERVLET_RESOURCES)
                         .toFile());
 
-        if (isEndpointServiceAvailable(lookup)) {
-            String connectJavaSourceFolder = config.getStringProperty(
-                    CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
-                    Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER)
-                            .toString());
-            String connectApplicationProperties = config.getStringProperty(
-                    CONNECT_APPLICATION_PROPERTIES_TOKEN,
-                    Paths.get(baseDir, DEFAULT_CONNECT_APPLICATION_PROPERTIES)
-                            .toString());
-            String connectOpenApiJsonFile = config
-                    .getStringProperty(CONNECT_OPEN_API_FILE_TOKEN,
-                            Paths.get(baseDir, config.getBuildFolder(),
-                                    DEFAULT_CONNECT_OPENAPI_JSON_FILE)
-                                    .toString());
-
-            options.withEndpointSourceFolder(new File(connectJavaSourceFolder))
-                    .withApplicationProperties(
-                            new File(connectApplicationProperties))
-                    .withEndpointGeneratedOpenAPIFile(
-                            new File(connectOpenApiJsonFile));
-        }
-
         // If we are missing either the base or generated package json
         // files
         // generate those
@@ -324,9 +295,9 @@ public class DevModeInitializer implements Serializable {
                 .copyLocalResources(new File(baseDir,
                         Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                 .enableImportsUpdate(true)
-                .runNpmInstall(config.frontendHotdeploy())
+                .withRunNpmInstall(config.frontendHotdeploy())
                 .populateTokenFileData(tokenFileData)
-                .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
+                .withEmbeddableWebComponents(true).withEnablePnpm(enablePnpm)
                 .useGlobalPnpm(useGlobalPnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
                 .withProductionMode(config.isProductionMode())
@@ -372,13 +343,6 @@ public class DevModeInitializer implements Serializable {
                     () -> ViteWebsocketEndpoint.init(context, handler));
             return handler;
         }
-    }
-
-    private static boolean isEndpointServiceAvailable(Lookup lookup) {
-        if (lookup == null) {
-            return false;
-        }
-        return lookup.lookup(EndpointGeneratorTaskFactory.class) != null;
     }
 
     private static Logger log() {

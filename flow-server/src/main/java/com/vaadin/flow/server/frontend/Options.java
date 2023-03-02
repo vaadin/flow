@@ -25,59 +25,53 @@ public class Options implements Serializable {
 
     private String buildDirectoryName;
 
-    ClassFinder classFinder;
+    private ClassFinder classFinder;
 
     private File frontendDirectory;
 
-    File webappResourcesDirectory = null;
+    private File webappResourcesDirectory = null;
 
-    File resourceOutputDirectory = null;
+    private File resourceOutputDirectory = null;
 
-    boolean enablePackagesUpdate = false;
+    private boolean enablePackagesUpdate = false;
 
-    boolean createMissingPackageJson = false;
+    private boolean createMissingPackageJson = false;
 
-    boolean enableImportsUpdate = false;
+    private boolean enableImportsUpdate = false;
 
-    boolean enableWebpackConfigUpdate = false;
+    private boolean enableWebpackConfigUpdate = false;
 
-    boolean runNpmInstall = false;
+    private boolean runNpmInstall = false;
 
     private boolean devBundleBuild = false;
 
-    Set<File> jarFiles = null;
+    private Set<File> jarFiles = null;
 
-    boolean generateEmbeddableWebComponents = true;
+    private boolean generateEmbeddableWebComponents = true;
 
-    boolean cleanNpmFiles = false;
+    private boolean cleanNpmFiles = false;
 
-    File jarFrontendResourcesFolder = null;
+    private File jarFrontendResourcesFolder = null;
 
-    File localResourcesFolder = null;
+    private File localResourcesFolder = null;
 
-    boolean useByteCodeScanner = false;
+    private boolean useByteCodeScanner = false;
 
-    JsonObject tokenFileData;
+    private JsonObject tokenFileData;
 
-    File tokenFile;
+    private File tokenFile;
 
-    boolean enablePnpm = Constants.ENABLE_PNPM_DEFAULT;
+    private boolean enablePnpm = Constants.ENABLE_PNPM_DEFAULT;
 
-    boolean ciBuild;
+    private boolean ciBuild;
 
-    boolean useGlobalPnpm = false;
+    private boolean useGlobalPnpm = false;
 
-    File endpointSourceFolder;
+    private File frontendGeneratedFolder;
 
-    File endpointGeneratedOpenAPIFile;
+    private boolean requireHomeNodeExec;
 
-    File applicationProperties;
-
-    File frontendGeneratedFolder;
-
-    boolean requireHomeNodeExec;
-
-    boolean copyTemplates = false;
+    private boolean copyTemplates = false;
 
     private File npmFolder;
 
@@ -88,34 +82,35 @@ public class Options implements Serializable {
      * Vaadin, for example <code>"v16.0.0"</code>. Defaults to
      * {@value FrontendTools#DEFAULT_NODE_VERSION}.
      */
-    String nodeVersion = FrontendTools.DEFAULT_NODE_VERSION;
+    private String nodeVersion = FrontendTools.DEFAULT_NODE_VERSION;
 
     /**
      * Download node.js from this URL. Handy in heavily firewalled corporate
      * environments where the node.js download can be provided from an intranet
      * mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      */
-    URI nodeDownloadRoot = URI.create(Platform.guess().getNodeDownloadRoot());
+    private URI nodeDownloadRoot = URI
+            .create(Platform.guess().getNodeDownloadRoot());
 
-    boolean nodeAutoUpdate = false;
+    private boolean nodeAutoUpdate = false;
 
-    Lookup lookup;
+    private Lookup lookup;
 
     /**
      * Default is true here so we do not accidentally include development stuff
      * into production.
      */
-    boolean productionMode = true;
+    private boolean productionMode = true;
 
     /**
      * The resource folder for java resources.
      */
-    File javaResourceFolder;
+    private File javaResourceFolder;
 
     /**
      * Additional npm packages to run postinstall for.
      */
-    List<String> postinstallPackages = new ArrayList<>();
+    private List<String> postinstallPackages = new ArrayList<>();
 
     private FeatureFlags featureFlags;
 
@@ -249,7 +244,7 @@ public class Options implements Serializable {
      *            run npm install. Default is <code>false</code>
      * @return the builder
      */
-    public Options runNpmInstall(boolean runNpmInstall) {
+    public Options withRunNpmInstall(boolean runNpmInstall) {
         this.runNpmInstall = runNpmInstall;
         return this;
     }
@@ -294,7 +289,7 @@ public class Options implements Serializable {
      *
      * @return the builder
      */
-    public Options copyTemplates(boolean copyTemplates) {
+    public Options withCopyTemplates(boolean copyTemplates) {
         this.copyTemplates = copyTemplates;
         return this;
     }
@@ -359,70 +354,6 @@ public class Options implements Serializable {
     }
 
     /**
-     * Set application properties file for Spring project.
-     *
-     * @param applicationProperties
-     *            application properties file.
-     * @return this builder, for chaining
-     */
-    public Options withApplicationProperties(File applicationProperties) {
-        this.applicationProperties = applicationProperties;
-        return this;
-    }
-
-    /**
-     * Get application properties file for Spring project.
-     *
-     * @return application properties file
-     **/
-    public File getApplicationProperties() {
-        return applicationProperties;
-    }
-
-    /**
-     * Set output location for the generated OpenAPI file.
-     *
-     * @param endpointGeneratedOpenAPIFile
-     *            the generated output file.
-     * @return the builder, for chaining
-     */
-    public Options withEndpointGeneratedOpenAPIFile(
-            File endpointGeneratedOpenAPIFile) {
-        this.endpointGeneratedOpenAPIFile = endpointGeneratedOpenAPIFile;
-        return this;
-    }
-
-    /**
-     * Gets the output location for the generated OpenAPI file. .
-     *
-     * @return the generated output file
-     */
-    public File getEndpointGeneratedOpenAPIFile() {
-        return endpointGeneratedOpenAPIFile;
-    }
-
-    /**
-     * Set source paths that OpenAPI generator searches for endpoints.
-     *
-     * @param endpointSourceFolder
-     *            java source folder
-     * @return the builder, for chaining
-     */
-    public Options withEndpointSourceFolder(File endpointSourceFolder) {
-        this.endpointSourceFolder = endpointSourceFolder;
-        return this;
-    }
-
-    /**
-     * Gets the source paths that OpenAPI generator searches for endpoints.
-     *
-     * @return java source folder
-     */
-    public File getEndpointSourceFolder() {
-        return endpointSourceFolder;
-    }
-
-    /**
      * Sets frontend scanner strategy: byte code scanning strategy is used if
      * {@code byteCodeScanner} is {@code true}, full classpath scanner strategy
      * is used otherwise (by default).
@@ -470,7 +401,7 @@ public class Options implements Serializable {
      *            enables pnpm.
      * @return the builder, for chaining
      */
-    public Options enablePnpm(boolean enable) {
+    public Options withEnablePnpm(boolean enable) {
         enablePnpm = enable;
         return this;
     }
@@ -485,7 +416,7 @@ public class Options implements Serializable {
      *            true to enable ci build
      * @return the builder, for chaining
      */
-    public Options ciBuild(boolean ciBuild) {
+    public Options withCiBuild(boolean ciBuild) {
         this.ciBuild = ciBuild;
         return this;
     }
@@ -712,6 +643,11 @@ public class Options implements Serializable {
         return buildDirectoryName;
     }
 
+    /**
+     * Gets the directory used for the build output.
+     *
+     * @return the build directory
+     */
     public File getBuildDirectory() {
         return new File(npmFolder, getBuildDirectoryName());
     }
@@ -731,10 +667,20 @@ public class Options implements Serializable {
         return featureFlags;
     }
 
+    /**
+     * Gets the folder to which frontend resources from add-on jars are copied.
+     *
+     * @return the jar resource folder
+     */
     public File getJarFrontendResourcesFolder() {
         return jarFrontendResourcesFolder;
     }
 
+    /**
+     * Gets the used class finder.
+     *
+     * @return the class finder
+     */
     public ClassFinder getClassFinder() {
         return classFinder;
     }
@@ -742,4 +688,122 @@ public class Options implements Serializable {
     public File getNodeModulesFolder() {
         return new File(getNpmFolder(), FrontendUtils.NODE_MODULES);
     }
+
+    public File getResourceOutputDirectory() {
+        return resourceOutputDirectory;
+    }
+
+    public boolean isEnablePackagesUpdate() {
+        return enablePackagesUpdate;
+    }
+
+    public boolean isCreateMissingPackageJson() {
+        return createMissingPackageJson;
+    }
+
+    public boolean isEnableImportsUpdate() {
+        return enableImportsUpdate;
+    }
+
+    public boolean isEnableWebpackConfigUpdate() {
+        return enableWebpackConfigUpdate;
+    }
+
+    public boolean isRunNpmInstall() {
+        return runNpmInstall;
+    }
+
+    public Set<File> getJarFiles() {
+        return jarFiles;
+    }
+
+    public boolean isGenerateEmbeddableWebComponents() {
+        return generateEmbeddableWebComponents;
+    }
+
+    public boolean isCleanNpmFiles() {
+        return cleanNpmFiles;
+    }
+
+    public File getLocalResourcesFolder() {
+        return localResourcesFolder;
+    }
+
+    public boolean isUseByteCodeScanner() {
+        return useByteCodeScanner;
+    }
+
+    public JsonObject getTokenFileData() {
+        return tokenFileData;
+    }
+
+    public File getTokenFile() {
+        return tokenFile;
+    }
+
+    public boolean isEnablePnpm() {
+        return enablePnpm;
+    }
+
+    public boolean isCiBuild() {
+        return ciBuild;
+    }
+
+    public boolean isUseGlobalPnpm() {
+        return useGlobalPnpm;
+    }
+
+    public boolean isRequireHomeNodeExec() {
+        return requireHomeNodeExec;
+    }
+
+    public boolean isCopyTemplates() {
+        return copyTemplates;
+    }
+
+    public String getNodeVersion() {
+        return nodeVersion;
+    }
+
+    public URI getNodeDownloadRoot() {
+        return nodeDownloadRoot;
+    }
+
+    public boolean isNodeAutoUpdate() {
+        return nodeAutoUpdate;
+    }
+
+    /**
+     * Gets the lookup instance to use for internal lookups.
+     *
+     * @return the lookup instance
+     */
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    /**
+     * Gets the production mode.
+     *
+     * @return <code>true</code> if production mode is enabled, otherwise
+     *         <code>false</code>
+     */
+    public boolean isProductionMode() {
+        return productionMode;
+    }
+
+    /**
+     * Gets the folder containing java resources, typically
+     * {@literal src/main/resources} in a Maven project.
+     *
+     * @return the java resource folder
+     */
+    public File getJavaResourceFolder() {
+        return javaResourceFolder;
+    }
+
+    public List<String> getPostinstallPackages() {
+        return postinstallPackages;
+    }
+
 }

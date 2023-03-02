@@ -148,7 +148,7 @@ public class TaskRunNpmInstallTest {
 
         deleteDirectory(nodeModules);
 
-        options.ciBuild(true);
+        options.withCiBuild(true);
         task.execute();
         Mockito.verify(logger).info(getRunningMsg());
     }
@@ -163,7 +163,7 @@ public class TaskRunNpmInstallTest {
 
         ensurePackageJson();
 
-        options.ciBuild(true);
+        options.withCiBuild(true);
 
         Assert.assertThrows(ExecutionFailedException.class, task::execute);
     }
@@ -527,7 +527,7 @@ public class TaskRunNpmInstallTest {
 
     private String getCommand() {
         String command = "install";
-        if (options.ciBuild) {
+        if (options.isCiBuild()) {
             if ("pnpm".equals(getToolName())) {
                 command += " --frozen-lockfile";
             } else {

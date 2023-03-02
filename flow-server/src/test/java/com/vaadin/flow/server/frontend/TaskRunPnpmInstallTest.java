@@ -149,7 +149,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
-        options.withHomeNodeExecRequired(true).enablePnpm(true)
+        options.withHomeNodeExecRequired(true).withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
@@ -665,11 +665,11 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     private TaskRunNpmInstall createCiTask() {
         NodeUpdater updater = getNodeUpdater();
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder);
-        options.enablePnpm(true)
+        options.withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT))
-                .ciBuild(true);
+                .withCiBuild(true);
         return new TaskRunNpmInstall(updater, options);
     }
 
@@ -677,7 +677,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
         NodeUpdater updater = getNodeUpdater();
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder);
-        options.enablePnpm(true)
+        options.withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT))
@@ -688,7 +688,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     protected TaskRunNpmInstall createTask(String versionsContent) {
         NodeUpdater updater = createAndRunNodeUpdater(versionsContent);
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder);
-        options.enablePnpm(true)
+        options.withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));

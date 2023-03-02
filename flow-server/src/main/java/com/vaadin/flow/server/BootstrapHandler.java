@@ -54,7 +54,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import jakarta.servlet.ServletRegistration;
-import org.atmosphere.cpr.ApplicationConfig;
 import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -74,6 +73,7 @@ import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.ReflectTools;
@@ -117,6 +117,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             + "window.__gwtStatsEvent = function(event) {"
             + "window.Vaadin.Flow.gwtStatsEvents.push(event); "
             + "return true;};};";
+
+    //@formatter:off
+    protected static final String SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG =
+            "const link = document.createElement('link');"
+            + "link.rel = 'stylesheet';"
+            + "link.type = 'text/css';"
+            + "link.href = $0;"
+            + "document.head.appendChild(link);";
+    //@formatter:on
+
     static final String CONTENT_ATTRIBUTE = "content";
     private static final String DEFER_ATTRIBUTE = "defer";
     static final String VIEWPORT = "viewport";
@@ -1598,30 +1608,58 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     /**
-     * Gives a link tag for referencing the custom theme stylesheet files
-     * (typically styles.css or document.css), which is served in express build
+     * Gives link tags for referencing the custom theme stylesheet files
+     * (typically styles.css or document.css), which are served in express build
      * mode by static file server directly from frontend/themes folder.
      *
      * @param config
      *            deployment configuration
      * @param fileName
      *            the stylesheet file name to add a reference to
-     * @return the collection of link tag elements to be added to the page
+     * @return the collection of link tags to be added to the page
      * @throws IOException
      *             if theme name cannot be extracted from file
      */
-    protected static Collection<Element> getTagForTheme(
+    protected static Collection<Element> getStylesheetTags(
             DeploymentConfiguration config, String fileName)
             throws IOException {
-        List<Element> tags = new ArrayList<>();
+        return getStylesheetReferences(config, fileName,
+                BootstrapHandler::getLinkTagWithStyleRef);
+    }
+
+    /**
+     * Gives a links for referencing the custom theme stylesheet files
+     * (typically styles.css or document.css), which are served in express build
+     * mode by static file server directly from frontend/themes folder.
+     *
+     * @param config
+     *            deployment configuration
+     * @param fileName
+     *            the stylesheet file name to add a reference to
+     * @return the collection of links to be added to the page
+     * @throws IOException
+     *             if theme name cannot be extracted from file
+     */
+    protected static Collection<String> getStylesheetLinks(
+            DeploymentConfiguration config, String fileName)
+            throws IOException {
+        return getStylesheetReferences(config, fileName,
+                BootstrapHandler::getThemeFilePath);
+    }
+
+    private static <T> Collection<T> getStylesheetReferences(
+            DeploymentConfiguration config, String fileName,
+            SerializableBiFunction<String, String, T> referenceProvider)
+            throws IOException {
+        List<T> references = new ArrayList<>();
 
         Optional<String> themeName = FrontendUtils
                 .getThemeName(config.getProjectFolder());
 
         if (themeName.isEmpty()) {
             getLogger().debug("Found no custom theme in the project. "
-                    + "Skipping adding a link tag for styles.css");
-            return tags;
+                    + "Skipping adding a link tag for custom theme stylesheets.");
+            return references;
         }
 
         // First check if project has a packaged themes and add a link if any
@@ -1640,20 +1678,25 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 String packagedThemeName = themeFolder.getName();
                 projectCustomThemeAdded = projectCustomThemeAdded
                         || packagedThemeName.equals(themeName.get());
-                Element tag = getLinkTagWithStyleRef(packagedThemeName,
+                T reference = referenceProvider.apply(packagedThemeName,
                         fileName);
-                tags.add(tag);
+                references.add(reference);
             }
         }
 
         // Secondly, add a link for the project's custom theme, if it exists
         // and not yet added by the packaged themes loop
         if (!projectCustomThemeAdded) {
-            Element tag = getLinkTagWithStyleRef(themeName.get(), fileName);
-            tags.add(tag);
+            T reference = referenceProvider.apply(themeName.get(), fileName);
+            references.add(reference);
         }
 
-        return tags;
+        return references;
+    }
+
+    private static String getThemeFilePath(String themeName, String fileName) {
+        return Constants.VAADIN_MAPPING + Constants.APPLICATION_THEME_ROOT + "/"
+                + themeName + "/" + fileName;
     }
 
     private static Element getLinkTagWithStyleRef(String themeName,
@@ -1661,9 +1704,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         Element element = new Element("link");
         element.attr("rel", "stylesheet");
         element.attr("type", "text/css");
-        element.attr("href",
-                Constants.VAADIN_MAPPING + Constants.APPLICATION_THEME_ROOT
-                        + "/" + themeName + "/" + fileName);
+        element.attr("href", getThemeFilePath(themeName, fileName));
         return element;
     }
 

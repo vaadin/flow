@@ -412,6 +412,11 @@ public class Binder<BEAN> implements Serializable {
          * an accessible setter; in that case the property value is never
          * updated and the binding is said to be <i>read-only</i>.
          *
+         * Nested property, when supported, can be referenced using the bean
+         * path, starting from the root class, for example 'address.streetName'.
+         * All intermediate getters must exist (e.g. {@code getAddress()}), and
+         * should never return {@literal null}, otherwise binding will fail.
+         *
          * <p>
          * <strong>Note:</strong> when the binding is <i>read-only</i> the field
          * will be marked as readonly by invoking {@link HasValue#setReadOnly}.
@@ -445,6 +450,11 @@ public class Binder<BEAN> implements Serializable {
          * is also added to the binding.
          * <p>
          * The property must have an accessible getter method.
+         *
+         * Nested property, when supported, can be referenced using the bean
+         * path, starting from the root class, for example 'address.streetName'.
+         * All intermediate getters must exist (e.g. {@code getAddress()}), and
+         * should never return {@literal null}, otherwise binding will fail.
          *
          * <p>
          * <strong>Note:</strong> the field will be marked as readonly by
@@ -1706,6 +1716,8 @@ public class Binder<BEAN> implements Serializable {
      * Creates a new binder that uses reflection based on the provided bean type
      * to resolve bean properties.
      *
+     * Nested properties are resolved lazily, when bound to a field.
+     *
      * @param beanType
      *            the bean type to use, not <code>null</code>
      */
@@ -1743,6 +1755,10 @@ public class Binder<BEAN> implements Serializable {
     /**
      * Creates a new binder that uses reflection based on the provided bean type
      * to resolve bean properties.
+     *
+     * If {@code scanNestedDefinitions} is true, nested properties are detected
+     * eagerly. Otherwise, they will be discovered lazily when the property is
+     * bound to a field.
      *
      * @param beanType
      *            the bean type to use, not {@code null}
@@ -2001,6 +2017,14 @@ public class Binder<BEAN> implements Serializable {
      * accessible setter; in that case the property value is never updated and
      * the binding is said to be <i>read-only</i>.
      *
+     * Nested properties support depends on the {@link PropertySet} type used to
+     * build the {@code Binder}. If support is available, for example using the
+     * default {@link BeanPropertySet}, nested property are supported and can be
+     * referenced using the bean path, starting from the root class, for example
+     * 'address.streetName'. All intermediate getters must exist (e.g.
+     * {@code getAddress()}), and should never return {@literal null}, otherwise
+     * binding will fail.
+     *
      * @param <FIELDVALUE>
      *            the value type of the field to bind
      * @param field
@@ -2035,6 +2059,14 @@ public class Binder<BEAN> implements Serializable {
      * {@link BeanValidator} is also added to the binding.
      * <p>
      * The property must have an accessible getter method.
+     *
+     * Nested properties support depends on the {@link PropertySet} type used to
+     * build the {@code Binder}. If support is available, for example using the
+     * default {@link BeanPropertySet}, nested property are supported and can be
+     * referenced using the bean path, starting from the root class, for example
+     * 'address.streetName'. All intermediate getters must exist (e.g.
+     * {@code getAddress()}), and should never return {@literal null}, otherwise
+     * binding will fail.
      *
      * @param <FIELDVALUE>
      *            the value type of the field to bind
