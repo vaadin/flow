@@ -46,15 +46,15 @@ In short debugging is building flow client JS in pretty/detailed mode and then a
    - Do not mind the many ERRORS happening while building the JAR, eventually build can be SUCCESS still,
    - the built JAR should be at the /target directory e.g. `target/flow-client-X.Y-SNAPSHOT.jar`
 4. Make sure your project is using the non-obfuscated `flow-client.jar`:
-   - Editing `pom.xml` or `gradle.build` or any other way,
+   - Please make sure that your build tool config file (`pom.xml` or `gradle.build`) contains the proper information:
+     - `flow-client` dependency in an application project points to the built version (e.g.: be sure it is `X.Y-SNAPSHOT`),
    - OR just uncompress the built JAR file and then copy the `FlowClient.js` from it to your proper directory 
 (where it is served to frontend) in e.g.: `frontend/generated/jar-resources`
      - this option will make sure you use the non-obfuscated JS file (the other option can cause still some optimization)
 5. Then you can debug the JS code in your browser's dev tools (e.g.sources tab: `VAADIN/generated/jar-resources/FlowClient.js`)
 
 #### Note for debugging:
-   - please make sure that `flow-client` dependency in an application project points to the built version (e.g.: be sure it is `X.Y-SNAPSHOT`), 
-   - OR add the dependency if it is not present.
+   - you shall add the dependency if it is not present.
      - For example, your project may use Vaadin `24.0.0`, but you rebuild the flow client at version `24.1-SNAPSHOT`. 
 In this case, you should probably add the `flow-client` dependency to overwrite the version the project is bringing in. 
    - Delete the dev-bundle (`src/main/dev-bundle`) directory to be sure the project will not use a previously bundled version of the client
