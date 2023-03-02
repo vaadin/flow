@@ -70,9 +70,9 @@ public class StreamReceiverHandler implements Serializable {
 
     private static final int MAX_UPLOAD_BUFFER_SIZE = 4 * 1024;
 
-    private static final long DEFAULT_SIZE_MAX = 100 * 1024 * 1024;
+    private static final long DEFAULT_SIZE_MAX = -1;
 
-    private static final long DEFAULT_FILE_SIZE_MAX = 100 * 1024 * 1024;
+    private static final long DEFAULT_FILE_SIZE_MAX = -1;
 
     private static final long DEFAULT_FILE_COUNT_MAX = 1000;
 
