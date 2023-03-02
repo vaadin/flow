@@ -310,11 +310,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         } else if (bundleJsonType == JsonType.NUMBER) {
             return JsonUtils.numbersEqual(jsonFromBundle, projectJson);
         } else if (bundleJsonType == JsonType.STRING) {
-            // ignore parent theme, because having a parent theme doesn't
-            // need a new bundle per se
-            if (projectJson.toJson().equals("parent")) {
-                return true;
-            }
             return JsonUtils.stringEqual(jsonFromBundle, projectJson);
         } else if (bundleJsonType == JsonType.ARRAY) {
             JsonArray jsonArrayFromBundle = (JsonArray) jsonFromBundle;
@@ -984,6 +979,12 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         for (String projectEntryKey : projectJsonObject.keys()) {
             JsonValue projectEntry = projectJsonObject.get(projectEntryKey);
+            // ignore parent theme, because having a parent theme doesn't
+            // need a new bundle per se
+            if (projectEntry.getType() == JsonType.STRING
+                    && "parent".equals(projectEntryKey)) {
+                continue;
+            }
             boolean entryFound = false;
             for (String bundleEntryKey : jsonObjectFromBundle.keys()) {
                 JsonValue bundleEntry = jsonObjectFromBundle
