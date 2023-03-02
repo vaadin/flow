@@ -12,7 +12,7 @@
     "lint": "eslint \"src/main/frontend\"",
     "client": "node scripts/client.js",
     "webpack": "webpack --config=webpack.tests.config.js",
-    "build": "npm run client",
+    "build": "npm run client && tsc",
     "compile": "npm run build && npm run lint",
     "test": "web-test-runner --node-resolve",
     "test-watch": "web-test-runner --node-resolve --watch"
