@@ -74,7 +74,7 @@ public class StreamReceiverHandler implements Serializable {
 
     private static final long DEFAULT_FILE_SIZE_MAX = -1;
 
-    private static final long DEFAULT_FILE_COUNT_MAX = 1000;
+    private static final long DEFAULT_FILE_COUNT_MAX = 10000;
 
     /* Minimum interval which will be used for streaming progress events. */
     public static final int DEFAULT_STREAMING_PROGRESS_EVENT_INTERVAL_MS = 500;
