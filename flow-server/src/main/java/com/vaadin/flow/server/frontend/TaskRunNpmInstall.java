@@ -600,18 +600,26 @@ public class TaskRunNpmInstall implements FallibleCommand {
             return;
         }
         long startTime = System.currentTimeMillis();
-        File modulesYaml = new File(options.getNodeModulesFolder(),
-                MODULES_YAML);
-        boolean hasModulesYaml = modulesYaml.exists() && modulesYaml.isFile();
-        if (!options.isEnablePnpm() && hasModulesYaml) {
+
+        if (options.isCiBuild()) {
             deleteNodeModules(options.getNodeModulesFolder());
-        } else if (options.isEnablePnpm() && !hasModulesYaml) {
-            // presence of .staging dir with a "pnpm-*" folder means that pnpm
-            // download is in progress, don't remove anything in this case
-            File staging = new File(options.getNodeModulesFolder(), ".staging");
-            if (!staging.isDirectory() || staging.listFiles(
-                    (dir, name) -> name.startsWith("pnpm-")).length == 0) {
+        } else {
+            File modulesYaml = new File(options.getNodeModulesFolder(),
+                    MODULES_YAML);
+            boolean hasModulesYaml = modulesYaml.exists()
+                    && modulesYaml.isFile();
+            if (!options.isEnablePnpm() && hasModulesYaml) {
                 deleteNodeModules(options.getNodeModulesFolder());
+            } else if (options.isEnablePnpm() && !hasModulesYaml) {
+                // presence of .staging dir with a "pnpm-*" folder means that
+                // pnpm download is in progress, don't remove anything in this
+                // case
+                File staging = new File(options.getNodeModulesFolder(),
+                        ".staging");
+                if (!staging.isDirectory() || staging.listFiles(
+                        (dir, name) -> name.startsWith("pnpm-")).length == 0) {
+                    deleteNodeModules(options.getNodeModulesFolder());
+                }
             }
         }
         lastInstallStats.cleanupTimeMs = System.currentTimeMillis() - startTime;
