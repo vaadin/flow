@@ -12,7 +12,7 @@ export function detectTheme(metadata: ComponentMetadata): ComponentTheme {
     const hostStyles = getComputedStyle(element);
 
     metadata.properties.forEach((property) => {
-      const propertyValue = getPropertyValue(hostStyles, property.propertyName);
+      const propertyValue = hostStyles.getPropertyValue(property.propertyName);
       componentTheme.updatePropertyValue(null, property.propertyName, propertyValue);
     });
 
@@ -25,7 +25,7 @@ export function detectTheme(metadata: ComponentMetadata): ComponentTheme {
       const partStyles = getComputedStyle(partElement);
 
       part.properties.forEach((property) => {
-        const propertyValue = getPropertyValue(partStyles, property.propertyName);
+        const propertyValue = partStyles.getPropertyValue(property.propertyName);
         componentTheme.updatePropertyValue(part.partName, property.propertyName, propertyValue);
       });
     });
@@ -34,8 +34,4 @@ export function detectTheme(metadata: ComponentMetadata): ComponentTheme {
   }
 
   return componentTheme;
-}
-
-function getPropertyValue(styles: CSSStyleDeclaration, propertyName: string) {
-  return propertyName.indexOf('--') === 0 ? styles.getPropertyValue(propertyName) : styles[propertyName as any];
 }
