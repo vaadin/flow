@@ -100,7 +100,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * If using pnpm, the install will be run with {@code --frozen-lockfile}
      * parameter.
      *
-     * This makes sure that the package lock file will not be overwritten.
+     * This makes sure that the versions in package lock file will not be overwritten and production builds are reproducible.
      */
     @Parameter(property = InitParameters.CI_BUILD, defaultValue = "false")
     private boolean ciBuild;
