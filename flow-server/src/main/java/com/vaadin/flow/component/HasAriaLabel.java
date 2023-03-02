@@ -51,8 +51,13 @@ public interface HasAriaLabel extends HasElement {
      *            the aria-label text to set or {@code null} to clear
      */
     default void setAriaLabel(String ariaLabel) {
-        getElement().setAttribute(ElementConstants.ARIA_LABEL_PROPERTY_NAME,
-                ariaLabel);
+        if (ariaLabel != null) {
+            getElement().setAttribute(ElementConstants.ARIA_LABEL_PROPERTY_NAME,
+                    ariaLabel);
+        } else {
+            getElement()
+                    .removeAttribute(ElementConstants.ARIA_LABEL_PROPERTY_NAME);
+        }
     }
 
     /**
