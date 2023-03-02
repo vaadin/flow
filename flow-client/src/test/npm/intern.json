@@ -14,10 +14,11 @@
   ],
   "suites": "target/frontend-tests/*.spec.js",
   "tunnelOptions": {
+    "version": "3.141.59",
     "drivers": [
-      { "name": "chrome", "version": "2.36" }
+      {"name": "chrome", "version": "${internJsonChromeDriverVersion}"}
     ]
-  },
+},
   "plugins": {
     "script": "src/test/frontend/utils.js",
     "useLoader": true
