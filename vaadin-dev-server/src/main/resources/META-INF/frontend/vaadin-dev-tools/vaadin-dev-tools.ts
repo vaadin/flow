@@ -1009,6 +1009,8 @@ export class VaadinDevTools extends LitElement {
 
   private transitionDuration: number = 0;
 
+  disableLiveReloadTimeout: number | null = null;
+
   elementTelemetry() {
     let data = {};
     try {
@@ -1376,11 +1378,14 @@ export class VaadinDevTools extends LitElement {
   }
 
   disableLiveReloadTemporarily() {
-    if (!VaadinDevTools.isActive) {
-      return;
+    if (VaadinDevTools.isActive || this.disableLiveReloadTimeout != null) {
+      this.setActive(false);
+      clearTimeout(this.disableLiveReloadTimeout!);
+      this.disableLiveReloadTimeout = window.setTimeout(() => {
+        this.setActive(true);
+        this.disableLiveReloadTimeout = null;
+      }, 2500);
     }
-    this.setActive(false);
-    setTimeout(() => this.setActive(true), 5000);
   }
 
   getStatusColor(status: ConnectionStatus | undefined) {

@@ -5,7 +5,7 @@ import { ComponentMetadata } from './metadata/model';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
 import './property-list';
-import { ComponentTheme, generateRules, Theme, ThemeEditorState } from './model';
+import { ComponentTheme, generateThemeRule, Theme, ThemeEditorState } from './model';
 import { detectTheme } from './detector';
 import { ThemePropertyValueChangeEvent } from './events';
 import { themePreview } from './preview';
@@ -40,18 +40,11 @@ export class ThemeEditor extends LitElement {
    */
   private modifiedComponentTheme: ComponentTheme | null = null;
   /**
-   * Pending theme modifications for the selected component that have not been
-   * saved yet
-   */
-  private editedComponentTheme: ComponentTheme | null = null;
-  /**
-   * The effective theme for the selected component, including base theme,
-   * previously saved modifications and pending modifications
+   * The effective theme for the selected component, including base theme and
+   * previously saved modifications
    */
   @state()
   private effectiveComponentTheme: ComponentTheme | null = null;
-  @state()
-  private hasModifications: boolean = false;
 
   static get styles() {
     return css`
@@ -100,37 +93,6 @@ export class ThemeEditor extends LitElement {
         flex: 1 1 auto;
         overflow-y: auto;
       }
-
-      .modifications-actions {
-        flex: 0 0 auto;
-        display: flex;
-        justify-content: space-between;
-        padding: 0.5rem var(--theme-editor-section-horizontal-padding);
-        border-top: solid 1px rgba(0, 0, 0, 0.2);
-      }
-
-      .modifications-actions button {
-        all: initial;
-        font-family: inherit;
-        font-size: var(--dev-tools-font-size-small);
-        line-height: 1;
-        white-space: nowrap;
-        background-color: rgba(0, 0, 0, 0.2);
-        color: inherit;
-        font-weight: 600;
-        padding: 0.25rem 0.375rem;
-        border-radius: 0.25rem;
-      }
-
-      .modifications-actions button.discard {
-        color: var(--dev-tools-text-color-emphasis);
-        background-color: var(--dev-tools-red-color);
-      }
-
-      .modifications-actions button.apply {
-        color: var(--dev-tools-text-color-emphasis);
-        background-color: var(--dev-tools-green-color);
-      }
     `;
   }
 
@@ -153,14 +115,6 @@ export class ThemeEditor extends LitElement {
             .theme=${this.effectiveComponentTheme}
             @theme-property-value-change=${this.handlePropertyChange}
           ></vaadin-dev-tools-theme-property-list>`
-        : null}
-      ${this.hasModifications
-        ? html`
-            <div class="modifications-actions">
-              <button class="discard" @click=${this.discardChanges}>Discard</button>
-              <button class="apply" @click=${this.applyChanges}>Apply changes</button>
-            </div>
-          `
         : null}
     `;
   }
@@ -193,19 +147,14 @@ export class ThemeEditor extends LitElement {
       `,
       pickCallback: async (component) => {
         this.selectedComponentMetadata = await metadataRegistry.getMetadata(component);
-        this.hasModifications = false;
         if (this.selectedComponentMetadata) {
           themePreview.reset();
           this.baseComponentTheme = detectTheme(this.selectedComponentMetadata);
-          this.modifiedComponentTheme =
-            this.theme.getComponentTheme(this.selectedComponentMetadata.tagName) ||
-            new ComponentTheme(this.selectedComponentMetadata);
-          this.editedComponentTheme = new ComponentTheme(this.selectedComponentMetadata);
+          this.modifiedComponentTheme = this.theme.getOrCreateComponentTheme(this.selectedComponentMetadata);
           this.effectiveComponentTheme = ComponentTheme.combine(this.baseComponentTheme, this.modifiedComponentTheme);
         } else {
           this.baseComponentTheme = null;
           this.modifiedComponentTheme = null;
-          this.editedComponentTheme = null;
           this.effectiveComponentTheme = null;
         }
         this.updateThemePreview();
@@ -214,55 +163,31 @@ export class ThemeEditor extends LitElement {
   }
 
   private handlePropertyChange(e: ThemePropertyValueChangeEvent) {
-    if (!this.editedComponentTheme || !this.baseComponentTheme || !this.modifiedComponentTheme) {
-      return;
-    }
-    const { part, property, value } = e.detail;
-    const partName = part?.partName || null;
-    this.hasModifications = true;
-    this.editedComponentTheme.updatePropertyValue(partName, property.propertyName, value);
-    this.effectiveComponentTheme = ComponentTheme.combine(
-      this.baseComponentTheme,
-      this.modifiedComponentTheme,
-      this.editedComponentTheme
-    );
-    this.updateThemePreview();
-  }
-
-  private discardChanges() {
     if (!this.selectedComponentMetadata || !this.baseComponentTheme || !this.modifiedComponentTheme) {
       return;
     }
-    this.hasModifications = false;
-    this.editedComponentTheme = new ComponentTheme(this.selectedComponentMetadata);
+
+    // Update local theme state
+    const { part, property, value } = e.detail;
+    const partName = part?.partName || null;
+    this.modifiedComponentTheme.updatePropertyValue(partName, property.propertyName, value);
     this.effectiveComponentTheme = ComponentTheme.combine(this.baseComponentTheme, this.modifiedComponentTheme);
     this.updateThemePreview();
-  }
 
-  private applyChanges() {
-    if (!this.editedComponentTheme || !this.selectedComponentMetadata || !this.baseComponentTheme) {
-      return;
-    }
-
+    // Update theme editor CSS
     // Notify dev tools that we are about to save CSS, so that it can disable
     // live reload temporarily
     this.dispatchEvent(new CustomEvent('before-save'));
-
-    const rules = generateRules(this.editedComponentTheme);
-    this.connection.sendThemeEditorRules(rules);
-
-    this.hasModifications = false;
-    this.theme.updateComponentTheme(this.editedComponentTheme);
-    this.modifiedComponentTheme = this.theme.getComponentTheme(this.selectedComponentMetadata.tagName);
-    this.editedComponentTheme = new ComponentTheme(this.selectedComponentMetadata);
-    this.effectiveComponentTheme = ComponentTheme.combine(this.baseComponentTheme, this.modifiedComponentTheme);
+    const updateRule = generateThemeRule(
+      this.selectedComponentMetadata?.tagName,
+      partName,
+      property.propertyName,
+      value
+    );
+    this.connection.sendThemeEditorRules([updateRule]);
   }
 
   private updateThemePreview() {
-    const previewTheme = this.theme.clone();
-    if (this.editedComponentTheme) {
-      previewTheme.updateComponentTheme(this.editedComponentTheme);
-    }
-    themePreview.update(previewTheme);
+    themePreview.update(this.theme);
   }
 }

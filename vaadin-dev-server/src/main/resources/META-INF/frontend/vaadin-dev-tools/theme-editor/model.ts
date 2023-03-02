@@ -80,18 +80,17 @@ export class ComponentTheme {
   }
 }
 
-export function generateRules(theme: ComponentTheme): ThemeEditorRule[] {
-  return theme.properties.map((propertyValue) => {
-    const selector = propertyValue.partName
-      ? `${theme.metadata.tagName}::part(${propertyValue.partName})`
-      : theme.metadata.tagName;
+function generateSelector(tagName: string, partName: string | null) {
+  return partName ? `${tagName}::part(${partName})` : tagName;
+}
 
-    return {
-      selector,
-      property: propertyValue.propertyName,
-      value: propertyValue.value
-    };
-  });
+export function generateThemeRule(tagName: string, partName: string | null, propertyName: string, value: string) {
+  const selector = generateSelector(tagName, partName);
+  return {
+    selector,
+    property: propertyName,
+    value: value
+  };
 }
 
 type ComponentThemeMap = { [key: string]: ComponentTheme };
@@ -107,13 +106,18 @@ export class Theme {
     return this._componentThemes[tagName] || null;
   }
 
-  updateComponentTheme(updatedTheme: ComponentTheme) {
-    let existingTheme = this.getComponentTheme(updatedTheme.metadata.tagName);
-    if (!existingTheme) {
-      existingTheme = new ComponentTheme(updatedTheme.metadata);
-      this._componentThemes[existingTheme.metadata.tagName] = existingTheme;
+  getOrCreateComponentTheme(metadata: ComponentMetadata) {
+    let componentTheme = this.getComponentTheme(metadata.tagName);
+    if (!componentTheme) {
+      componentTheme = new ComponentTheme(metadata);
+      this._componentThemes[metadata.tagName] = componentTheme;
     }
-    existingTheme.addPropertyValues(updatedTheme.properties);
+    return componentTheme;
+  }
+
+  updateComponentTheme(updatedTheme: ComponentTheme) {
+    const componentTheme = this.getOrCreateComponentTheme(updatedTheme.metadata);
+    componentTheme.addPropertyValues(updatedTheme.properties);
   }
 
   clone() {
