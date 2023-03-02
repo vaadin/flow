@@ -65,4 +65,43 @@ public class HasAriaLabelTest {
 
         assertEquals("test AriaLabel", component.getAriaLabel().get());
     }
+
+    @Test
+    public void withoutAriaLabelledByComponent_getAriaLabelledByReturnsEmptyOptional() {
+        TestComponent component = new TestComponent();
+
+        assertFalse(component.getAriaLabelledBy().isPresent());
+    }
+
+    @Test
+    public void withNullAriaLabelledBy_getAriaLabelledByReturnsEmptyOptional() {
+        TestComponent component = new TestComponent();
+        component.setAriaLabelledBy(null);
+        assertFalse(component.getAriaLabelledBy().isPresent());
+    }
+
+    @Test
+    public void withEmptyAriaLabelledBy_getAriaLabelledByReturnsEmptyString() {
+        TestComponent component = new TestComponent();
+        component.setAriaLabelledBy("");
+        assertEquals("", component.getAriaLabelledBy().get());
+    }
+
+    @Test
+    public void withAriaLabelledBy_setAriaLabelledByToNullClearsAriaLabelledBy() {
+        TestComponent component = new TestComponent();
+        component.setAriaLabelledBy("test AriaLabelledBy");
+
+        component.setAriaLabelledBy(null);
+        assertFalse(component.getAriaLabelledBy().isPresent());
+    }
+
+    @Test
+    public void setAriaLabelledBy() {
+        TestComponent component = new TestComponent();
+        component.setAriaLabelledBy("test AriaLabelledBy");
+
+        assertEquals("test AriaLabelledBy",
+                component.getAriaLabelledBy().get());
+    }
 }
