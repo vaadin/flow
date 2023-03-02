@@ -43,7 +43,7 @@ In short debugging is building flow client JS in pretty/detailed mode and then a
 3. Edit `flow-client/pom.xml` and change `<gwt.module.style>OBF</gwt.module.style> to DETAILED or PRETTY`
 4. Then build the project: `mvn clean install` in the `flow-client` folder.
    - Do not mind the many ERRORS happening while building the JAR, eventually build can be SUCCESS still,
-   - the built JAR should be at the /target directory e.g. `target/flow-client-23.3-SNAPSHOT.jar`
+   - the built JAR should be at the /target directory e.g. `target/flow-client-X.Y-SNAPSHOT.jar`
 5. Make sure your project is using the non-obfuscated `flow-client.jar`:
    - Editing `pom.xml` or `gradle.build` or any other way,
    - OR just uncompress the built JAR file and then copy the `FlowClient.js` from it to your proper directory 
