@@ -95,6 +95,10 @@ public class NodeTasks implements FallibleCommand {
 
         final FeatureFlags featureFlags = options.getFeatureFlags();
 
+        if (options.isFrontendHotdeploy()) {
+            UsageStatistics.markAsUsed("flow/hotdeploy", null);
+        }
+
         if (options.isEnablePackagesUpdate() || options.isEnableImportsUpdate()
                 || options.isEnableWebpackConfigUpdate()) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
@@ -111,9 +115,20 @@ public class NodeTasks implements FallibleCommand {
                         frontendDependencies, classFinder)) {
                     options.withRunNpmInstall(true);
                     options.withCopyTemplates(true);
+                    UsageStatistics.markAsUsed("flow/expressBuild/app-bundle",
+                            null);
                 } else {
                     // A dev bundle build is not needed after all, skip it
                     options.withDevBundleBuild(false);
+                    File devBundleFolder = FrontendUtils
+                            .getDevBundleFolder(options.getNpmFolder());
+                    if (devBundleFolder.exists()) {
+                        UsageStatistics.markAsUsed(
+                                "flow/expressBuild/app-bundle", null);
+                    } else {
+                        UsageStatistics.markAsUsed(
+                                "flow/expressBuild/default-bundle", null);
+                    }
                 }
             }
 
