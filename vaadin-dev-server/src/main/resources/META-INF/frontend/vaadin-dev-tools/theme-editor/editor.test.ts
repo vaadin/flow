@@ -1,5 +1,5 @@
 import { aTimeout, elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { ThemeEditorRule, ThemeEditorState } from './model';
+import { ThemeEditorState } from './model';
 import { ThemeEditor } from './editor';
 import './editor';
 import { PickerOptions, PickerProvider } from '../component-picker';
@@ -48,7 +48,9 @@ describe('theme-editor', () => {
     const partTestId = partName || 'host';
     return editor
       .shadowRoot!.querySelector('.property-list')
-      ?.shadowRoot!.querySelector(`.section[data-testid="${partTestId}"] .property-editor[data-testid="${propertyName}"]`)!;
+      ?.shadowRoot!.querySelector(
+        `.section[data-testid="${partTestId}"] .property-editor[data-testid="${propertyName}"]`
+      )!;
   }
 
   async function editProperty(partName: string, propertyName: string, value: string) {
@@ -70,14 +72,6 @@ describe('theme-editor', () => {
 
   function findPickerButton() {
     return editor.shadowRoot!.querySelector('.picker button');
-  }
-
-  function findDiscardButton() {
-    return editor.shadowRoot!.querySelector('.modifications-actions button.discard') as HTMLElement;
-  }
-
-  function findApplyButton() {
-    return editor.shadowRoot!.querySelector('.modifications-actions button.apply') as HTMLElement;
   }
 
   function getTestElementStyles() {
@@ -118,50 +112,6 @@ describe('theme-editor', () => {
   });
 
   describe('editing', () => {
-    it('should not be modified initially', async () => {
-      expect(findDiscardButton()).to.not.exist;
-      expect(findApplyButton()).to.not.exist;
-    });
-
-    it('should be modified after changing a property', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-
-      expect(findDiscardButton()).to.exist;
-      expect(findApplyButton()).to.exist;
-    });
-
-    it('should not be modified after discarding changes', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-
-      findDiscardButton().click();
-      await elementUpdated(editor);
-
-      expect(findDiscardButton()).to.not.exist;
-      expect(findApplyButton()).to.not.exist;
-    });
-
-    it('should not be modified after picking another component', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-
-      await pickComponent();
-
-      expect(findDiscardButton()).to.not.exist;
-      expect(findApplyButton()).to.not.exist;
-    });
-
-    it('should not be modified after saving pending changes', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-      findApplyButton().click();
-      await elementUpdated(editor);
-
-      expect(findDiscardButton()).to.not.exist;
-      expect(findApplyButton()).to.not.exist;
-    });
-
     it('should update theme preview after changing a property', async () => {
       await pickComponent();
       await editProperty('label', 'color', 'red');
@@ -169,36 +119,12 @@ describe('theme-editor', () => {
       expect(getTestElementStyles().label.color).to.equal('rgb(255, 0, 0)');
     });
 
-    it('should reset theme preview after discarding changes', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-
-      findDiscardButton().click();
-      await elementUpdated(editor);
-
-      expect(getTestElementStyles().label.color).to.equal('rgb(0, 0, 0)');
-    });
-
-    it('should reset theme preview after picking another component', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-
-      await pickComponent();
-
-      expect(getTestElementStyles().label.color).to.equal('rgb(0, 0, 0)');
-    });
-
     it('should keep saved modifications in theme preview', async () => {
       await pickComponent();
       await editProperty('label', 'color', 'red');
-      findApplyButton().click();
       expect(getTestElementStyles().label.color).to.equal('rgb(255, 0, 0)');
 
       await pickComponent();
-      expect(getTestElementStyles().label.color).to.equal('rgb(255, 0, 0)');
-
-      await editProperty('label', 'color', 'green');
-      findDiscardButton().click();
       expect(getTestElementStyles().label.color).to.equal('rgb(255, 0, 0)');
     });
 
@@ -206,10 +132,10 @@ describe('theme-editor', () => {
       await pickComponent();
 
       // Host properties
-      testElementMetadata.properties.forEach(property => {
+      testElementMetadata.properties.forEach((property) => {
         const propertyEditor = findPropertyEditor(null, property.propertyName);
         expect(propertyEditor).to.exist;
-      })
+      });
       // Part properties
       testElementMetadata.parts.forEach((part) => {
         part.properties.forEach((property) => {
@@ -232,57 +158,39 @@ describe('theme-editor', () => {
       expect(getPropertyValue('label', 'color')).to.equal('red');
     });
 
-    it('should reset property editors after discarding changes', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-
-      findDiscardButton().click();
-      await elementUpdated(editor);
-
-      expect(getPropertyValue('label', 'color')).to.equal('rgb(0, 0, 0)');
-    });
-
-    it('should reset property editors after picking another component', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-
-      await pickComponent();
-
-      expect(getPropertyValue('label', 'color')).to.equal('rgb(0, 0, 0)');
-    });
-
     it('should keep previously saved theme modifications', async () => {
       await pickComponent();
       await editProperty('label', 'color', 'red');
-      findApplyButton().click();
       await elementUpdated(editor);
       expect(getPropertyValue('label', 'color')).to.equal('red');
 
       await pickComponent();
-      expect(getPropertyValue('label', 'color')).to.equal('red');
-
-      await editProperty('label', 'color', 'green');
-      findDiscardButton().click();
-      await elementUpdated(editor);
       expect(getPropertyValue('label', 'color')).to.equal('red');
     });
 
-    it('should send theme rules when applying changes', async () => {
+    it('should send theme rules when changing properties', async () => {
       await pickComponent();
       await editProperty('label', 'color', 'red');
 
-      findApplyButton().click();
-
-      const expectedRules: ThemeEditorRule[] = [
+      expect(connectionMock.sendThemeEditorRules.calledOnce);
+      expect(connectionMock.sendThemeEditorRules.args[0][0]).to.deep.equal([
         {
           selector: 'test-element::part(label)',
           property: 'color',
           value: 'red'
         }
-      ];
+      ]);
+      connectionMock.sendThemeEditorRules.resetHistory();
 
-      expect(connectionMock.sendThemeEditorRules.called);
-      expect(connectionMock.sendThemeEditorRules.args[0][0]).to.deep.equal(expectedRules);
+      await editProperty('label', 'color', 'green');
+      expect(connectionMock.sendThemeEditorRules.calledOnce);
+      expect(connectionMock.sendThemeEditorRules.args[0][0]).to.deep.equal([
+        {
+          selector: 'test-element::part(label)',
+          property: 'color',
+          value: 'green'
+        }
+      ]);
     });
 
     it('should dispatch event before saving changes', async () => {
@@ -291,7 +199,6 @@ describe('theme-editor', () => {
 
       await pickComponent();
       await editProperty('label', 'color', 'red');
-      findApplyButton().click();
 
       expect(beforeSaveSpy.calledOnce).to.be.true;
     });

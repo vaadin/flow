@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { ComponentTheme, generateRules, Theme, ThemeEditorRule, ThemePropertyValue } from './model';
+import {ComponentTheme, generateThemeRule, Theme, ThemeEditorRule, ThemePropertyValue} from './model';
 import buttonMetadata from './metadata/components/vaadin-button';
 import { ComponentMetadata } from './metadata/model';
 
@@ -148,19 +148,14 @@ describe('model', () => {
     });
   });
 
-  describe('generateRules', () => {
-    it('should generate zero rules for empty theme', () => {
-      const theme = new ComponentTheme(buttonMetadata);
-      const rules = generateRules(theme);
-      expect(rules.length).to.equal(0);
-    });
-
-    it('should generate rules for theme', () => {
-      const theme = new ComponentTheme(buttonMetadata);
-      theme.updatePropertyValue(null, 'background', 'cornflowerblue');
-      theme.updatePropertyValue(null, 'padding', '3px');
-      theme.updatePropertyValue('label', 'color', 'white');
-      theme.updatePropertyValue('label', 'font-size', '20px');
+  describe('generateRule', () => {
+    it('should generate rules for property changes', () => {
+      const rules = [
+          generateThemeRule('vaadin-button', null, 'background', 'cornflowerblue'),
+          generateThemeRule('vaadin-button', null, 'padding', '3px'),
+          generateThemeRule('vaadin-button', 'label', 'color', 'white'),
+          generateThemeRule('vaadin-button', 'label', 'font-size', '20px'),
+      ]
 
       const expectedRules: ThemeEditorRule[] = [
         { selector: 'vaadin-button', property: 'background', value: 'cornflowerblue' },
@@ -169,7 +164,6 @@ describe('model', () => {
         { selector: 'vaadin-button::part(label)', property: 'font-size', value: '20px' }
       ];
 
-      const rules = generateRules(theme);
       expect(rules).to.deep.equal(expectedRules);
     });
   });
@@ -183,6 +177,12 @@ describe('model', () => {
 
     it('should return null for non-existing component themes', () => {
       expect(theme.getComponentTheme('vaadin-button')).to.be.null;
+    });
+
+    it('should get or create theme component themes', () => {
+      const buttonTheme = theme.getOrCreateComponentTheme(buttonMetadata);
+      expect(buttonTheme).to.not.be.null;
+      expect(theme.getOrCreateComponentTheme(buttonMetadata)).to.equal(buttonTheme);
     });
 
     it('should add and return component themes', () => {
