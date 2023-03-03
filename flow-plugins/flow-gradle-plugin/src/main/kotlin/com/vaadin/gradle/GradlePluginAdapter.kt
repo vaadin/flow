@@ -183,4 +183,6 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
     override fun postinstallPackages(): List<String> = extension.postinstallPackages
 
     override fun isFrontendHotdeploy(): Boolean = extension.frontendHotdeploy
+
+    override fun ciBuild(): Boolean = extension.ciBuild
 }
