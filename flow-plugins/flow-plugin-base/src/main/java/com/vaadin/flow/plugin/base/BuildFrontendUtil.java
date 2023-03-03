@@ -331,7 +331,8 @@ public class BuildFrontendUtil {
                     .withNodeDownloadRoot(nodeDownloadRootURI)
                     .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                     .setJavaResourceFolder(adapter.javaResourceFolder())
-                    .withPostinstallPackages(adapter.postinstallPackages());
+                    .withPostinstallPackages(adapter.postinstallPackages())
+                    .withCiBuild(adapter.ciBuild());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -643,6 +644,7 @@ public class BuildFrontendUtil {
             buildInfo.remove(FRONTEND_TOKEN);
             buildInfo.remove(FRONTEND_HOTDEPLOY);
             buildInfo.remove(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM);
+            buildInfo.remove(InitParameters.CI_BUILD);
             buildInfo.remove(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE);
             buildInfo.remove(
                     InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
