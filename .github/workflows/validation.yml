@@ -213,7 +213,7 @@ jobs:
       issues: read
       checks: write
       pull-requests: write
-    if: ${{ failure() || success() }}
+    if: ${{ always() }}
     needs: [unit-tests, it-tests]
     runs-on: ubuntu-22.04
     steps:
@@ -240,5 +240,5 @@ jobs:
       - name: Set Failure Status
         if: ${{ needs.unit-tests.result != 'success' || needs.it-tests.result != 'success' }}
         run: |
-            echo "🚫 THERE ARE TEST MODULES WITH FAILURES" | tee -a $GITHUB_STEP_SUMMARY
+            echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANNELLED" | tee -a $GITHUB_STEP_SUMMARY
             exit 1
