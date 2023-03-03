@@ -16,6 +16,7 @@
 package com.vaadin.flow.frontend;
 
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.router.Route;
@@ -23,6 +24,7 @@ import com.vaadin.flow.router.Route;
 @Route("com.vaadin.flow.frontend.LitView")
 @Tag("lit-view")
 @JsModule("./views/lit-view.ts")
+@CssImport("./styles/my-styles.css")
 public class LitView extends LitTemplate {
 
 }
