@@ -65,4 +65,16 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
      */
     boolean runNpmInstall();
 
+    /**
+     * Setting this to true will run {@code npm ci} instead of
+     * {@code npm install} when using npm.
+     *
+     * If using pnpm, the install will be run with {@code --frozen-lockfile}
+     * parameter.
+     *
+     * This makes sure that the package lock file will not be overwritten.
+     *
+     * @return true if ci build should be enabled
+     */
+    boolean ciBuild();
 }
