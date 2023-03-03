@@ -238,7 +238,7 @@ jobs:
         run: |
           ./scripts/computeMatrix.js test-results >> $GITHUB_STEP_SUMMARY
       - name: Set Failure Status
-        if: ${{ always() && (needs.unit-tests.result != 'success' || needs.it-tests.result != 'success') }}
+        if: ${{ cancelled() && (needs.unit-tests.result == 'failure' || needs.unit-tests.result == 'skipped' || needs.it-tests.result == 'failure' || needs.it-tests.result == 'skipped') }}
         run: |
             echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANNELLED" | tee -a $GITHUB_STEP_SUMMARY
             exit 1
