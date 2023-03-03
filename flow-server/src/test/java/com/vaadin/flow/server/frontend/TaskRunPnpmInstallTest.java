@@ -155,7 +155,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 new TaskRunNpmInstall(getNodeUpdater(), true, true,
                         FrontendTools.DEFAULT_NODE_VERSION,
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
-                        false, false, POSTINSTALL_PACKAGES));
+                        false, false, POSTINSTALL_PACKAGES, false));
     }
 
     @Test
@@ -636,28 +636,52 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                         "postinstall-file.txt").exists());
     }
 
+    @Test
+    public void runPnpmInstallAndCi_emptyDir_pnpmInstallAndCiIsExecuted()
+            throws ExecutionFailedException, IOException {
+        TaskRunNpmInstall task = createTask();
+
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        nodeModules.mkdir();
+        getNodeUpdater().modified = false;
+
+        task.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+
+        deleteDirectory(nodeModules);
+
+        TaskRunNpmInstall ciTask = createTask(new ArrayList<>(), true);
+        ciTask.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
     @Override
     protected String getToolName() {
         return "pnpm";
     }
 
     protected TaskRunNpmInstall createTask() {
-        return createTask(new ArrayList<>());
+        return createTask(new ArrayList<>(), false);
+    }
+
+    protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
+        return createTask(additionalPostInstall, false);
     }
 
     @Override
-    protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
+    protected TaskRunNpmInstall createTask(List<String> additionalPostInstall,
+            boolean ciBuild) {
         return new TaskRunNpmInstall(getNodeUpdater(), true, false,
                 FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, additionalPostInstall);
+                false, additionalPostInstall, ciBuild);
     }
 
     protected TaskRunNpmInstall createTask(String versionsContent) {
         return new TaskRunNpmInstall(createAndRunNodeUpdater(versionsContent),
                 true, false, FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, new ArrayList<>());
+                false, new ArrayList<>(), false);
     }
 
     private JsonObject getGeneratedVersionsContent(File versions,

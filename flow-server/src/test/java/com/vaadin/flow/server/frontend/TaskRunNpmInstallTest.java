@@ -28,8 +28,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -43,6 +46,7 @@ import com.vaadin.flow.testcategory.SlowTests;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -74,12 +78,13 @@ public class TaskRunNpmInstallTest {
 
     protected ClassFinder finder;
 
-    private Logger logger = Mockito
+    protected Logger logger = Mockito
             .spy(LoggerFactory.getLogger(NodeUpdater.class));
     protected File generatedPath;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
+    private boolean ciBuild;
 
     @Before
     public void setUp() throws IOException {
@@ -101,14 +106,16 @@ public class TaskRunNpmInstallTest {
             }
 
         };
-        task = createTask(new ArrayList<>());
+        task = createTask(new ArrayList<>(), false);
     }
 
-    protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
+    protected TaskRunNpmInstall createTask(List<String> additionalPostInstall,
+            boolean ciBuild) {
+        this.ciBuild = ciBuild;
         return new TaskRunNpmInstall(getNodeUpdater(), false, false,
                 FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, additionalPostInstall);
+                false, additionalPostInstall, ciBuild);
     }
 
     @Test
@@ -122,6 +129,42 @@ public class TaskRunNpmInstallTest {
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    @Test
+    public void runNpmInstallAndCi_emptyDir_npmInstallAndCiIsExecuted()
+            throws ExecutionFailedException, IOException {
+        Assume.assumeTrue(getClass().equals(TaskRunNpmInstallTest.class));
+
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        nodeModules.mkdir();
+        getNodeUpdater().modified = false;
+
+        ensurePackageJson();
+
+        task = createTask(new ArrayList<>(), true);
+        task.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+
+        deleteDirectory(nodeModules);
+
+        task.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    @Test
+    public void runNpmCi_emptyDir_npmCiFails() throws IOException {
+        Assume.assumeTrue(getClass().equals(TaskRunNpmInstallTest.class));
+
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        nodeModules.mkdir();
+        getNodeUpdater().modified = false;
+
+        ensurePackageJson();
+
+        task = createTask(new ArrayList<>(), true);
+
+        Assert.assertThrows(ExecutionFailedException.class, task::execute);
     }
 
     @Test
@@ -211,12 +254,12 @@ public class TaskRunNpmInstallTest {
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         Mockito.verify(logger).info(captor.capture(),
-                Mockito.matches(getToolName()),
+                Mockito.matches(getToolName()), Mockito.matches(getCommand()),
                 Mockito.matches(nodeModules.getAbsolutePath().replaceAll("\\\\",
                         "\\\\\\\\")),
                 Mockito.any(), Mockito.matches(Constants.PACKAGE_JSON));
         Assert.assertEquals(
-                "Skipping `{} install` because the frontend packages are already installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
+                "Skipping `{} {}` because the frontend packages are already installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
                 captor.getValue());
     }
 
@@ -263,7 +306,7 @@ public class TaskRunNpmInstallTest {
                 new TaskRunNpmInstall(getNodeUpdater(), false, true,
                         FrontendTools.DEFAULT_NODE_VERSION,
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
-                        false, false, new ArrayList<>()));
+                        false, false, new ArrayList<>(), ciBuild));
     }
 
     @Test
@@ -391,7 +434,7 @@ public class TaskRunNpmInstallTest {
     public void runNpmInstall_postInstall_runForDefinedAdditionalPackages()
             throws ExecutionFailedException, IOException {
         setupEsbuildAndFooInstallation();
-        task = createTask(Collections.singletonList("foo"));
+        task = createTask(Collections.singletonList("foo"), false);
         task.execute();
 
         Assert.assertTrue("Postinstall for 'esbuild' was not run",
@@ -475,10 +518,23 @@ public class TaskRunNpmInstallTest {
         }
     }
 
-    private String getRunningMsg() {
-        return "Running `" + getToolName() + " install` to "
+    protected String getRunningMsg() {
+
+        return "Running `" + getToolName() + " " + getCommand() + "` to "
                 + "resolve and optionally download frontend dependencies. "
                 + "This may take a moment, please stand by...";
+    }
+
+    private String getCommand() {
+        String command = "install";
+        if (ciBuild) {
+            if ("pnpm".equals(getToolName())) {
+                command += " --frozen-lockfile";
+            } else {
+                command = "ci";
+            }
+        }
+        return command;
     }
 
     protected NodeUpdater getNodeUpdater() {
@@ -500,6 +556,11 @@ public class TaskRunNpmInstallTest {
             getNodeUpdater().writePackageFile(packageJson);
         }
         return file;
+    }
+
+    void deleteDirectory(File dir) throws IOException {
+        Files.walk(dir.toPath()).sorted(Comparator.reverseOrder())
+                .map(Path::toFile).forEach(File::delete);
     }
 
 }
