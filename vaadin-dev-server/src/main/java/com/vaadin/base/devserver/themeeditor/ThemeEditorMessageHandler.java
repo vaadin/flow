@@ -4,6 +4,8 @@ import com.vaadin.base.devserver.themeeditor.messages.*;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.VaadinContext;
 import elemental.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -18,7 +20,7 @@ public class ThemeEditorMessageHandler {
 
     private final ThemeModifier themeModifier;
 
-    private final Map<String, Function<JsonObject, JsonObject>> handlers;
+    private final Map<String, Function<JsonObject, BaseResponse>> handlers;
 
     public ThemeEditorMessageHandler(VaadinContext context) {
         this.sourceModifier = new JavaSourceModifier(context);
@@ -69,49 +71,56 @@ public class ThemeEditorMessageHandler {
      *            Command data
      * @return response in form of JsonObject
      */
-    public JsonObject handleDebugMessageData(String command, JsonObject data) {
+    public BaseResponse handleDebugMessageData(String command,
+            JsonObject data) {
         assert canHandle(command, data);
-        return handlers.get(command).apply(data);
+        try {
+            return handlers.get(command).apply(data);
+        } catch (ThemeEditorException ex) {
+            getLogger().error(ex.getMessage(), ex);
+            return new ErrorResponse(data.getString("requestId"),
+                    ex.getMessage());
+        }
     }
 
-    protected JsonObject handleThemeEditorRules(JsonObject data) {
+    protected BaseResponse handleThemeEditorRules(JsonObject data) {
         RulesRequest request = JsonUtils.readToObject(data, RulesRequest.class);
-        if (request.add() != null) {
-            getThemeModifier().setThemeProperties(request.add());
+        if (request.getAdd() != null) {
+            getThemeModifier().setThemeProperties(request.getAdd());
         }
-        if (request.remove() != null) {
-            getThemeModifier().removeThemeProperties(request.remove());
+        if (request.getRemove() != null) {
+            getThemeModifier().removeThemeProperties(request.getRemove());
         }
-        return ok(request.requestId());
+        return BaseResponse.ok(request.getRequestId());
     }
 
-    protected JsonObject handleThemeEditorClassNames(JsonObject data) {
+    protected BaseResponse handleThemeEditorClassNames(JsonObject data) {
         ClassNamesRequest request = JsonUtils.readToObject(data,
                 ClassNamesRequest.class);
-        int uiId = request.uiId();
-        int nodeId = request.nodeId();
-        if (request.add() != null) {
-            getSourceModifier().setClassNames(uiId, nodeId, request.add());
+        int uiId = request.getUiId();
+        int nodeId = request.getNodeId();
+        if (request.getAdd() != null) {
+            getSourceModifier().setClassNames(uiId, nodeId, request.getAdd());
         }
-        if (request.remove() != null) {
+        if (request.getRemove() != null) {
             getSourceModifier().removeClassNames(uiId, nodeId,
-                    request.remove());
+                    request.getRemove());
         }
-        return ok(request.requestId());
+        return BaseResponse.ok(request.getRequestId());
     }
 
-    protected JsonObject handleComponentMetadata(JsonObject data) {
+    protected BaseResponse handleComponentMetadata(JsonObject data) {
         ComponentMetadataRequest request = JsonUtils.readToObject(data,
                 ComponentMetadataRequest.class);
         JavaSourceModifier.ComponentMetadata metadata = getSourceModifier()
-                .getMetadata(request.uiId(), request.nodeId());
-        ComponentMetadataResponse response = new ComponentMetadataResponse(
-                request.requestId(), metadata.isAccessible());
-        return JsonUtils.beanToJson(response);
+                .getMetadata(request.getUiId(), request.getNodeId());
+        return new ComponentMetadataResponse(request.getRequestId(),
+                metadata.isAccessible());
     }
 
-    private JsonObject ok(String requestId) {
-        return JsonUtils.beanToJson(new GenericResponse(requestId));
+    private static Logger getLogger() {
+        return LoggerFactory
+                .getLogger(ThemeEditorMessageHandler.class.getName());
     }
 
 }

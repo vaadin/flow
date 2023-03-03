@@ -1,7 +1,7 @@
 package com.vaadin.base.devserver.themeeditor.messages;
 
-public record ComponentMetadataRequest(String requestId,int nodeId,int uiId){
+public class ComponentMetadataRequest extends BaseRequest {
 
-public static final String COMMAND_NAME="themeEditorComponentMetadata";
+    public static final String COMMAND_NAME = "themeEditorComponentMetadata";
 
 }

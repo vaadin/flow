@@ -53,7 +53,7 @@ public final class JsonUtils {
 
     private static final String CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT = "Cannot convert null to JSON";
 
-    private static final String CANNOT_CONVERT_NULL_JSON_TO_OBJECT = "Cannot convert null JSON object to Java object";
+    private static final String CANNOT_CONVERT_NULL_TO_OBJECT = "Cannot convert null to Java object";
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -368,7 +368,7 @@ public final class JsonUtils {
      *            type of result instance
      */
     public static <T> T readToObject(JsonObject jsonObject, Class<T> tClass) {
-        Objects.requireNonNull(jsonObject, CANNOT_CONVERT_NULL_JSON_TO_OBJECT);
+        Objects.requireNonNull(jsonObject, CANNOT_CONVERT_NULL_TO_OBJECT);
         try {
             return objectMapper.readValue(jsonObject.toJson(), tClass);
         } catch (JsonProcessingException e) {

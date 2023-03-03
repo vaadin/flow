@@ -32,7 +32,7 @@ public class JavaSourceModifier {
 
     private VaadinContext context;
 
-    public class ComponentMetadata {
+    public static class ComponentMetadata {
         private boolean accessible;
 
         public boolean isAccessible() {
@@ -144,7 +144,7 @@ public class JavaSourceModifier {
     }
 
     /**
-     * Returns metadata for picked component. Supports class names and themes.
+     * Returns metadata for picked component.
      *
      * @param uiId
      *            uiId of target component's UI
@@ -177,9 +177,7 @@ public class JavaSourceModifier {
             }).get(5, TimeUnit.SECONDS);
             return metadata;
         } catch (Exception e) {
-            throw new ThemeEditorException(
-                    "Cannot access picked component class names or theme variants",
-                    e);
+            throw new ThemeEditorException("Cannot generate metadata.", e);
         }
     }
 
