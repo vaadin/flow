@@ -7,7 +7,6 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
-import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.github.javaparser.utils.SourceRoot;
 import com.vaadin.flow.component.Component;
@@ -26,11 +25,24 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class JavaSourceModifier {
 
     private VaadinContext context;
+
+    public static class ComponentMetadata {
+        private boolean accessible;
+
+        public boolean isAccessible() {
+            return accessible;
+        }
+
+        public void setAccessible(boolean accessible) {
+            this.accessible = accessible;
+        }
+    }
 
     public JavaSourceModifier(VaadinContext context) {
         this.context = context;
@@ -57,8 +69,9 @@ public class JavaSourceModifier {
 
         VaadinSession session = getSession();
         getSession().access(() -> {
-            ComponentTracker.Location location = getComponentLocation(session,
-                    uiId, nodeId);
+            Component component = getComponent(session, uiId, nodeId);
+            ComponentTracker.Location location = getComponentLocation(
+                    component);
 
             File sourceFolder = getSourceFolder(location);
             File sourceFile = new File(sourceFolder, location.filename());
@@ -104,8 +117,9 @@ public class JavaSourceModifier {
 
         VaadinSession session = getSession();
         getSession().access(() -> {
-            ComponentTracker.Location location = getComponentLocation(session,
-                    uiId, nodeId);
+            Component component = getComponent(session, uiId, nodeId);
+            ComponentTracker.Location location = getComponentLocation(
+                    component);
 
             File sourceFolder = getSourceFolder(location);
             File sourceFile = new File(sourceFolder, location.filename());
@@ -129,6 +143,44 @@ public class JavaSourceModifier {
         });
     }
 
+    /**
+     * Returns metadata for picked component.
+     *
+     * @param uiId
+     *            uiId of target component's UI
+     * @param nodeId
+     *            nodeIf of target component
+     * @return component metadata
+     */
+    public ComponentMetadata getMetadata(Integer uiId, Integer nodeId) {
+        assert uiId != null && nodeId != null;
+
+        try {
+            ComponentMetadata metadata = new ComponentMetadata();
+            VaadinSession session = getSession();
+            getSession().access(() -> {
+                Component component = getComponent(session, uiId, nodeId);
+                ComponentTracker.Location location = getComponentLocation(
+                        component);
+
+                File sourceFolder = getSourceFolder(location);
+                SourceRoot root = new SourceRoot(sourceFolder.toPath());
+                CompilationUnit cu = LexicalPreservingPrinter
+                        .setup(root.parse("", location.filename()));
+
+                try {
+                    getVariableDeclarationExpressionStmt(cu, location);
+                    metadata.setAccessible(true);
+                } catch (Exception ex) {
+                    metadata.setAccessible(false);
+                }
+            }).get(5, TimeUnit.SECONDS);
+            return metadata;
+        } catch (Exception e) {
+            throw new ThemeEditorException("Cannot generate metadata.", e);
+        }
+    }
+
     protected String getVariableName(ExpressionStmt node) {
         return node.getExpression().asVariableDeclarationExpr().getVariables()
                 .get(0).getNameAsString();
@@ -139,7 +191,7 @@ public class JavaSourceModifier {
             CompilationUnit cu, ComponentTracker.Location location) {
         Node node = cu.accept(new LineNumberVisitor(), location.lineNumber());
         if (!nodeIsSingleVariableDeclaration(node)) {
-            throw new ModifierException(
+            throw new ThemeEditorException(
                     "Cannot modify className of selected component. Only single declaration in code block is supported currently. "
                             + "Cannot apply changes at: "
                             + toStackTraceElement(location));
@@ -147,21 +199,23 @@ public class JavaSourceModifier {
         return (ExpressionStmt) node;
     }
 
-    protected ComponentTracker.Location getComponentLocation(
-            VaadinSession session, int uiId, int nodeId) {
+    protected Component getComponent(VaadinSession session, int uiId,
+            int nodeId) {
         Element element = session.findElement(uiId, nodeId);
         Optional<Component> c = element.getComponent();
         if (!c.isPresent()) {
-            throw new ModifierException(
-                    "Only component locations are tracked. The given node id refers to an element and not a component");
+            throw new ThemeEditorException(
+                    "Only component locations are tracked. The given node id refers to an element and not a component.");
         }
+        return c.get();
+    }
 
-        ComponentTracker.Location location = ComponentTracker
-                .findCreate(c.get());
+    protected ComponentTracker.Location getComponentLocation(Component c) {
+        ComponentTracker.Location location = ComponentTracker.findCreate(c);
         if (location == null) {
-            throw new ModifierException(
+            throw new ThemeEditorException(
                     "Unable to find the location where the component "
-                            + c.get().getClass().getName() + " was created");
+                            + c.getClass().getName() + " was created");
         }
         return location;
     }
@@ -172,7 +226,7 @@ public class JavaSourceModifier {
             writer = new FileWriter(sourceFile);
             IOUtils.write(LexicalPreservingPrinter.print(cu), writer);
         } catch (IOException e) {
-            throw new ModifierException(
+            throw new ThemeEditorException(
                     "Cannot update file: " + sourceFile.getPath(), e);
         } finally {
             IOUtils.closeQuietly(writer);
