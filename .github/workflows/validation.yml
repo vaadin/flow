@@ -68,7 +68,7 @@ jobs:
           path: workspace.tar
   unit-tests:
     needs: build
-    timeout-minutes: 20
+    timeout-minutes: 1
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
@@ -130,7 +130,7 @@ jobs:
           path: tests-report-*.tgz
   it-tests:
     needs: build
-    timeout-minutes: 20
+    timeout-minutes: 1
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
