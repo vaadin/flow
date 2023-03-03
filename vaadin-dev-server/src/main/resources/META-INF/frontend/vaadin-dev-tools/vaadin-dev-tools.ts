@@ -170,7 +170,7 @@ export class Connection extends Object {
   }
 
   sendThemeEditorRules(rules: ThemeEditorRule[]) {
-    this.send('themeEditorRules', { add: rules });
+    this.send('themeEditorRules', { requestId: 'abc-123-def-456', add: rules });
   }
 }
 

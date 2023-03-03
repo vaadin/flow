@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
+import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -243,9 +244,10 @@ public class DebugWindowConnection implements BrowserLiveReload {
                             "Only component locations are tracked. The given node id refers to an element and not a component");
                 }
             });
-        } else if (themeEditorMessageHandler.handleDebugMessageData(command,
-                data)) {
-            // nop
+        } else if (themeEditorMessageHandler.canHandle(command, data)) {
+            BaseResponse resultData = themeEditorMessageHandler
+                    .handleDebugMessageData(command, data);
+            send(resource, BaseResponse.COMMAND_NAME, resultData);
         } else {
             getLogger().info("Unknown command from the browser: " + command);
         }
