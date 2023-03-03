@@ -33,6 +33,7 @@ import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBuild;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.theme.Theme;
 
@@ -92,6 +93,19 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Parameter(defaultValue = "true")
     private boolean optimizeBundle;
 
+    /**
+     * Setting this to true will run {@code npm ci} instead of
+     * {@code npm install} when using npm.
+     *
+     * If using pnpm, the install will be run with {@code --frozen-lockfile}
+     * parameter.
+     *
+     * This makes sure that the versions in package lock file will not be
+     * overwritten and production builds are reproducible.
+     */
+    @Parameter(property = InitParameters.CI_BUILD, defaultValue = "false")
+    private boolean ciBuild;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
@@ -146,6 +160,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     public boolean runNpmInstall() {
 
         return runNpmInstall;
+    }
+
+    @Override
+    public boolean ciBuild() {
+        return ciBuild;
     }
 
 }
