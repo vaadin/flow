@@ -183,25 +183,29 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 .getPackages();
 
         if (!hashAndBundleModulesEqual(statsJson, packageJson, npmPackages)) {
-            UsageStatistics.markAsUsed("flow/expressBuild/npm-package", null);
+            UsageStatistics.markAsUsed("flow/rebundle-reason-missing-package",
+                    null);
             // Hash in the project doesn't match the bundle hash or NpmPackages
             // are found missing in bundle.
             return true;
         }
         if (!frontendImportsFound(statsJson, options, finder,
                 frontendDependencies)) {
-            UsageStatistics.markAsUsed("flow/expressBuild/frontend-file", null);
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-missing-frontend-import", null);
             return true;
         }
 
         if (themeConfigurationChanged(options, statsJson,
                 frontendDependencies)) {
-            UsageStatistics.markAsUsed("flow/expressBuild/theme", null);
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-changed-theme-config", null);
             return true;
         }
 
         if (exportedWebComponents(statsJson, finder)) {
-            UsageStatistics.markAsUsed("flow/expressBuild/exported", null);
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-added-exported-component", null);
             return true;
         }
 
