@@ -45,6 +45,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -182,21 +183,29 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 .getPackages();
 
         if (!hashAndBundleModulesEqual(statsJson, packageJson, npmPackages)) {
+            UsageStatistics.markAsUsed("flow/rebundle-reason-missing-package",
+                    null);
             // Hash in the project doesn't match the bundle hash or NpmPackages
             // are found missing in bundle.
             return true;
         }
         if (!frontendImportsFound(statsJson, options, finder,
                 frontendDependencies)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-missing-frontend-import", null);
             return true;
         }
 
         if (themeConfigurationChanged(options, statsJson,
                 frontendDependencies)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-changed-theme-config", null);
             return true;
         }
 
         if (exportedWebComponents(statsJson, finder)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-added-exported-component", null);
             return true;
         }
 
