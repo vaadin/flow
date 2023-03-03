@@ -213,7 +213,7 @@ jobs:
       issues: read
       checks: write
       pull-requests: write
-    if: ${{ always() }}
+    if: ${{ failure() || success() }}
     needs: [unit-tests, it-tests]
     runs-on: ubuntu-22.04
     steps:
@@ -238,7 +238,7 @@ jobs:
         run: |
           ./scripts/computeMatrix.js test-results >> $GITHUB_STEP_SUMMARY
       - name: Set Failure Status
-        if: ${{ needs.unit-tests.result != 'success' || needs.it-tests.result != 'success' }}
+        if: ${{ always() && (needs.unit-tests.result != 'success' || needs.it-tests.result != 'success') }}
         run: |
             echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANNELLED" | tee -a $GITHUB_STEP_SUMMARY
             exit 1
