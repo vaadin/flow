@@ -45,6 +45,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -182,21 +183,25 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 .getPackages();
 
         if (!hashAndBundleModulesEqual(statsJson, packageJson, npmPackages)) {
+            UsageStatistics.markAsUsed("flow/expressBuild/npm-package", null);
             // Hash in the project doesn't match the bundle hash or NpmPackages
             // are found missing in bundle.
             return true;
         }
         if (!frontendImportsFound(statsJson, options, finder,
                 frontendDependencies)) {
+            UsageStatistics.markAsUsed("flow/expressBuild/frontend-file", null);
             return true;
         }
 
         if (themeConfigurationChanged(options, statsJson,
                 frontendDependencies)) {
+            UsageStatistics.markAsUsed("flow/expressBuild/theme", null);
             return true;
         }
 
         if (exportedWebComponents(statsJson, finder)) {
+            UsageStatistics.markAsUsed("flow/expressBuild/exported", null);
             return true;
         }
 
