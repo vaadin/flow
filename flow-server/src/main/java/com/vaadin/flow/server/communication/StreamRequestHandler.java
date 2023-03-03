@@ -180,7 +180,7 @@ public class StreamRequestHandler implements RequestHandler {
 
     /**
      * Returns maximum request size for upload. Override this to increase the
-     * default. Defaults to 100 MB.
+     * default. Defaults to -1 (no limit).
      *
      * @return maximum request size for upload
      */
@@ -190,7 +190,7 @@ public class StreamRequestHandler implements RequestHandler {
 
     /**
      * Returns maximum file size for upload. Override this to increase the
-     * default. Defaults to 100 MB.
+     * default. Defaults to -1 (no limit).
      *
      * @return maximum file size for upload
      */
@@ -200,7 +200,7 @@ public class StreamRequestHandler implements RequestHandler {
 
     /**
      * Returns maximum file part count for upload. Override this to increase the
-     * default. Defaults to 1000.
+     * default. Defaults to 10000.
      *
      * @return maximum file part count for upload
      */

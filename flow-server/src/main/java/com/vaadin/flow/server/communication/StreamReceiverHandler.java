@@ -273,15 +273,18 @@ public class StreamReceiverHandler implements Serializable {
             }
         } catch (FileUploadException e) {
             String limitInfoStr = "{} limit exceeded. To increase the limit "
-                    + "extend StreamRequestHandler and provide a higher limit. "
-                    + "The extended class needs to be added to request handlers"
-                    + " in an extension of VaadinServiceInitListener.";
+                    + "extend StreamRequestHandler, override {} method and "
+                    + "provide a higher limit. The extended class needs to be "
+                    + "added to request handlers with "
+                    + "ServiceInitEvent::addRequestHandler in an extension of "
+                    + "VaadinServiceInitListener.";
             if (e instanceof SizeLimitExceededException) {
-                getLogger().warn(String.format(limitInfoStr, "Request size"));
+                getLogger().warn(limitInfoStr, "Request size",
+                        "getRequestSizeMax");
             } else if (e instanceof FileSizeLimitExceededException) {
-                getLogger().warn(String.format(limitInfoStr, "File size"));
+                getLogger().warn(limitInfoStr, "File size", "getFileSizeMax");
             } else if (e instanceof FileCountLimitExceededException) {
-                getLogger().warn(String.format(limitInfoStr, "File count"));
+                getLogger().warn(limitInfoStr, "File count", "getFileCountMax");
             }
             success = false;
             getLogger().warn("File upload failed.", e);
