@@ -50,6 +50,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.CvdlProducts;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -198,13 +199,14 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         Set<File> jarFiles = getJarFiles();
 
         final URI nodeDownloadRootURI;
-        if(nodeDownloadRoot == null) {
+        if (nodeDownloadRoot == null) {
             nodeDownloadRoot = Platform.guess().getNodeDownloadRoot();
         }
         try {
             nodeDownloadRootURI = new URI(nodeDownloadRoot);
         } catch (URISyntaxException e) {
-            throw new MojoExecutionException("Failed to parse " + nodeDownloadRoot, e);
+            throw new MojoExecutionException(
+                    "Failed to parse " + nodeDownloadRoot, e);
         }
         // @formatter:off
         new NodeTasks.Builder(getClassFinder(project),
@@ -222,6 +224,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .withNodeVersion(nodeVersion)
                         .withNodeDownloadRoot(nodeDownloadRootURI)
                         .withProductionMode(productionMode)
+                        .withCiBuild(ciBuild)
                         .build()
                         .execute();
     }
@@ -431,6 +434,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             buildInfo.remove(NODE_DOWNLOAD_ROOT);
             buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
             buildInfo.remove(Constants.REQUIRE_HOME_NODE_EXECUTABLE);
+            buildInfo.remove(InitParameters.CI_BUILD);
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",

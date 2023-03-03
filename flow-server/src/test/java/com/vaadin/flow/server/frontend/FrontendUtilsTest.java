@@ -243,14 +243,15 @@ public class FrontendUtilsTest {
     public void commandToString_longCommand_resultIsWrapped() {
         List<String> command = Arrays.asList("./node/node",
                 "./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
-                "--config", "./webpack.config.js", "--port 57799",
-"-d", "--inline=false", "--progress",
-                "--colors");
+                "--config", "./webpack.config.js", "--port 57799", "-d",
+                "--inline=false", "--progress", "--colors");
         String wrappedCommand = FrontendUtils.commandToString(".", command);
-        Assert.assertEquals("\n" + "./node/node \\ \n"
-                + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \\ \n"
-                + "    --config ./webpack.config.js --port 57799 -d \\ \n"
-                + "    --inline=false --progress --colors \n", wrappedCommand);
+        Assert.assertEquals(
+                "\n" + "./node/node \\ \n"
+                        + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \\ \n"
+                        + "    --config ./webpack.config.js --port 57799 -d \\ \n"
+                        + "    --inline=false --progress --colors \n",
+                wrappedCommand);
     }
 
     @Test
@@ -475,15 +476,14 @@ public class FrontendUtilsTest {
         };
 
         new TaskRunNpmInstall(finder, nodeUpdater, false, true, "v16.16.0",
-                URI.create(
-                        NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)).execute();
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false)
+                        .execute();
 
         FrontendUtils.deleteNodeModules(new File(npmFolder, "node_modules"));
 
         Assert.assertTrue("Linked folder contents should not be removed.",
                 linkFolderFile.exists());
     }
-
 
     private ResourceProvider mockResourceProvider(VaadinService service,
             VaadinContext context) {

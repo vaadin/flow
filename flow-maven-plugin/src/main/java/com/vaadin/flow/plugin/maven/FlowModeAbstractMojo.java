@@ -17,6 +17,7 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.maven.plugin.AbstractMojo;
@@ -86,8 +87,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
         }
         // Default mode for V14 is bower true
         compatibility = compatibilityMode != null
-                ? Boolean.valueOf(compatibilityMode)
-                : isDefaultCompatibility();
+                ? Boolean.valueOf(compatibilityMode) : isDefaultCompatibility();
     }
 
     abstract boolean isDefaultCompatibility();
@@ -116,4 +116,17 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "${project.basedir}/" + FRONTEND)
     protected File frontendDirectory;
+
+    /**
+     * Setting this to true will run {@code npm ci} instead of
+     * {@code npm install} when using npm.
+     *
+     * If using pnpm, the install will be run with {@code --frozen-lockfile}
+     * parameter.
+     *
+     * This makes sure that the versions in package lock file will not be
+     * overwritten and production builds are reproducible.
+     */
+    @Parameter(property = InitParameters.CI_BUILD, defaultValue = "false")
+    protected boolean ciBuild;
 }

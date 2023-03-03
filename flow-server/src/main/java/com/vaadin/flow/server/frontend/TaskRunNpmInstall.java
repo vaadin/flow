@@ -94,54 +94,56 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     private final String nodeVersion;
     private final URI nodeDownloadRoot;
+    private boolean ciBuild;
 
     /**
      * Create an instance of the command.
      *
-     * @param packageUpdater
-     *            package-updater instance used for checking if previous
-     *            execution modified the package.json file
-     * @param enablePnpm
-     *            whether PNPM should be used instead of NPM
-     * @param requireHomeNodeExec
-     *            whether vaadin home node executable has to be used
-     * @param nodeVersion
-     *            The node.js version to be used when node.js is installed
-     *            automatically by Vaadin, for example <code>"v14.15.4"</code>.
-     *            Use {@value FrontendTools#DEFAULT_NODE_VERSION} by default.
-     * @param nodeDownloadRoot
-     *            Download node.js from this URL. Handy in heavily firewalled
-     *            corporate environments where the node.js download can be
-     *            provided from an intranet mirror. Use
-     *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
+     * @param packageUpdater      package-updater instance used for checking if previous
+     *                            execution modified the package.json file
+     * @param enablePnpm          whether PNPM should be used instead of NPM
+     * @param requireHomeNodeExec whether vaadin home node executable has to be used
+     * @param nodeVersion         The node.js version to be used when node.js is installed
+     *                            automatically by Vaadin, for example <code>"v14.15.4"</code>.
+     *                            Use {@value FrontendTools#DEFAULT_NODE_VERSION} by default.
+     * @param nodeDownloadRoot    Download node.js from this URL. Handy in heavily firewalled
+     *                            corporate environments where the node.js download can be
+     *                            provided from an intranet mirror. Use
+     *                            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
+     * @param ciBuild             whether CI build for npm/pnpm should be enabled
      */
     TaskRunNpmInstall(ClassFinder classFinder, NodeUpdater packageUpdater,
             boolean enablePnpm, boolean requireHomeNodeExec, String nodeVersion,
-            URI nodeDownloadRoot) {
+            URI nodeDownloadRoot, boolean ciBuild) {
         this.classFinder = classFinder;
         this.packageUpdater = packageUpdater;
         this.enablePnpm = enablePnpm;
         this.requireHomeNodeExec = requireHomeNodeExec;
         this.nodeVersion = Objects.requireNonNull(nodeVersion);
         this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
+        this.ciBuild = ciBuild;
     }
 
     @Override
     public void execute() throws ExecutionFailedException {
         String toolName = enablePnpm ? "pnpm" : "npm";
-        if (packageUpdater.modified || shouldRunNpmInstall()) {
+        String command = getInstallCommand();
+
+        if (ciBuild || packageUpdater.modified || shouldRunNpmInstall()) {
             packageUpdater.log()
-                    .info("Running `" + toolName + " install` to "
-                            + "resolve and optionally download frontend dependencies. "
+                    .info("Running `" + toolName + " " + command
+                            + "` to resolve and "
+                            + "optionally download frontend dependencies. "
                             + "This may take a moment, please stand by...");
             runNpmInstall();
 
             updateLocalHash();
         } else {
             packageUpdater.log()
-                    .info("Skipping `{} install` because the frontend packages are already "
-                            + "installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
-                            toolName,
+                    .info("Skipping `{} {}}` because the frontend packages "
+                            + "are already installed in the folder '{}' and "
+                            + "the hash in the file '{}' is the same as in '{}'",
+                            toolName, command,
                             packageUpdater.nodeModulesFolder.getAbsolutePath(),
                             getLocalHashFile().getAbsolutePath(),
                             Constants.PACKAGE_JSON);
@@ -187,8 +189,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * Generate versions json file for pnpm.
      *
      * @return generated versions json file path
-     * @throws IOException
-     *             when file IO fails
+     * @throws IOException when file IO fails
      */
     protected String generateVersionsJson() throws IOException {
         assert enablePnpm;
@@ -223,8 +224,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * defined packages.
      *
      * @return versions Json based on package.json
-     * @throws IOException
-     *             If reading package.json fails
+     * @throws IOException If reading package.json fails
      */
     private JsonObject generateVersionsFromPackageJson() throws IOException {
         JsonObject versionsJson = Json.createObject();
@@ -339,8 +339,19 @@ public class TaskRunNpmInstall implements FallibleCommand {
             throw new ExecutionFailedException(exception.getMessage(),
                     exception);
         }
+
         List<String> command = new ArrayList<>(executable);
-        command.add("install");
+
+        if (ciBuild) {
+            if (enablePnpm) {
+                command.add("install");
+                command.add("--frozen-lockfile");
+            } else {
+                command.add("ci");
+            }
+        } else {
+            command.add("install");
+        }
 
         if (packageUpdater.log().isDebugEnabled()) {
             packageUpdater.log().debug(commandToString(
@@ -463,19 +474,24 @@ public class TaskRunNpmInstall implements FallibleCommand {
         if (!packageUpdater.nodeModulesFolder.exists()) {
             return;
         }
-        File modulesYaml = new File(packageUpdater.nodeModulesFolder,
-                MODULES_YAML);
-        boolean hasModulesYaml = modulesYaml.exists() && modulesYaml.isFile();
-        if (!enablePnpm && hasModulesYaml) {
+        if (ciBuild) {
             deleteNodeModules(packageUpdater.nodeModulesFolder);
-        } else if (enablePnpm && !hasModulesYaml) {
-            // presence of .staging dir with a "pnpm-*" folder means that pnpm
-            // download is in progress, don't remove anything in this case
-            File staging = new File(packageUpdater.nodeModulesFolder,
-                    ".staging");
-            if (!staging.isDirectory() || staging.listFiles(
-                    (dir, name) -> name.startsWith("pnpm-")).length == 0) {
+        } else {
+            File modulesYaml = new File(packageUpdater.nodeModulesFolder,
+                    MODULES_YAML);
+            boolean hasModulesYaml = modulesYaml.exists()
+                    && modulesYaml.isFile();
+            if (!enablePnpm && hasModulesYaml) {
                 deleteNodeModules(packageUpdater.nodeModulesFolder);
+            } else if (enablePnpm && !hasModulesYaml) {
+                // presence of .staging dir with a "pnpm-*" folder means that pnpm
+                // download is in progress, don't remove anything in this case
+                File staging = new File(packageUpdater.nodeModulesFolder,
+                        ".staging");
+                if (!staging.isDirectory() || staging.listFiles(
+                        (dir, name) -> name.startsWith("pnpm-")).length == 0) {
+                    deleteNodeModules(packageUpdater.nodeModulesFolder);
+                }
             }
         }
     }
@@ -510,5 +526,17 @@ public class TaskRunNpmInstall implements FallibleCommand {
             throw new IllegalStateException(
                     String.format(NPM_VALIDATION_FAIL_MESSAGE));
         }
+    }
+
+    private String getInstallCommand() {
+        String command = "install";
+        if (ciBuild) {
+            if (enablePnpm) {
+                command += "--frozen-lockfile ";
+            } else {
+                command = "ci";
+            }
+        }
+        return command;
     }
 }

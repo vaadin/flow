@@ -93,6 +93,8 @@ public class NodeTasks implements FallibleCommand {
 
         private boolean requireHomeNodeExec;
 
+        private boolean ciBuild;
+
         private List<String> additionalFrontendModules = new ArrayList<>();
 
         /**
@@ -467,6 +469,21 @@ public class NodeTasks implements FallibleCommand {
             this.oldLicenseChecker = enable;
             return this;
         }
+
+        /**
+         * Enables ci build.
+         * <p>
+         * "npm ci" will be used instead of "npm install". "--frozen-lockfile" will
+         * be used if pnpm is used instead of npm.
+         *
+         * @param ciBuild
+         *            true to enable ci build
+         * @return the builder, for chaining
+         */
+        public Builder withCiBuild(boolean ciBuild) {
+            this.ciBuild = ciBuild;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -510,7 +527,8 @@ public class NodeTasks implements FallibleCommand {
             if (builder.runNpmInstall) {
                 commands.add(new TaskRunNpmInstall(classFinder, packageUpdater,
                         builder.enablePnpm, builder.requireHomeNodeExec,
-                        builder.nodeVersion, builder.nodeDownloadRoot));
+                        builder.nodeVersion, builder.nodeDownloadRoot,
+                        builder.ciBuild));
 
                 commands.add(new TaskInstallWebpackPlugins(
                         new File(builder.npmFolder, NODE_MODULES)));
@@ -542,8 +560,8 @@ public class NodeTasks implements FallibleCommand {
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData, builder.enablePnpm,
-                            builder.additionalFrontendModules, builder.productionMode,
-                            builder.oldLicenseChecker));
+                            builder.additionalFrontendModules,
+                            builder.productionMode, builder.oldLicenseChecker));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),

@@ -57,6 +57,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -214,9 +215,11 @@ public class BuildFrontendMojoTest {
                 "All project resources should be copied into the node_modules",
                 projectFrontendResources.size(), filesInNodeModules.size());
 
-        filesInNodeModules.forEach(file -> Assert.assertTrue(String.format(
-                "Expected the copied file '%s' to be in the project resources",
-                file), projectFrontendResources.contains(file.getName())));
+        filesInNodeModules.forEach(file -> Assert.assertTrue(
+                String.format(
+                        "Expected the copied file '%s' to be in the project resources",
+                        file),
+                projectFrontendResources.contains(file.getName())));
     }
 
     @Test
@@ -399,6 +402,8 @@ public class BuildFrontendMojoTest {
                         + "should have been removed",
                 buildInfo.get(
                         Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
+        Assert.assertNull(InitParameters.CI_BUILD + "should have been removed",
+                buildInfo.get(InitParameters.CI_BUILD));
     }
 
     @Test
@@ -452,17 +457,18 @@ public class BuildFrontendMojoTest {
     @Test
     public void offlineLicenseChecking_compatibilityMode_setStrictOfflineNotCalled()
             throws IllegalAccessException, MojoExecutionException {
-        ReflectionUtils.setVariableValueInObject(mojo, "compatibility",
-                true);
+        ReflectionUtils.setVariableValueInObject(mojo, "compatibility", true);
         FrontendTools tools = Mockito.mock(FrontendTools.class);
 
-        try(MockedStatic<LicenseChecker> licenseChecker = Mockito.mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
+                .mockStatic(LicenseChecker.class)) {
             try {
                 mojo.runWebpack(tools);
             } catch (IllegalStateException e) {
                 // expected 'Unable to locate webpack executable ...'
             }
-            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true), times(0));
+            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true),
+                    times(0));
 
             ReflectionUtils.setVariableValueInObject(mojo, "compatibility",
                     false);
@@ -483,13 +489,15 @@ public class BuildFrontendMojoTest {
                 true);
         FrontendTools tools = Mockito.mock(FrontendTools.class);
 
-        try(MockedStatic<LicenseChecker> licenseChecker = Mockito.mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
+                .mockStatic(LicenseChecker.class)) {
             try {
                 mojo.runWebpack(tools);
             } catch (IllegalStateException e) {
                 // expected 'Unable to locate webpack executable ...'
             }
-            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true), times(0));
+            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true),
+                    times(0));
 
             ReflectionUtils.setVariableValueInObject(mojo, "oldLicenseChecker",
                     false);
@@ -504,19 +512,19 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    public void validateLicenses_compatibilityMode_noValidation() throws IllegalAccessException {
-        ReflectionUtils.setVariableValueInObject(mojo, "compatibility",
-                true);
+    public void validateLicenses_compatibilityMode_noValidation()
+            throws IllegalAccessException {
+        ReflectionUtils.setVariableValueInObject(mojo, "compatibility", true);
         // simulate no stats.json file to verify target method execution
-        File resourceOutput = new File(temporaryFolder.getRoot(), "fakeOutputDir");
+        File resourceOutput = new File(temporaryFolder.getRoot(),
+                "fakeOutputDir");
         ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
                 resourceOutput);
 
         // method return immediately with no exception
         mojo.validateLicenses();
 
-        ReflectionUtils.setVariableValueInObject(mojo, "compatibility",
-                    false);
+        ReflectionUtils.setVariableValueInObject(mojo, "compatibility", false);
 
         Assert.assertThrows(
                 "Expected license validation fail because of no stats.json file",
@@ -524,11 +532,13 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    public void validateLicenses_configParameter_noValidation() throws IllegalAccessException {
+    public void validateLicenses_configParameter_noValidation()
+            throws IllegalAccessException {
         ReflectionUtils.setVariableValueInObject(mojo, "oldLicenseChecker",
                 true);
         // simulate no stats.json file to verify target method execution
-        File resourceOutput = new File(temporaryFolder.getRoot(), "fakeOutputDir");
+        File resourceOutput = new File(temporaryFolder.getRoot(),
+                "fakeOutputDir");
         ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
                 resourceOutput);
 
@@ -556,13 +566,13 @@ public class BuildFrontendMojoTest {
         if (contains) {
             Arrays.asList(imports)
                     .forEach(s -> Assert.assertTrue(
-                            s + " not found in:\n" + content,
-                            content.contains(addWebpackPrefix(s))));
+                            s + " not found in:\n" + content, content
+                                    .contains(addWebpackPrefix(s))));
         } else {
             Arrays.asList(imports)
                     .forEach(s -> Assert.assertFalse(
-                            s + " found in:\n" + content,
-                            content.contains(addWebpackPrefix(s))));
+                            s + " found in:\n" + content, content
+                                    .contains(addWebpackPrefix(s))));
         }
     }
 

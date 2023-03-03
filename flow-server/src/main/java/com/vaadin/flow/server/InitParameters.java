@@ -221,4 +221,9 @@ public class InitParameters implements Serializable {
      * @since 2.8
      */
     public static final String SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER = "oldLicenseChecker";
+
+    /**
+     * Configuration name for enabling ci build for npm/pnpm.
+     */
+    public static final String CI_BUILD = "ci.build";
 }

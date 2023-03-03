@@ -130,7 +130,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // @formatter:on
 
         JsonObject versionsJson = getGeneratedVersionsContent(versions);
-        Assert.assertEquals("Generated versions json should have keys for each dependency",
+        Assert.assertEquals(
+                "Generated versions json should have keys for each dependency",
                 3, versionsJson.keys().length);
         Assert.assertEquals("Overlay should be pinned to user version",
                 customOverlayVersion,
@@ -182,7 +183,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // @formatter:on
 
         JsonObject versionsJson = getGeneratedVersionsContent(versions);
-        Assert.assertEquals("Generated versions json should have keys for each dependency",
+        Assert.assertEquals(
+                "Generated versions json should have keys for each dependency",
                 3, versionsJson.keys().length);
         Assert.assertEquals("Overlay should be pinned to user version",
                 customOverlayVersion,
@@ -282,7 +284,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         fakeFile.createNewFile();
 
         getNodeUpdater().modified = true;
-        createTask().execute();
+        createTask(false).execute();
 
         Assert.assertFalse(fakeFile.exists());
     }
@@ -301,7 +303,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 StandardCharsets.UTF_8);
 
         getNodeUpdater().modified = true;
-        createTask().execute();
+        createTask(false).execute();
 
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         FileUtils.forceMkdir(nodeModules);
@@ -311,7 +313,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         fakeFile.createNewFile();
 
         getNodeUpdater().modified = true;
-        createTask().execute();
+        createTask(false).execute();
 
         Assert.assertTrue(fakeFile.exists());
     }
@@ -319,7 +321,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     @Test
     public void generateVersionsJson_noVersions_noDevDeps_versionsGeneratedFromPackageJson()
             throws IOException {
-        TaskRunNpmInstall task = createTask();
+        TaskRunNpmInstall task = createTask(false);
 
         final String versions = task.generateVersionsJson();
         Assert.assertNotNull(versions);
@@ -365,7 +367,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             + "}", StandardCharsets.UTF_8);
         // @formatter:on
 
-        TaskRunNpmInstall task = createTask();
+        TaskRunNpmInstall task = createTask(false);
 
         final String versions = task.generateVersionsJson();
         Assert.assertNotNull(versions);
@@ -390,13 +392,13 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(new TaskRunNpmInstall(
                 getClassFinder(), getNodeUpdater(), true, true,
                 FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)));
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false));
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(new TaskRunNpmInstall(
                 getClassFinder(), getNodeUpdater(), true, true,
                 FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)));
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false));
     }
 
     @Test
@@ -408,7 +410,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        TaskRunNpmInstall task = createTask();
+        TaskRunNpmInstall task = createTask(false);
         getNodeUpdater().modified = true;
         task.execute();
 
@@ -423,7 +425,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     @Test
     public void runPnpmInstall_versionsJsonIsNotFound_pnpmHookFileIsGeneratedFromPackageJson()
             throws IOException, ExecutionFailedException {
-        TaskRunNpmInstall task = createTask();
+        TaskRunNpmInstall task = createTask(false);
         getNodeUpdater().modified = true;
         task.execute();
 
@@ -575,7 +577,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         exception.expectMessage(CoreMatchers.containsString(
                 "The path to npm cache contains whitespaces, and the currently installed npm version doesn't accept this."));
 
-        TaskRunNpmInstall task = createTask();
+        TaskRunNpmInstall task = createTask(false);
         getNodeUpdater().modified = true;
 
         // when
@@ -584,22 +586,42 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // then exception is thrown
     }
 
+    @Test
+    public void runPnpmInstallAndCi_emptyDir_pnpmInstallAndCiIsExecuted()
+            throws ExecutionFailedException, IOException {
+        TaskRunNpmInstall task = createTask(false);
+
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        nodeModules.mkdir();
+        getNodeUpdater().modified = false;
+
+        task.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+
+        deleteDirectory(nodeModules);
+
+        TaskRunNpmInstall ciTask = createTask(true);
+        ciTask.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
     @Override
     protected String getToolName() {
         return "pnpm";
     }
 
     @Override
-    protected TaskRunNpmInstall createTask() {
+    protected TaskRunNpmInstall createTask(boolean ciBuild) {
         return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
                 false, FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
+                ciBuild);
     }
 
     protected TaskRunNpmInstall createTask(String versionsContent) {
         return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
                 false, FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)) {
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false) {
             @Override
             protected String generateVersionsJson() {
                 try {
@@ -625,7 +647,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         TaskRunNpmInstall task = new TaskRunNpmInstall(getClassFinder(),
                 getNodeUpdater(), true, false,
                 FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false);
 
         String path = task.generateVersionsJson();
 
