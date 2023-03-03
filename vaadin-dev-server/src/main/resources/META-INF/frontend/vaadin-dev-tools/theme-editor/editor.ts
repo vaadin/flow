@@ -10,6 +10,7 @@ import { detectTheme } from './detector';
 import { ThemePropertyValueChangeEvent } from './events';
 import { themePreview } from './preview';
 import { Connection } from '../vaadin-dev-tools';
+import { ThemeEditorApi } from './api';
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
@@ -19,6 +20,7 @@ export class ThemeEditor extends LitElement {
   public pickerProvider!: PickerProvider;
   @property({})
   public connection!: Connection;
+  private api!: ThemeEditorApi;
 
   /**
    * Metadata for the selected / picked component
@@ -94,6 +96,10 @@ export class ThemeEditor extends LitElement {
         overflow-y: auto;
       }
     `;
+  }
+
+  protected firstUpdated() {
+    this.api = new ThemeEditorApi(this.connection);
   }
 
   render() {
@@ -184,7 +190,7 @@ export class ThemeEditor extends LitElement {
       property.propertyName,
       value
     );
-    this.connection.sendThemeEditorRules([updateRule]);
+    this.api.updateCssRules([updateRule], []);
   }
 
   private updateThemePreview() {
