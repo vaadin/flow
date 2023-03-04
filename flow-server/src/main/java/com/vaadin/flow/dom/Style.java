@@ -159,6 +159,13 @@ public interface Style extends Serializable {
     }
 
     /**
+     * Css values for the clear property.
+     */
+    public enum Clear {
+        NONE, LEFT, RIGHT, BOTH, INITIAL, INHERIT
+    }
+
+    /**
      * Sets the <code>clear</code> property.
      *
      * @param value
@@ -166,8 +173,12 @@ public interface Style extends Serializable {
      *            will be removed)
      * @return this style instance
      */
-    default Style setClear(String value) {
-        set("clear", value);
+    default Style setClear(Clear value) {
+        if (value == null) {
+            remove("clear");
+        } else {
+            set("clear", value.name().toLowerCase());
+        }
         return this;
     }
 
@@ -214,6 +225,14 @@ public interface Style extends Serializable {
         return this;
     }
 
+    // PostFixed with "Css" to avoid collician with java.lang.Float
+    /**
+     * Css values for the float property.
+     */
+    public enum FloatCss {
+        NONE, LEFT, RIGHT, INITIAL, INHERIT
+    }
+
     /**
      * Sets the <code>float</code> property.
      *
@@ -222,8 +241,12 @@ public interface Style extends Serializable {
      *            will be removed)
      * @return this style instance
      */
-    default Style setFloat(String value) {
-        set("float", value);
+    default Style setFloat(FloatCss value) {
+        if (value == null) {
+            remove("float");
+        } else {
+            set("float", value.name().toLowerCase());
+        }
         return this;
     }
 
@@ -317,8 +340,11 @@ public interface Style extends Serializable {
         set("padding", value);
         return this;
     }
-    
-    enum Position {
+
+    /**
+     * Css values for the position property.
+     */
+    public enum Position {
         STATIC, RELATIVE, ABSOLUTE, FIXED, STICKY;
     }
 
@@ -331,7 +357,11 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setPosition(Position value) {
-        set("position ", value.name().toLowerCase());
+        if (value == null) {
+            remove("position");
+        } else {
+            set("position ", value.name().toLowerCase());
+        }
         return this;
     }
 
@@ -351,6 +381,13 @@ public interface Style extends Serializable {
     }
 
     /**
+     * Css values for the text-align property.
+     */
+    public enum TextAlign {
+        LEFT, RIGHT, CENTER, JUSTIFY, INITIAL, INHERIT
+    }
+
+    /**
      * Sets the <code>text-align</code> property.
      *
      * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-text-align
@@ -360,8 +397,13 @@ public interface Style extends Serializable {
      *            will be removed)
      * @return this style instance
      */
-    default Style setTextAlign(String value) {
-        set("text-align", value);
+    default Style setTextAlign(TextAlign value) {
+        if (value == null) {
+            remove("text-align");
+        } else {
+
+            set("text-align", value.name().toLowerCase());
+        }
         return this;
     }
 
@@ -411,6 +453,13 @@ public interface Style extends Serializable {
     }
 
     /**
+     * Css values for the visibility property.
+     */
+    public enum Visibility {
+        VISIBLE, HIDDEN, COLLAPSE, INITIAL, INHERIT
+    }
+
+    /**
      * Sets the <code>visibility</code> property.
      *
      * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-visibility
@@ -420,8 +469,13 @@ public interface Style extends Serializable {
      *            will be removed)
      * @return this style instance
      */
-    default Style setVisibility(String value) {
-        set("visibility", value);
+    default Style setVisibility(Visibility value) {
+        if (value == null) {
+            remove("visibility");
+        } else {
+
+            set("visibility", value.name().toLowerCase());
+        }
         return this;
     }
 
@@ -439,6 +493,13 @@ public interface Style extends Serializable {
     }
 
     /**
+     * Css values for the white-space property.
+     */
+    public enum WhiteSpace {
+        NORMAL, NOWRAP, PRE, PRE_LINE, PRE_WRAP, INITIAL, INHERIT
+    }
+
+    /**
      * Sets the <code>white-space</code> property.
      *
      * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-white-space
@@ -448,8 +509,12 @@ public interface Style extends Serializable {
      *            will be removed)
      * @return this style instance
      */
-    default Style setWhiteSpace(String value) {
-        set("white-space", value);
+    default Style setWhiteSpace(WhiteSpace value) {
+        if (value == null) {
+            remove("white-space");
+        } else {
+            set("white-space", value.name().replace("_", "-").toLowerCase());
+        }
         return this;
     }
 
