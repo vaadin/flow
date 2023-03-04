@@ -177,7 +177,7 @@ public interface Style extends Serializable {
         if (value == null) {
             remove("clear");
         } else {
-            set("clear", value.name().toLowerCase());
+            set("clear", javaEnumToCssValue(value));
         }
         return this;
     }
@@ -210,6 +210,10 @@ public interface Style extends Serializable {
         return this;
     }
 
+    public enum Display {
+        INLINE, BLOCK, CONTENTS, FLEX, GRID, INLINE_BLOCK, INLINE_FLEX, INLINE_GRID, INLINE_TABLE, LIST_ITEM, RUN_IN, TABLE, TABLE_CAPTION, TABLE_COLUMN_GROUP, TABLE_HEADER_GROUP, TABLE_FOOTER_GROUP, TABLE_ROW_GROUP, TABLE_CELL, TABLE_COLUMN, TABLE_ROW, NONE, INITIAL, INHERIT
+    }
+
     /**
      * Sets the <code>display</code> property.
      *
@@ -220,8 +224,8 @@ public interface Style extends Serializable {
      *            will be removed)
      * @return this style instance
      */
-    default Style setDisplay(String value) {
-        set("display", value);
+    default Style setDisplay(Display value) {
+        set("display", javaEnumToCssValue(value));
         return this;
     }
 
@@ -245,7 +249,7 @@ public interface Style extends Serializable {
         if (value == null) {
             remove("float");
         } else {
-            set("float", value.name().toLowerCase());
+            set("float", javaEnumToCssValue(value));
         }
         return this;
     }
@@ -360,7 +364,7 @@ public interface Style extends Serializable {
         if (value == null) {
             remove("position");
         } else {
-            set("position", value.name().toLowerCase());
+            set("position", javaEnumToCssValue(value));
         }
         return this;
     }
@@ -402,7 +406,7 @@ public interface Style extends Serializable {
             remove("text-align");
         } else {
 
-            set("text-align", value.name().toLowerCase());
+            set("text-align", javaEnumToCssValue(value));
         }
         return this;
     }
@@ -474,7 +478,7 @@ public interface Style extends Serializable {
             remove("visibility");
         } else {
 
-            set("visibility", value.name().toLowerCase());
+            set("visibility", javaEnumToCssValue(value));
         }
         return this;
     }
@@ -513,7 +517,7 @@ public interface Style extends Serializable {
         if (value == null) {
             remove("white-space");
         } else {
-            set("white-space", value.name().replace("_", "-").toLowerCase());
+            set("white-space", javaEnumToCssValue(value));
         }
         return this;
     }
@@ -585,6 +589,10 @@ public interface Style extends Serializable {
             set("z-index", "" + value);
         }
         return this;
+    }
+
+    private String javaEnumToCssValue(Enum value) {
+        return value.name().replace("_", "-").toLowerCase();
     }
 
 }
