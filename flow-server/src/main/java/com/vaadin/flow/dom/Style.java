@@ -327,7 +327,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setPosition(String value) {
-        set("positio ", value);
+        set("position ", value);
         return this;
     }
 
