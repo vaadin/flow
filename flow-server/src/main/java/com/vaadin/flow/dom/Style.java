@@ -360,7 +360,7 @@ public interface Style extends Serializable {
         if (value == null) {
             remove("position");
         } else {
-            set("position ", value.name().toLowerCase());
+            set("position", value.name().toLowerCase());
         }
         return this;
     }
