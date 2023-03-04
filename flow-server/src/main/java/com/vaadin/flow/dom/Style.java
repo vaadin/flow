@@ -317,6 +317,10 @@ public interface Style extends Serializable {
         set("padding", value);
         return this;
     }
+    
+    enum Position {
+        STATIC, RELATIVE, ABSOLUTE, FIXED, STICKY;
+    }
 
     /**
      * Sets the <code>position</code> property.
@@ -326,8 +330,8 @@ public interface Style extends Serializable {
      *            will be removed)
      * @return this style instance
      */
-    default Style setPosition(String value) {
-        set("position ", value);
+    default Style setPosition(Position value) {
+        set("position ", value.name().toLowerCase());
         return this;
     }
 
