@@ -346,7 +346,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setScale(String value) {
-        set("scael", value);
+        set("scale", value);
         return this;
     }
 
