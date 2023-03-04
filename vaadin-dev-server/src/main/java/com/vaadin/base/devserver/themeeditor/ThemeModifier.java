@@ -7,6 +7,8 @@ import com.helger.css.decl.CSSStyleRule;
 import com.helger.css.decl.CascadingStyleSheet;
 import com.helger.css.reader.CSSReader;
 import com.helger.css.writer.CSSWriter;
+import com.helger.css.writer.CSSWriterSettings;
+import com.vaadin.base.devserver.themeeditor.messages.LoadRulesResponse;
 import com.vaadin.base.devserver.themeeditor.messages.RulesRequest;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.VaadinContext;
@@ -19,9 +21,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -87,6 +93,36 @@ public class ThemeModifier {
         properties.forEach(cssProp -> removeCssProperty(styleSheet, cssProp));
         sortStylesheet(styleSheet);
         writeStylesheet(styleSheet);
+    }
+
+    /**
+     * Returns the full content of the theme editor CSS file.
+     * @return CSS string
+     */
+    public String getCss() {
+        File styles = getStyleSheetFile();
+        try {
+            return Files.readString(Path.of(styles.getAbsolutePath()));
+        } catch (IOException e) {
+            throw new ThemeEditorException("Could not read stylesheet from " + styles.getAbsolutePath());
+        }
+    }
+
+    public List<LoadRulesResponse.CssRule> getCssRules(String selectorFilter) {
+        CascadingStyleSheet styleSheet = getCascadingStyleSheet();
+        CSSWriterSettings cssWriterSettings = new CSSWriterSettings();
+
+        return styleSheet.getAllStyleRules().stream().filter(rule -> {
+            String cssSelector = rule.getSelectorCount() > 0 ? rule.getSelectorAtIndex(0).getAsCSSString() : null;
+            return cssSelector != null && cssSelector.startsWith(selectorFilter);
+        }).map(rule -> {
+            String selector = rule.getSelectorsAsCSSString(cssWriterSettings, 0);
+            Map<String, String> properties = new HashMap<>();
+            rule.getAllDeclarations().forEach(cssDeclaration -> {
+                properties.put(cssDeclaration.getProperty(), cssDeclaration.getExpressionAsCSSString());
+            });
+            return new LoadRulesResponse.CssRule(selector, properties);
+        }).toList();
     }
 
     protected String getCssFileName() {

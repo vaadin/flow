@@ -1,4 +1,5 @@
 import { ComponentMetadata } from './metadata/model';
+import {ServerCssRule} from "./api";
 
 export enum ThemeEditorState {
   disabled = 'disabled',
@@ -78,6 +79,37 @@ export class ComponentTheme {
 
     return resultTheme;
   }
+
+  static fromServerRules(metadata: ComponentMetadata, rules: ServerCssRule[]) {
+    const theme = new ComponentTheme(metadata);
+
+    const hostSelector = generateSelector(metadata.tagName, null);
+    const hostRule = rules.find((rule) => rule.selector === hostSelector);
+    if (hostRule) {
+      metadata.properties.forEach((property) => {
+        const value = hostRule.properties[property.propertyName];
+        if (value) {
+          theme.updatePropertyValue(null, property.propertyName, value);
+        }
+      });
+    }
+
+    metadata.parts.forEach((part) => {
+      const partSelector = generateSelector(metadata.tagName, part.partName);
+      const partRule = rules.find((rule) => rule.selector === partSelector);
+
+      if (partRule) {
+        part.properties.forEach((property) => {
+          const value = partRule.properties[property.propertyName];
+          if (value) {
+            theme.updatePropertyValue(part.partName, property.propertyName, value);
+          }
+        });
+      }
+    });
+
+    return theme;
+  }
 }
 
 function generateSelector(tagName: string, partName: string | null) {
@@ -91,38 +123,4 @@ export function generateThemeRule(tagName: string, partName: string | null, prop
     property: propertyName,
     value: value
   };
-}
-
-type ComponentThemeMap = { [key: string]: ComponentTheme };
-
-export class Theme {
-  private _componentThemes: ComponentThemeMap = {};
-
-  get componentThemes(): ComponentTheme[] {
-    return Object.values(this._componentThemes);
-  }
-
-  getComponentTheme(tagName: string) {
-    return this._componentThemes[tagName] || null;
-  }
-
-  getOrCreateComponentTheme(metadata: ComponentMetadata) {
-    let componentTheme = this.getComponentTheme(metadata.tagName);
-    if (!componentTheme) {
-      componentTheme = new ComponentTheme(metadata);
-      this._componentThemes[metadata.tagName] = componentTheme;
-    }
-    return componentTheme;
-  }
-
-  updateComponentTheme(updatedTheme: ComponentTheme) {
-    const componentTheme = this.getOrCreateComponentTheme(updatedTheme.metadata);
-    componentTheme.addPropertyValues(updatedTheme.properties);
-  }
-
-  clone() {
-    const resultTheme = new Theme();
-    this.componentThemes.forEach((componentTheme) => resultTheme.updateComponentTheme(componentTheme));
-    return resultTheme;
-  }
 }
