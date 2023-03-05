@@ -109,8 +109,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setBackground(String value) {
-        set("background", value);
-        return this;
+        return set("background", value);
     }
 
     /**
@@ -124,8 +123,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setBorder(String value) {
-        set("border", value);
-        return this;
+        return set("border", value);
     }
 
     /**
@@ -139,8 +137,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setBoxSizing(String value) {
-        set("box-sizing", value);
-        return this;
+        return set("box-sizing", value);
     }
 
     /**
@@ -154,8 +151,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setBoxShadow(String value) {
-        set("box-shadow", value);
-        return this;
+        return set("box-shadow", value);
     }
 
     /**
@@ -174,8 +170,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setClear(Clear value) {
-        applyOrErase("clear", value);
-        return this;
+        return applyOrErase("clear", value);
     }
 
     /**
@@ -189,8 +184,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setCursor(String value) {
-        set("cursor", value);
-        return this;
+        return set("cursor", value);
     }
 
     /**
@@ -202,8 +196,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setColor(String value) {
-        set("color", value);
-        return this;
+        return set("color", value);
     }
 
     public enum Display {
@@ -221,8 +214,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setDisplay(Display value) {
-        applyOrErase("display", value);
-        return this;
+        return applyOrErase("display", value);
     }
 
     // PostFixed with "Css" to avoid collician with java.lang.Float
@@ -242,8 +234,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setFloat(FloatCss value) {
-        applyOrErase("float", value);
-        return this;
+        return applyOrErase("float", value);
     }
 
     /**
@@ -255,8 +246,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setFont(String value) {
-        set("font", value);
-        return this;
+        return set("font", value);
     }
 
     /**
@@ -268,8 +258,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setHeight(String value) {
-        set("height", value);
-        return this;
+        return set("height", value);
     }
 
     /**
@@ -281,8 +270,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setMargin(String value) {
-        set("margin", value);
-        return this;
+        return set("margin", value);
     }
 
     /**
@@ -296,8 +284,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setOutline(String value) {
-        set("outline", value);
-        return this;
+        return set("outline", value);
     }
 
     /**
@@ -309,8 +296,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setOpacity(String value) {
-        set("opacity", value);
-        return this;
+        return set("opacity", value);
     }
 
     /**
@@ -322,8 +308,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setOverflow(String value) {
-        set("overflow", value);
-        return this;
+        return set("overflow", value);
     }
 
     /**
@@ -333,8 +318,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setPadding(String value) {
-        set("padding", value);
-        return this;
+        return set("padding", value);
     }
 
     /**
@@ -353,8 +337,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setPosition(Position value) {
-        applyOrErase("position", value);
-        return this;
+        return applyOrErase("position", value);
     }
 
     /**
@@ -368,8 +351,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setScale(String value) {
-        set("scale", value);
-        return this;
+        return set("scale", value);
     }
 
     /**
@@ -390,8 +372,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setTextAlign(TextAlign value) {
-        applyOrErase("text-align", value);
-        return this;
+        return applyOrErase("text-align", value);
     }
 
     /**
@@ -405,8 +386,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setTextDecoration(String value) {
-        set("text-decoration", value);
-        return this;
+        return set("text-decoration", value);
     }
 
     /**
@@ -420,8 +400,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setTransform(String value) {
-        set("transform", value);
-        return this;
+        return set("transform", value);
     }
 
     /**
@@ -435,8 +414,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setTransition(String value) {
-        set("transition", value);
-        return this;
+        return set("transition", value);
     }
 
     /**
@@ -457,8 +435,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setVisibility(Visibility value) {
-        applyOrErase("visibility", value);
-        return this;
+        return applyOrErase("visibility", value);
     }
 
     /**
@@ -470,8 +447,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setWidth(String value) {
-        set("width", value);
-        return this;
+        return set("width", value);
     }
 
     /**
@@ -492,8 +468,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setWhiteSpace(WhiteSpace value) {
-        applyOrErase("white-space", value);
-        return this;
+        return applyOrErase("white-space", value);
     }
 
     /**
@@ -505,8 +480,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setLeft(String value) {
-        set("left", value);
-        return this;
+        return set("left", value);
     }
 
     /**
@@ -518,8 +492,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setRight(String value) {
-        set("right", value);
-        return this;
+        return set("right", value);
     }
 
     /**
@@ -531,8 +504,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setTop(String value) {
-        set("top", value);
-        return this;
+        return set("top", value);
     }
 
     /**
@@ -544,8 +516,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setBottom(String value) {
-        set("bottom", value);
-        return this;
+        return set("bottom", value);
     }
 
     /**
@@ -557,23 +528,22 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setZIndex(Integer value) {
-        applyOrErase("z-index", value);
-        return this;
+        return applyOrErase("z-index", value);
     }
 
-    private void applyOrErase(String propertyName, Enum value) {
+    private Style applyOrErase(String propertyName, Enum value) {
         if (value == null) {
-            remove(propertyName);
+            return remove(propertyName);
         } else {
-            set(propertyName, value.name().replace("_", "-").toLowerCase());
+            return set(propertyName, value.name().replace("_", "-").toLowerCase());
         }
     }
 
-    private void applyOrErase(String propertyName, Object value) {
+    private Style applyOrErase(String propertyName, Object value) {
         if (value == null) {
-            remove(propertyName);
+            return remove(propertyName);
         } else {
-            set(propertyName, value.toString());
+            return set(propertyName, value.toString());
         }
     }
 
