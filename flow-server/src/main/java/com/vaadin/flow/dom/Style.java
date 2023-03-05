@@ -174,11 +174,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setClear(Clear value) {
-        if (value == null) {
-            remove("clear");
-        } else {
-            set("clear", javaEnumToCssValue(value));
-        }
+        applyOrErase("clear", value);
         return this;
     }
 
@@ -225,7 +221,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setDisplay(Display value) {
-        set("display", javaEnumToCssValue(value));
+        applyOrErase("display", value);
         return this;
     }
 
@@ -246,11 +242,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setFloat(FloatCss value) {
-        if (value == null) {
-            remove("float");
-        } else {
-            set("float", javaEnumToCssValue(value));
-        }
+        applyOrErase("float", value);
         return this;
     }
 
@@ -361,11 +353,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setPosition(Position value) {
-        if (value == null) {
-            remove("position");
-        } else {
-            set("position", javaEnumToCssValue(value));
-        }
+        applyOrErase("position", value);
         return this;
     }
 
@@ -402,12 +390,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setTextAlign(TextAlign value) {
-        if (value == null) {
-            remove("text-align");
-        } else {
-
-            set("text-align", javaEnumToCssValue(value));
-        }
+        applyOrErase("text-align", value);
         return this;
     }
 
@@ -474,12 +457,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setVisibility(Visibility value) {
-        if (value == null) {
-            remove("visibility");
-        } else {
-
-            set("visibility", javaEnumToCssValue(value));
-        }
+        applyOrErase("visibility", value);
         return this;
     }
 
@@ -514,11 +492,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setWhiteSpace(WhiteSpace value) {
-        if (value == null) {
-            remove("white-space");
-        } else {
-            set("white-space", javaEnumToCssValue(value));
-        }
+        applyOrErase("white-space", value);
         return this;
     }
 
@@ -583,16 +557,24 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setZIndex(Integer value) {
-        if (value == null) {
-            remove("z-index");
-        } else {
-            set("z-index", "" + value);
-        }
+        applyOrErase("z-index", value);
         return this;
     }
 
-    private String javaEnumToCssValue(Enum value) {
-        return value.name().replace("_", "-").toLowerCase();
+    private void applyOrErase(String propertyName, Enum value) {
+        if (value == null) {
+            remove(propertyName);
+        } else {
+            set(propertyName, value.name().replace("_", "-").toLowerCase());
+        }
+    }
+
+    private void applyOrErase(String propertyName, Object value) {
+        if (value == null) {
+            remove(propertyName);
+        } else {
+            set(propertyName, value.toString());
+        }
     }
 
 }
