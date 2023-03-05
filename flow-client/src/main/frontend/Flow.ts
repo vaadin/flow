@@ -58,7 +58,7 @@ export interface PreventAndRedirectCommands extends PreventCommands {
 
 // flow uses body for keeping references
 const flowRoot: FlowRoot = window.document.body as any;
-const $wnd = (window as any) as {
+const $wnd = window as any as {
   Vaadin: {
     Flow: any;
     TypeScript: any;
