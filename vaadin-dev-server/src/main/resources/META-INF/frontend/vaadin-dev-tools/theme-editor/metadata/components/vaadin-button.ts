@@ -14,6 +14,13 @@ export default {
       displayName: 'Text color'
     },
     {
+      propertyName: 'font-size',
+      displayName: 'Font size',
+      editorType: EditorType.range,
+      presets: presets.lumoFontSize,
+      icon: 'font'
+    },
+    {
       propertyName: '--lumo-button-size',
       displayName: 'Size',
       editorType: EditorType.range,

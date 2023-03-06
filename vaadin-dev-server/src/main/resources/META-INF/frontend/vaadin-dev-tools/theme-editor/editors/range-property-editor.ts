@@ -156,7 +156,7 @@ export class RangePropertyEditor extends LitElement {
         <div class="property-name">${this.propertyMetadata.displayName}</div>
         <div class="property-editor">
           <div class=${classMap(sliderWrapperClasses)}>
-            ${icon ? html` <div class="icon prefix">${icons.square}</div>` : null}
+            ${icon ? html` <div class="icon prefix">${icon}</div>` : null}
             <input
               type="range"
               class="slider"
@@ -168,7 +168,7 @@ export class RangePropertyEditor extends LitElement {
               @input=${this.handleSliderInput}
               @change=${this.handleSliderChange}
             />
-            ${icon ? html` <div class="icon suffix">${icons.square}</div>` : null}
+            ${icon ? html` <div class="icon suffix">${icon}</div>` : null}
           </div>
           <input type="text" class="input" .value=${this.value} @change=${this.handleValueChange} />
         </div>
