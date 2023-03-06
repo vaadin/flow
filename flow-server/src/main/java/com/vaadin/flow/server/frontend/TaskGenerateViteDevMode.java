@@ -55,7 +55,7 @@ public class TaskGenerateViteDevMode extends AbstractTaskClientGenerator {
 
     @Override
     protected boolean shouldGenerate() {
-        return options.productionMode || options.isFrontendHotdeploy()
+        return options.isProductionMode() || options.isFrontendHotdeploy()
                 || options.isDevBundleBuild();
     }
 

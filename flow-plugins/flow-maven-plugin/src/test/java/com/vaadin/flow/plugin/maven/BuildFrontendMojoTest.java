@@ -152,7 +152,7 @@ public class BuildFrontendMojoTest {
 
         defaultJavaSource = new File(".", "src/test/java");
         openApiJsonFile = new File(npmFolder,
-                "target/generated-resources/openapi.json");
+                "target/classes/dev/hilla/openapi.json");
         generatedTsFolder = new File(npmFolder, "frontend/generated");
 
         Assert.assertTrue("Failed to create a test project resources",
@@ -496,6 +496,7 @@ public class BuildFrontendMojoTest {
         initialBuildInfo.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, true);
         initialBuildInfo.put(
                 InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, true);
+        initialBuildInfo.put(InitParameters.CI_BUILD, true);
 
         org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
         org.apache.commons.io.FileUtils.write(tokenFile,
@@ -522,6 +523,8 @@ public class BuildFrontendMojoTest {
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been removed",
                 buildInfo.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
+        Assert.assertNull(InitParameters.CI_BUILD + "should have been removed",
+                buildInfo.get(InitParameters.CI_BUILD));
         Assert.assertNull(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE
                         + "should have been removed",

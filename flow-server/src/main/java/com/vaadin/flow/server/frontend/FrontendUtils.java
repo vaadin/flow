@@ -228,21 +228,6 @@ public class FrontendUtils {
     public static final String VITE_DEVMODE_TS = "vite-devmode.ts";
 
     /**
-     * Default Java source folder for OpenAPI generator.
-     */
-    public static final String DEFAULT_CONNECT_JAVA_SOURCE_FOLDER = "src/main/java";
-
-    /**
-     * Default application properties file path in Vaadin project.
-     */
-    public static final String DEFAULT_CONNECT_APPLICATION_PROPERTIES = "src/main/resources/application.properties";
-
-    /**
-     * Default generated path for OpenAPI spec file.
-     */
-    public static final String DEFAULT_CONNECT_OPENAPI_JSON_FILE = "generated-resources/openapi.json";
-
-    /**
      * Default generated path for generated frontend files.
      */
     public static final String DEFAULT_PROJECT_FRONTEND_GENERATED_DIR = DEFAULT_FRONTEND_DIR
@@ -1243,8 +1228,7 @@ public class FrontendUtils {
         URL statsJson = findBundleFile(projectDir, "config/stats.json");
         if (statsJson == null) {
             getLogger().warn(
-                    "There is no dev-bundle in the project or on the classpath nor is there a default bundle included. "
-                            + "Verify that the dependency 'com.vaadin:vaadin-dev-bundle' is added to your project.");
+                    "There is no dev-bundle in the project or on the classpath nor is there a default bundle included.");
             return null;
         }
 

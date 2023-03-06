@@ -8,7 +8,7 @@
 * test-dev-mode
   * Root context tests run in compatibility + development mode
 * test-embedding
-  * Test for for webcomponents (npm and compatibility mode) see module [README.md](test-embedding/README.md)
+  * Test for webcomponents (npm and compatibility mode) see module [README.md](test-embedding/README.md)
   * Sum test modules:
     * embedding-test-assets
     * test-embedding-generic
@@ -31,7 +31,7 @@
 * test-multi-war
   * Tests that we can deploy multiple Flow war files to the same server
 * test-no-root-context
-  * Running tests with a non root context mapping
+  * Running tests with a non-root context mapping
     * `/custom/*` mapped istead of `/*`
   * !Not active at the moment!
 * test-no-theme
