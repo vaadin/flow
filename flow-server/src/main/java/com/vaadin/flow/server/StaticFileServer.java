@@ -380,9 +380,7 @@ public class StaticFileServer implements StaticFileHandler {
                             + "bundle '%2$s/assets/'. \n"
                             + "Verify that the asset is available in "
                             + "'frontend/themes/%3$s/' directory and is added into the "
-                            + "'assets' block of the 'theme.json' file. \n"
-                            + "Else verify that the dependency 'com.vaadin:vaadin-dev-bundle' "
-                            + "is added to your project.",
+                            + "'assets' block of the 'theme.json' file.",
                     assetName, Constants.DEV_BUNDLE_LOCATION, themeName));
         }
         return assetInDevBundleUrl;
