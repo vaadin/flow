@@ -621,7 +621,6 @@ public class ShortcutRegistration implements Registration, Serializable {
                 if (!allowEventPropagation) {
                     filterText += " && (event.stopPropagation() || true)";
                 }
-                // Or here add the handling
                 listenerRegistration.setFilter(filterText);
 
                 shortcutActive = true;
