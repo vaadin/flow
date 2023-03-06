@@ -53,7 +53,7 @@ public class DevBundleCssImportIT extends ChromeBrowserTest {
                 frontendHashes
                         .hasKey("addons-styles/add-on-styles.css?inline"));
         Assert.assertEquals("Unexpected addon styles content hash",
-                "5a7bc75b3b5edc5051ed36f75f625e204260459b4f1872dfc03a255b944fc89e",
+                "f6062ef78e2712e881faa15252bf001d737ab4f12b12e91f0d9f8030100643b6",
                 frontendHashes
                         .getString("addons-styles/add-on-styles.css?inline"));
 
