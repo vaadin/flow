@@ -3,7 +3,7 @@ package com.vaadin.base.devserver.themeeditor.messages;
 import java.util.List;
 import java.util.Map;
 
-public class LoadRulesResponse extends BaseResponse{
+public class LoadRulesResponse extends BaseResponse {
     public record CssRule(String selector, Map<String, String> properties) {
     }
 

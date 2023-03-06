@@ -97,6 +97,7 @@ public class ThemeModifier {
 
     /**
      * Returns the full content of the theme editor CSS file.
+     *
      * @return CSS string
      */
     public String getCss() {
@@ -104,7 +105,8 @@ public class ThemeModifier {
         try {
             return Files.readString(Path.of(styles.getAbsolutePath()));
         } catch (IOException e) {
-            throw new ThemeEditorException("Could not read stylesheet from " + styles.getAbsolutePath());
+            throw new ThemeEditorException("Could not read stylesheet from "
+                    + styles.getAbsolutePath());
         }
     }
 
@@ -113,13 +115,18 @@ public class ThemeModifier {
         CSSWriterSettings cssWriterSettings = new CSSWriterSettings();
 
         return styleSheet.getAllStyleRules().stream().filter(rule -> {
-            String cssSelector = rule.getSelectorCount() > 0 ? rule.getSelectorAtIndex(0).getAsCSSString() : null;
-            return cssSelector != null && cssSelector.startsWith(selectorFilter);
+            String cssSelector = rule.getSelectorCount() > 0
+                    ? rule.getSelectorAtIndex(0).getAsCSSString()
+                    : null;
+            return cssSelector != null
+                    && cssSelector.startsWith(selectorFilter);
         }).map(rule -> {
-            String selector = rule.getSelectorsAsCSSString(cssWriterSettings, 0);
+            String selector = rule.getSelectorsAsCSSString(cssWriterSettings,
+                    0);
             Map<String, String> properties = new HashMap<>();
             rule.getAllDeclarations().forEach(cssDeclaration -> {
-                properties.put(cssDeclaration.getProperty(), cssDeclaration.getExpressionAsCSSString());
+                properties.put(cssDeclaration.getProperty(),
+                        cssDeclaration.getExpressionAsCSSString());
             });
             return new LoadRulesResponse.CssRule(selector, properties);
         }).toList();

@@ -300,7 +300,8 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
         String css = modifier.getCss();
         System.out.println(css);
 
-        String fileContent = Files.readString(getThemeFile("theme-editor.css").toPath());
+        String fileContent = Files
+                .readString(getThemeFile("theme-editor.css").toPath());
 
         assertEquals(fileContent, css);
     }
@@ -309,19 +310,19 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
     public void getCssRules() {
         ThemeModifier modifier = new TestThemeModifier();
         List<RulesRequest.CssRuleProperty> toBeAdded = new ArrayList<>();
-        toBeAdded.add(new RulesRequest.CssRuleProperty("vaadin-button",
-                "color", "red"));
+        toBeAdded.add(new RulesRequest.CssRuleProperty("vaadin-button", "color",
+                "red"));
         toBeAdded.add(new RulesRequest.CssRuleProperty("vaadin-button",
                 "background", "black"));
-        toBeAdded.add(new RulesRequest.CssRuleProperty("vaadin-button::part(label)",
-                "font-family", "serif"));
+        toBeAdded.add(new RulesRequest.CssRuleProperty(
+                "vaadin-button::part(label)", "font-family", "serif"));
         toBeAdded.add(new RulesRequest.CssRuleProperty("vaadin-text-field",
                 "color", "red"));
-        toBeAdded.add(new RulesRequest.CssRuleProperty("span",
-                "color", "red"));
+        toBeAdded.add(new RulesRequest.CssRuleProperty("span", "color", "red"));
         modifier.setThemeProperties(toBeAdded);
 
-        List<LoadRulesResponse.CssRule> cssRules = modifier.getCssRules("vaadin-button");
+        List<LoadRulesResponse.CssRule> cssRules = modifier
+                .getCssRules("vaadin-button");
         assertEquals(2, cssRules.size());
 
         assertEquals("vaadin-button", cssRules.get(0).selector());

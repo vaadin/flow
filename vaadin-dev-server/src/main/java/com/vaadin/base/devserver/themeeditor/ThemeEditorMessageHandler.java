@@ -30,10 +30,8 @@ public class ThemeEditorMessageHandler {
                 this::handleThemeEditorRules, ClassNamesRequest.COMMAND_NAME,
                 this::handleThemeEditorClassNames,
                 ComponentMetadataRequest.COMMAND_NAME,
-                this::handleComponentMetadata,
-                LoadPreviewRequest.COMMAND_NAME,
-                this::handleLoadPreview,
-                LoadRulesRequest.COMMAND_NAME,
+                this::handleComponentMetadata, LoadPreviewRequest.COMMAND_NAME,
+                this::handleLoadPreview, LoadRulesRequest.COMMAND_NAME,
                 this::handleLoadRules);
     }
 
@@ -64,7 +62,7 @@ public class ThemeEditorMessageHandler {
      */
     public boolean canHandle(String command, JsonObject data) {
         return command != null && data != null && data.hasKey("requestId")
-               && handlers.containsKey(command);
+                && handlers.containsKey(command);
     }
 
     /**
@@ -124,14 +122,17 @@ public class ThemeEditorMessageHandler {
     }
 
     protected BaseResponse handleLoadPreview(JsonObject data) {
-        LoadPreviewRequest request = JsonUtils.readToObject(data, LoadPreviewRequest.class);
+        LoadPreviewRequest request = JsonUtils.readToObject(data,
+                LoadPreviewRequest.class);
         String css = getThemeModifier().getCss();
         return new LoadPreviewResponse(request.getRequestId(), css);
     }
 
     protected BaseResponse handleLoadRules(JsonObject data) {
-        LoadRulesRequest request = JsonUtils.readToObject(data, LoadRulesRequest.class);
-        List<LoadRulesResponse.CssRule> rules = getThemeModifier().getCssRules(request.getSelectorFilter());
+        LoadRulesRequest request = JsonUtils.readToObject(data,
+                LoadRulesRequest.class);
+        List<LoadRulesResponse.CssRule> rules = getThemeModifier()
+                .getCssRules(request.getSelectorFilter());
         return new LoadRulesResponse(request.getRequestId(), rules);
     }
 

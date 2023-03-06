@@ -111,8 +111,8 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
         String requestId = UUID.randomUUID().toString();
         data.put("requestId", requestId);
 
-        BaseResponse response = handler.handleDebugMessageData(
-                LoadPreviewRequest.COMMAND_NAME, data);
+        BaseResponse response = handler
+                .handleDebugMessageData(LoadPreviewRequest.COMMAND_NAME, data);
         assertResponseOk(response, requestId);
     }
 
@@ -124,8 +124,8 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
         data.put("requestId", requestId);
         data.put("selectorFilter", "vaadin-button");
 
-        BaseResponse response = handler.handleDebugMessageData(
-                LoadRulesRequest.COMMAND_NAME, data);
+        BaseResponse response = handler
+                .handleDebugMessageData(LoadRulesRequest.COMMAND_NAME, data);
         assertResponseOk(response, requestId);
     }
 
