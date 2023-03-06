@@ -4,7 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { ComponentPicker } from './component-picker';
 import { ComponentReference } from './component-util';
 import './theme-editor/editor';
-import { ThemeEditorState, ThemeEditorRule } from './theme-editor/model';
+import { ThemeEditorState } from './theme-editor/model';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
@@ -141,7 +141,7 @@ export class Connection extends Object {
     }
   }
 
-  private send(command: string, data: any) {
+  public send(command: string, data: any) {
     const message = JSON.stringify({ command, data });
     if (!this.webSocket) {
       // eslint-disable-next-line no-console
@@ -167,10 +167,6 @@ export class Connection extends Object {
   }
   sendShowComponentAttachLocation(component: ComponentReference) {
     this.send('showComponentAttachLocation', component);
-  }
-
-  sendThemeEditorRules(rules: ThemeEditorRule[]) {
-    this.send('themeEditorRules', { requestId: 'abc-123-def-456', add: rules });
   }
 }
 
