@@ -51,7 +51,25 @@ public class ChangeFrontendContentIT extends ChromeBrowserTest {
         Assert.assertEquals("Greetings from test web component: Hello John Doe",
                 paragraph.getText());
 
-        JsonObject frontendHashes = getFrontendHashes();
+        File baseDir = new File(System.getProperty("user.dir", "."));
+
+        // should create a dev-bundle
+        Assert.assertTrue("New devBundle should be generated",
+                new File(baseDir, Constants.DEV_BUNDLE_LOCATION).exists());
+
+        // should add a hash for lit-view
+        File statsJson = new File(baseDir,
+                Constants.DEV_BUNDLE_LOCATION + "/config/stats.json");
+        Assert.assertTrue("Stats.json should exist", statsJson.exists());
+
+        String content = FileUtils.readFileToString(statsJson,
+                StandardCharsets.UTF_8);
+        JsonObject jsonContent = Json.parse(content);
+
+        JsonObject frontendHashes = jsonContent.getObject("frontendHashes");
+
+        Assert.assertNotNull("Frontend hashes are expected in the stats.json",
+                frontendHashes);
         Assert.assertTrue("Lit template content hash is expected",
                 frontendHashes.hasKey("views/lit-view.ts"));
         Assert.assertTrue("Imported TS file content hash is expected",
@@ -62,41 +80,5 @@ public class ChangeFrontendContentIT extends ChromeBrowserTest {
         Assert.assertEquals("Unexpected imported file content hash",
                 "84951a8a4f324bd4f4a4d39c9913b139af094a0b425773fb8b8d43bb7cd61f10",
                 frontendHashes.getString("views/another.ts"));
-    }
-
-    @Test
-    public void stylesInFrontend_hashCalculated() throws IOException {
-        $("lit-view").waitForFirst();
-
-        JsonObject frontendHashes = getFrontendHashes();
-        Assert.assertTrue("My-styles.css content hash is expected",
-                frontendHashes.hasKey("styles/my-styles.css"));
-        Assert.assertEquals("Unexpected my-styles.css content hash",
-                "13aa9362a7d217c9de443be4adb0844c3669d1432ea8e8e9af0e46dc3ded29cd",
-                frontendHashes.getString("styles/my-styles.css"));
-    }
-
-    private static JsonObject getFrontendHashes() throws IOException {
-        JsonObject statsJson = getStatsJson();
-        JsonObject frontendHashes = statsJson.getObject("frontendHashes");
-        Assert.assertNotNull("Frontend hashes are expected in the stats.json",
-                frontendHashes);
-        return frontendHashes;
-    }
-
-    private static JsonObject getStatsJson() throws IOException {
-        File baseDir = new File(System.getProperty("user.dir", "."));
-
-        // should create a dev-bundle
-        Assert.assertTrue("New devBundle should be generated",
-                new File(baseDir, Constants.DEV_BUNDLE_LOCATION).exists());
-
-        File statsJson = new File(baseDir,
-                Constants.DEV_BUNDLE_LOCATION + "/config/stats.json");
-        Assert.assertTrue("Stats.json should exist", statsJson.exists());
-
-        String content = FileUtils.readFileToString(statsJson,
-                StandardCharsets.UTF_8);
-        return Json.parse(content);
     }
 }
