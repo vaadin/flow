@@ -3,7 +3,9 @@ import { ThemeEditorRule } from './model';
 
 export enum Commands {
   response = 'themeEditorResponse',
-  updateCssRules = 'themeEditorRules'
+  updateCssRules = 'themeEditorRules',
+  loadPreview = 'themeEditorLoadPreview',
+  loadRules = 'themeEditorLoadRules'
 }
 
 export enum ResponseCode {
@@ -14,6 +16,19 @@ export enum ResponseCode {
 export interface BaseResponse {
   requestId: string;
   code: ResponseCode;
+}
+
+export interface LoadPreviewResponse extends BaseResponse {
+  css: string;
+}
+
+export interface ServerCssRule {
+  selector: string;
+  properties: { [key: string]: string };
+}
+
+export interface LoadRulesResponse {
+  rules: ServerCssRule[];
 }
 
 interface RequestHandle {
@@ -74,5 +89,13 @@ export class ThemeEditorApi {
       add,
       remove
     });
+  }
+
+  public loadPreview(): Promise<LoadPreviewResponse> {
+    return this.sendRequest(Commands.loadPreview, {});
+  }
+
+  public loadRules(selectorFilter: string): Promise<LoadRulesResponse> {
+    return this.sendRequest(Commands.loadRules, { selectorFilter });
   }
 }
