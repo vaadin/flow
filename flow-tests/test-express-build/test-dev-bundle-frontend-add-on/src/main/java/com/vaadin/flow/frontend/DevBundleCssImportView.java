@@ -20,8 +20,7 @@ import com.vaadin.flow.router.Route;
 
 @Route("com.vaadin.flow.frontend.DevBundleCssImportView")
 public class DevBundleCssImportView extends Div {
-    static final String MY_COMPONENT_ID =
-            "test-css-import-meta-inf-resources-span";
+    static final String MY_COMPONENT_ID = "test-css-import-meta-inf-resources-span";
 
     public DevBundleCssImportView() {
         MyComponent myComponent = new MyComponent();

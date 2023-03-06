@@ -1710,9 +1710,11 @@ public class TaskRunDevBundleBuildTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        CssData cssData = new CssData("./addons-styles/my-styles.css", null, null, null);
+        CssData cssData = new CssData("./addons-styles/my-styles.css", null,
+                null, null);
 
-        Mockito.when(depScanner.getCss()).thenReturn(Collections.singleton(cssData));
+        Mockito.when(depScanner.getCss())
+                .thenReturn(Collections.singleton(cssData));
 
         JsonObject stats = getBasicStats();
 
@@ -1721,7 +1723,7 @@ public class TaskRunDevBundleBuildTest {
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
             utils.when(() -> FrontendUtils
-                            .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
                     .thenReturn(stats.toJson());
 
             // Should not throw an IllegalStateException:
