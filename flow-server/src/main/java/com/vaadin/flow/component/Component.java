@@ -678,10 +678,11 @@ public abstract class Component
      */
     @Deprecated
     public String getTranslation(String key, Locale locale, Object... params) {
-        if (getI18NProvider() == null) {
+        final I18NProvider i18NProvider = getI18NProvider();
+        if (i18nProvider == null) {
             return "!{" + key + "}!";
         }
-        return getI18NProvider().getTranslation(key, locale, params);
+        return i18nProvider.getTranslation(key, locale, params);
     }
 
     /**
@@ -703,10 +704,11 @@ public abstract class Component
      */
     @Deprecated
     public String getTranslation(Object key, Locale locale, Object... params) {
-        if (getI18NProvider() == null) {
+        final I18NProvider i18NProvider = getI18NProvider();
+        if (i18NProvider == null) {
             return "!{" + key + "}!";
         }
-        return getI18NProvider().getTranslation(key, locale, params);
+        return i18NProvider.getTranslation(key, locale, params);
     }
 
     /**
