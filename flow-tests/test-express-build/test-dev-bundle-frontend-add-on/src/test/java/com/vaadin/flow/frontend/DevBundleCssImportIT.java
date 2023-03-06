@@ -35,10 +35,39 @@ import elemental.json.JsonObject;
 public class DevBundleCssImportIT extends ChromeBrowserTest {
 
     @Test
+    public void cssImportedStyles_hashCalculatedWithNoQuestionMark()
+            throws IOException {
+        open();
+        waitForElementPresent(By.id(DevBundleCssImportView.SPAN_ID));
+        WebElement span = findElement(By.id(DevBundleCssImportView.SPAN_ID));
+
+        Assert.assertEquals("3px solid rgb(0, 0, 255)",
+                span.getCssValue("border"));
+
+        JsonObject frontendHashes = getFrontendHashes();
+        Assert.assertTrue("My-styles.css content hash is expected",
+                frontendHashes.hasKey("styles/my-styles.css"));
+        Assert.assertEquals("Unexpected my-styles.css content hash",
+                "c015998854f963b9169a1bca554c9ee5828feb8d1bc4a800cdf9dd5e9a0e5d87",
+                frontendHashes.getString("styles/my-styles.css"));
+
+        JsonArray bundleImports = getBundleImports();
+        boolean found = false;
+        for (int i = 0; i < bundleImports.length(); i++) {
+            if (bundleImports.get(i).asString()
+                    .equals("Frontend/styles/my-styles.css")) {
+                found = true;
+            }
+        }
+        Assert.assertTrue("My-styles.css import is expected", found);
+    }
+
+    @Test
     public void cssImportedStyles_stylesInMetaInfResources_stylesApplied_hashCalculated()
             throws IOException {
         open();
 
+        waitForElementPresent(By.id(DevBundleCssImportView.MY_COMPONENT_ID));
         WebElement myComponent = findElement(
                 By.id(DevBundleCssImportView.MY_COMPONENT_ID));
 
@@ -47,21 +76,17 @@ public class DevBundleCssImportIT extends ChromeBrowserTest {
 
         JsonObject frontendHashes = getFrontendHashes();
 
-        // TODO: remove '?inline' after
-        // https://github.com/vaadin/flow/pull/16125
         Assert.assertTrue("Add-on styles content hash is expected",
-                frontendHashes
-                        .hasKey("addons-styles/add-on-styles.css?inline"));
+                frontendHashes.hasKey("addons-styles/add-on-styles.css"));
         Assert.assertEquals("Unexpected addon styles content hash",
                 "f6062ef78e2712e881faa15252bf001d737ab4f12b12e91f0d9f8030100643b6",
-                frontendHashes
-                        .getString("addons-styles/add-on-styles.css?inline"));
+                frontendHashes.getString("addons-styles/add-on-styles.css"));
 
         JsonArray bundleImports = getBundleImports();
         boolean found = false;
         for (int i = 0; i < bundleImports.length(); i++) {
             if (bundleImports.get(i).asString().equals(
-                    "Frontend/generated/jar-resources/addons-styles/add-on-styles.css?inline")) {
+                    "Frontend/generated/jar-resources/addons-styles/add-on-styles.css")) {
                 found = true;
             }
         }

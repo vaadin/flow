@@ -15,14 +15,24 @@
  */
 package com.vaadin.flow.frontend;
 
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 
 @Route("com.vaadin.flow.frontend.DevBundleCssImportView")
+@CssImport("./styles/my-styles.css")
 public class DevBundleCssImportView extends Div {
+
     static final String MY_COMPONENT_ID = "test-css-import-meta-inf-resources-span";
 
+    static final String SPAN_ID = "test-css-import-frontend-span";
+
     public DevBundleCssImportView() {
+        Span span = new Span("Test CssImport with dev bundle");
+        span.setId(SPAN_ID);
+        add(span);
+
         MyComponent myComponent = new MyComponent();
         myComponent.setId(MY_COMPONENT_ID);
         add(myComponent);
