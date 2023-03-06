@@ -18,7 +18,6 @@ package com.vaadin.flow.component;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -678,11 +677,9 @@ public abstract class Component
      */
     @Deprecated
     public String getTranslation(String key, Locale locale, Object... params) {
-        final I18NProvider i18NProvider = getI18NProvider();
-        if (i18nProvider == null) {
-            return "!{" + key + "}!";
-        }
-        return i18nProvider.getTranslation(key, locale, params);
+        return getI18NProvider()
+                .map(i18n -> i18n.getTranslation(key, locale, params))
+                .orElse("!{" + key + "}!");
     }
 
     /**
@@ -704,11 +701,9 @@ public abstract class Component
      */
     @Deprecated
     public String getTranslation(Object key, Locale locale, Object... params) {
-        final I18NProvider i18NProvider = getI18NProvider();
-        if (i18NProvider == null) {
-            return "!{" + key + "}!";
-        }
-        return i18NProvider.getTranslation(key, locale, params);
+        return getI18NProvider()
+                .map(i18n -> i18n.getTranslation(key, locale, params))
+                .orElse("!{" + key + "}!");
     }
 
     /**
@@ -749,8 +744,9 @@ public abstract class Component
         return getTranslation(key, locale, params);
     }
 
-    private I18NProvider getI18NProvider() {
-        return VaadinService.getCurrent().getInstantiator().getI18NProvider();
+    private Optional<I18NProvider> getI18NProvider() {
+        return Optional.ofNullable(
+                VaadinService.getCurrent().getInstantiator().getI18NProvider());
     }
 
     /**
@@ -764,23 +760,12 @@ public abstract class Component
      * @return the component locale
      */
     protected Locale getLocale() {
-        UI currentUi = UI.getCurrent();
-        Locale locale = currentUi == null ? null : currentUi.getLocale();
-        if (locale == null) {
-            final I18NProvider i18NProvider = getI18NProvider();
-            // If a i18nProvider is not defined we should just return the
-            // default locale.
-            if (i18NProvider == null) {
-                return Locale.getDefault();
-            }
-            List<Locale> locales = i18NProvider.getProvidedLocales();
-            if (locales != null && !locales.isEmpty()) {
-                locale = locales.get(0);
-            } else {
-                locale = Locale.getDefault();
-            }
-        }
-        return locale;
+        return Optional.ofNullable(UI.getCurrent()).map(UI::getLocale)
+                .orElseGet(() -> getI18NProvider()
+                        .map(I18NProvider::getProvidedLocales)
+                        .filter(locales -> !locales.isEmpty())
+                        .map(locales -> locales.get(0))
+                        .orElseGet(Locale::getDefault));
     }
 
     /**
