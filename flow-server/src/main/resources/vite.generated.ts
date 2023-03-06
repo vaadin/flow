@@ -225,7 +225,7 @@ function statsExtracterPlugin(): PluginOption {
       const generatedImports = readFileSync(path.resolve(generatedFlowImportsFolder, "generated-flow-imports.js"), {encoding: 'utf-8'})
           .split("\n")
           .filter((line: string) => line.startsWith("import"))
-          .map((line: string) => line.substring(line.indexOf("'")+1, line.lastIndexOf("'")))
+          .map((line: string) => line.substring(line.indexOf("'") + 1, line.lastIndexOf("'")))
           .map((line: string) => line.includes('?') ? line.substring(0, line.lastIndexOf('?')) : line);
 
       const frontendFiles: Record<string, string> = { };
