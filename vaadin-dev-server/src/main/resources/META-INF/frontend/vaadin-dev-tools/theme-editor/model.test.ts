@@ -2,6 +2,8 @@ import { expect } from '@open-wc/testing';
 import { ComponentTheme, generateThemeRule, ThemeEditorRule, ThemePropertyValue } from './model';
 import buttonMetadata from './metadata/components/vaadin-button';
 import { ComponentMetadata } from './metadata/model';
+import { ServerCssRule } from './api';
+import { testElementMetadata } from './tests/utils';
 
 describe('model', () => {
   describe('ComponentTheme', () => {
@@ -145,6 +147,70 @@ describe('model', () => {
       const result = ComponentTheme.combine(buttonTheme, fooTheme);
 
       expect(result.metadata).to.equal(buttonMetadata);
+    });
+  });
+
+  describe('fromServerRules', () => {
+    it('should create empty theme from empty rules', () => {
+      const theme = ComponentTheme.fromServerRules(buttonMetadata, []);
+
+      expect(theme.properties.length).to.equal(0);
+    });
+
+    it('should create theme from rules', () => {
+      const serverRules: ServerCssRule[] = [
+        {
+          selector: 'test-element',
+          properties: {
+            background: 'cornflowerblue',
+            padding: '3px'
+          }
+        },
+        {
+          selector: 'test-element::part(label)',
+          properties: {
+            color: 'red',
+            'font-size': '20px'
+          }
+        }
+      ];
+      const expectedProperties = [
+        { partName: null, propertyName: 'padding', value: '3px' },
+        { partName: null, propertyName: 'background', value: 'cornflowerblue' },
+        { partName: 'label', propertyName: 'color', value: 'red' },
+        { partName: 'label', propertyName: 'font-size', value: '20px' }
+      ];
+
+      const theme = ComponentTheme.fromServerRules(testElementMetadata, serverRules);
+      expect(theme.metadata).to.equal(testElementMetadata);
+      expect(theme.properties).to.deep.equal(expectedProperties);
+    });
+
+    it('should ignore unknown selectors and properties', () => {
+      const serverRules: ServerCssRule[] = [
+        {
+          selector: 'test-element',
+          properties: {
+            foo: 'cornflowerblue'
+          }
+        },
+        {
+          selector: 'test-element::part(label)',
+          properties: {
+            bar: '20px'
+          }
+        },
+        {
+          selector: 'test-element::part(foo)',
+          properties: {
+            color: 'cornflowerblue',
+            background: 'cornflowerblue'
+          }
+        }
+      ];
+
+      const theme = ComponentTheme.fromServerRules(testElementMetadata, serverRules);
+      expect(theme.properties.length).to.equal(0);
     });
   });
 
