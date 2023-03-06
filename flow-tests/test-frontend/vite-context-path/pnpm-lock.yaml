@@ -1,8 +1,15 @@
 dependencies:
   '@polymer/polymer': 3.5.1
+  '@testscope/all': link:../vite-test-assets/packages/@testscope/all
+  '@testscope/button': link:../vite-test-assets/packages/@testscope/button
+  '@testscope/map': link:../vite-test-assets/packages/@testscope/map
+  '@vaadin/bundles': link:../vite-test-assets/packages/@vaadin/bundles-old
   '@vaadin/common-frontend': 0.0.17_lit@2.6.1
+  '@vaadin/polymer-legacy-adapter': 24.0.0-alpha13
   '@vaadin/router': 1.7.4
   '@vaadin/text-field': 24.0.0-alpha13
+  '@vaadin/vaadin-lumo-styles': 24.0.0-alpha13
+  '@vaadin/vaadin-themable-mixin': 24.0.0-alpha13
   construct-style-sheets-polyfill: 3.1.0
   lit: 2.6.1
 devDependencies:
@@ -1735,6 +1742,14 @@ packages:
     dev: false
     resolution:
       integrity: sha512-ujPOk/gvsvU9aAmO4RxwfguRhEeJLyVRyeCC4F16eTCMk4BOh2RUowgb0cqkAug7WUpwF9DIKE7OTFnDJhqCbw==
+  /@vaadin/polymer-legacy-adapter/24.0.0-alpha13:
+    dependencies:
+      '@polymer/polymer': 3.5.1
+      '@vaadin/vaadin-themable-mixin': 24.0.0-alpha13
+      lit: 2.6.1
+    dev: false
+    resolution:
+      integrity: sha512-ZWz2JGdZrzn/VfF7JGmFmhsAJvti9F+sjdXoSeCj1zC97VUa2ikq3EEx1GREmSqG42V6xDAJlVveXdHRXqinLw==
   /@vaadin/router/1.7.4:
     dependencies:
       '@vaadin/vaadin-usage-statistics': 2.1.0
@@ -3822,9 +3837,16 @@ specifiers:
   '@polymer/polymer': 3.5.1
   '@rollup/plugin-replace': 5.0.2
   '@rollup/pluginutils': 5.0.2
+  '@testscope/all': ../vite-test-assets/packages/@testscope/all
+  '@testscope/button': ../vite-test-assets/packages/@testscope/button
+  '@testscope/map': ../vite-test-assets/packages/@testscope/map
+  '@vaadin/bundles': ../vite-test-assets/packages/@vaadin/bundles-old
   '@vaadin/common-frontend': 0.0.17
+  '@vaadin/polymer-legacy-adapter': 24.0.0-alpha13
   '@vaadin/router': 1.7.4
   '@vaadin/text-field': 24.0.0-alpha13
+  '@vaadin/vaadin-lumo-styles': 24.0.0-alpha13
+  '@vaadin/vaadin-themable-mixin': 24.0.0-alpha13
   async: 3.2.2
   construct-style-sheets-polyfill: 3.1.0
   glob: 7.2.3

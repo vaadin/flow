@@ -2,11 +2,9 @@
   "name": "no-name",
   "license": "UNLICENSED",
   "dependencies": {
+    "@polymer/paper-checkbox": "3.0.1",
+    "@polymer/paper-input": "3.0.2",
     "@polymer/polymer": "3.5.1",
-    "@testscope/all": "../vite-test-assets/packages/@testscope/all",
-    "@testscope/button": "../vite-test-assets/packages/@testscope/button",
-    "@testscope/map": "../vite-test-assets/packages/@testscope/map",
-    "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles-old",
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/polymer-legacy-adapter": "24.0.0-rc2",
     "@vaadin/router": "1.7.4",
@@ -14,6 +12,7 @@
     "@vaadin/vaadin-lumo-styles": "24.0.0-rc2",
     "@vaadin/vaadin-themable-mixin": "24.0.0-rc2",
     "construct-style-sheets-polyfill": "3.1.0",
+    "line-awesome": "1.3.0",
     "lit": "2.6.1"
   },
   "devDependencies": {
@@ -34,6 +33,8 @@
   },
   "vaadin": {
     "dependencies": {
+      "@polymer/paper-checkbox": "3.0.1",
+      "@polymer/paper-input": "3.0.2",
       "@polymer/polymer": "3.5.1",
       "@vaadin/common-frontend": "0.0.17",
       "@vaadin/polymer-legacy-adapter": "24.0.0-rc2",
@@ -42,6 +43,7 @@
       "@vaadin/vaadin-lumo-styles": "24.0.0-rc2",
       "@vaadin/vaadin-themable-mixin": "24.0.0-rc2",
       "construct-style-sheets-polyfill": "3.1.0",
+      "line-awesome": "1.3.0",
       "lit": "2.6.1"
     },
     "devDependencies": {
@@ -60,6 +62,20 @@
       "workbox-core": "6.5.4",
       "workbox-precaching": "6.5.4"
     },
-    "hash": "54086201385f255c864cf6d3efd5de7d2831381156c5848ca16ad0cadba142b3"
+    "hash": "b52489f7900ad8acca1d744de3951aab2f93123efdb59357f156406041c3c6c6"
+  },
+  "overrides": {
+    "@vaadin/common-frontend": "$@vaadin/common-frontend",
+    "construct-style-sheets-polyfill": "$construct-style-sheets-polyfill",
+    "lit": "$lit",
+    "@vaadin/router": "$@vaadin/router",
+    "@polymer/polymer": "$@polymer/polymer",
+    "@vaadin/polymer-legacy-adapter": "$@vaadin/polymer-legacy-adapter",
+    "@vaadin/vaadin-themable-mixin": "$@vaadin/vaadin-themable-mixin",
+    "@vaadin/text-field": "$@vaadin/text-field",
+    "@polymer/paper-checkbox": "$@polymer/paper-checkbox",
+    "@vaadin/vaadin-lumo-styles": "$@vaadin/vaadin-lumo-styles",
+    "@polymer/paper-input": "$@polymer/paper-input",
+    "line-awesome": "$line-awesome"
   }
 }

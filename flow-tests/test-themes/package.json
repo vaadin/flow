@@ -2,17 +2,14 @@
   "name": "no-name",
   "license": "UNLICENSED",
   "dependencies": {
+    "@fortawesome/fontawesome-free": "5.15.1",
     "@polymer/polymer": "3.5.1",
-    "@testscope/all": "../vite-test-assets/packages/@testscope/all",
-    "@testscope/button": "../vite-test-assets/packages/@testscope/button",
-    "@testscope/map": "../vite-test-assets/packages/@testscope/map",
-    "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles-old",
     "@vaadin/common-frontend": "0.0.17",
-    "@vaadin/polymer-legacy-adapter": "24.0.0-rc2",
+    "@vaadin/polymer-legacy-adapter": "24.0.0-alpha13",
     "@vaadin/router": "1.7.4",
-    "@vaadin/text-field": "24.0.0-rc2",
-    "@vaadin/vaadin-lumo-styles": "24.0.0-rc2",
-    "@vaadin/vaadin-themable-mixin": "24.0.0-rc2",
+    "@vaadin/text-field": "24.0.0-alpha13",
+    "@vaadin/vaadin-lumo-styles": "24.0.0-alpha13",
+    "@vaadin/vaadin-themable-mixin": "24.0.0-alpha13",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "2.6.1"
   },
@@ -34,13 +31,14 @@
   },
   "vaadin": {
     "dependencies": {
+      "@fortawesome/fontawesome-free": "5.15.1",
       "@polymer/polymer": "3.5.1",
       "@vaadin/common-frontend": "0.0.17",
-      "@vaadin/polymer-legacy-adapter": "24.0.0-rc2",
+      "@vaadin/polymer-legacy-adapter": "24.0.0-alpha13",
       "@vaadin/router": "1.7.4",
-      "@vaadin/text-field": "24.0.0-rc2",
-      "@vaadin/vaadin-lumo-styles": "24.0.0-rc2",
-      "@vaadin/vaadin-themable-mixin": "24.0.0-rc2",
+      "@vaadin/text-field": "24.0.0-alpha13",
+      "@vaadin/vaadin-lumo-styles": "24.0.0-alpha13",
+      "@vaadin/vaadin-themable-mixin": "24.0.0-alpha13",
       "construct-style-sheets-polyfill": "3.1.0",
       "lit": "2.6.1"
     },
@@ -60,6 +58,6 @@
       "workbox-core": "6.5.4",
       "workbox-precaching": "6.5.4"
     },
-    "hash": "54086201385f255c864cf6d3efd5de7d2831381156c5848ca16ad0cadba142b3"
+    "hash": "5052a43fdafeb33580ab9fc97989dc5536f06c0d0c03fc280daa0b71e0ea5f11"
   }
 }

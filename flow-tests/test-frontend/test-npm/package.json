@@ -5,7 +5,7 @@
     "@polymer/polymer": "3.5.1",
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/router": "1.7.4",
-    "@vaadin/vaadin-text-field": "23.3.0-alpha2",
+    "@vaadin/text-field": "24.0.0-rc2",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "2.6.1"
   },
@@ -19,8 +19,8 @@
     "strip-css-comments": "5.0.0",
     "transform-ast": "2.4.4",
     "typescript": "4.9.3",
-    "vite": "4.0.2",
-    "vite-plugin-checker": "0.5.2",
+    "vite": "4.1.3",
+    "vite-plugin-checker": "0.5.5",
     "workbox-build": "6.5.4",
     "workbox-core": "6.5.4",
     "workbox-precaching": "6.5.4"
@@ -30,7 +30,7 @@
       "@polymer/polymer": "3.5.1",
       "@vaadin/common-frontend": "0.0.17",
       "@vaadin/router": "1.7.4",
-      "@vaadin/vaadin-text-field": "23.3.0-alpha2",
+      "@vaadin/text-field": "24.0.0-rc2",
       "construct-style-sheets-polyfill": "3.1.0",
       "lit": "2.6.1"
     },
@@ -44,13 +44,13 @@
       "strip-css-comments": "5.0.0",
       "transform-ast": "2.4.4",
       "typescript": "4.9.3",
-      "vite": "4.0.2",
-      "vite-plugin-checker": "0.5.2",
+      "vite": "4.1.3",
+      "vite-plugin-checker": "0.5.5",
       "workbox-build": "6.5.4",
       "workbox-core": "6.5.4",
       "workbox-precaching": "6.5.4"
     },
-    "hash": "c5e599a1ccc4ae18cdbd06d240b3af84195ae60a3e5aeea766a56623ebaa3edc"
+    "hash": "53b6b6bb91bad456288845139db161d6b9b45e94d45344fffe213a9e3ea6410a"
   },
   "overrides": {
     "@vaadin/common-frontend": "$@vaadin/common-frontend",
@@ -58,6 +58,6 @@
     "lit": "$lit",
     "@vaadin/router": "$@vaadin/router",
     "@polymer/polymer": "$@polymer/polymer",
-    "@vaadin/vaadin-text-field": "$@vaadin/vaadin-text-field"
+    "@vaadin/text-field": "$@vaadin/text-field"
   }
 }
