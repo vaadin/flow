@@ -5,7 +5,7 @@
     "@polymer/polymer": "3.5.1",
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/router": "1.7.4",
-    "@vaadin/text-field": "24.0.0-rc2",
+    "@vaadin/text-field": "24.1.0-alpha1",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "2.6.1"
   },
@@ -30,7 +30,7 @@
       "@polymer/polymer": "3.5.1",
       "@vaadin/common-frontend": "0.0.17",
       "@vaadin/router": "1.7.4",
-      "@vaadin/text-field": "24.0.0-rc2",
+      "@vaadin/text-field": "24.1.0-alpha1",
       "construct-style-sheets-polyfill": "3.1.0",
       "lit": "2.6.1"
     },
