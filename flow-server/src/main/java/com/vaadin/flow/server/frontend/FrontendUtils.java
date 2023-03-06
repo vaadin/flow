@@ -1228,8 +1228,7 @@ public class FrontendUtils {
         URL statsJson = findBundleFile(projectDir, "config/stats.json");
         if (statsJson == null) {
             getLogger().warn(
-                    "There is no dev-bundle in the project or on the classpath nor is there a default bundle included. "
-                            + "Verify that the dependency 'com.vaadin:vaadin-dev-bundle' is added to your project.");
+                    "There is no dev-bundle in the project or on the classpath nor is there a default bundle included.");
             return null;
         }
 
