@@ -20,10 +20,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -465,8 +467,15 @@ public class NodeInstaller {
 
     private void extractFile(File archive, File destinationDirectory)
             throws ArchiveExtractionException {
+        long size;
         try {
-            getLogger().info("Unpacking {} into {}", archive,
+            size = Files.size(archive.toPath());
+        } catch (IOException e) {
+            throw new ArchiveExtractionException(
+                    "Error determining archive size", e);
+        }
+        try {
+            getLogger().info("Unpacking {} ({} bytes) into {}", archive, size,
                     destinationDirectory);
             archiveExtractor.extract(archive, destinationDirectory);
         } catch (ArchiveExtractionException e) {
