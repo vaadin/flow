@@ -133,6 +133,15 @@ describe('range property editor', () => {
     expect(getInput().value).to.equal('40px');
   });
 
+  it('should display raw preset value in input field if theme value is a preset value', async () => {
+    const updatedTheme = cloneTheme();
+    updatedTheme.updatePropertyValue(null, 'height', 'var(--test-size-xl)');
+    editor.theme = updatedTheme;
+    await elementUpdated(editor);
+
+    expect(getInput().value).to.equal('60px');
+  });
+
   it('should select slider preset when entering a value that matches a preset', async () => {
     const input = getInput();
     input.value = '60px';
