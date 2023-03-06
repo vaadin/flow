@@ -105,6 +105,31 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
     }
 
     @Test
+    public void testHandleLoadPreview() {
+        ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
+        JsonObject data = Json.createObject();
+        String requestId = UUID.randomUUID().toString();
+        data.put("requestId", requestId);
+
+        BaseResponse response = handler.handleDebugMessageData(
+                LoadPreviewRequest.COMMAND_NAME, data);
+        assertResponseOk(response, requestId);
+    }
+
+    @Test
+    public void testHandleLoadRules() {
+        ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
+        JsonObject data = Json.createObject();
+        String requestId = UUID.randomUUID().toString();
+        data.put("requestId", requestId);
+        data.put("selectorFilter", "vaadin-button");
+
+        BaseResponse response = handler.handleDebugMessageData(
+                LoadRulesRequest.COMMAND_NAME, data);
+        assertResponseOk(response, requestId);
+    }
+
+    @Test
     public void testError() {
         prepareComponentTracker(42);
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();

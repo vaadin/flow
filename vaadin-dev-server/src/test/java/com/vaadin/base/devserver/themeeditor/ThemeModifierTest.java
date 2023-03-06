@@ -4,6 +4,7 @@ import com.helger.css.ECSSVersion;
 import com.helger.css.decl.CSSStyleRule;
 import com.helger.css.decl.CascadingStyleSheet;
 import com.helger.css.reader.CSSReader;
+import com.vaadin.base.devserver.themeeditor.messages.LoadRulesResponse;
 import com.vaadin.base.devserver.themeeditor.messages.RulesRequest;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.testutil.TestUtils;
@@ -14,6 +15,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -285,10 +287,64 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
         assertEquals(0, styleSheet.getStyleRuleCount());
     }
 
-    private CascadingStyleSheet getStylesheet(String fileName) {
+    @Test
+    public void getCss() throws IOException {
+        ThemeModifier modifier = new TestThemeModifier();
+        List<RulesRequest.CssRuleProperty> toBeAdded = new ArrayList<>();
+        toBeAdded.add(new RulesRequest.CssRuleProperty(SELECTOR_WITH_PART,
+                "color", "red"));
+        toBeAdded.add(new RulesRequest.CssRuleProperty(SELECTOR_WITH_PART,
+                "font-family", "serif"));
+        modifier.setThemeProperties(toBeAdded);
+
+        String css = modifier.getCss();
+        System.out.println(css);
+
+        String fileContent = Files.readString(getThemeFile("theme-editor.css").toPath());
+
+        assertEquals(fileContent, css);
+    }
+
+    @Test
+    public void getCssRules() {
+        ThemeModifier modifier = new TestThemeModifier();
+        List<RulesRequest.CssRuleProperty> toBeAdded = new ArrayList<>();
+        toBeAdded.add(new RulesRequest.CssRuleProperty("vaadin-button",
+                "color", "red"));
+        toBeAdded.add(new RulesRequest.CssRuleProperty("vaadin-button",
+                "background", "black"));
+        toBeAdded.add(new RulesRequest.CssRuleProperty("vaadin-button::part(label)",
+                "font-family", "serif"));
+        toBeAdded.add(new RulesRequest.CssRuleProperty("vaadin-text-field",
+                "color", "red"));
+        toBeAdded.add(new RulesRequest.CssRuleProperty("span",
+                "color", "red"));
+        modifier.setThemeProperties(toBeAdded);
+
+        List<LoadRulesResponse.CssRule> cssRules = modifier.getCssRules("vaadin-button");
+        assertEquals(2, cssRules.size());
+
+        assertEquals("vaadin-button", cssRules.get(0).selector());
+        assertEquals(2, cssRules.get(0).properties().size());
+        assertTrue(cssRules.get(0).properties().containsKey("color"));
+        assertEquals("red", cssRules.get(0).properties().get("color"));
+        assertTrue(cssRules.get(0).properties().containsKey("background"));
+        assertEquals("black", cssRules.get(0).properties().get("background"));
+
+        assertEquals("vaadin-button::part(label)", cssRules.get(1).selector());
+        assertEquals(1, cssRules.get(1).properties().size());
+        assertTrue(cssRules.get(1).properties().containsKey("font-family"));
+        assertEquals("serif", cssRules.get(1).properties().get("font-family"));
+    }
+
+    private File getThemeFile(String fileName) {
         File themeFolder = TestUtils
                 .getTestFolder(FRONTEND_FOLDER + "/themes/my-theme");
-        File themeEditorCss = new File(themeFolder, fileName);
+        return new File(themeFolder, fileName);
+    }
+
+    private CascadingStyleSheet getStylesheet(String fileName) {
+        File themeEditorCss = getThemeFile(fileName);
         return CSSReader.readFromFile(themeEditorCss, StandardCharsets.UTF_8,
                 ECSSVersion.LATEST);
     }
