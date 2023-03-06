@@ -35,29 +35,33 @@ import elemental.json.JsonObject;
 public class DevBundleCssImportIT extends ChromeBrowserTest {
 
     @Test
-    public void cssImportedStyles_stylesInMetaInfResources_stylesApplied_hashCalculated() throws IOException {
+    public void cssImportedStyles_stylesInMetaInfResources_stylesApplied_hashCalculated()
+            throws IOException {
         open();
 
-        WebElement myComponent =
-                findElement(By.id(DevBundleCssImportView.MY_COMPONENT_ID));
+        WebElement myComponent = findElement(
+                By.id(DevBundleCssImportView.MY_COMPONENT_ID));
 
-        Assert.assertEquals("1px solid rgb(0, 128, 0)", myComponent.getCssValue(
-                "border"));
+        Assert.assertEquals("1px solid rgb(0, 128, 0)",
+                myComponent.getCssValue("border"));
 
         JsonObject frontendHashes = getFrontendHashes();
 
-        // TODO: remove '?inline' after https://github.com/vaadin/flow/pull/16125
+        // TODO: remove '?inline' after
+        // https://github.com/vaadin/flow/pull/16125
         Assert.assertTrue("Add-on styles content hash is expected",
-                frontendHashes.hasKey("addons-styles/add-on-styles.css?inline"));
+                frontendHashes
+                        .hasKey("addons-styles/add-on-styles.css?inline"));
         Assert.assertEquals("Unexpected addon styles content hash",
                 "5a7bc75b3b5edc5051ed36f75f625e204260459b4f1872dfc03a255b944fc89e",
-                frontendHashes.getString("addons-styles/add-on-styles.css?inline"));
+                frontendHashes
+                        .getString("addons-styles/add-on-styles.css?inline"));
 
         JsonArray bundleImports = getBundleImports();
         boolean found = false;
         for (int i = 0; i < bundleImports.length(); i++) {
-            if (bundleImports.get(i).asString()
-                    .equals("Frontend/generated/jar-resources/addons-styles/add-on-styles.css?inline")) {
+            if (bundleImports.get(i).asString().equals(
+                    "Frontend/generated/jar-resources/addons-styles/add-on-styles.css?inline")) {
                 found = true;
             }
         }
