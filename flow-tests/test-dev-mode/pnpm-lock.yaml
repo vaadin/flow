@@ -2,7 +2,7 @@ dependencies:
   '@polymer/polymer': 3.5.1
   '@vaadin/common-frontend': 0.0.17_lit@2.6.1
   '@vaadin/router': 1.7.4
-  '@vaadin/text-field': 24.0.0-alpha13
+  '@vaadin/text-field': 24.0.0-rc2
   construct-style-sheets-polyfill: 3.1.0
   lit: 2.6.1
 devDependencies:
@@ -1696,7 +1696,7 @@ packages:
       lit: ^2.0.0
     resolution:
       integrity: sha512-M4tg10cYgdDqQAXfGfXpQ90eHm+xL6ynAFEDgtc2IxXVWXKYU8jGK08SM5yOcZ4wDk0ETyHMtQlKUPDNkz6Qfw==
-  /@vaadin/component-base/24.0.0-alpha13:
+  /@vaadin/component-base/24.0.0-rc2:
     dependencies:
       '@open-wc/dedupe-mixin': 1.3.1
       '@polymer/polymer': 3.5.1
@@ -1705,36 +1705,36 @@ packages:
       lit: 2.6.1
     dev: false
     resolution:
-      integrity: sha512-SVU3ByMxzHVsbfa9HMubf9HVybobSL7CEZJYh45vyYWH9HTHbMLbtFwfdTk6rSaIReQ7utbt0s8OKPeyMrbPQQ==
-  /@vaadin/field-base/24.0.0-alpha13:
+      integrity: sha512-19MsBI2e0xz4qK43Q0jYf6rwHPSBXEBZp+slWofEi+Npvd6JtIR2abViApjMZ0QEiudncXgBNhg2CAYFABItGQ==
+  /@vaadin/field-base/24.0.0-rc2:
     dependencies:
       '@open-wc/dedupe-mixin': 1.3.1
       '@polymer/polymer': 3.5.1
-      '@vaadin/component-base': 24.0.0-alpha13
+      '@vaadin/component-base': 24.0.0-rc2
       lit: 2.6.1
     dev: false
     resolution:
-      integrity: sha512-o3W7LhXPRQrf0hiQupzdXw1HC+IU/oft2LmKan/LfsmyeXAnYX8Py/nv18A19RWiChR+Snz2oI5wqVNCPuwb5Q==
-  /@vaadin/icon/24.0.0-alpha13:
+      integrity: sha512-1tWIErAa+9L34gc6lqDMVILywfFoXOI4QkvLSB50dSCN6UEvZsUwZ+0F8WKmlQLPMEhIB2mGU8BguKkohbvyZg==
+  /@vaadin/icon/24.0.0-rc2:
     dependencies:
       '@polymer/polymer': 3.5.1
-      '@vaadin/component-base': 24.0.0-alpha13
-      '@vaadin/vaadin-lumo-styles': 24.0.0-alpha13
-      '@vaadin/vaadin-themable-mixin': 24.0.0-alpha13
+      '@vaadin/component-base': 24.0.0-rc2
+      '@vaadin/vaadin-lumo-styles': 24.0.0-rc2
+      '@vaadin/vaadin-themable-mixin': 24.0.0-rc2
       lit: 2.6.1
     dev: false
     resolution:
-      integrity: sha512-51QpsR72QBR68ANMoOv+yMeeuH+23MjOkHkBT44U9lR11DRy96E3h6QahsxK0O2KdDaqc0dkz1Fg1u7NB++ydA==
-  /@vaadin/input-container/24.0.0-alpha13:
+      integrity: sha512-MRZEHyW1YM3Jw20WvE5pIFDp8VBJN0GV/D6PCEQqQZaqOM7JA5X4bNzvVWQTePPbIQF9yZdFD6LMH4fb01f6QQ==
+  /@vaadin/input-container/24.0.0-rc2:
     dependencies:
       '@polymer/polymer': 3.5.1
-      '@vaadin/component-base': 24.0.0-alpha13
-      '@vaadin/vaadin-lumo-styles': 24.0.0-alpha13
-      '@vaadin/vaadin-material-styles': 24.0.0-alpha13
-      '@vaadin/vaadin-themable-mixin': 24.0.0-alpha13
+      '@vaadin/component-base': 24.0.0-rc2
+      '@vaadin/vaadin-lumo-styles': 24.0.0-rc2
+      '@vaadin/vaadin-material-styles': 24.0.0-rc2
+      '@vaadin/vaadin-themable-mixin': 24.0.0-rc2
     dev: false
     resolution:
-      integrity: sha512-ujPOk/gvsvU9aAmO4RxwfguRhEeJLyVRyeCC4F16eTCMk4BOh2RUowgb0cqkAug7WUpwF9DIKE7OTFnDJhqCbw==
+      integrity: sha512-cYdy62uG3OTshtiT5k9mb0KlXBDC/p64C4njyBVUhalJ2EeJ2yH9FTyHXPlJc5w+AmtR+SXThq2u5iKVtQx6hQ==
   /@vaadin/router/1.7.4:
     dependencies:
       '@vaadin/vaadin-usage-statistics': 2.1.0
@@ -1742,44 +1742,46 @@ packages:
     dev: false
     resolution:
       integrity: sha512-B4JVtzFVUMlsjuJHNXEMfNZrM4QDrdeOMc6EEigiHYxwF82py6yDdP6SWP0aPoP3f6aQHt51tLWdXSpkKpWf7A==
-  /@vaadin/text-field/24.0.0-alpha13:
+  /@vaadin/text-field/24.0.0-rc2:
     dependencies:
+      '@open-wc/dedupe-mixin': 1.3.1
       '@polymer/polymer': 3.5.1
-      '@vaadin/component-base': 24.0.0-alpha13
-      '@vaadin/field-base': 24.0.0-alpha13
-      '@vaadin/input-container': 24.0.0-alpha13
-      '@vaadin/vaadin-lumo-styles': 24.0.0-alpha13
-      '@vaadin/vaadin-material-styles': 24.0.0-alpha13
-      '@vaadin/vaadin-themable-mixin': 24.0.0-alpha13
+      '@vaadin/component-base': 24.0.0-rc2
+      '@vaadin/field-base': 24.0.0-rc2
+      '@vaadin/input-container': 24.0.0-rc2
+      '@vaadin/vaadin-lumo-styles': 24.0.0-rc2
+      '@vaadin/vaadin-material-styles': 24.0.0-rc2
+      '@vaadin/vaadin-themable-mixin': 24.0.0-rc2
+      lit: 2.6.1
     dev: false
     resolution:
-      integrity: sha512-lIcgWVj0Ylit5gKkxz7r5r0+tokC8UyvLLuwp6O9sm9Wz8toj3Bx4HKq4qFKNGQ5lJVS+1anMANUInerod5deA==
+      integrity: sha512-umQauffue+PCyMKfpyUpTTvQjCrme7Fgbfmsm46L8RigBL3idyaRjfDuTqtn+eRcqNj+JzRaVqRTPTNXMYil/A==
   /@vaadin/vaadin-development-mode-detector/2.0.5:
     dev: false
     resolution:
       integrity: sha512-miirBQw10UHjKwRv29iZniXCo41cLg3wFotoyTeUZ2PTGIDk/fZVFr4Q4WVKZrp3D15878vz94nNQROSmPLjdg==
-  /@vaadin/vaadin-lumo-styles/24.0.0-alpha13:
+  /@vaadin/vaadin-lumo-styles/24.0.0-rc2:
     dependencies:
       '@polymer/polymer': 3.5.1
-      '@vaadin/icon': 24.0.0-alpha13
-      '@vaadin/vaadin-themable-mixin': 24.0.0-alpha13
+      '@vaadin/icon': 24.0.0-rc2
+      '@vaadin/vaadin-themable-mixin': 24.0.0-rc2
     dev: false
     resolution:
-      integrity: sha512-xxEIoxis28OfX3ate2BUtATcS33lVjDVv5NkVs7j6cIs7UAJp9lUmXVNHd21nJeXV4FiYenVDkYG+XDI33o1hw==
-  /@vaadin/vaadin-material-styles/24.0.0-alpha13:
+      integrity: sha512-Lvrc1ehTF6UtYOb4ClryjZESUQUzHgoDHb39WwUtMYsCMFQM7LeIW4RwrpH3D7ZxA54ekAPhc9y5CWnCvUFTEw==
+  /@vaadin/vaadin-material-styles/24.0.0-rc2:
     dependencies:
       '@polymer/polymer': 3.5.1
-      '@vaadin/vaadin-themable-mixin': 24.0.0-alpha13
+      '@vaadin/vaadin-themable-mixin': 24.0.0-rc2
     dev: false
     resolution:
-      integrity: sha512-cx0VIhgmv0Z9bSPRFMSZv0pAx8ijVVLJ7fp5I8JBVie4mt6qxxLw65gPbwvq+vJ2ZYVrbg0e4xitZSPx3gBnBA==
-  /@vaadin/vaadin-themable-mixin/24.0.0-alpha13:
+      integrity: sha512-mOLnwIh6dWLGlMgWM9+psHeMnl11pqTW3BT1/oDum+SszyOC+EmSkigQJlB5KTSTToULgF1zX/Fu+10ZX67vDw==
+  /@vaadin/vaadin-themable-mixin/24.0.0-rc2:
     dependencies:
       '@open-wc/dedupe-mixin': 1.3.1
       lit: 2.6.1
     dev: false
     resolution:
-      integrity: sha512-KPS1IMpY4QcNkzcEh+lf5bUTZ8EJwORJn+6HrsE7y06rFj++Z8XoTyZYBLU7/fmjHfmVu3gxiaBCiE0+jf5Nxw==
+      integrity: sha512-IDURay3llfIwg+Plrh0QmDsBLCXgWZ5UgNhrOMjyMYpOq8M7+FyRzR4mu4RpQ8hhPtmZr9qSVri98AP7K90d7g==
   /@vaadin/vaadin-usage-statistics/2.1.0:
     dependencies:
       '@vaadin/vaadin-development-mode-detector': 2.0.5
@@ -3824,7 +3826,7 @@ specifiers:
   '@rollup/pluginutils': 5.0.2
   '@vaadin/common-frontend': 0.0.17
   '@vaadin/router': 1.7.4
-  '@vaadin/text-field': 24.0.0-alpha13
+  '@vaadin/text-field': 24.0.0-rc2
   async: 3.2.2
   construct-style-sheets-polyfill: 3.1.0
   glob: 7.2.3

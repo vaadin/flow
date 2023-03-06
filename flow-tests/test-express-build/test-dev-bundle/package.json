@@ -2,11 +2,17 @@
   "name": "no-name",
   "license": "UNLICENSED",
   "dependencies": {
+    "@polymer/paper-checkbox": "3.0.1",
+    "@polymer/paper-input": "3.0.2",
     "@polymer/polymer": "3.5.1",
     "@vaadin/common-frontend": "0.0.17",
+    "@vaadin/polymer-legacy-adapter": "24.0.0-rc2",
     "@vaadin/router": "1.7.4",
     "@vaadin/text-field": "24.0.0-rc2",
+    "@vaadin/vaadin-lumo-styles": "24.0.0-rc2",
+    "@vaadin/vaadin-themable-mixin": "24.0.0-rc2",
     "construct-style-sheets-polyfill": "3.1.0",
+    "line-awesome": "1.3.0",
     "lit": "2.6.1"
   },
   "devDependencies": {
@@ -27,11 +33,17 @@
   },
   "vaadin": {
     "dependencies": {
+      "@polymer/paper-checkbox": "3.0.1",
+      "@polymer/paper-input": "3.0.2",
       "@polymer/polymer": "3.5.1",
       "@vaadin/common-frontend": "0.0.17",
+      "@vaadin/polymer-legacy-adapter": "24.0.0-rc2",
       "@vaadin/router": "1.7.4",
       "@vaadin/text-field": "24.0.0-rc2",
+      "@vaadin/vaadin-lumo-styles": "24.0.0-rc2",
+      "@vaadin/vaadin-themable-mixin": "24.0.0-rc2",
       "construct-style-sheets-polyfill": "3.1.0",
+      "line-awesome": "1.3.0",
       "lit": "2.6.1"
     },
     "devDependencies": {
@@ -50,7 +62,7 @@
       "workbox-core": "6.5.4",
       "workbox-precaching": "6.5.4"
     },
-    "hash": "53b6b6bb91bad456288845139db161d6b9b45e94d45344fffe213a9e3ea6410a"
+    "hash": "e3a53b9f29a378cfc8d5bd70bcdbe0fe513044141713c87a5f98b7d9f5dd0e4b"
   },
   "overrides": {
     "@vaadin/common-frontend": "$@vaadin/common-frontend",
@@ -58,6 +70,12 @@
     "lit": "$lit",
     "@vaadin/router": "$@vaadin/router",
     "@polymer/polymer": "$@polymer/polymer",
-    "@vaadin/text-field": "$@vaadin/text-field"
+    "@vaadin/polymer-legacy-adapter": "$@vaadin/polymer-legacy-adapter",
+    "@vaadin/vaadin-themable-mixin": "$@vaadin/vaadin-themable-mixin",
+    "@vaadin/text-field": "$@vaadin/text-field",
+    "@polymer/paper-checkbox": "$@polymer/paper-checkbox",
+    "@vaadin/vaadin-lumo-styles": "$@vaadin/vaadin-lumo-styles",
+    "@polymer/paper-input": "$@polymer/paper-input",
+    "line-awesome": "$line-awesome"
   }
 }

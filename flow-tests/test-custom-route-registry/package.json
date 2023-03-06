@@ -50,14 +50,6 @@
       "workbox-core": "6.5.4",
       "workbox-precaching": "6.5.4"
     },
-    "hash": "53b6b6bb91bad456288845139db161d6b9b45e94d45344fffe213a9e3ea6410a"
-  },
-  "overrides": {
-    "@vaadin/common-frontend": "$@vaadin/common-frontend",
-    "construct-style-sheets-polyfill": "$construct-style-sheets-polyfill",
-    "lit": "$lit",
-    "@vaadin/router": "$@vaadin/router",
-    "@polymer/polymer": "$@polymer/polymer",
-    "@vaadin/text-field": "$@vaadin/text-field"
+    "hash": "d414b1b28cd9ae2bf9844a3b7c20e6e3c807fad2156c6f6768e69ab7e756c50d"
   }
 }

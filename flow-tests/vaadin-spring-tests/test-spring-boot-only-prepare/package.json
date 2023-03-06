@@ -2,10 +2,26 @@
   "name": "no-name",
   "license": "UNLICENSED",
   "dependencies": {
+    "@polymer/paper-checkbox": "3.0.1",
+    "@polymer/paper-input": "3.0.2",
     "@polymer/polymer": "3.5.1",
+    "@vaadin/button": "24.0.0-rc2",
     "@vaadin/common-frontend": "0.0.17",
+    "@vaadin/email-field": "24.0.0-rc2",
+    "@vaadin/icon": "24.0.0-rc2",
+    "@vaadin/icons": "24.0.0-rc2",
+    "@vaadin/integer-field": "24.0.0-rc2",
+    "@vaadin/notification": "24.0.0-rc2",
+    "@vaadin/number-field": "24.0.0-rc2",
+    "@vaadin/password-field": "24.0.0-rc2",
+    "@vaadin/polymer-legacy-adapter": "24.0.0-rc2",
     "@vaadin/router": "1.7.4",
+    "@vaadin/text-area": "24.0.0-rc2",
     "@vaadin/text-field": "24.0.0-rc2",
+    "@vaadin/tooltip": "24.0.0-rc2",
+    "@vaadin/upload": "24.0.0-rc2",
+    "@vaadin/vaadin-lumo-styles": "24.0.0-rc2",
+    "@vaadin/vaadin-themable-mixin": "24.0.0-rc2",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "2.6.1"
   },
@@ -27,10 +43,26 @@
   },
   "vaadin": {
     "dependencies": {
+      "@polymer/paper-checkbox": "3.0.1",
+      "@polymer/paper-input": "3.0.2",
       "@polymer/polymer": "3.5.1",
+      "@vaadin/button": "24.0.0-rc2",
       "@vaadin/common-frontend": "0.0.17",
+      "@vaadin/email-field": "24.0.0-rc2",
+      "@vaadin/icon": "24.0.0-rc2",
+      "@vaadin/icons": "24.0.0-rc2",
+      "@vaadin/integer-field": "24.0.0-rc2",
+      "@vaadin/notification": "24.0.0-rc2",
+      "@vaadin/number-field": "24.0.0-rc2",
+      "@vaadin/password-field": "24.0.0-rc2",
+      "@vaadin/polymer-legacy-adapter": "24.0.0-rc2",
       "@vaadin/router": "1.7.4",
+      "@vaadin/text-area": "24.0.0-rc2",
       "@vaadin/text-field": "24.0.0-rc2",
+      "@vaadin/tooltip": "24.0.0-rc2",
+      "@vaadin/upload": "24.0.0-rc2",
+      "@vaadin/vaadin-lumo-styles": "24.0.0-rc2",
+      "@vaadin/vaadin-themable-mixin": "24.0.0-rc2",
       "construct-style-sheets-polyfill": "3.1.0",
       "lit": "2.6.1"
     },
@@ -50,14 +82,6 @@
       "workbox-core": "6.5.4",
       "workbox-precaching": "6.5.4"
     },
-    "hash": "53b6b6bb91bad456288845139db161d6b9b45e94d45344fffe213a9e3ea6410a"
-  },
-  "overrides": {
-    "@vaadin/common-frontend": "$@vaadin/common-frontend",
-    "construct-style-sheets-polyfill": "$construct-style-sheets-polyfill",
-    "lit": "$lit",
-    "@vaadin/router": "$@vaadin/router",
-    "@polymer/polymer": "$@polymer/polymer",
-    "@vaadin/text-field": "$@vaadin/text-field"
+    "hash": "ee551cc8c3b57f72ca9ba481dcef5e6507dd304914030392576ccaa388a35f2c"
   }
 }
