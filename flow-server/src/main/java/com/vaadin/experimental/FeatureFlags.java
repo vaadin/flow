@@ -63,7 +63,7 @@ public class FeatureFlags implements Serializable {
             "enforceFieldValidation",
             "https://github.com/vaadin/platform/issues/3066", false, null);
     public static final Feature THEME_EDITOR = new Feature("Theme Editor",
-            "themeEditor", null, false, null);
+            "themeEditor", null, true, null);
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;

@@ -1,13 +1,14 @@
 package com.vaadin.base.devserver.themeeditor;
 
+import com.vaadin.base.devserver.themeeditor.messages.*;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.VaadinContext;
-import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Handler for ThemeEditor debug window communication messages. Responsible for
@@ -19,9 +20,16 @@ public class ThemeEditorMessageHandler {
 
     private final ThemeModifier themeModifier;
 
+    private final Map<String, Function<JsonObject, BaseResponse>> handlers;
+
     public ThemeEditorMessageHandler(VaadinContext context) {
-        sourceModifier = new JavaSourceModifier(context);
-        themeModifier = new ThemeModifier(context);
+        this.sourceModifier = new JavaSourceModifier(context);
+        this.themeModifier = new ThemeModifier(context);
+        this.handlers = Map.of(RulesRequest.COMMAND_NAME,
+                this::handleThemeEditorRules, ClassNamesRequest.COMMAND_NAME,
+                this::handleThemeEditorClassNames,
+                ComponentMetadataRequest.COMMAND_NAME,
+                this::handleComponentMetadata);
     }
 
     public boolean isEnabled() {
@@ -32,6 +40,28 @@ public class ThemeEditorMessageHandler {
         return themeModifier.getState().name().toLowerCase();
     }
 
+    protected JavaSourceModifier getSourceModifier() {
+        return sourceModifier;
+    }
+
+    protected ThemeModifier getThemeModifier() {
+        return themeModifier;
+    }
+
+    /**
+     * Checks if given command can be handled by ThemeEditor.
+     *
+     * @param command
+     *            command to be verified if supported
+     * @param data
+     *            data object to be verified if is of proper structure
+     * @return true if it can be handled, false otherwise
+     */
+    public boolean canHandle(String command, JsonObject data) {
+        return command != null && data != null && data.hasKey("requestId")
+                && handlers.containsKey(command);
+    }
+
     /**
      * Handles debug message command and performs given action.
      *
@@ -39,64 +69,53 @@ public class ThemeEditorMessageHandler {
      *            Command name
      * @param data
      *            Command data
-     * @return true if message has been handled, false otherwise
+     * @return response in form of JsonObject
      */
-    public boolean handleDebugMessageData(String command, JsonObject data) {
+    public BaseResponse handleDebugMessageData(String command,
+            JsonObject data) {
+        assert canHandle(command, data);
         try {
-            switch (command) {
-            case "themeEditorRules":
-                List<ThemeModifier.CssRuleProperty> rulesToBeAdded = toCssRulePropertiesList(
-                        data.getArray("add"));
-                List<ThemeModifier.CssRuleProperty> rulesToBeRemoved = toCssRulePropertiesList(
-                        data.getArray("remove"));
-                themeModifier.setThemeProperties(rulesToBeAdded);
-                themeModifier.removeThemeProperties(rulesToBeRemoved);
-                return true;
-            case "themeEditorCreateDefaultTheme":
-                themeModifier.createDefaultTheme();
-                return true;
-            case "themeEditorClassName":
-                int uiId = (int) data.getNumber("uiId");
-                int nodeId = (int) data.getNumber("nodeId");
-                List<String> classNamesToBeAdded = toClassNameList(
-                        data.get("add"));
-                List<String> classNamesToBeRemoved = toClassNameList(
-                        data.get("remove"));
-                sourceModifier.setClassNames(uiId, nodeId, classNamesToBeAdded);
-                sourceModifier.removeClassNames(uiId, nodeId,
-                        classNamesToBeRemoved);
-                return true;
-            default:
-                return false;
-            }
-        } catch (ModifierException ex) {
-            getLogger().error(ex.getMessage(), ex.getCause());
+            return handlers.get(command).apply(data);
+        } catch (ThemeEditorException ex) {
+            getLogger().error(ex.getMessage(), ex);
+            return new ErrorResponse(data.getString("requestId"),
+                    ex.getMessage());
         }
-        return true;
     }
 
-    protected List<String> toClassNameList(JsonArray array) {
-        List<String> list = new ArrayList<>();
-        if (array != null) {
-            for (int i = 0; i < array.length(); ++i) {
-                list.add(array.getString(i));
-            }
+    protected BaseResponse handleThemeEditorRules(JsonObject data) {
+        RulesRequest request = JsonUtils.readToObject(data, RulesRequest.class);
+        if (request.getAdd() != null) {
+            getThemeModifier().setThemeProperties(request.getAdd());
         }
-        return list;
+        if (request.getRemove() != null) {
+            getThemeModifier().removeThemeProperties(request.getRemove());
+        }
+        return BaseResponse.ok(request.getRequestId());
     }
 
-    protected List<ThemeModifier.CssRuleProperty> toCssRulePropertiesList(
-            JsonArray array) {
-        List<ThemeModifier.CssRuleProperty> list = new ArrayList<>();
-        if (array != null) {
-            for (int i = 0; i < array.length(); ++i) {
-                JsonObject rule = array.getObject(i);
-                list.add(new ThemeModifier.CssRuleProperty(
-                        rule.getString("selector"), rule.getString("property"),
-                        rule.getString("value")));
-            }
+    protected BaseResponse handleThemeEditorClassNames(JsonObject data) {
+        ClassNamesRequest request = JsonUtils.readToObject(data,
+                ClassNamesRequest.class);
+        int uiId = request.getUiId();
+        int nodeId = request.getNodeId();
+        if (request.getAdd() != null) {
+            getSourceModifier().setClassNames(uiId, nodeId, request.getAdd());
         }
-        return list;
+        if (request.getRemove() != null) {
+            getSourceModifier().removeClassNames(uiId, nodeId,
+                    request.getRemove());
+        }
+        return BaseResponse.ok(request.getRequestId());
+    }
+
+    protected BaseResponse handleComponentMetadata(JsonObject data) {
+        ComponentMetadataRequest request = JsonUtils.readToObject(data,
+                ComponentMetadataRequest.class);
+        JavaSourceModifier.ComponentMetadata metadata = getSourceModifier()
+                .getMetadata(request.getUiId(), request.getNodeId());
+        return new ComponentMetadataResponse(request.getRequestId(),
+                metadata.isAccessible());
     }
 
     private static Logger getLogger() {
