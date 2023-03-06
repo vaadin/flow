@@ -7,18 +7,19 @@ import { metadataRegistry } from './metadata/registry';
 import sinon from 'sinon';
 import { themePreview } from './preview';
 import { testElementMetadata } from './tests/utils';
+import { Commands } from './api';
 
 describe('theme-editor', () => {
   let editor: ThemeEditor;
   let testElement: HTMLElement;
   let connectionMock: {
-    sendThemeEditorRules: sinon.SinonSpy;
+    send: sinon.SinonSpy;
   };
   let getMetadataStub: sinon.SinonStub;
 
   async function editorFixture() {
     connectionMock = {
-      sendThemeEditorRules: sinon.spy(() => {})
+      send: sinon.spy(() => {})
     };
     const pickerMock = {
       open: (options: PickerOptions) => {
@@ -172,25 +173,35 @@ describe('theme-editor', () => {
       await pickComponent();
       await editProperty('label', 'color', 'red');
 
-      expect(connectionMock.sendThemeEditorRules.calledOnce);
-      expect(connectionMock.sendThemeEditorRules.args[0][0]).to.deep.equal([
-        {
-          selector: 'test-element::part(label)',
-          property: 'color',
-          value: 'red'
-        }
-      ]);
-      connectionMock.sendThemeEditorRules.resetHistory();
+      expect(connectionMock.send.calledOnce);
+      expect(connectionMock.send.args[0][0]).to.equal(Commands.updateCssRules);
+      expect(connectionMock.send.args[0][1]).to.deep.equal({
+        requestId: '0',
+        add: [
+          {
+            selector: 'test-element::part(label)',
+            property: 'color',
+            value: 'red'
+          }
+        ],
+        remove: []
+      });
+      connectionMock.send.resetHistory();
 
       await editProperty('label', 'color', 'green');
-      expect(connectionMock.sendThemeEditorRules.calledOnce);
-      expect(connectionMock.sendThemeEditorRules.args[0][0]).to.deep.equal([
-        {
-          selector: 'test-element::part(label)',
-          property: 'color',
-          value: 'green'
-        }
-      ]);
+      expect(connectionMock.send.calledOnce);
+      expect(connectionMock.send.args[0][0]).to.equal(Commands.updateCssRules);
+      expect(connectionMock.send.args[0][1]).to.deep.equal({
+        requestId: '1',
+        add: [
+          {
+            selector: 'test-element::part(label)',
+            property: 'color',
+            value: 'green'
+          }
+        ],
+        remove: []
+      });
     });
 
     it('should dispatch event before saving changes', async () => {
