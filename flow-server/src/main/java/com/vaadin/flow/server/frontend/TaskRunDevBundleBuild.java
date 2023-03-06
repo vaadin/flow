@@ -45,6 +45,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -182,21 +183,29 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 .getPackages();
 
         if (!hashAndBundleModulesEqual(statsJson, packageJson, npmPackages)) {
+            UsageStatistics.markAsUsed("flow/rebundle-reason-missing-package",
+                    null);
             // Hash in the project doesn't match the bundle hash or NpmPackages
             // are found missing in bundle.
             return true;
         }
         if (!frontendImportsFound(statsJson, options, finder,
                 frontendDependencies)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-missing-frontend-import", null);
             return true;
         }
 
         if (themeConfigurationChanged(options, statsJson,
                 frontendDependencies)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-changed-theme-config", null);
             return true;
         }
 
         if (exportedWebComponents(statsJson, finder)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-added-exported-component", null);
             return true;
         }
 
@@ -347,11 +356,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         } else if (bundleJsonType == JsonType.NUMBER) {
             return JsonUtils.numbersEqual(jsonFromBundle, projectJson);
         } else if (bundleJsonType == JsonType.STRING) {
-            // ignore parent theme, because having a parent theme doesn't
-            // need a new bundle per se
-            if (projectJson.toJson().equals("parent")) {
-                return true;
-            }
             return JsonUtils.stringEqual(jsonFromBundle, projectJson);
         } else if (bundleJsonType == JsonType.ARRAY) {
             JsonArray jsonArrayFromBundle = (JsonArray) jsonFromBundle;
@@ -1021,6 +1025,12 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         for (String projectEntryKey : projectJsonObject.keys()) {
             JsonValue projectEntry = projectJsonObject.get(projectEntryKey);
+            // ignore parent theme, because having a parent theme doesn't
+            // need a new bundle per se
+            if (projectEntry.getType() == JsonType.STRING
+                    && "parent".equals(projectEntryKey)) {
+                continue;
+            }
             boolean entryFound = false;
             for (String bundleEntryKey : jsonObjectFromBundle.keys()) {
                 JsonValue bundleEntry = jsonObjectFromBundle
