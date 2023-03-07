@@ -24,7 +24,6 @@ import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
@@ -147,7 +146,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
                             c.getName());
                     continue;
                 }
-
+                registeredClasses.add(c.getName());
                 logger.debug("Registering a bean for route class {}",
                         c.getName());
                 AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
