@@ -61,14 +61,6 @@ import com.vaadin.testbench.parallel.Browser;
 @Category(ChromeTests.class)
 public class ChromeDeviceTest extends ViewOrUITest {
 
-    /**
-     * Sets up the chrome driver path in a system variable.
-     */
-    @BeforeClass
-    public static void setChromeDriverPath() {
-        ChromeDriverLocator.fillEnvironmentProperty();
-    }
-
     static boolean isJavaInDebugMode() {
         return ManagementFactory.getRuntimeMXBean().getInputArguments()
                 .toString().contains("jdwp");
