@@ -240,5 +240,5 @@ jobs:
       - name: Set Failure Status
         if: ${{ always() && (needs.unit-tests.result != 'success' || needs.it-tests.result != 'success') }}
         run: |
-            echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANNELLED" | tee -a $GITHUB_STEP_SUMMARY
+            echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
             exit 1
