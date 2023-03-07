@@ -20,6 +20,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
@@ -31,8 +34,9 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_COUNT_MAX;
+import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_SIZE_MAX;
+import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_SIZE_MAX;
 
 /**
  * Handles {@link StreamResource} and {@link StreamReceiver} instances
@@ -64,6 +68,9 @@ public class StreamRequestHandler implements RequestHandler {
     }
 
     protected StreamRequestHandler(StreamReceiverHandler receiverHandler) {
+        receiverHandler.setRequestSizeMax(getRequestSizeMax());
+        receiverHandler.setFileSizeMax(getFileSizeMax());
+        receiverHandler.setFileCountMax(getFileCountMax());
         this.receiverHandler = receiverHandler;
     }
 
@@ -169,6 +176,36 @@ public class StreamRequestHandler implements RequestHandler {
                     e);
             return Optional.empty();
         }
+    }
+
+    /**
+     * Returns maximum request size for upload. Override this to increase the
+     * default. Defaults to -1 (no limit).
+     *
+     * @return maximum request size for upload
+     */
+    protected long getRequestSizeMax() {
+        return DEFAULT_SIZE_MAX;
+    }
+
+    /**
+     * Returns maximum file size for upload. Override this to increase the
+     * default. Defaults to -1 (no limit).
+     *
+     * @return maximum file size for upload
+     */
+    protected long getFileSizeMax() {
+        return DEFAULT_FILE_SIZE_MAX;
+    }
+
+    /**
+     * Returns maximum file part count for upload. Override this to increase the
+     * default. Defaults to 10000.
+     *
+     * @return maximum file part count for upload
+     */
+    protected long getFileCountMax() {
+        return DEFAULT_FILE_COUNT_MAX;
     }
 
     private static Logger getLogger() {
