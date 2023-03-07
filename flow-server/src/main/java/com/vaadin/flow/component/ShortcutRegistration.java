@@ -753,24 +753,29 @@ public class ShortcutRegistration implements Registration, Serializable {
         // shortcut
 
         /*
-         * Due to https://github.com/vaadin/flow/issues/15906 Because browsers
-         * having different implementation for Option key: -> Option key
-         * triggered on Mac: - Mozilla:ALT_GRAPH and ALT as well triggered
-         * (getModifierState() return true for both) - Chrome: only ALT
-         * triggered (getModifierState() return true for only ALT)
+         * Due to https://github.com/vaadin/flow/issues/15906.
+         * Browsers having different implementation for Option keys:
+         * -> Mozilla: ALT_GRAPH and ALT both are triggered
+         * (getModifierState() return true for ALT AND ALT_GRAPH),
+         * -> Chrome: ALT is triggered only
+         * (getModifierState() return true for only ALT).
          *
-         * So we need to remove in that case the ALT_GRAPH from the realMods
+         * So we need to check if ALT is in the modifiers list,
+         * if it is, we do not check anymore that !ALT_GRAPH is not in filter list, because it can be
+         * based on browser implementations.
          */
 
-        if (modifiers.contains(Key.ALT)) {
-            realMods.remove(Key.ALT_GRAPH);
-        }
+        final boolean altAdded = modifiers.contains(Key.ALT);
 
         return Arrays.stream(KeyModifier.values()).map(modifier -> {
             boolean modifierRequired = realMods.stream()
                     .anyMatch(mod -> mod.matches(modifier.getKeys().get(0)));
-            return (modifierRequired ? "" : "!") + "event.getModifierState('"
-                    + modifier.getKeys().get(0) + "')";
+            if (!modifierRequired && modifier == KeyModifier.ALT_GRAPH && altAdded) {
+                return "";
+            } else {
+                return (modifierRequired ? "" : "!") + "event.getModifierState('"
+                        + modifier.getKeys().get(0) + "')";
+            }
         }).collect(Collectors.joining(" && "));
     }
 
