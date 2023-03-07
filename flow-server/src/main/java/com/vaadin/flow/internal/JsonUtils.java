@@ -53,6 +53,8 @@ public final class JsonUtils {
 
     private static final String CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT = "Cannot convert null to JSON";
 
+    private static final String CANNOT_CONVERT_NULL_TO_OBJECT = "Cannot convert null to Java object";
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -134,12 +136,11 @@ public final class JsonUtils {
         case NULL:
             return true;
         case BOOLEAN:
-            return a.asBoolean() == b.asBoolean();
+            return booleanEqual(a, b);
         case NUMBER:
-            return Double.doubleToRawLongBits(a.asNumber()) == Double
-                    .doubleToRawLongBits(b.asNumber());
+            return numbersEqual(a, b);
         case STRING:
-            return a.asString().equals(b.asString());
+            return stringEqual(a, b);
         case OBJECT:
             return jsonObjectEquals((JsonObject) a, (JsonObject) b);
         case ARRAY:
@@ -147,6 +148,25 @@ public final class JsonUtils {
         default:
             throw new IllegalArgumentException("Unsupported JsonType: " + type);
         }
+    }
+
+    public static boolean stringEqual(JsonValue a, JsonValue b) {
+        assert a.getType() == JsonType.STRING;
+        assert b.getType() == JsonType.STRING;
+        return a.asString().equals(b.asString());
+    }
+
+    public static boolean booleanEqual(JsonValue a, JsonValue b) {
+        assert a.getType() == JsonType.BOOLEAN;
+        assert b.getType() == JsonType.BOOLEAN;
+        return a.asBoolean() == b.asBoolean();
+    }
+
+    public static boolean numbersEqual(JsonValue a, JsonValue b) {
+        assert a.getType() == JsonType.NUMBER;
+        assert b.getType() == JsonType.NUMBER;
+        return Double.doubleToRawLongBits(a.asNumber()) == Double
+                .doubleToRawLongBits(b.asNumber());
     }
 
     private static boolean jsonObjectEquals(JsonObject a, JsonObject b) {
@@ -333,6 +353,27 @@ public final class JsonUtils {
             return Json.instance().parse(objectMapper.writeValueAsString(map));
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error converting map to JSON", e);
+        }
+    }
+
+    /**
+     * Converts JsonObject into Java object of given type.
+     *
+     * @param jsonObject
+     *            JSON object to convert, not {@code null}
+     * @param tClass
+     *            class of converted object instance
+     * @return converted object instance
+     * @param <T>
+     *            type of result instance
+     */
+    public static <T> T readToObject(JsonObject jsonObject, Class<T> tClass) {
+        Objects.requireNonNull(jsonObject, CANNOT_CONVERT_NULL_TO_OBJECT);
+        try {
+            return objectMapper.readValue(jsonObject.toJson(), tClass);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(
+                    "Error converting JsonObject to " + tClass.getName(), e);
         }
     }
 }

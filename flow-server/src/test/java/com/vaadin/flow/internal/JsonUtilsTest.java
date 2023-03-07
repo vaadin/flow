@@ -24,8 +24,6 @@ import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.internal.JsonUtilsTest.ChildBean;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -405,6 +403,24 @@ public class JsonUtilsTest {
 
         Assert.assertEquals("bean1", json.getObject("one").getString("string"));
         Assert.assertEquals("bean2", json.getObject("two").getString("string"));
+    }
+
+    public record Person(String name, double age, boolean canSwim) {
+
+    }
+
+    @Test
+    public void testReadObject() {
+        JsonObject jsonObject = Json.createObject();
+        jsonObject.put("name", "Foo");
+        jsonObject.put("age", 30.5);
+        jsonObject.put("canSwim", true);
+
+        Person person = JsonUtils.readToObject(jsonObject, Person.class);
+
+        Assert.assertEquals("Foo", person.name);
+        Assert.assertEquals(30.5, person.age, 0.0);
+        Assert.assertEquals(true, person.canSwim);
     }
 
 }

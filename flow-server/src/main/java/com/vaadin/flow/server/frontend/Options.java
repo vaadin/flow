@@ -63,6 +63,8 @@ public class Options implements Serializable {
 
     private boolean enablePnpm = Constants.ENABLE_PNPM_DEFAULT;
 
+    private boolean ciBuild;
+
     private boolean useGlobalPnpm = false;
 
     private File frontendGeneratedFolder;
@@ -405,6 +407,21 @@ public class Options implements Serializable {
     }
 
     /**
+     * Enables ci build.
+     * <p>
+     * "npm ci" will be used instead of "npm install". "--frozen-lockfile" will
+     * be used if pnpm is used instead of npm.
+     *
+     * @param ciBuild
+     *            true to enable ci build
+     * @return the builder, for chaining
+     */
+    public Options withCiBuild(boolean ciBuild) {
+        this.ciBuild = ciBuild;
+        return this;
+    }
+
+    /**
      * Uses globally installed pnpm tool for frontend packages installation.
      *
      * @param useGlobalPnpm
@@ -726,6 +743,10 @@ public class Options implements Serializable {
 
     public boolean isEnablePnpm() {
         return enablePnpm;
+    }
+
+    public boolean isCiBuild() {
+        return ciBuild;
     }
 
     public boolean isUseGlobalPnpm() {

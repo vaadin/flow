@@ -62,9 +62,15 @@ public interface ClassFinder extends Serializable {
             classList.sort(
                     (cls1, cls2) -> cls1.getName().compareTo(cls2.getName()));
             this.classes = new LinkedHashSet<>(classList);
-            // take classLoader from the first class in the set, unless empty
-            classLoader = classes.isEmpty() ? getClass().getClassLoader()
-                    : classes.iterator().next().getClassLoader();
+
+            // The classes might be loaded with different class loaders, e.g app
+            // class
+            // loader and restart class loader in Spring Boot applications. If
+            // we pick one
+            // of them and pick the parent, then it won't find classes and
+            // resources loaded
+            // by the child loader.
+            classLoader = Thread.currentThread().getContextClassLoader();
         }
 
         /**

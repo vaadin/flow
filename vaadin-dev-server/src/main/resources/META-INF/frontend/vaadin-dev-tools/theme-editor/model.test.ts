@@ -1,7 +1,9 @@
 import { expect } from '@open-wc/testing';
-import { combineThemes, ComponentTheme, generateRules, ThemeEditorRule, ThemePropertyValue } from './model';
+import { ComponentTheme, generateThemeRule, ThemeEditorRule, ThemePropertyValue } from './model';
 import buttonMetadata from './metadata/components/vaadin-button';
 import { ComponentMetadata } from './metadata/model';
+import { ServerCssRule } from './api';
+import { testElementMetadata } from './tests/utils';
 
 describe('model', () => {
   describe('ComponentTheme', () => {
@@ -97,12 +99,12 @@ describe('model', () => {
     });
   });
 
-  describe('combineThemes', () => {
+  describe('combine', () => {
     it('should return new theme instance', () => {
       const theme1 = new ComponentTheme(buttonMetadata);
       const theme2 = new ComponentTheme(buttonMetadata);
 
-      const result = combineThemes(theme1, theme2);
+      const result = ComponentTheme.combine(theme1, theme2);
       expect(result).to.not.equal(theme1);
       expect(result).to.not.equal(theme2);
     });
@@ -117,7 +119,7 @@ describe('model', () => {
       theme2.updatePropertyValue('label', 'color', 'red');
       theme2.updatePropertyValue('label', 'font-size', '20px');
 
-      const result = combineThemes(theme1, theme2);
+      const result = ComponentTheme.combine(theme1, theme2);
       const expectedValues = [
         { partName: null, propertyName: 'background', value: 'cornflowerblue' },
         { partName: 'label', propertyName: 'color', value: 'red' },
@@ -129,37 +131,97 @@ describe('model', () => {
     });
 
     it('should throw when less than two themes are provided', () => {
-      expect(() => combineThemes()).to.throw;
-      expect(() => combineThemes(new ComponentTheme(buttonMetadata))).to.throw;
+      expect(() => ComponentTheme.combine()).to.throw;
+      expect(() => ComponentTheme.combine(new ComponentTheme(buttonMetadata))).to.throw;
     });
 
     it('should adopt metadata from first theme', () => {
       const fooMetadata: ComponentMetadata = {
         tagName: 'foo-component',
         displayName: 'Foo',
+        properties: [],
         parts: []
       };
       const buttonTheme = new ComponentTheme(buttonMetadata);
       const fooTheme = new ComponentTheme(fooMetadata);
-      const result = combineThemes(buttonTheme, fooTheme);
+      const result = ComponentTheme.combine(buttonTheme, fooTheme);
 
       expect(result.metadata).to.equal(buttonMetadata);
     });
   });
 
-  describe('generateRules', () => {
-    it('should generate zero rules for empty theme', () => {
-      const theme = new ComponentTheme(buttonMetadata);
-      const rules = generateRules(theme);
-      expect(rules.length).to.equal(0);
+  describe('fromServerRules', () => {
+    it('should create empty theme from empty rules', () => {
+      const theme = ComponentTheme.fromServerRules(buttonMetadata, []);
+
+      expect(theme.properties.length).to.equal(0);
     });
 
-    it('should generate rules for theme', () => {
-      const theme = new ComponentTheme(buttonMetadata);
-      theme.updatePropertyValue(null, 'background', 'cornflowerblue');
-      theme.updatePropertyValue(null, 'padding', '3px');
-      theme.updatePropertyValue('label', 'color', 'white');
-      theme.updatePropertyValue('label', 'font-size', '20px');
+    it('should create theme from rules', () => {
+      const serverRules: ServerCssRule[] = [
+        {
+          selector: 'test-element',
+          properties: {
+            background: 'cornflowerblue',
+            padding: '3px'
+          }
+        },
+        {
+          selector: 'test-element::part(label)',
+          properties: {
+            color: 'red',
+            'font-size': '20px'
+          }
+        }
+      ];
+      const expectedProperties = [
+        { partName: null, propertyName: 'padding', value: '3px' },
+        { partName: null, propertyName: 'background', value: 'cornflowerblue' },
+        { partName: 'label', propertyName: 'color', value: 'red' },
+        { partName: 'label', propertyName: 'font-size', value: '20px' }
+      ];
+
+      const theme = ComponentTheme.fromServerRules(testElementMetadata, serverRules);
+      expect(theme.metadata).to.equal(testElementMetadata);
+      expect(theme.properties).to.deep.equal(expectedProperties);
+    });
+
+    it('should ignore unknown selectors and properties', () => {
+      const serverRules: ServerCssRule[] = [
+        {
+          selector: 'test-element',
+          properties: {
+            foo: 'cornflowerblue'
+          }
+        },
+        {
+          selector: 'test-element::part(label)',
+          properties: {
+            bar: '20px'
+          }
+        },
+        {
+          selector: 'test-element::part(foo)',
+          properties: {
+            color: 'cornflowerblue',
+            background: 'cornflowerblue'
+          }
+        }
+      ];
+
+      const theme = ComponentTheme.fromServerRules(testElementMetadata, serverRules);
+      expect(theme.properties.length).to.equal(0);
+    });
+  });
+
+  describe('generateRule', () => {
+    it('should generate rules for property changes', () => {
+      const rules = [
+        generateThemeRule('vaadin-button', null, 'background', 'cornflowerblue'),
+        generateThemeRule('vaadin-button', null, 'padding', '3px'),
+        generateThemeRule('vaadin-button', 'label', 'color', 'white'),
+        generateThemeRule('vaadin-button', 'label', 'font-size', '20px')
+      ];
 
       const expectedRules: ThemeEditorRule[] = [
         { selector: 'vaadin-button', property: 'background', value: 'cornflowerblue' },
@@ -168,7 +230,6 @@ describe('model', () => {
         { selector: 'vaadin-button::part(label)', property: 'font-size', value: '20px' }
       ];
 
-      const rules = generateRules(theme);
       expect(rules).to.deep.equal(expectedRules);
     });
   });

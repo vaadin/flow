@@ -1,4 +1,5 @@
 import { ComponentMetadata } from './metadata/model';
+import {ServerCssRule} from "./api";
 
 export enum ThemeEditorState {
   disabled = 'disabled',
@@ -67,29 +68,59 @@ export class ComponentTheme {
   public getPropertyValuesForPart(partName: string | null) {
     return this.properties.filter((property) => property.partName === partName);
   }
-}
 
-export function combineThemes(...themes: ComponentTheme[]): ComponentTheme {
-  if (themes.length < 2) {
-    throw new Error('Must provide at least two themes');
+  static combine(...themes: ComponentTheme[]) {
+    if (themes.length < 2) {
+      throw new Error('Must provide at least two themes');
+    }
+
+    const resultTheme = new ComponentTheme(themes[0].metadata);
+    themes.forEach((theme) => resultTheme.addPropertyValues(theme.properties));
+
+    return resultTheme;
   }
 
-  const resultTheme = new ComponentTheme(themes[0].metadata);
-  themes.forEach((theme) => resultTheme.addPropertyValues(theme.properties));
+  static fromServerRules(metadata: ComponentMetadata, rules: ServerCssRule[]) {
+    const theme = new ComponentTheme(metadata);
 
-  return resultTheme;
+    const hostSelector = generateSelector(metadata.tagName, null);
+    const hostRule = rules.find((rule) => rule.selector === hostSelector);
+    if (hostRule) {
+      metadata.properties.forEach((property) => {
+        const value = hostRule.properties[property.propertyName];
+        if (value) {
+          theme.updatePropertyValue(null, property.propertyName, value);
+        }
+      });
+    }
+
+    metadata.parts.forEach((part) => {
+      const partSelector = generateSelector(metadata.tagName, part.partName);
+      const partRule = rules.find((rule) => rule.selector === partSelector);
+
+      if (partRule) {
+        part.properties.forEach((property) => {
+          const value = partRule.properties[property.propertyName];
+          if (value) {
+            theme.updatePropertyValue(part.partName, property.propertyName, value);
+          }
+        });
+      }
+    });
+
+    return theme;
+  }
 }
 
-export function generateRules(theme: ComponentTheme): ThemeEditorRule[] {
-  return theme.properties.map((propertyValue) => {
-    const selector = propertyValue.partName
-      ? `${theme.metadata.tagName}::part(${propertyValue.partName})`
-      : theme.metadata.tagName;
+function generateSelector(tagName: string, partName: string | null) {
+  return partName ? `${tagName}::part(${partName})` : tagName;
+}
 
-    return {
-      selector,
-      property: propertyValue.propertyName,
-      value: propertyValue.value
-    };
-  });
+export function generateThemeRule(tagName: string, partName: string | null, propertyName: string, value: string) {
+  const selector = generateSelector(tagName, partName);
+  return {
+    selector,
+    property: propertyName,
+    value: value
+  };
 }
