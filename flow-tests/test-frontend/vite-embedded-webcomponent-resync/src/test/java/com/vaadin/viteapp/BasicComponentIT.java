@@ -17,8 +17,10 @@ package com.vaadin.viteapp;
 
 import java.io.File;
 
+import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
+
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -37,7 +39,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
 
     private WebAppContext context;
 
-    private String sessionId;
+    protected HttpSession session;
 
     @Before
     public void init() throws Exception {
@@ -56,7 +58,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
                 getAuthenticationResult());
 
         // simulate expired session by invalidating current session
-        context.getSessionHandler().getSession(sessionId).invalidate();
+        session.invalidate();
 
         // init request to resynchronize expired session and recreate components
         clickButton();
@@ -115,7 +117,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
         context.getSessionHandler().addEventListener(new HttpSessionListener() {
             @Override
             public void sessionCreated(HttpSessionEvent httpSessionEvent) {
-                sessionId = httpSessionEvent.getSession().getId();
+                session = httpSessionEvent.getSession();
             }
         });
 
