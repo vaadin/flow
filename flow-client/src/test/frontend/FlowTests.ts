@@ -1,28 +1,21 @@
-import { SinonStatic } from 'sinon';
-
-const { suite, test, after, before, beforeEach, afterEach } = intern.getInterface('tdd');
-const { assert } = intern.getPlugin('chai');
-const { sinon } = intern.getPlugin('sinon') as { sinon: SinonStatic };
+import { expect } from '@open-wc/testing';
 
 // API to test
-import {
-  Flow,
-  NavigationParameters,
-  PreventAndRedirectCommands
-} from '../../main/frontend/Flow';
 import { ConnectionState, ConnectionStateStore } from '@vaadin/common-frontend';
+import { Flow, NavigationParameters } from '../../main/frontend/Flow';
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
 import '../../main/frontend/FlowBootstrap';
 import '../../main/frontend/FlowClient';
 // Mock XMLHttpRequest so as we don't need flow-server running for tests.
-import mock from 'xhr-mock';
+import { MockXhrServer, newServer } from 'mock-xmlhttprequest';
+import sinon from 'sinon';
 
 const $wnd = window as any;
 const flowRoot = window.document.body as any;
 
 const stubVaadinPushSrc = '/src/test/frontend/stubVaadinPush.js';
-
+let server: MockXhrServer;
 // A `changes` array that adds a div with 'Foo' text to body
 const changesResponse = `[
   {
@@ -101,7 +94,7 @@ function createInitResponse(appId: string, changes = '[]', pushScript?: string):
     `;
 }
 
-suite('Flow', () => {
+describe('Flow', () => {
   before(() => {
     // keep track of all event listeners added by Flow client to window for removal between tests
     $wnd.originalAddEventListener = $wnd.addEventListener;
@@ -111,7 +104,7 @@ suite('Flow', () => {
     $wnd.addEventListener = $wnd.originalAddEventListener;
   });
 
-  let listeners = [];
+  let listeners: { type: string; listener: any }[] = [];
 
   beforeEach(() => {
     delete $wnd.Vaadin;
@@ -128,11 +121,12 @@ suite('Flow', () => {
       $wnd.originalAddEventListener(type, listener);
     };
 
-    mock.setup();
+    server = newServer({});
+    server.install();
   });
 
   afterEach(() => {
-    mock.teardown();
+    server.remove();
     delete $wnd.Vaadin;
     delete flowRoot.$;
     if (flowRoot.$server) {
@@ -140,26 +134,26 @@ suite('Flow', () => {
       flowRoot.$server.timers.forEach(clearTimeout);
       delete flowRoot.$server;
     }
-    listeners.forEach((recorded) => {
+    listeners.forEach((recorded: any) => {
       $wnd.removeEventListener(recorded.type, recorded.listener);
     });
     listeners = [];
   });
 
-  test('should accept a configuration object', () => {
+  it('should accept a configuration object', () => {
     const flow = new Flow({ imports: () => {} });
-    assert.isDefined(flow.config);
-    assert.isDefined(flow.config.imports);
+    expect(flow.config).not.to.be.undefined;
+    expect(flow.config.imports).not.to.be.undefined;
   });
 
-  test('should initialize window.Flow object', () => {
+  it('should initialize window.Flow object', () => {
     new Flow({ imports: () => {} });
 
-    assert.isDefined($wnd.Vaadin);
-    assert.isDefined($wnd.Vaadin.Flow);
+    expect($wnd.Vaadin).not.to.be.undefined;
+    expect($wnd.Vaadin.Flow).not.to.be.undefined;
   });
 
-  test('should initialize a flow loading indicator', async () => {
+  it('should initialize a flow loading indicator', async () => {
     new Flow({ imports: () => {} });
     $wnd.Vaadin.connectionIndicator.firstDelay = 100;
     $wnd.Vaadin.connectionIndicator.secondDelay = 200;
@@ -167,99 +161,104 @@ suite('Flow', () => {
     await $wnd.Vaadin.connectionIndicator.updateComplete;
     const indicator = $wnd.document.querySelector('.v-loading-indicator') as HTMLElement;
     const styles = $wnd.document.querySelector('style#css-loading-indicator') as HTMLElement;
-    assert.isNotNull(indicator);
-    assert.isNotNull(styles);
+    expect(indicator).not.to.be.null;
+    expect(styles).not.to.be.null;
 
-    assert.equal(indicator.getAttribute('style'), 'display: none');
+    expect(indicator.getAttribute('style')).to.equal('display: none');
 
     $wnd.Vaadin.connectionState.state = ConnectionState.LOADING;
     await $wnd.Vaadin.connectionIndicator.updateComplete;
 
     await new Promise((resolve) => setTimeout(resolve, 150));
-    assert.equal(indicator.getAttribute('style'), 'display: block');
-    assert.isTrue(indicator.classList.contains('first'));
-    assert.isFalse(indicator.classList.contains('second'));
-    assert.isFalse(indicator.classList.contains('third'));
+    expect(indicator.getAttribute('style')).to.equal('display: block');
+    expect(indicator.classList.contains('first')).to.be.true;
+    expect(indicator.classList.contains('second')).to.be.false;
+    expect(indicator.classList.contains('third')).to.be.false;
 
     await new Promise((resolve) => setTimeout(resolve, 150));
-    assert.equal(indicator.getAttribute('style'), 'display: block');
-    assert.isFalse(indicator.classList.contains('first'));
-    assert.isTrue(indicator.classList.contains('second'));
-    assert.isFalse(indicator.classList.contains('third'));
+    expect(indicator.getAttribute('style')).to.equal('display: block');
+    expect(indicator.classList.contains('first')).to.be.false;
+    expect(indicator.classList.contains('second')).to.be.true;
+    expect(indicator.classList.contains('third')).to.be.false;
 
     await new Promise((resolve) => setTimeout(resolve, 150));
-    assert.isFalse(indicator.classList.contains('first'));
-    assert.isFalse(indicator.classList.contains('second'));
-    assert.isTrue(indicator.classList.contains('third'));
+    expect(indicator.classList.contains('first')).to.be.false;
+    expect(indicator.classList.contains('second')).to.be.false;
+    expect(indicator.classList.contains('third')).to.be.true;
 
     $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
     await $wnd.Vaadin.connectionIndicator.updateComplete;
 
-    assert.equal(indicator.getAttribute('style'), 'display: none');
-    assert.isFalse(indicator.classList.contains('first'));
-    assert.isFalse(indicator.classList.contains('second'));
-    assert.isFalse(indicator.classList.contains('third'));
+    expect(indicator.getAttribute('style')).to.equal('display: none');
+    expect(indicator.classList.contains('first')).to.be.false;
+    expect(indicator.classList.contains('second')).to.be.false;
+    expect(indicator.classList.contains('third')).to.be.false;
   });
 
-  test('should initialize Flow server navigation when calling flowInit(true)', () => {
+  it('should initialize Flow server navigation when calling flowInit(true)', () => {
     stubServerRemoteFunction('FooBar-12345');
     mockInitResponse('FooBar-12345', changesResponse);
 
     const flow = new Flow();
     return (flow as any).flowInit(true).then(() => {
-      assert.isDefined(flow.response);
-      assert.isDefined(flow.response.appConfig);
+      if (!flow.response) {
+        expect.fail('Response should be defined');
+      }
+
+      expect(flow.response.appConfig).not.to.be.undefined;
 
       // Check that serverside routing is enabled
-      assert.isFalse(flow.response.appConfig.clientRouting);
+      expect(flow.response.appConfig.clientRouting).to.be.false;
 
       // Check that bootstrap was initialized
-      assert.isDefined($wnd.Vaadin.Flow.initApplication);
-      assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
+      expect($wnd.Vaadin.Flow.initApplication).not.to.be.undefined;
+      expect($wnd.Vaadin.Flow.registerWidgetset).not.to.be.undefined;
       // Check that flowClient was initialized
-      assert.isDefined($wnd.Vaadin.Flow.clients.FooBar.resolveUri);
-      assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
+      expect($wnd.Vaadin.Flow.clients.FooBar.resolveUri).not.to.be.undefined;
+      expect($wnd.Vaadin.Flow.clients.FooBar.isActive()).to.be.false;
 
       // Check that pushScript is not initialized
-      assert.isUndefined($wnd.vaadinPush);
+      expect($wnd.vaadinPush).to.be.undefined;
 
       // Check server added a div content with `Foo` text
-      assert.equal('Foo', document.body.lastElementChild.textContent);
+      expect('Foo').to.equal(document.body.lastElementChild.textContent);
     });
   });
 
-  test('should initialize UI when calling flowInit(true)', () => {
+  it('should initialize UI when calling flowInit(true)', () => {
     const initial = createInitResponse('FooBar-12345');
     $wnd.Vaadin.TypeScript = { initial: JSON.parse(initial) };
 
     const flow = new Flow();
     return (flow as any).flowInit(true).then(() => {
-      assert.isDefined(flow.response);
-      assert.isDefined(flow.response.appConfig);
+      if (!flow.response) {
+        expect.fail('Response should be defined');
+      }
+      expect(flow.response.appConfig).not.to.be.undefined;
 
       // Check that serverside routing is enabled
-      assert.isFalse(flow.response.appConfig.clientRouting);
+      expect(flow.response.appConfig.clientRouting).to.be.false;
 
       // Check that bootstrap was initialized
-      assert.isDefined($wnd.Vaadin.Flow.initApplication);
-      assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
+      expect($wnd.Vaadin.Flow.initApplication).not.to.be.undefined;
+      expect($wnd.Vaadin.Flow.registerWidgetset).not.to.be.undefined;
       // Check that flowClient was initialized
-      assert.isDefined($wnd.Vaadin.Flow.clients.FooBar.resolveUri);
-      assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
+      expect($wnd.Vaadin.Flow.clients.FooBar.resolveUri).not.to.be.undefined;
+      expect($wnd.Vaadin.Flow.clients.FooBar.isActive()).to.be.false;
 
       // Check that pushScript is not initialized
-      assert.isUndefined($wnd.vaadinPush);
+      expect($wnd.vaadinPush).to.be.undefined;
 
       // Check that Flow.ts doesn't inject appId script if config.imports is undefined
       const appIdScript = document.querySelector('script[type="module"][data-app-id]');
-      assert.isNull(appIdScript);
+      expect(appIdScript).to.be.null;
 
       // Check that initial was removed
-      assert.isUndefined($wnd.Vaadin.Flow.initial);
+      expect($wnd.Vaadin.Flow.initial).to.be.undefined;
     });
   });
 
-  test('should inject appId script when calling flowInit(true) with custom config.imports', () => {
+  it('should inject appId script when calling flowInit(true) with custom config.imports', () => {
     const initial = createInitResponse('FooBar-12345');
     $wnd.Vaadin.TypeScript = { initial: JSON.parse(initial) };
 
@@ -267,38 +266,45 @@ suite('Flow', () => {
       imports: () => {}
     });
     return (flow as any).flowInit(true).then(() => {
-      assert.isDefined(flow.response);
-      assert.isDefined(flow.response.appConfig);
+      if (!flow.response) {
+        expect.fail('Response should be defined');
+      }
+      expect(flow.response.appConfig).not.to.be.undefined;
 
       // Check that serverside routing is enabled
-      assert.isFalse(flow.response.appConfig.clientRouting);
+      expect(flow.response.appConfig.clientRouting).to.be.false;
 
       // Check that bootstrap was initialized
-      assert.isDefined($wnd.Vaadin.Flow.initApplication);
-      assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
+      expect($wnd.Vaadin.Flow.initApplication).not.to.be.undefined;
+      expect($wnd.Vaadin.Flow.registerWidgetset).not.to.be.undefined;
       // Check that flowClient was initialized
-      assert.isDefined($wnd.Vaadin.Flow.clients.FooBar.resolveUri);
-      assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
+      expect($wnd.Vaadin.Flow.clients.FooBar.resolveUri).not.to.be.undefined;
+      expect($wnd.Vaadin.Flow.clients.FooBar.isActive()).to.be.false;
 
       // Check that pushScript is not initialized
-      assert.isUndefined($wnd.vaadinPush);
+      expect($wnd.vaadinPush).to.be.undefined;
 
       // Check that Flow.ts inject appId script
       const appIdScript = document.body.querySelector('script[type="module"][data-app-id]');
-      assert.isDefined(appIdScript);
+      if (!appIdScript) {
+        expect.fail('appIdScript should be defined');
+      }
       const injectedAppId = appIdScript.getAttribute('data-app-id');
-      assert.isTrue(flow.response.appConfig.appId.startsWith(injectedAppId));
+      if (!injectedAppId) {
+        expect.fail('injectedAppId should be defined');
+      }
+      expect(flow.response.appConfig.appId.startsWith(injectedAppId)).to.be.true;
 
       // Check that initial was removed
-      assert.isUndefined($wnd.Vaadin.Flow.initial);
+      expect($wnd.Vaadin.Flow.initial).to.be.undefined;
     });
   });
 
-  test('should throw when an incorrect server response is received', () => {
+  it('should throw when an incorrect server response is received', () => {
     // Configure an invalid server response
-    mock.get(/^.*\?v-r=init&location=.*/, (req, res) => {
-      assert.equal('GET', req.method());
-      return res.status(500).body(`Unexpected Server Error`);
+    server.addHandler('GET', /^.*\?v-r=init&location=.*/, (req) => {
+      expect('GET').to.equal(req.method);
+      return req.respond(500, {}, `Unexpected Server Error`);
     });
 
     return (new Flow() as any)
@@ -307,68 +313,71 @@ suite('Flow', () => {
         throw new Error('Should not happen');
       })
       .catch((error) => {
-        assert.match(error.toString(), /500/);
+        expect(error.toString()).to.match(/500/);
       });
   });
 
-  test('should connect client and server on route action', async () => {
+  it('should connect client and server on route action', async () => {
     stubServerRemoteFunction('foobar-1111111');
     mockInitResponse('foobar-1111111');
 
     const flow = new Flow();
     // Check that the Flow puts a client object for TypeScript
-    assert.isDefined($wnd.Vaadin.Flow.clients.TypeScript.isActive);
-    assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive).not.to.be.undefined;
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
 
     const route = flow.serverSideRoutes[0];
 
     sinon.spy(flow, 'loadingStarted');
     sinon.spy(flow, 'loadingFinished');
 
-    return route.action({ pathname: 'Foo/Bar.baz' }).then(() => {
+    return route.action({ pathname: 'Foo/Bar.baz', search: '' }).then(() => {
       // Check that flowInit() was called
-      assert.isDefined(flow.response);
-      assert.isDefined(flow.response.appConfig);
+      if (!flow.response) {
+        expect.fail('Response should be defined');
+      }
+
+      expect(flow.response.appConfig).not.to.be.undefined;
       // Check that bootstrap was initialized
-      assert.isDefined($wnd.Vaadin.Flow.initApplication);
-      assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
+      expect($wnd.Vaadin.Flow.initApplication).not.to.be.undefined;
+      expect($wnd.Vaadin.Flow.registerWidgetset).not.to.be.undefined;
       // Check that flowClient was initialized
-      assert.isDefined($wnd.Vaadin.Flow.clients.foobar.resolveUri);
-      assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
+      expect($wnd.Vaadin.Flow.clients.foobar.resolveUri).not.to.be.undefined;
+      expect($wnd.Vaadin.Flow.clients.foobar.isActive()).to.be.false;
 
       // Check that pushScript is not initialized
-      assert.isUndefined($wnd.vaadinPush);
+      expect($wnd.vaadinPush).to.be.undefined;
 
       // Assert that element was created amd put in flowRoot so as server can find it
-      assert.isDefined(flowRoot.$);
-      assert.isDefined(flowRoot.$['foobar-1111111']);
+      expect(flowRoot.$).not.to.be.undefined;
+      expect(flowRoot.$['foobar-1111111']).not.to.be.undefined;
 
       // Check that `loadingStarted` and `loadingFinished` pair was called
       sinon.assert.calledOnce(flow.loadingStarted);
       sinon.assert.calledOnce(flow.loadingFinished);
 
       // Check that `isActive` flag is set to false after the action
-      assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
+      expect($wnd.Vaadin.Flow.clients.foobar.isActive()).to.be.false;
     });
   });
 
-  test('loadingStarted and loadingFinished should update isActive and connection indicator', async () => {
+  it('loadingStarted and loadingFinished should update isActive and connection indicator', async () => {
     const flow = new Flow();
     sinon.spy($wnd.Vaadin.connectionState, 'loadingStarted');
     sinon.spy($wnd.Vaadin.connectionState, 'loadingFinished');
 
     flow.loadingStarted();
-    assert.isTrue($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.true;
     sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingStarted);
     sinon.assert.notCalled($wnd.Vaadin.connectionState.loadingFinished);
 
     flow.loadingFinished();
-    assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
     sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingStarted);
     sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingFinished);
   });
 
-  test('should remove context-path in request', () => {
+  it('should remove context-path in request', () => {
     stubServerRemoteFunction('foobar-1111111', false, new RegExp('^Foo/Bar.baz$'));
     mockInitResponse('foobar-1111111');
 
@@ -377,11 +386,13 @@ suite('Flow', () => {
     const route = flow.serverSideRoutes[0];
 
     return route.action({ pathname: '/foo/Foo/Bar.baz' }).then(() => {
-      assert.isDefined(flow.response);
+      if (!flow.response) {
+        expect.fail('Response should be defined');
+      }
     });
   });
 
-  test('should bind Flow serverSideRoutes function to the flow context', () => {
+  it('should bind Flow serverSideRoutes function to the flow context', () => {
     // A mock class for router
     class TestRouter {
       routes: [];
@@ -394,11 +405,11 @@ suite('Flow', () => {
     router.routes = new Flow().serverSideRoutes;
 
     return router.routes[0].action({ pathname: 'another-route' }).then((elem) => {
-      assert.isDefined(elem);
+      expect(elem).not.to.be.undefined;
     });
   });
 
-  test('should reuse container element in flow navigation', () => {
+  it('should reuse container element in flow navigation', () => {
     stubServerRemoteFunction('ROOT-12345');
     mockInitResponse('ROOT-12345');
 
@@ -406,14 +417,14 @@ suite('Flow', () => {
 
     return route.action({ pathname: 'Foo' }).then((e1) => {
       return route.action({ pathname: 'Bar' }).then((e2) => {
-        assert.equal(1, Object.keys(flowRoot.$).length);
-        assert.equal(e1, e2);
-        assert.equal(e1.id, e2.id);
+        expect(1).to.equal(Object.keys(flowRoot.$).length);
+        expect(e1).to.equal(e2);
+        expect(e1.id).to.equal(e2.id);
       });
     });
   });
 
-  test('navigation should be delayed to onBeforeEnter when using router API', () => {
+  it('navigation should be delayed to onBeforeEnter when using router API', () => {
     stubServerRemoteFunction('foobar-12345');
     mockInitResponse('foobar-12345');
 
@@ -421,20 +432,20 @@ suite('Flow', () => {
 
     return route.action({ pathname: 'Foo/Bar.baz' }).then(async (elem) => {
       // Check that flowInit() was called
-      assert.isDefined($wnd.Vaadin.Flow.clients.foobar.resolveUri);
+      expect($wnd.Vaadin.Flow.clients.foobar.resolveUri).not.to.be.undefined;
       // Assert that flowRoot namespace was created
-      assert.isDefined(flowRoot.$);
+      expect(flowRoot.$).not.to.be.undefined;
       // Assert that container was created and put in the flowRoot
-      assert.isDefined(flowRoot.$['foobar-12345']);
+      expect(flowRoot.$['foobar-12345']).not.to.be.undefined;
 
       // Assert server side has not put anything in the container
-      assert.equal(0, elem.children.length);
+      expect(0).to.equal(elem.children.length);
 
       // When using router API, it should expose the onBeforeEnter handler
-      assert.isDefined(elem.onBeforeEnter);
+      expect(elem.onBeforeEnter).not.to.be.undefined;
 
       // after action TB isActive flag should be false
-      assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+      expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
 
       // Store `isActive` flag when the onBeforeEnter is being executed
       let wasActive = false;
@@ -442,15 +453,15 @@ suite('Flow', () => {
       // @ts-ignore
       await elem.onBeforeEnter({ pathname: 'Foo/Bar.baz' }, {});
       // TB should be informed when the server call was in progress and when it is finished
-      assert.isTrue(wasActive);
-      assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+      expect(wasActive).to.be.true;
+      expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
 
       // Assert server side has put content in the container
-      assert.equal(1, elem.children.length);
+      expect(1).to.equal(elem.children.length);
     });
   });
 
-  test('should be possible to cancel navigation when using router onBeforeEnter API', () => {
+  it('should be possible to cancel navigation when using router onBeforeEnter API', () => {
     // true means that server will prevent navigation
     stubServerRemoteFunction('foobar-12345', true);
 
@@ -460,17 +471,17 @@ suite('Flow', () => {
 
     return route.action({ pathname: 'Foo/Bar.baz' }).then((elem) => {
       // Check that flowInit() was called
-      assert.isDefined($wnd.Vaadin.Flow.clients.foobar.resolveUri);
+      expect($wnd.Vaadin.Flow.clients.foobar.resolveUri).not.to.be.undefined;
       // Assert that flowRoot namespace was created
-      assert.isDefined(flowRoot.$);
+      expect(flowRoot.$).not.to.be.undefined;
       // Assert that container was created and put in the flowRoot
-      assert.isDefined(flowRoot.$['foobar-12345']);
+      expect(flowRoot.$['foobar-12345']).not.to.be.undefined;
 
       // Assert server side has not put anything in the container
-      assert.equal(0, elem.children.length);
+      expect(0).to.equal(elem.children.length);
 
       // When using router API, it should expose the onBeforeEnter handler
-      assert.isDefined(elem.onBeforeEnter);
+      expect(elem.onBeforeEnter).not.to.be.undefined;
 
       // @ts-ignore
       elem
@@ -482,11 +493,11 @@ suite('Flow', () => {
             }
           }
         )
-        .then((obj) => assert.isTrue(obj.cancel));
+        .then((obj) => expect(obj.cancel).to.be.true);
     });
   });
 
-  test('onBeforeLeave should cancel `server->client` navigation', () => {
+  it('onBeforeLeave should cancel `server->client` navigation', () => {
     // true to prevent navigation from server
     stubServerRemoteFunction('foobar-12345', true);
     mockInitResponse('foobar-12345');
@@ -495,8 +506,8 @@ suite('Flow', () => {
     const route = flow.serverSideRoutes[0];
 
     return route.action({ pathname: 'Foo' }).then((elem: any) => {
-      assert.isDefined(elem.onBeforeLeave);
-      assert.equal('Foo', flow.pathname);
+      expect(elem.onBeforeLeave).not.to.be.undefined;
+      expect('Foo').to.equal(flow.pathname);
 
       return elem
         .onBeforeEnter(
@@ -510,8 +521,8 @@ suite('Flow', () => {
         )
         .then((result: any) => {
           // view content was set
-          assert.isFalse(result.cancel);
-          assert.equal(1, elem.children.length);
+          expect(result.cancel).to.be.false;
+          expect(1).to.equal(elem.children.length);
 
           return elem
             .onBeforeLeave(
@@ -525,13 +536,13 @@ suite('Flow', () => {
             )
             .then((result: any) => {
               // Navigation cancelled onBeforeLeave
-              assert.isTrue(result.cancel);
+              expect(result.cancel).to.be.true;
             });
         });
     });
   });
 
-  test('onBeforeEnter should handle forwardTo `server->client` navigation', () => {
+  it('onBeforeEnter should handle forwardTo `server->client` navigation', () => {
     // true to prevent navigation from server
     stubServerRemoteFunction('foobar-12345', false, undefined, { pathname: 'Lorem', search: '' });
     mockInitResponse('foobar-12345');
@@ -551,12 +562,12 @@ suite('Flow', () => {
         )
         .then((result: any) => {
           // Navigate to expect destination
-          assert.equal('Lorem', result.redirectContext);
+          expect('Lorem').to.equal(result.redirectContext);
         });
     });
   });
 
-  test('onBeforeLeave should not cause double round-trip on `server->server` navigation', () => {
+  it('onBeforeLeave should not cause double round-trip on `server->server` navigation', () => {
     // true to prevent navigation from server
     stubServerRemoteFunction('foobar-12345', true);
     mockInitResponse('foobar-12345');
@@ -590,13 +601,13 @@ suite('Flow', () => {
               // since server call is skipped, prevent() above is not executed
               // checking that cancel was not set demonstrates that there
               // were no double round-trip
-              assert.isUndefined(result.cancel);
+              expect(result.cancel).to.be.undefined;
             });
         });
     });
   });
 
-  test('should load pushScript on init', async () => {
+  it('should load pushScript on init', async () => {
     stubServerRemoteFunction('foobar-1111111');
     mockInitResponse('foobar-1111111', undefined, stubVaadinPushSrc);
 
@@ -605,11 +616,11 @@ suite('Flow', () => {
     const route = flow.serverSideRoutes[0];
     await route.action({ pathname: 'Foo/Bar.baz' });
 
-    assert.isDefined($wnd.vaadinPush);
-    assert.isTrue($wnd.vaadinPush.isStub);
+    expect($wnd.vaadinPush).not.to.be.undefined;
+    expect($wnd.vaadinPush.isStub).to.be.true;
   });
 
-  test('should load pushScript on flowInit(true) with initial response', async () => {
+  it('should load pushScript on flowInit(true) with initial response', async () => {
     const initial = createInitResponse('FooBar-12345');
     $wnd.Vaadin.TypeScript = { initial: JSON.parse(initial) };
     $wnd.Vaadin.TypeScript.initial.pushScript = stubVaadinPushSrc;
@@ -617,22 +628,22 @@ suite('Flow', () => {
     const flow = new Flow();
     await (flow as any).flowInit(true);
 
-    assert.isDefined($wnd.vaadinPush);
-    assert.isTrue($wnd.vaadinPush.isStub);
+    expect($wnd.vaadinPush).not.to.be.undefined;
+    expect($wnd.vaadinPush.isStub).to.be.true;
   });
 
-  test('should load pushScript on flowInit(true) with server response', async () => {
+  it('should load pushScript on flowInit(true) with server response', async () => {
     stubServerRemoteFunction('FooBar-12345');
     mockInitResponse('FooBar-12345', undefined, stubVaadinPushSrc);
 
     const flow = new Flow();
     await (flow as any).flowInit(true);
 
-    assert.isDefined($wnd.vaadinPush);
-    assert.isTrue($wnd.vaadinPush.isStub);
+    expect($wnd.vaadinPush).not.to.be.undefined;
+    expect($wnd.vaadinPush.isStub).to.be.true;
   });
 
-  test('should load pushScript on route action', async () => {
+  it('should load pushScript on route action', async () => {
     stubServerRemoteFunction('foobar-1111111');
     mockInitResponse('foobar-1111111', undefined, stubVaadinPushSrc);
 
@@ -641,11 +652,11 @@ suite('Flow', () => {
     const route = flow.serverSideRoutes[0];
     await route.action({ pathname: 'Foo/Bar.baz', search: '' });
 
-    assert.isDefined($wnd.vaadinPush);
-    assert.isTrue($wnd.vaadinPush.isStub);
+    expect($wnd.vaadinPush).not.to.be.undefined;
+    expect($wnd.vaadinPush.isStub).to.be.true;
   });
 
-  test('should not throw error when response header content type has charset', async () => {
+  it('should not throw error when response header content type has charset', async () => {
     stubServerRemoteFunction('foobar-1111112');
     mockInitResponse('foobar-1111113', undefined, stubVaadinPushSrc, true);
     const flow = new Flow();
@@ -653,7 +664,7 @@ suite('Flow', () => {
     await route.action({ pathname: 'Foo/Bar.baz', search: '' });
   });
 
-  test('should not throw error when response header content type has no charset', async () => {
+  it('should not throw error when response header content type has no charset', async () => {
     stubServerRemoteFunction('foobar-1111113');
     mockInitResponse('foobar-1111113', undefined, stubVaadinPushSrc);
     const flow = new Flow();
@@ -661,7 +672,7 @@ suite('Flow', () => {
     await route.action({ pathname: 'Foo/Bar.baz', search: '' });
   });
 
-  test('should show stub when navigating to server view offline', async () => {
+  it('should show stub when navigating to server view offline', async () => {
     stubServerRemoteFunction('foobar-123');
     $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
     const flow = new Flow();
@@ -671,21 +682,21 @@ suite('Flow', () => {
       search: ''
     };
     const view = await route.action(params);
-    assert.equal(view.localName, 'iframe');
-    assert.equal(view.getAttribute('src'), './offline-stub.html');
+    expect(view.localName).to.equal('iframe');
+    expect(view.getAttribute('src')).to.equal('./offline-stub.html');
 
     // @ts-ignore
     let onBeforeEnterReturns = view.onBeforeEnter(params, {});
-    assert.equal(onBeforeEnterReturns, undefined);
+    expect(onBeforeEnterReturns).to.equal(undefined);
 
     // @ts-ignore
     let onBeforeLeaveReturns = view.onBeforeLeave(params, {});
-    assert.equal(onBeforeLeaveReturns, undefined);
+    expect(onBeforeLeaveReturns).to.equal(undefined);
   });
 
-  test('should show stub when navigating to server view and Flow initialization fails due to network error', async () => {
-    mock.get(/^.*\?v-r=init.*/, () => {
-      throw new Error('unable to connect');
+  it('should show stub when navigating to server view and Flow initialization fails due to network error', async () => {
+    server.addHandler('GET', /^.*\?v-r=init.*/, (req) => {
+      req.respond(500, {}, 'unable to connect');
     });
     const flow = new Flow();
     const route = flow.serverSideRoutes[0];
@@ -698,22 +709,22 @@ suite('Flow', () => {
     const indicator = $wnd.document.querySelector('.v-loading-indicator');
 
     const view = await route.action(params);
-    assert.isNotNull(view);
-    assert.equal(view.localName, 'iframe');
-    assert.equal(view.getAttribute('src'), './offline-stub.html');
+    expect(view).not.to.be.null;
+    expect(view.localName).to.equal('iframe');
+    expect(view.getAttribute('src')).to.equal('./offline-stub.html');
 
-    assert.equal(indicator.getAttribute('style'), 'display: none');
+    expect(indicator.getAttribute('style')).to.equal('display: none');
 
     // @ts-ignore
     let onBeforeEnterReturns = view.onBeforeEnter(params, {});
-    assert.equal(onBeforeEnterReturns, undefined);
+    expect(onBeforeEnterReturns).to.equal(undefined);
 
     // @ts-ignore
     let onBeforeLeaveReturns = view.onBeforeLeave(params, {});
-    assert.deepEqual(onBeforeLeaveReturns, undefined);
+    expect(onBeforeLeaveReturns).to.deep.equal(undefined);
   });
 
-  test('should retry navigation when back online', async () => {
+  it('should retry navigation when back online', async () => {
     stubServerRemoteFunction('foobar-123');
     $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
     const flow = new Flow();
@@ -731,62 +742,66 @@ suite('Flow', () => {
     sinon.assert.calledWithExactly(clientSideRouter.render.getCall(0), params, false);
   });
 
-  test("when no Flow client loaded, should transition to CONNECTED when receiving 'offline' and then 'online' events and connection is reestablished", async () => {
-    mock.use('HEAD', /^.*sw.js/, (req, res) => {
-      return res.status(200);
+  it("when no Flow client loaded, should transition to CONNECTED when receiving 'offline' and then 'online' events and connection is reestablished", async () => {
+    server.addHandler("HEAD",/^.*sw.js/, (req) => {
+      req.respond(200);
     });
     new Flow();
-    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
     $wnd.dispatchEvent(new Event('offline')); // caught by Flow.ts
-    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
     $wnd.dispatchEvent(new Event('online')); // caught by Flow.ts
-    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.RECONNECTING);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.RECONNECTING);
     await new Promise((resolve) => setTimeout(resolve, 100));
-    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
   });
 
-  test("when no Flow client loaded, should transition to CONNECTION_LOST when receiving 'offline' and then 'online' events and connection is not reestablished", async () => {
+  it("when no Flow client loaded, should transition to CONNECTION_LOST when receiving 'offline' and then 'online' events and connection is not reestablished", async () => {
+    server.addHandler("HEAD",/^.*sw.js/, (req) => {
+      req.setNetworkError();
+    });
+
     new Flow();
-    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
     $wnd.dispatchEvent(new Event('offline')); // caught by Flow.ts
-    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
     $wnd.dispatchEvent(new Event('online')); // caught by Flow.ts
-    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.RECONNECTING);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.RECONNECTING);
     await new Promise((resolve) => setTimeout(resolve, 100));
-    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
   });
 
-  test("when Flow client loaded, should transition to RECONNECTING on receiving 'offline' and then 'online' events", async () => {
+  it("when Flow client loaded, should transition to RECONNECTING on receiving 'offline' and then 'online' events", async () => {
     stubServerRemoteFunction('FooBar-12345');
     mockInitResponse('FooBar-12345', undefined, stubVaadinPushSrc);
     const flow = new Flow();
     await (flow as any).flowInit(true);
-    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTED);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTED);
     $wnd.dispatchEvent(new Event('offline')); // caught by DefaultConnectionStateHandler
-    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
     $wnd.dispatchEvent(new Event('online')); // caught by DefaultConnectionStateHandler
-    assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.RECONNECTING);
+    expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.RECONNECTING);
   });
 
-  test("should pre-attach container element on every navigation", async () => {
+  it('should pre-attach container element on every navigation', async () => {
     stubServerRemoteFunction('foobar-12345');
     mockInitResponse('foobar-12345');
 
     const flow = new Flow();
     const route = flow.serverSideRoutes[0];
 
-    const flowRouteParams = {pathname: 'Foo', search: ''};
-    const otherRouteParams = {pathname: 'Lorem', search: ''};
+    const flowRouteParams = { pathname: 'Foo', search: '' };
+    const otherRouteParams = { pathname: 'Lorem', search: '' };
 
     // Initial navigation
     const container = await route.action(flowRouteParams);
-    assert.isTrue(container.isConnected);
-    assert.equal(container.style.display, 'none');
+    expect(container.isConnected).to.be.true;
+    expect(container.style.display).to.equal('none');
 
     // @ts-ignore
     await container.onBeforeEnter(flowRouteParams, {});
-    assert.isTrue(container.isConnected);
-    assert.equal(container.style.display, '');
+    expect(container.isConnected).to.be.true;
+    expect(container.style.display).to.equal('');
 
     // Leave
 
@@ -796,13 +811,13 @@ suite('Flow', () => {
     container.parentNode!.removeChild(container);
 
     await route.action(flowRouteParams);
-    assert.isTrue(container.isConnected);
-    assert.equal(container.style.display, 'none');
+    expect(container.isConnected).to.be.true;
+    expect(container.style.display).to.equal('none');
 
     // @ts-ignore
     await container.onBeforeEnter(flowRouteParams, {});
-    assert.isTrue(container.isConnected);
-    assert.equal(container.style.display, '');
+    expect(container.isConnected).to.be.true;
+    expect(container.style.display).to.equal('');
   });
 });
 
@@ -819,24 +834,24 @@ function stubServerRemoteFunction(
     timers: [],
 
     connectClient: (localName: string, elemId: string, route: string) => {
-      assert.isDefined(localName);
-      assert.isDefined(elemId);
-      assert.isDefined(route);
+      expect(localName).not.to.be.undefined;
+      expect(elemId).not.to.be.undefined;
+      expect(route).not.to.be.undefined;
       if (routeRegex) {
-        assert.match(route, routeRegex);
+        expect(route).to.match(routeRegex);
       }
 
-      assert.equal(elemId, id);
-      assert.equal(localName, `flow-container-${elemId.toLowerCase()}`);
+      expect(elemId).to.equal(id);
+      expect(localName).to.equal(`flow-container-${elemId.toLowerCase()}`);
 
       container = flowRoot.$[elemId];
 
-      assert.isDefined(container);
-      assert.isDefined(container.serverConnected);
+      expect(container).not.to.be.undefined;
+      expect(container.serverConnected).not.to.be.undefined;
 
       // When appending elements container should be attached and hidden
-      assert.isTrue(container.isConnected);
-      assert.equal('none', container.style.display);
+      expect(container.isConnected).to.be.true;
+      expect('none').to.equal(container.style.display);
 
       container.appendChild(document.createElement('div'));
 
@@ -844,7 +859,7 @@ function stubServerRemoteFunction(
       const timer = setTimeout(() => {
         container.serverConnected(cancel, url);
         // container should be visible when not cancelled or not has redirect server-client
-        assert.equal(cancel || url ? 'none' : '', container.style.display);
+        expect(cancel || url ? 'none' : '').to.equal(container.style.display);
       }, 10);
       flowRoot.$server.timers.push(timer);
     },
@@ -858,11 +873,12 @@ function stubServerRemoteFunction(
 
 function mockInitResponse(appId: string, changes = '[]', pushScript?: string, withCharset?: boolean) {
   // Configure a valid server initialization response
-  mock.get(/^.*\?v-r=init.*/, (req, res) => {
-    assert.equal('GET', req.method());
-    return res
-      .status(200)
-      .header('content-type', 'application/json' + (withCharset ? ';charset=ISO-8859-1' : ''))
-      .body(createInitResponse(appId, changes, pushScript));
+
+  server.addHandler('GET', /^.*\?v-r=init.*/, (req) => {
+    req.respond(
+      200,
+      { 'content-type': 'application/json' + (withCharset ? ';charset=ISO-8859-1' : '') },
+      createInitResponse(appId, changes, pushScript)
+    );
   });
 }
