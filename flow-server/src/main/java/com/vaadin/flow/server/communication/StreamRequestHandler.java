@@ -23,6 +23,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,10 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+
+import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_COUNT_MAX;
+import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_SIZE_MAX;
+import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_SIZE_MAX;
 
 /**
  * Handles {@link StreamResource} and {@link StreamReceiver} instances
@@ -52,7 +57,14 @@ public class StreamRequestHandler implements RequestHandler {
     static final String DYN_RES_PREFIX = "VAADIN/dynamic/resource/";
 
     private StreamResourceHandler resourceHandler = new StreamResourceHandler();
-    private StreamReceiverHandler receiverHandler = new StreamReceiverHandler();
+    private StreamReceiverHandler receiverHandler;
+
+    public StreamRequestHandler() {
+        receiverHandler = new StreamReceiverHandler();
+        receiverHandler.setRequestSizeMax(getRequestSizeMax());
+        receiverHandler.setFileSizeMax(getFileSizeMax());
+        receiverHandler.setFileCountMax(getFileCountMax());
+    }
 
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
@@ -166,6 +178,36 @@ public class StreamRequestHandler implements RequestHandler {
             getLogger().info("Path '{}' is not correct URI (it violates RFC 2396)", path, e);
             return Optional.empty();
         }
+    }
+
+    /**
+     * Returns maximum request size for upload. Override this to increase the
+     * default. Defaults to -1 (no limit).
+     *
+     * @return maximum request size for upload
+     */
+    protected long getRequestSizeMax() {
+        return DEFAULT_SIZE_MAX;
+    }
+
+    /**
+     * Returns maximum file size for upload. Override this to increase the
+     * default. Defaults to -1 (no limit).
+     *
+     * @return maximum file size for upload
+     */
+    protected long getFileSizeMax() {
+        return DEFAULT_FILE_SIZE_MAX;
+    }
+
+    /**
+     * Returns maximum file part count for upload. Override this to increase the
+     * default. Defaults to 10000.
+     *
+     * @return maximum file part count for upload
+     */
+    protected long getFileCountMax() {
+        return DEFAULT_FILE_COUNT_MAX;
     }
 
     private static Logger getLogger() {
