@@ -1,6 +1,5 @@
 package com.vaadin.viteapp;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -16,10 +15,6 @@ import com.vaadin.viteapp.views.template.ReflectivelyReferencedComponent;
 import com.vaadin.viteapp.views.template.TemplateView;
 
 public class TemplateIT extends ChromeBrowserTest {
-    @BeforeClass
-    public static void driver() {
-        WebDriverManager.chromedriver().setup();
-    }
 
     @Before
     public void openView() {
