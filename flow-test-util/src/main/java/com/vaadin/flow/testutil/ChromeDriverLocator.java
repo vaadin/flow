@@ -18,8 +18,6 @@ package com.vaadin.flow.testutil;
 
 import java.io.File;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
-
 /**
  * Locates a chromedriver binary.
  *
