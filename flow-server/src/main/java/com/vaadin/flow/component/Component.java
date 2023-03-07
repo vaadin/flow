@@ -679,7 +679,7 @@ public abstract class Component
     public String getTranslation(String key, Locale locale, Object... params) {
         return getI18NProvider()
                 .map(i18n -> i18n.getTranslation(key, locale, params))
-                .orElse("!{" + key + "}!");
+                .orElseGet(() -> "!{" + key + "}!");
     }
 
     /**
@@ -703,7 +703,7 @@ public abstract class Component
     public String getTranslation(Object key, Locale locale, Object... params) {
         return getI18NProvider()
                 .map(i18n -> i18n.getTranslation(key, locale, params))
-                .orElse("!{" + key + "}!");
+                .orElseGet(() -> "!{" + key + "}!");
     }
 
     /**
