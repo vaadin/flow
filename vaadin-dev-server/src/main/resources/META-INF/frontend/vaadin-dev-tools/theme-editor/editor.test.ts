@@ -7,19 +7,26 @@ import { metadataRegistry } from './metadata/registry';
 import sinon from 'sinon';
 import { themePreview } from './preview';
 import { testElementMetadata } from './tests/utils';
-import { Commands } from './api';
+import { ThemeEditorApi } from './api';
 
 describe('theme-editor', () => {
   let editor: ThemeEditor;
   let testElement: HTMLElement;
   let connectionMock: {
+    onMessage: sinon.SinonSpy;
     send: sinon.SinonSpy;
+  };
+  let apiMock: {
+    updateCssRules: sinon.SinonStub;
+    loadPreview: sinon.SinonStub;
+    loadRules: sinon.SinonStub;
   };
   let getMetadataStub: sinon.SinonStub;
 
   async function editorFixture() {
     connectionMock = {
-      send: sinon.spy(() => {})
+      onMessage: sinon.spy(),
+      send: sinon.spy()
     };
     const pickerMock = {
       open: (options: PickerOptions) => {
@@ -31,6 +38,15 @@ describe('theme-editor', () => {
       .pickerProvider=${pickerProvider}
       .connection=${connectionMock}
     ></vaadin-dev-tools-theme-editor>`)) as ThemeEditor;
+
+    apiMock = {
+      updateCssRules: sinon.stub((editor as any).api as ThemeEditorApi, 'updateCssRules'),
+      loadPreview: sinon.stub((editor as any).api as ThemeEditorApi, 'loadPreview'),
+      loadRules: sinon.stub((editor as any).api as ThemeEditorApi, 'loadRules')
+    };
+    apiMock.updateCssRules.returns(Promise.resolve({}));
+    apiMock.loadPreview.returns(Promise.resolve({ css: '' }));
+    apiMock.loadRules.returns(Promise.resolve({ rules: [] }));
 
     return {
       editor,
@@ -91,7 +107,7 @@ describe('theme-editor', () => {
   });
 
   beforeEach(async () => {
-    themePreview.reset();
+    themePreview.update('');
     testElement = await fixture(html` <test-element></test-element>`);
     const fixtureResult = await editorFixture();
     editor = fixtureResult.editor;
@@ -114,18 +130,15 @@ describe('theme-editor', () => {
 
   describe('editing', () => {
     it('should update theme preview after changing a property', async () => {
+      apiMock.loadPreview.returns(
+        Promise.resolve({
+          css: 'test-element::part(label) { color: red }'
+        })
+      );
       await pickComponent();
       await editProperty('label', 'color', 'red');
 
-      expect(getTestElementStyles().label.color).to.equal('rgb(255, 0, 0)');
-    });
-
-    it('should keep saved modifications in theme preview', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-      expect(getTestElementStyles().label.color).to.equal('rgb(255, 0, 0)');
-
-      await pickComponent();
+      expect(apiMock.loadPreview.calledOnce).to.be.true;
       expect(getTestElementStyles().label.color).to.equal('rgb(255, 0, 0)');
     });
 
@@ -146,10 +159,28 @@ describe('theme-editor', () => {
       });
     });
 
-    it('should initialize property editors with base theme values', async () => {
+    it('should initialize property editors with base theme values when there are no custom rules', async () => {
       await pickComponent();
 
       expect(getPropertyValue('label', 'color')).to.equal('rgb(0, 0, 0)');
+    });
+
+    it('should initialize property editors with values from custom rules', async () => {
+      apiMock.loadRules.returns(
+        Promise.resolve({
+          rules: [
+            {
+              selector: 'test-element::part(label)',
+              properties: {
+                color: 'red'
+              }
+            }
+          ]
+        })
+      );
+      await pickComponent();
+
+      expect(getPropertyValue('label', 'color')).to.equal('red');
     });
 
     it('should update property editors with edited theme values', async () => {
@@ -159,49 +190,31 @@ describe('theme-editor', () => {
       expect(getPropertyValue('label', 'color')).to.equal('red');
     });
 
-    it('should keep previously saved theme modifications', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-      await elementUpdated(editor);
-      expect(getPropertyValue('label', 'color')).to.equal('red');
-
-      await pickComponent();
-      expect(getPropertyValue('label', 'color')).to.equal('red');
-    });
-
     it('should send theme rules when changing properties', async () => {
       await pickComponent();
-      await editProperty('label', 'color', 'red');
 
-      expect(connectionMock.send.calledOnce);
-      expect(connectionMock.send.args[0][0]).to.equal(Commands.updateCssRules);
-      expect(connectionMock.send.args[0][1]).to.deep.equal({
-        requestId: '0',
-        add: [
-          {
-            selector: 'test-element::part(label)',
-            property: 'color',
-            value: 'red'
-          }
-        ],
-        remove: []
-      });
-      connectionMock.send.resetHistory();
+      await editProperty('label', 'color', 'red');
+      expect(apiMock.updateCssRules.calledOnce).to.be.true;
+      expect(apiMock.updateCssRules.args[0][0]).to.deep.equal([
+        {
+          selector: 'test-element::part(label)',
+          property: 'color',
+          value: 'red'
+        }
+      ]);
+      expect(apiMock.updateCssRules.args[0][1]).to.deep.equal([]);
+      apiMock.updateCssRules.resetHistory();
 
       await editProperty('label', 'color', 'green');
-      expect(connectionMock.send.calledOnce);
-      expect(connectionMock.send.args[0][0]).to.equal(Commands.updateCssRules);
-      expect(connectionMock.send.args[0][1]).to.deep.equal({
-        requestId: '1',
-        add: [
-          {
-            selector: 'test-element::part(label)',
-            property: 'color',
-            value: 'green'
-          }
-        ],
-        remove: []
-      });
+      expect(apiMock.updateCssRules.calledOnce).to.be.true;
+      expect(apiMock.updateCssRules.args[0][0]).to.deep.equal([
+        {
+          selector: 'test-element::part(label)',
+          property: 'color',
+          value: 'green'
+        }
+      ]);
+      expect(apiMock.updateCssRules.args[0][1]).to.deep.equal([]);
     });
 
     it('should dispatch event before saving changes', async () => {
