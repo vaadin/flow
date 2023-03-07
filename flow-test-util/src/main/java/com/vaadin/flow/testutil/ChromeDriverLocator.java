@@ -20,8 +20,6 @@ import java.io.File;
 
 import org.slf4j.LoggerFactory;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
-
 /**
  * Locates a chromedriver binary.
  *
