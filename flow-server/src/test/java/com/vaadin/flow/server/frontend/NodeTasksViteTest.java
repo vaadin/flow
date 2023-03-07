@@ -104,7 +104,7 @@ public class NodeTasksViteTest {
 
         Options options = new Options(mockedLookup, new File(userDir))
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
-                .enableImportsUpdate(true).runNpmInstall(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder());
@@ -144,7 +144,7 @@ public class NodeTasksViteTest {
 
         Options options = new Options(mockedLookup, new File(userDir))
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
-                .enableImportsUpdate(true).runNpmInstall(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir)
                 .withJarFrontendResourcesFolder(
@@ -172,7 +172,7 @@ public class NodeTasksViteTest {
                 .when(mockedLookup).lookup(ClassFinder.class);
         Options options = new Options(mockedLookup, new File(userDir))
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
-                .enableImportsUpdate(true).runNpmInstall(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder());
@@ -199,7 +199,7 @@ public class NodeTasksViteTest {
                 .when(mockedLookup).lookup(ClassFinder.class);
         Options options = new Options(mockedLookup, new File(userDir))
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
-                .enableImportsUpdate(true).runNpmInstall(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder());
@@ -229,7 +229,7 @@ public class NodeTasksViteTest {
                 .when(mockedLookup).lookup(ClassFinder.class);
         Options options = new Options(mockedLookup, new File(userDir))
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
-                .enableImportsUpdate(true).runNpmInstall(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder());
@@ -263,7 +263,7 @@ public class NodeTasksViteTest {
                 .when(mockedLookup).lookup(ClassFinder.class);
         Options options = new Options(mockedLookup, new File(userDir))
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
-                .enableImportsUpdate(true).runNpmInstall(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder());

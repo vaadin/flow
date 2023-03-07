@@ -1,29 +1,36 @@
 import { aTimeout, elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import '@vaadin/button';
-import { ThemeEditorRule, ThemeEditorState } from './model';
+import { ThemeEditorState } from './model';
 import { ThemeEditor } from './editor';
 import './editor';
 import { PickerOptions, PickerProvider } from '../component-picker';
 import { metadataRegistry } from './metadata/registry';
-import buttonMetadata from './metadata/components/vaadin-button';
 import sinon from 'sinon';
-import {themePreview} from "./preview";
+import { themePreview } from './preview';
+import { testElementMetadata } from './tests/utils';
+import { ThemeEditorApi } from './api';
 
 describe('theme-editor', () => {
   let editor: ThemeEditor;
-  let button: HTMLElement;
-  let defaultButtonLabelStyles: CSSStyleDeclaration;
+  let testElement: HTMLElement;
   let connectionMock: {
-    sendThemeEditorRules: sinon.SinonSpy;
+    onMessage: sinon.SinonSpy;
+    send: sinon.SinonSpy;
   };
+  let apiMock: {
+    updateCssRules: sinon.SinonStub;
+    loadPreview: sinon.SinonStub;
+    loadRules: sinon.SinonStub;
+  };
+  let getMetadataStub: sinon.SinonStub;
 
   async function editorFixture() {
     connectionMock = {
-      sendThemeEditorRules: sinon.spy(() => {})
+      onMessage: sinon.spy(),
+      send: sinon.spy()
     };
     const pickerMock = {
       open: (options: PickerOptions) => {
-        options.pickCallback({ nodeId: 1, uiId: 1, element: button });
+        options.pickCallback({ nodeId: 1, uiId: 1, element: testElement });
       }
     };
     const pickerProvider: PickerProvider = () => pickerMock as any;
@@ -31,6 +38,15 @@ describe('theme-editor', () => {
       .pickerProvider=${pickerProvider}
       .connection=${connectionMock}
     ></vaadin-dev-tools-theme-editor>`)) as ThemeEditor;
+
+    apiMock = {
+      updateCssRules: sinon.stub((editor as any).api as ThemeEditorApi, 'updateCssRules'),
+      loadPreview: sinon.stub((editor as any).api as ThemeEditorApi, 'loadPreview'),
+      loadRules: sinon.stub((editor as any).api as ThemeEditorApi, 'loadRules')
+    };
+    apiMock.updateCssRules.returns(Promise.resolve({}));
+    apiMock.loadPreview.returns(Promise.resolve({ css: '' }));
+    apiMock.loadRules.returns(Promise.resolve({ rules: [] }));
 
     return {
       editor,
@@ -45,10 +61,13 @@ describe('theme-editor', () => {
     await aTimeout(50);
   }
 
-  function findPropertyEditor(partName: string, propertyName: string) {
+  function findPropertyEditor(partName: string | null, propertyName: string) {
+    const partTestId = partName || 'host';
     return editor
       .shadowRoot!.querySelector('.property-list')
-      ?.shadowRoot!.querySelector(`.part[data-testid="${partName}"] .property-editor[data-testid="${propertyName}"]`)!;
+      ?.shadowRoot!.querySelector(
+        `.section[data-testid="${partTestId}"] .property-editor[data-testid="${propertyName}"]`
+      )!;
   }
 
   async function editProperty(partName: string, propertyName: string, value: string) {
@@ -62,28 +81,34 @@ describe('theme-editor', () => {
     await elementUpdated(editor);
   }
 
+  function getPropertyValue(partName: string, propertyName: string) {
+    const propertyEditor = findPropertyEditor(partName, propertyName);
+    const input = propertyEditor.shadowRoot!.querySelector('input')! as HTMLInputElement;
+    return input.value;
+  }
+
   function findPickerButton() {
     return editor.shadowRoot!.querySelector('.picker button');
   }
 
-  function findDiscardButton() {
-    return editor.shadowRoot!.querySelector('.modifications-actions button.discard') as HTMLElement;
-  }
-
-  function findApplyButton() {
-    return editor.shadowRoot!.querySelector('.modifications-actions button.apply') as HTMLElement;
+  function getTestElementStyles() {
+    return {
+      host: getComputedStyle(testElement),
+      label: getComputedStyle(testElement.shadowRoot!.querySelector('[part="label"]')!)
+    };
   }
 
   before(async () => {
-    // Pre-cache button metadata
-    const button = document.createElement('vaadin-button');
-    await metadataRegistry.getMetadata({ nodeId: 1, uiId: 1, element: button });
+    getMetadataStub = sinon.stub(metadataRegistry, 'getMetadata').returns(Promise.resolve(testElementMetadata));
+  });
+
+  after(() => {
+    getMetadataStub.restore();
   });
 
   beforeEach(async () => {
-    themePreview.reset();
-    button = await fixture(html` <vaadin-button></vaadin-button>`);
-    defaultButtonLabelStyles = getComputedStyle(button.shadowRoot!.querySelector('[part="label"]')!);
+    themePreview.update('');
+    testElement = await fixture(html` <test-element></test-element>`);
     const fixtureResult = await editorFixture();
     editor = fixtureResult.editor;
   });
@@ -104,73 +129,29 @@ describe('theme-editor', () => {
   });
 
   describe('editing', () => {
-    it('should not be modified initially', async () => {
-      expect(findDiscardButton()).to.not.exist;
-      expect(findApplyButton()).to.not.exist;
-    });
-
-    it('should be modified after changing a property', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-
-      expect(findDiscardButton()).to.exist;
-      expect(findApplyButton()).to.exist;
-    });
-
-    it('should not be modified after discarding changes', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-
-      findDiscardButton().click();
-      await elementUpdated(editor);
-
-      expect(findDiscardButton()).to.not.exist;
-      expect(findApplyButton()).to.not.exist;
-    });
-
-    it('should not be modified after picking another component', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-
-      await pickComponent();
-
-      expect(findDiscardButton()).to.not.exist;
-      expect(findApplyButton()).to.not.exist;
-    });
-
     it('should update theme preview after changing a property', async () => {
+      apiMock.loadPreview.returns(
+        Promise.resolve({
+          css: 'test-element::part(label) { color: red }'
+        })
+      );
       await pickComponent();
       await editProperty('label', 'color', 'red');
 
-      const labelStyle = getComputedStyle(button.shadowRoot!.querySelector('[part="label"]')!);
-      expect(labelStyle.color).to.equal('rgb(255, 0, 0)');
-    });
-
-    it('should reset theme preview after discarding changes', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-
-      findDiscardButton().click();
-      await elementUpdated(editor);
-
-      const labelStyle = getComputedStyle(button.shadowRoot!.querySelector('[part="label"]')!);
-      expect(labelStyle.color).to.equal(defaultButtonLabelStyles.color);
-    });
-
-    it('should reset theme preview after picking another component', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-
-      await pickComponent();
-
-      const labelStyle = getComputedStyle(button.shadowRoot!.querySelector('[part="label"]')!);
-      expect(labelStyle.color).to.equal(defaultButtonLabelStyles.color);
+      expect(apiMock.loadPreview.calledOnce).to.be.true;
+      expect(getTestElementStyles().label.color).to.equal('rgb(255, 0, 0)');
     });
 
     it('should show property editors for picked component', async () => {
       await pickComponent();
 
-      buttonMetadata.parts.forEach((part) => {
+      // Host properties
+      testElementMetadata.properties.forEach((property) => {
+        const propertyEditor = findPropertyEditor(null, property.propertyName);
+        expect(propertyEditor).to.exist;
+      });
+      // Part properties
+      testElementMetadata.parts.forEach((part) => {
         part.properties.forEach((property) => {
           const propertyEditor = findPropertyEditor(part.partName, property.propertyName);
           expect(propertyEditor).to.exist;
@@ -178,66 +159,72 @@ describe('theme-editor', () => {
       });
     });
 
-    it('should initialize property editors with base theme values', async () => {
+    it('should initialize property editors with base theme values when there are no custom rules', async () => {
       await pickComponent();
 
-      const propertyEditor = findPropertyEditor('label', 'color');
-      const input = propertyEditor.shadowRoot!.querySelector('input')! as HTMLInputElement;
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(0, 0, 0)');
+    });
 
-      expect(input.value).to.equal(defaultButtonLabelStyles.color);
+    it('should initialize property editors with values from custom rules', async () => {
+      apiMock.loadRules.returns(
+        Promise.resolve({
+          rules: [
+            {
+              selector: 'test-element::part(label)',
+              properties: {
+                color: 'red'
+              }
+            }
+          ]
+        })
+      );
+      await pickComponent();
+
+      expect(getPropertyValue('label', 'color')).to.equal('red');
     });
 
     it('should update property editors with edited theme values', async () => {
       await pickComponent();
       await editProperty('label', 'color', 'red');
 
-      const propertyEditor = findPropertyEditor('label', 'color');
-      const input = propertyEditor.shadowRoot!.querySelector('input')! as HTMLInputElement;
-
-      expect(input.value).to.equal('red');
+      expect(getPropertyValue('label', 'color')).to.equal('red');
     });
 
-    it('should reset property editors after discarding changes', async () => {
+    it('should send theme rules when changing properties', async () => {
       await pickComponent();
+
       await editProperty('label', 'color', 'red');
-
-      findDiscardButton().click();
-      await elementUpdated(editor);
-
-      const propertyEditor = findPropertyEditor('label', 'color');
-      const input = propertyEditor.shadowRoot!.querySelector('input')! as HTMLInputElement;
-
-      expect(input.value).to.equal(defaultButtonLabelStyles.color);
-    });
-
-    it('should reset property editors after picking another component', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-
-      await pickComponent();
-
-      const propertyEditor = findPropertyEditor('label', 'color');
-      const input = propertyEditor.shadowRoot!.querySelector('input')! as HTMLInputElement;
-
-      expect(input.value).to.equal(defaultButtonLabelStyles.color);
-    });
-
-    it('should send theme rules when applying changes', async () => {
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-
-      findApplyButton().click();
-
-      const expectedRules: ThemeEditorRule[] = [
+      expect(apiMock.updateCssRules.calledOnce).to.be.true;
+      expect(apiMock.updateCssRules.args[0][0]).to.deep.equal([
         {
-          selector: 'vaadin-button::part(label)',
+          selector: 'test-element::part(label)',
           property: 'color',
           value: 'red'
         }
-      ];
+      ]);
+      expect(apiMock.updateCssRules.args[0][1]).to.deep.equal([]);
+      apiMock.updateCssRules.resetHistory();
 
-      expect(connectionMock.sendThemeEditorRules.called);
-      expect(connectionMock.sendThemeEditorRules.args[0][0]).to.deep.equal(expectedRules);
+      await editProperty('label', 'color', 'green');
+      expect(apiMock.updateCssRules.calledOnce).to.be.true;
+      expect(apiMock.updateCssRules.args[0][0]).to.deep.equal([
+        {
+          selector: 'test-element::part(label)',
+          property: 'color',
+          value: 'green'
+        }
+      ]);
+      expect(apiMock.updateCssRules.args[0][1]).to.deep.equal([]);
+    });
+
+    it('should dispatch event before saving changes', async () => {
+      const beforeSaveSpy = sinon.spy();
+      editor.addEventListener('before-save', beforeSaveSpy);
+
+      await pickComponent();
+      await editProperty('label', 'color', 'red');
+
+      expect(beforeSaveSpy.calledOnce).to.be.true;
     });
   });
 });

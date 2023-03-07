@@ -4,7 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { ComponentPicker } from './component-picker';
 import { ComponentReference } from './component-util';
 import './theme-editor/editor';
-import { ThemeEditorState, ThemeEditorRule } from './theme-editor/model';
+import { ThemeEditorState } from './theme-editor/model';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
@@ -141,7 +141,7 @@ export class Connection extends Object {
     }
   }
 
-  private send(command: string, data: any) {
+  public send(command: string, data: any) {
     const message = JSON.stringify({ command, data });
     if (!this.webSocket) {
       // eslint-disable-next-line no-console
@@ -167,10 +167,6 @@ export class Connection extends Object {
   }
   sendShowComponentAttachLocation(component: ComponentReference) {
     this.send('showComponentAttachLocation', component);
-  }
-
-  sendThemeEditorRules(rules: ThemeEditorRule[]) {
-    this.send('themeEditorRules', { add: rules });
   }
 }
 
@@ -1009,6 +1005,8 @@ export class VaadinDevTools extends LitElement {
 
   private transitionDuration: number = 0;
 
+  disableLiveReloadTimeout: number | null = null;
+
   elementTelemetry() {
     let data = {};
     try {
@@ -1375,6 +1373,17 @@ export class VaadinDevTools extends LitElement {
     window.sessionStorage.setItem(VaadinDevTools.ACTIVE_KEY_IN_SESSION_STORAGE, yes ? 'true' : 'false');
   }
 
+  disableLiveReloadTemporarily() {
+    if (VaadinDevTools.isActive || this.disableLiveReloadTimeout != null) {
+      this.setActive(false);
+      clearTimeout(this.disableLiveReloadTimeout!);
+      this.disableLiveReloadTimeout = window.setTimeout(() => {
+        this.setActive(true);
+        this.disableLiveReloadTimeout = null;
+      }, 2500);
+    }
+  }
+
   getStatusColor(status: ConnectionStatus | undefined) {
     if (status === ConnectionStatus.ACTIVE) {
       return 'var(--dev-tools-green-color)';
@@ -1647,6 +1656,7 @@ export class VaadinDevTools extends LitElement {
       .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
       .connection=${this.frontendConnection}
+      @before-save=${this.disableLiveReloadTemporarily}
     ></vaadin-dev-tools-theme-editor>`;
   }
 
