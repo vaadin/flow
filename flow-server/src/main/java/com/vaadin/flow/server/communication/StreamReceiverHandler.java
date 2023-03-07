@@ -15,8 +15,7 @@
  */
 package com.vaadin.flow.server.communication;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,13 +23,14 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
-
-import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
+import org.apache.commons.fileupload.FileCountLimitExceededException;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadBase.FileSizeLimitExceededException;
+import org.apache.commons.fileupload.FileUploadBase.SizeLimitExceededException;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.slf4j.Logger;
@@ -54,6 +54,8 @@ import com.vaadin.flow.server.communication.streaming.StreamingProgressEventImpl
 import com.vaadin.flow.server.communication.streaming.StreamingStartEventImpl;
 import com.vaadin.flow.shared.ApplicationConstants;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
  *
@@ -65,8 +67,20 @@ public class StreamReceiverHandler implements Serializable {
 
     private static final int MAX_UPLOAD_BUFFER_SIZE = 4 * 1024;
 
+    static final long DEFAULT_SIZE_MAX = -1;
+
+    static final long DEFAULT_FILE_SIZE_MAX = -1;
+
+    static final long DEFAULT_FILE_COUNT_MAX = 10000;
+
     /* Minimum interval which will be used for streaming progress events. */
     public static final int DEFAULT_STREAMING_PROGRESS_EVENT_INTERVAL_MS = 500;
+
+    private long requestSizeMax = DEFAULT_SIZE_MAX;
+
+    private long fileSizeMax = DEFAULT_FILE_SIZE_MAX;
+
+    private long fileCountMax = DEFAULT_FILE_COUNT_MAX;
 
     /**
      * An UploadInterruptedException will be thrown by an ongoing upload if
@@ -174,6 +188,9 @@ public class StreamReceiverHandler implements Serializable {
 
         // Create a new file upload handler
         ServletFileUpload upload = new ServletFileUpload();
+        upload.setSizeMax(requestSizeMax);
+        upload.setFileSizeMax(fileSizeMax);
+        upload.setFileCountMax(fileCountMax);
 
         long contentLength = getContentLength(request);
         // Parse the request
@@ -186,6 +203,20 @@ public class StreamReceiverHandler implements Serializable {
                         item);
             }
         } catch (FileUploadException e) {
+            String limitInfoStr = "{} limit exceeded. To increase the limit "
+                    + "extend StreamRequestHandler, override {} method and "
+                    + "provide a higher limit. The extended class needs to be "
+                    + "added to request handlers with "
+                    + "ServiceInitEvent::addRequestHandler in an extension of "
+                    + "VaadinServiceInitListener.";
+            if (e instanceof SizeLimitExceededException) {
+                getLogger().warn(limitInfoStr, "Request size",
+                        "getRequestSizeMax");
+            } else if (e instanceof FileSizeLimitExceededException) {
+                getLogger().warn(limitInfoStr, "File size", "getFileSizeMax");
+            } else if (e instanceof FileCountLimitExceededException) {
+                getLogger().warn(limitInfoStr, "File count", "getFileCountMax");
+            }
             getLogger().warn("File upload failed.", e);
         }
         sendUploadResponse(response);
@@ -468,6 +499,18 @@ public class StreamReceiverHandler implements Serializable {
         } catch (NumberFormatException e) {
             return -1l;
         }
+    }
+
+    public void setRequestSizeMax(long requestSizeMax) {
+        this.requestSizeMax = requestSizeMax;
+    }
+
+    public void setFileSizeMax(long fileSizeMax) {
+        this.fileSizeMax = fileSizeMax;
+    }
+
+    public void setFileCountMax(long fileCountMax) {
+        this.fileCountMax = fileCountMax;
     }
 
     private static Logger getLogger() {
