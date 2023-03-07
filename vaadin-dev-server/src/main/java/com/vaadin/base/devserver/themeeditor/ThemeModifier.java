@@ -7,6 +7,9 @@ import com.helger.css.decl.CSSStyleRule;
 import com.helger.css.decl.CascadingStyleSheet;
 import com.helger.css.reader.CSSReader;
 import com.helger.css.writer.CSSWriter;
+import com.helger.css.writer.CSSWriterSettings;
+import com.vaadin.base.devserver.themeeditor.messages.LoadRulesResponse;
+import com.vaadin.base.devserver.themeeditor.messages.RulesRequest;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -18,10 +21,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,13 +37,7 @@ public class ThemeModifier {
         ENABLED, DISABLED, MISSING_THEME
     }
 
-    public record CssRuleProperty(String selector, String property,
-            String value) {
-    }
-
     private static final String THEME_EDITOR_CSS = "theme-editor.css";
-
-    private static final String DEFAULT_THEME = "my-theme";
 
     private static final String HEADER_TEXT = "This file has been created by the Vaadin Theme Editor. Please note that\n"
             + "manual changes to individual CSS properties may be overwritten by the theme editor.";
@@ -63,12 +63,14 @@ public class ThemeModifier {
 
     /**
      * Performs update of CSS file setting (adding or updating) given lists of
-     * {@link CssRuleProperty}.
+     * {@link RulesRequest.CssRuleProperty}.
      *
      * @param properties
-     *            list of {@link CssRuleProperty} to be added or updated
+     *            list of {@link RulesRequest.CssRuleProperty} to be added or
+     *            updated
      */
-    public void setThemeProperties(List<CssRuleProperty> properties) {
+    public void setThemeProperties(
+            List<RulesRequest.CssRuleProperty> properties) {
         assert properties != null;
         CascadingStyleSheet styleSheet = getCascadingStyleSheet();
         properties.forEach(cssProp -> setCssProperty(styleSheet, cssProp));
@@ -78,12 +80,14 @@ public class ThemeModifier {
 
     /**
      * Performs update of CSS file setting and removing given lists of
-     * {@link CssRuleProperty}.
+     * {@link RulesRequest.CssRuleProperty}.
      *
      * @param properties
-     *            list of {@link CssRuleProperty} to be added or updated
+     *            list of {@link RulesRequest.CssRuleProperty} to be added or
+     *            updated
      */
-    public void removeThemeProperties(List<CssRuleProperty> properties) {
+    public void removeThemeProperties(
+            List<RulesRequest.CssRuleProperty> properties) {
         assert properties != null;
         CascadingStyleSheet styleSheet = getCascadingStyleSheet();
         properties.forEach(cssProp -> removeCssProperty(styleSheet, cssProp));
@@ -92,30 +96,44 @@ public class ThemeModifier {
     }
 
     /**
-     * Creates default theme folder structure within frontend resources. Creates
-     * styles.css with import of ThemeEditor default stylesheet. Does not
-     * add @Theme annotation to AppShell configuration.
+     * Returns the full content of the theme editor CSS file.
+     *
+     * @return CSS string
      */
-    public void createDefaultTheme() {
-        File theme = Path.of(getFrontendFolder().getPath(), "themes",
-                getDefaultThemeName()).toFile();
-        if (!theme.exists()) {
-            theme.mkdirs();
-        }
+    public String getCss() {
+        File styles = getStyleSheetFile();
         try {
-            new File(theme, "styles.css").createNewFile();
+            return Files.readString(Path.of(styles.getAbsolutePath()));
         } catch (IOException e) {
-            throw new ModifierException(
-                    "Cannot create styles.css in " + theme.getPath(), e);
+            throw new ThemeEditorException("Could not read stylesheet from "
+                    + styles.getAbsolutePath());
         }
+    }
+
+    public List<LoadRulesResponse.CssRule> getCssRules(String selectorFilter) {
+        CascadingStyleSheet styleSheet = getCascadingStyleSheet();
+        CSSWriterSettings cssWriterSettings = new CSSWriterSettings();
+
+        return styleSheet.getAllStyleRules().stream().filter(rule -> {
+            String cssSelector = rule.getSelectorCount() > 0
+                    ? rule.getSelectorAtIndex(0).getAsCSSString()
+                    : null;
+            return cssSelector != null
+                    && cssSelector.startsWith(selectorFilter);
+        }).map(rule -> {
+            String selector = rule.getSelectorsAsCSSString(cssWriterSettings,
+                    0);
+            Map<String, String> properties = new HashMap<>();
+            rule.getAllDeclarations().forEach(cssDeclaration -> {
+                properties.put(cssDeclaration.getProperty(),
+                        cssDeclaration.getExpressionAsCSSString());
+            });
+            return new LoadRulesResponse.CssRule(selector, properties);
+        }).toList();
     }
 
     protected String getCssFileName() {
         return THEME_EDITOR_CSS;
-    }
-
-    protected String getDefaultThemeName() {
-        return DEFAULT_THEME;
     }
 
     protected String getHeaderText() {
@@ -150,17 +168,17 @@ public class ThemeModifier {
         if (!themeEditorStyles.exists()) {
             try {
                 if (!themeEditorStyles.createNewFile()) {
-                    throw new IllegalStateException(
+                    throw new ThemeEditorException(
                             "Cannot create " + themeEditorStyles.getPath());
                 }
             } catch (IOException e) {
-                throw new IllegalStateException(
+                throw new ThemeEditorException(
                         "Cannot create " + themeEditorStyles.getPath(), e);
             }
         }
 
         if (!themeEditorStyles.canWrite()) {
-            throw new IllegalStateException(
+            throw new ThemeEditorException(
                     themeEditorStyles.getPath() + " is not writable.");
         }
 
@@ -181,18 +199,18 @@ public class ThemeModifier {
     }
 
     protected void setCssProperty(CascadingStyleSheet styleSheet,
-            CssRuleProperty css) {
-        CSSStyleRule newRule = createStyleRule(css.selector, css.property,
-                css.value);
+            RulesRequest.CssRuleProperty css) {
+        CSSStyleRule newRule = createStyleRule(css.selector(), css.property(),
+                css.value());
         findRuleBySelector(styleSheet, newRule).ifPresentOrElse(
                 existingRule -> addOrUpdateProperty(existingRule, newRule),
                 () -> styleSheet.addRule(newRule));
     }
 
     protected void removeCssProperty(CascadingStyleSheet styleSheet,
-            CssRuleProperty css) {
+            RulesRequest.CssRuleProperty css) {
         // value not considered
-        CSSStyleRule newRule = createStyleRule(css.selector, css.property,
+        CSSStyleRule newRule = createStyleRule(css.selector(), css.property(),
                 "inherit");
         Optional<CSSStyleRule> optRule = findRuleBySelector(styleSheet,
                 newRule);
@@ -213,7 +231,7 @@ public class ThemeModifier {
             writer.getSettings().setOptimizedOutput(false);
             writer.writeCSS(styleSheet, new FileWriter(styles));
         } catch (IOException e) {
-            throw new IllegalStateException("Cannot write " + styles.getPath(),
+            throw new ThemeEditorException("Cannot write " + styles.getPath(),
                     e);
         }
     }
@@ -296,7 +314,7 @@ public class ThemeModifier {
                 writer = new FileWriter(themeStyles);
                 IOUtils.writeLines(lines, System.lineSeparator(), writer);
             } catch (IOException e) {
-                throw new RuntimeException(
+                throw new ThemeEditorException(
                         "Cannot insert theme-editor.css @import", e);
             } finally {
                 IOUtils.closeQuietly(writer);
@@ -307,10 +325,10 @@ public class ThemeModifier {
     protected String getThemeName(File themes) {
         String[] themeFolders = themes.list();
         if (themeFolders == null || themeFolders.length == 0) {
-            throw new IllegalStateException(
+            throw new ThemeEditorException(
                     "No theme folder found in " + themes.getAbsolutePath());
         } else if (themeFolders.length > 1) {
-            throw new IllegalStateException("Multiple theme folders found in "
+            throw new ThemeEditorException("Multiple theme folders found in "
                     + themes.getAbsolutePath()
                     + ". I don't know which to update");
         }

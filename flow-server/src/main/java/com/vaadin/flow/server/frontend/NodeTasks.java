@@ -95,6 +95,10 @@ public class NodeTasks implements FallibleCommand {
 
         final FeatureFlags featureFlags = options.getFeatureFlags();
 
+        if (options.isFrontendHotdeploy()) {
+            UsageStatistics.markAsUsed("flow/hotdeploy", null);
+        }
+
         if (options.isEnablePackagesUpdate() || options.isEnableImportsUpdate()
                 || options.isEnableWebpackConfigUpdate()) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
@@ -106,14 +110,21 @@ public class NodeTasks implements FallibleCommand {
             // determine if we need a rebuild as the check happens immediately
             // and no update tasks are executed before it.
             if (!options.isProductionMode() && options.isDevBundleBuild()) {
-                UsageStatistics.markAsUsed("flow/expressBuild", null);
                 if (TaskRunDevBundleBuild.needsBuild(options,
                         frontendDependencies, classFinder)) {
                     options.withRunNpmInstall(true);
                     options.withCopyTemplates(true);
+                    UsageStatistics.markAsUsed("flow/app-dev-bundle", null);
                 } else {
                     // A dev bundle build is not needed after all, skip it
                     options.withDevBundleBuild(false);
+                    File devBundleFolder = FrontendUtils
+                            .getDevBundleFolder(options.getNpmFolder());
+                    if (devBundleFolder.exists()) {
+                        UsageStatistics.markAsUsed("flow/app-dev-bundle", null);
+                    } else {
+                        UsageStatistics.markAsUsed("flow/dev-bundle", null);
+                    }
                 }
             }
 

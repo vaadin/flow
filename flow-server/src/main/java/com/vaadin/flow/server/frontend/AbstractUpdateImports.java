@@ -500,7 +500,19 @@ abstract class AbstractUpdateImports implements Runnable {
         return file.isFile() || file.isDirectory();
     }
 
-    private boolean addCssLines(Collection<String> lines, CssData cssData,
+    /**
+     * Adds CSS imports to the generated flow imports file based on the given
+     * CssImport data.
+     *
+     * @param lines
+     *            collection of generated file lines to add imports to
+     * @param cssData
+     *            CssImport data
+     * @param i
+     *            imported CSS counter
+     * @return true if the imported CSS files does exist, false otherwise
+     */
+    protected boolean addCssLines(Collection<String> lines, CssData cssData,
             int i) {
         String cssFile = resolveResource(cssData.getValue());
         boolean found = importedFileExists(cssFile);

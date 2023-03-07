@@ -207,12 +207,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private CssData createCssData(Annotation cssImport) {
-        CssData data = new CssData();
-        data.id = adaptCssValue(cssImport, "id");
-        data.include = adaptCssValue(cssImport, "include");
-        data.themefor = adaptCssValue(cssImport, "themeFor");
-        data.value = adaptCssValue(cssImport, VALUE);
-        return data;
+        String id = adaptCssValue(cssImport, "id");
+        String include = adaptCssValue(cssImport, "include");
+        String themeFor = adaptCssValue(cssImport, "themeFor");
+        String value = adaptCssValue(cssImport, VALUE);
+        return new CssData(value, id, include, themeFor);
     }
 
     private String adaptCssValue(Annotation cssImport, String method) {

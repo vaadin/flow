@@ -5,11 +5,12 @@ import { ComponentMetadata } from './metadata/model';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
 import './property-list';
-import { ComponentTheme, generateThemeRule, Theme, ThemeEditorState } from './model';
+import { ComponentTheme, generateThemeRule, ThemeEditorState } from './model';
 import { detectTheme } from './detector';
 import { ThemePropertyValueChangeEvent } from './events';
 import { themePreview } from './preview';
 import { Connection } from '../vaadin-dev-tools';
+import { ThemeEditorApi } from './api';
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
@@ -19,6 +20,7 @@ export class ThemeEditor extends LitElement {
   public pickerProvider!: PickerProvider;
   @property({})
   public connection!: Connection;
+  private api!: ThemeEditorApi;
 
   /**
    * Metadata for the selected / picked component
@@ -26,25 +28,20 @@ export class ThemeEditor extends LitElement {
   @state()
   private selectedComponentMetadata: ComponentMetadata | null = null;
   /**
-   * Theme modifications for all components, containing all changes since the
-   * last reload
-   */
-  private theme: Theme = new Theme();
-  /**
    * Base theme detected from existing CSS files for the selected component
    */
-  private baseComponentTheme: ComponentTheme | null = null;
+  private baseTheme: ComponentTheme | null = null;
   /**
-   * Previously saved theme modifications for the selected component since the
+   * Currently edited theme modifications for the selected component since the
    * last reload
    */
-  private modifiedComponentTheme: ComponentTheme | null = null;
+  private editedTheme: ComponentTheme | null = null;
   /**
    * The effective theme for the selected component, including base theme and
    * previously saved modifications
    */
   @state()
-  private effectiveComponentTheme: ComponentTheme | null = null;
+  private effectiveTheme: ComponentTheme | null = null;
 
   static get styles() {
     return css`
@@ -96,6 +93,10 @@ export class ThemeEditor extends LitElement {
     `;
   }
 
+  protected firstUpdated() {
+    this.api = new ThemeEditorApi(this.connection);
+  }
+
   render() {
     if (this.themeEditorState === ThemeEditorState.missing_theme) {
       return this.renderMissingThemeNotice();
@@ -112,7 +113,7 @@ export class ThemeEditor extends LitElement {
         ? html` <vaadin-dev-tools-theme-property-list
             class="property-list"
             .metadata=${this.selectedComponentMetadata}
-            .theme=${this.effectiveComponentTheme}
+            .theme=${this.effectiveTheme}
             @theme-property-value-change=${this.handlePropertyChange}
           ></vaadin-dev-tools-theme-property-list>`
         : null}
@@ -146,33 +147,35 @@ export class ThemeEditor extends LitElement {
         </div>
       `,
       pickCallback: async (component) => {
-        this.selectedComponentMetadata = await metadataRegistry.getMetadata(component);
-        if (this.selectedComponentMetadata) {
-          themePreview.reset();
-          this.baseComponentTheme = detectTheme(this.selectedComponentMetadata);
-          this.modifiedComponentTheme = this.theme.getOrCreateComponentTheme(this.selectedComponentMetadata);
-          this.effectiveComponentTheme = ComponentTheme.combine(this.baseComponentTheme, this.modifiedComponentTheme);
-        } else {
-          this.baseComponentTheme = null;
-          this.modifiedComponentTheme = null;
-          this.effectiveComponentTheme = null;
+        const metadata = await metadataRegistry.getMetadata(component);
+        if (!metadata) {
+          this.baseTheme = null;
+          this.editedTheme = null;
+          this.effectiveTheme = null;
+          return;
         }
-        this.updateThemePreview();
+
+        const scopeSelector = metadata.tagName;
+        const serverRules = await this.api.loadRules(scopeSelector);
+
+        this.selectedComponentMetadata = metadata;
+        this.baseTheme = detectTheme(metadata);
+        this.editedTheme = ComponentTheme.fromServerRules(metadata, serverRules.rules);
+        this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
       }
     });
   }
 
-  private handlePropertyChange(e: ThemePropertyValueChangeEvent) {
-    if (!this.selectedComponentMetadata || !this.baseComponentTheme || !this.modifiedComponentTheme) {
+  private async handlePropertyChange(e: ThemePropertyValueChangeEvent) {
+    if (!this.selectedComponentMetadata || !this.baseTheme || !this.editedTheme) {
       return;
     }
 
     // Update local theme state
     const { part, property, value } = e.detail;
     const partName = part?.partName || null;
-    this.modifiedComponentTheme.updatePropertyValue(partName, property.propertyName, value);
-    this.effectiveComponentTheme = ComponentTheme.combine(this.baseComponentTheme, this.modifiedComponentTheme);
-    this.updateThemePreview();
+    this.editedTheme.updatePropertyValue(partName, property.propertyName, value);
+    this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
 
     // Update theme editor CSS
     // Notify dev tools that we are about to save CSS, so that it can disable
@@ -184,10 +187,12 @@ export class ThemeEditor extends LitElement {
       property.propertyName,
       value
     );
-    this.connection.sendThemeEditorRules([updateRule]);
+    await this.api.updateCssRules([updateRule], []);
+    await this.updateThemePreview();
   }
 
-  private updateThemePreview() {
-    themePreview.update(this.theme);
+  private async updateThemePreview() {
+    const preview = await this.api.loadPreview();
+    themePreview.update(preview.css);
   }
 }

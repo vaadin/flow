@@ -19,6 +19,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -1345,6 +1346,40 @@ public class TaskRunDevBundleBuildTest {
     }
 
     @Test
+    public void themeJsonUpdates_containsParentTheme_noBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectThemeJsonStub("{\"parent\": \"my-parent-theme\"}");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        final ThemeDefinition themeDefinition = Mockito
+                .mock(ThemeDefinition.class);
+        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
+        Mockito.when(depScanner.getThemeDefinition())
+                .thenReturn(themeDefinition);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            JsonObject stats = getBasicStats();
+            stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle",
+                    "{\"lumoImports\": [\"typography\"]}");
+
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Should not trigger a bundle rebuild when parent theme is used",
+                    needsBuild);
+        }
+    }
+
+    @Test
     public void themeJsonUpdates_statsHasThemeJson_projectHasNoThemeJson_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
@@ -1663,6 +1698,40 @@ public class TaskRunDevBundleBuildTest {
                     .needsBuildInternal(options, depScanner, finder);
             Assert.assertFalse(
                     "Should not require bundling if component JS is missing in jar-resources",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void cssImport_cssInMetaInfResources_notThrow_bundleRequired()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        CssData cssData = new CssData("./addons-styles/my-styles.css", null,
+                null, null);
+
+        Mockito.when(depScanner.getCss())
+                .thenReturn(Collections.singleton(cssData));
+
+        JsonObject stats = getBasicStats();
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            // Should not throw an IllegalStateException:
+            // "Failed to find the following css files in the...."
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Should re-bundle if CSS is imported from META-INF/resources",
                     needsBuild);
         }
     }

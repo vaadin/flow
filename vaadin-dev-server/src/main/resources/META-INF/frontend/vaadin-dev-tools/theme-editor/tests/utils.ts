@@ -22,6 +22,7 @@ export class TestElement extends HTMLElement {
     shadow.adoptedStyleSheets.push(styles);
   }
 }
+
 customElements.define('test-element', TestElement);
 
 export const testElementMetadata: ComponentMetadata = {
@@ -31,6 +32,10 @@ export const testElementMetadata: ComponentMetadata = {
     {
       propertyName: 'padding',
       displayName: 'Padding'
+    },
+    {
+      propertyName: 'background',
+      displayName: 'Background'
     }
   ],
   parts: [
@@ -41,6 +46,10 @@ export const testElementMetadata: ComponentMetadata = {
         {
           propertyName: 'color',
           displayName: 'Text color'
+        },
+        {
+          propertyName: 'font-size',
+          displayName: 'Font size'
         }
       ]
     }

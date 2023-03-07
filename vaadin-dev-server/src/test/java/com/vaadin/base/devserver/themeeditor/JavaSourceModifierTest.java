@@ -4,100 +4,25 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.utils.SourceRoot;
-import com.vaadin.base.devserver.MockVaadinContext;
-import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.internal.ComponentTracker;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.testutil.TestUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
-import java.io.*;
-import java.lang.reflect.Field;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
-public class JavaSourceModifierTest {
-
-    private VaadinContext mockContext = new MockVaadinContext();
-
-    private class TestJavaSourceModifier extends JavaSourceModifier {
-
-        private VaadinSession session = new MockVaadinSession(null);
-
-        public TestJavaSourceModifier() {
-            super(mockContext);
-        }
-
-        @Override
-        public VaadinSession getSession() {
-            return session;
-        }
-    }
-
-    private class MockVaadinSession extends VaadinSession {
-
-        private static Span pickedComponent = new Span("test");
-
-        public MockVaadinSession(VaadinService service) {
-            super(service);
-        }
-
-        @Override
-        public Future<Void> access(Command command) {
-            command.execute();
-            return new CompletableFuture<>();
-        }
-
-        @Override
-        public Element findElement(int uiId, int nodeId)
-                throws IllegalArgumentException {
-            return pickedComponent.getElement();
-        }
-    }
+public class JavaSourceModifierTest extends AbstractThemeEditorTest {
 
     @Before
     public void prepare() {
+        super.prepare();
         copy("TestView_clean.java", "TestView.java");
-        Lookup lookup = Mockito.mock(Lookup.class);
-        mockContext.setAttribute(Lookup.class, lookup);
-
-        VaadinService service = Mockito.mock(VaadinService.class);
-        VaadinService.setCurrent(service);
-        Mockito.when(service.getContext()).thenReturn(mockContext);
-
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
-        ApplicationConfigurationFactory factory = Mockito
-                .mock(ApplicationConfigurationFactory.class);
-
-        Mockito.when(lookup.lookup(ApplicationConfigurationFactory.class))
-                .thenReturn(factory);
-        Mockito.when(factory.create(Mockito.any())).thenReturn(configuration);
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        // used for source file manipulation
-        Mockito.when(configuration.getJavaSourceFolder())
-                .thenReturn(new File("target/test-classes/java"));
-        Mockito.when(configuration.getJavaResourceFolder())
-                .thenReturn(new File("src/test/resources"));
-
-        FeatureFlags.get(mockContext)
-                .setEnabled(FeatureFlags.THEME_EDITOR.getId(), true);
     }
 
     @After
@@ -106,21 +31,6 @@ public class JavaSourceModifierTest {
         File testView = new File(javaFolder, "TestView.java");
         if (testView.exists()) {
             testView.delete();
-        }
-    }
-
-    private void copy(String from, String to) {
-        try {
-            File javaFolder = TestUtils
-                    .getTestFolder("java/org/vaadin/example");
-            File testViewClean = new File(javaFolder, from);
-            File testView = new File(javaFolder, to);
-            FileReader reader = new FileReader(testViewClean);
-            FileWriter writer = new FileWriter(testView);
-            IOUtils.copy(reader, writer);
-            IOUtils.closeQuietly(writer, reader);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -203,14 +113,14 @@ public class JavaSourceModifierTest {
         modifier.removeClassNames(0, 0, Arrays.asList("very-ugly"));
     }
 
-    @Test(expected = ModifierException.class)
+    @Test(expected = ThemeEditorException.class)
     public void declarationAsClassProperty_exceptionIsThrown() {
         prepareComponentTracker(18);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
         modifier.setClassNames(0, 0, Arrays.asList("bold", "beautiful"));
     }
 
-    @Test(expected = ModifierException.class)
+    @Test(expected = ThemeEditorException.class)
     public void declarationAsInlineArgument_exceptionIsThrown() {
         prepareComponentTracker(44);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
@@ -235,22 +145,22 @@ public class JavaSourceModifierTest {
         }
     }
 
-    private void prepareComponentTracker(int line) {
-        try {
-            Field createLocationField = ComponentTracker.class
-                    .getDeclaredField("createLocation");
-            createLocationField.setAccessible(true);
-            Map<Component, ComponentTracker.Location> createMap = (Map<Component, ComponentTracker.Location>) createLocationField
-                    .get(null);
+    @Test
+    public void componentPicked_componentAccessible() {
+        prepareComponentTracker(22);
+        JavaSourceModifier modifier = new TestJavaSourceModifier();
+        JavaSourceModifier.ComponentMetadata metadata = modifier.getMetadata(0,
+                0);
+        Assert.assertTrue(metadata.isAccessible());
+    }
 
-            ComponentTracker.Location location = new ComponentTracker.Location(
-                    "org.vaadin.example.TestView", "TestView.java", "TestView",
-                    line);
-
-            createMap.put(MockVaadinSession.pickedComponent, location);
-        } catch (Exception ex) {
-
-        }
+    @Test
+    public void componentPicked_componentNotAccessible() {
+        prepareComponentTracker(44);
+        JavaSourceModifier modifier = new TestJavaSourceModifier();
+        JavaSourceModifier.ComponentMetadata metadata = modifier.getMetadata(0,
+                0);
+        Assert.assertFalse(metadata.isAccessible());
     }
 
     private CompilationUnit getCompilationUnit() {
