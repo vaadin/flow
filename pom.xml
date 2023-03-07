@@ -84,9 +84,9 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.version>6.0.4</spring.version>
-        <spring.boot.version>3.0.2</spring.boot.version>
-        <spring.security.version>6.0.1</spring.security.version>
+        <spring.version>6.0.6</spring.version>
+        <spring.boot.version>3.0.4</spring.boot.version>
+        <spring.security.version>6.0.2</spring.security.version>
         <spring.security.oauth2.authorization.server.version>1.0.1</spring.security.oauth2.authorization.server.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
