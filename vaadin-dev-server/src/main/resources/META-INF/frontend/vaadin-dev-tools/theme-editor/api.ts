@@ -39,6 +39,7 @@ export class ThemeEditorApi {
   private wrappedConnection: Connection;
   private pendingRequests: { [key: string]: RequestHandle } = {};
   private requestCounter: number = 0;
+  private globalUiId: number = this.getGlobalUiId();
 
   constructor(wrappedConnection: Connection) {
     this.wrappedConnection = wrappedConnection;
@@ -54,7 +55,7 @@ export class ThemeEditorApi {
 
   private sendRequest(command: string, data: any) {
     const requestId = (this.requestCounter++).toString();
-    const uiId = 0;
+    const uiId = data['uiId'] ?? this.globalUiId;
 
     return new Promise<any>((resolve, reject) => {
       this.wrappedConnection.send(command, {
@@ -98,4 +99,20 @@ export class ThemeEditorApi {
   public loadRules(selectorFilter: string): Promise<LoadRulesResponse> {
     return this.sendRequest(Commands.loadRules, { selectorFilter });
   }
+
+  private getGlobalUiId(): number {
+    const vaadin = (window as any).Vaadin;
+    if (vaadin && vaadin.Flow) {
+      const { clients } = vaadin.Flow;
+      const appIds = Object.keys(clients);
+      for (const appId of appIds) {
+        const client = clients[appId];
+        if (client.getNodeId) {
+          return client.getUIId();
+        }
+      }
+    }
+    return -1;
+  }
+
 }

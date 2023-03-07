@@ -51,7 +51,7 @@ describe('theme editor API', () => {
     expect(connectionMock.send.args[0][1]).to.deep.equal({
       requestId: '0',
       rules: rules,
-      uiId: 0
+      uiId: -1
     });
   });
 
