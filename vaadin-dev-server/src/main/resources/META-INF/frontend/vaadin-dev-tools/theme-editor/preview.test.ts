@@ -1,7 +1,6 @@
 import { expect, fixture, html } from '@open-wc/testing';
 import { themePreview } from './preview';
-import { ComponentTheme, Theme } from './model';
-import { testElementMetadata } from './tests/utils';
+import './tests/utils';
 
 describe('theme-preview', () => {
   let element: HTMLElement;
@@ -19,12 +18,16 @@ describe('theme-preview', () => {
   });
 
   it('should apply theme preview', () => {
-    const theme = new Theme();
-    const componentTheme = new ComponentTheme(testElementMetadata);
-    componentTheme.updatePropertyValue(null, 'padding', '20px');
-    componentTheme.updatePropertyValue('label', 'color', 'red');
-    theme.updateComponentTheme(componentTheme);
-    themePreview.update(theme);
+    const css = `
+      test-element {
+        padding: 20px;
+      }
+      
+      test-element::part(label) {
+        color: red;
+      }
+    `;
+    themePreview.update(css);
 
     const elementStyles = getElementStyles();
     expect(elementStyles.host.padding).to.equal('20px');
@@ -32,17 +35,27 @@ describe('theme-preview', () => {
   });
 
   it('should update theme preview', () => {
-    const theme = new Theme();
-    const componentTheme = new ComponentTheme(testElementMetadata);
-    componentTheme.updatePropertyValue(null, 'padding', '20px');
-    componentTheme.updatePropertyValue('label', 'color', 'red');
-    theme.updateComponentTheme(componentTheme);
-    themePreview.update(theme);
+    const css = `
+      test-element {
+        padding: 20px;
+      }
+      
+      test-element::part(label) {
+        color: red;
+      }
+    `;
+    themePreview.update(css);
 
-    componentTheme.updatePropertyValue(null, 'padding', '30px');
-    componentTheme.updatePropertyValue('label', 'color', 'green');
-    theme.updateComponentTheme(componentTheme);
-    themePreview.update(theme);
+    const updatedCss = `
+      test-element {
+        padding: 30px;
+      }
+      
+      test-element::part(label) {
+        color: green;
+      }
+    `;
+    themePreview.update(updatedCss);
 
     const elementStyles = getElementStyles();
     expect(elementStyles.host.padding).to.equal('30px');
@@ -50,14 +63,17 @@ describe('theme-preview', () => {
   });
 
   it('should reset theme preview', () => {
-    const theme = new Theme();
-    const componentTheme = new ComponentTheme(testElementMetadata);
-    componentTheme.updatePropertyValue(null, 'padding', '20px');
-    componentTheme.updatePropertyValue('label', 'color', 'red');
-    theme.updateComponentTheme(componentTheme);
-    themePreview.update(theme);
-
-    themePreview.reset();
+    const css = `
+      test-element {
+        padding: 20px;
+      }
+      
+      test-element::part(label) {
+        color: red;
+      }
+    `;
+    themePreview.update(css);
+    themePreview.update('');
 
     const elementStyles = getElementStyles();
     expect(elementStyles.host.padding).to.equal('10px');
