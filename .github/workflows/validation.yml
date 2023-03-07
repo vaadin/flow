@@ -9,7 +9,7 @@ permissions:
   contents: read
 jobs:
   build:
-    timeout-minutes: 20
+    timeout-minutes: 30
     runs-on: ubuntu-22.04
     outputs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
@@ -40,6 +40,10 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -67,7 +71,7 @@ jobs:
           path: workspace.tar
   unit-tests:
     needs: build
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
@@ -80,6 +84,10 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -128,7 +136,7 @@ jobs:
           path: tests-report-*.tgz
   it-tests:
     needs: build
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
@@ -148,6 +156,10 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
