@@ -753,16 +753,15 @@ public class ShortcutRegistration implements Registration, Serializable {
         // shortcut
 
         /*
-         * Due to https://github.com/vaadin/flow/issues/15906.
-         * Browsers having different implementation for Option keys:
-         * -> Mozilla: ALT_GRAPH and ALT both are triggered
-         * (getModifierState() return true for ALT AND ALT_GRAPH),
-         * -> Chrome: ALT is triggered only
-         * (getModifierState() return true for only ALT).
+         * Due to https://github.com/vaadin/flow/issues/15906. Browsers having
+         * different implementation for Option keys: -> Mozilla: ALT_GRAPH and
+         * ALT both are triggered (getModifierState() return true for ALT AND
+         * ALT_GRAPH), -> Chrome: ALT is triggered only (getModifierState()
+         * return true for only ALT).
          *
-         * So we need to check if ALT is in the modifiers list,
-         * if it is, we do not check anymore that !ALT_GRAPH is not in filter list, because it can be
-         * based on browser implementations.
+         * So we need to check if ALT is in the modifiers list, if it is, we do
+         * not check anymore that !ALT_GRAPH is not in filter list, because it
+         * can be based on browser implementations.
          */
 
         final boolean altAdded = modifiers.contains(Key.ALT);
@@ -770,11 +769,13 @@ public class ShortcutRegistration implements Registration, Serializable {
         return Arrays.stream(KeyModifier.values()).map(modifier -> {
             boolean modifierRequired = realMods.stream()
                     .anyMatch(mod -> mod.matches(modifier.getKeys().get(0)));
-            if (!modifierRequired && modifier == KeyModifier.ALT_GRAPH && altAdded) {
+            if (!modifierRequired && modifier == KeyModifier.ALT_GRAPH
+                    && altAdded) {
                 return "";
             } else {
-                return (modifierRequired ? "" : "!") + "event.getModifierState('"
-                        + modifier.getKeys().get(0) + "')";
+                return (modifierRequired ? "" : "!")
+                        + "event.getModifierState('" + modifier.getKeys().get(0)
+                        + "')";
             }
         }).collect(Collectors.joining(" && "));
     }

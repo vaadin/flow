@@ -15,10 +15,10 @@ import static org.junit.Assert.assertTrue;
 public class ShortCutRegistrationFilterText {
 
     public static String invokeGenerateEventModifierFilter(List<Key> list)
-            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Method privateMethod =
-                ShortcutRegistration.class.getDeclaredMethod("generateEventModifierFilter",
-                        Collection.class);
+            throws NoSuchMethodException, InvocationTargetException,
+            IllegalAccessException {
+        Method privateMethod = ShortcutRegistration.class.getDeclaredMethod(
+                "generateEventModifierFilter", Collection.class);
         privateMethod.setAccessible(true);
         // invoke the private method for testing
         String result = (String) privateMethod.invoke(null, list);
@@ -27,18 +27,21 @@ public class ShortCutRegistrationFilterText {
 
     @Test
     public void testGenerateEventModifierFilterWithModifierKeyAlt()
-            throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        String result = invokeGenerateEventModifierFilter(Collections.singletonList(Key.ALT));
+            throws InvocationTargetException, NoSuchMethodException,
+            IllegalAccessException {
+        String result = invokeGenerateEventModifierFilter(
+                Collections.singletonList(Key.ALT));
         assertTrue(result.contains("&& event.getModifierState('Alt')"));
         assertTrue(result.contains("&& !event.getModifierState('Control')"));
         assertFalse(!result.contains("AltGraph"));
     }
 
-
     @Test
     public void testGenerateEventModifierFilterWithModifierKeyAltGr()
-            throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        String result = invokeGenerateEventModifierFilter(Collections.singletonList(Key.ALT_GRAPH));
+            throws InvocationTargetException, NoSuchMethodException,
+            IllegalAccessException {
+        String result = invokeGenerateEventModifierFilter(
+                Collections.singletonList(Key.ALT_GRAPH));
         assertTrue(result.contains("&& event.getModifierState('AltGraph')"));
         assertTrue(result.contains("&& !event.getModifierState('Alt')"));
         assertTrue(result.contains("&& !event.getModifierState('Control')"));
@@ -46,8 +49,10 @@ public class ShortCutRegistrationFilterText {
 
     @Test
     public void testGenerateEventModifierFilterWithModifierKeyAltAndAltGr()
-            throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        String result = invokeGenerateEventModifierFilter(Arrays.asList(Key.ALT, Key.ALT_GRAPH));
+            throws InvocationTargetException, NoSuchMethodException,
+            IllegalAccessException {
+        String result = invokeGenerateEventModifierFilter(
+                Arrays.asList(Key.ALT, Key.ALT_GRAPH));
         assertTrue(result.contains("&& event.getModifierState('Alt')"));
         assertTrue(result.contains("&& event.getModifierState('AltGraph')"));
         assertTrue(result.contains("&& !event.getModifierState('Control')"));
@@ -55,8 +60,10 @@ public class ShortCutRegistrationFilterText {
 
     @Test
     public void testGenerateEventModifierFilterWithModifierKeyAltGrAndCtrl()
-            throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        String result = invokeGenerateEventModifierFilter(Arrays.asList(Key.ALT_GRAPH, Key.CONTROL));
+            throws InvocationTargetException, NoSuchMethodException,
+            IllegalAccessException {
+        String result = invokeGenerateEventModifierFilter(
+                Arrays.asList(Key.ALT_GRAPH, Key.CONTROL));
         assertTrue(result.contains("&& event.getModifierState('AltGraph')"));
         assertTrue(result.contains("&& event.getModifierState('Control')"));
         assertTrue(result.contains("&& !event.getModifierState('Alt')"));
@@ -64,8 +71,10 @@ public class ShortCutRegistrationFilterText {
 
     @Test
     public void testGenerateEventModifierFilterWithModifierKeyAltAndCtrl()
-            throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        String result = invokeGenerateEventModifierFilter(Arrays.asList(Key.ALT, Key.CONTROL));
+            throws InvocationTargetException, NoSuchMethodException,
+            IllegalAccessException {
+        String result = invokeGenerateEventModifierFilter(
+                Arrays.asList(Key.ALT, Key.CONTROL));
         assertTrue(result.contains("&& event.getModifierState('Alt')"));
         assertTrue(result.contains("&& event.getModifierState('Control')"));
         assertFalse(!result.contains("'AltGraph'"));

@@ -15,8 +15,8 @@ public class ShortcutEventTest {
     private ShortcutEvent eventTwoModifiers = event(Key.KEY_F, KeyModifier.ALT,
             KeyModifier.CONTROL);
 
-    private ShortcutEvent eventWithAltAndAltGr = event(Key.KEY_F, KeyModifier.ALT,
-            KeyModifier.ALT_GRAPH);
+    private ShortcutEvent eventWithAltAndAltGr = event(Key.KEY_F,
+            KeyModifier.ALT, KeyModifier.ALT_GRAPH);
 
     @Test
     public void matches() {
@@ -26,8 +26,9 @@ public class ShortcutEventTest {
                 eventNoModifiers.matches(Key.KEY_F, KeyModifier.ALT));
         assertFalse("Missing modifier should return false",
                 eventOneModifier.matches(Key.KEY_F));
-        assertFalse("Matching key and two modifiers (Alt, Alt_Gr) plus an extra one (Control), " +
-                        "should return false",
+        assertFalse(
+                "Matching key and two modifiers (Alt, Alt_Gr) plus an extra one (Control), "
+                        + "should return false",
                 eventWithAltAndAltGr.matches(Key.KEY_F, KeyModifier.ALT,
                         KeyModifier.ALT_GRAPH, KeyModifier.CONTROL));
 
@@ -38,7 +39,8 @@ public class ShortcutEventTest {
         assertTrue("Matching key and two modifiers should return true",
                 eventTwoModifiers.matches(Key.KEY_F, KeyModifier.ALT,
                         KeyModifier.CONTROL));
-        assertTrue("Matching key and two modifiers (Alt_Gr, Alt) should return true",
+        assertTrue(
+                "Matching key and two modifiers (Alt_Gr, Alt) should return true",
                 eventWithAltAndAltGr.matches(Key.KEY_F, KeyModifier.ALT_GRAPH,
                         KeyModifier.ALT));
     }
