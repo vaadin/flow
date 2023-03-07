@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
@@ -635,7 +636,11 @@ public abstract class Component
      *         null)
      */
     public String getTranslation(String key, Object... params) {
-        return getTranslation(key, getLocale(), params);
+        final Optional<I18NProvider> i18NProvider = getI18NProvider();
+        final Locale locale = getLocale(() -> i18NProvider);
+        return i18NProvider
+                .map(i18n -> i18n.getTranslation(key, locale, params))
+                .orElseGet(() -> "!{" + key + "}!");
     }
 
     /**
@@ -655,7 +660,11 @@ public abstract class Component
      *         null)
      */
     public String getTranslation(Object key, Object... params) {
-        return getTranslation(key, getLocale(), params);
+        final Optional<I18NProvider> i18NProvider = getI18NProvider();
+        final Locale locale = getLocale(() -> i18NProvider);
+        return i18NProvider
+                .map(i18n -> i18n.getTranslation(key, locale, params))
+                .orElseGet(() -> "!{" + key + "}!");
     }
 
     /**
@@ -760,8 +769,12 @@ public abstract class Component
      * @return the component locale
      */
     protected Locale getLocale() {
+        return getLocale(() -> getI18NProvider());
+    }
+
+    private Locale getLocale(Supplier<Optional<I18NProvider>> i18NProvider) {
         return Optional.ofNullable(UI.getCurrent()).map(UI::getLocale)
-                .orElseGet(() -> getI18NProvider()
+                .orElseGet(() -> i18NProvider.get()
                         .map(I18NProvider::getProvidedLocales)
                         .filter(locales -> !locales.isEmpty())
                         .map(locales -> locales.get(0))
