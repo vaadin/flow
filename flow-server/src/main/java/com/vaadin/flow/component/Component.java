@@ -637,9 +637,8 @@ public abstract class Component
      */
     public String getTranslation(String key, Object... params) {
         final Optional<I18NProvider> i18NProvider = getI18NProvider();
-        final Locale locale = getLocale(() -> i18NProvider);
         return i18NProvider
-                .map(i18n -> i18n.getTranslation(key, locale, params))
+                .map(i18n -> i18n.getTranslation(key, getLocale(() -> i18NProvider), params))
                 .orElseGet(() -> "!{" + key + "}!");
     }
 
@@ -661,9 +660,8 @@ public abstract class Component
      */
     public String getTranslation(Object key, Object... params) {
         final Optional<I18NProvider> i18NProvider = getI18NProvider();
-        final Locale locale = getLocale(() -> i18NProvider);
         return i18NProvider
-                .map(i18n -> i18n.getTranslation(key, locale, params))
+                .map(i18n -> i18n.getTranslation(key, getLocale(() -> i18NProvider), params))
                 .orElseGet(() -> "!{" + key + "}!");
     }
 
@@ -774,11 +772,10 @@ public abstract class Component
 
     private Locale getLocale(Supplier<Optional<I18NProvider>> i18NProvider) {
         return Optional.ofNullable(UI.getCurrent()).map(UI::getLocale)
-                .orElseGet(() -> i18NProvider.get()
+                .or(() -> i18NProvider.get()
                         .map(I18NProvider::getProvidedLocales)
-                        .filter(locales -> !locales.isEmpty())
-                        .map(locales -> locales.get(0))
-                        .orElseGet(Locale::getDefault));
+                        .flatMap(locales -> locales.stream().findFirst()))
+                .orElseGet(Locale::getDefault);
     }
 
     /**
