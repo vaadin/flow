@@ -17,7 +17,6 @@ package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,8 +29,11 @@ import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.apache.commons.fileupload.FileCountLimitExceededException;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadBase.FileSizeLimitExceededException;
+import org.apache.commons.fileupload.FileUploadBase.SizeLimitExceededException;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.slf4j.Logger;
@@ -65,19 +67,30 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @author Vaadin Ltd
  * @since 1.0
- *
  */
 public class StreamReceiverHandler implements Serializable {
 
     private static final int MAX_UPLOAD_BUFFER_SIZE = 4 * 1024;
 
+    static final long DEFAULT_SIZE_MAX = -1;
+
+    static final long DEFAULT_FILE_SIZE_MAX = -1;
+
+    static final long DEFAULT_FILE_COUNT_MAX = 10000;
+
     /* Minimum interval which will be used for streaming progress events. */
     public static final int DEFAULT_STREAMING_PROGRESS_EVENT_INTERVAL_MS = 500;
+
+    private long requestSizeMax = DEFAULT_SIZE_MAX;
+
+    private long fileSizeMax = DEFAULT_FILE_SIZE_MAX;
+
+    private long fileCountMax = DEFAULT_FILE_COUNT_MAX;
 
     /**
      * An UploadInterruptedException will be thrown by an ongoing upload if
      * {@link StreamVariable#isInterrupted()} returns <code>true</code>.
-     *
+     * <p>
      * By checking the exception of an
      * {@link StreamVariable.StreamingErrorEvent} or {link FailedEvent} against
      * this class, it is possible to determine if an upload was interrupted by
@@ -259,6 +272,20 @@ public class StreamReceiverHandler implements Serializable {
                 success = success && itemSuccess;
             }
         } catch (FileUploadException e) {
+            String limitInfoStr = "{} limit exceeded. To increase the limit "
+                    + "extend StreamRequestHandler, override {} method and "
+                    + "provide a higher limit. The extended class needs to be "
+                    + "added to request handlers with "
+                    + "ServiceInitEvent::addRequestHandler in an extension of "
+                    + "VaadinServiceInitListener.";
+            if (e instanceof SizeLimitExceededException) {
+                getLogger().warn(limitInfoStr, "Request size",
+                        "getRequestSizeMax");
+            } else if (e instanceof FileSizeLimitExceededException) {
+                getLogger().warn(limitInfoStr, "File size", "getFileSizeMax");
+            } else if (e instanceof FileCountLimitExceededException) {
+                getLogger().warn(limitInfoStr, "File count", "getFileCountMax");
+            }
             success = false;
             getLogger().warn("File upload failed.", e);
         }
@@ -613,7 +640,22 @@ public class StreamReceiverHandler implements Serializable {
     protected FileItemIterator getItemIterator(VaadinRequest request)
             throws FileUploadException, IOException {
         ServletFileUpload upload = new ServletFileUpload();
+        upload.setSizeMax(requestSizeMax);
+        upload.setFileSizeMax(fileSizeMax);
+        upload.setFileCountMax(fileCountMax);
         return upload.getItemIterator((HttpServletRequest) request);
+    }
+
+    public void setRequestSizeMax(long requestSizeMax) {
+        this.requestSizeMax = requestSizeMax;
+    }
+
+    public void setFileSizeMax(long fileSizeMax) {
+        this.fileSizeMax = fileSizeMax;
+    }
+
+    public void setFileCountMax(long fileCountMax) {
+        this.fileCountMax = fileCountMax;
     }
 
     private static Logger getLogger() {
