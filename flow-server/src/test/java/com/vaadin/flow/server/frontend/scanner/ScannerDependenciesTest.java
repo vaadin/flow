@@ -53,7 +53,7 @@ public class ScannerDependenciesTest {
         assertEquals("There should be 1 css import", 1, deps.getCss().size());
 
         assertEquals("Invalid css import", "frontend://styles/interface.css",
-                deps.getCss().iterator().next().value);
+                deps.getCss().iterator().next().getValue());
     }
 
     @Test

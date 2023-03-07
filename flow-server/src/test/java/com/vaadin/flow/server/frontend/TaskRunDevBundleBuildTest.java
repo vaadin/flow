@@ -19,6 +19,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -1697,6 +1698,67 @@ public class TaskRunDevBundleBuildTest {
                     .needsBuildInternal(options, depScanner, finder);
             Assert.assertFalse(
                     "Should not require bundling if component JS is missing in jar-resources",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void cssImport_cssInMetaInfResources_notThrow_bundleRequired()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        CssData cssData = new CssData("./addons-styles/my-styles.css", null,
+                null, null);
+
+        Mockito.when(depScanner.getCss())
+                .thenReturn(Collections.singleton(cssData));
+
+        JsonObject stats = getBasicStats();
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            // Should not throw an IllegalStateException:
+            // "Failed to find the following css files in the...."
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Should re-bundle if CSS is imported from META-INF/resources",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void flowFrontendPackageInPackageJson_noBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(
+                "{\"dependencies\": {\"@vaadin/flow-frontend\": \"./target/flow-frontend\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            JsonObject stats = getBasicStats();
+
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Shouldn't re-bundle when old @vaadin/flow-frontend package is in package.json",
                     needsBuild);
         }
     }
