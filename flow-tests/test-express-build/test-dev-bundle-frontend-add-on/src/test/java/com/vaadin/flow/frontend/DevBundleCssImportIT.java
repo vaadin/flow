@@ -62,6 +62,37 @@ public class DevBundleCssImportIT extends ChromeBrowserTest {
         Assert.assertTrue("My-styles.css import is expected", found);
     }
 
+    @Test
+    public void cssImportedStyles_stylesInMetaInfResources_stylesApplied_hashCalculated()
+            throws IOException {
+        open();
+
+        WebElement myComponent = findElement(
+                By.id(DevBundleCssImportView.MY_COMPONENT_ID));
+
+        Assert.assertEquals("1px solid rgb(0, 128, 0)",
+                myComponent.getCssValue("border"));
+
+        JsonObject frontendHashes = getFrontendHashes();
+
+        Assert.assertTrue("Add-on styles content hash is expected",
+                frontendHashes.hasKey("addons-styles/add-on-styles.css"));
+        Assert.assertEquals("Unexpected addon styles content hash",
+                "f6062ef78e2712e881faa15252bf001d737ab4f12b12e91f0d9f8030100643b6",
+                frontendHashes
+                        .getString("addons-styles/add-on-styles.css?inline"));
+
+        JsonArray bundleImports = getBundleImports();
+        boolean found = false;
+        for (int i = 0; i < bundleImports.length(); i++) {
+            if (bundleImports.get(i).asString().equals(
+                    "Frontend/generated/jar-resources/addons-styles/add-on-styles.css?inline")) {
+                found = true;
+            }
+        }
+        Assert.assertTrue("Addon import is expected", found);
+    }
+
     private static JsonObject getFrontendHashes() throws IOException {
         JsonObject statsJson = getStatsJson();
         JsonObject frontendHashes = statsJson.getObject("frontendHashes");

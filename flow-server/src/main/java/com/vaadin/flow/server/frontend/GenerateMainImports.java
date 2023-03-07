@@ -73,6 +73,16 @@ public class GenerateMainImports extends AbstractUpdateImports {
     }
 
     @Override
+    protected boolean addCssLines(Collection<String> lines, CssData cssData,
+            int i) {
+        super.addCssLines(lines, cssData, i);
+        // CSS files in 'generated/jar-resources' are not generated at this
+        // moment, so not let the application interrupt and continue with
+        // checking the dev-bundle
+        return true;
+    }
+
+    @Override
     protected void writeImportLines(List<String> lines) {
         // NO-OP. Only store the lines to write
         this.lines = lines;

@@ -7,6 +7,7 @@ import elemental.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -29,7 +30,9 @@ public class ThemeEditorMessageHandler {
                 this::handleThemeEditorRules, ClassNamesRequest.COMMAND_NAME,
                 this::handleThemeEditorClassNames,
                 ComponentMetadataRequest.COMMAND_NAME,
-                this::handleComponentMetadata);
+                this::handleComponentMetadata, LoadPreviewRequest.COMMAND_NAME,
+                this::handleLoadPreview, LoadRulesRequest.COMMAND_NAME,
+                this::handleLoadRules);
     }
 
     public boolean isEnabled() {
@@ -116,6 +119,21 @@ public class ThemeEditorMessageHandler {
                 .getMetadata(request.getUiId(), request.getNodeId());
         return new ComponentMetadataResponse(request.getRequestId(),
                 metadata.isAccessible());
+    }
+
+    protected BaseResponse handleLoadPreview(JsonObject data) {
+        LoadPreviewRequest request = JsonUtils.readToObject(data,
+                LoadPreviewRequest.class);
+        String css = getThemeModifier().getCss();
+        return new LoadPreviewResponse(request.getRequestId(), css);
+    }
+
+    protected BaseResponse handleLoadRules(JsonObject data) {
+        LoadRulesRequest request = JsonUtils.readToObject(data,
+                LoadRulesRequest.class);
+        List<LoadRulesResponse.CssRule> rules = getThemeModifier()
+                .getCssRules(request.getSelectorFilter());
+        return new LoadRulesResponse(request.getRequestId(), rules);
     }
 
     private static Logger getLogger() {
