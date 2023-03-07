@@ -12,7 +12,7 @@ import java.util.List;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class ShortCutRegistrationFilterText {
+public class ShortCutRegistrationFilterTest {
 
     public static String invokeGenerateEventModifierFilter(List<Key> list)
             throws NoSuchMethodException, InvocationTargetException,
