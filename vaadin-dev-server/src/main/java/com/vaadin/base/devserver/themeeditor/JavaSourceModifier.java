@@ -9,6 +9,8 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.github.javaparser.utils.SourceRoot;
+import com.vaadin.base.devserver.themeeditor.utils.LineNumberVisitor;
+import com.vaadin.base.devserver.themeeditor.utils.ThemeEditorException;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.dom.Element;

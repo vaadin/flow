@@ -1,7 +1,6 @@
 import { aTimeout, expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import { Commands, ResponseCode, ThemeEditorApi } from './api';
-import { ThemeEditorRule } from './model';
+import {Commands, ResponseCode, ServerCssRule, ThemeEditorApi} from './api';
 
 describe('theme editor API', () => {
   let api: ThemeEditorApi;
@@ -42,24 +41,24 @@ describe('theme editor API', () => {
   });
 
   it('should send messages', () => {
-    const addRules: ThemeEditorRule[] = [{ selector: 'vaadin-button', property: 'background', value: 'red' }];
-    const removeRules: ThemeEditorRule[] = [{ selector: 'vaadin-text-field', property: 'color', value: 'inherit' }];
+    const rules: ServerCssRule[] = [{ selector: 'vaadin-button', properties: {'background': 'red' }},
+      { selector: 'vaadin-text-field', properties: {'color': '' }}];
 
-    api.updateCssRules(addRules, removeRules);
+    api.setCssRules(rules);
 
     expect(connectionMock.send.calledOnce).to.be.true;
-    expect(connectionMock.send.args[0][0]).to.equal(Commands.updateCssRules);
+    expect(connectionMock.send.args[0][0]).to.equal(Commands.setCssRules);
     expect(connectionMock.send.args[0][1]).to.deep.equal({
       requestId: '0',
-      add: addRules,
-      remove: removeRules
+      rules: rules,
+      uiId: 0
     });
   });
 
   it('should resolve request when receiving ok response', async () => {
     const resolveSpy = sinon.spy();
     const rejectSpy = sinon.spy();
-    api.updateCssRules([], []).then(resolveSpy).catch(rejectSpy);
+    api.setCssRules([]).then(resolveSpy).catch(rejectSpy);
 
     const responseData = { requestId: '0', code: ResponseCode.ok };
     connectionMock.onMessage(message(Commands.response, responseData));
@@ -73,7 +72,7 @@ describe('theme editor API', () => {
   it('should reject request when receiving error response', async () => {
     const resolveSpy = sinon.spy();
     const rejectSpy = sinon.spy();
-    api.updateCssRules([], []).then(resolveSpy).catch(rejectSpy);
+    api.setCssRules([]).then(resolveSpy).catch(rejectSpy);
 
     const responseData = { requestId: '0', code: ResponseCode.error };
     connectionMock.onMessage(message(Commands.response, responseData));
@@ -87,7 +86,7 @@ describe('theme editor API', () => {
   it('should not resolve or reject request when receiving unknown request ID', async () => {
     const resolveSpy = sinon.spy();
     const rejectSpy = sinon.spy();
-    api.updateCssRules([], []).then(resolveSpy).catch(rejectSpy);
+    api.setCssRules([]).then(resolveSpy).catch(rejectSpy);
 
     const responseData = { requestId: 'unknown', code: ResponseCode.error };
     connectionMock.onMessage(message(Commands.response, responseData));
@@ -98,9 +97,9 @@ describe('theme editor API', () => {
   });
 
   it('should increase request ID', () => {
-    api.updateCssRules([], []);
-    api.updateCssRules([], []);
-    api.updateCssRules([], []);
+    api.setCssRules([]);
+    api.setCssRules([]);
+    api.setCssRules([]);
 
     expect(connectionMock.send.calledThrice).to.be.true;
     expect(connectionMock.send.args[0][1].requestId).to.equal('0');

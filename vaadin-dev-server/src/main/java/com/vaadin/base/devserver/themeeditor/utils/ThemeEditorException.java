@@ -1,4 +1,4 @@
-package com.vaadin.base.devserver.themeeditor;
+package com.vaadin.base.devserver.themeeditor.utils;
 
 public class ThemeEditorException extends RuntimeException {
     public ThemeEditorException() {

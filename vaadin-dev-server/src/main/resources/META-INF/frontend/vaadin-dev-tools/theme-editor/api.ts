@@ -1,9 +1,8 @@
 import { Connection } from '../vaadin-dev-tools';
-import { ThemeEditorRule } from './model';
 
 export enum Commands {
   response = 'themeEditorResponse',
-  updateCssRules = 'themeEditorRules',
+  setCssRules = 'themeEditorRules',
   loadPreview = 'themeEditorLoadPreview',
   loadRules = 'themeEditorLoadRules'
 }
@@ -55,11 +54,13 @@ export class ThemeEditorApi {
 
   private sendRequest(command: string, data: any) {
     const requestId = (this.requestCounter++).toString();
+    const uiId = 0;
 
     return new Promise<any>((resolve, reject) => {
       this.wrappedConnection.send(command, {
         ...data,
-        requestId
+        requestId,
+        uiId
       });
       this.pendingRequests[requestId] = {
         resolve,
@@ -84,10 +85,9 @@ export class ThemeEditorApi {
     }
   }
 
-  public updateCssRules(add: ThemeEditorRule[], remove: ThemeEditorRule[]): Promise<BaseResponse> {
-    return this.sendRequest(Commands.updateCssRules, {
-      add,
-      remove
+  public setCssRules(rules: ServerCssRule[]): Promise<BaseResponse> {
+    return this.sendRequest(Commands.setCssRules, {
+      rules
     });
   }
 
