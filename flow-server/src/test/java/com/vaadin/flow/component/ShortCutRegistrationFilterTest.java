@@ -33,7 +33,7 @@ public class ShortCutRegistrationFilterTest {
                 Collections.singletonList(Key.ALT));
         assertTrue(result.contains("&& event.getModifierState('Alt')"));
         assertTrue(result.contains("&& !event.getModifierState('Control')"));
-        assertFalse(!result.contains("AltGraph"));
+        assertFalse(result.contains("AltGraph"));
     }
 
     @Test
@@ -77,6 +77,6 @@ public class ShortCutRegistrationFilterTest {
                 Arrays.asList(Key.ALT, Key.CONTROL));
         assertTrue(result.contains("&& event.getModifierState('Alt')"));
         assertTrue(result.contains("&& event.getModifierState('Control')"));
-        assertFalse(!result.contains("'AltGraph'"));
+        assertFalse(result.contains("'AltGraph'"));
     }
 }
