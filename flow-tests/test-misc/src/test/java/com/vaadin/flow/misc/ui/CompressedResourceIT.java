@@ -15,11 +15,6 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class CompressedResourceIT extends AbstractParallelTestBenchTest {
 
-    @BeforeClass
-    public static void setChromeDriverPath() {
-        ChromeBrowserTest.setChromeDriverPath();
-    }
-
     @Test
     public void compressedResourcesAreServedCompressed() throws IOException {
         URL textFileUrl = new URL(getRootURL() + "/textfile.txt");

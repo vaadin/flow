@@ -25,6 +25,12 @@
             <artifactId>vaadin-dev-server</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.brotli</groupId>
+            <artifactId>dec</artifactId>
+            <version>0.1.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
