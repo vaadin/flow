@@ -68,14 +68,6 @@ public class ChromeDeviceTest extends ViewOrUITest {
         return devTools;
     }
 
-    /**
-     * Sets up the chrome driver path in a system variable.
-     */
-    @BeforeClass
-    public static void setChromeDriverPath() {
-        ChromeDriverLocator.fillEnvironmentProperty();
-    }
-
     static boolean isJavaInDebugMode() {
         return ManagementFactory.getRuntimeMXBean().getInputArguments()
                 .toString().contains("jdwp");
