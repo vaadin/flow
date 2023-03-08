@@ -67,6 +67,7 @@ public class DevBundleCssImportIT extends ChromeBrowserTest {
             throws IOException {
         open();
 
+        waitForElementPresent(By.id(DevBundleCssImportView.MY_COMPONENT_ID));
         WebElement myComponent = findElement(
                 By.id(DevBundleCssImportView.MY_COMPONENT_ID));
 
@@ -79,14 +80,13 @@ public class DevBundleCssImportIT extends ChromeBrowserTest {
                 frontendHashes.hasKey("addons-styles/add-on-styles.css"));
         Assert.assertEquals("Unexpected addon styles content hash",
                 "f6062ef78e2712e881faa15252bf001d737ab4f12b12e91f0d9f8030100643b6",
-                frontendHashes
-                        .getString("addons-styles/add-on-styles.css?inline"));
+                frontendHashes.getString("addons-styles/add-on-styles.css"));
 
         JsonArray bundleImports = getBundleImports();
         boolean found = false;
         for (int i = 0; i < bundleImports.length(); i++) {
             if (bundleImports.get(i).asString().equals(
-                    "Frontend/generated/jar-resources/addons-styles/add-on-styles.css?inline")) {
+                    "Frontend/generated/jar-resources/addons-styles/add-on-styles.css")) {
                 found = true;
             }
         }
