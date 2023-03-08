@@ -4,6 +4,8 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.utils.SourceRoot;
+import com.vaadin.base.devserver.themeeditor.utils.LineNumberVisitor;
+import com.vaadin.base.devserver.themeeditor.utils.ThemeEditorException;
 import com.vaadin.flow.testutil.TestUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;

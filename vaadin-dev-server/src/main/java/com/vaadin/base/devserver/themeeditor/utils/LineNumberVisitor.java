@@ -1,4 +1,4 @@
-package com.vaadin.base.devserver.themeeditor;
+package com.vaadin.base.devserver.themeeditor.utils;
 
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.*;

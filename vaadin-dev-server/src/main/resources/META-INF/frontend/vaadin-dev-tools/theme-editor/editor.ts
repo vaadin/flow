@@ -187,7 +187,7 @@ export class ThemeEditor extends LitElement {
       property.propertyName,
       value
     );
-    await this.api.updateCssRules([updateRule], []);
+    await this.api.setCssRules([updateRule]);
     await this.updateThemePreview();
   }
 

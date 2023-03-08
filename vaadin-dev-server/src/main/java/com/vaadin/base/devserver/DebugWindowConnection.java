@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
+import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
 import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
@@ -142,7 +143,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 .collect(Collectors.toList())));
 
         if (themeEditorMessageHandler.isEnabled()) {
-            send(resource, "themeEditorState",
+            send(resource, ThemeEditorCommand.STATE,
                     themeEditorMessageHandler.getState());
         }
     }
@@ -247,7 +248,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         } else if (themeEditorMessageHandler.canHandle(command, data)) {
             BaseResponse resultData = themeEditorMessageHandler
                     .handleDebugMessageData(command, data);
-            send(resource, BaseResponse.COMMAND_NAME, resultData);
+            send(resource, ThemeEditorCommand.RESPONSE, resultData);
         } else {
             getLogger().info("Unknown command from the browser: " + command);
         }
