@@ -161,7 +161,7 @@ public class BuildFrontendUtil {
                 .createMissingPackageJson(
                         new File(adapter.npmFolder(), PACKAGE_JSON).exists())
                 .enableImportsUpdate(false).enablePackagesUpdate(false)
-                .runNpmInstall(false)
+                .withRunNpmInstall(false)
                 .withFrontendGeneratedFolder(adapter.generatedTsFolder())
                 .withNodeVersion(adapter.nodeVersion())
                 .withNodeDownloadRoot(nodeDownloadRootURI)
@@ -310,20 +310,20 @@ public class BuildFrontendUtil {
                     .withGeneratedFolder(adapter.generatedFolder())
                     .withFrontendDirectory(adapter.frontendDirectory())
                     .withBuildDirectory(adapter.buildFolder())
-                    .runNpmInstall(adapter.runNpmInstall())
+                    .withRunNpmInstall(adapter.runNpmInstall())
                     .withWebpack(adapter.webpackOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
                     .enablePackagesUpdate(true)
                     .useByteCodeScanner(adapter.optimizeBundle())
                     .withJarFrontendResourcesFolder(
                             getJarFrontendResourcesFolder(adapter))
-                    .copyResources(jarFiles).copyTemplates(true)
+                    .copyResources(jarFiles).withCopyTemplates(true)
                     .copyLocalResources(adapter.frontendResourcesDirectory())
                     .enableImportsUpdate(true)
                     .withEmbeddableWebComponents(
                             adapter.generateEmbeddableWebComponents())
                     .withTokenFile(BuildFrontendUtil.getTokenFile(adapter))
-                    .enablePnpm(adapter.pnpmEnable())
+                    .withEnablePnpm(adapter.pnpmEnable())
                     .useGlobalPnpm(adapter.useGlobalPnpm())
                     .withFrontendGeneratedFolder(adapter.generatedTsFolder())
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
@@ -331,7 +331,8 @@ public class BuildFrontendUtil {
                     .withNodeDownloadRoot(nodeDownloadRootURI)
                     .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                     .setJavaResourceFolder(adapter.javaResourceFolder())
-                    .withPostinstallPackages(adapter.postinstallPackages());
+                    .withPostinstallPackages(adapter.postinstallPackages())
+                    .withCiBuild(adapter.ciBuild());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -381,19 +382,19 @@ public class BuildFrontendUtil {
                     .withGeneratedFolder(adapter.generatedFolder())
                     .withFrontendDirectory(adapter.frontendDirectory())
                     .withBuildDirectory(adapter.buildFolder())
-                    .runNpmInstall(adapter.runNpmInstall())
+                    .withRunNpmInstall(adapter.runNpmInstall())
                     .withWebpack(adapter.webpackOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
                     .enablePackagesUpdate(true).useByteCodeScanner(false)
                     .withJarFrontendResourcesFolder(
                             getJarFrontendResourcesFolder(adapter))
-                    .copyResources(jarFiles).copyTemplates(true)
+                    .copyResources(jarFiles).withCopyTemplates(true)
                     .copyLocalResources(adapter.frontendResourcesDirectory())
                     .enableImportsUpdate(true)
                     .withEmbeddableWebComponents(
                             adapter.generateEmbeddableWebComponents())
                     .withTokenFile(BuildFrontendUtil.getTokenFile(adapter))
-                    .enablePnpm(adapter.pnpmEnable())
+                    .withEnablePnpm(adapter.pnpmEnable())
                     .useGlobalPnpm(adapter.useGlobalPnpm())
                     .withFrontendGeneratedFolder(adapter.generatedTsFolder())
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
@@ -643,6 +644,7 @@ public class BuildFrontendUtil {
             buildInfo.remove(FRONTEND_TOKEN);
             buildInfo.remove(FRONTEND_HOTDEPLOY);
             buildInfo.remove(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM);
+            buildInfo.remove(InitParameters.CI_BUILD);
             buildInfo.remove(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE);
             buildInfo.remove(
                     InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);

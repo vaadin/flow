@@ -5,7 +5,7 @@ export interface CssPropertyMetadata {
 }
 
 export interface ComponentPartMetadata {
-  selector: string;
+  partName: string;
   displayName: string;
   description?: string;
   properties: CssPropertyMetadata[];
@@ -15,5 +15,6 @@ export interface ComponentMetadata {
   tagName: string;
   displayName: string;
   description?: string;
+  properties: CssPropertyMetadata[];
   parts: ComponentPartMetadata[];
 }

@@ -215,7 +215,7 @@ abstract class AbstractUpdateImports implements Runnable {
                     options.getFrontendDirectory().getPath());
 
             String suffix;
-            if (options.tokenFile == null
+            if (options.getTokenFile() == null
                     && !options.getFrontendDirectory().exists()) {
                 suffix = "Unable to locate frontend resources and missing token file. "
                         + "Please run the `prepare-frontend` Vaadin plugin goal before deploying the application";
@@ -355,7 +355,7 @@ abstract class AbstractUpdateImports implements Runnable {
         if (!resourceNotFound.isEmpty()) {
             String prefix = "Failed to find the following files: ";
             String suffix;
-            if (options.tokenFile == null
+            if (options.getTokenFile() == null
                     && !options.getFrontendDirectory().exists()) {
                 suffix = "Unable to locate frontend resources and missing token file. "
                         + "Please run the `prepare-frontend` Vaadin plugin goal before deploying the application";
@@ -381,7 +381,7 @@ abstract class AbstractUpdateImports implements Runnable {
                     notFoundMessage(resourceNotFound, prefix, suffix));
         }
 
-        boolean devModeWithoutServer = !options.productionMode
+        boolean devModeWithoutServer = !options.isProductionMode()
                 && !options.isFrontendHotdeploy()
                 && !options.isDevBundleBuild();
         if (!npmNotFound.isEmpty() && getLogger().isInfoEnabled()
@@ -500,7 +500,19 @@ abstract class AbstractUpdateImports implements Runnable {
         return file.isFile() || file.isDirectory();
     }
 
-    private boolean addCssLines(Collection<String> lines, CssData cssData,
+    /**
+     * Adds CSS imports to the generated flow imports file based on the given
+     * CssImport data.
+     *
+     * @param lines
+     *            collection of generated file lines to add imports to
+     * @param cssData
+     *            CssImport data
+     * @param i
+     *            imported CSS counter
+     * @return true if the imported CSS files does exist, false otherwise
+     */
+    protected boolean addCssLines(Collection<String> lines, CssData cssData,
             int i) {
         String cssFile = resolveResource(cssData.getValue());
         boolean found = importedFileExists(cssFile);

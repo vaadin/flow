@@ -35,6 +35,12 @@
             <version>8.5.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-core</artifactId>
+            <version>3.25.0</version>
+        </dependency>
+
         <!-- API dependencies -->
 
         <dependency>
@@ -87,8 +93,9 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <excludes>
-                    <!-- Exclude all frontend tests -->
+                    <!-- Exclude all frontend tests and utils -->
                     <exclude>META-INF/frontend/vaadin-dev-tools/**/*.test.ts</exclude>
+                    <exclude>META-INF/frontend/vaadin-dev-tools/theme-editor/tests/*.*</exclude>
                 </excludes>
             </resource>
         </resources>

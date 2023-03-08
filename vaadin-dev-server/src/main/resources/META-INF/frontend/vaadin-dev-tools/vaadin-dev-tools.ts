@@ -141,7 +141,7 @@ export class Connection extends Object {
     }
   }
 
-  private send(command: string, data: any) {
+  public send(command: string, data: any) {
     const message = JSON.stringify({ command, data });
     if (!this.webSocket) {
       // eslint-disable-next-line no-console
@@ -963,8 +963,7 @@ export class VaadinDevTools extends LitElement {
   private tabs: Tab[] = [
     { id: 'log', title: 'Log', render: () => this.renderLog(), activate: this.activateLog },
     { id: 'info', title: 'Info', render: () => this.renderInfo() },
-    { id: 'features', title: 'Feature Flags', render: () => this.renderFeatures() },
-    { id: 'code', title: 'Code', render: () => this.renderCode() }
+    { id: 'features', title: 'Feature Flags', render: () => this.renderFeatures() }
   ];
 
   @state()
@@ -1005,6 +1004,8 @@ export class VaadinDevTools extends LitElement {
   private disableEventListener?: EventListener;
 
   private transitionDuration: number = 0;
+
+  disableLiveReloadTimeout: number | null = null;
 
   elementTelemetry() {
     let data = {};
@@ -1151,6 +1152,13 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
+  constructor() {
+    super();
+
+    if ((window as any).Vaadin.Flow) {
+      this.tabs.push({ id: 'code', title: 'Code', render: () => this.renderCode() });
+    }
+  }
   connectedCallback() {
     super.connectedCallback();
     this.catchErrors();
@@ -1363,6 +1371,17 @@ export class VaadinDevTools extends LitElement {
     this.frontendConnection?.setActive(yes);
     this.javaConnection?.setActive(yes);
     window.sessionStorage.setItem(VaadinDevTools.ACTIVE_KEY_IN_SESSION_STORAGE, yes ? 'true' : 'false');
+  }
+
+  disableLiveReloadTemporarily() {
+    if (VaadinDevTools.isActive || this.disableLiveReloadTimeout != null) {
+      this.setActive(false);
+      clearTimeout(this.disableLiveReloadTimeout!);
+      this.disableLiveReloadTimeout = window.setTimeout(() => {
+        this.setActive(true);
+        this.disableLiveReloadTimeout = null;
+      }, 2500);
+    }
   }
 
   getStatusColor(status: ConnectionStatus | undefined) {
@@ -1636,6 +1655,8 @@ export class VaadinDevTools extends LitElement {
     return html` <vaadin-dev-tools-theme-editor
       .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
+      .connection=${this.frontendConnection}
+      @before-save=${this.disableLiveReloadTemporarily}
     ></vaadin-dev-tools-theme-editor>`;
   }
 

@@ -391,20 +391,20 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private void updateBuildFile(AbstractUpdateImports updater) {
-        boolean tokenFileExists = options.tokenFile != null
-                && options.tokenFile.exists();
+        boolean tokenFileExists = options.getTokenFile() != null
+                && options.getTokenFile().exists();
         if (!tokenFileExists) {
             log().warn(
                     "Token file is not available. Fallback chunk data won't be written.");
         }
         try {
             if (tokenFileExists) {
-                String json = FileUtils.readFileToString(options.tokenFile,
+                String json = FileUtils.readFileToString(options.getTokenFile(),
                         StandardCharsets.UTF_8);
                 JsonObject buildInfo = json.isEmpty() ? Json.createObject()
                         : JsonUtil.parse(json);
                 populateFallbackData(buildInfo, updater);
-                FileUtils.write(options.tokenFile,
+                FileUtils.write(options.getTokenFile(),
                         JsonUtil.stringify(buildInfo, 2),
                         StandardCharsets.UTF_8);
             }
@@ -412,8 +412,8 @@ public class TaskUpdateImports extends NodeUpdater {
         } catch (IOException e) {
             log().warn("Unable to read token file", e);
         }
-        if (options.tokenFileData != null) {
-            populateFallbackData(options.tokenFileData, updater);
+        if (options.getTokenFileData() != null) {
+            populateFallbackData(options.getTokenFileData(), updater);
         }
     }
 
@@ -449,7 +449,7 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private Stream<String> filter(Stream<String> modules) {
-        if (options.productionMode) {
+        if (options.isProductionMode()) {
             return modules.filter(
                     module -> CvdlProducts.includeInFallbackBundle(module,
                             options.getNodeModulesFolder()));
@@ -485,11 +485,11 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private String getAbsentPackagesMessage() {
-        String lockFile = options.enablePnpm ? "pnpm-lock.yaml"
+        String lockFile = options.isEnablePnpm() ? "pnpm-lock.yaml"
                 : Constants.PACKAGE_LOCK_JSON;
-        String command = options.enablePnpm ? "pnpm" : "npm";
+        String command = options.isEnablePnpm() ? "pnpm" : "npm";
         String note = "";
-        if (options.enablePnpm) {
+        if (options.isEnablePnpm()) {
             note = "\nMake sure first that `pnpm` command is installed, otherwise you should install it using npm: `npm add -g pnpm@"
                     + FrontendTools.DEFAULT_PNPM_VERSION + "`";
         }

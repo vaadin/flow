@@ -3,60 +3,23 @@ import { ComponentMetadata } from '../model';
 export default {
   tagName: 'vaadin-button',
   displayName: 'Button',
-  parts: [
+  properties: [
     {
-      selector: '::part(label)',
-      displayName: 'Label',
-      properties: [
-        {
-          propertyName: 'color',
-          displayName: 'Text color'
-        },
-        {
-          propertyName: 'font-size',
-          displayName: 'Font size'
-        },
-        {
-          propertyName: 'background',
-          displayName: 'Background'
-        }
-      ]
+      propertyName: 'background-color',
+      displayName: 'Background color',
     },
     {
-      selector: '::part(prefix)',
-      displayName: 'Prefix',
-      properties: [
-        {
-          propertyName: 'color',
-          displayName: 'Text color'
-        },
-        {
-          propertyName: 'font-size',
-          displayName: 'Font size'
-        },
-        {
-          propertyName: 'background',
-          displayName: 'Background'
-        }
-      ]
+      propertyName: 'color',
+      displayName: 'Text color',
     },
     {
-      selector: '::part(suffix)',
-      displayName: 'Suffix',
-      properties: [
-        {
-          propertyName: 'color',
-          displayName: 'Text color'
-        },
-        {
-          propertyName: 'font-size',
-          displayName: 'Font size'
-        },
-        {
-          propertyName: 'background',
-          displayName: 'Background'
-        }
-      ]
+      propertyName: '--lumo-button-size',
+      displayName: 'Size',
+    },
+    {
+      propertyName: 'padding-inline',
+      displayName: 'Padding',
     }
-  ]
+  ],
+  parts: []
 } as ComponentMetadata;

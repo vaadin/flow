@@ -149,7 +149,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
-        options.withHomeNodeExecRequired(true).enablePnpm(true)
+        options.withHomeNodeExecRequired(true).withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
@@ -634,6 +634,25 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                         "postinstall-file.txt").exists());
     }
 
+    @Test
+    public void runPnpmInstallAndCi_emptyDir_pnpmInstallAndCiIsExecuted()
+            throws ExecutionFailedException, IOException {
+        TaskRunNpmInstall task = createTask();
+
+        File nodeModules = options.getNodeModulesFolder();
+        nodeModules.mkdir();
+        getNodeUpdater().modified = false;
+
+        task.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+
+        deleteDirectory(nodeModules);
+
+        TaskRunNpmInstall ciTask = createCiTask();
+        ciTask.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
     @Override
     protected String getToolName() {
         return "pnpm";
@@ -643,11 +662,22 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         return createTask(new ArrayList<>());
     }
 
+    private TaskRunNpmInstall createCiTask() {
+        NodeUpdater updater = getNodeUpdater();
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder);
+        options.withEnablePnpm(true)
+                .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                .withNodeDownloadRoot(
+                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT))
+                .withCiBuild(true);
+        return new TaskRunNpmInstall(updater, options);
+    }
+
     @Override
     protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
         NodeUpdater updater = getNodeUpdater();
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder);
-        options.enablePnpm(true)
+        options.withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT))
@@ -658,7 +688,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     protected TaskRunNpmInstall createTask(String versionsContent) {
         NodeUpdater updater = createAndRunNodeUpdater(versionsContent);
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder);
-        options.enablePnpm(true)
+        options.withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));

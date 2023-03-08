@@ -9,14 +9,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openqa.selenium.Dimension;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
-
 public class ProductionBasicsIT extends ChromeBrowserTest {
-
-    @BeforeClass
-    public static void driver() {
-        WebDriverManager.chromedriver().setup();
-    }
 
     @Test
     public void applicationStarts() {

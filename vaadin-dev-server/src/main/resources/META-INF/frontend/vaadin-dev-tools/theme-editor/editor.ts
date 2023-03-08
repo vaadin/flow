@@ -5,7 +5,12 @@ import { ComponentMetadata } from './metadata/model';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
 import './property-list';
-import { ThemeEditorState } from './model';
+import { ComponentTheme, generateThemeRule, ThemeEditorState } from './model';
+import { detectTheme } from './detector';
+import { ThemePropertyValueChangeEvent } from './events';
+import { themePreview } from './preview';
+import { Connection } from '../vaadin-dev-tools';
+import { ThemeEditorApi } from './api';
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
@@ -13,15 +18,39 @@ export class ThemeEditor extends LitElement {
   public themeEditorState: ThemeEditorState = ThemeEditorState.enabled;
   @property({})
   public pickerProvider!: PickerProvider;
+  @property({})
+  public connection!: Connection;
+  private api!: ThemeEditorApi;
 
+  /**
+   * Metadata for the selected / picked component
+   */
   @state()
   private selectedComponentMetadata: ComponentMetadata | null = null;
+  /**
+   * Base theme detected from existing CSS files for the selected component
+   */
+  private baseTheme: ComponentTheme | null = null;
+  /**
+   * Currently edited theme modifications for the selected component since the
+   * last reload
+   */
+  private editedTheme: ComponentTheme | null = null;
+  /**
+   * The effective theme for the selected component, including base theme and
+   * previously saved modifications
+   */
+  @state()
+  private effectiveTheme: ComponentTheme | null = null;
 
   static get styles() {
     return css`
       :host {
         animation: fade-in var(--dev-tools-transition-duration) ease-in;
         --theme-editor-section-horizontal-padding: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        max-height: 400px;
       }
 
       .missing-theme {
@@ -33,6 +62,7 @@ export class ThemeEditor extends LitElement {
       }
 
       .picker {
+        flex: 0 0 auto;
         display: flex;
         align-items: center;
         padding: var(--theme-editor-section-horizontal-padding);
@@ -55,7 +85,16 @@ export class ThemeEditor extends LitElement {
       .picker .no-selection {
         font-style: italic;
       }
+
+      .property-list {
+        flex: 1 1 auto;
+        overflow-y: auto;
+      }
     `;
+  }
+
+  protected firstUpdated() {
+    this.api = new ThemeEditorApi(this.connection);
   }
 
   render() {
@@ -72,7 +111,10 @@ export class ThemeEditor extends LitElement {
       </div>
       ${this.selectedComponentMetadata
         ? html` <vaadin-dev-tools-theme-property-list
+            class="property-list"
             .metadata=${this.selectedComponentMetadata}
+            .theme=${this.effectiveTheme}
+            @theme-property-value-change=${this.handlePropertyChange}
           ></vaadin-dev-tools-theme-property-list>`
         : null}
     `;
@@ -105,8 +147,52 @@ export class ThemeEditor extends LitElement {
         </div>
       `,
       pickCallback: async (component) => {
-        this.selectedComponentMetadata = await metadataRegistry.getMetadata(component);
+        const metadata = await metadataRegistry.getMetadata(component);
+        if (!metadata) {
+          this.baseTheme = null;
+          this.editedTheme = null;
+          this.effectiveTheme = null;
+          return;
+        }
+
+        const scopeSelector = metadata.tagName;
+        const serverRules = await this.api.loadRules(scopeSelector);
+
+        this.selectedComponentMetadata = metadata;
+        this.baseTheme = detectTheme(metadata);
+        this.editedTheme = ComponentTheme.fromServerRules(metadata, serverRules.rules);
+        this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
       }
     });
+  }
+
+  private async handlePropertyChange(e: ThemePropertyValueChangeEvent) {
+    if (!this.selectedComponentMetadata || !this.baseTheme || !this.editedTheme) {
+      return;
+    }
+
+    // Update local theme state
+    const { part, property, value } = e.detail;
+    const partName = part?.partName || null;
+    this.editedTheme.updatePropertyValue(partName, property.propertyName, value);
+    this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
+
+    // Update theme editor CSS
+    // Notify dev tools that we are about to save CSS, so that it can disable
+    // live reload temporarily
+    this.dispatchEvent(new CustomEvent('before-save'));
+    const updateRule = generateThemeRule(
+      this.selectedComponentMetadata?.tagName,
+      partName,
+      property.propertyName,
+      value
+    );
+    await this.api.updateCssRules([updateRule], []);
+    await this.updateThemePreview();
+  }
+
+  private async updateThemePreview() {
+    const preview = await this.api.loadPreview();
+    themePreview.update(preview.css);
   }
 }
