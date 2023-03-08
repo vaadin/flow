@@ -3,7 +3,10 @@ package com.vaadin.base.devserver.themeeditor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.base.devserver.DebugWindowMessage;
-import com.vaadin.base.devserver.themeeditor.messages.*;
+import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
+import com.vaadin.base.devserver.themeeditor.messages.ComponentMetadataResponse;
+import com.vaadin.base.devserver.themeeditor.messages.ErrorResponse;
+import com.vaadin.base.devserver.themeeditor.messages.LoadRulesResponse;
 import com.vaadin.base.devserver.themeeditor.utils.CssRule;
 import com.vaadin.flow.testutil.TestUtils;
 import elemental.json.Json;
@@ -19,8 +22,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import static com.vaadin.base.devserver.themeeditor.ThemeEditorCommand.ERROR;
-import static com.vaadin.base.devserver.themeeditor.ThemeEditorCommand.OK;
+import static com.vaadin.base.devserver.themeeditor.ThemeEditorCommand.CODE_ERROR;
+import static com.vaadin.base.devserver.themeeditor.ThemeEditorCommand.CODE_OK;
 
 public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
@@ -237,13 +240,13 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
     private void assertResponseOk(BaseResponse response, String requestId) {
         Assert.assertEquals(requestId, response.getRequestId());
-        Assert.assertEquals(OK, response.getCode());
+        Assert.assertEquals(CODE_OK, response.getCode());
     }
 
     private void assertResponseError(BaseResponse response, String requestId) {
         Assert.assertTrue(response instanceof ErrorResponse);
         Assert.assertEquals(requestId, response.getRequestId());
-        Assert.assertEquals(ERROR, response.getCode());
+        Assert.assertEquals(CODE_ERROR, response.getCode());
         Assert.assertNotNull(((ErrorResponse) response).getMessage());
     }
 

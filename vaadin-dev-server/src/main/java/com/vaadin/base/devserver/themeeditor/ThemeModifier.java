@@ -204,8 +204,6 @@ public class ThemeModifier {
             } else {
                 // rule with given selector, property and value exists -> save
                 // for undo
-                String existingValue = existingDeclaration
-                        .getExpressionAsCSSString();
                 existingDeclaration
                         .setExpression(newDeclaration.getExpression());
             }

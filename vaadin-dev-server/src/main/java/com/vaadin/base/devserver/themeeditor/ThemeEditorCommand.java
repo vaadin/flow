@@ -2,9 +2,9 @@ package com.vaadin.base.devserver.themeeditor;
 
 public interface ThemeEditorCommand {
 
-    String OK = "ok";
+    String CODE_OK = "ok";
 
-    String ERROR = "error";
+    String CODE_ERROR = "error";
 
     String STATE = "themeEditorState";
 

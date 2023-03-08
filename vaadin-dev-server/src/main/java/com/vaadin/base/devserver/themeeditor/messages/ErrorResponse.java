@@ -1,6 +1,6 @@
 package com.vaadin.base.devserver.themeeditor.messages;
 
-import static com.vaadin.base.devserver.themeeditor.ThemeEditorCommand.ERROR;
+import static com.vaadin.base.devserver.themeeditor.ThemeEditorCommand.CODE_ERROR;
 
 public class ErrorResponse extends BaseResponse {
 
@@ -25,6 +25,6 @@ public class ErrorResponse extends BaseResponse {
 
     @Override
     public String getCode() {
-        return ERROR;
+        return CODE_ERROR;
     }
 }

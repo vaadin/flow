@@ -2,7 +2,7 @@ package com.vaadin.base.devserver.themeeditor.handlers;
 
 import com.vaadin.base.devserver.themeeditor.JavaSourceModifier;
 import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
-import com.vaadin.base.devserver.themeeditor.messages.ComponentMetadataRequest;
+import com.vaadin.base.devserver.themeeditor.messages.BaseRequest;
 import com.vaadin.base.devserver.themeeditor.messages.ComponentMetadataResponse;
 import com.vaadin.base.devserver.themeeditor.utils.HasSourceModifier;
 import com.vaadin.base.devserver.themeeditor.utils.MessageHandler;
@@ -22,8 +22,7 @@ public class ComponentMetadataHandler implements MessageHandler {
     @Override
     public ExecuteAndUndo handle(JsonObject data) {
         return new ExecuteAndUndo(() -> {
-            ComponentMetadataRequest request = JsonUtils.readToObject(data,
-                    ComponentMetadataRequest.class);
+            BaseRequest request = JsonUtils.readToObject(data, BaseRequest.class);
             JavaSourceModifier.ComponentMetadata metadata = hasSourceModifier
                     .getSourceModifier()
                     .getMetadata(request.getUiId(), request.getNodeId());

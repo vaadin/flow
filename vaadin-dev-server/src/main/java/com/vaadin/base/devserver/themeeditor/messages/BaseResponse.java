@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.io.Serializable;
 
-import static com.vaadin.base.devserver.themeeditor.ThemeEditorCommand.OK;
+import static com.vaadin.base.devserver.themeeditor.ThemeEditorCommand.CODE_OK;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BaseResponse implements Serializable {
@@ -27,7 +27,7 @@ public class BaseResponse implements Serializable {
     }
 
     public String getCode() {
-        return OK;
+        return CODE_OK;
     }
 
     public static BaseResponse ok() {

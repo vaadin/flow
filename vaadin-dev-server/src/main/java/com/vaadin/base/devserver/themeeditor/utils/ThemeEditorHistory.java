@@ -9,7 +9,7 @@ public class ThemeEditorHistory {
 
     private static class UiHistory
             extends LinkedHashMap<String, MessageHandler.ExecuteAndUndo> {
-        private static final int LIMIT = 30;
+        private static final int LIMIT = 100;
 
         @Override
         protected boolean removeEldestEntry(
