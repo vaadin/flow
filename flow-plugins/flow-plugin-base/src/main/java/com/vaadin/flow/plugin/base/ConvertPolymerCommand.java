@@ -18,10 +18,14 @@ package com.vaadin.flow.plugin.base;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -152,11 +156,31 @@ public class ConvertPolymerCommand implements AutoCloseable {
         PathMatcher matcher = FileSystems.getDefault()
                 .getPathMatcher("glob:" + glob);
 
-        try (Stream<Path> walk = Files.walk(baseDir)) {
-            return walk.filter(path -> matcher.matches(path))
-                    .filter(path -> !path.toString().contains("node_modules"))
-                    .collect(Collectors.toList());
-        }
+        List<Path> matchingPaths = new ArrayList<>();
+
+        Files.walkFileTree(baseDir, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir,
+                    BasicFileAttributes attrs) throws IOException {
+                if (dir.toString().contains("node_modules")) {
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file,
+                    BasicFileAttributes attrs) throws IOException {
+                if (matcher.matches(file)) {
+                    matchingPaths.add(file);
+                }
+
+                return FileVisitResult.CONTINUE;
+            }
+        });
+
+        return matchingPaths;
     }
 
     private Path getLookupPath() {
