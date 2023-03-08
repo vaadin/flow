@@ -66,14 +66,6 @@ public class ChromeBrowserTest extends ViewOrUITest {
         }
     }
 
-    /**
-     * Sets up the chrome driver path in a system variable.
-     */
-    @BeforeClass
-    public static void setChromeDriverPath() {
-        ChromeDriverLocator.fillEnvironmentProperty();
-    }
-
     @Before
     @Override
     public void setup() throws Exception {
