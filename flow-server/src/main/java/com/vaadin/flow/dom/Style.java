@@ -535,7 +535,8 @@ public interface Style extends Serializable {
         if (value == null) {
             return remove(propertyName);
         } else {
-            return set(propertyName, value.name().replace("_", "-").toLowerCase());
+            return set(propertyName,
+                    value.name().replace("_", "-").toLowerCase());
         }
     }
 
