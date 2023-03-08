@@ -14,13 +14,6 @@ export default {
       displayName: 'Text color'
     },
     {
-      propertyName: 'font-size',
-      displayName: 'Font size',
-      editorType: EditorType.range,
-      presets: presets.lumoFontSize,
-      icon: 'font'
-    },
-    {
       propertyName: '--lumo-button-size',
       displayName: 'Size',
       editorType: EditorType.range,
@@ -35,5 +28,19 @@ export default {
       icon: 'square'
     }
   ],
-  parts: []
+  parts: [
+    {
+      partName: 'label',
+      displayName: 'Label',
+      properties: [
+        {
+          propertyName: 'font-size',
+          displayName: 'Font size',
+          editorType: EditorType.range,
+          presets: presets.lumoFontSize,
+          icon: 'font'
+        }
+      ]
+    }
+  ]
 } as ComponentMetadata;
