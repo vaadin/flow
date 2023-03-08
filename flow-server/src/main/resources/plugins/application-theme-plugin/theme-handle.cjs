@@ -20,11 +20,11 @@
  */
 import { existsSync, writeFileSync, readFileSync } from 'fs';
 import { resolve } from 'path';
-import { generateThemeFile } from './theme-generator.js';
-import { copyStaticAssets, copyThemeResources } from './theme-copy.js';
+import { generateThemeFile } from './theme-generator.cjs';
+import { copyStaticAssets, copyThemeResources } from './theme-copy.cjs';
 
-// matches theme name in './theme-my-theme.generated.js'
-const nameRegex = /theme-(.*)\.generated\.js/;
+// matches theme name in './theme-my-theme.generated.cjs'
+const nameRegex = /theme-(.*)\.generated\.cjs/;
 
 let prevThemeName = undefined;
 let firstThemeName = undefined;
@@ -131,7 +131,7 @@ function findThemeFolderAndHandleTheme(themeName, options, logger) {
 
 /**
  * Copies static resources for theme and generates/writes the
- * [theme-name].generated.js for webpack to handle.
+ * [theme-name].generated.cjs for webpack to handle.
  *
  * Note! If a parent theme is defined it will also be handled here so that the parent theme generated file is
  * generated in advance of the theme generated file.
@@ -169,7 +169,7 @@ function handleThemes(themeName, themesFolder, options, logger) {
     copyThemeResources(themeFolder, options.projectStaticAssetsOutputFolder, logger);
     const themeFile = generateThemeFile(themeFolder, themeName, themeProperties, options);
 
-    writeFileSync(resolve(options.frontendGeneratedFolder, 'theme-' + themeName + '.generated.js'), themeFile);
+    writeFileSync(resolve(options.frontendGeneratedFolder, 'theme-' + themeName + '.generated.cjs'), themeFile);
     return true;
   }
   return false;
@@ -188,23 +188,23 @@ function getThemeProperties(themeFolder) {
 }
 
 /**
- * Extracts current theme name from auto-generated 'theme.js' file located on a
+ * Extracts current theme name from auto-generated 'theme.cjs' file located on a
  * given folder.
- * @param frontendGeneratedFolder folder in project containing 'theme.js' file
+ * @param frontendGeneratedFolder folder in project containing 'theme.cjs' file
  * @returns {string} current theme name
  */
 function extractThemeName(frontendGeneratedFolder) {
   if (!frontendGeneratedFolder) {
     throw new Error(
-      "Couldn't extract theme name from 'theme.js'," +
+      "Couldn't extract theme name from 'theme.cjs'," +
         ' because the path to folder containing this file is empty. Please set' +
         ' the a correct folder path in ApplicationThemePlugin constructor' +
         ' parameters.'
     );
   }
-  const generatedThemeFile = resolve(frontendGeneratedFolder, 'theme.js');
+  const generatedThemeFile = resolve(frontendGeneratedFolder, 'theme.cjs');
   if (existsSync(generatedThemeFile)) {
-    // read theme name from the 'generated/theme.js' as there we always
+    // read theme name from the 'generated/theme.cjs' as there we always
     // mark the used theme for webpack to handle.
     const themeName = nameRegex.exec(readFileSync(generatedThemeFile, { encoding: 'utf8' }))[1];
     if (!themeName) {

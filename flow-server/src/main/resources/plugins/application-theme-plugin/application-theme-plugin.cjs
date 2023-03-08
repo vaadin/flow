@@ -14,7 +14,7 @@
  * the License.
  */
 
-import { processThemeResources, extractThemeName, findParentThemes } from './theme-handle.js';
+import { processThemeResources, extractThemeName, findParentThemes } from './theme-handle.cjs';
 
 /**
  * The application theme plugin is for generating, collecting and copying of theme files for the application theme.

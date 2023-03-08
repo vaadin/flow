@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from 'fs';
 import { resolve, basename } from 'path';
-import { sync } from 'glob';
+import glob from 'glob';
+
+const { sync } = glob;
 
 // Collect groups [url(] ['|"]optional './|../', file part and end of url
 const urlMatcher = /(url\(\s*)(\'|\")?(\.\/|\.\.\/)(\S*)(\2\s*\))/g;

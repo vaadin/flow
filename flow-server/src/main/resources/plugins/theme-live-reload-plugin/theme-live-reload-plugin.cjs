@@ -41,7 +41,7 @@ class ThemeLiveReloadPlugin {
     this.componentStyleFileRegexp = /(\\|\/)themes\1([\s\S]*)\1components\1(.*)\.css$/;
     // There might be several theme generated files in the generated
     // folder, so the regexp does not contain the exact theme name
-    this.themeGeneratedFileRegexp = /theme-[\s\S]*?\.generated\.js$/;
+    this.themeGeneratedFileRegexp = /theme-[\s\S]*?\.generated\.cjs$/;
   }
 
   apply(compiler) {
@@ -87,21 +87,21 @@ class ThemeLiveReloadPlugin {
               "' has been deleted.\n\n" +
               "You should also delete './frontend/generated/theme-" +
               themeName +
-              ".generated.js' (simultaneously) with the component stylesheet'.\n" +
+              ".generated.cjs' (simultaneously) with the component stylesheet'.\n" +
               "Otherwise it will cause a webpack compilation error 'no such file or directory', as component style sheets are referenced from " +
               "'./frontend/generated/theme-" +
               themeName +
-              ".generated.js'.\n\n" +
+              ".generated.cjs'.\n\n" +
               "If you encounter a 'no such file or directory' error in your application, just click on the overlay (or refresh the browser page), and it should disappear.\n\n" +
               'It should then be possible to continue working on the application and theming.\n' +
               "If it doesn't help, you need to restart the application."
           );
         }
 
-        // Webpack watches to the changes in theme-[my-theme].generated.js
-        // because it is referenced from theme.js. Changes in this file
+        // Webpack watches to the changes in theme-[my-theme].generated.cjs
+        // because it is referenced from theme.cjs. Changes in this file
         // should not trigger the theme handling callback (which
-        // re-generates theme-[my-theme].generated.js),
+        // re-generates theme-[my-theme].generated.cjs),
         // otherwise it will get into infinite re-compilation loop.
         if (themeGeneratedFileDeleted || !themeGeneratedFileChanged) {
           this.processThemeResourcesCallback(logger);

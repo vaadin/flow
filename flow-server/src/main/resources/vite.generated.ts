@@ -384,7 +384,7 @@ function vaadinBundlesPlugin(): PluginOption {
       if (command !== 'serve') return false;
 
       try {
-        const vaadinBundleJsonPath = require.resolve('@vaadin/bundles/vaadin-bundle.json');
+        const vaadinBundleJsonPath = path.resolve(modulesDirectory, '@vaadin/bundles/vaadin-bundle.json');
         vaadinBundleJson = JSON.parse(readFileSync(vaadinBundleJsonPath, { encoding: 'utf8' }));
       } catch (e: unknown) {
         if (typeof e === 'object' && (e as { code: string }).code === 'MODULE_NOT_FOUND') {
