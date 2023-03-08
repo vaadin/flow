@@ -28,10 +28,20 @@ import java.util.Objects;
  * @since 2.0
  */
 public final class CssData implements Serializable {
-    String value;
-    String id;
-    String include;
-    String themefor;
+    private String value;
+    private String id;
+    private String include;
+    private String themefor;
+
+    public CssData() {
+    }
+
+    public CssData(String value, String id, String include, String themefor) {
+        this.value = value;
+        this.id = id;
+        this.include = include;
+        this.themefor = themefor;
+    }
 
     /**
      * The value getter.
@@ -67,6 +77,22 @@ public final class CssData implements Serializable {
      */
     public String getThemefor() {
         return themefor;
+    }
+
+    void setValue(String value) {
+        this.value = value;
+    }
+
+    void setId(String id) {
+        this.id = id;
+    }
+
+    void setInclude(String include) {
+        this.include = include;
+    }
+
+    void setThemefor(String themefor) {
+        this.themefor = themefor;
     }
 
     @Override

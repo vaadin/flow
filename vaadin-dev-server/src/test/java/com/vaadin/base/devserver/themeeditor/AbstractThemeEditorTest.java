@@ -73,7 +73,7 @@ public abstract class AbstractThemeEditorTest {
         }
 
         @Override
-        protected ThemeModifier getThemeModifier() {
+        public ThemeModifier getThemeModifier() {
             return testThemeModifier;
         }
 

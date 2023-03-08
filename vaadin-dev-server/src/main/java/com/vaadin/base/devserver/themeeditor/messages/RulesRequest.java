@@ -1,43 +1,23 @@
 package com.vaadin.base.devserver.themeeditor.messages;
 
+import com.vaadin.base.devserver.themeeditor.utils.CssRule;
+
 import java.util.List;
 
 public class RulesRequest extends BaseRequest {
 
-    public record CssRuleProperty(String selector, String property,
-            String value) {
-    }
-
-    public static final String COMMAND_NAME = "themeEditorRules";
-
-    private List<CssRuleProperty> add;
-
-    private List<CssRuleProperty> remove;
+    private List<CssRule> rules;
 
     public RulesRequest() {
 
     }
 
-    public RulesRequest(String requestId, List<CssRuleProperty> add,
-            List<CssRuleProperty> remove) {
-        super(requestId);
-        this.add = add;
-        this.remove = remove;
+    public List<CssRule> getRules() {
+        return rules;
     }
 
-    public List<CssRuleProperty> getAdd() {
-        return add;
+    public void setRules(List<CssRule> rules) {
+        this.rules = rules;
     }
 
-    public void setAdd(List<CssRuleProperty> add) {
-        this.add = add;
-    }
-
-    public List<CssRuleProperty> getRemove() {
-        return remove;
-    }
-
-    public void setRemove(List<CssRuleProperty> remove) {
-        this.remove = remove;
-    }
 }

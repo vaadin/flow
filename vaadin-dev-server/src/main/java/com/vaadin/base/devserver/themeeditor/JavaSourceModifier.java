@@ -9,6 +9,8 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.github.javaparser.utils.SourceRoot;
+import com.vaadin.base.devserver.themeeditor.utils.LineNumberVisitor;
+import com.vaadin.base.devserver.themeeditor.utils.ThemeEditorException;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.dom.Element;
@@ -22,7 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -64,7 +66,7 @@ public class JavaSourceModifier {
      *            list of classes to be added
      */
     public void setClassNames(Integer uiId, Integer nodeId,
-            List<String> classNames) {
+            Collection<String> classNames) {
         assert uiId != null && nodeId != null && classNames != null;
 
         VaadinSession session = getSession();
@@ -112,7 +114,7 @@ public class JavaSourceModifier {
      *            list of classes to be removed
      */
     public void removeClassNames(Integer uiId, Integer nodeId,
-            List<String> classNames) {
+            Collection<String> classNames) {
         assert uiId != null && nodeId != null && classNames != null;
 
         VaadinSession session = getSession();
