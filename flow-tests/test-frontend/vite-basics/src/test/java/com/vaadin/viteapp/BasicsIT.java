@@ -11,8 +11,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
-
 public class BasicsIT extends ViteDevModeIT {
 
     @Test
