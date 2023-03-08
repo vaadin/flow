@@ -1,7 +1,6 @@
 package com.vaadin.base.devserver.themeeditor.messages;
 
 public class LoadRulesRequest extends BaseRequest {
-    public static final String COMMAND_NAME = "themeEditorLoadRules";
 
     private String selectorFilter;
 

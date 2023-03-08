@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { ComponentTheme, generateThemeRule, ThemeEditorRule, ThemePropertyValue } from './model';
+import { ComponentTheme, generateThemeRule, ThemePropertyValue } from './model';
 import buttonMetadata from './metadata/components/vaadin-button';
 import { ComponentMetadata } from './metadata/model';
 import { ServerCssRule } from './api';
@@ -223,11 +223,11 @@ describe('model', () => {
         generateThemeRule('vaadin-button', 'label', 'font-size', '20px')
       ];
 
-      const expectedRules: ThemeEditorRule[] = [
-        { selector: 'vaadin-button', property: 'background', value: 'cornflowerblue' },
-        { selector: 'vaadin-button', property: 'padding', value: '3px' },
-        { selector: 'vaadin-button::part(label)', property: 'color', value: 'white' },
-        { selector: 'vaadin-button::part(label)', property: 'font-size', value: '20px' }
+      const expectedRules: ServerCssRule[] = [
+        { selector: 'vaadin-button', properties: {'background': 'cornflowerblue' }},
+        { selector: 'vaadin-button', properties: {'padding': '3px' }},
+        { selector: 'vaadin-button::part(label)', properties: {'color': 'white' }},
+        { selector: 'vaadin-button::part(label)', properties: {'font-size': '20px' }}
       ];
 
       expect(rules).to.deep.equal(expectedRules);
