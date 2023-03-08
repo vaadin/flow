@@ -101,8 +101,6 @@ public interface Style extends Serializable {
     /**
      * Sets the <code>background</code> property.
      *
-     * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-background
-     *
      * @param value
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
@@ -114,8 +112,6 @@ public interface Style extends Serializable {
 
     /**
      * Sets the <code>border</code> property.
-     *
-     * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-border
      *
      * @param value
      *            the style property value (if <code>null</code>, the property
@@ -129,8 +125,6 @@ public interface Style extends Serializable {
     /**
      * Sets the <code>box-sizing</code> property.
      *
-     * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-box-sizing
-     *
      * @param value
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
@@ -142,8 +136,6 @@ public interface Style extends Serializable {
 
     /**
      * Sets the <code>box-shadow</code> property.
-     *
-     * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-box-shadow
      *
      * @param value
      *            the style property value (if <code>null</code>, the property
@@ -176,8 +168,6 @@ public interface Style extends Serializable {
     /**
      * Sets the <code>cursor</code> property.
      *
-     * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-cursor
-     *
      * @param value
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
@@ -205,8 +195,6 @@ public interface Style extends Serializable {
 
     /**
      * Sets the <code>display</code> property.
-     *
-     * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-display
      *
      * @param value
      *            the style property value (if <code>null</code>, the property
@@ -276,8 +264,6 @@ public interface Style extends Serializable {
     /**
      * Sets the <code>outline</code> property.
      *
-     * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-outline
-     *
      * @param value
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
@@ -315,6 +301,9 @@ public interface Style extends Serializable {
      * Sets the <code>padding</code> property. * @param value the style property
      * value (if <code>null</code>, the property will be removed)
      *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
      * @return this style instance
      */
     default Style setPadding(String value) {
@@ -343,8 +332,6 @@ public interface Style extends Serializable {
     /**
      * Sets the <code>scale</code> property.
      *
-     * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-scale
-     *
      * @param value
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
@@ -364,8 +351,6 @@ public interface Style extends Serializable {
     /**
      * Sets the <code>text-align</code> property.
      *
-     * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-text-align
-     *
      * @param value
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
@@ -377,8 +362,6 @@ public interface Style extends Serializable {
 
     /**
      * Sets the <code>text-decoration</code> property.
-     *
-     * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-text-decoration
      *
      * @param value
      *            the style property value (if <code>null</code>, the property
@@ -392,8 +375,6 @@ public interface Style extends Serializable {
     /**
      * Sets the <code>transform</code> property.
      *
-     * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-transform
-     *
      * @param value
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
@@ -405,8 +386,6 @@ public interface Style extends Serializable {
 
     /**
      * Sets the <code>transition</code> property.
-     *
-     * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-transition
      *
      * @param value
      *            the style property value (if <code>null</code>, the property
@@ -426,8 +405,6 @@ public interface Style extends Serializable {
 
     /**
      * Sets the <code>visibility</code> property.
-     *
-     * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-visibility
      *
      * @param value
      *            the style property value (if <code>null</code>, the property
@@ -459,8 +436,6 @@ public interface Style extends Serializable {
 
     /**
      * Sets the <code>white-space</code> property.
-     *
-     * @see https://drafts.csswg.org/css-backgrounds-3/#propdef-white-space
      *
      * @param value
      *            the style property value (if <code>null</code>, the property
