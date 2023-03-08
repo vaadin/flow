@@ -17,7 +17,7 @@ describe('theme-editor', () => {
     send: sinon.SinonSpy;
   };
   let apiMock: {
-    updateCssRules: sinon.SinonStub;
+    setCssRules: sinon.SinonStub;
     loadPreview: sinon.SinonStub;
     loadRules: sinon.SinonStub;
   };
@@ -40,11 +40,11 @@ describe('theme-editor', () => {
     ></vaadin-dev-tools-theme-editor>`)) as ThemeEditor;
 
     apiMock = {
-      updateCssRules: sinon.stub((editor as any).api as ThemeEditorApi, 'updateCssRules'),
+      setCssRules: sinon.stub((editor as any).api as ThemeEditorApi, 'setCssRules'),
       loadPreview: sinon.stub((editor as any).api as ThemeEditorApi, 'loadPreview'),
       loadRules: sinon.stub((editor as any).api as ThemeEditorApi, 'loadRules')
     };
-    apiMock.updateCssRules.returns(Promise.resolve({}));
+    apiMock.setCssRules.returns(Promise.resolve({}));
     apiMock.loadPreview.returns(Promise.resolve({ css: '' }));
     apiMock.loadRules.returns(Promise.resolve({ rules: [] }));
 
@@ -194,27 +194,23 @@ describe('theme-editor', () => {
       await pickComponent();
 
       await editProperty('label', 'color', 'red');
-      expect(apiMock.updateCssRules.calledOnce).to.be.true;
-      expect(apiMock.updateCssRules.args[0][0]).to.deep.equal([
+      expect(apiMock.setCssRules.calledOnce).to.be.true;
+      expect(apiMock.setCssRules.args[0][0]).to.deep.equal([
         {
           selector: 'test-element::part(label)',
-          property: 'color',
-          value: 'red'
+          properties: {'color': 'red'}
         }
       ]);
-      expect(apiMock.updateCssRules.args[0][1]).to.deep.equal([]);
-      apiMock.updateCssRules.resetHistory();
+      apiMock.setCssRules.resetHistory();
 
       await editProperty('label', 'color', 'green');
-      expect(apiMock.updateCssRules.calledOnce).to.be.true;
-      expect(apiMock.updateCssRules.args[0][0]).to.deep.equal([
+      expect(apiMock.setCssRules.calledOnce).to.be.true;
+      expect(apiMock.setCssRules.args[0][0]).to.deep.equal([
         {
           selector: 'test-element::part(label)',
-          property: 'color',
-          value: 'green'
+          properties: {'color': 'green'}
         }
       ]);
-      expect(apiMock.updateCssRules.args[0][1]).to.deep.equal([]);
     });
 
     it('should dispatch event before saving changes', async () => {
