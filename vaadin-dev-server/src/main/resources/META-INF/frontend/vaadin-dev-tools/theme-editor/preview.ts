@@ -1,18 +1,23 @@
 class ThemePreview {
-  private _stylesheet: CSSStyleSheet;
-
-  constructor() {
-    this._stylesheet = new CSSStyleSheet();
-    this._stylesheet.replaceSync('');
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, this._stylesheet];
-  }
+  private _stylesheet?: CSSStyleSheet;
 
   get stylesheet(): CSSStyleSheet {
-    return this._stylesheet;
+    this.ensureStylesheet();
+    return this._stylesheet!;
   }
 
   update(css: string) {
-    this._stylesheet.replaceSync(css);
+    this.ensureStylesheet();
+    this._stylesheet!.replaceSync(css);
+  }
+
+  private ensureStylesheet() {
+    if (this._stylesheet) {
+      return;
+    }
+    this._stylesheet = new CSSStyleSheet();
+    this._stylesheet.replaceSync('');
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, this._stylesheet];
   }
 }
 
