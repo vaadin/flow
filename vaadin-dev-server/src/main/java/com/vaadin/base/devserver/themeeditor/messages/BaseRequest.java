@@ -6,9 +6,9 @@ public class BaseRequest implements Serializable {
 
     private String requestId;
 
-    private int nodeId;
+    private Integer nodeId;
 
-    private int uiId;
+    private Integer uiId;
 
     public BaseRequest() {
     }
@@ -17,7 +17,7 @@ public class BaseRequest implements Serializable {
         this.requestId = requestId;
     }
 
-    public BaseRequest(String requestId, int nodeId, int uiId) {
+    public BaseRequest(String requestId, Integer nodeId, Integer uiId) {
         this.requestId = requestId;
         this.nodeId = nodeId;
         this.uiId = uiId;
@@ -31,19 +31,19 @@ public class BaseRequest implements Serializable {
         this.requestId = requestId;
     }
 
-    public int getNodeId() {
+    public Integer getNodeId() {
         return nodeId;
     }
 
-    public void setNodeId(int nodeId) {
+    public void setNodeId(Integer nodeId) {
         this.nodeId = nodeId;
     }
 
-    public int getUiId() {
+    public Integer getUiId() {
         return uiId;
     }
 
-    public void setUiId(int uiId) {
+    public void setUiId(Integer uiId) {
         this.uiId = uiId;
     }
 }

@@ -1,53 +1,58 @@
 package com.vaadin.base.devserver.themeeditor;
 
-import com.vaadin.base.devserver.themeeditor.messages.*;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.base.devserver.themeeditor.handlers.*;
+import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
+import com.vaadin.base.devserver.themeeditor.messages.ErrorResponse;
+import com.vaadin.base.devserver.themeeditor.utils.*;
 import com.vaadin.flow.server.VaadinContext;
 import elemental.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Handler for ThemeEditor debug window communication messages. Responsible for
  * preparing data for {@link ThemeModifier} and {@link JavaSourceModifier}.
  */
-public class ThemeEditorMessageHandler {
+public class ThemeEditorMessageHandler
+        implements HasSourceModifier, HasThemeModifier {
 
     private final JavaSourceModifier sourceModifier;
 
     private final ThemeModifier themeModifier;
 
-    private final Map<String, Function<JsonObject, BaseResponse>> handlers;
+    private final Set<MessageHandler> handlers = new HashSet<>();
 
     public ThemeEditorMessageHandler(VaadinContext context) {
         this.sourceModifier = new JavaSourceModifier(context);
         this.themeModifier = new ThemeModifier(context);
-        this.handlers = Map.of(RulesRequest.COMMAND_NAME,
-                this::handleThemeEditorRules, ClassNamesRequest.COMMAND_NAME,
-                this::handleThemeEditorClassNames,
-                ComponentMetadataRequest.COMMAND_NAME,
-                this::handleComponentMetadata, LoadPreviewRequest.COMMAND_NAME,
-                this::handleLoadPreview, LoadRulesRequest.COMMAND_NAME,
-                this::handleLoadRules);
+        this.handlers.add(new RulesHandler(this));
+        this.handlers.add(new ClassNamesHandler(this));
+        this.handlers.add(new ComponentMetadataHandler(this));
+        this.handlers.add(new HistoryHandler());
+        this.handlers.add(new LoadRulesHandler(this));
+        this.handlers.add(new LoadPreviewHandler(this));
     }
 
     public boolean isEnabled() {
-        return themeModifier.isEnabled() && sourceModifier.isEnabled();
+        return getThemeModifier().isEnabled()
+                && getSourceModifier().isEnabled();
     }
 
     public String getState() {
-        return themeModifier.getState().name().toLowerCase();
+        return getThemeModifier().getState().name().toLowerCase();
     }
 
-    protected JavaSourceModifier getSourceModifier() {
+    @Override
+    public JavaSourceModifier getSourceModifier() {
         return sourceModifier;
     }
 
-    protected ThemeModifier getThemeModifier() {
+    @Override
+    public ThemeModifier getThemeModifier() {
         return themeModifier;
     }
 
@@ -62,7 +67,7 @@ public class ThemeEditorMessageHandler {
      */
     public boolean canHandle(String command, JsonObject data) {
         return command != null && data != null && data.hasKey("requestId")
-                && handlers.containsKey(command);
+                && getHandler(command).isPresent();
     }
 
     /**
@@ -77,63 +82,26 @@ public class ThemeEditorMessageHandler {
     public BaseResponse handleDebugMessageData(String command,
             JsonObject data) {
         assert canHandle(command, data);
+        String requestId = data.getString("requestId");
+        Integer uiId = (int) data.getNumber("uiId");
+        ThemeEditorHistory history = ThemeEditorHistory.forUi(uiId);
         try {
-            return handlers.get(command).apply(data);
+            MessageHandler.ExecuteAndUndo executeAndUndo = getHandler(command)
+                    .get().handle(data);
+            executeAndUndo.undoCommand()
+                    .ifPresent(undo -> history.put(requestId, executeAndUndo));
+            BaseResponse response = executeAndUndo.executeCommand().execute();
+            response.setRequestId(requestId);
+            return response;
         } catch (ThemeEditorException ex) {
             getLogger().error(ex.getMessage(), ex);
-            return new ErrorResponse(data.getString("requestId"),
-                    ex.getMessage());
+            return new ErrorResponse(requestId, ex.getMessage());
         }
     }
 
-    protected BaseResponse handleThemeEditorRules(JsonObject data) {
-        RulesRequest request = JsonUtils.readToObject(data, RulesRequest.class);
-        if (request.getAdd() != null) {
-            getThemeModifier().setThemeProperties(request.getAdd());
-        }
-        if (request.getRemove() != null) {
-            getThemeModifier().removeThemeProperties(request.getRemove());
-        }
-        return BaseResponse.ok(request.getRequestId());
-    }
-
-    protected BaseResponse handleThemeEditorClassNames(JsonObject data) {
-        ClassNamesRequest request = JsonUtils.readToObject(data,
-                ClassNamesRequest.class);
-        int uiId = request.getUiId();
-        int nodeId = request.getNodeId();
-        if (request.getAdd() != null) {
-            getSourceModifier().setClassNames(uiId, nodeId, request.getAdd());
-        }
-        if (request.getRemove() != null) {
-            getSourceModifier().removeClassNames(uiId, nodeId,
-                    request.getRemove());
-        }
-        return BaseResponse.ok(request.getRequestId());
-    }
-
-    protected BaseResponse handleComponentMetadata(JsonObject data) {
-        ComponentMetadataRequest request = JsonUtils.readToObject(data,
-                ComponentMetadataRequest.class);
-        JavaSourceModifier.ComponentMetadata metadata = getSourceModifier()
-                .getMetadata(request.getUiId(), request.getNodeId());
-        return new ComponentMetadataResponse(request.getRequestId(),
-                metadata.isAccessible());
-    }
-
-    protected BaseResponse handleLoadPreview(JsonObject data) {
-        LoadPreviewRequest request = JsonUtils.readToObject(data,
-                LoadPreviewRequest.class);
-        String css = getThemeModifier().getCss();
-        return new LoadPreviewResponse(request.getRequestId(), css);
-    }
-
-    protected BaseResponse handleLoadRules(JsonObject data) {
-        LoadRulesRequest request = JsonUtils.readToObject(data,
-                LoadRulesRequest.class);
-        List<LoadRulesResponse.CssRule> rules = getThemeModifier()
-                .getCssRules(request.getSelectorFilter());
-        return new LoadRulesResponse(request.getRequestId(), rules);
+    private Optional<MessageHandler> getHandler(String command) {
+        return handlers.stream().filter(h -> h.getCommandName().equals(command))
+                .findFirst();
     }
 
     private static Logger getLogger() {

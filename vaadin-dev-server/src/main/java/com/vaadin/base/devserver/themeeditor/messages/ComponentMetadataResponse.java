@@ -8,8 +8,7 @@ public class ComponentMetadataResponse extends BaseResponse {
 
     }
 
-    public ComponentMetadataResponse(String requestId, boolean accessible) {
-        super(requestId, CODE_OK);
+    public ComponentMetadataResponse(boolean accessible) {
         this.accessible = accessible;
     }
 

@@ -7,12 +7,6 @@ export enum ThemeEditorState {
   missing_theme = 'missing_theme'
 }
 
-export interface ThemeEditorRule {
-  selector: string;
-  property: string;
-  value: string;
-}
-
 export interface ThemePropertyValue {
   partName: string | null;
   propertyName: string;
@@ -118,9 +112,9 @@ function generateSelector(tagName: string, partName: string | null) {
 
 export function generateThemeRule(tagName: string, partName: string | null, propertyName: string, value: string) {
   const selector = generateSelector(tagName, partName);
+  const properties = {[propertyName]: value};
   return {
     selector,
-    property: propertyName,
-    value: value
+    properties
   };
 }
