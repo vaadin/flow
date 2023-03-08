@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public class ThemeEditorHistory {
 
-    private class UiHistory
+    private static class UiHistory
             extends LinkedHashMap<String, MessageHandler.ExecuteAndUndo> {
         private static final int LIMIT = 30;
 
