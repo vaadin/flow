@@ -139,7 +139,6 @@ jobs:
       - uses: browser-actions/setup-chrome@latest
         with:
           chrome-version: stable
-      - uses: nanasess/setup-chromedriver@master
       - uses: actions/download-artifact@v2
         with:
           name: saved-workspace
