@@ -176,7 +176,6 @@ jobs:
       - uses: browser-actions/setup-chrome@latest
         with:
           chrome-version: stable
-      - uses: nanasess/setup-chromedriver@master
       - uses: actions/download-artifact@v3
         if: ${{ github.run_attempt == 1 }}
         with:
