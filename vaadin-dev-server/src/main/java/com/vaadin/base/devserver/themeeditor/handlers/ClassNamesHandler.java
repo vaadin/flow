@@ -8,6 +8,7 @@ import com.vaadin.base.devserver.themeeditor.utils.MessageHandler;
 import com.vaadin.flow.internal.JsonUtils;
 import elemental.json.JsonObject;
 
+import java.util.Collection;
 import java.util.Optional;
 
 public class ClassNamesHandler implements MessageHandler {
@@ -25,21 +26,21 @@ public class ClassNamesHandler implements MessageHandler {
         int uiId = request.getUiId();
         int nodeId = request.getNodeId();
         return new ExecuteAndUndo(() -> {
-            if (request.getAdd() != null) {
+            if (isNotEmpty(request.getAdd())) {
                 hasSourceModifier.getSourceModifier().setClassNames(uiId,
                         nodeId, request.getAdd());
             }
-            if (request.getRemove() != null) {
+            if (isNotEmpty(request.getRemove())) {
                 hasSourceModifier.getSourceModifier().removeClassNames(uiId,
                         nodeId, request.getRemove());
             }
             return BaseResponse.ok();
         }, Optional.of(() -> {
-            if (request.getAdd() != null) {
+            if (isNotEmpty(request.getAdd())) {
                 hasSourceModifier.getSourceModifier().removeClassNames(uiId,
                         nodeId, request.getAdd());
             }
-            if (request.getRemove() != null) {
+            if (isNotEmpty(request.getRemove())) {
                 hasSourceModifier.getSourceModifier().setClassNames(uiId,
                         nodeId, request.getRemove());
             }
@@ -50,5 +51,9 @@ public class ClassNamesHandler implements MessageHandler {
     @Override
     public String getCommandName() {
         return ThemeEditorCommand.CLASS_NAMES;
+    }
+
+    private boolean isNotEmpty(Collection collection) {
+        return collection != null && !collection.isEmpty();
     }
 }

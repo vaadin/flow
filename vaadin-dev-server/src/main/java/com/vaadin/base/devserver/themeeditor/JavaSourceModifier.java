@@ -24,7 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -66,7 +66,7 @@ public class JavaSourceModifier {
      *            list of classes to be added
      */
     public void setClassNames(Integer uiId, Integer nodeId,
-            List<String> classNames) {
+            Collection<String> classNames) {
         assert uiId != null && nodeId != null && classNames != null;
 
         VaadinSession session = getSession();
@@ -114,7 +114,7 @@ public class JavaSourceModifier {
      *            list of classes to be removed
      */
     public void removeClassNames(Integer uiId, Integer nodeId,
-            List<String> classNames) {
+            Collection<String> classNames) {
         assert uiId != null && nodeId != null && classNames != null;
 
         VaadinSession session = getSession();

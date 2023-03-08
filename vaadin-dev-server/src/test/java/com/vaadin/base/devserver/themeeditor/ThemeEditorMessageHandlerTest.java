@@ -16,6 +16,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;
@@ -231,11 +232,25 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
     @Test
     public void testHistoryUndo_attributeRemoved() {
         prepareComponentTracker(22);
-        ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
+        JavaSourceModifier javaSourceModifierMock = Mockito
+                .mock(JavaSourceModifier.class);
+        ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler() {
+            @Override
+            public JavaSourceModifier getSourceModifier() {
+                return javaSourceModifierMock;
+            }
+        };
+
         setClassNames(0, "id1", handler, new String[] { "bold", "beautiful" },
                 new String[] {});
+        Mockito.verify(javaSourceModifierMock, Mockito.times(1))
+                .setClassNames(Mockito.any(), Mockito.any(), Mockito.any());
+
         // undo
         undoRedo(0, "id2", true, "id1", handler);
+        Mockito.verify(javaSourceModifierMock, Mockito.times(1))
+                .removeClassNames(Mockito.any(), Mockito.any(), Mockito.any());
+
     }
 
     private void assertResponseOk(BaseResponse response, String requestId) {

@@ -22,7 +22,8 @@ public class ComponentMetadataHandler implements MessageHandler {
     @Override
     public ExecuteAndUndo handle(JsonObject data) {
         return new ExecuteAndUndo(() -> {
-            BaseRequest request = JsonUtils.readToObject(data, BaseRequest.class);
+            BaseRequest request = JsonUtils.readToObject(data,
+                    BaseRequest.class);
             JavaSourceModifier.ComponentMetadata metadata = hasSourceModifier
                     .getSourceModifier()
                     .getMetadata(request.getUiId(), request.getNodeId());
