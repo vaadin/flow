@@ -1684,7 +1684,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
         }
 
-        // Secondly, add a link for the project's custom theme, if it exists
+        // Secondly, check if a parent theme is in the project's frontend/themes
+        // folder
+        Optional<String> parentThemeName = FrontendUtils
+                .getParentThemeNameInFrontend(frontendFolder, themeName.get());
+        if (parentThemeName.isPresent()) {
+            T reference = referenceProvider.apply(parentThemeName.get(),
+                    fileName);
+            references.add(reference);
+        }
+
+        // Finally, add a link for the project's custom theme, if it exists
         // and not yet added by the packaged themes loop
         if (!projectCustomThemeAdded) {
             T reference = referenceProvider.apply(themeName.get(), fileName);

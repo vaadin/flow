@@ -1316,7 +1316,8 @@ public class TaskRunDevBundleBuildTest {
     public void themeJsonUpdates_statsHasNoThemeJson_projectHasThemeJson_bundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}");
+        createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}",
+                "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1336,6 +1337,15 @@ public class TaskRunDevBundleBuildTest {
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
                     .thenReturn(stats.toJson());
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(Options.class),
+                    Mockito.any(ThemeDefinition.class))).thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(File.class), Mockito.any(String.class)))
+                    .thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getParentThemeNameInFrontend(
+                    Mockito.any(File.class), Mockito.any(JsonObject.class)))
+                    .thenCallRealMethod();
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1349,7 +1359,8 @@ public class TaskRunDevBundleBuildTest {
     public void themeJsonUpdates_containsParentTheme_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub("{\"parent\": \"my-parent-theme\"}");
+        createProjectThemeJsonStub("{\"parent\": \"my-parent-theme\"}",
+                "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1370,6 +1381,15 @@ public class TaskRunDevBundleBuildTest {
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
                     .thenReturn(stats.toJson());
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(Options.class),
+                    Mockito.any(ThemeDefinition.class))).thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(File.class), Mockito.any(String.class)))
+                    .thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getParentThemeNameInFrontend(
+                    Mockito.any(File.class), Mockito.any(JsonObject.class)))
+                    .thenCallRealMethod();
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1403,6 +1423,15 @@ public class TaskRunDevBundleBuildTest {
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
                     .thenReturn(stats.toJson());
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(Options.class),
+                    Mockito.any(ThemeDefinition.class))).thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(File.class), Mockito.any(String.class)))
+                    .thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getParentThemeNameInFrontend(
+                    Mockito.any(File.class), Mockito.any(JsonObject.class)))
+                    .thenCallRealMethod();
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1416,11 +1445,13 @@ public class TaskRunDevBundleBuildTest {
     public void themeJsonUpdates_statsAndProjectThemeJsonEquals_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub("{\n" + "  \"boolean-property\": true,\n"
-                + "  \"numeric-property\": 42.42,\n"
-                + "  \"string-property\": \"foo\",\n"
-                + "  \"array-property\": [\"one\", \"two\"],\n"
-                + "  \"object-property\": { \"foo\": \"bar\" }\n" + "}");
+        createProjectThemeJsonStub(
+                "{\n" + "  \"boolean-property\": true,\n"
+                        + "  \"numeric-property\": 42.42,\n"
+                        + "  \"string-property\": \"foo\",\n"
+                        + "  \"array-property\": [\"one\", \"two\"],\n"
+                        + "  \"object-property\": { \"foo\": \"bar\" }\n" + "}",
+                "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1446,6 +1477,15 @@ public class TaskRunDevBundleBuildTest {
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
                     .thenReturn(stats.toJson());
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(Options.class),
+                    Mockito.any(ThemeDefinition.class))).thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(File.class), Mockito.any(String.class)))
+                    .thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getParentThemeNameInFrontend(
+                    Mockito.any(File.class), Mockito.any(JsonObject.class)))
+                    .thenCallRealMethod();
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1463,7 +1503,7 @@ public class TaskRunDevBundleBuildTest {
                 + "  \"importCss\": [\"@fortawesome/fontawesome-free/css/all.css\"],"
                 + "  \"assets\": {\n" + "    \"line-awesome\": {\n"
                 + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
-                + "    }\n" + "  }\n" + "}");
+                + "    }\n  }\n}", "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1488,6 +1528,15 @@ public class TaskRunDevBundleBuildTest {
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
                     .thenReturn(stats.toJson());
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(Options.class),
+                    Mockito.any(ThemeDefinition.class))).thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(File.class), Mockito.any(String.class)))
+                    .thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getParentThemeNameInFrontend(
+                    Mockito.any(File.class), Mockito.any(JsonObject.class)))
+                    .thenCallRealMethod();
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1503,7 +1552,7 @@ public class TaskRunDevBundleBuildTest {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectThemeJsonStub("{\n"
                 + "  \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"]\n"
-                + "}");
+                + "}", "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1528,6 +1577,15 @@ public class TaskRunDevBundleBuildTest {
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
                     .thenReturn(stats.toJson());
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(Options.class),
+                    Mockito.any(ThemeDefinition.class))).thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(File.class), Mockito.any(String.class)))
+                    .thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getParentThemeNameInFrontend(
+                    Mockito.any(File.class), Mockito.any(JsonObject.class)))
+                    .thenCallRealMethod();
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1542,7 +1600,8 @@ public class TaskRunDevBundleBuildTest {
     public void themeJsonUpdates_noProjectThemeHashInStats_bundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}");
+        createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}",
+                "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1561,12 +1620,67 @@ public class TaskRunDevBundleBuildTest {
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
                     .thenReturn(stats.toJson());
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(Options.class),
+                    Mockito.any(ThemeDefinition.class))).thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(File.class), Mockito.any(String.class)))
+                    .thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getParentThemeNameInFrontend(
+                    Mockito.any(File.class), Mockito.any(JsonObject.class)))
+                    .thenCallRealMethod();
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
             Assert.assertTrue(
                     "Should trigger a bundle rebuild when project has theme"
                             + ".json but stats doesn't",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void parentThemeInFrontend_parentHasEntriesInJson_bundleMissesSomeEntries_bundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectThemeJsonStub("{ \"importCss\": [\"foo\"]}",
+                "parent-theme");
+        createProjectThemeJsonStub("{\"parent\": \"parent-theme\"}",
+                "my-theme");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        final ThemeDefinition themeDefinition = Mockito
+                .mock(ThemeDefinition.class);
+        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
+        Mockito.when(depScanner.getThemeDefinition())
+                .thenReturn(themeDefinition);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            JsonObject stats = getBasicStats();
+            stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle", "{}");
+
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(Options.class),
+                    Mockito.any(ThemeDefinition.class))).thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                    Mockito.any(File.class), Mockito.any(String.class)))
+                    .thenCallRealMethod();
+            utils.when(() -> FrontendUtils.getParentThemeNameInFrontend(
+                    Mockito.any(File.class), Mockito.any(JsonObject.class)))
+                    .thenCallRealMethod();
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Should rebuild when 'theme.json' from parent theme in "
+                            + "frontend folder adds extra entries",
                     needsBuild);
         }
     }
@@ -1744,9 +1858,10 @@ public class TaskRunDevBundleBuildTest {
         FileUtils.write(packageJson, content, StandardCharsets.UTF_8);
     }
 
-    private void createProjectThemeJsonStub(String content) throws IOException {
+    private void createProjectThemeJsonStub(String content, String theme)
+            throws IOException {
         File themeJson = new File(temporaryFolder.getRoot(),
-                "frontend/themes/my-theme/theme.json");
+                "frontend/themes/" + theme + "/theme.json");
         FileUtils.forceMkdir(themeJson.getParentFile());
         boolean created = themeJson.createNewFile();
         Assert.assertTrue(created);

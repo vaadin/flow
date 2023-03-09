@@ -277,9 +277,16 @@ function statsExtracterPlugin(): PluginOption {
 
       const projectThemeJson = path.resolve(frontendFolder, settings.themeFolder, settings.themeName, "theme.json")
       if (existsSync(projectThemeJson)) {
-        themeJsonContents[ settings.themeName ] = readFileSync(projectThemeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+        const themeJson = readFileSync(projectThemeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+        themeJsonContents[ settings.themeName ] = themeJson;
+        const themeJsonObject = JSON.parse(themeJson);
+        if (themeJsonObject.parent) {
+          const parentThemeJson = path.resolve(frontendFolder, settings.themeFolder, themeJsonObject.parent, "theme.json");
+          if (existsSync(parentThemeJson)) {
+            themeJsonContents[ themeJsonObject.parent ] = readFileSync(parentThemeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+          }
+        }
       }
-
 
       let webComponents: string[] = [];
       if (webComponentTags) {
