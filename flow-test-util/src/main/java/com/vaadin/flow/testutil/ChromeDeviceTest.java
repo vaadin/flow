@@ -121,6 +121,7 @@ public class ChromeDeviceTest extends ViewOrUITest {
             if (!isJavaInDebugMode()) {
                 chromeOptions.addArguments("--headless", "--disable-gpu");
             }
+            chromeOptions.addArguments("--remote-allow-origins=*");
         } else {
             // Enable service workers over http remote connection
             chromeOptions.addArguments(String.format(
