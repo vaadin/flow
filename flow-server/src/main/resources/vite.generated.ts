@@ -17,10 +17,10 @@ import * as net from 'net';
 
 import {
   processThemeResources
-} from '#buildFolder#/plugins/application-theme-plugin/theme-handle.cjs';
+} from '#buildFolder#/plugins/application-theme-plugin/theme-handle.js';
 import {
   rewriteCssUrls
-} from '#buildFolder#/plugins/theme-loader/theme-loader-utils.cjs';
+} from '#buildFolder#/plugins/theme-loader/theme-loader-utils.js';
 import settings from '#settingsImport#';
 import {
   AssetInfo,
@@ -39,7 +39,7 @@ import brotli from 'rollup-plugin-brotli';
 import replace from '@rollup/plugin-replace';
 import checker from 'vite-plugin-checker';
 import postcssLit
-  from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.cjs';
+  from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 
 const appShellUrl = '.';
 

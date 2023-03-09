@@ -1,5 +1,5 @@
-import { ComponentMetadata } from './metadata/model.js';
-import {ServerCssRule} from "./api.js";
+import { ComponentMetadata } from './metadata/model';
+import {ServerCssRule} from "./api";
 
 export enum ThemeEditorState {
   disabled = 'disabled',

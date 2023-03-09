@@ -1,14 +1,14 @@
 import { css, html, LitElement, nothing, TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { ComponentPicker } from './component-picker.js';
-import { ComponentReference } from './component-util.js';
+import { ComponentPicker } from './component-picker';
+import { ComponentReference } from './component-util';
 import './theme-editor/editor';
-import { ThemeEditorState } from './theme-editor/model.js';
+import { ThemeEditorState } from './theme-editor/model';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
-import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, licenseInit, Product } from './License.js';
+import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, licenseInit, Product } from './License';
 
 interface ServerInfo {
   vaadinVersion: string;
@@ -1570,7 +1570,7 @@ export class VaadinDevTools extends LitElement {
                   </p>
                 </div>
               `,
-              pickCallback: (component: ComponentReference) => {
+              pickCallback: (component) => {
                 const serializableComponentRef: ComponentReference = { nodeId: component.nodeId, uiId: component.uiId };
                 const locationType = (this.renderRoot.querySelector('#locationType') as HTMLSelectElement).value;
                 if (locationType === 'create') {

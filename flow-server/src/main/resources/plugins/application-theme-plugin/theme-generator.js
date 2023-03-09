@@ -15,13 +15,13 @@
  */
 
 /**
- * This file handles the generation of the '[theme-name].cjs' to
+ * This file handles the generation of the '[theme-name].js' to
  * the themes/[theme-name] folder according to properties from 'theme.json'.
  */
 import glob from 'glob';
 import { resolve, basename } from 'path';
 import { existsSync, writeFileSync } from 'fs';
-import { checkModules } from './theme-copy.cjs';
+import { checkModules } from './theme-copy.js';
 
 const { sync } = glob;
 
@@ -114,7 +114,7 @@ const addLumoImportStyleTag = (lumoStyles, target) => {
 `;
 
 /**
- * Generate the [themeName].cjs file for themeFolder which collects all required information from the folder.
+ * Generate the [themeName].js file for themeFolder which collects all required information from the folder.
  *
  * @param {string} themeFolder folder of the theme
  * @param {string} themeName name of the handled theme
@@ -143,7 +143,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
   }
 
   if (themeProperties.parent) {
-    themeFile += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.cjs';\n`;
+    themeFile += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';\n`;
   }
   themeFile += `import stripCssComments from 'strip-css-comments';\n`;
 
@@ -183,7 +183,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
   const lumoImports = themeProperties.lumoImports || ['color', 'typography'];
   if (lumoImports && lumoImports.length > 0) {
     lumoImports.forEach((lumoImport) => {
-      imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles/${lumoImport}.cjs';\n`);
+      imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles/${lumoImport}.js';\n`);
     });
 
     if (useDevServer) {
