@@ -174,7 +174,7 @@ export class ThemeEditor extends LitElement {
     // Update local theme state
     const { part, property, value } = e.detail;
     const partName = part?.partName || null;
-    this.editedTheme.updatePropertyValue(partName, property.propertyName, value);
+    this.editedTheme.updatePropertyValue(partName, property.propertyName, value, true);
     this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
 
     // Update theme editor CSS

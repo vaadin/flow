@@ -190,6 +190,16 @@ describe('theme-editor', () => {
       expect(getPropertyValue('label', 'color')).to.equal('red');
     });
 
+    it('should mark property as modified', async () => {
+      await pickComponent();
+      await editProperty('label', 'color', 'red');
+
+      const modifiedIndicator = findPropertyEditor('label', 'color').shadowRoot!.querySelector(
+        '.property-name .modified'
+      );
+      expect(modifiedIndicator).to.exist;
+    });
+
     it('should send theme rules when changing properties', async () => {
       await pickComponent();
 
@@ -198,7 +208,7 @@ describe('theme-editor', () => {
       expect(apiMock.setCssRules.args[0][0]).to.deep.equal([
         {
           selector: 'test-element::part(label)',
-          properties: {'color': 'red'}
+          properties: { color: 'red' }
         }
       ]);
       apiMock.setCssRules.resetHistory();
@@ -208,7 +218,7 @@ describe('theme-editor', () => {
       expect(apiMock.setCssRules.args[0][0]).to.deep.equal([
         {
           selector: 'test-element::part(label)',
-          properties: {'color': 'green'}
+          properties: { color: 'green' }
         }
       ]);
     });

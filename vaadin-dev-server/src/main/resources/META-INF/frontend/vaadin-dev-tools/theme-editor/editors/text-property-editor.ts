@@ -31,7 +31,9 @@ export class TextPropertyEditor extends LitElement {
 
     return html`
       <div class="property">
-        <div class="property-name">${this.propertyMetadata.displayName}</div>
+        <div class="property-name">
+          ${this.propertyMetadata.displayName} ${propertyValue.modified ? html`<span class="modified"></span>` : null}
+        </div>
         <div class="property-editor">
           <input class="input" .value=${propertyValue.value} @change=${this.handleInputChange} />
         </div>
