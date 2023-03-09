@@ -56,6 +56,22 @@ public interface AbstractConfiguration extends Serializable {
     }
 
     /**
+     * Gets the mode the application is running in.
+     *
+     * @return production, development using livereload or development using
+     *         bundle
+     **/
+    default Mode getMode() {
+        if (isProductionMode()) {
+            return Mode.PRODUCTION;
+        } else if (frontendHotdeploy()) {
+            return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD;
+        } else {
+            return Mode.DEVELOPMENT_BUNDLE;
+        }
+    }
+
+    /**
      * Get if the dev server should be reused on each reload. True by default,
      * set it to false in tests so as dev server is not kept as a daemon after
      * the test.
