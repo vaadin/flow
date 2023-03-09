@@ -83,6 +83,11 @@ export class ThemeEditor extends LitElement {
       .picker .no-selection {
         font-style: italic;
       }
+      
+      .actions {
+        display: flex;
+        align-items: center;
+      }
 
       .property-list {
         flex: 1 1 auto;
