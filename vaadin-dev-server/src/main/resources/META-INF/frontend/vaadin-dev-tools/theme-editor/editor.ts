@@ -128,10 +128,20 @@ export class ThemeEditor extends LitElement {
             : html`<span class="no-selection">Pick an element to get started</span>`}
         </div>
         <div class="actions">
-          <button class="icon-button" ?disabled=${!this.historyActions?.allowUndo} @click=${this.handleUndo}>
+          <button
+            class="icon-button"
+            data-testid="undo"
+            ?disabled=${!this.historyActions?.allowUndo}
+            @click=${this.handleUndo}
+          >
             ${icons.undo}
           </button>
-          <button class="icon-button" ?disabled=${!this.historyActions?.allowRedo} @click=${this.handleRedo}>
+          <button
+            class="icon-button"
+            data-testid="redo"
+            ?disabled=${!this.historyActions?.allowRedo}
+            @click=${this.handleRedo}
+          >
             ${icons.redo}
           </button>
         </div>

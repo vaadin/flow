@@ -78,4 +78,10 @@ export class ThemeEditorHistory {
     }
     return this.allowedActions;
   }
+
+  // Only intended to be used for testing
+  static clear() {
+    state.entries = [];
+    state.index = -1;
+  }
 }
