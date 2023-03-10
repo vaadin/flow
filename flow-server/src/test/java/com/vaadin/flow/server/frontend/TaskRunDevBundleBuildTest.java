@@ -1736,6 +1736,33 @@ public class TaskRunDevBundleBuildTest {
         }
     }
 
+    @Test
+    public void flowFrontendPackageInPackageJson_noBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(
+                "{\"dependencies\": {\"@vaadin/flow-frontend\": \"./target/flow-frontend\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            JsonObject stats = getBasicStats();
+
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn(stats.toJson());
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Shouldn't re-bundle when old @vaadin/flow-frontend package is in package.json",
+                    needsBuild);
+        }
+    }
+
     private void createPackageJsonStub(String content) throws IOException {
         File packageJson = new File(temporaryFolder.getRoot(),
                 Constants.PACKAGE_JSON);
