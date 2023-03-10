@@ -8,6 +8,7 @@ import sinon from 'sinon';
 import { themePreview } from './preview';
 import { testElementMetadata } from './tests/utils';
 import { ThemeEditorApi } from './api';
+import { ThemeEditorHistory } from './history';
 
 describe('theme-editor', () => {
   let editor: ThemeEditor;
@@ -20,8 +21,14 @@ describe('theme-editor', () => {
     setCssRules: sinon.SinonStub;
     loadPreview: sinon.SinonStub;
     loadRules: sinon.SinonStub;
+    undo: sinon.SinonStub;
+    redo: sinon.SinonStub;
+  };
+  let historySpy: {
+    push: sinon.SinonSpy;
   };
   let getMetadataStub: sinon.SinonStub;
+  let beforeSaveSpy: sinon.SinonSpy;
 
   async function editorFixture() {
     connectionMock = {
@@ -42,11 +49,22 @@ describe('theme-editor', () => {
     apiMock = {
       setCssRules: sinon.stub((editor as any).api as ThemeEditorApi, 'setCssRules'),
       loadPreview: sinon.stub((editor as any).api as ThemeEditorApi, 'loadPreview'),
-      loadRules: sinon.stub((editor as any).api as ThemeEditorApi, 'loadRules')
+      loadRules: sinon.stub((editor as any).api as ThemeEditorApi, 'loadRules'),
+      undo: sinon.stub((editor as any).api as ThemeEditorApi, 'undo'),
+      redo: sinon.stub((editor as any).api as ThemeEditorApi, 'redo')
     };
     apiMock.setCssRules.returns(Promise.resolve({}));
     apiMock.loadPreview.returns(Promise.resolve({ css: '' }));
     apiMock.loadRules.returns(Promise.resolve({ rules: [] }));
+    apiMock.undo.returns(Promise.resolve({}));
+    apiMock.redo.returns(Promise.resolve({}));
+
+    historySpy = {
+      push: sinon.spy((editor as any).history as ThemeEditorHistory, 'push')
+    };
+
+    beforeSaveSpy = sinon.spy();
+    editor.addEventListener('before-save', beforeSaveSpy);
 
     return {
       editor,
@@ -88,7 +106,29 @@ describe('theme-editor', () => {
   }
 
   function findPickerButton() {
-    return editor.shadowRoot!.querySelector('.picker button');
+    return editor.shadowRoot!.querySelector('.picker button') as HTMLElement;
+  }
+
+  function findUndoButton() {
+    return editor.shadowRoot!.querySelector('[data-testid="undo"]') as HTMLElement;
+  }
+
+  function findRedoButton() {
+    return editor.shadowRoot!.querySelector('[data-testid="redo"]') as HTMLElement;
+  }
+
+  async function undo() {
+    findUndoButton().click();
+    await elementUpdated(editor);
+    // Wait for async state updates to resolve
+    await aTimeout(0);
+  }
+
+  async function redo() {
+    findRedoButton().click();
+    await elementUpdated(editor);
+    // Wait for async state updates to resolve
+    await aTimeout(0);
   }
 
   function getTestElementStyles() {
@@ -96,6 +136,25 @@ describe('theme-editor', () => {
       host: getComputedStyle(testElement),
       label: getComputedStyle(testElement.shadowRoot!.querySelector('[part="label"]')!)
     };
+  }
+
+  function mockRulesResponse(partName: string, propertyName: string, value: string) {
+    return Promise.resolve({
+      rules: [
+        {
+          selector: `test-element::part(${partName})`,
+          properties: {
+            [propertyName]: value
+          }
+        }
+      ]
+    });
+  }
+
+  function mockPreviewResponse(css: string) {
+    return Promise.resolve({
+      css
+    });
   }
 
   before(async () => {
@@ -107,8 +166,13 @@ describe('theme-editor', () => {
   });
 
   beforeEach(async () => {
+    // Reset history
+    ThemeEditorHistory.clear();
+    // Reset theme preview
     themePreview.update('');
+    // Render editable test element
     testElement = await fixture(html` <test-element></test-element>`);
+    // Render editor
     const fixtureResult = await editorFixture();
     editor = fixtureResult.editor;
   });
@@ -224,11 +288,142 @@ describe('theme-editor', () => {
     });
 
     it('should dispatch event before saving changes', async () => {
-      const beforeSaveSpy = sinon.spy();
-      editor.addEventListener('before-save', beforeSaveSpy);
-
       await pickComponent();
       await editProperty('label', 'color', 'red');
+
+      expect(beforeSaveSpy.calledOnce).to.be.true;
+    });
+  });
+
+  describe('undo and redo', () => {
+    it('should only enable undo and redo buttons when history allows it', async () => {
+      const undoButton = findUndoButton();
+      const redoButton = findRedoButton();
+
+      // disabled initially
+      expect(undoButton.getAttribute('disabled')).to.not.be.null;
+      expect(redoButton.getAttribute('disabled')).to.not.be.null;
+
+      // edit something
+      await pickComponent();
+      await editProperty('label', 'color', 'red');
+
+      // undo allowed
+      expect(undoButton.getAttribute('disabled')).to.be.null;
+      expect(redoButton.getAttribute('disabled')).to.not.be.null;
+
+      // undo
+      await undo();
+
+      // redo allowed
+      expect(undoButton.getAttribute('disabled')).to.not.be.null;
+      expect(redoButton.getAttribute('disabled')).to.be.null;
+    });
+
+    it('should add history entry when editing property', async () => {
+      apiMock.setCssRules.returns(Promise.resolve({ requestId: 'request1' }));
+
+      // edit something
+      await pickComponent();
+      await editProperty('label', 'color', 'red');
+
+      expect(historySpy.push.calledOnce).to.be.true;
+      expect(historySpy.push.args).to.deep.equal([['request1']]);
+    });
+
+    it('should call undo when clicking undo button', async () => {
+      apiMock.setCssRules.returns(Promise.resolve({ requestId: 'request1' }));
+
+      // edit something
+      await pickComponent();
+      await editProperty('label', 'color', 'red');
+
+      // undo
+      await undo();
+
+      expect(apiMock.undo.calledOnce).to.be.true;
+      expect(apiMock.undo.args).to.deep.equal([['request1']]);
+    });
+
+    it('should refresh theme on undo', async () => {
+      // edit something
+      await pickComponent();
+      await editProperty('label', 'color', 'red');
+
+      // mock theme responses
+      const rulesResponse = mockRulesResponse('label', 'color', 'green');
+      apiMock.loadRules.returns(rulesResponse);
+      const previewResponse = mockPreviewResponse('test-element::part(label) { color: green }');
+      apiMock.loadPreview.returns(previewResponse);
+
+      // undo
+      await undo();
+
+      expect(getPropertyValue('label', 'color')).to.equal('green');
+      expect(getTestElementStyles().label.color).to.equal('rgb(0, 128, 0)');
+    });
+
+    it('should prevent live reload on undo', async () => {
+      // edit something
+      await pickComponent();
+      await editProperty('label', 'color', 'red');
+
+      // undo
+      beforeSaveSpy.resetHistory();
+      await undo();
+
+      expect(beforeSaveSpy.calledOnce).to.be.true;
+    });
+
+    it('should call redo when clicking redo button', async () => {
+      apiMock.setCssRules.returns(Promise.resolve({ requestId: 'request1' }));
+
+      // edit something
+      await pickComponent();
+      await editProperty('label', 'color', 'red');
+
+      // undo
+      await undo();
+
+      // redo
+      await redo();
+
+      expect(apiMock.redo.calledOnce).to.be.true;
+      expect(apiMock.redo.args).to.deep.equal([['request1']]);
+    });
+
+    it('should refresh theme on redo', async () => {
+      // edit something
+      await pickComponent();
+      await editProperty('label', 'color', 'red');
+
+      // undo
+      await undo();
+
+      // mock theme responses
+      const rulesResponse = mockRulesResponse('label', 'color', 'green');
+      apiMock.loadRules.returns(rulesResponse);
+      const previewResponse = mockPreviewResponse('test-element::part(label) { color: green }');
+      apiMock.loadPreview.returns(previewResponse);
+
+      // redo
+      await redo();
+
+      expect(getPropertyValue('label', 'color')).to.equal('green');
+      expect(getTestElementStyles().label.color).to.equal('rgb(0, 128, 0)');
+    });
+
+    it('should prevent live reload on redo', async () => {
+      // edit something
+      await pickComponent();
+      await editProperty('label', 'color', 'red');
+
+      // undo
+      await undo();
+
+      // redo
+      beforeSaveSpy.resetHistory();
+      await redo();
 
       expect(beforeSaveSpy.calledOnce).to.be.true;
     });
