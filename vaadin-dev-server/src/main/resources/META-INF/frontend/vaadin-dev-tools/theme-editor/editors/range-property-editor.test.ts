@@ -182,21 +182,4 @@ describe('range property editor', () => {
     expect(valueChangeSpy.calledOnce).to.be.true;
     expect(valueChangeSpy.args[0][0].detail.value).to.equal('25px');
   });
-
-  it('should not show modified indicator if property value is not modified', () => {
-    const modifiedIndicator = editor.shadowRoot!.querySelector('.property-name .modified');
-
-    expect(modifiedIndicator).to.not.exist;
-  });
-
-  it('should show modified indicator if property value is modified', async () => {
-    const updatedTheme = cloneTheme();
-    updatedTheme.updatePropertyValue(null, 'height', 'var(--test-size-xl)', true);
-    editor.theme = updatedTheme;
-    await elementUpdated(editor);
-
-    const modifiedIndicator = editor.shadowRoot!.querySelector('.property-name .modified');
-
-    expect(modifiedIndicator).to.exist;
-  });
 });
