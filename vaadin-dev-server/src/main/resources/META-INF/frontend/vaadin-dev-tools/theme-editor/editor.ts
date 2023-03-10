@@ -5,7 +5,7 @@ import { ComponentMetadata } from './metadata/model';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
 import './property-list';
-import { ComponentTheme, generateThemeRule, ThemeEditorState } from './model';
+import { ComponentTheme, generateThemeRule, ThemeEditorLicense, ThemeEditorSettings, ThemeEditorState } from './model';
 import { detectTheme } from './detector';
 import { ThemePropertyValueChangeEvent } from './events';
 import { themePreview } from './preview';
@@ -16,7 +16,7 @@ import { ThemeEditorHistory, ThemeEditorHistoryActions } from './history';
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
   @property({})
-  public themeEditorState: ThemeEditorState = ThemeEditorState.enabled;
+  public settings!: ThemeEditorSettings;
   @property({})
   public pickerProvider!: PickerProvider;
   @property({})
@@ -57,11 +57,11 @@ export class ThemeEditor extends LitElement {
         max-height: 400px;
       }
 
-      .missing-theme {
+      .notice {
         padding: var(--theme-editor-section-horizontal-padding);
       }
 
-      .missing-theme a {
+      .notice a {
         color: var(--dev-tools-text-color-emphasis);
       }
 
@@ -83,7 +83,7 @@ export class ThemeEditor extends LitElement {
       .picker .no-selection {
         font-style: italic;
       }
-      
+
       .actions {
         display: flex;
         align-items: center;
@@ -120,7 +120,13 @@ export class ThemeEditor extends LitElement {
   }
 
   render() {
-    if (this.themeEditorState === ThemeEditorState.missing_theme) {
+    if (this.settings.license === ThemeEditorLicense.notChecked) {
+      return null;
+    }
+    if (this.settings.license === ThemeEditorLicense.invalid) {
+      return this.renderMissingLicenseNotice();
+    }
+    if (this.settings.state === ThemeEditorState.missing_theme) {
       return this.renderMissingThemeNotice();
     }
 
@@ -162,9 +168,20 @@ export class ThemeEditor extends LitElement {
     `;
   }
 
+  renderMissingLicenseNotice() {
+    return html`
+      <div class="notice">
+        Theme editor requires a Vaadin Pro (or higher) subscription.
+        <br />
+        Please
+        <a href=${this.settings.licenseUrl} target="_blank">log in or sign up for an account</a>.
+      </div>
+    `;
+  }
+
   renderMissingThemeNotice() {
     return html`
-      <div class="missing-theme">
+      <div class="notice">
         It looks like you have not set up a custom theme yet. Theme editor requires an existing theme to work with.
         Please check our
         <a href="https://vaadin.com/docs/latest/styling/custom-theme/creating-custom-theme" target="_blank"

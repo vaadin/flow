@@ -4,7 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { ComponentPicker } from './component-picker';
 import { ComponentReference } from './component-util';
 import './theme-editor/editor';
-import { ThemeEditorState } from './theme-editor/model';
+import { ThemeEditorLicense, ThemeEditorSettings, ThemeEditorState } from './theme-editor/model';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
@@ -104,6 +104,8 @@ export class Connection extends Object {
       if (this.status === ConnectionStatus.ACTIVE) {
         this.onReload();
       }
+    } else if (json.command.startsWith('license-') && json.data.product?.name === 'vaadin-dev-tools-theme-editor') {
+      this.onMessage(json);
     } else if (json.command === 'license-check-ok') {
       licenseCheckOk(json.data);
     } else if (json.command === 'license-check-failed') {
@@ -994,7 +996,10 @@ export class VaadinDevTools extends LitElement {
   componentPickActive: boolean = false;
 
   @state()
-  themeEditorState: ThemeEditorState = ThemeEditorState.disabled;
+  themeEditorSettings: ThemeEditorSettings = {
+    state: ThemeEditorState.disabled,
+    license: ThemeEditorLicense.notChecked,
+  }
 
   private javaConnection?: Connection;
   private frontendConnection?: Connection;
@@ -1109,10 +1114,31 @@ export class VaadinDevTools extends LitElement {
     } else if (message?.command === 'featureFlags') {
       this.features = message.data.features as Feature[];
     } else if (message?.command === 'themeEditorState') {
-      this.themeEditorState = message.data;
-      if (this.themeEditorState !== ThemeEditorState.disabled) {
-        this.tabs.push({ id: 'theme-editor', title: 'Theme Editor', render: () => this.renderThemeEditor() });
-        this.requestUpdate();
+      this.themeEditorSettings = {
+        ...this.themeEditorSettings,
+        state: message.data
+      };
+      if (this.themeEditorSettings.state !== ThemeEditorState.disabled) {
+        this.tabs.push({
+          id: 'theme-editor',
+          title: 'Theme Editor',
+          render: () => this.renderThemeEditor(),
+          activate: () => this.checkLicense({ name: 'vaadin-dev-tools-theme-editor', version: '0.0.1' })
+        });
+      }
+    } else if (message?.command === 'license-check-ok' && message.data.name === 'vaadin-dev-tools-theme-editor') {
+      this.themeEditorSettings = {
+        ...this.themeEditorSettings,
+        license: ThemeEditorLicense.ok
+      }
+    } else if (
+        message?.command === 'license-check-nokey' &&
+        message.data.product.name === 'vaadin-dev-tools-theme-editor'
+    ) {
+      this.themeEditorSettings = {
+        ...this.themeEditorSettings,
+        license: ThemeEditorLicense.invalid,
+        licenseUrl: message.data.message
       }
     } else {
       // eslint-disable-next-line no-console
@@ -1653,7 +1679,7 @@ export class VaadinDevTools extends LitElement {
 
   renderThemeEditor() {
     return html` <vaadin-dev-tools-theme-editor
-      .themeEditorState=${this.themeEditorState}
+      .settings=${this.themeEditorSettings}
       .pickerProvider=${() => this.componentPicker}
       .connection=${this.frontendConnection}
       @before-save=${this.disableLiveReloadTemporarily}

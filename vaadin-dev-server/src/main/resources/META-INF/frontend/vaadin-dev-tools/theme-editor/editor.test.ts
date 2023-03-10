@@ -1,5 +1,5 @@
 import { aTimeout, elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { ThemeEditorState } from './model';
+import { ThemeEditorLicense, ThemeEditorSettings, ThemeEditorState } from './model';
 import { ThemeEditor } from './editor';
 import './editor';
 import { PickerOptions, PickerProvider } from '../component-picker';
@@ -41,7 +41,12 @@ describe('theme-editor', () => {
       }
     };
     const pickerProvider: PickerProvider = () => pickerMock as any;
+    const settings: ThemeEditorSettings = {
+      state: ThemeEditorState.enabled,
+      license: ThemeEditorLicense.ok
+    };
     const editor = (await fixture(html` <vaadin-dev-tools-theme-editor
+      .settings=${settings}
       .pickerProvider=${pickerProvider}
       .connection=${connectionMock}
     ></vaadin-dev-tools-theme-editor>`)) as ThemeEditor;
@@ -184,7 +189,10 @@ describe('theme-editor', () => {
     });
 
     it('should show missing theme notice in theme missing state', async () => {
-      editor.themeEditorState = ThemeEditorState.missing_theme;
+      editor.settings = {
+        state: ThemeEditorState.missing_theme,
+        license: ThemeEditorLicense.ok
+      };
       await elementUpdated(editor);
 
       expect(findPickerButton()).to.not.exist;

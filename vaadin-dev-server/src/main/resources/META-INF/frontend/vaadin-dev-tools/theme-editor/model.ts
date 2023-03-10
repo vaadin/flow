@@ -7,6 +7,18 @@ export enum ThemeEditorState {
   missing_theme = 'missing_theme'
 }
 
+export enum ThemeEditorLicense {
+  notChecked,
+  ok,
+  invalid
+}
+
+export interface ThemeEditorSettings {
+  state: ThemeEditorState;
+  license: ThemeEditorLicense;
+  licenseUrl?: string;
+}
+
 export interface ThemePropertyValue {
   partName: string | null;
   propertyName: string;
