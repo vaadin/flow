@@ -61,6 +61,13 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- For DataSerializableTest -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>${jakarta.annotation.api.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
