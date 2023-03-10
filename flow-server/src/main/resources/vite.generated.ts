@@ -43,6 +43,7 @@ import postcssLit
 
 import { createRequire } from 'module';
 
+// Make `require` compatible with ES modules
 const require = createRequire(import.meta.url);
 
 const appShellUrl = '.';

@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'fs';
 import { resolve, basename } from 'path';
 import glob from 'glob';
 
+// Desctructure sync from glob separately for ES module compatibility
 const { sync } = glob;
 
 // Collect groups [url(] ['|"]optional './|../', file part and end of url
