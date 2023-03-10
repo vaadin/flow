@@ -4,7 +4,8 @@ export enum Commands {
   response = 'themeEditorResponse',
   setCssRules = 'themeEditorRules',
   loadPreview = 'themeEditorLoadPreview',
-  loadRules = 'themeEditorLoadRules'
+  loadRules = 'themeEditorLoadRules',
+  history = 'themeEditorHistory'
 }
 
 export enum ResponseCode {
@@ -100,6 +101,14 @@ export class ThemeEditorApi {
     return this.sendRequest(Commands.loadRules, { selectorFilter });
   }
 
+  public undo(requestId: string) {
+    return this.sendRequest(Commands.history, { undo: requestId });
+  }
+
+  public redo(requestId: string) {
+    return this.sendRequest(Commands.history, { redo: requestId });
+  }
+
   private getGlobalUiId(): number {
     const vaadin = (window as any).Vaadin;
     if (vaadin && vaadin.Flow) {
@@ -114,5 +123,4 @@ export class ThemeEditorApi {
     }
     return -1;
   }
-
 }
