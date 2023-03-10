@@ -1,5 +1,5 @@
 import { ComponentMetadata } from './metadata/model';
-import {ServerCssRule} from "./api";
+import { ServerCssRule } from './api';
 
 export enum ThemeEditorState {
   disabled = 'disabled',
@@ -11,6 +11,7 @@ export interface ThemePropertyValue {
   partName: string | null;
   propertyName: string;
   value: string;
+  modified: boolean;
 }
 
 type PropertyValueMap = { [key: string]: ThemePropertyValue };
@@ -39,23 +40,25 @@ export class ComponentTheme {
     return this._properties[propertyKey(partName, propertyName)] || null;
   }
 
-  public updatePropertyValue(partName: string | null, propertyName: string, value: string) {
+  public updatePropertyValue(partName: string | null, propertyName: string, value: string, modified?: boolean) {
     let propertyValue = this.getPropertyValue(partName, propertyName);
     if (!propertyValue) {
       propertyValue = {
         partName,
         propertyName,
-        value
+        value,
+        modified: modified || false
       };
       this._properties[propertyKey(partName, propertyName)] = propertyValue;
     } else {
       propertyValue.value = value;
+      propertyValue.modified = modified || false;
     }
   }
 
   public addPropertyValues(values: ThemePropertyValue[]) {
     values.forEach((value) => {
-      this.updatePropertyValue(value.partName, value.propertyName, value.value);
+      this.updatePropertyValue(value.partName, value.propertyName, value.value, value.modified);
     });
   }
 
@@ -83,7 +86,7 @@ export class ComponentTheme {
       metadata.properties.forEach((property) => {
         const value = hostRule.properties[property.propertyName];
         if (value) {
-          theme.updatePropertyValue(null, property.propertyName, value);
+          theme.updatePropertyValue(null, property.propertyName, value, true);
         }
       });
     }
@@ -96,7 +99,7 @@ export class ComponentTheme {
         part.properties.forEach((property) => {
           const value = partRule.properties[property.propertyName];
           if (value) {
-            theme.updatePropertyValue(part.partName, property.propertyName, value);
+            theme.updatePropertyValue(part.partName, property.propertyName, value, true);
           }
         });
       }
@@ -112,7 +115,7 @@ function generateSelector(tagName: string, partName: string | null) {
 
 export function generateThemeRule(tagName: string, partName: string | null, propertyName: string, value: string) {
   const selector = generateSelector(tagName, partName);
-  const properties = {[propertyName]: value};
+  const properties = { [propertyName]: value };
   return {
     selector,
     properties

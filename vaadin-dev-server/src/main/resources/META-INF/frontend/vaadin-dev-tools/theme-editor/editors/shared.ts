@@ -16,6 +16,15 @@ export const sharedStyles = css`
     width: 100px;
   }
 
+  .property .property-name .modified {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: orange;
+    border-radius: 3px;
+    margin-left: 3px;
+  }
+  
   .property .property-editor {
     flex: 1 1 0;
   }
