@@ -60,15 +60,15 @@
             <version>2.1.0</version>
             <scope>provided</scope>
         </dependency>
-        
+
+        <!-- Test dependencies -->
+
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-web-api</artifactId>
             <version>10.0.0</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- Test dependencies -->
 
         <dependency>
             <groupId>com.vaadin</groupId>
