@@ -104,7 +104,8 @@ export class Connection extends Object {
       if (this.status === ConnectionStatus.ACTIVE) {
         this.onReload();
       }
-    } else if (json.command.startsWith('license-') && json.data.product?.name === 'vaadin-dev-tools-theme-editor') {
+    } else if (json.command.startsWith('license-') &&
+        (json.data.name === 'vaadin-dev-tools-theme-editor' || json.data.product?.name === 'vaadin-dev-tools-theme-editor')) {
       this.onMessage(json);
     } else if (json.command === 'license-check-ok') {
       licenseCheckOk(json.data);
