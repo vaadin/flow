@@ -4,25 +4,18 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.io.Serializable;
 
+import static com.vaadin.base.devserver.themeeditor.ThemeEditorCommand.CODE_OK;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BaseResponse implements Serializable {
 
-    public static final String COMMAND_NAME = "themeEditorResponse";
-
-    public static final String CODE_OK = "ok";
-
-    public static final String CODE_ERROR = "error";
-
     private String requestId;
-
-    private String code;
 
     public BaseResponse() {
     }
 
-    public BaseResponse(String requestId, String code) {
+    public BaseResponse(String requestId) {
         this.requestId = requestId;
-        this.code = code;
     }
 
     public String getRequestId() {
@@ -34,14 +27,10 @@ public class BaseResponse implements Serializable {
     }
 
     public String getCode() {
-        return code;
+        return CODE_OK;
     }
 
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public static BaseResponse ok(String requestId) {
-        return new BaseResponse(requestId, CODE_OK);
+    public static BaseResponse ok() {
+        return new BaseResponse();
     }
 }

@@ -1,11 +1,11 @@
 import { Connection } from '../vaadin-dev-tools';
-import { ThemeEditorRule } from './model';
 
 export enum Commands {
   response = 'themeEditorResponse',
-  updateCssRules = 'themeEditorRules',
+  setCssRules = 'themeEditorRules',
   loadPreview = 'themeEditorLoadPreview',
-  loadRules = 'themeEditorLoadRules'
+  loadRules = 'themeEditorLoadRules',
+  history = 'themeEditorHistory'
 }
 
 export enum ResponseCode {
@@ -40,6 +40,7 @@ export class ThemeEditorApi {
   private wrappedConnection: Connection;
   private pendingRequests: { [key: string]: RequestHandle } = {};
   private requestCounter: number = 0;
+  private globalUiId: number = this.getGlobalUiId();
 
   constructor(wrappedConnection: Connection) {
     this.wrappedConnection = wrappedConnection;
@@ -55,11 +56,13 @@ export class ThemeEditorApi {
 
   private sendRequest(command: string, data: any) {
     const requestId = (this.requestCounter++).toString();
+    const uiId = data['uiId'] ?? this.globalUiId;
 
     return new Promise<any>((resolve, reject) => {
       this.wrappedConnection.send(command, {
         ...data,
-        requestId
+        requestId,
+        uiId
       });
       this.pendingRequests[requestId] = {
         resolve,
@@ -84,10 +87,9 @@ export class ThemeEditorApi {
     }
   }
 
-  public updateCssRules(add: ThemeEditorRule[], remove: ThemeEditorRule[]): Promise<BaseResponse> {
-    return this.sendRequest(Commands.updateCssRules, {
-      add,
-      remove
+  public setCssRules(rules: ServerCssRule[]): Promise<BaseResponse> {
+    return this.sendRequest(Commands.setCssRules, {
+      rules
     });
   }
 
@@ -97,5 +99,28 @@ export class ThemeEditorApi {
 
   public loadRules(selectorFilter: string): Promise<LoadRulesResponse> {
     return this.sendRequest(Commands.loadRules, { selectorFilter });
+  }
+
+  public undo(requestId: string) {
+    return this.sendRequest(Commands.history, { undo: requestId });
+  }
+
+  public redo(requestId: string) {
+    return this.sendRequest(Commands.history, { redo: requestId });
+  }
+
+  private getGlobalUiId(): number {
+    const vaadin = (window as any).Vaadin;
+    if (vaadin && vaadin.Flow) {
+      const { clients } = vaadin.Flow;
+      const appIds = Object.keys(clients);
+      for (const appId of appIds) {
+        const client = clients[appId];
+        if (client.getNodeId) {
+          return client.getUIId();
+        }
+      }
+    }
+    return -1;
   }
 }
