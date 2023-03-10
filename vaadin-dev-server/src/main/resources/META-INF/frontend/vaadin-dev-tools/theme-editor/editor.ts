@@ -174,7 +174,7 @@ export class ThemeEditor extends LitElement {
         Theme editor requires a Vaadin Pro (or higher) subscription.
         <br />
         Please
-        <a href=${this.settings.licenseUrl} target="_blank">log in or sign up for an account</a>.
+        <a href=${this.settings.licenseUrl}>log in or sign up for an account</a>.
       </div>
     `;
   }
