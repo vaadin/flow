@@ -41,6 +41,10 @@ import checker from 'vite-plugin-checker';
 import postcssLit
   from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+
 const appShellUrl = '.';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
@@ -380,7 +384,7 @@ function vaadinBundlesPlugin(): PluginOption {
       if (command !== 'serve') return false;
 
       try {
-        const vaadinBundleJsonPath = path.resolve(modulesDirectory, '@vaadin/bundles/vaadin-bundle.json');
+        const vaadinBundleJsonPath = require.resolve('@vaadin/bundles/vaadin-bundle.json');
         vaadinBundleJson = JSON.parse(readFileSync(vaadinBundleJsonPath, { encoding: 'utf8' }));
       } catch (e: unknown) {
         if (typeof e === 'object' && (e as { code: string }).code === 'MODULE_NOT_FOUND') {
