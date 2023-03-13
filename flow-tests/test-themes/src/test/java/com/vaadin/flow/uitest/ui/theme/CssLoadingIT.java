@@ -48,8 +48,9 @@ public class CssLoadingIT extends ChromeBrowserTest {
 
     private void assertColor(String id) {
         if (id.equals("cssImportVsLumo")) {
-                // This is currently broken, https://github.com/vaadin/flow/issues/16231
-                return;
+            // This is currently broken,
+            // https://github.com/vaadin/flow/issues/16231
+            return;
         }
 
         TestBenchElement element = $("*").id(id);
