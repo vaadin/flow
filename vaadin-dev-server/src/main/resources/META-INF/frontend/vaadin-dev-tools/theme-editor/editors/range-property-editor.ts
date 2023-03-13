@@ -1,17 +1,14 @@
-import { css, html, LitElement, PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { css, html, PropertyValues, TemplateResult } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { ComponentPartMetadata, CssPropertyMetadata } from '../metadata/model';
-import { ComponentTheme } from '../model';
-import { ThemePropertyValueChangeEvent } from '../events';
 import { icons } from '../icons';
-import { sharedStyles } from './shared';
+import { BasePropertyEditor } from './base-property-editor';
 
 @customElement('vaadin-dev-tools-theme-range-property-editor')
-export class RangePropertyEditor extends LitElement {
+export class RangePropertyEditor extends BasePropertyEditor {
   static get styles() {
     return [
-      sharedStyles,
+      BasePropertyEditor.styles,
       css`
         :host {
           --preset-count: 3;
@@ -116,36 +113,21 @@ export class RangePropertyEditor extends LitElement {
     ];
   }
 
-  @property({})
-  public partMetadata?: ComponentPartMetadata;
-  @property({})
-  public propertyMetadata!: CssPropertyMetadata;
-  @property({})
-  public theme!: ComponentTheme;
-
   @state()
-  value: string = '';
-  @state()
-  modified?: boolean;
-  @state()
-  selectedPresetIndex: number = -1;
+  private selectedPresetIndex: number = -1;
   @state()
   private presets: string[] = [];
   private rawPresetValues: { [key: string]: string } = {};
 
   protected update(changedProperties: PropertyValues) {
-    super.update(changedProperties);
-
     if (changedProperties.has('propertyMetadata')) {
       this.measurePresetValues();
     }
 
-    if (changedProperties.has('propertyMetadata') || changedProperties.has('theme')) {
-      this.updateValueFromTheme();
-    }
+    super.update(changedProperties);
   }
 
-  render() {
+  protected renderEditor(): TemplateResult {
     const sliderWrapperClasses = {
       'slider-wrapper': true,
       'custom-value': this.selectedPresetIndex < 0
@@ -154,29 +136,22 @@ export class RangePropertyEditor extends LitElement {
     const icon = iconName ? (icons as any)[iconName] : null;
 
     return html`
-      <div class="property">
-        <div class="property-name">
-          ${this.propertyMetadata.displayName} ${this.modified ? html`<span class="modified"></span>` : null}
-        </div>
-        <div class="property-editor">
-          <div class=${classMap(sliderWrapperClasses)}>
-            ${icon ? html` <div class="icon prefix">${icon}</div>` : null}
-            <input
-              type="range"
-              class="slider"
-              style="--preset-count: ${this.presets.length}"
-              step="1"
-              min="0"
-              .max=${(this.presets.length - 1).toString()}
-              .value=${this.selectedPresetIndex}
-              @input=${this.handleSliderInput}
-              @change=${this.handleSliderChange}
-            />
-            ${icon ? html` <div class="icon suffix">${icon}</div>` : null}
-          </div>
-          <input type="text" class="input" .value=${this.value} @change=${this.handleValueChange} />
-        </div>
+      <div class=${classMap(sliderWrapperClasses)}>
+        ${icon ? html` <div class="icon prefix">${icon}</div>` : null}
+        <input
+          type="range"
+          class="slider"
+          style="--preset-count: ${this.presets.length}"
+          step="1"
+          min="0"
+          .max=${(this.presets.length - 1).toString()}
+          .value=${this.selectedPresetIndex}
+          @input=${this.handleSliderInput}
+          @change=${this.handleSliderChange}
+        />
+        ${icon ? html` <div class="icon suffix">${icon}</div>` : null}
       </div>
+      <input type="text" class="input" .value=${this.value} @change=${this.handleValueChange} />
     `;
   }
 
@@ -221,7 +196,7 @@ export class RangePropertyEditor extends LitElement {
   }
 
   private handleSliderChange() {
-    this.dispatchChange();
+    this.dispatchChange(this.value);
   }
 
   private handleValueChange(e: Event) {
@@ -229,26 +204,22 @@ export class RangePropertyEditor extends LitElement {
     this.value = input.value;
 
     this.updateSliderValue();
-    this.dispatchChange();
+    this.dispatchChange(this.value);
   }
 
-  private dispatchChange() {
+  protected dispatchChange(value: string) {
     // If value matches a raw preset value, send preset instead
-    const preset = this.findPreset(this.value);
-    const effectiveValue = preset || this.value;
+    const preset = this.findPreset(value);
+    const effectiveValue = preset || value;
 
-    this.dispatchEvent(
-      new ThemePropertyValueChangeEvent(this.partMetadata || null, this.propertyMetadata, effectiveValue)
-    );
+    super.dispatchChange(effectiveValue);
   }
 
-  private updateValueFromTheme() {
-    const partName = this.partMetadata?.partName || null;
-    const propertyValue = this.theme.getPropertyValue(partName, this.propertyMetadata.propertyName);
+  protected updateValueFromTheme() {
+    super.updateValueFromTheme();
 
     // If value matches a preset, then display raw preset value
-    this.value = this.rawPresetValues[propertyValue.value] || propertyValue.value;
-    this.modified = propertyValue.modified;
+    this.value = this.rawPresetValues[this.value] || this.value;
     this.updateSliderValue();
   }
 
