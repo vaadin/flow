@@ -344,7 +344,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 if (!objectIncludesEntry(content, themeContent.getValue(),
                         missedKeys)) {
                     getLogger().info(
-                            "Parent/Re-used custom theme '{}' has imports/assets in 'theme.json' not present in the bundle",
+                            "Parent theme '{}' has imports/assets in 'theme.json' not present in the bundle",
                             themeContent.getKey());
                     logMissedEntries(missedKeys);
                     return true;

@@ -1685,7 +1685,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         // Secondly, check if a parent theme is in the project's frontend/themes
-        // folder
+        // folder and add a link if any
         Optional<String> parentThemeName = FrontendUtils
                 .getParentThemeNameInFrontend(frontendFolder, themeName.get());
         if (parentThemeName.isPresent()) {
