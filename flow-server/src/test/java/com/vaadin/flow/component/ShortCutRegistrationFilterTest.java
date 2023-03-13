@@ -15,6 +15,16 @@ import static org.junit.Assert.assertTrue;
 
 public class ShortCutRegistrationFilterTest {
 
+    /**
+     * This method is used to test the generateEventModifierFilter method in the ShortcutRegistration
+     * class. This method is private, so we need to use reflection to invoke it.
+     *
+     * @param list
+     * @return
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     */
     private static String invokeGenerateEventModifierFilter(List<Key> list)
             throws NoSuchMethodException, InvocationTargetException,
             IllegalAccessException {
@@ -26,6 +36,18 @@ public class ShortCutRegistrationFilterTest {
         return result;
     }
 
+    /**
+     * This method is used to get the HashableKey object from the ShortcutRegistration class.
+     * This is needed because the HashableKey class is private, and we need to create an instance
+     * of it to test the generateEventModifierFilter method.
+     *
+     * @param keyModifier
+     * @return
+     * @throws ClassNotFoundException
+     * @throws InvocationTargetException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     */
     private static Object getHashableKey(KeyModifier keyModifier)
             throws ClassNotFoundException, InvocationTargetException,
             InstantiationException, IllegalAccessException {
@@ -33,8 +55,7 @@ public class ShortCutRegistrationFilterTest {
                 "com.vaadin.flow.component.ShortcutRegistration$HashableKey");
         final Constructor<?> ctor = nestedClass.getDeclaredConstructors()[0];
         ctor.setAccessible(true);
-        final Object instance = ctor.newInstance(keyModifier);
-        return instance;
+        return ctor.newInstance(keyModifier);
     }
 
     @Test
