@@ -1,5 +1,6 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { html as staticHtml, literal, StaticValue } from 'lit/static-html.js';
 import { ComponentMetadata, ComponentPartMetadata, CssPropertyMetadata, EditorType } from './metadata/model';
 import { ComponentTheme } from './model';
 import './editors/text-property-editor';
@@ -47,24 +48,22 @@ export class PropertyList extends LitElement {
   }
 
   private renderPropertyEditor(part: ComponentPartMetadata | null, property: CssPropertyMetadata) {
+    let editorTagName: StaticValue;
     switch (property.editorType) {
       case EditorType.range:
-        return html` <vaadin-dev-tools-theme-range-property-editor
+        editorTagName = literal`vaadin-dev-tools-theme-range-property-editor`;
+        break;
+      default:
+        editorTagName = literal`vaadin-dev-tools-theme-text-property-editor`;
+    }
+
+    return staticHtml` <${editorTagName}
           class="property-editor"
           .partMetadata=${part}
           .propertyMetadata=${property}
           .theme=${this.theme}
           data-testid=${property.propertyName}
         >
-        </vaadin-dev-tools-theme-range-property-editor>`;
-      default:
-        return html` <vaadin-dev-tools-theme-text-property-editor
-          class="property-editor"
-          .partMetadata=${part}
-          .propertyMetadata=${property}
-          .theme=${this.theme}
-          data-testid=${property.propertyName}
-        ></vaadin-dev-tools-theme-text-property-editor>`;
-    }
+        </${editorTagName}>`;
   }
 }

@@ -4,6 +4,7 @@ import { CssPropertyMetadata } from '../metadata/model';
 import { testElementMetadata } from '../tests/utils';
 import { TextPropertyEditor } from './text-property-editor';
 import './text-property-editor';
+import sinon from 'sinon';
 
 const colorMetadata: CssPropertyMetadata = {
   propertyName: 'color',
@@ -13,6 +14,11 @@ const colorMetadata: CssPropertyMetadata = {
 describe('text property editor', () => {
   let theme: ComponentTheme;
   let editor: TextPropertyEditor;
+  let valueChangeSpy: sinon.SinonSpy;
+
+  function getInput() {
+    return editor.shadowRoot!.querySelector('input') as HTMLInputElement;
+  }
 
   function cloneTheme() {
     const result = new ComponentTheme(testElementMetadata);
@@ -23,28 +29,35 @@ describe('text property editor', () => {
   beforeEach(async () => {
     theme = new ComponentTheme(testElementMetadata);
     theme.updatePropertyValue(null, 'color', 'black');
+    valueChangeSpy = sinon.spy();
 
     editor = await fixture(html` <vaadin-dev-tools-theme-text-property-editor
       .theme=${theme}
       .propertyMetadata=${colorMetadata}
+      @theme-property-value-change=${valueChangeSpy}
     >
     </vaadin-dev-tools-theme-text-property-editor>`);
   });
 
-  it('should not show modified indicator if property value is not modified', () => {
-    const modifiedIndicator = editor.shadowRoot!.querySelector('.property-name .modified');
+  it('should update input from theme', async () => {
+    const input = getInput();
 
-    expect(modifiedIndicator).to.not.exist;
-  });
+    expect(input.value).to.equal('black');
 
-  it('should show modified indicator if property value is modified', async () => {
     const updatedTheme = cloneTheme();
     updatedTheme.updatePropertyValue(null, 'color', 'red', true);
     editor.theme = updatedTheme;
     await elementUpdated(editor);
 
-    const modifiedIndicator = editor.shadowRoot!.querySelector('.property-name .modified');
+    expect(input.value).to.equal('red');
+  });
 
-    expect(modifiedIndicator).to.exist;
+  it('should dispatch event when changing input value', () => {
+    const input = getInput();
+    input.value = 'red';
+    input.dispatchEvent(new CustomEvent('change'));
+
+    expect(valueChangeSpy.calledOnce).to.be.true;
+    expect(valueChangeSpy.args[0][0].detail.value).to.equal('red');
   });
 });
