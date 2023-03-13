@@ -46,7 +46,9 @@ public interface AbstractConfiguration extends Serializable {
      * should be used.
      *
      * @return true if dev server should be used
+     * @deprecated Use {@link #getMode()} instead
      */
+    @Deprecated
     default boolean frontendHotdeploy() {
         if (isProductionMode()) {
             return false;
