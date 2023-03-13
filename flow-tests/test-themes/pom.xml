@@ -9,7 +9,7 @@
         <version>24.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-themes</artifactId>
-    <name>Flow themes tests</name>
+    <name>Flow themes tests, dev hotdeploy</name>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
