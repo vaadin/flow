@@ -1,0 +1,1 @@
+{"version":3,"file":"rgb-color-picker.d.ts","sourceRoot":"","sources":["src/rgb-color-picker.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,MAAM,0BAA0B,CAAC;AACnD,YAAY,EAAE,QAAQ,EAAE,MAAM,aAAa,CAAC;AAE5C;;;;;;;;;;;;;GAaG;AACH,qBAAa,cAAe,SAAQ,OAAO;CAAG;AAI9C,OAAO,CAAC,MAAM,CAAC;IACb,UAAU,qBAAqB;QAC7B,kBAAkB,EAAE,cAAc,CAAC;KACpC;CACF"}

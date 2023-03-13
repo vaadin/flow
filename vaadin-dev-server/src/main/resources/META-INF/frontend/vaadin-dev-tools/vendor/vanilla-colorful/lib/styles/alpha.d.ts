@@ -1,0 +1,3 @@
+declare const _default: "[part=alpha]{flex:0 0 24px}[part=alpha]::after{display:block;content:\"\";position:absolute;top:0;left:0;right:0;bottom:0;border-radius:inherit;background-image:var(--gradient);box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}[part^=alpha]{background-color:#fff;background-image:url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill-opacity=\".05\"><rect x=\"8\" width=\"8\" height=\"8\"/><rect y=\"8\" width=\"8\" height=\"8\"/></svg>')}[part=alpha-pointer]{top:50%}";
+export default _default;
+//# sourceMappingURL=alpha.d.ts.map
