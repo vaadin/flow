@@ -16,8 +16,9 @@ import static org.junit.Assert.assertTrue;
 public class ShortCutRegistrationFilterTest {
 
     /**
-     * This method is used to test the generateEventModifierFilter method in the ShortcutRegistration
-     * class. This method is private, so we need to use reflection to invoke it.
+     * This method is used to test the generateEventModifierFilter method in the
+     * ShortcutRegistration class. This method is private, so we need to use
+     * reflection to invoke it.
      *
      * @param list
      * @return
@@ -37,9 +38,10 @@ public class ShortCutRegistrationFilterTest {
     }
 
     /**
-     * This method is used to get the HashableKey object from the ShortcutRegistration class.
-     * This is needed because the HashableKey class is private, and we need to create an instance
-     * of it to test the generateEventModifierFilter method.
+     * This method is used to get the HashableKey object from the
+     * ShortcutRegistration class. This is needed because the HashableKey class
+     * is private, and we need to create an instance of it to test the
+     * generateEventModifierFilter method.
      *
      * @param keyModifier
      * @return
@@ -68,6 +70,10 @@ public class ShortCutRegistrationFilterTest {
         assertTrue(result.contains("&& event.getModifierState('Alt')"));
         assertTrue(result.contains("&& !event.getModifierState('Control')"));
         assertFalse(result.contains("AltGraph"));
+        assertFalse(result.endsWith("&& "));
+        assertFalse(result.startsWith(" &&"));
+        assertFalse(result.contains("&& &&"));
+        assertFalse(result.contains("&&&&"));
     }
 
     @Test
@@ -80,6 +86,10 @@ public class ShortCutRegistrationFilterTest {
         assertTrue(result.contains("&& event.getModifierState('AltGraph')"));
         assertTrue(result.contains("&& !event.getModifierState('Alt')"));
         assertTrue(result.contains("&& !event.getModifierState('Control')"));
+        assertFalse(result.endsWith("&& "));
+        assertFalse(result.startsWith(" &&"));
+        assertFalse(result.contains("&& &&"));
+        assertFalse(result.contains("&&&&"));
     }
 
     @Test
@@ -93,6 +103,10 @@ public class ShortCutRegistrationFilterTest {
         assertTrue(result.contains("&& event.getModifierState('Alt')"));
         assertTrue(result.contains("&& event.getModifierState('AltGraph')"));
         assertTrue(result.contains("&& !event.getModifierState('Control')"));
+        assertFalse(result.endsWith("&& "));
+        assertFalse(result.startsWith(" &&"));
+        assertFalse(result.contains("&& &&"));
+        assertFalse(result.contains("&&&&"));
     }
 
     @Test
@@ -106,6 +120,10 @@ public class ShortCutRegistrationFilterTest {
         assertTrue(result.contains("&& event.getModifierState('AltGraph')"));
         assertTrue(result.contains("&& event.getModifierState('Control')"));
         assertTrue(result.contains("&& !event.getModifierState('Alt')"));
+        assertFalse(result.endsWith("&& "));
+        assertFalse(result.startsWith(" &&"));
+        assertFalse(result.contains("&& &&"));
+        assertFalse(result.contains("&&&&"));
     }
 
     @Test
@@ -119,5 +137,9 @@ public class ShortCutRegistrationFilterTest {
         assertTrue(result.contains("&& event.getModifierState('Alt')"));
         assertTrue(result.contains("&& event.getModifierState('Control')"));
         assertFalse(result.contains("'AltGraph'"));
+        assertFalse(result.endsWith("&& "));
+        assertFalse(result.startsWith(" &&"));
+        assertFalse(result.contains("&& &&"));
+        assertFalse(result.contains("&&&&"));
     }
 }
