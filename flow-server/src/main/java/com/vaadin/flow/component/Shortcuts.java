@@ -24,7 +24,7 @@ import com.vaadin.flow.shared.Registration;
  * <p>
  * Unlike the shortcut methods offered by {@link Focusable} and
  * {@link ClickNotifier}, these methods allow for configuring the {@code
- * lifecycleOwner} directly, making it possible to added the shortcut onto any
+ * lifecycleOwner} directly, making it possible to add the shortcut onto any
  * component. The {@code lifecycleOwner} denotes the component to which the
  * shortcut is bound to. If the lifecycle owner is not attached, visible, or
  * enabled, the shortcut won't work, and vice-versa.
@@ -162,7 +162,7 @@ public final class Shortcuts {
      */
     public static Registration setShortcutListenOnElement(
             String elementLocatorJs, Component listenOnComponent) {
-        // a bit wasteful to store this for each component instance but it
+        // a bit wasteful to store this for each component instance, but it
         // stays in memory only as long as the component itself does
         ComponentUtil.setData(listenOnComponent, ELEMENT_LOCATOR_JS_KEY,
                 elementLocatorJs);
