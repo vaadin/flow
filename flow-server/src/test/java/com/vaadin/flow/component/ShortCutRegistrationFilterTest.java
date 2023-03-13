@@ -1,12 +1,15 @@
 package com.vaadin.flow.component;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -57,6 +60,19 @@ public class ShortCutRegistrationFilterTest {
         return ctor.newInstance(keyModifier);
     }
 
+    private static ArrayList<String> getModifierFilterConditions(
+            String eventModifierFilter, int expectedFilterCount) {
+        ArrayList<String> filterConditions = new ArrayList<>(Arrays
+                .asList(eventModifierFilter.split(" && ", Integer.MAX_VALUE)));
+        assertTrue(
+                "Split filter conditions should not contain '&' character or blank strings.",
+                filterConditions.stream()
+                        .filter(c -> c.contains("&") || StringUtils.isBlank(c))
+                        .collect(Collectors.toList()).isEmpty());
+        assertEquals(expectedFilterCount, filterConditions.size());
+        return filterConditions;
+    }
+
     @Test
     public void testGenerateEventModifierFilterWithModifierKeyAlt()
             throws InvocationTargetException, NoSuchMethodException,
@@ -64,13 +80,11 @@ public class ShortCutRegistrationFilterTest {
             InstantiationException {
         String result = invokeGenerateEventModifierFilter(Collections
                 .singletonList(((Key) getHashableKey(KeyModifier.ALT))));
-        assertTrue(result.contains("&& event.getModifierState('Alt')"));
-        assertTrue(result.contains("&& !event.getModifierState('Control')"));
-        assertFalse(result.contains("AltGraph"));
-        ArrayList<String> stringArrayList = new ArrayList<>(
-                Arrays.asList(result.split("&&", Integer.MAX_VALUE)));
-        assertFalse(stringArrayList.stream().map(String::trim)
-                .anyMatch(String::isEmpty));
+        ArrayList<String> conditions = getModifierFilterConditions(result, 4);
+        assertTrue(conditions.contains("event.getModifierState('Alt')"));
+        assertTrue(conditions.contains("!event.getModifierState('Control')"));
+        assertFalse(conditions.contains("event.getModifierState('AltGraph')"));
+        assertFalse(conditions.contains("!event.getModifierState('AltGraph')"));
     }
 
     @Test
@@ -80,13 +94,10 @@ public class ShortCutRegistrationFilterTest {
             InstantiationException {
         String result = invokeGenerateEventModifierFilter(Collections
                 .singletonList(((Key) getHashableKey(KeyModifier.ALT_GRAPH))));
-        assertTrue(result.contains("&& event.getModifierState('AltGraph')"));
-        assertTrue(result.contains("&& !event.getModifierState('Alt')"));
-        assertTrue(result.contains("&& !event.getModifierState('Control')"));
-        ArrayList<String> stringArrayList = new ArrayList<>(
-                Arrays.asList(result.split("&&", Integer.MAX_VALUE)));
-        assertFalse(stringArrayList.stream().map(String::trim)
-                .anyMatch(String::isEmpty));
+        ArrayList<String> conditions = getModifierFilterConditions(result, 5);
+        assertTrue(conditions.contains("event.getModifierState('AltGraph')"));
+        assertTrue(conditions.contains("!event.getModifierState('Alt')"));
+        assertTrue(conditions.contains("!event.getModifierState('Control')"));
     }
 
     @Test
@@ -97,13 +108,10 @@ public class ShortCutRegistrationFilterTest {
         String result = invokeGenerateEventModifierFilter(
                 Arrays.asList((Key) getHashableKey(KeyModifier.ALT),
                         (Key) getHashableKey(KeyModifier.ALT_GRAPH)));
-        assertTrue(result.contains("&& event.getModifierState('Alt')"));
-        assertTrue(result.contains("&& event.getModifierState('AltGraph')"));
-        assertTrue(result.contains("&& !event.getModifierState('Control')"));
-        ArrayList<String> stringArrayList = new ArrayList<>(
-                Arrays.asList(result.split("&&", Integer.MAX_VALUE)));
-        assertFalse(stringArrayList.stream().map(String::trim)
-                .anyMatch(String::isEmpty));
+        ArrayList<String> conditions = getModifierFilterConditions(result, 5);
+        assertTrue(conditions.contains("event.getModifierState('Alt')"));
+        assertTrue(conditions.contains("event.getModifierState('AltGraph')"));
+        assertTrue(conditions.contains("!event.getModifierState('Control')"));
     }
 
     @Test
@@ -114,13 +122,10 @@ public class ShortCutRegistrationFilterTest {
         String result = invokeGenerateEventModifierFilter(
                 Arrays.asList((Key) getHashableKey(KeyModifier.ALT_GRAPH),
                         (Key) getHashableKey(KeyModifier.CONTROL)));
-        assertTrue(result.contains("&& event.getModifierState('AltGraph')"));
-        assertTrue(result.contains("&& event.getModifierState('Control')"));
-        assertTrue(result.contains("&& !event.getModifierState('Alt')"));
-        ArrayList<String> stringArrayList = new ArrayList<>(
-                Arrays.asList(result.split("&&", Integer.MAX_VALUE)));
-        assertFalse(stringArrayList.stream().map(String::trim)
-                .anyMatch(String::isEmpty));
+        ArrayList<String> conditions = getModifierFilterConditions(result, 5);
+        assertTrue(conditions.contains("event.getModifierState('AltGraph')"));
+        assertTrue(conditions.contains("event.getModifierState('Control')"));
+        assertTrue(conditions.contains("!event.getModifierState('Alt')"));
     }
 
     @Test
@@ -131,12 +136,10 @@ public class ShortCutRegistrationFilterTest {
         String result = invokeGenerateEventModifierFilter(
                 Arrays.asList((Key) getHashableKey(KeyModifier.ALT),
                         (Key) getHashableKey(KeyModifier.CONTROL)));
-        assertTrue(result.contains("&& event.getModifierState('Alt')"));
-        assertTrue(result.contains("&& event.getModifierState('Control')"));
-        assertFalse(result.contains("'AltGraph'"));
-        ArrayList<String> stringArrayList = new ArrayList<>(
-                Arrays.asList(result.split("&&", Integer.MAX_VALUE)));
-        assertFalse(stringArrayList.stream().map(String::trim)
-                .anyMatch(String::isEmpty));
+        ArrayList<String> conditions = getModifierFilterConditions(result, 4);
+        assertTrue(conditions.contains("event.getModifierState('Alt')"));
+        assertTrue(conditions.contains("event.getModifierState('Control')"));
+        assertFalse(conditions.contains("event.getModifierState('AltGraph')"));
+        assertFalse(conditions.contains("!event.getModifierState('AltGraph')"));
     }
 }

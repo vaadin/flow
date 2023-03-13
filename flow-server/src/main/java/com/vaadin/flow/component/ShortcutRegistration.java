@@ -768,17 +768,19 @@ public class ShortcutRegistration implements Registration, Serializable {
                 .contains(new HashableKey(KeyModifier.ALT));
 
         return Arrays.stream(KeyModifier.values()).map(modifier -> {
+            String modKey = modifier.getKeys().get(0);
             boolean modifierRequired = realMods.stream()
-                    .anyMatch(mod -> mod.matches(modifier.getKeys().get(0)));
+                    .anyMatch(mod -> mod.matches(modKey));
             if (!modifierRequired && modifier == KeyModifier.ALT_GRAPH
                     && altAdded) {
-                return "true";
+                return null;
             } else {
                 return (modifierRequired ? "" : "!")
-                        + "event.getModifierState('" + modifier.getKeys().get(0)
-                        + "')";
+                        + "event.getModifierState('" + modKey + "')";
             }
-        }).collect(Collectors.joining(" && "));
+        }).filter(Objects::nonNull).filter(s -> !s.isBlank())
+                .collect(Collectors.joining(" && "));
+
     }
 
     private static String generateEventKeyFilter(Key key) {
