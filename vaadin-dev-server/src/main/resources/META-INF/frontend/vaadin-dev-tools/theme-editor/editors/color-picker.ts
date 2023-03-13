@@ -1,6 +1,5 @@
 import { css, html, LitElement, PropertyValues, render } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
-import { Overlay } from '@vaadin/overlay';
 // @ts-ignore
 import { PositionMixin } from '../../vendor/@vaadin/overlay/src/vaadin-overlay-position-mixin.js';
 import '../../vendor/vanilla-colorful/rgba-string-color-picker.js';
@@ -78,7 +77,7 @@ export class ColorPicker extends LitElement {
 
   @query('#toggle')
   private toggle!: HTMLElement;
-  private overlay!: Overlay;
+  private overlay!: VaadinOverlay;
   private commitValue: boolean = false;
 
   protected update(changedProperties: PropertyValues) {
@@ -93,10 +92,10 @@ export class ColorPicker extends LitElement {
     // Create custom Vaadin overlay and wire up renderer and event listeners
     // Not creating this in the render function as Lit gets confused after
     // the overlay teleports itself to the document body
-    this.overlay = document.createElement('vaadin-dev-tools-color-picker-overlay') as Overlay;
+    this.overlay = document.createElement('vaadin-dev-tools-color-picker-overlay') as VaadinOverlay;
     this.overlay.renderer = this.renderOverlayContent.bind(this);
-    (this.overlay as any).positionTarget = this.toggle;
-    (this.overlay as any).noVerticalOverlap = true;
+    this.overlay.positionTarget = this.toggle;
+    this.overlay.noVerticalOverlap = true;
     this.overlay.addEventListener('vaadin-overlay-escape-press', this.handleOverlayEscape.bind(this));
     this.overlay.addEventListener('vaadin-overlay-close', this.handleOverlayClose.bind(this));
     this.append(this.overlay);
@@ -246,11 +245,20 @@ export class ColorPickerOverlayContent extends LitElement {
   }
 }
 
+// Define basic interface for Vaadin Overlay
+// Importing the interface is not possible as it breaks the Flow build
+interface VaadinOverlay extends HTMLElement {
+  opened: boolean;
+  positionTarget: HTMLElement;
+  noVerticalOverlap: boolean;
+
+  renderer(root: HTMLElement): void;
+
+  requestContentUpdate(): void;
+}
+
 // Define a custom overlay Polymer element that includes the position mixin.
-// Not using a direct import for the Overlay class here as that could lead to
-// loading different versions of the component on the same page when using the
-// development setup (one from the app, the other from the dev tools frontend
-// dev server), which is not supported by Vaadin components.
+// Importing the Overlay class is not possible as it breaks the Flow build
 customElements.whenDefined('vaadin-overlay').then(() => {
   const OverlayClass = customElements.get('vaadin-overlay');
 
