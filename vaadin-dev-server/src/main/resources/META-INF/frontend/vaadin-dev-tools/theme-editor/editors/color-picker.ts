@@ -1,7 +1,8 @@
 import { css, html, LitElement, PropertyValues, render } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { Overlay } from '@vaadin/overlay';
-import { PositionMixin } from '@vaadin/overlay/src/vaadin-overlay-position-mixin';
+// @ts-ignore
+import { PositionMixin } from '../../vendor/@vaadin/overlay/src/vaadin-overlay-position-mixin.js';
 import '../../vendor/vanilla-colorful/rgba-string-color-picker.js';
 
 export class ColorPickerChangeEvent extends CustomEvent<{ value: string }> {
