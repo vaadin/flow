@@ -8,7 +8,7 @@
         <artifactId>flow-tests</artifactId>
         <version>24.1-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-themes</artifactId>
+    <artifactId>flow-test-themes-production</artifactId>
     <name>Flow themes tests</name>
     <packaging>war</packaging>
     <properties>
