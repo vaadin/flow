@@ -126,6 +126,8 @@ export class RangePropertyEditor extends LitElement {
   @state()
   value: string = '';
   @state()
+  modified?: boolean;
+  @state()
   selectedPresetIndex: number = -1;
   @state()
   private presets: string[] = [];
@@ -153,7 +155,9 @@ export class RangePropertyEditor extends LitElement {
 
     return html`
       <div class="property">
-        <div class="property-name">${this.propertyMetadata.displayName}</div>
+        <div class="property-name">
+          ${this.propertyMetadata.displayName} ${this.modified ? html`<span class="modified"></span>` : null}
+        </div>
         <div class="property-editor">
           <div class=${classMap(sliderWrapperClasses)}>
             ${icon ? html` <div class="icon prefix">${icon}</div>` : null}
@@ -244,6 +248,7 @@ export class RangePropertyEditor extends LitElement {
 
     // If value matches a preset, then display raw preset value
     this.value = this.rawPresetValues[propertyValue.value] || propertyValue.value;
+    this.modified = propertyValue.modified;
     this.updateSliderValue();
   }
 

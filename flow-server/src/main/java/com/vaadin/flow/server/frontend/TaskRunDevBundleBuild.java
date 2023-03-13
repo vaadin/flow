@@ -659,7 +659,13 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         JsonObject dependencies = packageJson.getObject("dependencies");
 
-        List<String> missingFromBundle = Arrays.stream(dependencies.keys())
+        List<String> dependenciesList = Arrays.stream(dependencies.keys())
+                // skip checking flow-frontend as it was used in previous
+                // versions as an alias for ./target/flow-frontend
+                .filter(pkg -> !"@vaadin/flow-frontend".equals(pkg))
+                .collect(Collectors.toList());
+
+        List<String> missingFromBundle = dependenciesList.stream()
                 .filter(pkg -> !bundleModules.hasKey(pkg))
                 .collect(Collectors.toList());
 
@@ -672,7 +678,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
 
         // We know here that all dependencies exist
-        missingFromBundle = Arrays.stream(dependencies.keys())
+        missingFromBundle = dependenciesList.stream()
                 .filter(pkg -> !versionAccepted(dependencies.getString(pkg),
                         bundleModules.getString(pkg)))
                 .collect(Collectors.toList());
