@@ -1,0 +1,349 @@
+{
+  "$schema": "https://json.schemastore.org/web-types",
+  "name": "vanilla-colorful",
+  "version": "0.7.2",
+  "description-markup": "markdown",
+  "framework": "lit",
+  "framework-config": {
+    "enable-when": {
+      "node-packages": [
+        "lit"
+      ]
+    }
+  },
+  "contributions": {
+    "html": {
+      "elements": [
+        {
+          "name": "hex-alpha-color-picker",
+          "description": "A color picker custom element that uses HEX format with alpha.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": ".color",
+              "description": "Selected color in HEX format.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "@color-changed",
+              "description": "Event fired when color property changes.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        },
+        {
+          "name": "hex-color-picker",
+          "description": "A color picker custom element that uses HEX format.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": ".color",
+              "description": "Selected color in HEX format.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "@color-changed",
+              "description": "Event fired when color property changes.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        },
+        {
+          "name": "hex-input",
+          "description": "A custom element for entering color in HEX format.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": ".color",
+              "description": "Color in HEX format.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": ".alpha",
+              "description": "When true, `#rgba` and `#rrggbbaa` color formats are allowed.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": ".prefixed",
+              "description": "When true, `#` prefix is displayed in the input.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "@color-changed",
+              "description": "Event fired when color is changed.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        },
+        {
+          "name": "hsl-color-picker",
+          "description": "A color picker custom element that uses HSL object format.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": ".color",
+              "description": "Selected color in HSL object format.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "@color-changed",
+              "description": "Event fired when color property changes.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        },
+        {
+          "name": "hsl-string-color-picker",
+          "description": "A color picker custom element that uses HSL string format.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": ".color",
+              "description": "Selected color in HSL string format.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "@color-changed",
+              "description": "Event fired when color property changes.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        },
+        {
+          "name": "hsla-color-picker",
+          "description": "A color picker custom element that uses HSLA object format.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": ".color",
+              "description": "Selected color in HSLA object format.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "@color-changed",
+              "description": "Event fired when color property changes.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        },
+        {
+          "name": "hsla-string-color-picker",
+          "description": "A color picker custom element that uses HSLA string format.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": ".color",
+              "description": "Selected color in HSLA string format.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "@color-changed",
+              "description": "Event fired when color property changes.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        },
+        {
+          "name": "hsv-color-picker",
+          "description": "A color picker custom element that uses HSV object format.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": ".color",
+              "description": "Selected color in HSV object format.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "@color-changed",
+              "description": "Event fired when color property changes.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        },
+        {
+          "name": "hsv-string-color-picker",
+          "description": "A color picker custom element that uses HSV string format.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": ".color",
+              "description": "Selected color in HSV string format.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "@color-changed",
+              "description": "Event fired when color property changes.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        },
+        {
+          "name": "hsva-color-picker",
+          "description": "A color picker custom element that uses HSVA object format.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": ".color",
+              "description": "Selected color in HSVA object format.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "@color-changed",
+              "description": "Event fired when color property changes.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        },
+        {
+          "name": "hsva-string-color-picker",
+          "description": "A color picker custom element that uses HSVA string format.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": ".color",
+              "description": "Selected color in HSVA string format.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "@color-changed",
+              "description": "Event fired when color property changes.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        },
+        {
+          "name": "rgb-color-picker",
+          "description": "A color picker custom element that uses RGB object format.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": ".color",
+              "description": "Selected color in RGB object format.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "@color-changed",
+              "description": "Event fired when color property changes.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        },
+        {
+          "name": "rgb-string-color-picker",
+          "description": "A color picker custom element that uses RGB string format.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": ".color",
+              "description": "Selected color in RGB string format.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "@color-changed",
+              "description": "Event fired when color property changes.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        },
+        {
+          "name": "rgba-color-picker",
+          "description": "A color picker custom element that uses RGBA object format.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": ".color",
+              "description": "Selected color in RGBA object format.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "@color-changed",
+              "description": "Event fired when color property changes.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        },
+        {
+          "name": "rgba-string-color-picker",
+          "description": "A color picker custom element that uses RGBA string format.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": ".color",
+              "description": "Selected color in RGBA string format.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "@color-changed",
+              "description": "Event fired when color property changes.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

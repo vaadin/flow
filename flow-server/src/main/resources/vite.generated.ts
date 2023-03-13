@@ -225,7 +225,8 @@ function statsExtracterPlugin(): PluginOption {
       const generatedImports = readFileSync(path.resolve(generatedFlowImportsFolder, "generated-flow-imports.js"), {encoding: 'utf-8'})
           .split("\n")
           .filter((line: string) => line.startsWith("import"))
-          .map((line: string) => line.substring(line.indexOf("'")+1, line.lastIndexOf("'")));
+          .map((line: string) => line.substring(line.indexOf("'") + 1, line.lastIndexOf("'")))
+          .map((line: string) => line.includes('?') ? line.substring(0, line.lastIndexOf('?')) : line);
 
       const frontendFiles: Record<string, string> = { };
 
@@ -236,7 +237,9 @@ function statsExtracterPlugin(): PluginOption {
       modules.map((id) => id.replace(/\\/g, '/'))
           .filter((id) => id.startsWith(frontendFolder.replace(/\\/g, '/')))
           .filter((id) => !id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/')))
-          .map(id => id.substring(frontendFolder.length + 1)).forEach((line: string) => {
+          .map(id => id.substring(frontendFolder.length + 1))
+          .map((line: string) => line.includes('?') ? line.substring(0, line.lastIndexOf('?')) : line)
+          .forEach((line: string) => {
         // \r\n from windows made files may be used so change to \n
         const filePath = path.resolve(frontendFolder, line);
         if (projectFileExtensions.includes(path.extname(filePath))) {
@@ -247,12 +250,7 @@ function statsExtracterPlugin(): PluginOption {
 
       // collects frontend resources from the JARs
       generatedImports.filter((line: string) => line.includes("generated/jar-resources")).forEach((line: string) => {
-        let filename;
-        if(line.includes('?')) {
-          filename = line.substring(line.indexOf("generated"), line.lastIndexOf('?'));
-        } else {
-          filename = line.substring(line.indexOf("generated"));
-        }
+        let filename = line.substring(line.indexOf("generated"));
         // \r\n from windows made files may be used ro remove to be only \n
         const fileBuffer = readFileSync(path.resolve(frontendFolder, filename), {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
         const hash = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
@@ -263,9 +261,7 @@ function statsExtracterPlugin(): PluginOption {
       // If a index.ts exists hash it to be able to see if it changes.
       if (existsSync(path.resolve(frontendFolder, "index.ts"))) {
         const fileBuffer = readFileSync(path.resolve(frontendFolder, "index.ts"), {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
-        const hash = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
-        // @ts-ignore
-        frontendFiles[`index.ts`] = hash;
+        frontendFiles[`index.ts`] = createHash('sha256').update(fileBuffer, 'utf8').digest("hex");
       }
 
       const themeJsonContents: Record<string, string> = { };
