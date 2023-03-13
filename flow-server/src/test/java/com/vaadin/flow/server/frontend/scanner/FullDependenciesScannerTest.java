@@ -342,12 +342,7 @@ public class FullDependenciesScannerTest {
 
     private CssData createCssData(String value, String id, String include,
             String themefor) {
-        CssData data = new CssData();
-        data.value = value;
-        data.id = id;
-        data.include = include;
-        data.themefor = themefor;
-        return data;
+        return new CssData(value, id, include, themefor);
     }
 
     private List<? extends Annotation> findAnnotations(Class<?> type,

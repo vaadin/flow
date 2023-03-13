@@ -1,8 +1,10 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { ComponentMetadata, ComponentPartMetadata, CssPropertyMetadata } from './metadata/model';
-import './property-editor';
+import { html as staticHtml, literal, StaticValue } from 'lit/static-html.js';
+import { ComponentMetadata, ComponentPartMetadata, CssPropertyMetadata, EditorType } from './metadata/model';
 import { ComponentTheme } from './model';
+import './editors/text-property-editor';
+import './editors/range-property-editor';
 
 @customElement('vaadin-dev-tools-theme-property-list')
 export class PropertyList extends LitElement {
@@ -35,15 +37,7 @@ export class PropertyList extends LitElement {
   }
 
   private renderSection(part: ComponentPartMetadata | null, properties: CssPropertyMetadata[]) {
-    const propertiesList = properties.map((property) => {
-      return html` <vaadin-dev-tools-theme-property-editor
-        class="property-editor"
-        .partMetadata=${part}
-        .propertyMetadata=${property}
-        .theme=${this.theme}
-        data-testid=${property.propertyName}
-      ></vaadin-dev-tools-theme-property-editor>`;
-    });
+    const propertiesList = properties.map((property) => this.renderPropertyEditor(part, property));
 
     return html`
       <div class="section" data-testid=${part?.partName || 'host'}>
@@ -51,5 +45,25 @@ export class PropertyList extends LitElement {
         <div class="property-list">${propertiesList}</div>
       </div>
     `;
+  }
+
+  private renderPropertyEditor(part: ComponentPartMetadata | null, property: CssPropertyMetadata) {
+    let editorTagName: StaticValue;
+    switch (property.editorType) {
+      case EditorType.range:
+        editorTagName = literal`vaadin-dev-tools-theme-range-property-editor`;
+        break;
+      default:
+        editorTagName = literal`vaadin-dev-tools-theme-text-property-editor`;
+    }
+
+    return staticHtml` <${editorTagName}
+          class="property-editor"
+          .partMetadata=${part}
+          .propertyMetadata=${property}
+          .theme=${this.theme}
+          data-testid=${property.propertyName}
+        >
+        </${editorTagName}>`;
   }
 }

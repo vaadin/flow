@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { ComponentTheme, generateThemeRule, ThemeEditorRule, ThemePropertyValue } from './model';
+import { ComponentTheme, generateThemeRule, ThemePropertyValue } from './model';
 import buttonMetadata from './metadata/components/vaadin-button';
 import { ComponentMetadata } from './metadata/model';
 import { ServerCssRule } from './api';
@@ -25,12 +25,14 @@ describe('model', () => {
       const expectedHostBackgroundValue: ThemePropertyValue = {
         partName: null,
         propertyName: 'background',
-        value: 'cornflowerblue'
+        value: 'cornflowerblue',
+        modified: false
       };
       const expectedLabelColorValue: ThemePropertyValue = {
         partName: 'label',
         propertyName: 'color',
-        value: 'white'
+        value: 'white',
+        modified: false
       };
 
       expect(theme.properties).to.deep.equal([expectedHostBackgroundValue, expectedLabelColorValue]);
@@ -61,18 +63,34 @@ describe('model', () => {
 
       theme.addPropertyValues([
         // Add new host prop
-        { partName: null, propertyName: 'padding', value: '3px' },
+        { partName: null, propertyName: 'padding', value: '3px', modified: false },
         // Update existing part prop
-        { partName: 'label', propertyName: 'color', value: 'red' },
+        { partName: 'label', propertyName: 'color', value: 'red', modified: false },
         // Add new part prop
-        { partName: 'label', propertyName: 'font-size', value: '20px' }
+        { partName: 'label', propertyName: 'font-size', value: '20px', modified: false }
       ]);
 
       const expectedValues = [
-        { partName: null, propertyName: 'background', value: 'cornflowerblue' },
-        { partName: 'label', propertyName: 'color', value: 'red' },
-        { partName: null, propertyName: 'padding', value: '3px' },
-        { partName: 'label', propertyName: 'font-size', value: '20px' }
+        { partName: null, propertyName: 'background', value: 'cornflowerblue', modified: false },
+        { partName: 'label', propertyName: 'color', value: 'red', modified: false },
+        { partName: null, propertyName: 'padding', value: '3px', modified: false },
+        { partName: 'label', propertyName: 'font-size', value: '20px', modified: false }
+      ];
+
+      expect(theme.properties).to.deep.equal(expectedValues);
+    });
+
+    it('should update modified state when merging properties', () => {
+      theme.updatePropertyValue(null, 'background', 'cornflowerblue');
+
+      theme.addPropertyValues([
+        { partName: null, propertyName: 'background', value: 'red', modified: true },
+        { partName: null, propertyName: 'padding', value: '3px', modified: true }
+      ]);
+
+      const expectedValues = [
+        { partName: null, propertyName: 'background', value: 'red', modified: true },
+        { partName: null, propertyName: 'padding', value: '3px', modified: true }
       ];
 
       expect(theme.properties).to.deep.equal(expectedValues);
@@ -85,12 +103,12 @@ describe('model', () => {
       theme.updatePropertyValue('label', 'font-size', '20px');
 
       const expectedHostProperties = [
-        { partName: null, propertyName: 'background', value: 'cornflowerblue' },
-        { partName: null, propertyName: 'padding', value: '3px' }
+        { partName: null, propertyName: 'background', value: 'cornflowerblue', modified: false },
+        { partName: null, propertyName: 'padding', value: '3px', modified: false }
       ];
       const expectedLabelProperties = [
-        { partName: 'label', propertyName: 'color', value: 'white' },
-        { partName: 'label', propertyName: 'font-size', value: '20px' }
+        { partName: 'label', propertyName: 'color', value: 'white', modified: false },
+        { partName: 'label', propertyName: 'font-size', value: '20px', modified: false }
       ];
 
       expect(theme.getPropertyValuesForPart(null)).to.deep.equal(expectedHostProperties);
@@ -121,10 +139,10 @@ describe('model', () => {
 
       const result = ComponentTheme.combine(theme1, theme2);
       const expectedValues = [
-        { partName: null, propertyName: 'background', value: 'cornflowerblue' },
-        { partName: 'label', propertyName: 'color', value: 'red' },
-        { partName: null, propertyName: 'padding', value: '3px' },
-        { partName: 'label', propertyName: 'font-size', value: '20px' }
+        { partName: null, propertyName: 'background', value: 'cornflowerblue', modified: false },
+        { partName: 'label', propertyName: 'color', value: 'red', modified: false },
+        { partName: null, propertyName: 'padding', value: '3px', modified: false },
+        { partName: 'label', propertyName: 'font-size', value: '20px', modified: false }
       ];
 
       expect(result.properties).to.deep.equal(expectedValues);
@@ -175,10 +193,10 @@ describe('model', () => {
         }
       ];
       const expectedProperties = [
-        { partName: null, propertyName: 'padding', value: '3px' },
-        { partName: null, propertyName: 'background', value: 'cornflowerblue' },
-        { partName: 'label', propertyName: 'color', value: 'red' },
-        { partName: 'label', propertyName: 'font-size', value: '20px' }
+        { partName: null, propertyName: 'padding', value: '3px', modified: true },
+        { partName: null, propertyName: 'background', value: 'cornflowerblue', modified: true },
+        { partName: 'label', propertyName: 'color', value: 'red', modified: true },
+        { partName: 'label', propertyName: 'font-size', value: '20px', modified: true }
       ];
 
       const theme = ComponentTheme.fromServerRules(testElementMetadata, serverRules);
@@ -223,11 +241,11 @@ describe('model', () => {
         generateThemeRule('vaadin-button', 'label', 'font-size', '20px')
       ];
 
-      const expectedRules: ThemeEditorRule[] = [
-        { selector: 'vaadin-button', property: 'background', value: 'cornflowerblue' },
-        { selector: 'vaadin-button', property: 'padding', value: '3px' },
-        { selector: 'vaadin-button::part(label)', property: 'color', value: 'white' },
-        { selector: 'vaadin-button::part(label)', property: 'font-size', value: '20px' }
+      const expectedRules: ServerCssRule[] = [
+        { selector: 'vaadin-button', properties: { background: 'cornflowerblue' } },
+        { selector: 'vaadin-button', properties: { padding: '3px' } },
+        { selector: 'vaadin-button::part(label)', properties: { color: 'white' } },
+        { selector: 'vaadin-button::part(label)', properties: { 'font-size': '20px' } }
       ];
 
       expect(rules).to.deep.equal(expectedRules);
