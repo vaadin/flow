@@ -99,20 +99,6 @@ export const injectGlobalCss = (css, target, first) => {
 };
 `;
 
-const addLumoImportStyleTag = `
-const addLumoImportStyleTag = (lumoStyles, target) => {
-  const styleTag = document.createElement('style');
-  styleTag.type = 'text/css';
-  styleTag.appendChild(document.createTextNode(lumoStyles));
-  // For target document append to head else append to target
-  if (target === document) {
-    document.head.appendChild(styleTag);
-  } else {
-    target.appendChild(styleTag);
-  }
-};
-`;
-
 /**
  * Generate the [themeName].js file for themeFolder which collects all required information from the folder.
  *
@@ -149,11 +135,11 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
 
   themeFile += createLinkReferences;
   themeFile += injectGlobalCssMethod;
-  themeFile += addLumoImportStyleTag;
 
   const imports = [];
   const globalCssCode = [];
   const lumoCssCode = [];
+  const lumoCssShadowOnlyCode = [];
   const componentCssCode = [];
   const parentTheme = themeProperties.parent ? 'applyBaseTheme(target);\n' : '';
 
@@ -186,15 +172,13 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
       imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles/${lumoImport}.js';\n`);
     });
 
-    if (useDevServer) {
-      lumoImports.forEach((lumoImport) => {
+    lumoImports.forEach((lumoImport) => {
+      if (lumoImport === 'utility') {
         lumoCssCode.push(`injectGlobalCss(${lumoImport}.cssText, target, true);\n`);
-      });
-    } else {
-      lumoImports.forEach((lumoImport) => {
-        lumoCssCode.push(`addLumoImportStyleTag(${lumoImport}.cssText, target);\n`);
-      });
-    }
+      } else {
+        lumoCssShadowOnlyCode.push(`injectGlobalCss(${lumoImport}.cssText, target, true);\n`);
+      }
+    });
   }
 
   if (useDevServer) {
@@ -308,15 +292,19 @@ function getHash(input) {
   // Don't format as the generated file formatting will get wonky!
   // If targets check that we only register the style parts once, checks exist for global css and component css
   const themeFileApply = `export const applyTheme = (target) => {
-  ${parentTheme}
-  ${globalCssCode.join('')}
-  
-  if (!document['${componentCssFlag}']) {
-    ${componentCssCode.join('')}
-    document['${componentCssFlag}'] = true;
+    if (target !== document) {
+      // Lumo is injected to the document by Lumo itself, except for the utility module
+      ${lumoCssShadowOnlyCode.join('')}
+    }
+    ${lumoCssCode.join('')}
+    ${parentTheme}
+    ${globalCssCode.join('')}
+    
+    if (!document['${componentCssFlag}']) {
+      ${componentCssCode.join('')}
+      document['${componentCssFlag}'] = true;
+    }
   }
-  ${lumoCssCode.join('')}
-}
 `;
 
   themeFile += themeFileApply;
