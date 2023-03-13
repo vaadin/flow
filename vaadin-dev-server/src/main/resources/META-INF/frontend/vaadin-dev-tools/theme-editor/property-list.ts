@@ -5,6 +5,7 @@ import { ComponentMetadata, ComponentPartMetadata, CssPropertyMetadata, EditorTy
 import { ComponentTheme } from './model';
 import './editors/text-property-editor';
 import './editors/range-property-editor';
+import './editors/color-property-editor';
 
 @customElement('vaadin-dev-tools-theme-property-list')
 export class PropertyList extends LitElement {
@@ -52,6 +53,9 @@ export class PropertyList extends LitElement {
     switch (property.editorType) {
       case EditorType.range:
         editorTagName = literal`vaadin-dev-tools-theme-range-property-editor`;
+        break;
+      case EditorType.color:
+        editorTagName = literal`vaadin-dev-tools-theme-color-property-editor`;
         break;
       default:
         editorTagName = literal`vaadin-dev-tools-theme-text-property-editor`;

@@ -1,6 +1,7 @@
 export enum EditorType {
-  text,
-  range
+  text = 'text',
+  range = 'range',
+  color = 'color'
 }
 
 export interface CssPropertyMetadata {
