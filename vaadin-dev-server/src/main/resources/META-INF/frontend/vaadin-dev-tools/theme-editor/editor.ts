@@ -7,7 +7,7 @@ import { icons } from './icons';
 import './property-list';
 import { ComponentTheme, generateThemeRule, ThemeEditorState } from './model';
 import { detectTheme } from './detector';
-import { ThemePropertyValueChangeEvent } from './events';
+import { ThemePropertyValueChangeEvent } from './editors/base-property-editor';
 import { themePreview } from './preview';
 import { Connection } from '../vaadin-dev-tools';
 import { ThemeEditorApi } from './api';
