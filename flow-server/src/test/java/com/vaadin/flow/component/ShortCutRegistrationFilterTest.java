@@ -5,10 +5,7 @@ import org.junit.Test;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -70,10 +67,10 @@ public class ShortCutRegistrationFilterTest {
         assertTrue(result.contains("&& event.getModifierState('Alt')"));
         assertTrue(result.contains("&& !event.getModifierState('Control')"));
         assertFalse(result.contains("AltGraph"));
-        assertFalse(result.endsWith("&& "));
-        assertFalse(result.startsWith(" &&"));
-        assertFalse(result.contains("&& &&"));
-        assertFalse(result.contains("&&&&"));
+        ArrayList<String> stringArrayList = new ArrayList<>(
+                Arrays.asList(result.split("&&")));
+        assertFalse(stringArrayList.stream().map(String::trim)
+                .anyMatch(String::isEmpty));
     }
 
     @Test
@@ -86,10 +83,10 @@ public class ShortCutRegistrationFilterTest {
         assertTrue(result.contains("&& event.getModifierState('AltGraph')"));
         assertTrue(result.contains("&& !event.getModifierState('Alt')"));
         assertTrue(result.contains("&& !event.getModifierState('Control')"));
-        assertFalse(result.endsWith("&& "));
-        assertFalse(result.startsWith(" &&"));
-        assertFalse(result.contains("&& &&"));
-        assertFalse(result.contains("&&&&"));
+        ArrayList<String> stringArrayList = new ArrayList<>(
+                Arrays.asList(result.split("&&")));
+        assertFalse(stringArrayList.stream().map(String::trim)
+                .anyMatch(String::isEmpty));
     }
 
     @Test
@@ -103,10 +100,10 @@ public class ShortCutRegistrationFilterTest {
         assertTrue(result.contains("&& event.getModifierState('Alt')"));
         assertTrue(result.contains("&& event.getModifierState('AltGraph')"));
         assertTrue(result.contains("&& !event.getModifierState('Control')"));
-        assertFalse(result.endsWith("&& "));
-        assertFalse(result.startsWith(" &&"));
-        assertFalse(result.contains("&& &&"));
-        assertFalse(result.contains("&&&&"));
+        ArrayList<String> stringArrayList = new ArrayList<>(
+                Arrays.asList(result.split("&&")));
+        assertFalse(stringArrayList.stream().map(String::trim)
+                .anyMatch(String::isEmpty));
     }
 
     @Test
@@ -120,10 +117,10 @@ public class ShortCutRegistrationFilterTest {
         assertTrue(result.contains("&& event.getModifierState('AltGraph')"));
         assertTrue(result.contains("&& event.getModifierState('Control')"));
         assertTrue(result.contains("&& !event.getModifierState('Alt')"));
-        assertFalse(result.endsWith("&& "));
-        assertFalse(result.startsWith(" &&"));
-        assertFalse(result.contains("&& &&"));
-        assertFalse(result.contains("&&&&"));
+        ArrayList<String> stringArrayList = new ArrayList<>(
+                Arrays.asList(result.split("&&")));
+        assertFalse(stringArrayList.stream().map(String::trim)
+                .anyMatch(String::isEmpty));
     }
 
     @Test
@@ -137,9 +134,9 @@ public class ShortCutRegistrationFilterTest {
         assertTrue(result.contains("&& event.getModifierState('Alt')"));
         assertTrue(result.contains("&& event.getModifierState('Control')"));
         assertFalse(result.contains("'AltGraph'"));
-        assertFalse(result.endsWith("&& "));
-        assertFalse(result.startsWith(" &&"));
-        assertFalse(result.contains("&& &&"));
-        assertFalse(result.contains("&&&&"));
+        ArrayList<String> stringArrayList = new ArrayList<>(
+                Arrays.asList(result.split("&&")));
+        assertFalse(stringArrayList.stream().map(String::trim)
+                .anyMatch(String::isEmpty));
     }
 }
