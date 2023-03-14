@@ -19,7 +19,8 @@
     "sinon": "^15.0.1"
   },
   "dependencies": {
-    "@vaadin/button": "24.0.0-rc1",
+    "@vaadin/button": "24.0.0",
+    "@vaadin/overlay": "24.0.0",
     "lit": "^2.6.1"
   }
 }

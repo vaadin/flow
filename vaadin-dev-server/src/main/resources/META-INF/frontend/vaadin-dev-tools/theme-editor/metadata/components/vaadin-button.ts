@@ -7,11 +7,14 @@ export default {
   properties: [
     {
       propertyName: 'background-color',
-      displayName: 'Background color'
+      displayName: 'Background color',
+      editorType: EditorType.color
     },
     {
       propertyName: 'color',
-      displayName: 'Text color'
+      displayName: 'Text color',
+      editorType: EditorType.color,
+      presets: presets.lumoTextColor
     },
     {
       propertyName: '--lumo-button-size',

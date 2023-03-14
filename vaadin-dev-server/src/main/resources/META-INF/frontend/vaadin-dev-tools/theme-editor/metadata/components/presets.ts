@@ -10,5 +10,15 @@ export const presets = {
     '--lumo-font-size-xl',
     '--lumo-font-size-xxl',
     '--lumo-font-size-xxxl'
+  ],
+  lumoTextColor: [
+    '--lumo-header-text-color',
+    '--lumo-body-text-color',
+    '--lumo-secondary-text-color',
+    '--lumo-tertiary-text-color',
+    '--lumo-disabled-text-color',
+    '--lumo-primary-text-color',
+    '--lumo-error-text-color',
+    '--lumo-success-text-color'
   ]
 };

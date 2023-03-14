@@ -104,3 +104,58 @@ export abstract class BasePropertyEditor extends LitElement {
     this.dispatchEvent(new ThemePropertyValueChangeEvent(this.partMetadata || null, this.propertyMetadata, value));
   }
 }
+
+export class PropertyPresets {
+  private _values: string[] = [];
+  private _rawValues: { [key: string]: string } = {};
+
+  get values(): string[] {
+    return this._values;
+  }
+
+  get rawValues(): { [key: string]: string } {
+    return this._rawValues;
+  }
+
+  constructor(propertyMetadata?: CssPropertyMetadata) {
+    if (propertyMetadata) {
+      const propertyName = propertyMetadata.propertyName;
+      const presets = propertyMetadata.presets ?? [];
+
+      // Convert presets that reference custom CSS properties in valid CSS
+      // property values by wrapping them into var(...)
+      this._values = (presets || []).map((preset) => (preset.startsWith('--') ? `var(${preset})` : preset));
+
+      // Create map of presets to raw values. This allows to display `2.25rem`
+      // instead of `--lumo-size-m` in the input field when changing the slider,
+      // and in reverse allows to select a preset in the slider from a computed
+      // style value such as `2.25rem`.
+      const measureElement = document.createElement('div');
+      measureElement.style.visibility = 'hidden';
+      document.body.append(measureElement);
+
+      try {
+        this._values.forEach((preset) => {
+          measureElement.style.setProperty(propertyName, preset);
+          const style = getComputedStyle(measureElement);
+          this._rawValues[preset] = style.getPropertyValue(propertyName).trim();
+        });
+      } finally {
+        measureElement.remove();
+      }
+    }
+  }
+
+  tryMapToRawValue(presetOrValue: string) {
+    return this._rawValues[presetOrValue] ?? presetOrValue;
+  }
+
+  tryMapToPreset(value: string) {
+    return this.findPreset(value) ?? value;
+  }
+
+  findPreset(rawValue: string) {
+    const sanitizedValue = rawValue ? rawValue.trim() : rawValue;
+    return this.values.find((preset) => this._rawValues[preset] === sanitizedValue);
+  }
+}

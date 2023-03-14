@@ -2,7 +2,7 @@ import { css, html, PropertyValues, TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { icons } from '../icons';
-import { BasePropertyEditor } from './base-property-editor';
+import { BasePropertyEditor, PropertyPresets } from './base-property-editor';
 
 @customElement('vaadin-dev-tools-theme-range-property-editor')
 export class RangePropertyEditor extends BasePropertyEditor {
@@ -116,12 +116,11 @@ export class RangePropertyEditor extends BasePropertyEditor {
   @state()
   private selectedPresetIndex: number = -1;
   @state()
-  private presets: string[] = [];
-  private rawPresetValues: { [key: string]: string } = {};
+  private presets: PropertyPresets = new PropertyPresets();
 
   protected update(changedProperties: PropertyValues) {
     if (changedProperties.has('propertyMetadata')) {
-      this.measurePresetValues();
+      this.presets = new PropertyPresets(this.propertyMetadata);
     }
 
     super.update(changedProperties);
@@ -134,6 +133,7 @@ export class RangePropertyEditor extends BasePropertyEditor {
     };
     const iconName = this.propertyMetadata.icon;
     const icon = iconName ? (icons as any)[iconName] : null;
+    const presetCount = this.presets.values.length;
 
     return html`
       <div class=${classMap(sliderWrapperClasses)}>
@@ -141,10 +141,10 @@ export class RangePropertyEditor extends BasePropertyEditor {
         <input
           type="range"
           class="slider"
-          style="--preset-count: ${this.presets.length}"
+          style="--preset-count: ${presetCount}"
           step="1"
           min="0"
-          .max=${(this.presets.length - 1).toString()}
+          .max=${(presetCount - 1).toString()}
           .value=${this.selectedPresetIndex}
           @input=${this.handleSliderInput}
           @change=${this.handleSliderChange}
@@ -155,44 +155,13 @@ export class RangePropertyEditor extends BasePropertyEditor {
     `;
   }
 
-  private measurePresetValues() {
-    if (!this.propertyMetadata || !this.theme) {
-      return;
-    }
-
-    // Convert presets that reference custom CSS properties in valid CSS
-    // property values by wrapping them into var(...)
-    this.presets = (this.propertyMetadata.presets || []).map((preset) =>
-      preset.startsWith('--') ? `var(${preset})` : preset
-    );
-
-    // Create map of presets to raw values. This allows to display `2.25rem`
-    // instead of `--lumo-size-m` in the input field when changing the slider,
-    // and in reverse allows to select a preset in the slider from a computed
-    // style value such as `2.25rem`.
-    this.rawPresetValues = {};
-    const measureElement = document.createElement('div');
-    measureElement.style.visibility = 'hidden';
-    document.body.append(measureElement);
-
-    try {
-      this.presets.forEach((preset) => {
-        measureElement.style.setProperty(this.propertyMetadata.propertyName, preset);
-        const style = getComputedStyle(measureElement);
-        this.rawPresetValues[preset] = style.getPropertyValue(this.propertyMetadata.propertyName).trim();
-      });
-    } finally {
-      measureElement.remove();
-    }
-  }
-
   private handleSliderInput(e: Event) {
     const input = e.target as HTMLInputElement;
     const selectedIndex = parseInt(input.value);
-    const preset = this.presets[selectedIndex];
+    const preset = this.presets.values[selectedIndex];
 
     this.selectedPresetIndex = selectedIndex;
-    this.value = this.rawPresetValues[preset];
+    this.value = this.presets.rawValues[preset];
   }
 
   private handleSliderChange() {
@@ -209,8 +178,7 @@ export class RangePropertyEditor extends BasePropertyEditor {
 
   protected dispatchChange(value: string) {
     // If value matches a raw preset value, send preset instead
-    const preset = this.findPreset(value);
-    const effectiveValue = preset || value;
+    const effectiveValue = this.presets.tryMapToPreset(value);
 
     super.dispatchChange(effectiveValue);
   }
@@ -219,17 +187,12 @@ export class RangePropertyEditor extends BasePropertyEditor {
     super.updateValueFromTheme();
 
     // If value matches a preset, then display raw preset value
-    this.value = this.rawPresetValues[this.value] || this.value;
+    this.value = this.presets.tryMapToRawValue(this.propertyValue?.value || '');
     this.updateSliderValue();
   }
 
   private updateSliderValue() {
-    const maybePreset = this.findPreset(this.value);
-    this.selectedPresetIndex = maybePreset ? this.presets.indexOf(maybePreset) : -1;
-  }
-
-  private findPreset(rawValue: string) {
-    const sanitizedValue = rawValue ? rawValue.trim() : rawValue;
-    return this.presets.find((preset) => this.rawPresetValues[preset] === sanitizedValue);
+    const maybePreset = this.presets.findPreset(this.value);
+    this.selectedPresetIndex = maybePreset ? this.presets.values.indexOf(maybePreset) : -1;
   }
 }
