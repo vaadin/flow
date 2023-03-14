@@ -1,10 +1,9 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { PickerProvider } from '../component-picker';
-import { ComponentMetadata } from './metadata/model';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
-import { ComponentTheme, generateThemeRule, ThemeEditorState, ThemeScope } from './model';
+import { ComponentTheme, generateThemeRule, ThemeEditorState, ThemeScope, ThemeScopeType } from './model';
 import { detectTheme } from './detector';
 import { ThemePropertyValueChangeEvent } from './editors/base-property-editor';
 import { themePreview } from './preview';
@@ -14,7 +13,6 @@ import { ThemeEditorHistory, ThemeEditorHistoryActions } from './history';
 import { ScopeChangeEvent } from './components/scope-selector';
 import './components/scope-selector';
 import './property-list';
-import { ComponentReference } from '../component-util';
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
@@ -29,14 +27,9 @@ export class ThemeEditor extends LitElement {
   @state()
   private historyActions?: ThemeEditorHistoryActions;
 
-  /**
-   * Metadata for the selected / picked component
-   */
   @state()
-  private selectedComponentMetadata: ComponentMetadata | null = null;
-  private componentRef: ComponentReference | null = null;
-  @state()
-  private themeScope: ThemeScope = ThemeScope.local;
+  private scope: ThemeScope | null = null;
+
   /**
    * Base theme detected from existing CSS files for the selected component
    */
@@ -135,16 +128,16 @@ export class ThemeEditor extends LitElement {
       <div class="header">
         <div class="picker">
           <button class="icon-button" @click=${this.pickComponent}>${icons.crosshair}</button>
-          ${this.selectedComponentMetadata
-            ? html`<span>${this.selectedComponentMetadata.displayName}</span>`
+          ${this.scope
+            ? html`<span>${this.scope.metadata.displayName}</span>`
             : html`<span class="no-selection">Pick an element to get started</span>`}
         </div>
         <div class="actions">
-          ${this.selectedComponentMetadata
+          ${this.scope
             ? html` <vaadin-dev-tools-theme-scope-selector
-                .value=${this.themeScope}
-                .metadata=${this.selectedComponentMetadata}
-                @scope-change=${this.handleScopeChange}
+                .value=${this.scope.type}
+                .metadata=${this.scope.metadata}
+                @scope-change=${this.handleScopeTypeChange}
               ></vaadin-dev-tools-theme-scope-selector>`
             : null}
           <button
@@ -165,10 +158,10 @@ export class ThemeEditor extends LitElement {
           </button>
         </div>
       </div>
-      ${this.selectedComponentMetadata
+      ${this.scope
         ? html` <vaadin-dev-tools-theme-property-list
             class="property-list"
-            .metadata=${this.selectedComponentMetadata}
+            .metadata=${this.scope.metadata}
             .theme=${this.effectiveTheme}
             @theme-property-value-change=${this.handlePropertyChange}
           ></vaadin-dev-tools-theme-property-list>`
@@ -205,34 +198,39 @@ export class ThemeEditor extends LitElement {
       pickCallback: async (component) => {
         const metadata = await metadataRegistry.getMetadata(component);
         if (!metadata) {
-          this.selectedComponentMetadata = null;
-          this.componentRef = null;
+          this.scope = null;
           this.baseTheme = null;
           this.editedTheme = null;
           this.effectiveTheme = null;
           return;
         }
 
-        // Reset theme scope to local / instance whenever a new component is picked
-        this.themeScope = ThemeScope.local;
-        this.componentRef = component;
+        // Detect base theme whenever a new component is picked
+        this.baseTheme = detectTheme(metadata);
 
-        this.refreshTheme(metadata);
+        this.refreshTheme({
+          // Reset scope type to local / instance whenever a new component is picked
+          type: ThemeScopeType.local,
+          metadata,
+          component
+        });
       }
     });
   }
 
-  private handleScopeChange(e: ScopeChangeEvent) {
-    if (e.detail.value === this.themeScope) {
+  private handleScopeTypeChange(e: ScopeChangeEvent) {
+    if (!this.scope) {
       return;
     }
-    console.log("scope change")
-    this.themeScope = e.detail.value;
-    this.refreshTheme();
+
+    this.refreshTheme({
+      ...this.scope,
+      type: e.detail.value
+    });
   }
 
   private async handlePropertyChange(e: ThemePropertyValueChangeEvent) {
-    if (!this.selectedComponentMetadata || !this.componentRef || !this.baseTheme || !this.editedTheme) {
+    if (!this.scope || !this.baseTheme || !this.editedTheme) {
       return;
     }
 
@@ -243,16 +241,11 @@ export class ThemeEditor extends LitElement {
     this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
 
     // Update theme editor CSS
-    const updateRule = generateThemeRule(
-      this.selectedComponentMetadata?.tagName,
-      partName,
-      property.propertyName,
-      value
-    );
-    const componentRef = this.themeScope === ThemeScope.local ? this.componentRef : null;
+    const updateRule = generateThemeRule(this.scope.metadata.tagName, partName, property.propertyName, value);
+    const component = this.scope.type === ThemeScopeType.local ? this.scope.component : null;
     try {
       this.preventLiveReload();
-      const response = await this.api.setCssRules([updateRule], componentRef);
+      const response = await this.api.setCssRules([updateRule], component);
       this.historyActions = this.history.push(response.requestId);
       await this.updateThemePreview();
     } catch (error) {
@@ -272,26 +265,22 @@ export class ThemeEditor extends LitElement {
     await this.refreshTheme();
   }
 
-  private async refreshTheme(newMetadata?: ComponentMetadata) {
-    // Load server rules for new or existing metadata
-    const metadata = newMetadata || this.selectedComponentMetadata;
-    if (!metadata) {
+  private async refreshTheme(newScope?: ThemeScope) {
+    // Load server rules for new or existing scope
+    const scope = newScope || this.scope;
+    if (!scope) {
       return;
     }
 
-    const scopeSelector = metadata.tagName;
-    const componentRef = this.themeScope === ThemeScope.local ? this.componentRef : null;
-    const serverRules = await this.api.loadRules(scopeSelector, componentRef);
+    const scopeSelector = scope.metadata.tagName;
+    const component = scope.type === ThemeScopeType.local ? scope.component : null;
+    const serverRules = await this.api.loadRules(scopeSelector, component);
 
     // Update state properties after data has loaded, so that everything
     // consistently updates at once - this avoids re-rendering the editor with
     // new metadata but without matching theme data
-    if (newMetadata) {
-      this.selectedComponentMetadata = newMetadata;
-      // Update base theme whenever metadata changes
-      this.baseTheme = detectTheme(metadata);
-    }
-    this.editedTheme = ComponentTheme.fromServerRules(metadata, serverRules.rules);
+    this.scope = scope;
+    this.editedTheme = ComponentTheme.fromServerRules(scope.metadata, serverRules.rules);
     this.effectiveTheme = ComponentTheme.combine(this.baseTheme!, this.editedTheme);
     await this.updateThemePreview();
   }

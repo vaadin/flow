@@ -2,13 +2,13 @@ import { css, html, LitElement, PropertyValues, render } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { Select, SelectValueChangedEvent } from '@vaadin/select';
 import { ComponentMetadata } from '../metadata/model';
-import { ThemeScope } from '../model';
+import { ThemeScopeType } from '../model';
 import { injectGlobalCss } from '../styles';
 
-export class ScopeChangeEvent extends CustomEvent<{ value: ThemeScope }> {
-    constructor(value: ThemeScope) {
-        super('scope-change', { detail: { value } });
-    }
+export class ScopeChangeEvent extends CustomEvent<{ value: ThemeScopeType }> {
+  constructor(value: ThemeScopeType) {
+    super('scope-change', { detail: { value } });
+  }
 }
 
 injectGlobalCss(css`
@@ -37,6 +37,7 @@ injectGlobalCss(css`
   vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] vaadin-item::part(checkmark) {
     margin: 6px;
   }
+
   vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] vaadin-item::part(checkmark)::before {
     color: rgba(255, 255, 255, 0.95);
   }
@@ -48,8 +49,8 @@ injectGlobalCss(css`
 
 @customElement('vaadin-dev-tools-theme-scope-selector')
 export class ScopeSelector extends LitElement {
-    static get styles() {
-        return css`
+  static get styles() {
+    return css`
       vaadin-select {
         --lumo-primary-color-50pct: rgba(255, 255, 255, 0.5);
         width: 100px;
@@ -73,56 +74,61 @@ export class ScopeSelector extends LitElement {
         font-size: 13px;
       }
     `;
+  }
+
+  @property({})
+  public value: ThemeScopeType = ThemeScopeType.local;
+  @property({})
+  public metadata?: ComponentMetadata;
+  @query('vaadin-select')
+  private select?: Select;
+
+  protected update(changedProperties: PropertyValues) {
+    super.update(changedProperties);
+
+    if (changedProperties.has('metadata')) {
+      this.select?.requestContentUpdate();
     }
+  }
 
-    @property({})
-    public value: ThemeScope = ThemeScope.local;
-    @property({})
-    public metadata?: ComponentMetadata;
-    @query('vaadin-select')
-    private select?: Select;
-
-    protected update(changedProperties: PropertyValues) {
-        super.update(changedProperties);
-
-        if (changedProperties.has('metadata')) {
-            this.select?.requestContentUpdate();
-        }
-    }
-
-    render() {
-        return html` <vaadin-select
+  render() {
+    return html` <vaadin-select
       theme="small vaadin-dev-tools-theme-scope-selector"
       .value=${this.value}
       .renderer=${this.selectRenderer.bind(this)}
       @value-changed=${this.handleValueChange}
     ></vaadin-select>`;
-    }
+  }
 
-    private selectRenderer(root: HTMLElement) {
-        const componentName = this.metadata?.displayName || 'Component';
-        const componentNamePlural = `${componentName}s`;
+  private selectRenderer(root: HTMLElement) {
+    const componentName = this.metadata?.displayName || 'Component';
+    const componentNamePlural = `${componentName}s`;
 
-        render(
-            html`
+    render(
+      html`
         <vaadin-list-box>
-          <vaadin-item value=${ThemeScope.local} label="Local">
+          <vaadin-item value=${ThemeScopeType.local} label="Local">
             <span class="title">Local</span>
             <br />
             <span>Edit styles for this ${componentName}</span>
           </vaadin-item>
-          <vaadin-item value=${ThemeScope.global} label="Global">
+          <vaadin-item value=${ThemeScopeType.global} label="Global">
             <span class="title">Global</span>
             <br />
             <span>Edit styles for all ${componentNamePlural}</span>
           </vaadin-item>
         </vaadin-list-box>
       `,
-            root
-        );
-    }
+      root
+    );
+  }
 
-    private handleValueChange(e: SelectValueChangedEvent) {
-        this.dispatchEvent(new ScopeChangeEvent(e.detail.value as ThemeScope));
+  private handleValueChange(e: SelectValueChangedEvent) {
+    // Discard change if it was caused from setting value property
+    const newScopeType = e.detail.value as ThemeScopeType;
+    if (newScopeType === this.value) {
+      return;
     }
+    this.dispatchEvent(new ScopeChangeEvent(newScopeType));
+  }
 }

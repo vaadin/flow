@@ -1,5 +1,6 @@
 import { ComponentMetadata } from './metadata/model';
 import { ServerCssRule } from './api';
+import { ComponentReference } from '../component-util';
 
 export enum ThemeEditorState {
   disabled = 'disabled',
@@ -7,9 +8,15 @@ export enum ThemeEditorState {
   missing_theme = 'missing_theme'
 }
 
-export enum ThemeScope {
+export enum ThemeScopeType {
   local = 'local',
   global = 'globals'
+}
+
+export interface ThemeScope {
+  type: ThemeScopeType;
+  metadata: ComponentMetadata;
+  component: ComponentReference;
 }
 
 export interface ThemePropertyValue {
