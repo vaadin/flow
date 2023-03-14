@@ -24,7 +24,9 @@ export interface LoadPreviewResponse extends BaseResponse {
 }
 
 export interface ServerCssRule {
-  selector: string;
+  tagName: string;
+  partName: string | null;
+  className?: string;
   properties: { [key: string]: string };
 }
 
@@ -38,12 +40,14 @@ interface RequestHandle {
 }
 
 export class ThemeEditorApi {
+  private static instance: ThemeEditorApi;
+
   private wrappedConnection: Connection;
   private pendingRequests: { [key: string]: RequestHandle } = {};
   private requestCounter: number = 0;
   private globalUiId: number = this.getGlobalUiId();
 
-  constructor(wrappedConnection: Connection) {
+  private constructor(wrappedConnection: Connection) {
     this.wrappedConnection = wrappedConnection;
     const prevOnMessage = this.wrappedConnection.onMessage;
     this.wrappedConnection.onMessage = (message: any) => {
@@ -53,6 +57,13 @@ export class ThemeEditorApi {
         prevOnMessage.call(this.wrappedConnection, message);
       }
     };
+  }
+
+  public static getInstance(connection: Connection) {
+    if (!this.instance) {
+      this.instance = new ThemeEditorApi(connection);
+    }
+    return this.instance;
   }
 
   private sendRequest(command: string, data: any) {
@@ -89,8 +100,8 @@ export class ThemeEditorApi {
   }
 
   public setCssRules(rules: ServerCssRule[], componentRef?: ComponentReference | null): Promise<BaseResponse> {
-    console.log('setCssRules', rules, componentRef?.nodeId);
     return this.sendRequest(Commands.setCssRules, {
+      nodeId: componentRef?.nodeId,
       rules
     });
   }
@@ -100,8 +111,7 @@ export class ThemeEditorApi {
   }
 
   public loadRules(selectorFilter: string, componentRef?: ComponentReference | null): Promise<LoadRulesResponse> {
-    console.log('loadRules', selectorFilter, componentRef?.nodeId);
-    return this.sendRequest(Commands.loadRules, { selectorFilter });
+    return this.sendRequest(Commands.loadRules, { nodeId: componentRef?.nodeId, selectorFilter });
   }
 
   public undo(requestId: string) {

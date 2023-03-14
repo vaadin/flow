@@ -13,6 +13,7 @@ import { ThemeEditorHistory, ThemeEditorHistoryActions } from './history';
 import { ScopeChangeEvent } from './components/scope-selector';
 import './components/scope-selector';
 import './components/property-list';
+import '../component-picker.js';
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
@@ -118,7 +119,7 @@ export class ThemeEditor extends LitElement {
   }
 
   protected firstUpdated() {
-    this.api = new ThemeEditorApi(this.connection);
+    this.api = ThemeEditorApi.getInstance(this.connection);
     this.history = new ThemeEditorHistory(this.api);
     this.historyActions = this.history.allowedActions;
   }
@@ -207,9 +208,6 @@ export class ThemeEditor extends LitElement {
   }
 
   private async pickComponent() {
-    // Ensure component picker module is loaded
-    await import('../component-picker.js');
-
     this.pickerProvider().open({
       infoTemplate: html`
         <div>
