@@ -71,6 +71,7 @@ import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.FallbackChunk;
@@ -287,6 +288,7 @@ public class DevModeInitializer implements Serializable {
         File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
                 FrontendUtils.JAR_RESOURCES_FOLDER);
         JsonObject tokenFileData = Json.createObject();
+        Mode mode = config.getMode();
         options.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder)
@@ -295,7 +297,7 @@ public class DevModeInitializer implements Serializable {
                 .copyLocalResources(new File(baseDir,
                         Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                 .enableImportsUpdate(true)
-                .withRunNpmInstall(config.frontendHotdeploy())
+                .withRunNpmInstall(mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
                 .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).withEnablePnpm(enablePnpm)
                 .useGlobalPnpm(useGlobalPnpm)
@@ -303,15 +305,15 @@ public class DevModeInitializer implements Serializable {
                 .withProductionMode(config.isProductionMode())
                 .withPostinstallPackages(
                         Arrays.asList(additionalPostinstallPackages))
-                .withFrontendHotdeploy(config.frontendHotdeploy())
-                .withDevBundleBuild(!config.isProductionMode()
-                        && !config.frontendHotdeploy());
+                .withFrontendHotdeploy(
+                        mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
+                .withDevBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE);
         ;
         NodeTasks tasks = new NodeTasks(options);
 
         Runnable runnable = () -> {
             runNodeTasks(context, tokenFileData, tasks);
-            if (config.frontendHotdeploy()) {
+            if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
                 // For Vite, wait until a VaadinServlet is deployed so we know
                 // which frontend servlet path to use
                 if (VaadinServlet.getFrontendMapping() == null) {
@@ -333,7 +335,7 @@ public class DevModeInitializer implements Serializable {
                 Lookup.of(config, ApplicationConfiguration.class));
         int port = Integer
                 .parseInt(config.getStringProperty("devServerPort", "0"));
-        if (!config.frontendHotdeploy()) {
+        if (mode == Mode.DEVELOPMENT_BUNDLE) {
             nodeTasksFuture.join();
             return null;
         } else {
