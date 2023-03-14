@@ -231,8 +231,7 @@ export class ThemeEditor extends LitElement {
         this.baseTheme = detectTheme(metadata);
 
         this.refreshTheme({
-          // Reset scope type to local / instance whenever a new component is picked
-          type: ThemeScopeType.local,
+          type: this.scope?.type || ThemeScopeType.local,
           metadata,
           component
         });
