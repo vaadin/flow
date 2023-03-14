@@ -1,1 +1,0 @@
-{"version":3,"file":"hsla-string-color-picker.d.ts","sourceRoot":"","sources":["src/hsla-string-color-picker.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,cAAc,EAAE,MAAM,kCAAkC,CAAC;AAElE;;;;;;;;;;;;;;;;GAgBG;AACH,qBAAa,qBAAsB,SAAQ,cAAc;CAAG;AAI5D,OAAO,CAAC,MAAM,CAAC;IACb,UAAU,qBAAqB;QAC7B,0BAA0B,EAAE,qBAAqB,CAAC;KACnD;CACF"}

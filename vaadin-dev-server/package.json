@@ -1,10 +1,11 @@
 {
   "scripts": {
+    "build": "vite build",
     "start": "web-dev-server --node-resolve",
     "test": "web-test-runner --node-resolve",
     "test-watch": "web-test-runner --node-resolve --watch",
     "patch-app": "node patch-application.js",
-    "prettier": "prettier --write src/main/resources/META-INF/frontend"
+    "prettier": "prettier --write frontend"
   },
   "devDependencies": {
     "@koa/cors": "^4.0.0",
@@ -16,11 +17,13 @@
     "@web/dev-server-esbuild": "^0.3.3",
     "@web/test-runner": "^0.15.0",
     "prettier": "^2.8.4",
-    "sinon": "^15.0.1"
+    "sinon": "^15.0.1",
+    "vite": "^4.1.4"
   },
   "dependencies": {
     "@vaadin/button": "24.0.0",
     "@vaadin/overlay": "24.0.0",
-    "lit": "^2.6.1"
+    "lit": "^2.6.1",
+    "vanilla-colorful": "^0.7.2"
   }
 }
