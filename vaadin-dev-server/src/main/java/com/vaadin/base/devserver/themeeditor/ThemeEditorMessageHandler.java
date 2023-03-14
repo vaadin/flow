@@ -31,7 +31,6 @@ public class ThemeEditorMessageHandler
         this.themeModifier = new ThemeModifier(context);
         this.handlers.add(new RulesHandler(this, this));
         this.handlers.add(new ClassNamesHandler(this));
-        this.handlers.add(new ComponentMetadataHandler(this));
         this.handlers.add(new HistoryHandler());
         this.handlers.add(new LoadRulesHandler(this, this));
         this.handlers.add(new LoadPreviewHandler(this));

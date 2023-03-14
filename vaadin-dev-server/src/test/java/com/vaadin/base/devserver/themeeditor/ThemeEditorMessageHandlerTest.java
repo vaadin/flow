@@ -102,22 +102,6 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
     }
 
     @Test
-    public void testHandleComponentMetadata() {
-        prepareComponentTracker(22);
-        ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
-        JsonObject data = Json.createObject();
-        String requestId = UUID.randomUUID().toString();
-        data.put("uiId", 0);
-        data.put("nodeId", 0);
-        data.put("requestId", requestId);
-        BaseResponse response = handler.handleDebugMessageData(
-                ThemeEditorCommand.COMPONENT_METADATA, data);
-        assertResponseOk(response, requestId);
-        Assert.assertTrue(
-                ((ComponentMetadataResponse) response).isAccessible());
-    }
-
-    @Test
     public void testHandleLoadPreview() {
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         JsonObject data = Json.createObject();
@@ -309,6 +293,8 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
                 .handleDebugMessageData(ThemeEditorCommand.LOAD_RULES, request);
         assertResponseOk(response, requestId);
         Assert.assertTrue(response instanceof LoadRulesResponse);
+        Assert.assertEquals(nodeId != null ? Boolean.TRUE : null,
+                ((LoadRulesResponse) response).isAccessible());
         return ((LoadRulesResponse) response).getRules();
     }
 

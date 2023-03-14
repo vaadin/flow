@@ -33,9 +33,14 @@ public class RulesHandler implements MessageHandler {
 
         // in case of instance request - load or generate unique class name
         if (request.isInstanceRequest()) {
-            String uniqueClassName = hasSourceModifier.getSourceModifier()
-                    .getUniqueClassName(request.getUiId(), request.getNodeId());
-            rules.forEach(rule -> rule.setClassName(uniqueClassName));
+            boolean accessible = hasSourceModifier.getSourceModifier()
+                    .isAccessible(request.getUiId(), request.getNodeId());
+            if (accessible) {
+                String uniqueClassName = hasSourceModifier.getSourceModifier()
+                        .getUniqueClassName(request.getUiId(),
+                                request.getNodeId());
+                rules.forEach(rule -> rule.setClassName(uniqueClassName));
+            }
         }
 
         List<CssRule> currentRules = new ArrayList<>();

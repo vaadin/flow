@@ -33,20 +33,12 @@ public class JavaSourceModifier {
 
     private VaadinContext context;
 
-    public static class ComponentMetadata {
-        private boolean accessible;
-
-        public boolean isAccessible() {
-            return accessible;
-        }
-
-        public void setAccessible(boolean accessible) {
-            this.accessible = accessible;
-        }
-    }
-
     private static class ClassNameHolder {
         String className;
+    }
+
+    private static class AccessibleHolder {
+        boolean accessible;
     }
 
     public JavaSourceModifier(VaadinContext context) {
@@ -203,19 +195,19 @@ public class JavaSourceModifier {
     }
 
     /**
-     * Returns metadata for picked component.
+     * Checks if component can be accessed within source code.
      *
      * @param uiId
      *            uiId of target component's UI
      * @param nodeId
      *            nodeIf of target component
-     * @return component metadata
+     * @return true if component is accessible, false otherwise
      */
-    public ComponentMetadata getMetadata(Integer uiId, Integer nodeId) {
+    public boolean isAccessible(Integer uiId, Integer nodeId) {
         assert uiId != null && nodeId != null;
 
+        AccessibleHolder holder = new AccessibleHolder();
         try {
-            ComponentMetadata metadata = new ComponentMetadata();
             VaadinSession session = getSession();
             getSession().access(() -> {
                 Component component = getComponent(session, uiId, nodeId);
@@ -229,12 +221,12 @@ public class JavaSourceModifier {
 
                 try {
                     getVariableDeclarationExpressionStmt(cu, location);
-                    metadata.setAccessible(true);
+                    holder.accessible = true;
                 } catch (Exception ex) {
-                    metadata.setAccessible(false);
+
                 }
             }).get(5, TimeUnit.SECONDS);
-            return metadata;
+            return holder.accessible;
         } catch (Exception e) {
             throw new ThemeEditorException("Cannot generate metadata.", e);
         }

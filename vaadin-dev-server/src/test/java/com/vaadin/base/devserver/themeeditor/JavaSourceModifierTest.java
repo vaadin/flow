@@ -153,18 +153,14 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
     public void componentPicked_componentAccessible() {
         prepareComponentTracker(22);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
-        JavaSourceModifier.ComponentMetadata metadata = modifier.getMetadata(0,
-                0);
-        Assert.assertTrue(metadata.isAccessible());
+        Assert.assertTrue(modifier.isAccessible(0, 0));
     }
 
     @Test
     public void componentPicked_componentNotAccessible() {
         prepareComponentTracker(44);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
-        JavaSourceModifier.ComponentMetadata metadata = modifier.getMetadata(0,
-                0);
-        Assert.assertFalse(metadata.isAccessible());
+        Assert.assertFalse(modifier.isAccessible(0, 0));
     }
 
     @Test

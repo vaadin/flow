@@ -34,12 +34,18 @@ public class LoadRulesHandler implements MessageHandler {
         // no filter by default
         Predicate<String> filter = selector -> true;
 
+        Boolean accessible = null;
         // in case of instance request - load or generate unique class name
         if (request.isInstanceRequest()) {
-            String uniqueClassName = hasSourceModifier.getSourceModifier()
-                    .getUniqueClassName(request.getUiId(), request.getNodeId());
-            filter = filter
-                    .and(selector -> selector.contains("." + uniqueClassName));
+            accessible = hasSourceModifier.getSourceModifier()
+                    .isAccessible(request.getUiId(), request.getNodeId());
+            if (accessible) {
+                String uniqueClassName = hasSourceModifier.getSourceModifier()
+                        .getUniqueClassName(request.getUiId(),
+                                request.getNodeId());
+                filter = filter.and(
+                        selector -> selector.contains("." + uniqueClassName));
+            }
         }
 
         if (request.getSelectorFilter() != null) {
@@ -48,10 +54,11 @@ public class LoadRulesHandler implements MessageHandler {
         }
 
         final Predicate<String> filterFinal = filter;
+        final Boolean accessibleFinal = accessible;
         return new ExecuteAndUndo(() -> {
             List<CssRule> rules = hasThemeModifier.getThemeModifier()
                     .getCssRules(filterFinal);
-            return new LoadRulesResponse(rules);
+            return new LoadRulesResponse(rules, accessibleFinal);
         }, Optional.empty());
     }
 
