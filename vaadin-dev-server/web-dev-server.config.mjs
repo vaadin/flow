@@ -12,7 +12,7 @@ export default {
     }),
     // Enable hot module reload for dev tools components
     hmrPlugin({
-      include: ['src/main/resources/META-INF/frontend/vaadin-dev-tools/**/*'],
+      include: ['frontend/**/*'],
       presets: [presets.lit]
     }),
   ],

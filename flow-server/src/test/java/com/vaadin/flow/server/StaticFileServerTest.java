@@ -171,7 +171,15 @@ public class StaticFileServerTest implements Serializable {
 
         configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
-
+        Mockito.when(configuration.getMode()).thenAnswer(q -> {
+            if (configuration.isProductionMode()) {
+                return Mode.PRODUCTION;
+            } else if (configuration.frontendHotdeploy()) {
+                return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD;
+            } else {
+                return Mode.DEVELOPMENT_BUNDLE;
+            }
+        });
         Mockito.when(servletService.getDeploymentConfiguration())
                 .thenReturn(configuration);
 
