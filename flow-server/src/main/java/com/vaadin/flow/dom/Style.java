@@ -209,7 +209,7 @@ public interface Style extends Serializable {
         return applyOrErase("display", value);
     }
 
-    // PostFixed with "Css" to avoid collician with java.lang.Float
+    // PostFixed with "Css" to avoid a collision with java.lang.Float
     /**
      * Css values for the float property.
      */
