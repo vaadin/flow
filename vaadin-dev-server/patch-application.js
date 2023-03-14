@@ -24,7 +24,7 @@ if (!fs.existsSync(vaadinFilePath)) {
 // - add HMR script from @web/dev-server
 // - add the vaadin-dev-tools hosted by web-dev-server with HMR support
 const webDevServerUrl = 'http://localhost:8000';
-const devToolsImport = "import 'Frontend/generated/jar-resources/vaadin-dev-tools.js';";
+const devToolsImport = "import 'Frontend/generated/jar-resources/vaadin-dev-tools/vaadin-dev-tools.js';";
 const vaadinFileContent = fs.readFileSync(vaadinFilePath, 'utf8');
 
 const isPatched = vaadinFileContent.includes('__web-dev-server__web-socket.js');
@@ -41,7 +41,7 @@ document.body.append(hmrScript);
 
 const devToolsScript = document.createElement("script");
 devToolsScript.setAttribute("type", "module");
-devToolsScript.setAttribute("src", "${webDevServerUrl}/src/main/resources/META-INF/frontend/vaadin-dev-tools/vaadin-dev-tools.ts");
+devToolsScript.setAttribute("src", "${webDevServerUrl}/frontend/vaadin-dev-tools.ts");
 document.body.append(devToolsScript);
 `;
 

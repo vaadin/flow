@@ -41,6 +41,11 @@ import checker from 'vite-plugin-checker';
 import postcssLit
   from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 
+import { createRequire } from 'module';
+
+// Make `require` compatible with ES modules
+const require = createRequire(import.meta.url);
+
 const appShellUrl = '.';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
