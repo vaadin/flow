@@ -45,7 +45,7 @@ public class JavaSourceModifier {
         }
     }
 
-    private class ClassNameHolder {
+    private static class ClassNameHolder {
         String className;
     }
 
