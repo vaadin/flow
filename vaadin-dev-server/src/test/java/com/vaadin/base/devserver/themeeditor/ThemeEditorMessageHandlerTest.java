@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import static com.vaadin.base.devserver.themeeditor.JavaSourceModifier.UNIQUE_CLASSNAME_PREFIX;
 import static com.vaadin.base.devserver.themeeditor.ThemeEditorCommand.CODE_ERROR;
 import static com.vaadin.base.devserver.themeeditor.ThemeEditorCommand.CODE_OK;
 
@@ -82,9 +83,14 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
     @Test
     public void testHandleThemeEditorRules() {
+        prepareComponentTracker(22);
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
-        setRule(0, "id1", handler, "vaadin-button::part(label)", "color",
+        // set global rules for vaadin-button
+        setRule(0, null, "id1", handler, "vaadin-button", "label", "color",
                 "red");
+        // set instance specific rules for given vaadin-button
+        setRule(0, 0, "id2", handler, "vaadin-button", "label", "color",
+                "brown");
     }
 
     @Test
@@ -126,8 +132,26 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
     @Test
     public void testHandleLoadRules() {
+        prepareComponentTracker(22);
+
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
-        loadRules(0, "id1", handler, "vaadin-button");
+        setRule(0, null, "id1", handler, "vaadin-button", "label", "color",
+                "red");
+        setRule(0, 0, "id2", handler, "vaadin-button", "label", "color",
+                "brown");
+
+        List<CssRule> rules = loadRules(0, 0, "id3", handler, "vaadin-button");
+        Assert.assertEquals(1, rules.size());
+        Assert.assertNotNull(rules.get(0).getClassName());
+        Assert.assertTrue(rules.get(0).getClassName()
+                .startsWith(UNIQUE_CLASSNAME_PREFIX));
+        Assert.assertEquals("brown", rules.get(0).getProperties().get("color"));
+
+        rules = loadRules(0, null, "id4", handler, "vaadin-button");
+        Assert.assertEquals(2, rules.size());
+
+        rules = loadRules(0, null, "id5", handler, "vaadin-button-fake");
+        Assert.assertEquals(0, rules.size());
     }
 
     @Test
@@ -184,12 +208,14 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
     public void testHistoryUndo_ruleRevert() {
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         // set rules
-        setRule(0, "id1", handler, "vaadin-button", "color", "red");
-        setRule(0, "id2", handler, "vaadin-button", "color", "brown");
+        setRule(0, null, "id1", handler, "vaadin-button", null, "color", "red");
+        setRule(0, null, "id2", handler, "vaadin-button", null, "color",
+                "brown");
         // undo
         undoRedo(0, "id3", true, "id2", handler);
         // validate if value has been unset
-        List<CssRule> rules = loadRules(0, "id4", handler, "vaadin-button");
+        List<CssRule> rules = loadRules(0, null, "id4", handler,
+                "vaadin-button");
         Assert.assertEquals(1, rules.size());
         Assert.assertEquals("red", rules.get(0).getProperties().get("color"));
     }
@@ -198,12 +224,14 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
     public void testHistoryUndo_ruleRemoved() {
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         // set rules
-        setRule(0, "id1", handler, "vaadin-button", "color", "red");
-        setRule(0, "id2", handler, "vaadin-button", "font-size", "12px");
+        setRule(0, null, "id1", handler, "vaadin-button", null, "color", "red");
+        setRule(0, null, "id2", handler, "vaadin-button", null, "font-size",
+                "12px");
         // undo
         undoRedo(0, "id3", true, "id2", handler);
         // validate if value has been unset
-        List<CssRule> rules = loadRules(0, "id4", handler, "vaadin-button");
+        List<CssRule> rules = loadRules(0, null, "id4", handler,
+                "vaadin-button");
         Assert.assertEquals(1, rules.size());
         Assert.assertNull(rules.get(0).getProperties().get("font-size"));
     }
@@ -212,18 +240,20 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
     public void testHistoryRedo() {
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         // set rules
-        setRule(0, "id1", handler, "vaadin-button", "color", "red");
-        setRule(0, "id2", handler, "vaadin-button", "font-size", "12px");
+        setRule(0, null, "id1", handler, "vaadin-button", null, "color", "red");
+        setRule(0, null, "id2", handler, "vaadin-button", null, "font-size",
+                "12px");
         // undo
         undoRedo(0, "id3", true, "id2", handler);
         // validate if value has been unset
-        List<CssRule> rules = loadRules(0, "id4", handler, "vaadin-button");
+        List<CssRule> rules = loadRules(0, null, "id4", handler,
+                "vaadin-button");
         Assert.assertEquals(1, rules.size());
         Assert.assertNull(rules.get(0).getProperties().get("font-size"));
         // redo
         undoRedo(0, "id4", false, "id2", handler);
         // validate if value has been set again
-        rules = loadRules(0, "id4", handler, "vaadin-button");
+        rules = loadRules(0, null, "id4", handler, "vaadin-button");
         Assert.assertEquals(1, rules.size());
         Assert.assertEquals("12px",
                 rules.get(0).getProperties().get("font-size"));
@@ -265,11 +295,15 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
         Assert.assertNotNull(((ErrorResponse) response).getMessage());
     }
 
-    private List<CssRule> loadRules(Integer uiId, String requestId,
-            ThemeEditorMessageHandler handler, String selector) {
+    private List<CssRule> loadRules(Integer uiId, Integer nodeId,
+            String requestId, ThemeEditorMessageHandler handler,
+            String selector) {
         JsonObject request = Json.createObject();
         request.put("requestId", requestId);
         request.put("uiId", uiId);
+        if (nodeId != null) {
+            request.put("nodeId", nodeId);
+        }
         request.put("selectorFilter", selector);
         BaseResponse response = handler
                 .handleDebugMessageData(ThemeEditorCommand.LOAD_RULES, request);
@@ -278,16 +312,22 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
         return ((LoadRulesResponse) response).getRules();
     }
 
-    private void setRule(Integer uiId, String requestId,
-            ThemeEditorMessageHandler handler, String selector, String property,
-            String value) {
+    private void setRule(Integer uiId, Integer nodeId, String requestId,
+            ThemeEditorMessageHandler handler, String tagName, String partName,
+            String property, String value) {
         JsonObject data = Json.createObject();
         data.put("requestId", requestId);
         data.put("uiId", uiId);
+        if (nodeId != null) {
+            data.put("nodeId", nodeId);
+        }
 
         JsonArray rules = Json.createArray();
         JsonObject rule = Json.createObject();
-        rule.put("selector", selector);
+        rule.put("tagName", tagName);
+        if (partName != null) {
+            rule.put("partName", partName);
+        }
         JsonObject properties = Json.createObject();
         properties.put(property, value);
         rule.put("properties", properties);

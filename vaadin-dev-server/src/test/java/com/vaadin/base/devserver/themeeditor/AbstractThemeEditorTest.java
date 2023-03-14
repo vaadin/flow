@@ -33,6 +33,10 @@ public abstract class AbstractThemeEditorTest {
 
     protected String FRONTEND_NO_THEME_FOLDER = "themeeditor-empty/META-INF/frontend";
 
+    protected String TAG_NAME = "vaadin-text-field";
+
+    protected String PART_NAME = "label";
+
     protected String SELECTOR_WITH_PART = "vaadin-text-field::part(label)";
 
     protected class TestThemeModifier extends ThemeModifier {

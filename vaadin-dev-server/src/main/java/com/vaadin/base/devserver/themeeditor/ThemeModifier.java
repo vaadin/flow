@@ -1,10 +1,7 @@
 package com.vaadin.base.devserver.themeeditor;
 
 import com.helger.css.ECSSVersion;
-import com.helger.css.decl.CSSDeclaration;
-import com.helger.css.decl.CSSImportRule;
-import com.helger.css.decl.CSSStyleRule;
-import com.helger.css.decl.CascadingStyleSheet;
+import com.helger.css.decl.*;
 import com.helger.css.reader.CSSReader;
 import com.helger.css.writer.CSSWriter;
 import com.vaadin.base.devserver.themeeditor.utils.CssRule;
@@ -71,11 +68,9 @@ public class ThemeModifier {
                     .entrySet()) {
                 if (property.getValue() != null
                         && !property.getValue().isBlank()) {
-                    setCssProperty(styleSheet, rule.getSelector(),
-                            property.getKey(), property.getValue());
+                    setCssProperty(styleSheet, rule);
                 } else {
-                    removeCssProperty(styleSheet, rule.getSelector(),
-                            property.getKey());
+                    removeCssProperty(styleSheet, rule);
                 }
             }
         }
@@ -111,16 +106,7 @@ public class ThemeModifier {
                 .filter(rule -> rule.getSelectorCount() > 0)
                 .filter(rule -> selectorFilter
                         .test(rule.getSelectorAtIndex(0).getAsCSSString()))
-                .map(rule -> {
-                    String selector = rule.getSelectorAtIndex(0)
-                            .getAsCSSString();
-                    Map<String, String> properties = new HashMap<>();
-                    rule.getAllDeclarations().forEach(cssDeclaration -> {
-                        properties.put(cssDeclaration.getProperty(),
-                                cssDeclaration.getExpressionAsCSSString());
-                    });
-                    return new CssRule(selector, properties);
-                }).toList();
+                .map(this::toCssRule).toList();
     }
 
     protected String getCssFileName() {
@@ -190,15 +176,20 @@ public class ThemeModifier {
     }
 
     protected void setCssProperty(CascadingStyleSheet styleSheet,
-            String selector, String property, String newValue) {
-        CSSStyleRule newRule = createStyleRule(selector, property, newValue);
+            CssRule cssRuleSingleValue) {
+        Map.Entry<String, String> property = cssRuleSingleValue.getProperties()
+                .entrySet().iterator().next();
+        CSSStyleRule newRule = createStyleRule(cssRuleSingleValue.getSelector(),
+                property.getKey(), property.getValue());
         CSSStyleRule existingRule = findRuleBySelector(styleSheet, newRule);
         if (existingRule == null) {
             styleSheet.addRule(newRule);
         } else {
+            String propertyName = cssRuleSingleValue.getProperties().keySet()
+                    .iterator().next();
             CSSDeclaration newDeclaration = newRule.getDeclarationAtIndex(0);
             CSSDeclaration existingDeclaration = existingRule
-                    .getDeclarationOfPropertyName(property);
+                    .getDeclarationOfPropertyName(propertyName);
             if (existingDeclaration == null) {
                 existingRule.addDeclaration(newDeclaration);
             } else {
@@ -211,9 +202,11 @@ public class ThemeModifier {
     }
 
     protected void removeCssProperty(CascadingStyleSheet styleSheet,
-            String selector, String property) {
+            CssRule rule) {
         // value not considered
-        CSSStyleRule newRule = createStyleRule(selector, property, "inherit");
+        String propertyName = rule.getProperties().keySet().iterator().next();
+        CSSStyleRule newRule = createStyleRule(rule.getSelector(), propertyName,
+                "none");
         CSSStyleRule existingRule = findRuleBySelector(styleSheet, newRule);
         if (existingRule != null) {
             removeProperty(existingRule, newRule);
@@ -321,6 +314,41 @@ public class ThemeModifier {
         }
 
         return themeFolders[0];
+    }
+
+    protected CssRule toCssRule(CSSStyleRule rule) {
+        CSSSelector selector = rule.getSelectorAtIndex(0);
+        String tagName = getTagName(selector);
+        String className = getClassName(selector);
+        String partName = getPartName(selector);
+        Map<String, String> properties = new HashMap<>();
+        rule.getAllDeclarations()
+                .forEach(cssDeclaration -> properties.put(
+                        cssDeclaration.getProperty(),
+                        cssDeclaration.getExpressionAsCSSString()));
+        return new CssRule(tagName, partName, className, properties);
+    }
+
+    protected String getTagName(CSSSelector selector) {
+        // assume tag name is always first
+        return selector.getMemberAtIndex(0).getAsCSSString();
+    }
+
+    protected String getClassName(CSSSelector selector) {
+        return selector.getAllMembers().stream()
+                .filter(CSSSelectorSimpleMember.class::isInstance)
+                .map(CSSSelectorSimpleMember.class::cast)
+                .map(CSSSelectorSimpleMember::getValue)
+                .filter(v -> v.startsWith(".")).map(v -> v.substring(1))
+                .findFirst().orElse(null);
+    }
+
+    protected String getPartName(CSSSelector selector) {
+        return selector.getAllMembers().stream()
+                .filter(CSSSelectorMemberFunctionLike.class::isInstance)
+                .map(CSSSelectorMemberFunctionLike.class::cast)
+                .map(CSSSelectorMemberFunctionLike::getParameterExpression)
+                .map(CSSExpression::getAsCSSString).findFirst().orElse(null);
     }
 
 }

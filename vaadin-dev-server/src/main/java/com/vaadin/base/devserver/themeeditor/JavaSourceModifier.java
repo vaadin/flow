@@ -23,14 +23,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class JavaSourceModifier {
+
+    public static final String UNIQUE_CLASSNAME_PREFIX = "tb-";
 
     private VaadinContext context;
 
@@ -44,6 +43,10 @@ public class JavaSourceModifier {
         public void setAccessible(boolean accessible) {
             this.accessible = accessible;
         }
+    }
+
+    private class ClassNameHolder {
+        String className;
     }
 
     public JavaSourceModifier(VaadinContext context) {
@@ -100,6 +103,60 @@ public class JavaSourceModifier {
 
             writeFile(cu, sourceFile);
         });
+    }
+
+    /**
+     * Gets instance unique classname if exists otherwise generates and sets
+     * new.
+     *
+     * @param uiId
+     *            uiId of target component's UI
+     * @param nodeId
+     *            nodeIf of target component
+     * @return component unique classname
+     */
+    public String getUniqueClassName(Integer uiId, Integer nodeId) {
+        assert uiId != null && nodeId != null;
+
+        try {
+            ClassNameHolder holder = new ClassNameHolder();
+            VaadinSession session = getSession();
+            getSession().access(() -> {
+                Component component = getComponent(session, uiId, nodeId);
+                ComponentTracker.Location location = getComponentLocation(
+                        component);
+
+                File sourceFolder = getSourceFolder(location);
+                File sourceFile = new File(sourceFolder, location.filename());
+                SourceRoot root = new SourceRoot(sourceFolder.toPath());
+                CompilationUnit cu = LexicalPreservingPrinter
+                        .setup(root.parse("", location.filename()));
+
+                ExpressionStmt node = getVariableDeclarationExpressionStmt(cu,
+                        location);
+
+                BlockStmt parentBlock = getParentBlockStmt(node).get();
+                String variableName = getVariableName(node);
+
+                Optional<String> className = findThemeEditorClassNameInBlockStmt(
+                        parentBlock, variableName);
+                if (className.isPresent()) {
+                    holder.className = className.get();
+                } else {
+                    holder.className = generateUniqueClassName();
+                    ExpressionStmt methodCall = createMethodCallExprStmt(
+                            variableName, "addClassName", holder.className);
+                    parentBlock.addStatement(
+                            getIndexOfNode(parentBlock, node) + 1, methodCall);
+                    writeFile(cu, sourceFile);
+                }
+
+            }).get(5, TimeUnit.SECONDS);
+            return holder.className;
+        } catch (Exception e) {
+            throw new ThemeEditorException(
+                    "Cannot get or set unique class name.", e);
+        }
     }
 
     /**
@@ -184,8 +241,15 @@ public class JavaSourceModifier {
     }
 
     protected String getVariableName(ExpressionStmt node) {
-        return node.getExpression().asVariableDeclarationExpr().getVariables()
-                .get(0).getNameAsString();
+        if (node.getExpression().isVariableDeclarationExpr()) {
+            return node.getExpression().asVariableDeclarationExpr()
+                    .getVariables().get(0).getNameAsString();
+        } else if (node.getExpression().isMethodCallExpr()) {
+            return node.getExpression().asMethodCallExpr().getScope()
+                    .map(e -> e.asNameExpr().getNameAsString()).stream()
+                    .findFirst().orElse(null);
+        }
+        return null;
     }
 
     // finds variable declaration on given location line
@@ -237,6 +301,29 @@ public class JavaSourceModifier {
 
     protected VaadinSession getSession() {
         return VaadinSession.getCurrent();
+    }
+
+    protected Optional<String> findThemeEditorClassNameInBlockStmt(BlockStmt n,
+            String variableName) {
+        return n.getStatements().stream()
+                .filter(ExpressionStmt.class::isInstance)
+                .map(ExpressionStmt.class::cast)
+                .filter(e -> e.getExpression().isMethodCallExpr()) // filter
+                                                                   // method
+                                                                   // calls
+                .filter(e -> Objects.equals(variableName, getVariableName(e))) // filter
+                                                                               // variable
+                                                                               // scope
+                .filter(e -> Objects.equals("addClassName",
+                        e.getExpression().asMethodCallExpr().getNameAsString())) // filter
+                                                                                 // .addClassName
+                                                                                 // calls
+                .map(e -> e.getExpression().asMethodCallExpr().getArgument(0)
+                        .asStringLiteralExpr().asString()) // get first argument
+                .filter(arg -> arg.startsWith(UNIQUE_CLASSNAME_PREFIX)) // filter
+                                                                        // tb-*
+                                                                        // arguments
+                .findFirst();
     }
 
     protected Optional<ExpressionStmt> findExpressionStmtInBlockStmt(
@@ -296,6 +383,10 @@ public class JavaSourceModifier {
                 location.methodName(), location.filename(),
                 location.lineNumber());
 
+    }
+
+    protected String generateUniqueClassName() {
+        return UNIQUE_CLASSNAME_PREFIX + UUID.randomUUID().hashCode();
     }
 
 }

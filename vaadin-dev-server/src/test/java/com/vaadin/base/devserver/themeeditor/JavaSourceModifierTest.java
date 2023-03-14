@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Arrays;
 
+import static com.vaadin.base.devserver.themeeditor.JavaSourceModifier.UNIQUE_CLASSNAME_PREFIX;
+
 public class JavaSourceModifierTest extends AbstractThemeEditorTest {
 
     @Before
@@ -38,14 +40,14 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
 
     @Test
     public void classNameAdd_javaUpdated_clean() {
-        classNameAdd_javaUpdated(22, 23, 24);
+        classNameAdd_javaUpdated(22, 23, 24, "beautiful");
     }
 
     public void classNameAdd_javaUpdated(int declarationLine, int expectedLine1,
-            int expectedLine2) {
+            int expectedLine2, String className) {
         prepareComponentTracker(declarationLine);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
-        modifier.setClassNames(0, 0, Arrays.asList("bold", "beautiful"));
+        modifier.setClassNames(0, 0, Arrays.asList("bold", className));
 
         CompilationUnit cu = getCompilationUnit();
         Node n1 = cu.accept(new LineNumberVisitor(), expectedLine1);
@@ -57,7 +59,7 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         ExpressionStmt expr1 = modifier.createMethodCallExprStmt("textField",
                 "addClassName", "bold");
         ExpressionStmt expr2 = modifier.createMethodCallExprStmt("textField",
-                "addClassName", "beautiful");
+                "addClassName", className);
 
         Assert.assertEquals(expr1, n1);
         Assert.assertEquals(expr2, n2);
@@ -133,7 +135,7 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
     public void messedFileModified_structurePreserved() {
         copy("TestView_messed.java", "TestView.java");
         classNameRemove_javaUpdated(25, 47);
-        classNameAdd_javaUpdated(25, 27, 28);
+        classNameAdd_javaUpdated(25, 27, 28, "beautiful");
         try {
             File javaFolder = TestUtils
                     .getTestFolder("java/org/vaadin/example");
@@ -163,6 +165,35 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         JavaSourceModifier.ComponentMetadata metadata = modifier.getMetadata(0,
                 0);
         Assert.assertFalse(metadata.isAccessible());
+    }
+
+    @Test
+    public void uniqueClassNameNotExists_javaUpdated() {
+        prepareComponentTracker(22);
+        JavaSourceModifier modifier = new TestJavaSourceModifier();
+        String uniqueClassName = modifier.getUniqueClassName(0, 0);
+        Assert.assertNotNull(uniqueClassName);
+        Assert.assertTrue(uniqueClassName.startsWith(UNIQUE_CLASSNAME_PREFIX));
+
+        CompilationUnit cu = getCompilationUnit();
+        Node n1 = cu.accept(new LineNumberVisitor(), 23);
+
+        Assert.assertTrue(n1 instanceof ExpressionStmt);
+
+        ExpressionStmt expr1 = modifier.createMethodCallExprStmt("textField",
+                "addClassName", uniqueClassName);
+
+        Assert.assertEquals(expr1, n1);
+    }
+
+    @Test
+    public void uniqueClassNameExists_valueRetrieved() {
+        String expectedClassName = "tb-123456789";
+        classNameAdd_javaUpdated(22, 23, 24, expectedClassName);
+
+        JavaSourceModifier modifier = new TestJavaSourceModifier();
+        String uniqueClassName = modifier.getUniqueClassName(0, 0);
+        Assert.assertEquals(expectedClassName, uniqueClassName);
     }
 
     private CompilationUnit getCompilationUnit() {
