@@ -1,8 +1,8 @@
 import { css, html, LitElement, PropertyValues, render } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
+import { RgbaStringBase } from 'vanilla-colorful/lib/entrypoints/rgba-string';
 // @ts-ignore
 import { PositionMixin } from '../../vendor/@vaadin/overlay/src/vaadin-overlay-position-mixin.js';
-import '../../vendor/vanilla-colorful/rgba-string-color-picker.js';
 
 export class ColorPickerChangeEvent extends CustomEvent<{ value: string }> {
   constructor(value: string) {
@@ -211,11 +211,11 @@ export class ColorPickerOverlayContent extends LitElement {
 
   render() {
     return html` <div>
-      <rgba-string-color-picker
+      <vaadin-dev-tools-rgba-string-color-picker
         class="picker"
         .color=${this.value}
         @color-changed=${this.handlePickerChange}
-      ></rgba-string-color-picker>
+      ></vaadin-dev-tools-rgba-string-color-picker>
       ${this.renderSwatches()}
     </div>`;
   }
@@ -266,3 +266,6 @@ customElements.whenDefined('vaadin-overlay').then(() => {
 
   customElements.define('vaadin-dev-tools-color-picker-overlay', ColorPickerOverlay as any);
 });
+
+// Define dev-tools specific element for the vanilla-colorful RGBA picker
+customElements.define('vaadin-dev-tools-rgba-string-color-picker', RgbaStringBase);
