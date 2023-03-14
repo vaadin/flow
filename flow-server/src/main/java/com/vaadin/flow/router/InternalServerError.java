@@ -137,10 +137,9 @@ public class InternalServerError extends Component
                             + "As a result the logger doesn't do any real logging. "
                             + "Add some binding as a dependency to your project. "
                             + "See details ");
-            logInfo.getStyle().set("marginTop", "10px");
-            logInfo.getStyle().set("marginBottom", "10px");
+            logInfo.getStyle().setMargin("10px 0");
             logInfo.getStyle().set("fontWeight", "bold");
-            logInfo.getStyle().set("color", "#6495ED");
+            logInfo.getStyle().setColor("#6495ED");
             logInfo.appendChild(ElementFactory.createAnchor(
                     "https://www.slf4j.org/manual.html#swapping", "here"));
             getElement().appendChild(logInfo);
