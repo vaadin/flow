@@ -167,7 +167,7 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
     public void uniqueClassNameNotExists_javaUpdated() {
         prepareComponentTracker(22);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
-        String uniqueClassName = modifier.getUniqueClassName(0, 0);
+        String uniqueClassName = modifier.getUniqueClassName(0, 0, true);
         Assert.assertNotNull(uniqueClassName);
         Assert.assertTrue(uniqueClassName.startsWith(UNIQUE_CLASSNAME_PREFIX));
 
@@ -188,7 +188,7 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         classNameAdd_javaUpdated(22, 23, 24, expectedClassName);
 
         JavaSourceModifier modifier = new TestJavaSourceModifier();
-        String uniqueClassName = modifier.getUniqueClassName(0, 0);
+        String uniqueClassName = modifier.getUniqueClassName(0, 0, false);
         Assert.assertEquals(expectedClassName, uniqueClassName);
     }
 

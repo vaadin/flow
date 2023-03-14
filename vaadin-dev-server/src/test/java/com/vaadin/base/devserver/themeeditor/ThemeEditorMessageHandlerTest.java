@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.base.devserver.DebugWindowMessage;
 import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
-import com.vaadin.base.devserver.themeeditor.messages.ComponentMetadataResponse;
 import com.vaadin.base.devserver.themeeditor.messages.ErrorResponse;
 import com.vaadin.base.devserver.themeeditor.messages.LoadRulesResponse;
 import com.vaadin.base.devserver.themeeditor.utils.CssRule;
@@ -86,11 +85,13 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
         prepareComponentTracker(22);
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         // set global rules for vaadin-button
-        setRule(0, null, "id1", handler, "vaadin-button", "label", "color",
-                "red");
+        BaseResponse response = setRule(0, null, "id1", handler,
+                "vaadin-button", "label", "color", "red");
+        assertResponseOk(response, "id1");
         // set instance specific rules for given vaadin-button
-        setRule(0, 0, "id2", handler, "vaadin-button", "label", "color",
-                "brown");
+        response = setRule(0, 0, "id2", handler, "vaadin-button", "label",
+                "color", "brown");
+        assertResponseOk(response, "id2");
     }
 
     @Test
@@ -119,10 +120,12 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
         prepareComponentTracker(22);
 
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
-        setRule(0, null, "id1", handler, "vaadin-button", "label", "color",
-                "red");
-        setRule(0, 0, "id2", handler, "vaadin-button", "label", "color",
-                "brown");
+        BaseResponse response = setRule(0, null, "id1", handler,
+                "vaadin-button", "label", "color", "red");
+        assertResponseOk(response, "id1");
+        response = setRule(0, 0, "id2", handler, "vaadin-button", "label",
+                "color", "brown");
+        assertResponseOk(response, "id2");
 
         List<CssRule> rules = loadRules(0, 0, "id3", handler, "vaadin-button");
         Assert.assertEquals(1, rules.size());
@@ -136,6 +139,16 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
         rules = loadRules(0, null, "id5", handler, "vaadin-button-fake");
         Assert.assertEquals(0, rules.size());
+    }
+
+    @Test
+    public void testHandleRules_notAccessible_exceptionIsThrown() {
+        prepareComponentTracker(42);
+        ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
+        // set instance specific rules for given vaadin-button
+        BaseResponse response = setRule(0, 0, "id1", handler, "vaadin-button",
+                "label", "color", "brown");
+        assertResponseError(response, "id1");
     }
 
     @Test
@@ -192,9 +205,12 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
     public void testHistoryUndo_ruleRevert() {
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         // set rules
-        setRule(0, null, "id1", handler, "vaadin-button", null, "color", "red");
-        setRule(0, null, "id2", handler, "vaadin-button", null, "color",
-                "brown");
+        BaseResponse response = setRule(0, null, "id1", handler,
+                "vaadin-button", null, "color", "red");
+        assertResponseOk(response, "id1");
+        response = setRule(0, null, "id2", handler, "vaadin-button", null,
+                "color", "brown");
+        assertResponseOk(response, "id2");
         // undo
         undoRedo(0, "id3", true, "id2", handler);
         // validate if value has been unset
@@ -208,9 +224,12 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
     public void testHistoryUndo_ruleRemoved() {
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         // set rules
-        setRule(0, null, "id1", handler, "vaadin-button", null, "color", "red");
-        setRule(0, null, "id2", handler, "vaadin-button", null, "font-size",
-                "12px");
+        BaseResponse response = setRule(0, null, "id1", handler,
+                "vaadin-button", null, "color", "red");
+        assertResponseOk(response, "id1");
+        response = setRule(0, null, "id2", handler, "vaadin-button", null,
+                "font-size", "12px");
+        assertResponseOk(response, "id2");
         // undo
         undoRedo(0, "id3", true, "id2", handler);
         // validate if value has been unset
@@ -224,9 +243,13 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
     public void testHistoryRedo() {
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         // set rules
-        setRule(0, null, "id1", handler, "vaadin-button", null, "color", "red");
-        setRule(0, null, "id2", handler, "vaadin-button", null, "font-size",
-                "12px");
+        BaseResponse response = setRule(0, null, "id1", handler,
+                "vaadin-button", null, "color", "red");
+        assertResponseOk(response, "id1");
+        response = setRule(0, null, "id2", handler, "vaadin-button", null,
+                "font-size", "12px");
+        assertResponseOk(response, "id2");
+
         // undo
         undoRedo(0, "id3", true, "id2", handler);
         // validate if value has been unset
@@ -298,7 +321,7 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
         return ((LoadRulesResponse) response).getRules();
     }
 
-    private void setRule(Integer uiId, Integer nodeId, String requestId,
+    private BaseResponse setRule(Integer uiId, Integer nodeId, String requestId,
             ThemeEditorMessageHandler handler, String tagName, String partName,
             String property, String value) {
         JsonObject data = Json.createObject();
@@ -319,9 +342,7 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
         rule.put("properties", properties);
         rules.set(0, rule);
         data.put("rules", rules);
-        BaseResponse response = handler
-                .handleDebugMessageData(ThemeEditorCommand.RULES, data);
-        assertResponseOk(response, requestId);
+        return handler.handleDebugMessageData(ThemeEditorCommand.RULES, data);
     }
 
     private void setClassNames(Integer uiId, String requestId,

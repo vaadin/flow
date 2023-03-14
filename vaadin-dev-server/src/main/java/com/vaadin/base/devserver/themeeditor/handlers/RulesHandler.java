@@ -3,10 +3,7 @@ package com.vaadin.base.devserver.themeeditor.handlers;
 import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
 import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
 import com.vaadin.base.devserver.themeeditor.messages.RulesRequest;
-import com.vaadin.base.devserver.themeeditor.utils.CssRule;
-import com.vaadin.base.devserver.themeeditor.utils.HasSourceModifier;
-import com.vaadin.base.devserver.themeeditor.utils.HasThemeModifier;
-import com.vaadin.base.devserver.themeeditor.utils.MessageHandler;
+import com.vaadin.base.devserver.themeeditor.utils.*;
 import com.vaadin.flow.internal.JsonUtils;
 import elemental.json.JsonObject;
 
@@ -38,8 +35,11 @@ public class RulesHandler implements MessageHandler {
             if (accessible) {
                 String uniqueClassName = hasSourceModifier.getSourceModifier()
                         .getUniqueClassName(request.getUiId(),
-                                request.getNodeId());
+                                request.getNodeId(), true);
                 rules.forEach(rule -> rule.setClassName(uniqueClassName));
+            } else {
+                throw new ThemeEditorException(
+                        "Cannot modify unique CSS rules on inaccessible component.");
             }
         }
 

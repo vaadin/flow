@@ -105,9 +105,12 @@ public class JavaSourceModifier {
      *            uiId of target component's UI
      * @param nodeId
      *            nodeIf of target component
+     * @param createIfNotPresent
+     *            append classname if not present yet
      * @return component unique classname
      */
-    public String getUniqueClassName(Integer uiId, Integer nodeId) {
+    public String getUniqueClassName(Integer uiId, Integer nodeId,
+            boolean createIfNotPresent) {
         assert uiId != null && nodeId != null;
 
         try {
@@ -134,7 +137,7 @@ public class JavaSourceModifier {
                         parentBlock, variableName);
                 if (className.isPresent()) {
                     holder.className = className.get();
-                } else {
+                } else if (createIfNotPresent) {
                     holder.className = generateUniqueClassName();
                     ExpressionStmt methodCall = createMethodCallExprStmt(
                             variableName, "addClassName", holder.className);

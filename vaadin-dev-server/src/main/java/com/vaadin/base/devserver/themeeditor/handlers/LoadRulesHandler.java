@@ -42,9 +42,11 @@ public class LoadRulesHandler implements MessageHandler {
             if (accessible) {
                 String uniqueClassName = hasSourceModifier.getSourceModifier()
                         .getUniqueClassName(request.getUiId(),
-                                request.getNodeId());
-                filter = filter.and(
-                        selector -> selector.contains("." + uniqueClassName));
+                                request.getNodeId(), false);
+                if (uniqueClassName != null) {
+                    filter = filter.and(selector -> selector
+                            .contains("." + uniqueClassName));
+                }
             }
         }
 
