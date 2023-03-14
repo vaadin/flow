@@ -173,6 +173,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
     });
 
     lumoImports.forEach((lumoImport) => {
+      // Lumo is injected to the document by Lumo itself, except for the utility module
       if (lumoImport === 'utility') {
         lumoCssCode.push(`injectGlobalCss(${lumoImport}.cssText, target, true);\n`);
       } else {
