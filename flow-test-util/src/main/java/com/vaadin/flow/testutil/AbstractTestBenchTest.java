@@ -20,13 +20,17 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -435,4 +439,19 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
         return rootUrl;
     }
+
+    protected void assertImageEquals(Path pathToExpectedImage, String imageUrl)
+            throws IOException {
+        byte[] expectedImage = Files.readAllBytes(pathToExpectedImage);
+        if (imageUrl.startsWith("url(\"data")) {
+            String expectedUrl = "url(\"data:image/png;base64,"
+                    + Base64.getEncoder().encodeToString(expectedImage) + "\")";
+            Assert.assertEquals(expectedUrl, imageUrl);
+        } else if (imageUrl.startsWith("url(")) {
+            imageUrl = imageUrl.replaceFirst("url\\(['\"](.*)['\"]\\)", "$1");
+            byte[] actualImage = IOUtils.toByteArray(new URL(imageUrl));
+            Assert.assertArrayEquals(expectedImage, actualImage);
+        }
+    }
+
 }
