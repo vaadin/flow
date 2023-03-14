@@ -9,7 +9,7 @@ import { ComponentTheme, generateThemeRule, ThemeEditorState } from './model';
 import { detectTheme } from './detector';
 import { ThemePropertyValueChangeEvent } from './editors/base-property-editor';
 import { themePreview } from './preview';
-import { Connection } from '../vaadin-dev-tools';
+import { Connection } from '../connection';
 import { ThemeEditorApi } from './api';
 import { ThemeEditorHistory, ThemeEditorHistoryActions } from './history';
 
