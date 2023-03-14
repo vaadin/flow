@@ -23,6 +23,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.HasText.WhiteSpace;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.Style;
 
 public class HasTextTest {
 
@@ -47,8 +48,7 @@ public class HasTextTest {
 
     @Test
     public void getWhiteSpace_getStyleValue() {
-        hasText.getElement().getStyle().set("white-space", "inherit");
-
+        hasText.getElement().getStyle().setWhiteSpace(Style.WhiteSpace.INHERIT);
         Assert.assertEquals(WhiteSpace.INHERIT, hasText.getWhiteSpace());
     }
 

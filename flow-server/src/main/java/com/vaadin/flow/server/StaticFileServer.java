@@ -15,9 +15,8 @@
  */
 package com.vaadin.flow.server;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,8 +46,9 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Handles sending of resources from the WAR root (web content) or
@@ -259,8 +259,7 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         URL resourceUrl = null;
-        if (!deploymentConfiguration.isProductionMode()
-                && !deploymentConfiguration.frontendHotdeploy()) {
+        if (deploymentConfiguration.getMode() == Mode.DEVELOPMENT_BUNDLE) {
             if (filenameWithPath.startsWith(EXPRESS_MODE_BUNDLE_PATH_PREFIX)
                     || filenameWithPath.startsWith("/sw.js")) {
                 // Express mode bundle file
