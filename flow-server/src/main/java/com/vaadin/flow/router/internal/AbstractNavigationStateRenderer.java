@@ -983,7 +983,8 @@ public abstract class AbstractNavigationStateRenderer
         // Show a warning that live-reload may work counter-intuitively
         DeploymentConfiguration configuration = ui.getSession()
                 .getConfiguration();
-        if (configuration.getMode() == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
+        if (configuration.getMode() == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
+                && configuration.isDevModeLiveReloadEnabled()) {
             ui.getPage().executeJs(
                     "Vaadin.devTools.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");
         }
