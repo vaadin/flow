@@ -14,6 +14,7 @@ import { ThemeEditorHistory, ThemeEditorHistoryActions } from './history';
 import { ScopeChangeEvent } from './components/scope-selector';
 import './components/scope-selector';
 import './property-list';
+import { ComponentReference } from '../component-util';
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
@@ -33,6 +34,7 @@ export class ThemeEditor extends LitElement {
    */
   @state()
   private selectedComponentMetadata: ComponentMetadata | null = null;
+  private componentRef: ComponentReference | null = null;
   @state()
   private themeScope: ThemeScope = ThemeScope.local;
   /**
@@ -87,7 +89,7 @@ export class ThemeEditor extends LitElement {
       .picker .no-selection {
         font-style: italic;
       }
-      
+
       .actions {
         display: flex;
         align-items: center;
@@ -139,12 +141,12 @@ export class ThemeEditor extends LitElement {
         </div>
         <div class="actions">
           ${this.selectedComponentMetadata
-              ? html` <vaadin-dev-tools-theme-scope-selector
+            ? html` <vaadin-dev-tools-theme-scope-selector
                 .value=${this.themeScope}
                 .metadata=${this.selectedComponentMetadata}
                 @scope-change=${this.handleScopeChange}
               ></vaadin-dev-tools-theme-scope-selector>`
-              : null}
+            : null}
           <button
             class="icon-button"
             data-testid="undo"
@@ -187,10 +189,6 @@ export class ThemeEditor extends LitElement {
     `;
   }
 
-  private handleScopeChange(e: ScopeChangeEvent) {
-    this.themeScope = e.detail.value;
-  }
-
   private async pickComponent() {
     // Ensure component picker module is loaded
     await import('../component-picker.js');
@@ -214,9 +212,10 @@ export class ThemeEditor extends LitElement {
         }
 
         const scopeSelector = metadata.tagName;
-        const serverRules = await this.api.loadRules(scopeSelector);
+        const serverRules = await this.api.loadRules(scopeSelector, component);
 
         this.selectedComponentMetadata = metadata;
+        this.componentRef = component;
         this.themeScope = ThemeScope.local;
         this.baseTheme = detectTheme(metadata);
         this.editedTheme = ComponentTheme.fromServerRules(metadata, serverRules.rules);
@@ -225,8 +224,13 @@ export class ThemeEditor extends LitElement {
     });
   }
 
+  private handleScopeChange(e: ScopeChangeEvent) {
+    this.themeScope = e.detail.value;
+    this.refreshTheme();
+  }
+
   private async handlePropertyChange(e: ThemePropertyValueChangeEvent) {
-    if (!this.selectedComponentMetadata || !this.baseTheme || !this.editedTheme) {
+    if (!this.selectedComponentMetadata || !this.componentRef || !this.baseTheme || !this.editedTheme) {
       return;
     }
 
@@ -243,9 +247,10 @@ export class ThemeEditor extends LitElement {
       property.propertyName,
       value
     );
+    const componentRef = this.themeScope === ThemeScope.local ? this.componentRef : null;
     try {
       this.preventLiveReload();
-      const response = await this.api.setCssRules([updateRule]);
+      const response = await this.api.setCssRules([updateRule], componentRef);
       this.historyActions = this.history.push(response.requestId);
       await this.updateThemePreview();
     } catch (error) {
@@ -270,7 +275,8 @@ export class ThemeEditor extends LitElement {
       return;
     }
     const scopeSelector = this.selectedComponentMetadata.tagName;
-    const serverRules = await this.api.loadRules(scopeSelector);
+    const componentRef = this.themeScope === ThemeScope.local ? this.componentRef : null;
+    const serverRules = await this.api.loadRules(scopeSelector, componentRef);
 
     this.editedTheme = ComponentTheme.fromServerRules(this.selectedComponentMetadata, serverRules.rules);
     this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);

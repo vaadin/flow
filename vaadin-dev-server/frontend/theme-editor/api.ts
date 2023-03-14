@@ -1,4 +1,5 @@
 import { Connection } from '../connection';
+import { ComponentReference } from '../component-util';
 
 export enum Commands {
   response = 'themeEditorResponse',
@@ -87,7 +88,8 @@ export class ThemeEditorApi {
     }
   }
 
-  public setCssRules(rules: ServerCssRule[]): Promise<BaseResponse> {
+  public setCssRules(rules: ServerCssRule[], componentRef?: ComponentReference | null): Promise<BaseResponse> {
+    console.log('setCssRules', rules, componentRef?.nodeId);
     return this.sendRequest(Commands.setCssRules, {
       rules
     });
@@ -97,7 +99,8 @@ export class ThemeEditorApi {
     return this.sendRequest(Commands.loadPreview, {});
   }
 
-  public loadRules(selectorFilter: string): Promise<LoadRulesResponse> {
+  public loadRules(selectorFilter: string, componentRef?: ComponentReference | null): Promise<LoadRulesResponse> {
+    console.log('loadRules', selectorFilter, componentRef?.nodeId);
     return this.sendRequest(Commands.loadRules, { selectorFilter });
   }
 
