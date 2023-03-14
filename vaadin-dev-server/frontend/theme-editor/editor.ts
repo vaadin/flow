@@ -205,26 +205,28 @@ export class ThemeEditor extends LitElement {
       pickCallback: async (component) => {
         const metadata = await metadataRegistry.getMetadata(component);
         if (!metadata) {
+          this.selectedComponentMetadata = null;
+          this.componentRef = null;
           this.baseTheme = null;
           this.editedTheme = null;
           this.effectiveTheme = null;
           return;
         }
 
-        const scopeSelector = metadata.tagName;
-        const serverRules = await this.api.loadRules(scopeSelector, component);
-
-        this.selectedComponentMetadata = metadata;
-        this.componentRef = component;
+        // Reset theme scope to local / instance whenever a new component is picked
         this.themeScope = ThemeScope.local;
-        this.baseTheme = detectTheme(metadata);
-        this.editedTheme = ComponentTheme.fromServerRules(metadata, serverRules.rules);
-        this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
+        this.componentRef = component;
+
+        this.refreshTheme(metadata);
       }
     });
   }
 
   private handleScopeChange(e: ScopeChangeEvent) {
+    if (e.detail.value === this.themeScope) {
+      return;
+    }
+    console.log("scope change")
     this.themeScope = e.detail.value;
     this.refreshTheme();
   }
@@ -270,16 +272,27 @@ export class ThemeEditor extends LitElement {
     await this.refreshTheme();
   }
 
-  private async refreshTheme() {
-    if (!this.selectedComponentMetadata || !this.baseTheme) {
+  private async refreshTheme(newMetadata?: ComponentMetadata) {
+    // Load server rules for new or existing metadata
+    const metadata = newMetadata || this.selectedComponentMetadata;
+    if (!metadata) {
       return;
     }
-    const scopeSelector = this.selectedComponentMetadata.tagName;
+
+    const scopeSelector = metadata.tagName;
     const componentRef = this.themeScope === ThemeScope.local ? this.componentRef : null;
     const serverRules = await this.api.loadRules(scopeSelector, componentRef);
 
-    this.editedTheme = ComponentTheme.fromServerRules(this.selectedComponentMetadata, serverRules.rules);
-    this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
+    // Update state properties after data has loaded, so that everything
+    // consistently updates at once - this avoids re-rendering the editor with
+    // new metadata but without matching theme data
+    if (newMetadata) {
+      this.selectedComponentMetadata = newMetadata;
+      // Update base theme whenever metadata changes
+      this.baseTheme = detectTheme(metadata);
+    }
+    this.editedTheme = ComponentTheme.fromServerRules(metadata, serverRules.rules);
+    this.effectiveTheme = ComponentTheme.combine(this.baseTheme!, this.editedTheme);
     await this.updateThemePreview();
   }
 
