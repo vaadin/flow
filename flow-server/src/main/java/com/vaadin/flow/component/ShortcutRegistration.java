@@ -50,18 +50,18 @@ public class ShortcutRegistration implements Registration, Serializable {
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES = "listenOnComponents should not have duplicate entries!";
     static final String ELEMENT_LOCATOR_JS = //@formatter:off
             "const listenOn=this;" // this is the listenOn component's element
-            + "const delegate=%1$s;" // the output of the JsLocator
-            + "if (delegate) {"
-            + "delegate.addEventListener('keydown', function(event) {"
-            + "if (%2$s) {" // the filter text to match the key
-            + "const new_event = new event.constructor(event.type, event);"
-            + "listenOn.dispatchEvent(new_event);"
-            + "%3$s" // the new event allows default if desired
-            + "event.stopPropagation();}" // the new event bubbles if desired
-            + "});" // end matches filter
-            + "} else {"
-            + "throw \"Shortcut listenOn element not found with JS locator string '%1$s'\""
-            + "}";//@formatter:on
+                    + "const delegate=%1$s;" // the output of the JsLocator
+                    + "if (delegate) {"
+                    + "delegate.addEventListener('keydown', function(event) {"
+                    + "if (%2$s) {" // the filter text to match the key
+                    + "const new_event = new event.constructor(event.type, event);"
+                    + "listenOn.dispatchEvent(new_event);"
+                    + "%3$s" // the new event allows default if desired
+                    + "event.stopPropagation();}" // the new event bubbles if desired
+                    + "});" // end matches filter
+                    + "} else {"
+                    + "throw \"Shortcut listenOn element not found with JS locator string '%1$s'\""
+                    + "}";//@formatter:on
     private boolean allowDefaultBehavior = false;
     private boolean allowEventPropagation = false;
     static final String LISTEN_ON_INITIALIZED = "_initialized_listen_on_for_component";
@@ -748,16 +748,39 @@ public class ShortcutRegistration implements Registration, Serializable {
 
         final List<Key> realMods = modifiers.stream().filter(Key::isModifier)
                 .collect(Collectors.toList());
-
         // build a filter based on all the modifier keys. if modifier is not
         // in the parameter collection, require it to be passive to match the
         // shortcut
+
+        /*
+         * Due to https://github.com/vaadin/flow/issues/15906. Browsers having
+         * different implementation for Option keys: -> Mozilla: ALT_GRAPH and
+         * ALT both are triggered (getModifierState() return true for ALT AND
+         * ALT_GRAPH), -> Chrome: ALT is triggered only (getModifierState()
+         * return true for only ALT).
+         *
+         * So we need to check if ALT is in the modifiers list, if it is, we do
+         * not check anymore that !ALT_GRAPH is not in filter list, because it
+         * can be based on browser implementations.
+         */
+
+        final boolean altAdded = modifiers
+                .contains(new HashableKey(KeyModifier.ALT));
+
         return Arrays.stream(KeyModifier.values()).map(modifier -> {
+            String modKey = modifier.getKeys().get(0);
             boolean modifierRequired = realMods.stream()
-                    .anyMatch(mod -> mod.matches(modifier.getKeys().get(0)));
-            return (modifierRequired ? "" : "!") + "event.getModifierState('"
-                    + modifier.getKeys().get(0) + "')";
-        }).collect(Collectors.joining(" && "));
+                    .anyMatch(mod -> mod.matches(modKey));
+            if (!modifierRequired && modifier == KeyModifier.ALT_GRAPH
+                    && altAdded) {
+                return null;
+            } else {
+                return (modifierRequired ? "" : "!")
+                        + "event.getModifierState('" + modKey + "')";
+            }
+        }).filter(Objects::nonNull).filter(s -> !s.isBlank())
+                .collect(Collectors.joining(" && "));
+
     }
 
     private static String generateEventKeyFilter(Key key) {
