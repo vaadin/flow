@@ -5,14 +5,14 @@ import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
 import { ComponentTheme, generateThemeRule, ThemeEditorState, ThemeScope, ThemeScopeType } from './model';
 import { detectTheme } from './detector';
-import { ThemePropertyValueChangeEvent } from './editors/base-property-editor';
+import { ThemePropertyValueChangeEvent } from './components/editors/base-property-editor';
 import { themePreview } from './preview';
 import { Connection } from '../connection';
 import { ThemeEditorApi } from './api';
 import { ThemeEditorHistory, ThemeEditorHistoryActions } from './history';
 import { ScopeChangeEvent } from './components/scope-selector';
 import './components/scope-selector';
-import './property-list';
+import './components/property-list';
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {

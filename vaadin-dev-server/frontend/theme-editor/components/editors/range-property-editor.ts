@@ -1,7 +1,7 @@
 import { css, html, PropertyValues, TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { icons } from '../icons';
+import { icons } from '../../icons';
 import { BasePropertyEditor, PropertyPresets } from './base-property-editor';
 
 @customElement('vaadin-dev-tools-theme-range-property-editor')
