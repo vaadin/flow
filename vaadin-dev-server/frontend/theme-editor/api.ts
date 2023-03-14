@@ -1,4 +1,4 @@
-import { Connection } from '../vaadin-dev-tools';
+import { Connection } from '../connection';
 
 export enum Commands {
   response = 'themeEditorResponse',
