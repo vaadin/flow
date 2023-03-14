@@ -1,10 +1,10 @@
-import { css, html, LitElement } from 'lit';
+import { css, html, LitElement, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { PickerProvider } from '../component-picker';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
 import { ComponentTheme, generateThemeRule, ThemeEditorState, ThemeScope, ThemeScopeType } from './model';
-import { detectTheme } from './detector';
+import { detectTheme, detectElementDisplayName } from './detector';
 import { ThemePropertyValueChangeEvent } from './components/editors/base-property-editor';
 import { themePreview } from './preview';
 import { Connection } from '../connection';
@@ -70,13 +70,18 @@ export class ThemeEditor extends LitElement {
         align-items: center;
         justify-content: space-between;
         border-bottom: solid 1px rgba(0, 0, 0, 0.2);
+        padding: var(--theme-editor-section-horizontal-padding);
       }
 
       .picker {
         flex: 0 0 auto;
         display: flex;
         align-items: center;
-        padding: var(--theme-editor-section-horizontal-padding);
+        gap: 4px;
+      }
+
+      .picker .instance-name {
+        color: #e5a2fce5;
       }
 
       .picker .no-selection {
@@ -100,7 +105,6 @@ export class ThemeEditor extends LitElement {
         border: none;
         background: none;
         color: var(--dev-tools-text-color);
-        margin-right: 0.5rem;
       }
 
       .icon-button:disabled {
@@ -126,12 +130,7 @@ export class ThemeEditor extends LitElement {
 
     return html`
       <div class="header">
-        <div class="picker">
-          <button class="icon-button" @click=${this.pickComponent}>${icons.crosshair}</button>
-          ${this.scope
-            ? html`<span>${this.scope.metadata.displayName}</span>`
-            : html`<span class="no-selection">Pick an element to get started</span>`}
-        </div>
+        ${this.renderPicker()}
         <div class="actions">
           ${this.scope
             ? html` <vaadin-dev-tools-theme-scope-selector
@@ -178,6 +177,31 @@ export class ThemeEditor extends LitElement {
           >documentation</a
         >
         on how to set up a custom theme.
+      </div>
+    `;
+  }
+
+  renderPicker() {
+    let label: TemplateResult;
+
+    if (this.scope) {
+      const componentDisplayName =
+        this.scope.type === ThemeScopeType.local
+          ? this.scope.metadata.displayName
+          : `All ${this.scope.metadata.displayName}s`;
+      const componentLabel = html`<span>${componentDisplayName}</span>`;
+      const instanceLabel =
+        this.scope.type === ThemeScopeType.local
+          ? html` <span class="instance-name">"${detectElementDisplayName(this.scope.component)}"</span>`
+          : null;
+      label = html`${componentLabel} ${instanceLabel}`;
+    } else {
+      label = html`<span class="no-selection">Pick an element to get started</span>`;
+    }
+    return html`
+      <div class="picker">
+        <button class="icon-button" @click=${this.pickComponent}>${icons.crosshair}</button>
+        ${label}
       </div>
     `;
   }
