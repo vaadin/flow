@@ -306,8 +306,7 @@ public interface Style extends Serializable {
     }
 
     /**
-     * Sets the <code>padding</code> property. 
-     * value (if <code>null</code>, the property will be removed)
+     * Sets the <code>padding</code> property.
      *
      * @param value
      *            the style property value (if <code>null</code>, the property
