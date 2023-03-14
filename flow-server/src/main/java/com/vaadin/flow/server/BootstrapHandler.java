@@ -74,6 +74,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableBiFunction;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.ReflectTools;
@@ -1662,6 +1663,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return references;
         }
 
+        final SerializableConsumer<String> addThemeReferenceCallback = (
+                theme) -> {
+            T reference = referenceProvider.apply(theme, fileName);
+            references.add(reference);
+        };
+
         // First check if project has a packaged themes and add a link if any
         File frontendFolder = new File(config.getProjectFolder(),
                 FrontendUtils.FRONTEND);
@@ -1678,30 +1685,32 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 String packagedThemeName = themeFolder.getName();
                 projectCustomThemeAdded = projectCustomThemeAdded
                         || packagedThemeName.equals(themeName.get());
-                T reference = referenceProvider.apply(packagedThemeName,
-                        fileName);
-                references.add(reference);
+                addThemeReferenceCallback.accept(packagedThemeName);
             }
         }
 
-        // Secondly, check if a parent theme is in the project's frontend/themes
-        // folder and add a link if any
-        Optional<String> parentThemeName = FrontendUtils
-                .getParentThemeNameInFrontend(frontendFolder, themeName.get());
-        if (parentThemeName.isPresent()) {
-            T reference = referenceProvider.apply(parentThemeName.get(),
-                    fileName);
-            references.add(reference);
-        }
-
-        // Finally, add a link for the project's custom theme, if it exists
-        // and not yet added by the packaged themes loop
-        if (!projectCustomThemeAdded) {
-            T reference = referenceProvider.apply(themeName.get(), fileName);
-            references.add(reference);
-        }
+        // Secondly, add links for the themes from frontend/themes, including
+        // main theme and parent themes
+        referenceParentThemeInFrontend(themeName.get(), frontendFolder,
+                addThemeReferenceCallback, projectCustomThemeAdded);
 
         return references;
+    }
+
+    private static <T> void referenceParentThemeInFrontend(String themeName,
+            File frontendFolder,
+            SerializableConsumer<String> addReferenceCallback,
+            boolean themeAlreadyAdded) throws IOException {
+        Optional<String> parentThemeName = FrontendUtils
+                .getParentThemeNameInFrontend(frontendFolder, themeName);
+        if (parentThemeName.isPresent()) {
+            referenceParentThemeInFrontend(parentThemeName.get(),
+                    frontendFolder, addReferenceCallback, false);
+        }
+
+        if (!themeAlreadyAdded) {
+            addReferenceCallback.accept(themeName);
+        }
     }
 
     private static String getThemeFilePath(String themeName, String fileName) {
