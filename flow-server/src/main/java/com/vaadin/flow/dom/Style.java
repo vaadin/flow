@@ -121,6 +121,8 @@ public interface Style extends Serializable {
     default Style setBorder(String value) {
         return set("border", value);
     }
+    
+    public enum BoxSizing {CONTENT_BOX, BORDER_BOX, INITIAL, INHERIT}
 
     /**
      * Sets the <code>box-sizing</code> property.
@@ -130,8 +132,8 @@ public interface Style extends Serializable {
      *            will be removed)
      * @return this style instance
      */
-    default Style setBoxSizing(String value) {
-        return set("box-sizing", value);
+    default Style setBoxSizing(BoxSizing value) {
+        return applyOrErase("box-sizing", value);
     }
 
     /**
@@ -285,6 +287,8 @@ public interface Style extends Serializable {
         return set("opacity", value);
     }
 
+    public enum Overflow {VISIBLE,HIDDEN,CLIP,SCROLL,AUTO,INITIAL,INHERIT}
+        
     /**
      * Sets the <code>overflow</code> property.
      *
@@ -293,8 +297,8 @@ public interface Style extends Serializable {
      *            will be removed)
      * @return this style instance
      */
-    default Style setOverflow(String value) {
-        return set("overflow", value);
+    default Style setOverflow(Overflow value) {
+        return applyOrErase("overflow", value);
     }
 
     /**
