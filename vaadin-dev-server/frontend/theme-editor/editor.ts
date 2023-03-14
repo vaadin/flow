@@ -4,14 +4,16 @@ import { PickerProvider } from '../component-picker';
 import { ComponentMetadata } from './metadata/model';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
-import './property-list';
-import { ComponentTheme, generateThemeRule, ThemeEditorState } from './model';
+import { ComponentTheme, generateThemeRule, ThemeEditorState, ThemeScope } from './model';
 import { detectTheme } from './detector';
 import { ThemePropertyValueChangeEvent } from './editors/base-property-editor';
 import { themePreview } from './preview';
 import { Connection } from '../connection';
 import { ThemeEditorApi } from './api';
 import { ThemeEditorHistory, ThemeEditorHistoryActions } from './history';
+import { ScopeChangeEvent } from './components/scope-selector';
+import './components/scope-selector';
+import './property-list';
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
@@ -31,6 +33,8 @@ export class ThemeEditor extends LitElement {
    */
   @state()
   private selectedComponentMetadata: ComponentMetadata | null = null;
+  @state()
+  private themeScope: ThemeScope = ThemeScope.local;
   /**
    * Base theme detected from existing CSS files for the selected component
    */
@@ -70,6 +74,7 @@ export class ThemeEditor extends LitElement {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        border-bottom: solid 1px rgba(0, 0, 0, 0.2);
       }
 
       .picker {
@@ -77,7 +82,6 @@ export class ThemeEditor extends LitElement {
         display: flex;
         align-items: center;
         padding: var(--theme-editor-section-horizontal-padding);
-        border-bottom: solid 1px rgba(0, 0, 0, 0.2);
       }
 
       .picker .no-selection {
@@ -87,6 +91,7 @@ export class ThemeEditor extends LitElement {
       .actions {
         display: flex;
         align-items: center;
+        gap: 8px;
       }
 
       .property-list {
@@ -133,6 +138,13 @@ export class ThemeEditor extends LitElement {
             : html`<span class="no-selection">Pick an element to get started</span>`}
         </div>
         <div class="actions">
+          ${this.selectedComponentMetadata
+              ? html` <vaadin-dev-tools-theme-scope-selector
+                .value=${this.themeScope}
+                .metadata=${this.selectedComponentMetadata}
+                @scope-change=${this.handleScopeChange}
+              ></vaadin-dev-tools-theme-scope-selector>`
+              : null}
           <button
             class="icon-button"
             data-testid="undo"
@@ -175,6 +187,10 @@ export class ThemeEditor extends LitElement {
     `;
   }
 
+  private handleScopeChange(e: ScopeChangeEvent) {
+    this.themeScope = e.detail.value;
+  }
+
   private async pickComponent() {
     // Ensure component picker module is loaded
     await import('../component-picker.js');
@@ -201,6 +217,7 @@ export class ThemeEditor extends LitElement {
         const serverRules = await this.api.loadRules(scopeSelector);
 
         this.selectedComponentMetadata = metadata;
+        this.themeScope = ThemeScope.local;
         this.baseTheme = detectTheme(metadata);
         this.editedTheme = ComponentTheme.fromServerRules(metadata, serverRules.rules);
         this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);

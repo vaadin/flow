@@ -7,6 +7,11 @@ export enum ThemeEditorState {
   missing_theme = 'missing_theme'
 }
 
+export enum ThemeScope {
+  local = 'local',
+  global = 'globals'
+}
+
 export interface ThemePropertyValue {
   partName: string | null;
   propertyName: string;
