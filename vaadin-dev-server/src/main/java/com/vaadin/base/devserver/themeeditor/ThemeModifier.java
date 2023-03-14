@@ -7,7 +7,8 @@ import com.helger.css.decl.CSSStyleRule;
 import com.helger.css.decl.CascadingStyleSheet;
 import com.helger.css.reader.CSSReader;
 import com.helger.css.writer.CSSWriter;
-import com.vaadin.base.devserver.themeeditor.messages.RulesRequest;
+import com.vaadin.base.devserver.themeeditor.utils.CssRule;
+import com.vaadin.base.devserver.themeeditor.utils.ThemeEditorException;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -19,10 +20,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ThemeModifier {
@@ -56,37 +57,70 @@ public class ThemeModifier {
     }
 
     /**
-     * Performs update of CSS file setting (adding or updating) given lists of
-     * {@link RulesRequest.CssRuleProperty}.
+     * Performs update of CSS file setting (adding or updating) given
+     * {@link CssRule}.
      *
-     * @param properties
-     *            list of {@link RulesRequest.CssRuleProperty} to be added or
-     *            updated
+     * @param rules
+     *            list of {@link CssRule} to be added or updated
      */
-    public void setThemeProperties(
-            List<RulesRequest.CssRuleProperty> properties) {
-        assert properties != null;
+    public void setThemeProperties(List<CssRule> rules) {
+        assert rules != null;
         CascadingStyleSheet styleSheet = getCascadingStyleSheet();
-        properties.forEach(cssProp -> setCssProperty(styleSheet, cssProp));
+        for (CssRule rule : rules) {
+            for (Map.Entry<String, String> property : rule.getProperties()
+                    .entrySet()) {
+                if (property.getValue() != null
+                        && !property.getValue().isBlank()) {
+                    setCssProperty(styleSheet, rule.getSelector(),
+                            property.getKey(), property.getValue());
+                } else {
+                    removeCssProperty(styleSheet, rule.getSelector(),
+                            property.getKey());
+                }
+            }
+        }
         sortStylesheet(styleSheet);
         writeStylesheet(styleSheet);
     }
 
     /**
-     * Performs update of CSS file setting and removing given lists of
-     * {@link RulesRequest.CssRuleProperty}.
+     * Returns the full content of the theme editor CSS file.
      *
-     * @param properties
-     *            list of {@link RulesRequest.CssRuleProperty} to be added or
-     *            updated
+     * @return CSS string
      */
-    public void removeThemeProperties(
-            List<RulesRequest.CssRuleProperty> properties) {
-        assert properties != null;
+    public String getCss() {
+        File styles = getStyleSheetFile();
+        try {
+            return Files.readString(Path.of(styles.getAbsolutePath()));
+        } catch (IOException e) {
+            throw new ThemeEditorException("Could not read stylesheet from "
+                    + styles.getAbsolutePath());
+        }
+    }
+
+    /**
+     * Retrieves list of {@link CssRule} for given selector filter.
+     *
+     * @param selectorFilter
+     *            selector filter
+     * @return list of {@link CssRule}
+     */
+    public List<CssRule> getCssRules(Predicate<String> selectorFilter) {
         CascadingStyleSheet styleSheet = getCascadingStyleSheet();
-        properties.forEach(cssProp -> removeCssProperty(styleSheet, cssProp));
-        sortStylesheet(styleSheet);
-        writeStylesheet(styleSheet);
+        return styleSheet.getAllStyleRules().stream()
+                .filter(rule -> rule.getSelectorCount() > 0)
+                .filter(rule -> selectorFilter
+                        .test(rule.getSelectorAtIndex(0).getAsCSSString()))
+                .map(rule -> {
+                    String selector = rule.getSelectorAtIndex(0)
+                            .getAsCSSString();
+                    Map<String, String> properties = new HashMap<>();
+                    rule.getAllDeclarations().forEach(cssDeclaration -> {
+                        properties.put(cssDeclaration.getProperty(),
+                                cssDeclaration.getExpressionAsCSSString());
+                    });
+                    return new CssRule(selector, properties);
+                }).toList();
     }
 
     protected String getCssFileName() {
@@ -156,23 +190,32 @@ public class ThemeModifier {
     }
 
     protected void setCssProperty(CascadingStyleSheet styleSheet,
-            RulesRequest.CssRuleProperty css) {
-        CSSStyleRule newRule = createStyleRule(css.selector(), css.property(),
-                css.value());
-        findRuleBySelector(styleSheet, newRule).ifPresentOrElse(
-                existingRule -> addOrUpdateProperty(existingRule, newRule),
-                () -> styleSheet.addRule(newRule));
+            String selector, String property, String newValue) {
+        CSSStyleRule newRule = createStyleRule(selector, property, newValue);
+        CSSStyleRule existingRule = findRuleBySelector(styleSheet, newRule);
+        if (existingRule == null) {
+            styleSheet.addRule(newRule);
+        } else {
+            CSSDeclaration newDeclaration = newRule.getDeclarationAtIndex(0);
+            CSSDeclaration existingDeclaration = existingRule
+                    .getDeclarationOfPropertyName(property);
+            if (existingDeclaration == null) {
+                existingRule.addDeclaration(newDeclaration);
+            } else {
+                // rule with given selector, property and value exists -> save
+                // for undo
+                existingDeclaration
+                        .setExpression(newDeclaration.getExpression());
+            }
+        }
     }
 
     protected void removeCssProperty(CascadingStyleSheet styleSheet,
-            RulesRequest.CssRuleProperty css) {
+            String selector, String property) {
         // value not considered
-        CSSStyleRule newRule = createStyleRule(css.selector(), css.property(),
-                "inherit");
-        Optional<CSSStyleRule> optRule = findRuleBySelector(styleSheet,
-                newRule);
-        if (optRule.isPresent()) {
-            CSSStyleRule existingRule = optRule.get();
+        CSSStyleRule newRule = createStyleRule(selector, property, "inherit");
+        CSSStyleRule existingRule = findRuleBySelector(styleSheet, newRule);
+        if (existingRule != null) {
             removeProperty(existingRule, newRule);
             if (existingRule.getDeclarationCount() == 0) {
                 styleSheet.removeRule(existingRule);
@@ -219,19 +262,6 @@ public class ThemeModifier {
                 .getStyleRuleAtIndex(0);
     }
 
-    protected void addOrUpdateProperty(CSSStyleRule existingRule,
-            CSSStyleRule newRule) {
-        CSSDeclaration newDeclaration = newRule.getDeclarationAtIndex(0);
-        String property = newDeclaration.getProperty();
-        CSSDeclaration declaration = existingRule
-                .getDeclarationOfPropertyName(property);
-        if (declaration == null) {
-            existingRule.addDeclaration(newDeclaration);
-        } else {
-            declaration.setExpression(newDeclaration.getExpression());
-        }
-    }
-
     protected void removeProperty(CSSStyleRule existingRule,
             CSSStyleRule newRule) {
         CSSDeclaration newDeclaration = newRule.getDeclarationAtIndex(0);
@@ -243,11 +273,11 @@ public class ThemeModifier {
         }
     }
 
-    protected Optional<CSSStyleRule> findRuleBySelector(
-            CascadingStyleSheet styleSheet, CSSStyleRule rule) {
+    protected CSSStyleRule findRuleBySelector(CascadingStyleSheet styleSheet,
+            CSSStyleRule rule) {
         return styleSheet.getAllStyleRules().stream().filter(
                 r -> r.getAllSelectors().containsAll(rule.getAllSelectors()))
-                .findFirst();
+                .findFirst().orElse(null);
     }
 
     protected void insertImportIfNotExists() {

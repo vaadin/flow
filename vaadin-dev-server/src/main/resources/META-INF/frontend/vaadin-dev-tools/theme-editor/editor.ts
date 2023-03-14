@@ -5,11 +5,13 @@ import { ComponentMetadata } from './metadata/model';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
 import './property-list';
-import { ComponentTheme, generateThemeRule, Theme, ThemeEditorState } from './model';
+import { ComponentTheme, generateThemeRule, ThemeEditorState } from './model';
 import { detectTheme } from './detector';
-import { ThemePropertyValueChangeEvent } from './events';
+import { ThemePropertyValueChangeEvent } from './editors/base-property-editor';
 import { themePreview } from './preview';
 import { Connection } from '../vaadin-dev-tools';
+import { ThemeEditorApi } from './api';
+import { ThemeEditorHistory, ThemeEditorHistoryActions } from './history';
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
@@ -19,6 +21,10 @@ export class ThemeEditor extends LitElement {
   public pickerProvider!: PickerProvider;
   @property({})
   public connection!: Connection;
+  private api!: ThemeEditorApi;
+  private history!: ThemeEditorHistory;
+  @state()
+  private historyActions?: ThemeEditorHistoryActions;
 
   /**
    * Metadata for the selected / picked component
@@ -26,25 +32,20 @@ export class ThemeEditor extends LitElement {
   @state()
   private selectedComponentMetadata: ComponentMetadata | null = null;
   /**
-   * Theme modifications for all components, containing all changes since the
-   * last reload
-   */
-  private theme: Theme = new Theme();
-  /**
    * Base theme detected from existing CSS files for the selected component
    */
-  private baseComponentTheme: ComponentTheme | null = null;
+  private baseTheme: ComponentTheme | null = null;
   /**
-   * Previously saved theme modifications for the selected component since the
+   * Currently edited theme modifications for the selected component since the
    * last reload
    */
-  private modifiedComponentTheme: ComponentTheme | null = null;
+  private editedTheme: ComponentTheme | null = null;
   /**
    * The effective theme for the selected component, including base theme and
    * previously saved modifications
    */
   @state()
-  private effectiveComponentTheme: ComponentTheme | null = null;
+  private effectiveTheme: ComponentTheme | null = null;
 
   static get styles() {
     return css`
@@ -64,6 +65,13 @@ export class ThemeEditor extends LitElement {
         color: var(--dev-tools-text-color-emphasis);
       }
 
+      .header {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
       .picker {
         flex: 0 0 auto;
         display: flex;
@@ -72,7 +80,21 @@ export class ThemeEditor extends LitElement {
         border-bottom: solid 1px rgba(0, 0, 0, 0.2);
       }
 
-      .picker > button {
+      .picker .no-selection {
+        font-style: italic;
+      }
+      
+      .actions {
+        display: flex;
+        align-items: center;
+      }
+
+      .property-list {
+        flex: 1 1 auto;
+        overflow-y: auto;
+      }
+
+      .icon-button {
         padding: 0;
         line-height: 0;
         border: none;
@@ -81,19 +103,20 @@ export class ThemeEditor extends LitElement {
         margin-right: 0.5rem;
       }
 
-      .picker > button:hover {
+      .icon-button:disabled {
+        opacity: 0.5;
+      }
+
+      .icon-button:not(:disabled):hover {
         color: var(--dev-tools-text-color-emphasis);
       }
-
-      .picker .no-selection {
-        font-style: italic;
-      }
-
-      .property-list {
-        flex: 1 1 auto;
-        overflow-y: auto;
-      }
     `;
+  }
+
+  protected firstUpdated() {
+    this.api = new ThemeEditorApi(this.connection);
+    this.history = new ThemeEditorHistory(this.api);
+    this.historyActions = this.history.allowedActions;
   }
 
   render() {
@@ -102,17 +125,37 @@ export class ThemeEditor extends LitElement {
     }
 
     return html`
-      <div class="picker">
-        <button class="button" @click=${this.pickComponent}>${icons.crosshair}</button>
-        ${this.selectedComponentMetadata
-          ? html`<span>${this.selectedComponentMetadata.displayName}</span>`
-          : html`<span class="no-selection">Pick an element to get started</span>`}
+      <div class="header">
+        <div class="picker">
+          <button class="icon-button" @click=${this.pickComponent}>${icons.crosshair}</button>
+          ${this.selectedComponentMetadata
+            ? html`<span>${this.selectedComponentMetadata.displayName}</span>`
+            : html`<span class="no-selection">Pick an element to get started</span>`}
+        </div>
+        <div class="actions">
+          <button
+            class="icon-button"
+            data-testid="undo"
+            ?disabled=${!this.historyActions?.allowUndo}
+            @click=${this.handleUndo}
+          >
+            ${icons.undo}
+          </button>
+          <button
+            class="icon-button"
+            data-testid="redo"
+            ?disabled=${!this.historyActions?.allowRedo}
+            @click=${this.handleRedo}
+          >
+            ${icons.redo}
+          </button>
+        </div>
       </div>
       ${this.selectedComponentMetadata
         ? html` <vaadin-dev-tools-theme-property-list
             class="property-list"
             .metadata=${this.selectedComponentMetadata}
-            .theme=${this.effectiveComponentTheme}
+            .theme=${this.effectiveTheme}
             @theme-property-value-change=${this.handlePropertyChange}
           ></vaadin-dev-tools-theme-property-list>`
         : null}
@@ -146,48 +189,85 @@ export class ThemeEditor extends LitElement {
         </div>
       `,
       pickCallback: async (component) => {
-        this.selectedComponentMetadata = await metadataRegistry.getMetadata(component);
-        if (this.selectedComponentMetadata) {
-          themePreview.reset();
-          this.baseComponentTheme = detectTheme(this.selectedComponentMetadata);
-          this.modifiedComponentTheme = this.theme.getOrCreateComponentTheme(this.selectedComponentMetadata);
-          this.effectiveComponentTheme = ComponentTheme.combine(this.baseComponentTheme, this.modifiedComponentTheme);
-        } else {
-          this.baseComponentTheme = null;
-          this.modifiedComponentTheme = null;
-          this.effectiveComponentTheme = null;
+        const metadata = await metadataRegistry.getMetadata(component);
+        if (!metadata) {
+          this.baseTheme = null;
+          this.editedTheme = null;
+          this.effectiveTheme = null;
+          return;
         }
-        this.updateThemePreview();
+
+        const scopeSelector = metadata.tagName;
+        const serverRules = await this.api.loadRules(scopeSelector);
+
+        this.selectedComponentMetadata = metadata;
+        this.baseTheme = detectTheme(metadata);
+        this.editedTheme = ComponentTheme.fromServerRules(metadata, serverRules.rules);
+        this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
       }
     });
   }
 
-  private handlePropertyChange(e: ThemePropertyValueChangeEvent) {
-    if (!this.selectedComponentMetadata || !this.baseComponentTheme || !this.modifiedComponentTheme) {
+  private async handlePropertyChange(e: ThemePropertyValueChangeEvent) {
+    if (!this.selectedComponentMetadata || !this.baseTheme || !this.editedTheme) {
       return;
     }
 
     // Update local theme state
     const { part, property, value } = e.detail;
     const partName = part?.partName || null;
-    this.modifiedComponentTheme.updatePropertyValue(partName, property.propertyName, value);
-    this.effectiveComponentTheme = ComponentTheme.combine(this.baseComponentTheme, this.modifiedComponentTheme);
-    this.updateThemePreview();
+    this.editedTheme.updatePropertyValue(partName, property.propertyName, value, true);
+    this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
 
     // Update theme editor CSS
-    // Notify dev tools that we are about to save CSS, so that it can disable
-    // live reload temporarily
-    this.dispatchEvent(new CustomEvent('before-save'));
     const updateRule = generateThemeRule(
       this.selectedComponentMetadata?.tagName,
       partName,
       property.propertyName,
       value
     );
-    this.connection.sendThemeEditorRules([updateRule]);
+    try {
+      this.preventLiveReload();
+      const response = await this.api.setCssRules([updateRule]);
+      this.historyActions = this.history.push(response.requestId);
+      await this.updateThemePreview();
+    } catch (error) {
+      console.error('Failed to update property value', error);
+    }
   }
 
-  private updateThemePreview() {
-    themePreview.update(this.theme);
+  private async handleUndo() {
+    this.preventLiveReload();
+    this.historyActions = await this.history.undo();
+    await this.refreshTheme();
+  }
+
+  private async handleRedo() {
+    this.preventLiveReload();
+    this.historyActions = await this.history.redo();
+    await this.refreshTheme();
+  }
+
+  private async refreshTheme() {
+    if (!this.selectedComponentMetadata || !this.baseTheme) {
+      return;
+    }
+    const scopeSelector = this.selectedComponentMetadata.tagName;
+    const serverRules = await this.api.loadRules(scopeSelector);
+
+    this.editedTheme = ComponentTheme.fromServerRules(this.selectedComponentMetadata, serverRules.rules);
+    this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
+    await this.updateThemePreview();
+  }
+
+  private async updateThemePreview() {
+    const preview = await this.api.loadPreview();
+    themePreview.update(preview.css);
+  }
+
+  private preventLiveReload() {
+    // Notify dev tools that we are about to save CSS, so that it can disable
+    // live reload temporarily
+    this.dispatchEvent(new CustomEvent('before-save'));
   }
 }

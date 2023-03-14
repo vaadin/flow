@@ -40,6 +40,7 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
         // Flow server resources like BootstrapHandler.js and
         // RouteNotFoundError_prod.html
         hints.resources().registerPattern("com/vaadin/flow/server/*");
+        hints.resources().registerPattern("com/vaadin/flow/router/*");
     }
 
     private void registerResourceIfPresent(RuntimeHints hints, String path) {

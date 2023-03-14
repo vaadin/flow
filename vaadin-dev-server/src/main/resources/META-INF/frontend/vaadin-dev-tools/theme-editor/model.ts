@@ -1,4 +1,5 @@
 import { ComponentMetadata } from './metadata/model';
+import { ServerCssRule } from './api';
 
 export enum ThemeEditorState {
   disabled = 'disabled',
@@ -6,16 +7,11 @@ export enum ThemeEditorState {
   missing_theme = 'missing_theme'
 }
 
-export interface ThemeEditorRule {
-  selector: string;
-  property: string;
-  value: string;
-}
-
 export interface ThemePropertyValue {
   partName: string | null;
   propertyName: string;
   value: string;
+  modified: boolean;
 }
 
 type PropertyValueMap = { [key: string]: ThemePropertyValue };
@@ -44,23 +40,25 @@ export class ComponentTheme {
     return this._properties[propertyKey(partName, propertyName)] || null;
   }
 
-  public updatePropertyValue(partName: string | null, propertyName: string, value: string) {
+  public updatePropertyValue(partName: string | null, propertyName: string, value: string, modified?: boolean) {
     let propertyValue = this.getPropertyValue(partName, propertyName);
     if (!propertyValue) {
       propertyValue = {
         partName,
         propertyName,
-        value
+        value,
+        modified: modified || false
       };
       this._properties[propertyKey(partName, propertyName)] = propertyValue;
     } else {
       propertyValue.value = value;
+      propertyValue.modified = modified || false;
     }
   }
 
   public addPropertyValues(values: ThemePropertyValue[]) {
     values.forEach((value) => {
-      this.updatePropertyValue(value.partName, value.propertyName, value.value);
+      this.updatePropertyValue(value.partName, value.propertyName, value.value, value.modified);
     });
   }
 
@@ -78,6 +76,37 @@ export class ComponentTheme {
 
     return resultTheme;
   }
+
+  static fromServerRules(metadata: ComponentMetadata, rules: ServerCssRule[]) {
+    const theme = new ComponentTheme(metadata);
+
+    const hostSelector = generateSelector(metadata.tagName, null);
+    const hostRule = rules.find((rule) => rule.selector === hostSelector);
+    if (hostRule) {
+      metadata.properties.forEach((property) => {
+        const value = hostRule.properties[property.propertyName];
+        if (value) {
+          theme.updatePropertyValue(null, property.propertyName, value, true);
+        }
+      });
+    }
+
+    metadata.parts.forEach((part) => {
+      const partSelector = generateSelector(metadata.tagName, part.partName);
+      const partRule = rules.find((rule) => rule.selector === partSelector);
+
+      if (partRule) {
+        part.properties.forEach((property) => {
+          const value = partRule.properties[property.propertyName];
+          if (value) {
+            theme.updatePropertyValue(part.partName, property.propertyName, value, true);
+          }
+        });
+      }
+    });
+
+    return theme;
+  }
 }
 
 function generateSelector(tagName: string, partName: string | null) {
@@ -86,43 +115,9 @@ function generateSelector(tagName: string, partName: string | null) {
 
 export function generateThemeRule(tagName: string, partName: string | null, propertyName: string, value: string) {
   const selector = generateSelector(tagName, partName);
+  const properties = { [propertyName]: value };
   return {
     selector,
-    property: propertyName,
-    value: value
+    properties
   };
-}
-
-type ComponentThemeMap = { [key: string]: ComponentTheme };
-
-export class Theme {
-  private _componentThemes: ComponentThemeMap = {};
-
-  get componentThemes(): ComponentTheme[] {
-    return Object.values(this._componentThemes);
-  }
-
-  getComponentTheme(tagName: string) {
-    return this._componentThemes[tagName] || null;
-  }
-
-  getOrCreateComponentTheme(metadata: ComponentMetadata) {
-    let componentTheme = this.getComponentTheme(metadata.tagName);
-    if (!componentTheme) {
-      componentTheme = new ComponentTheme(metadata);
-      this._componentThemes[metadata.tagName] = componentTheme;
-    }
-    return componentTheme;
-  }
-
-  updateComponentTheme(updatedTheme: ComponentTheme) {
-    const componentTheme = this.getOrCreateComponentTheme(updatedTheme.metadata);
-    componentTheme.addPropertyValues(updatedTheme.properties);
-  }
-
-  clone() {
-    const resultTheme = new Theme();
-    this.componentThemes.forEach((componentTheme) => resultTheme.updateComponentTheme(componentTheme));
-    return resultTheme;
-  }
 }
