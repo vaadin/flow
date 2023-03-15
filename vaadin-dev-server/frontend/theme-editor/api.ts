@@ -92,10 +92,11 @@ export class ThemeEditorApi {
   }
 
   public setCssRules(rules: ServerCssRule[], componentRef?: ComponentReference | null): Promise<BaseResponse> {
-    return this.sendRequest(Commands.setCssRules, {
-      nodeId: componentRef?.nodeId,
-      rules
-    });
+    const payload: any = { rules };
+    if (componentRef?.nodeId) {
+      payload.nodeId = componentRef?.nodeId;
+    }
+    return this.sendRequest(Commands.setCssRules, payload);
   }
 
   public loadPreview(): Promise<LoadPreviewResponse> {
@@ -103,7 +104,11 @@ export class ThemeEditorApi {
   }
 
   public loadRules(selectorFilter: string, componentRef?: ComponentReference | null): Promise<LoadRulesResponse> {
-    return this.sendRequest(Commands.loadRules, { nodeId: componentRef?.nodeId, selectorFilter });
+    const payload: any = { selectorFilter };
+    if (componentRef?.nodeId) {
+      payload.nodeId = componentRef?.nodeId;
+    }
+    return this.sendRequest(Commands.loadRules, payload);
   }
 
   public undo(requestId: string) {
