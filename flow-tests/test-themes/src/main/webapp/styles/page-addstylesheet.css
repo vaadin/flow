@@ -1,0 +1,9 @@
+.addstylesheet {
+  color: black;
+  background-color: yellow;
+}
+
+/* This is the same rule that Lumo utilities define */
+.bg-contrast-30 {
+  background-color: yellow;
+}

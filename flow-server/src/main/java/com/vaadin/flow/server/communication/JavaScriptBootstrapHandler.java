@@ -36,6 +36,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -309,8 +310,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     private static void addLinkTagForTheme(VaadinSession session) {
         DeploymentConfiguration deploymentConfiguration = session
                 .getConfiguration();
-        if (!deploymentConfiguration.isProductionMode()
-                && !deploymentConfiguration.frontendHotdeploy()) {
+        if (deploymentConfiguration.getMode() == Mode.DEVELOPMENT_BUNDLE) {
             try {
                 BootstrapHandler
                         .getStylesheetLinks(deploymentConfiguration,

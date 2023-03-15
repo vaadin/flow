@@ -1,10 +1,14 @@
-#font-awesome {
-    color: rgba(0, 255, 255, 1); /* aqua */
-    margin: 15px;
+body.bg {
+  color: rgba(0, 255, 255, 1);
 }
 
-html, :host {
-    --lumo-primary-text-color: rgba(255, 165, 0, 1); /* orange */
-    --lumo-border-radius: 0;
+.parent-theme {
+  color: white;
+  background: blue;
 }
 
+/* This is the same rule that Lumo utilities define */
+.bg-contrast-50 {
+  color: white;
+  background-color: blue;
+}

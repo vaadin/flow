@@ -53,6 +53,7 @@ import com.vaadin.flow.data.converter.ConverterFactory;
 import com.vaadin.flow.data.converter.DefaultConverterFactory;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.BeanValidator;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
@@ -3476,11 +3477,8 @@ public class Binder<BEAN> implements Serializable {
     }
 
     private static void setVisible(HasText label, boolean visible) {
-        if (visible) {
-            label.getElement().getStyle().remove("display");
-        } else {
-            label.getElement().getStyle().set("display", "none");
-        }
+        label.getElement().getStyle()
+                .setDisplay((visible ? null : Style.Display.NONE));
     }
 
     /**

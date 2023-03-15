@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.uitest.ui.theme;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
@@ -35,6 +36,8 @@ public class ThemeView extends Div {
     public static final String CSS_SNOWFLAKE = "icon-snowflake";
 
     public ThemeView() {
+        UI.getCurrent().getPage()
+                .executeJs("document.body.classList.add('bg')");
         final Span textSpan = new Span("This is the theme test view");
         textSpan.setId(TEST_TEXT_ID);
 
