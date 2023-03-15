@@ -58,8 +58,6 @@ public class FeatureFlags implements Serializable {
             "Collaboration Engine backend for clustering support",
             "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
-    public static final Feature THEME_EDITOR = new Feature("Theme Editor",
-            "themeEditor", null, true, null);
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -78,7 +76,6 @@ public class FeatureFlags implements Serializable {
         this.lookup = lookup;
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
-        features.add(new Feature(THEME_EDITOR));
         loadProperties();
     }
 
