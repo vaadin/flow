@@ -754,7 +754,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                 return (modifierRequired ? "" : "!")
                         + "event.getModifierState('" + modKey + "')";
             }
-        }).filter(Objects::nonNull).filter(s -> !s.isBlank())
+        }).filter(Objects::nonNull).filter(s -> !s.trim().isEmpty())
                 .collect(Collectors.joining(" && "));
 
     }
