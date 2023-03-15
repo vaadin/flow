@@ -2,7 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
 import { Overlay } from '@vaadin/overlay';
 import '@vaadin/overlay';
-import { RgbaStringColorPicker } from '../../vendor/vanilla-colorful/rgba-string-color-picker';
+import { RgbaStringColorPicker } from 'vanilla-colorful/rgba-string-color-picker';
 import { ColorPicker, ColorPickerOverlayContent } from './color-picker';
 import './color-picker';
 
@@ -40,7 +40,7 @@ describe('color-picker', () => {
   }
 
   function getInternalPicker() {
-    return getOverlayContent().shadowRoot!.querySelector('rgba-string-color-picker') as RgbaStringColorPicker;
+    return getOverlayContent().shadowRoot!.querySelector('vaadin-dev-tools-rgba-string-color-picker') as RgbaStringColorPicker;
   }
 
   function changeInternalPickerColor(color: string) {
