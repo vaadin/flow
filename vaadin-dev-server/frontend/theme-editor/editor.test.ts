@@ -588,4 +588,23 @@ describe('theme-editor', () => {
       expect(getPropertyValue('label', 'color')).to.equal('rgb(255, 0, 0)');
     });
   });
+
+  describe('highlighting', () => {
+    it('should highlight selected component', async () => {
+      await pickComponent();
+      expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.true;
+    });
+
+    it('should update highlight when selecting a different component', async () => {
+      await pickComponent();
+      expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.true;
+
+      const anotherElement = (await fixture(html` <test-element></test-element>`)) as HTMLElement;
+      testComponentRef = { nodeId: 123, uiId: 456, element: anotherElement };
+      await pickComponent();
+
+      expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.false;
+      expect(anotherElement.classList.contains('vaadin-theme-editor-highlight')).to.be.true;
+    });
+  });
 });
