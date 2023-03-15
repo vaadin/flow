@@ -1,7 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { ComponentTheme } from '../model';
-import { CssPropertyMetadata } from '../metadata/model';
-import { testElementMetadata } from '../tests/utils';
+import { ComponentTheme } from '../../model';
+import { CssPropertyMetadata } from '../../metadata/model';
+import { testElementMetadata } from '../../tests/utils';
 import { TextPropertyEditor } from './text-property-editor';
 import './text-property-editor';
 import sinon from 'sinon';

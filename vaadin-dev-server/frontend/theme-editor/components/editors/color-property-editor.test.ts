@@ -1,9 +1,9 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
 import '@vaadin/overlay';
-import { CssPropertyMetadata } from '../metadata/model';
-import { ComponentTheme } from '../model';
-import { testElementMetadata } from '../tests/utils';
+import { CssPropertyMetadata } from '../../metadata/model';
+import { ComponentTheme } from '../../model';
+import { testElementMetadata } from '../../tests/utils';
 import { ColorPropertyEditor } from './color-property-editor';
 import './color-property-editor';
 import { ColorPicker, ColorPickerChangeEvent } from './color-picker';

@@ -178,14 +178,16 @@ describe('model', () => {
     it('should create theme from rules', () => {
       const serverRules: ServerCssRule[] = [
         {
-          selector: 'test-element',
+          tagName: 'test-element',
+          partName: null,
           properties: {
             background: 'cornflowerblue',
             padding: '3px'
           }
         },
         {
-          selector: 'test-element::part(label)',
+          tagName: 'test-element',
+          partName: 'label',
           properties: {
             color: 'red',
             'font-size': '20px'
@@ -207,19 +209,22 @@ describe('model', () => {
     it('should ignore unknown selectors and properties', () => {
       const serverRules: ServerCssRule[] = [
         {
-          selector: 'test-element',
+          tagName: 'test-element',
+          partName: null,
           properties: {
             foo: 'cornflowerblue'
           }
         },
         {
-          selector: 'test-element::part(label)',
+          tagName: 'test-element',
+          partName: 'label',
           properties: {
             bar: '20px'
           }
         },
         {
-          selector: 'test-element::part(foo)',
+          tagName: 'test-element',
+          partName: 'foo',
           properties: {
             color: 'cornflowerblue',
             background: 'cornflowerblue'
@@ -242,10 +247,10 @@ describe('model', () => {
       ];
 
       const expectedRules: ServerCssRule[] = [
-        { selector: 'vaadin-button', properties: { background: 'cornflowerblue' } },
-        { selector: 'vaadin-button', properties: { padding: '3px' } },
-        { selector: 'vaadin-button::part(label)', properties: { color: 'white' } },
-        { selector: 'vaadin-button::part(label)', properties: { 'font-size': '20px' } }
+        { tagName: 'vaadin-button', partName: null, properties: { background: 'cornflowerblue' } },
+        { tagName: 'vaadin-button', partName: null, properties: { padding: '3px' } },
+        { tagName: 'vaadin-button', partName: 'label', properties: { color: 'white' } },
+        { tagName: 'vaadin-button', partName: 'label', properties: { 'font-size': '20px' } }
       ];
 
       expect(rules).to.deep.equal(expectedRules);
