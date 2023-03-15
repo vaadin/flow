@@ -2,11 +2,11 @@ import { css, html, LitElement, PropertyValues, render } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { Select, SelectValueChangedEvent } from '@vaadin/select';
 import { ComponentMetadata } from '../metadata/model';
-import { ThemeScopeType } from '../model';
+import { ThemeScope } from '../model';
 import { injectGlobalCss } from '../styles';
 
-export class ScopeChangeEvent extends CustomEvent<{ value: ThemeScopeType }> {
-  constructor(value: ThemeScopeType) {
+export class ScopeChangeEvent extends CustomEvent<{ value: ThemeScope }> {
+  constructor(value: ThemeScope) {
     super('scope-change', { detail: { value } });
   }
 }
@@ -77,7 +77,7 @@ export class ScopeSelector extends LitElement {
   }
 
   @property({})
-  public value: ThemeScopeType = ThemeScopeType.local;
+  public value: ThemeScope = ThemeScope.local;
   @property({})
   public metadata?: ComponentMetadata;
   @query('vaadin-select')
@@ -107,12 +107,12 @@ export class ScopeSelector extends LitElement {
     render(
       html`
         <vaadin-list-box>
-          <vaadin-item value=${ThemeScopeType.local} label="Local">
+          <vaadin-item value=${ThemeScope.local} label="Local">
             <span class="title">Local</span>
             <br />
             <span>Edit styles for this ${componentName}</span>
           </vaadin-item>
-          <vaadin-item value=${ThemeScopeType.global} label="Global">
+          <vaadin-item value=${ThemeScope.global} label="Global">
             <span class="title">Global</span>
             <br />
             <span>Edit styles for all ${componentNamePlural}</span>
@@ -125,7 +125,7 @@ export class ScopeSelector extends LitElement {
 
   private handleValueChange(e: SelectValueChangedEvent) {
     // Discard change if it was caused from setting value property
-    const newScopeType = e.detail.value as ThemeScopeType;
+    const newScopeType = e.detail.value as ThemeScope;
     if (newScopeType === this.value) {
       return;
     }

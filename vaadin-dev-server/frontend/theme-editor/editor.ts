@@ -3,7 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { PickerProvider } from '../component-picker';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
-import { ComponentTheme, generateThemeRule, ThemeEditorState, ThemeScope, ThemeScopeType } from './model';
+import { ComponentTheme, generateThemeRule, ThemeEditorState, ThemeContext, ThemeScope } from './model';
 import { detectElementDisplayName, detectTheme } from './detector';
 import { ThemePropertyValueChangeEvent } from './components/editors/base-property-editor';
 import { themePreview } from './preview';
@@ -30,7 +30,7 @@ export class ThemeEditor extends LitElement {
   private historyActions?: ThemeEditorHistoryActions;
 
   @state()
-  private scope: ThemeScope | null = null;
+  private context: ThemeContext | null = null;
 
   /**
    * Base theme detected from existing CSS files for the selected component
@@ -150,11 +150,11 @@ export class ThemeEditor extends LitElement {
       <div class="header">
         ${this.renderPicker()}
         <div class="actions">
-          ${this.scope
+          ${this.context
             ? html` <vaadin-dev-tools-theme-scope-selector
-                .value=${this.scope.type}
-                .metadata=${this.scope.metadata}
-                @scope-change=${this.handleScopeTypeChange}
+                .value=${this.context.scope}
+                .metadata=${this.context.metadata}
+                @scope-change=${this.handleScopeChange}
               ></vaadin-dev-tools-theme-scope-selector>`
             : null}
           <button
@@ -193,13 +193,13 @@ export class ThemeEditor extends LitElement {
   }
 
   renderPropertyList() {
-    if (!this.scope) {
+    if (!this.context) {
       return null;
     }
 
-    const inaccessible = this.scope.type === ThemeScopeType.local && !this.scope.accessible;
+    const inaccessible = this.context.scope === ThemeScope.local && !this.context.accessible;
     if (inaccessible) {
-      const componentName = this.scope.metadata.displayName;
+      const componentName = this.context.metadata.displayName;
       return html`
         <div class="notice">
           The selected ${componentName} can not be styled locally. Currently, theme editor only supports styling
@@ -215,17 +215,17 @@ export class ThemeEditor extends LitElement {
 
     return html` <vaadin-dev-tools-theme-property-list
       class="property-list"
-      .metadata=${this.scope.metadata}
+      .metadata=${this.context.metadata}
       .theme=${this.effectiveTheme}
       @theme-property-value-change=${this.handlePropertyChange}
     ></vaadin-dev-tools-theme-property-list>`;
   }
 
   handleShowComponent() {
-    if (!this.scope) {
+    if (!this.context) {
       return;
     }
-    const component = this.scope.component;
+    const component = this.context.component;
     const serializableComponentRef: ComponentReference = { nodeId: component.nodeId, uiId: component.uiId };
     this.connection.sendShowComponentCreateLocation(serializableComponentRef);
   }
@@ -233,15 +233,15 @@ export class ThemeEditor extends LitElement {
   renderPicker() {
     let label: TemplateResult;
 
-    if (this.scope) {
+    if (this.context) {
       const componentDisplayName =
-        this.scope.type === ThemeScopeType.local
-          ? this.scope.metadata.displayName
-          : `All ${this.scope.metadata.displayName}s`;
+        this.context.scope === ThemeScope.local
+          ? this.context.metadata.displayName
+          : `All ${this.context.metadata.displayName}s`;
       const componentLabel = html`<span>${componentDisplayName}</span>`;
       const instanceLabel =
-        this.scope.type === ThemeScopeType.local
-          ? html` <span class="instance-name">"${detectElementDisplayName(this.scope.component)}"</span>`
+        this.context.scope === ThemeScope.local
+          ? html` <span class="instance-name">"${detectElementDisplayName(this.context.component)}"</span>`
           : null;
       label = html`${componentLabel} ${instanceLabel}`;
     } else {
@@ -268,7 +268,7 @@ export class ThemeEditor extends LitElement {
       pickCallback: async (component) => {
         const metadata = await metadataRegistry.getMetadata(component);
         if (!metadata) {
-          this.scope = null;
+          this.context = null;
           this.baseTheme = null;
           this.editedTheme = null;
           this.effectiveTheme = null;
@@ -279,7 +279,7 @@ export class ThemeEditor extends LitElement {
         this.baseTheme = detectTheme(metadata);
 
         this.refreshTheme({
-          type: this.scope?.type || ThemeScopeType.local,
+          scope: this.context?.scope || ThemeScope.local,
           metadata,
           component
         });
@@ -287,19 +287,19 @@ export class ThemeEditor extends LitElement {
     });
   }
 
-  private handleScopeTypeChange(e: ScopeChangeEvent) {
-    if (!this.scope) {
+  private handleScopeChange(e: ScopeChangeEvent) {
+    if (!this.context) {
       return;
     }
 
     this.refreshTheme({
-      ...this.scope,
-      type: e.detail.value
+      ...this.context,
+      scope: e.detail.value
     });
   }
 
   private async handlePropertyChange(e: ThemePropertyValueChangeEvent) {
-    if (!this.scope || !this.baseTheme || !this.editedTheme) {
+    if (!this.context || !this.baseTheme || !this.editedTheme) {
       return;
     }
 
@@ -310,8 +310,8 @@ export class ThemeEditor extends LitElement {
     this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
 
     // Update theme editor CSS
-    const updateRule = generateThemeRule(this.scope.metadata.tagName, partName, property.propertyName, value);
-    const component = this.scope.type === ThemeScopeType.local ? this.scope.component : null;
+    const updateRule = generateThemeRule(this.context.metadata.tagName, partName, property.propertyName, value);
+    const component = this.context.scope === ThemeScope.local ? this.context.component : null;
     try {
       this.preventLiveReload();
       const response = await this.api.setCssRules([updateRule], component);
@@ -334,25 +334,25 @@ export class ThemeEditor extends LitElement {
     await this.refreshTheme();
   }
 
-  private async refreshTheme(newScope?: ThemeScope) {
-    // Load server rules for new or existing scope
-    const scope = newScope || this.scope;
-    if (!scope) {
+  private async refreshTheme(newContext?: ThemeContext) {
+    // Load server rules for new or existing context
+    const context = newContext || this.context;
+    if (!context) {
       return;
     }
 
-    const scopeSelector = scope.metadata.tagName;
-    const component = scope.type === ThemeScopeType.local ? scope.component : null;
+    const scopeSelector = context.metadata.tagName;
+    const component = context.scope === ThemeScope.local ? context.component : null;
     const serverRules = await this.api.loadRules(scopeSelector, component);
 
     // Update state properties after data has loaded, so that everything
     // consistently updates at once - this avoids re-rendering the editor with
     // new metadata but without matching theme data
-    this.scope = {
-      ...scope,
+    this.context = {
+      ...context,
       accessible: serverRules.accessible
     };
-    this.editedTheme = ComponentTheme.fromServerRules(scope.metadata, serverRules.rules);
+    this.editedTheme = ComponentTheme.fromServerRules(context.metadata, serverRules.rules);
     this.effectiveTheme = ComponentTheme.combine(this.baseTheme!, this.editedTheme);
     await this.updateThemePreview();
   }

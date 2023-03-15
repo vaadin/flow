@@ -8,13 +8,13 @@ export enum ThemeEditorState {
   missing_theme = 'missing_theme'
 }
 
-export enum ThemeScopeType {
+export enum ThemeScope {
   local = 'local',
   global = 'globals'
 }
 
-export interface ThemeScope {
-  type: ThemeScopeType;
+export interface ThemeContext {
+  scope: ThemeScope;
   metadata: ComponentMetadata;
   component: ComponentReference;
   accessible?: boolean;
