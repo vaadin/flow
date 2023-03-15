@@ -58,10 +58,6 @@ public class FeatureFlags implements Serializable {
             "Collaboration Engine backend for clustering support",
             "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
-    public static final Feature ENFORCE_FIELD_VALIDATION = new Feature(
-            "Enforce client / constraint / binder validation",
-            "enforceFieldValidation",
-            "https://github.com/vaadin/platform/issues/3066", false, null);
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -80,7 +76,6 @@ public class FeatureFlags implements Serializable {
         this.lookup = lookup;
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
-        features.add(new Feature(ENFORCE_FIELD_VALIDATION));
         loadProperties();
     }
 
