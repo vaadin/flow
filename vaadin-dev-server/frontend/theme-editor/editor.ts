@@ -4,7 +4,7 @@ import { PickerProvider } from '../component-picker';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
 import { ComponentTheme, generateThemeRule, ThemeEditorState, ThemeScope, ThemeScopeType } from './model';
-import { detectTheme, detectElementDisplayName } from './detector';
+import { detectElementDisplayName, detectTheme } from './detector';
 import { ThemePropertyValueChangeEvent } from './components/editors/base-property-editor';
 import { themePreview } from './preview';
 import { Connection } from '../connection';
@@ -14,6 +14,7 @@ import { ScopeChangeEvent } from './components/scope-selector';
 import './components/scope-selector';
 import './components/property-list';
 import '../component-picker.js';
+import { ComponentReference } from '../component-util';
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
@@ -57,11 +58,11 @@ export class ThemeEditor extends LitElement {
         max-height: 400px;
       }
 
-      .missing-theme {
+      .notice {
         padding: var(--theme-editor-section-horizontal-padding);
       }
 
-      .missing-theme a {
+      .notice a {
         color: var(--dev-tools-text-color-emphasis);
       }
 
@@ -98,6 +99,22 @@ export class ThemeEditor extends LitElement {
       .property-list {
         flex: 1 1 auto;
         overflow-y: auto;
+      }
+
+      .link-button {
+        all: initial;
+        font-family: inherit;
+        font-size: var(--dev-tools-font-size-small);
+        line-height: 1;
+        white-space: nowrap;
+        color: inherit;
+        font-weight: 600;
+        text-decoration: underline;
+      }
+
+      .link-button:focus,
+      .link-button:hover {
+        color: var(--dev-tools-text-color-emphasis);
       }
 
       .icon-button {
@@ -158,20 +175,13 @@ export class ThemeEditor extends LitElement {
           </button>
         </div>
       </div>
-      ${this.scope
-        ? html` <vaadin-dev-tools-theme-property-list
-            class="property-list"
-            .metadata=${this.scope.metadata}
-            .theme=${this.effectiveTheme}
-            @theme-property-value-change=${this.handlePropertyChange}
-          ></vaadin-dev-tools-theme-property-list>`
-        : null}
+      ${this.renderPropertyList()}
     `;
   }
 
   renderMissingThemeNotice() {
     return html`
-      <div class="missing-theme">
+      <div class="notice">
         It looks like you have not set up a custom theme yet. Theme editor requires an existing theme to work with.
         Please check our
         <a href="https://vaadin.com/docs/latest/styling/custom-theme/creating-custom-theme" target="_blank"
@@ -180,6 +190,44 @@ export class ThemeEditor extends LitElement {
         on how to set up a custom theme.
       </div>
     `;
+  }
+
+  renderPropertyList() {
+    if (!this.scope) {
+      return null;
+    }
+
+    const inaccessible = this.scope.type === ThemeScopeType.local && !this.scope.accessible;
+    if (inaccessible) {
+      const componentName = this.scope.metadata.displayName;
+      return html`
+        <div class="notice">
+          The selected ${componentName} can not be styled locally. Currently, theme editor only supports styling
+          instances that are assigned to a local variable, like so:
+          <pre><code>Button saveButton = new Button("Save");</code></pre>
+          If you want to modify the code so that it satisfies this requirement,
+          <button class="link-button" @click=${this.handleShowComponent}>click here</button>
+          to open it in your IDE. Alternatively you can choose to style all ${componentName}s by selecting "Global" from
+          the scope dropdown above.
+        </div>
+      `;
+    }
+
+    return html` <vaadin-dev-tools-theme-property-list
+      class="property-list"
+      .metadata=${this.scope.metadata}
+      .theme=${this.effectiveTheme}
+      @theme-property-value-change=${this.handlePropertyChange}
+    ></vaadin-dev-tools-theme-property-list>`;
+  }
+
+  handleShowComponent() {
+    if (!this.scope) {
+      return;
+    }
+    const component = this.scope.component;
+    const serializableComponentRef: ComponentReference = { nodeId: component.nodeId, uiId: component.uiId };
+    this.connection.sendShowComponentCreateLocation(serializableComponentRef);
   }
 
   renderPicker() {
@@ -300,7 +348,10 @@ export class ThemeEditor extends LitElement {
     // Update state properties after data has loaded, so that everything
     // consistently updates at once - this avoids re-rendering the editor with
     // new metadata but without matching theme data
-    this.scope = scope;
+    this.scope = {
+      ...scope,
+      accessible: serverRules.accessible
+    };
     this.editedTheme = ComponentTheme.fromServerRules(scope.metadata, serverRules.rules);
     this.effectiveTheme = ComponentTheme.combine(this.baseTheme!, this.editedTheme);
     await this.updateThemePreview();

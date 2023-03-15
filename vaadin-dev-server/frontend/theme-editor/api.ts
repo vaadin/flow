@@ -31,6 +31,7 @@ export interface ServerCssRule {
 }
 
 export interface LoadRulesResponse {
+  accessible?: boolean;
   rules: ServerCssRule[];
 }
 
@@ -111,7 +112,8 @@ export class ThemeEditorApi {
   }
 
   public loadRules(selectorFilter: string, componentRef?: ComponentReference | null): Promise<LoadRulesResponse> {
-    return this.sendRequest(Commands.loadRules, { nodeId: componentRef?.nodeId, selectorFilter });
+    return this.sendRequest(Commands.loadRules, { nodeId: componentRef?.nodeId, selectorFilter })
+        .then(response => {console.log('loadRules', response); return response;});
   }
 
   public undo(requestId: string) {

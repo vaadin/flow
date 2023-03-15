@@ -17,6 +17,7 @@ export interface ThemeScope {
   type: ThemeScopeType;
   metadata: ComponentMetadata;
   component: ComponentReference;
+  accessible?: boolean;
 }
 
 export interface ThemePropertyValue {
