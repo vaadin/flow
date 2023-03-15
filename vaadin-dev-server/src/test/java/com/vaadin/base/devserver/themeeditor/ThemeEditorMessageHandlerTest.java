@@ -152,6 +152,22 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
     }
 
     @Test
+    public void testHandleRules_noUniqueRules() {
+        prepareComponentTracker(22);
+
+        ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
+        BaseResponse response = setRule(0, null, "id1", handler,
+                "vaadin-button", "label", "color", "red");
+        assertResponseOk(response, "id1");
+        response = setRule(0, null, "id2", handler, "vaadin-button", "label",
+                "color", "brown");
+        assertResponseOk(response, "id2");
+
+        List<CssRule> rules = loadRules(0, 0, "id3", handler, "vaadin-button");
+        Assert.assertEquals(0, rules.size());
+    }
+
+    @Test
     public void testError() {
         prepareComponentTracker(42);
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();

@@ -34,8 +34,15 @@ public class LoadRulesHandler implements MessageHandler {
         // no filter by default
         Predicate<String> filter = selector -> true;
 
+        // add selector filter
+        if (request.getSelectorFilter() != null) {
+            filter = filter.and(selector -> selector
+                    .startsWith(request.getSelectorFilter()));
+        }
+
         Boolean accessible = null;
-        // in case of instance request - load or generate unique class name
+
+        // add classname filter
         if (request.isInstanceRequest()) {
             accessible = hasSourceModifier.getSourceModifier()
                     .isAccessible(request.getUiId(), request.getNodeId());
@@ -46,13 +53,11 @@ public class LoadRulesHandler implements MessageHandler {
                 if (uniqueClassName != null) {
                     filter = filter.and(selector -> selector
                             .contains("." + uniqueClassName));
+                } else {
+                    // user requests rules for instance but there are none
+                    filter = selector -> false;
                 }
             }
-        }
-
-        if (request.getSelectorFilter() != null) {
-            filter = filter.and(selector -> selector
-                    .startsWith(request.getSelectorFilter()));
         }
 
         final Predicate<String> filterFinal = filter;
