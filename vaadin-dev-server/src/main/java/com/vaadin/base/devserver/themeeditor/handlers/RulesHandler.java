@@ -3,43 +3,60 @@ package com.vaadin.base.devserver.themeeditor.handlers;
 import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
 import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
 import com.vaadin.base.devserver.themeeditor.messages.RulesRequest;
-import com.vaadin.base.devserver.themeeditor.utils.CssRule;
-import com.vaadin.base.devserver.themeeditor.utils.HasThemeModifier;
-import com.vaadin.base.devserver.themeeditor.utils.MessageHandler;
+import com.vaadin.base.devserver.themeeditor.utils.*;
 import com.vaadin.flow.internal.JsonUtils;
 import elemental.json.JsonObject;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class RulesHandler implements MessageHandler {
 
     private final HasThemeModifier hasThemeModifier;
 
-    public RulesHandler(HasThemeModifier hasThemeModifier) {
+    private final HasSourceModifier hasSourceModifier;
+
+    public RulesHandler(HasThemeModifier hasThemeModifier,
+            HasSourceModifier hasSourceModifier) {
         this.hasThemeModifier = hasThemeModifier;
+        this.hasSourceModifier = hasSourceModifier;
     }
 
     @Override
     public ExecuteAndUndo handle(JsonObject data) {
         RulesRequest request = JsonUtils.readToObject(data, RulesRequest.class);
+
+        // needs to be final for ExecuteAndUndo lambdas
+        final List<CssRule> rules = new ArrayList<>(request.getRules());
+
+        // in case of instance request - load or generate unique class name
+        if (request.isInstanceRequest()) {
+            boolean accessible = hasSourceModifier.getSourceModifier()
+                    .isAccessible(request.getUiId(), request.getNodeId());
+            if (accessible) {
+                String uniqueClassName = hasSourceModifier.getSourceModifier()
+                        .getUniqueClassName(request.getUiId(),
+                                request.getNodeId(), true);
+                rules.forEach(rule -> rule.setClassName(uniqueClassName));
+            } else {
+                throw new ThemeEditorException(
+                        "Cannot modify unique CSS rules on inaccessible component.");
+            }
+        }
+
         List<CssRule> currentRules = new ArrayList<>();
-        for (CssRule rule : request.getRules()) {
+        for (CssRule rule : rules) {
             List<CssRule> existingRules = hasThemeModifier.getThemeModifier()
-                    .getCssRules(
-                            selector -> selector.equals(rule.getSelector()));
+                    .getCssRules(rule.getSelector()::equals);
             if (!existingRules.isEmpty()) {
                 // rule exists, calculate undo rule
                 currentRules.add(buildUndoRule(rule, existingRules.get(0)));
             } else {
                 // rule does not exist, need empty rule to be removed
-                currentRules.add(buildEmptyRule(rule));
+                currentRules.add(buildRuleWithEmptyValues(rule));
             }
         }
         return new ExecuteAndUndo(() -> {
-            hasThemeModifier.getThemeModifier()
-                    .setThemeProperties(request.getRules());
+            hasThemeModifier.getThemeModifier().setThemeProperties(rules);
             return BaseResponse.ok();
         }, Optional.of(() -> {
             hasThemeModifier.getThemeModifier()
@@ -54,19 +71,19 @@ public class RulesHandler implements MessageHandler {
     }
 
     private CssRule buildUndoRule(CssRule newRule, CssRule existingRule) {
-        CssRule undoRule = new CssRule();
-        undoRule.setSelector(newRule.getSelector());
-        newRule.getProperties().keySet()
-                .forEach(prop -> undoRule.getProperties().put(prop,
-                        existingRule.getProperties().get(prop)));
+        Map<String, String> properties = new HashMap<>();
+        newRule.getProperties().forEach((k, v) -> properties.put(k,
+                existingRule.getProperties().get(k)));
+        CssRule undoRule = newRule.clone();
+        undoRule.setProperties(properties);
         return undoRule;
     }
 
-    private CssRule buildEmptyRule(CssRule rule) {
-        CssRule emptyRule = new CssRule();
-        emptyRule.setSelector(rule.getSelector());
-        rule.getProperties().keySet()
-                .forEach(prop -> emptyRule.getProperties().put(prop, null));
+    private CssRule buildRuleWithEmptyValues(CssRule rule) {
+        Map<String, String> properties = new HashMap<>();
+        rule.getProperties().forEach((k, v) -> properties.put(k, ""));
+        CssRule emptyRule = rule.clone();
+        emptyRule.setProperties(properties);
         return emptyRule;
     }
 
