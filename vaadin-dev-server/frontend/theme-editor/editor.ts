@@ -15,6 +15,14 @@ import './components/scope-selector';
 import './components/property-list';
 import '../component-picker.js';
 import { ComponentReference } from '../component-util';
+import { injectGlobalCss } from './styles';
+
+injectGlobalCss(css`
+  .vaadin-theme-editor-highlight {
+    outline: solid 3px #9e2cc6;
+    outline-offset: 3px;
+  }
+`);
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
@@ -141,6 +149,12 @@ export class ThemeEditor extends LitElement {
     this.historyActions = this.history.allowedActions;
   }
 
+  disconnectedCallback() {
+    super.disconnectedCallback();
+
+    this.removeElementHighlight(this.context?.component.element);
+  }
+
   render() {
     if (this.themeEditorState === ThemeEditorState.missing_theme) {
       return this.renderMissingThemeNotice();
@@ -257,6 +271,8 @@ export class ThemeEditor extends LitElement {
   }
 
   private async pickComponent() {
+    this.removeElementHighlight(this.context?.component.element);
+
     this.pickerProvider().open({
       infoTemplate: html`
         <div>
@@ -275,6 +291,8 @@ export class ThemeEditor extends LitElement {
           this.effectiveTheme = null;
           return;
         }
+
+        this.highlightElement(component.element);
 
         this.refreshTheme({
           scope: this.context?.scope || ThemeScope.local,
@@ -367,5 +385,17 @@ export class ThemeEditor extends LitElement {
     // Notify dev tools that we are about to save CSS, so that it can disable
     // live reload temporarily
     this.dispatchEvent(new CustomEvent('before-save'));
+  }
+
+  private highlightElement(element?: HTMLElement) {
+    if (element) {
+      element.classList.add('vaadin-theme-editor-highlight');
+    }
+  }
+
+  private removeElementHighlight(element?: HTMLElement) {
+    if (element) {
+      element.classList.remove('vaadin-theme-editor-highlight');
+    }
   }
 }
