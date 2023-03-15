@@ -85,7 +85,7 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
 
         ThemeModifier modifier = new TestThemeModifier();
         modifier.setThemeProperties(Collections.singletonList(
-                new CssRule(SELECTOR_WITH_PART, "color", "red")));
+                new CssRule(TAG_NAME, PART_NAME, "color", "red")));
 
         styleSheet = getStylesheet("styles.css");
         assertEquals(1, styleSheet.getAllImportRules().size());
@@ -100,8 +100,8 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
 
         ThemeModifier modifier = new TestThemeModifier();
         List<CssRule> toBeAdded = new ArrayList<>();
-        toBeAdded.add(new CssRule(SELECTOR_WITH_PART, "color", "red"));
-        toBeAdded.add(new CssRule(SELECTOR_WITH_PART, "font-family", "serif"));
+        toBeAdded.add(new CssRule(TAG_NAME, PART_NAME, "color", "red"));
+        toBeAdded.add(new CssRule(TAG_NAME, PART_NAME, "font-family", "serif"));
         modifier.setThemeProperties(toBeAdded);
 
         styleSheet = getStylesheet("styles.css");
@@ -114,7 +114,7 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
     public void ruleAdded_ruleIsPresent() {
         ThemeModifier modifier = new TestThemeModifier();
         modifier.setThemeProperties(Collections.singletonList(
-                new CssRule(SELECTOR_WITH_PART, "color", "red")));
+                new CssRule(TAG_NAME, PART_NAME, "color", "red")));
 
         CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
         assertEquals(1, styleSheet.getStyleRuleCount());
@@ -128,8 +128,8 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
     public void ruleExists_ruleIsUpdated() {
         ThemeModifier modifier = new TestThemeModifier();
         List<CssRule> toBeAdded = new ArrayList<>();
-        toBeAdded.add(new CssRule(SELECTOR_WITH_PART, "color", "red"));
-        toBeAdded.add(new CssRule(SELECTOR_WITH_PART, "color", "blue"));
+        toBeAdded.add(new CssRule(TAG_NAME, PART_NAME, "color", "red"));
+        toBeAdded.add(new CssRule(TAG_NAME, PART_NAME, "color", "blue"));
         modifier.setThemeProperties(toBeAdded);
 
         CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
@@ -148,8 +148,8 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
     public void rulesWithSameSelectorExists_rulesAreGrouped() {
         ThemeModifier modifier = new TestThemeModifier();
         List<CssRule> toBeAdded = new ArrayList<>();
-        toBeAdded.add(new CssRule(SELECTOR_WITH_PART, "color", "red"));
-        toBeAdded.add(new CssRule(SELECTOR_WITH_PART, "font-family", "serif"));
+        toBeAdded.add(new CssRule(TAG_NAME, PART_NAME, "color", "red"));
+        toBeAdded.add(new CssRule(TAG_NAME, PART_NAME, "font-family", "serif"));
         modifier.setThemeProperties(toBeAdded);
 
         CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
@@ -203,9 +203,9 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
     public void rulesWithSameSelectorExists_ruleIsUpdated() {
         ThemeModifier modifier = new TestThemeModifier();
         List<CssRule> toBeAdded = new ArrayList<>();
-        toBeAdded.add(new CssRule(SELECTOR_WITH_PART, "color", "red"));
-        toBeAdded.add(new CssRule(SELECTOR_WITH_PART, "font-family", "serif"));
-        toBeAdded.add(new CssRule(SELECTOR_WITH_PART, "color", "blue"));
+        toBeAdded.add(new CssRule(TAG_NAME, PART_NAME, "color", "red"));
+        toBeAdded.add(new CssRule(TAG_NAME, PART_NAME, "font-family", "serif"));
+        toBeAdded.add(new CssRule(TAG_NAME, PART_NAME, "color", "blue"));
         modifier.setThemeProperties(toBeAdded);
 
         CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
@@ -221,8 +221,8 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
     public void ruleIsRemoved_rulesUpdated() {
         ThemeModifier modifier = new TestThemeModifier();
         List<CssRule> toBeAdded = new ArrayList<>();
-        toBeAdded.add(new CssRule(SELECTOR_WITH_PART, "color", "red"));
-        toBeAdded.add(new CssRule(SELECTOR_WITH_PART, "font-family", "serif"));
+        toBeAdded.add(new CssRule(TAG_NAME, PART_NAME, "color", "red"));
+        toBeAdded.add(new CssRule(TAG_NAME, PART_NAME, "font-family", "serif"));
         modifier.setThemeProperties(toBeAdded);
 
         CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
@@ -231,7 +231,7 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
                 styleSheet.getStyleRuleAtIndex(0).getDeclarationCount());
 
         modifier.setThemeProperties(Collections
-                .singletonList(new CssRule(SELECTOR_WITH_PART, "color", null)));
+                .singletonList(new CssRule(TAG_NAME, PART_NAME, "color", "")));
 
         styleSheet = getStylesheet("theme-editor.css");
         assertEquals(1, styleSheet.getStyleRuleCount());
@@ -245,8 +245,8 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
     public void allRulesAreRemoved_ruleIsNotPresent() {
         ThemeModifier modifier = new TestThemeModifier();
         List<CssRule> toBeAdded = new ArrayList<>();
-        toBeAdded.add(new CssRule(SELECTOR_WITH_PART, "color", "red"));
-        toBeAdded.add(new CssRule(SELECTOR_WITH_PART, "font-family", "serif"));
+        toBeAdded.add(new CssRule(TAG_NAME, PART_NAME, "color", "red"));
+        toBeAdded.add(new CssRule(TAG_NAME, PART_NAME, "font-family", "serif"));
         modifier.setThemeProperties(toBeAdded);
 
         CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
@@ -255,8 +255,9 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
                 styleSheet.getStyleRuleAtIndex(0).getDeclarationCount());
 
         List<CssRule> toBeRemoved = new ArrayList<>();
-        toBeRemoved.add(new CssRule(SELECTOR_WITH_PART, "font-family", null));
-        toBeRemoved.add(new CssRule(SELECTOR_WITH_PART, "color", null));
+        toBeRemoved.add(
+                new CssRule(TAG_NAME, PART_NAME, null, "font-family", null));
+        toBeRemoved.add(new CssRule(TAG_NAME, PART_NAME, null, "color", null));
         modifier.setThemeProperties(toBeRemoved);
 
         styleSheet = getStylesheet("theme-editor.css");
@@ -267,8 +268,8 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
     public void getCss() throws IOException {
         ThemeModifier modifier = new TestThemeModifier();
         List<CssRule> toBeAdded = new ArrayList<>();
-        toBeAdded.add(new CssRule(SELECTOR_WITH_PART, "color", "red"));
-        toBeAdded.add(new CssRule(SELECTOR_WITH_PART, "font-family", "serif"));
+        toBeAdded.add(new CssRule(TAG_NAME, PART_NAME, "color", "red"));
+        toBeAdded.add(new CssRule(TAG_NAME, PART_NAME, "font-family", "serif"));
         modifier.setThemeProperties(toBeAdded);
 
         String css = modifier.getCss();

@@ -46,4 +46,8 @@ public class BaseRequest implements Serializable {
     public void setUiId(Integer uiId) {
         this.uiId = uiId;
     }
+
+    public boolean isInstanceRequest() {
+        return getUiId() != null && getNodeId() != null;
+    }
 }
