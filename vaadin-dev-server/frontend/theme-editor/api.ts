@@ -41,14 +41,12 @@ interface RequestHandle {
 }
 
 export class ThemeEditorApi {
-  private static instance: ThemeEditorApi;
-
   private wrappedConnection: Connection;
   private pendingRequests: { [key: string]: RequestHandle } = {};
   private requestCounter: number = 0;
   private globalUiId: number = this.getGlobalUiId();
 
-  private constructor(wrappedConnection: Connection) {
+  constructor(wrappedConnection: Connection) {
     this.wrappedConnection = wrappedConnection;
     const prevOnMessage = this.wrappedConnection.onMessage;
     this.wrappedConnection.onMessage = (message: any) => {
@@ -58,13 +56,6 @@ export class ThemeEditorApi {
         prevOnMessage.call(this.wrappedConnection, message);
       }
     };
-  }
-
-  public static getInstance(connection: Connection) {
-    if (!this.instance) {
-      this.instance = new ThemeEditorApi(connection);
-    }
-    return this.instance;
   }
 
   private sendRequest(command: string, data: any) {
@@ -112,8 +103,10 @@ export class ThemeEditorApi {
   }
 
   public loadRules(selectorFilter: string, componentRef?: ComponentReference | null): Promise<LoadRulesResponse> {
-    return this.sendRequest(Commands.loadRules, { nodeId: componentRef?.nodeId, selectorFilter })
-        .then(response => {console.log('loadRules', response); return response;});
+    return this.sendRequest(Commands.loadRules, { nodeId: componentRef?.nodeId, selectorFilter }).then((response) => {
+      console.log('loadRules', response);
+      return response;
+    });
   }
 
   public undo(requestId: string) {

@@ -136,7 +136,7 @@ export class ThemeEditor extends LitElement {
   }
 
   protected firstUpdated() {
-    this.api = ThemeEditorApi.getInstance(this.connection);
+    this.api = new ThemeEditorApi(this.connection);
     this.history = new ThemeEditorHistory(this.api);
     this.historyActions = this.history.allowedActions;
   }
