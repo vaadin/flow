@@ -3,7 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { PickerProvider } from '../component-picker';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
-import { ComponentTheme, generateThemeRule, ThemeEditorState, ThemeContext, ThemeScope } from './model';
+import { ComponentTheme, generateThemeRule, ThemeContext, ThemeEditorState, ThemeScope } from './model';
 import { detectElementDisplayName, detectTheme } from './detector';
 import { ThemePropertyValueChangeEvent } from './components/editors/base-property-editor';
 import { themePreview } from './preview';
@@ -239,10 +239,11 @@ export class ThemeEditor extends LitElement {
           ? this.context.metadata.displayName
           : `All ${this.context.metadata.displayName}s`;
       const componentLabel = html`<span>${componentDisplayName}</span>`;
-      const instanceLabel =
-        this.context.scope === ThemeScope.local
-          ? html` <span class="instance-name">"${detectElementDisplayName(this.context.component)}"</span>`
-          : null;
+      const instanceName =
+        this.context.scope === ThemeScope.local ? detectElementDisplayName(this.context.component) : null;
+      const instanceLabel = instanceName
+        ? html` <span class="instance-name">"${detectElementDisplayName(this.context.component)}"</span>`
+        : null;
       label = html`${componentLabel} ${instanceLabel}`;
     } else {
       label = html`<span class="no-selection">Pick an element to get started</span>`;
