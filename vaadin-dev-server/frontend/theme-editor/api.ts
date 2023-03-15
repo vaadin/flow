@@ -26,7 +26,6 @@ export interface LoadPreviewResponse extends BaseResponse {
 export interface ServerCssRule {
   tagName: string;
   partName: string | null;
-  className?: string;
   properties: { [key: string]: string };
 }
 
