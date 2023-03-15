@@ -182,15 +182,6 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         @Override
-        protected Collection<String> getGeneratedModules() {
-            final Set<String> exclude = new HashSet<>(
-                    Arrays.asList(generatedFlowImports.getName(),
-                            FrontendUtils.FALLBACK_IMPORTS_NAME));
-            return NodeUpdater.getGeneratedModules(options.getGeneratedFolder(),
-                    exclude);
-        }
-
-        @Override
         protected ThemeDefinition getThemeDefinition() {
             return TaskUpdateImports.this.getThemeDefinition();
         }
@@ -268,11 +259,6 @@ public class TaskUpdateImports extends NodeUpdater {
         @Override
         protected URL getResource(String name) {
             return finder.getResource(name);
-        }
-
-        @Override
-        protected Collection<String> getGeneratedModules() {
-            return Collections.emptyList();
         }
 
         @Override

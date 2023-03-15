@@ -139,12 +139,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         }
 
         @Override
-        protected Collection<String> getGeneratedModules() {
-            return Arrays.asList("generated-modules-foo",
-                    "generated-modules-bar");
-        }
-
-        @Override
         protected ThemeDefinition getThemeDefinition() {
             return scanner.getThemeDefinition();
         }
@@ -356,9 +350,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add(
                 "registerStyles('foo-bar', $css_6, {include: 'bar', moduleId: 'flow_css_mod_6'});");
 
-        expectedLines.add("import 'generated-modules-foo';");
-        expectedLines.add("import 'generated-modules-bar';");
-
         updater.run();
 
         for (String line : expectedLines) {
@@ -515,8 +506,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .filter(importValue -> importValue
                         .contains(FrontendUtils.FRONTEND_FOLDER_ALIAS))
                 .sorted().collect(Collectors.toList());
-        updater.getGeneratedModules().stream().map(this::updateToImport)
-                .forEach(expectedImports::add);
         // Remove internals from the full list
         expectedImports.removeAll(internals);
         // Add internals to end of list

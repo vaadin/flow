@@ -67,12 +67,6 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     private static final String VAADIN_FORM_PKG = "@vaadin/form";
 
-    /**
-     * Relative paths of generated should be prefixed with this value, so they
-     * can be correctly separated from {projectDir}/frontend files.
-     */
-    public static final String GENERATED_PREFIX = "GENERATED/";
-
     // .vaadin/vaadin.json contains local installation data inside node_modules
     // This will help us know to execute even when another developer has pushed
     // a new hash to the code repository.
@@ -189,30 +183,6 @@ public abstract class NodeUpdater implements FallibleCommand {
                     .getFilteredVersions(versionsJson, versionsOrigin);
         }
         return versionsJson;
-    }
-
-    static Set<String> getGeneratedModules(File directory,
-            Set<String> excludes) {
-        if (!directory.exists()) {
-            return Collections.emptySet();
-        }
-
-        final Function<String, String> unixPath = str -> str.replace("\\", "/");
-
-        final URI baseDir = directory.toURI();
-
-        return FileUtils.listFiles(directory, new String[] { "js" }, true)
-                .stream().filter(file -> {
-                    String path = unixPath.apply(file.getPath());
-                    if (path.contains("/node_modules/")) {
-                        return false;
-                    }
-                    return excludes.stream().noneMatch(
-                            postfix -> path.endsWith(unixPath.apply(postfix)));
-                })
-                .map(file -> GENERATED_PREFIX + unixPath
-                        .apply(baseDir.relativize(file.toURI()).getPath()))
-                .collect(Collectors.toSet());
     }
 
     JsonObject getPackageJson() throws IOException {

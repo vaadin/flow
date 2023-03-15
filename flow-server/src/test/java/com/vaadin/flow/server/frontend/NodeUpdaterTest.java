@@ -87,25 +87,6 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void getGeneratedModules_should_excludeByFileName()
-            throws IOException {
-        File generated = temporaryFolder.newFolder();
-        File fileA = new File(generated, "a.js");
-        File fileB = new File(generated, "b.js");
-        File fileC = new File(generated, "c.js");
-        fileA.createNewFile();
-        fileB.createNewFile();
-        fileC.createNewFile();
-
-        Set<String> modules = NodeUpdater.getGeneratedModules(generated,
-                Stream.of("a.js", "/b.js").collect(Collectors.toSet()));
-
-        Assert.assertEquals(1, modules.size());
-        // GENERATED/ is an added prefix for files from this method
-        Assert.assertTrue(modules.contains("GENERATED/c.js"));
-    }
-
-    @Test
     public void getDefaultDependencies_includesAllDependencies() {
         Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
         Set<String> expectedDependencies = new HashSet<>();

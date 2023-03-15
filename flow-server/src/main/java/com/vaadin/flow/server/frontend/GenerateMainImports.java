@@ -104,23 +104,6 @@ public class GenerateMainImports extends AbstractUpdateImports {
     }
 
     @Override
-    protected Collection<String> getGeneratedModules() {
-        if (options.getGeneratedFolder() == null) {
-            return Collections.emptySet();
-        }
-        // Exclude generated-flow-imports.js and
-        // generated-flow-imports-fallback.js
-        // as they are not generated modules, but import files.
-        return NodeUpdater
-                .getGeneratedModules(options.getGeneratedFolder(), Stream
-                        .of(new File(options.getGeneratedFolder(), IMPORTS_NAME)
-                                .getName(),
-                                new File(options.getGeneratedFolder(),
-                                        FALLBACK_IMPORTS_NAME).getName())
-                        .collect(Collectors.toSet()));
-    }
-
-    @Override
     protected ThemeDefinition getThemeDefinition() {
         return frontendDepScanner.getThemeDefinition();
     }
