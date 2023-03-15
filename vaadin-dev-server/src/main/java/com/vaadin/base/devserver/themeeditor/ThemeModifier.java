@@ -68,9 +68,11 @@ public class ThemeModifier {
                     .entrySet()) {
                 if (property.getValue() != null
                         && !property.getValue().isBlank()) {
-                    setCssProperty(styleSheet, rule);
+                    setCssProperty(styleSheet, rule.getSelector(),
+                            property.getKey(), property.getValue());
                 } else {
-                    removeCssProperty(styleSheet, rule);
+                    removeCssProperty(styleSheet, rule.getSelector(),
+                            property.getKey());
                 }
             }
         }
@@ -176,20 +178,15 @@ public class ThemeModifier {
     }
 
     protected void setCssProperty(CascadingStyleSheet styleSheet,
-            CssRule cssRuleSingleValue) {
-        Map.Entry<String, String> property = cssRuleSingleValue.getProperties()
-                .entrySet().iterator().next();
-        CSSStyleRule newRule = createStyleRule(cssRuleSingleValue.getSelector(),
-                property.getKey(), property.getValue());
+            String selector, String property, String value) {
+        CSSStyleRule newRule = createStyleRule(selector, property, value);
         CSSStyleRule existingRule = findRuleBySelector(styleSheet, newRule);
         if (existingRule == null) {
             styleSheet.addRule(newRule);
         } else {
-            String propertyName = cssRuleSingleValue.getProperties().keySet()
-                    .iterator().next();
             CSSDeclaration newDeclaration = newRule.getDeclarationAtIndex(0);
             CSSDeclaration existingDeclaration = existingRule
-                    .getDeclarationOfPropertyName(propertyName);
+                    .getDeclarationOfPropertyName(property);
             if (existingDeclaration == null) {
                 existingRule.addDeclaration(newDeclaration);
             } else {
@@ -202,11 +199,9 @@ public class ThemeModifier {
     }
 
     protected void removeCssProperty(CascadingStyleSheet styleSheet,
-            CssRule rule) {
+            String selector, String property) {
         // value not considered
-        String propertyName = rule.getProperties().keySet().iterator().next();
-        CSSStyleRule newRule = createStyleRule(rule.getSelector(), propertyName,
-                "none");
+        CSSStyleRule newRule = createStyleRule(selector, property, "none");
         CSSStyleRule existingRule = findRuleBySelector(styleSheet, newRule);
         if (existingRule != null) {
             removeProperty(existingRule, newRule);

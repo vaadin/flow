@@ -243,8 +243,11 @@ public class JavaSourceModifier {
             return node.getExpression().asMethodCallExpr().getScope()
                     .map(e -> e.asNameExpr().getNameAsString()).stream()
                     .findFirst().orElse(null);
+        } else if (node.getExpression().isAssignExpr()) {
+            return node.getExpression().asAssignExpr().getTarget().toString();
         }
-        return null;
+        throw new ThemeEditorException(
+                "Cannot find variable name for given component.");
     }
 
     // finds variable declaration on given location line
@@ -360,15 +363,23 @@ public class JavaSourceModifier {
     }
 
     protected boolean nodeIsSingleVariableDeclaration(Node n) {
-        if (n instanceof ExpressionStmt expr
-                && expr.getExpression().isVariableDeclarationExpr()
-                && expr.getExpression().asVariableDeclarationExpr()
-                        .getVariables().size() == 1
-                && n.getParentNode().filter(BlockStmt.class::isInstance)
-                        .isPresent()) {
-            return true;
+        if (n instanceof ExpressionStmt expr) {
+            // check if inside block statement
+            if (!n.getParentNode().filter(BlockStmt.class::isInstance)
+                    .isPresent()) {
+                return false;
+            }
+            // assignment expression
+            if (expr.getExpression().isAssignExpr()) {
+                return true;
+            }
+            // general expression statement
+            if (expr.getExpression().isVariableDeclarationExpr()
+                    && expr.getExpression().asVariableDeclarationExpr()
+                            .getVariables().size() == 1) {
+                return true;
+            }
         }
-
         return false;
     }
 

@@ -82,7 +82,7 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
     @Test
     public void testHandleThemeEditorRules() {
-        prepareComponentTracker(22);
+        prepareComponentTracker(TEXTFIELD_LINE);
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         // set global rules for vaadin-button
         BaseResponse response = setRule(0, null, "id1", handler,
@@ -96,7 +96,7 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
     @Test
     public void testHandleThemeEditorClassNames() {
-        prepareComponentTracker(22);
+        prepareComponentTracker(TEXTFIELD_LINE);
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         setClassNames(0, "id1", handler, new String[] { "bold", "beautiful" },
                 new String[] { "ugly" });
@@ -117,7 +117,7 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
     @Test
     public void testHandleLoadRules() {
-        prepareComponentTracker(22);
+        prepareComponentTracker(TEXTFIELD_LINE);
 
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         BaseResponse response = setRule(0, null, "id1", handler,
@@ -153,14 +153,14 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
     @Test
     public void testHandleRules_noUniqueRules() {
-        prepareComponentTracker(22);
+        prepareComponentTracker(TEXTFIELD_LINE);
 
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         BaseResponse response = setRule(0, null, "id1", handler,
                 "vaadin-button", "label", "color", "red");
         assertResponseOk(response, "id1");
         response = setRule(0, null, "id2", handler, "vaadin-button", "label",
-                "color", "brown");
+                "font-size", "12px");
         assertResponseOk(response, "id2");
 
         List<CssRule> rules = loadRules(0, 0, "id3", handler, "vaadin-button");
@@ -284,7 +284,7 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
     @Test
     public void testHistoryUndo_attributeRemoved() {
-        prepareComponentTracker(22);
+        prepareComponentTracker(TEXTFIELD_LINE);
         JavaSourceModifier javaSourceModifierMock = Mockito
                 .mock(JavaSourceModifier.class);
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler() {
