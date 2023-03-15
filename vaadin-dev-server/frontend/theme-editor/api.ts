@@ -103,10 +103,7 @@ export class ThemeEditorApi {
   }
 
   public loadRules(selectorFilter: string, componentRef?: ComponentReference | null): Promise<LoadRulesResponse> {
-    return this.sendRequest(Commands.loadRules, { nodeId: componentRef?.nodeId, selectorFilter }).then((response) => {
-      console.log('loadRules', response);
-      return response;
-    });
+    return this.sendRequest(Commands.loadRules, { nodeId: componentRef?.nodeId, selectorFilter });
   }
 
   public undo(requestId: string) {
