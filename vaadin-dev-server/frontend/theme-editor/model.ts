@@ -10,7 +10,7 @@ export enum ThemeEditorState {
 
 export enum ThemeScope {
   local = 'local',
-  global = 'globals'
+  global = 'global'
 }
 
 export interface ThemeContext {
