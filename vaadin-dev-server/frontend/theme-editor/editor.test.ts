@@ -606,5 +606,13 @@ describe('theme-editor', () => {
       expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.false;
       expect(anotherElement.classList.contains('vaadin-theme-editor-highlight')).to.be.true;
     });
+
+    it('should remove highlight when removing editor from DOM', async () => {
+      await pickComponent();
+      expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.true;
+
+      editor.remove();
+      expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.false;
+    });
   });
 });
