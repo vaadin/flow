@@ -48,7 +48,7 @@ export function detectElementDisplayName(component: ComponentReference) {
   }
 
   // check for label
-  const label = element.shadowRoot?.querySelector('label');
+  const label = element.shadowRoot && element.shadowRoot.querySelector('label');
   if (label && label.textContent) {
     return sanitizeText(label.textContent);
   }
