@@ -49,18 +49,18 @@ public class ShortcutRegistration implements Registration, Serializable {
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES = "listenOnComponents should not have duplicate entries!";
     static final String ELEMENT_LOCATOR_JS = //@formatter:off
             "const listenOn=this;" // this is the listenOn component's element
-            + "const delegate=%1$s;" // the output of the JsLocator
-            + "if (delegate) {"
-            + "delegate.addEventListener('keydown', function(event) {"
-            + "if (%2$s) {" // the filter text to match the key
-            + "const new_event = new event.constructor(event.type, event);"
-            + "listenOn.dispatchEvent(new_event);"
-            + "%3$s" // the new event allows default if desired
-            + "event.stopPropagation();}" // the new event bubbles if desired
-            + "});" // end matches filter
-            + "} else {"
-            + "throw \"Shortcut listenOn element not found with JS locator string '%1$s'\""
-            + "}";//@formatter:on
+                    + "const delegate=%1$s;" // the output of the JsLocator
+                    + "if (delegate) {"
+                    + "delegate.addEventListener('keydown', function(event) {"
+                    + "if (%2$s) {" // the filter text to match the key
+                    + "const new_event = new event.constructor(event.type, event);"
+                    + "listenOn.dispatchEvent(new_event);"
+                    + "%3$s" // the new event allows default if desired
+                    + "event.stopPropagation();}" // the new event bubbles if desired
+                    + "});" // end matches filter
+                    + "} else {"
+                    + "throw \"Shortcut listenOn element not found with JS locator string '%1$s'\""
+                    + "}";//@formatter:on
     private boolean allowDefaultBehavior = false;
     private boolean allowEventPropagation = false;
     static final String LISTEN_ON_INITIALIZED = "_initialized_listen_on_for_component";
@@ -143,8 +143,8 @@ public class ShortcutRegistration implements Registration, Serializable {
      *            {@link KeyModifier}.
      */
     ShortcutRegistration(Component lifecycleOwner,
-            SerializableSupplier<Component[]> listenOnSuppliers,
-            ShortcutEventListener eventListener, Key key) {
+                         SerializableSupplier<Component[]> listenOnSuppliers,
+                         ShortcutEventListener eventListener, Key key) {
         if (Key.isModifier(key)) {
             throw new IllegalArgumentException(
                     String.format("Parameter " + "'key' cannot belong to %s",
@@ -813,7 +813,7 @@ public class ShortcutRegistration implements Registration, Serializable {
 
     /**
      * Get the sent listenOn event data or initialize new listenOn data.
-     * 
+     *
      * @param listenOn
      *            component to listen events on
      * @return set with already executed expressions.
