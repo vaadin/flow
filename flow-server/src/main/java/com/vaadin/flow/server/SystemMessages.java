@@ -75,6 +75,8 @@ public class SystemMessages implements Serializable {
      * Gets the URL the user will be redirected to after dismissing a session
      * expired message.
      *
+     * Default value is {@literal null}.
+     *
      * @return the URL to redirect to, or null to refresh the page
      */
     public String getSessionExpiredURL() {
@@ -86,6 +88,8 @@ public class SystemMessages implements Serializable {
      * user. If the notification is disabled the user will be immediately
      * redirected to the URL returned by {@link #getSessionExpiredURL()}.
      *
+     * By default, the "session expired" notification is disabled.
+     *
      * @return {@code true} to show the notification to the end user,
      *         {@code false} to redirect directly
      */
@@ -96,6 +100,9 @@ public class SystemMessages implements Serializable {
     /**
      * Gets the caption to show in a "session expired" notification.
      *
+     * Returns {@literal null} if the "session expired" notification is
+     * disabled.
+     *
      * @return The caption to show or {@code null} to show no caption.
      */
     public String getSessionExpiredCaption() {
@@ -105,6 +112,9 @@ public class SystemMessages implements Serializable {
 
     /**
      * Gets the message to show in a "session expired" notification.
+     *
+     * Returns {@literal null} if the "session expired" notification is
+     * disabled.
      *
      * @return The message to show or {@code null} to show no message.
      */
@@ -117,6 +127,8 @@ public class SystemMessages implements Serializable {
      * Gets the URL the user will be redirected to after dismissing an internal
      * error message.
      *
+     * Default value is {@literal null}.
+     *
      * @return the URL to redirect to, or null to refresh the page
      */
     public String getInternalErrorURL() {
@@ -128,6 +140,8 @@ public class SystemMessages implements Serializable {
      * If the notification is disabled the user will be immediately redirected
      * to the URL returned by {@link #getInternalErrorURL()}.
      *
+     * By default, the "internal error" notification is enabled.
+     *
      * @return {@code true} to show the notification to the end user,
      *         {@code false} to redirect directly
      */
@@ -138,6 +152,8 @@ public class SystemMessages implements Serializable {
     /**
      * Gets the caption to show in an "internal error" notification.
      *
+     * Returns {@literal null} if the "internal error" notification is disabled.
+     *
      * @return The caption to show or {@code null} to show no caption.
      */
     public String getInternalErrorCaption() {
@@ -146,6 +162,8 @@ public class SystemMessages implements Serializable {
 
     /**
      * Gets the message to show in a "internal error" notification.
+     *
+     * Returns {@literal null} if the "internal error" notification is disabled.
      *
      * @return The message to show or {@code null} to show no message.
      */
@@ -156,6 +174,8 @@ public class SystemMessages implements Serializable {
     /**
      * Gets the URL the user will be redirected to after dismissing a "cookies
      * disabled" message.
+     *
+     * Default value is {@literal null}.
      *
      * @return the URL to redirect to, or null to refresh the page
      */
@@ -168,6 +188,8 @@ public class SystemMessages implements Serializable {
      * user. If the notification is disabled the user will be immediately
      * redirected to the URL returned by {@link #getCookiesDisabledURL()}.
      *
+     * By default, the "cookies disable" notification is disabled.
+     *
      * @return {@code true} to show the notification to the end user,
      *         {@code false} to redirect directly
      */
@@ -178,6 +200,9 @@ public class SystemMessages implements Serializable {
     /**
      * Gets the caption to show in a "cookies disabled" notification.
      *
+     * Returns {@literal null} if the "cookies disable" notification is
+     * disabled.
+     *
      * @return The caption to show or {@code null} to show no caption.
      */
     public String getCookiesDisabledCaption() {
@@ -187,6 +212,9 @@ public class SystemMessages implements Serializable {
 
     /**
      * Gets the message to show in a "cookies disabled" notification.
+     *
+     * Returns {@literal null} if the "cookies disable" notification is
+     * disabled.
      *
      * @return The message to show or {@code null} to show no message.
      */

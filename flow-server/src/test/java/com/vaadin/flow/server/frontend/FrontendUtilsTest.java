@@ -441,6 +441,9 @@ public class FrontendUtilsTest {
 
         File symbolic = new File(npmFolder, "symbolic");
         symbolic.mkdir();
+        File symbolicPackageJson = new File(symbolic, "package.json");
+        FileUtils.writeStringToFile(symbolicPackageJson, "{}",
+                StandardCharsets.UTF_8);
         File linkFolderFile = new File(symbolic, "symbol.txt");
         linkFolderFile.createNewFile();
 

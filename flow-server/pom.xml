@@ -29,6 +29,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.vaadin.servletdetector</groupId>
+            <artifactId>throw-if-servlet5</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+
 
         <!-- API DEPENDENCIES -->
 
@@ -57,15 +63,7 @@
         <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
-            <version>1.4</version>
-            <!-- commons-fileupload depends on commons-io, override
-                it with Flow declaration -->
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>1.5</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
