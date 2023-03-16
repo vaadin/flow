@@ -1,4 +1,5 @@
-import { ComponentMetadata } from '../model';
+import {ComponentMetadata, EditorType} from '../model';
+import {presets} from "./presets";
 
 export default {
   tagName: 'vaadin-text-field',
@@ -11,15 +12,21 @@ export default {
       properties: [
         {
           propertyName: 'color',
-          displayName: 'Text color'
+          displayName: 'Text color',
+          editorType: EditorType.color,
+          presets: presets.lumoTextColor
         },
         {
           propertyName: 'font-size',
-          displayName: 'Font size'
+          displayName: 'Font size',
+          editorType: EditorType.range,
+          presets: presets.lumoFontSize,
+          icon: 'font'
         },
         {
-          propertyName: 'background',
-          displayName: 'Background'
+          propertyName: 'background-color',
+          displayName: 'Background color',
+          editorType: EditorType.color
         }
       ]
     },
@@ -29,15 +36,21 @@ export default {
       properties: [
         {
           propertyName: 'color',
-          displayName: 'Text color'
+          displayName: 'Text color',
+          editorType: EditorType.color,
+          presets: presets.lumoTextColor
         },
         {
           propertyName: 'font-size',
-          displayName: 'Font size'
+          displayName: 'Font size',
+          editorType: EditorType.range,
+          presets: presets.lumoFontSize,
+          icon: 'font'
         },
         {
-          propertyName: 'background',
-          displayName: 'Background'
+          propertyName: 'background-color',
+          displayName: 'Background color',
+          editorType: EditorType.color
         }
       ]
     },
@@ -47,15 +60,21 @@ export default {
       properties: [
         {
           propertyName: 'color',
-          displayName: 'Text color'
+          displayName: 'Text color',
+          editorType: EditorType.color,
+          presets: presets.lumoTextColor
         },
         {
           propertyName: 'font-size',
-          displayName: 'Font size'
+          displayName: 'Font size',
+          editorType: EditorType.range,
+          presets: presets.lumoFontSize,
+          icon: 'font'
         },
         {
-          propertyName: 'background',
-          displayName: 'Background'
+          propertyName: 'background-color',
+          displayName: 'Background color',
+          editorType: EditorType.color
         }
       ]
     },
@@ -65,15 +84,21 @@ export default {
       properties: [
         {
           propertyName: 'color',
-          displayName: 'Text color'
+          displayName: 'Text color',
+          editorType: EditorType.color,
+          presets: presets.lumoTextColor
         },
         {
           propertyName: 'font-size',
-          displayName: 'Font size'
+          displayName: 'Font size',
+          editorType: EditorType.range,
+          presets: presets.lumoFontSize,
+          icon: 'font'
         },
         {
-          propertyName: 'background',
-          displayName: 'Background'
+          propertyName: 'background-color',
+          displayName: 'Background color',
+          editorType: EditorType.color
         }
       ]
     }
