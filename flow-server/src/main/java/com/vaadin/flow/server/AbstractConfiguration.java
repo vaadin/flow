@@ -46,13 +46,31 @@ public interface AbstractConfiguration extends Serializable {
      * should be used.
      *
      * @return true if dev server should be used
+     * @deprecated Use {@link #getMode()} instead
      */
+    @Deprecated
     default boolean frontendHotdeploy() {
         if (isProductionMode()) {
             return false;
         }
         return getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY,
                 EndpointRequestUtil.isHillaAvailable());
+    }
+
+    /**
+     * Gets the mode the application is running in.
+     *
+     * @return production, development using livereload or development using
+     *         bundle
+     **/
+    default Mode getMode() {
+        if (isProductionMode()) {
+            return Mode.PRODUCTION;
+        } else if (frontendHotdeploy()) {
+            return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD;
+        } else {
+            return Mode.DEVELOPMENT_BUNDLE;
+        }
     }
 
     /**

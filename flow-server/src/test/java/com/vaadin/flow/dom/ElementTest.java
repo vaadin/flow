@@ -968,7 +968,7 @@ public class ElementTest extends AbstractNodeTest {
     public void getSingleStyleAsAttribute() {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
-        s.set("border", "1px solid black");
+        s.setBorder("1px solid black");
         Assert.assertTrue(e.hasAttribute("style"));
         Assert.assertEquals("border:1px solid black", e.getAttribute("style"));
     }
@@ -978,7 +978,7 @@ public class ElementTest extends AbstractNodeTest {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("border", "1px solid black");
-        s.set("margin", "1em");
+        s.setMargin("1em");
         Assert.assertTrue(e.hasAttribute("style"));
         assertEqualsOne(
                 new String[] { "border:1px solid black;margin:1em",
@@ -1105,7 +1105,7 @@ public class ElementTest extends AbstractNodeTest {
     @Test
     public void setStyleValueExtraWhitespace() {
         Element e = ElementFactory.createDiv();
-        e.getStyle().set("color", "red   ");
+        e.getStyle().setColor("red   ");
         Assert.assertEquals("color:red", e.getAttribute("style"));
         Assert.assertEquals("red", e.getStyle().get("color"));
     }
@@ -1114,14 +1114,14 @@ public class ElementTest extends AbstractNodeTest {
     public void removeStyles() {
         Element element = ElementFactory.createDiv();
 
-        element.getStyle().set("zIndex", "12");
+        element.getStyle().setZIndex(12);
         element.getStyle().set("background", "blue");
 
         element.getStyle().remove("background");
 
         Assert.assertEquals("z-index:12", element.getAttribute("style"));
 
-        element.getStyle().remove("zIndex");
+        element.getStyle().setZIndex(null);
 
         Assert.assertNull(element.getAttribute("style"));
         Assert.assertFalse(element.hasAttribute("style"));
@@ -1135,7 +1135,7 @@ public class ElementTest extends AbstractNodeTest {
 
         Style style = element.getStyle();
 
-        style.set("border", "1px solid green");
+        style.setBorder("1px solid green");
 
         element.removeAttribute("style");
 
@@ -1147,7 +1147,7 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         String validStyle = "background: url('foo;bar')";
         Style style = element.getStyle();
-        style.set("background", validStyle);
+        style.setBackground(validStyle);
         Assert.assertEquals(validStyle, style.get("background"));
     }
 
@@ -1260,7 +1260,7 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
 
         Style style = element.getStyle();
-        style.set("color", "var(--some-var)");
+        style.setColor("var(--some-var)");
         Assert.assertEquals("var(--some-var)", style.get("color"));
     }
 
@@ -2091,7 +2091,7 @@ public class ElementTest extends AbstractNodeTest {
     public void elementAttributesOuterHtml() {
         Element div = ElementFactory.createDiv();
         div.setAttribute("foo", "bar");
-        div.getStyle().set("width", "20px");
+        div.getStyle().setWidth("20px");
         div.getClassList().add("cls");
         div.setAttribute("pin", "");
 

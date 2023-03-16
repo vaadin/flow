@@ -38,7 +38,7 @@
         <dependency>
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-core</artifactId>
-            <version>3.25.0</version>
+            <version>3.25.1</version>
         </dependency>
 
         <!-- API dependencies -->
@@ -62,6 +62,12 @@
         </dependency>
 
         <!-- Test dependencies -->
+
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-web-api</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>

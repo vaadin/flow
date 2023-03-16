@@ -3,7 +3,7 @@ import { customElement, query, state } from 'lit/decorators.js';
 import { ComponentReference, getComponents } from './component-util.js';
 import './shim.js';
 import { Shim } from './shim.js';
-import { popupStyles } from './vaadin-dev-tools.js';
+import { popupStyles } from './styles';
 
 export interface PickerOptions {
   infoTemplate: TemplateResult;

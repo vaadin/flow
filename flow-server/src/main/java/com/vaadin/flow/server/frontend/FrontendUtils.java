@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
@@ -34,7 +33,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,7 +58,9 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
+import com.vaadin.flow.theme.ThemeDefinition;
 
+import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import jakarta.servlet.ServletContext;
@@ -1265,6 +1265,60 @@ public class FrontendUtils {
             throw new IllegalStateException(
                     "Couldn't extract theme name from theme imports file 'theme.js'");
         }
+    }
+
+    public static Optional<JsonObject> getThemeJsonInFrontend(
+            File frontendFolder, String themeName) throws IOException {
+        File themeJsonFile = Path.of(frontendFolder.getAbsolutePath(),
+                Constants.APPLICATION_THEME_ROOT, themeName, "theme.json")
+                .toFile();
+        if (themeJsonFile.exists()) {
+            String content = FileUtils.readFileToString(themeJsonFile,
+                    StandardCharsets.UTF_8);
+            content = content.replaceAll("\\r\\n", "\n");
+            return Optional.of(Json.parse(content));
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<JsonObject> getThemeJsonInFrontend(Options options,
+            ThemeDefinition themeDefinition) throws IOException {
+        if (themeDefinition != null) {
+            String themeName = themeDefinition.getName();
+            return getThemeJsonInFrontend(options.getFrontendDirectory(),
+                    themeName);
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<String> getParentThemeNameInFrontend(
+            File frontendFolder, JsonObject themeJson) {
+        if (themeJson != null) {
+            if (themeJson.hasKey("parent")) {
+                String parentThemeName = themeJson.getString("parent");
+                File parentThemeFolder = Path
+                        .of(frontendFolder.getAbsolutePath(),
+                                Constants.APPLICATION_THEME_ROOT,
+                                parentThemeName)
+                        .toFile();
+                if (parentThemeFolder.exists()) {
+                    return Optional.of(parentThemeName);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<String> getParentThemeNameInFrontend(
+            File frontendFolder, String projectCustomThemeName)
+            throws IOException {
+        Optional<JsonObject> themeJson = getThemeJsonInFrontend(frontendFolder,
+                projectCustomThemeName);
+        if (themeJson.isPresent()) {
+            return getParentThemeNameInFrontend(frontendFolder,
+                    themeJson.get());
+        }
+        return Optional.empty();
     }
 
 }

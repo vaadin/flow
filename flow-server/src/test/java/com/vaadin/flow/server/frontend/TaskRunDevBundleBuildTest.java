@@ -132,11 +132,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -170,11 +166,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -206,11 +198,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -243,11 +231,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -297,11 +281,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -338,11 +318,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -381,11 +357,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -419,11 +391,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -456,11 +424,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -493,11 +457,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -542,11 +502,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -595,11 +551,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -630,11 +582,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -664,11 +612,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -698,11 +642,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             final boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -742,11 +682,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -788,11 +724,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -835,11 +767,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1040,11 +968,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1072,11 +996,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1102,11 +1022,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1129,11 +1045,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(basicStats.toJson());
+            setupFrontendUtilsMock(basicStats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1161,11 +1073,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(getBasicStats().toJson());
+            setupFrontendUtilsMock(getBasicStats(), utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1189,11 +1097,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(getBasicStats().toJson());
+            setupFrontendUtilsMock(getBasicStats(), utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1220,11 +1124,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1258,11 +1158,7 @@ public class TaskRunDevBundleBuildTest {
                     + "      \"webfonts/**\": \"webfonts\"\n" + "    }\n"
                     + "  }\n" + "}");
 
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1298,11 +1194,7 @@ public class TaskRunDevBundleBuildTest {
                     + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
                     + "    }\n" + "  }\n" + "}\n");
 
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1316,7 +1208,8 @@ public class TaskRunDevBundleBuildTest {
     public void themeJsonUpdates_statsHasNoThemeJson_projectHasThemeJson_bundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}");
+        createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}",
+                "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1331,11 +1224,7 @@ public class TaskRunDevBundleBuildTest {
             JsonObject stats = getBasicStats();
             stats.remove(THEME_JSON_CONTENTS);
 
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1349,7 +1238,8 @@ public class TaskRunDevBundleBuildTest {
     public void themeJsonUpdates_containsParentTheme_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub("{\"parent\": \"my-parent-theme\"}");
+        createProjectThemeJsonStub("{\"parent\": \"my-parent-theme\"}",
+                "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1365,11 +1255,7 @@ public class TaskRunDevBundleBuildTest {
             stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle",
                     "{\"lumoImports\": [\"typography\"]}");
 
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1398,11 +1284,7 @@ public class TaskRunDevBundleBuildTest {
             stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle",
                     "{\"lumoImports\": [\"typography\"]}");
 
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1416,11 +1298,13 @@ public class TaskRunDevBundleBuildTest {
     public void themeJsonUpdates_statsAndProjectThemeJsonEquals_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub("{\n" + "  \"boolean-property\": true,\n"
-                + "  \"numeric-property\": 42.42,\n"
-                + "  \"string-property\": \"foo\",\n"
-                + "  \"array-property\": [\"one\", \"two\"],\n"
-                + "  \"object-property\": { \"foo\": \"bar\" }\n" + "}");
+        createProjectThemeJsonStub(
+                "{\n" + "  \"boolean-property\": true,\n"
+                        + "  \"numeric-property\": 42.42,\n"
+                        + "  \"string-property\": \"foo\",\n"
+                        + "  \"array-property\": [\"one\", \"two\"],\n"
+                        + "  \"object-property\": { \"foo\": \"bar\" }\n" + "}",
+                "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1441,11 +1325,7 @@ public class TaskRunDevBundleBuildTest {
                             + "  \"object-property\": { \"foo\": \"bar\" }\n"
                             + "}");
 
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1463,7 +1343,7 @@ public class TaskRunDevBundleBuildTest {
                 + "  \"importCss\": [\"@fortawesome/fontawesome-free/css/all.css\"],"
                 + "  \"assets\": {\n" + "    \"line-awesome\": {\n"
                 + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
-                + "    }\n" + "  }\n" + "}");
+                + "    }\n  }\n}", "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1483,11 +1363,7 @@ public class TaskRunDevBundleBuildTest {
                     + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
                     + "    }\n" + "  }\n" + "}");
 
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1503,7 +1379,7 @@ public class TaskRunDevBundleBuildTest {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectThemeJsonStub("{\n"
                 + "  \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"]\n"
-                + "}");
+                + "}", "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1523,11 +1399,7 @@ public class TaskRunDevBundleBuildTest {
                     + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
                     + "    }\n" + "  }\n" + "}");
 
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1542,7 +1414,8 @@ public class TaskRunDevBundleBuildTest {
     public void themeJsonUpdates_noProjectThemeHashInStats_bundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}");
+        createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}",
+                "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1556,17 +1429,46 @@ public class TaskRunDevBundleBuildTest {
                 .mockStatic(FrontendUtils.class)) {
             JsonObject stats = getBasicStats();
 
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
             Assert.assertTrue(
                     "Should trigger a bundle rebuild when project has theme"
                             + ".json but stats doesn't",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void parentThemeInFrontend_parentHasEntriesInJson_bundleMissesSomeEntries_bundleRebuild()
+            throws IOException {
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectThemeJsonStub("{ \"importCss\": [\"foo\"]}",
+                "parent-theme");
+        createProjectThemeJsonStub("{\"parent\": \"parent-theme\"}",
+                "my-theme");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        final ThemeDefinition themeDefinition = Mockito
+                .mock(ThemeDefinition.class);
+        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
+        Mockito.when(depScanner.getThemeDefinition())
+                .thenReturn(themeDefinition);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            JsonObject stats = getBasicStats();
+            stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle", "{}");
+
+            setupFrontendUtilsMock(stats, utils);
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Should rebuild when 'theme.json' from parent theme in "
+                            + "frontend folder adds extra entries",
                     needsBuild);
         }
     }
@@ -1589,11 +1491,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1622,11 +1520,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1658,11 +1552,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1688,11 +1578,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1720,11 +1606,7 @@ public class TaskRunDevBundleBuildTest {
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             // Should not throw an IllegalStateException:
             // "Failed to find the following css files in the...."
@@ -1749,11 +1631,7 @@ public class TaskRunDevBundleBuildTest {
                 .mockStatic(FrontendUtils.class)) {
             JsonObject stats = getBasicStats();
 
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -1771,9 +1649,10 @@ public class TaskRunDevBundleBuildTest {
         FileUtils.write(packageJson, content, StandardCharsets.UTF_8);
     }
 
-    private void createProjectThemeJsonStub(String content) throws IOException {
+    private void createProjectThemeJsonStub(String content, String theme)
+            throws IOException {
         File themeJson = new File(temporaryFolder.getRoot(),
-                "frontend/themes/my-theme/theme.json");
+                "frontend/themes/" + theme + "/theme.json");
         FileUtils.forceMkdir(themeJson.getParentFile());
         boolean created = themeJson.createNewFile();
         Assert.assertTrue(created);
@@ -1787,5 +1666,23 @@ public class TaskRunDevBundleBuildTest {
         boolean created = frontendFile.createNewFile();
         Assert.assertTrue(created);
         FileUtils.write(frontendFile, "Some codes", StandardCharsets.UTF_8);
+    }
+
+    private void setupFrontendUtilsMock(JsonObject stats,
+            MockedStatic<FrontendUtils> utils) {
+        utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                .thenReturn(temporaryFolder.getRoot());
+        utils.when(() -> FrontendUtils
+                .findBundleStatsJson(temporaryFolder.getRoot()))
+                .thenReturn(stats.toJson());
+        utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                Mockito.any(Options.class), Mockito.any(ThemeDefinition.class)))
+                .thenCallRealMethod();
+        utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+                Mockito.any(File.class), Mockito.any(String.class)))
+                .thenCallRealMethod();
+        utils.when(() -> FrontendUtils.getParentThemeNameInFrontend(
+                Mockito.any(File.class), Mockito.any(JsonObject.class)))
+                .thenCallRealMethod();
     }
 }

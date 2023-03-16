@@ -60,6 +60,7 @@ import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.JsonValue;
@@ -985,7 +986,7 @@ public abstract class AbstractNavigationStateRenderer
         // Show a warning that live-reload may work counter-intuitively
         DeploymentConfiguration configuration = ui.getSession()
                 .getConfiguration();
-        if (!configuration.isProductionMode()
+        if (configuration.getMode() == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
                 && configuration.isDevModeLiveReloadEnabled()) {
             ui.getPage().executeJs(
                     "Vaadin.devTools.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");

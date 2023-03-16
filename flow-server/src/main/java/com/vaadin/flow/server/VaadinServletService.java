@@ -85,7 +85,8 @@ public class VaadinServletService extends VaadinService {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
 
-        if (getDeploymentConfiguration().frontendHotdeploy()) {
+        if (getDeploymentConfiguration()
+                .getMode() == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
             Optional<DevModeHandler> handlerManager = DevModeHandlerManager
                     .getDevModeHandler(this);
             if (handlerManager.isPresent()) {
