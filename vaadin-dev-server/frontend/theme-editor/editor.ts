@@ -19,7 +19,7 @@ import { injectGlobalCss } from './styles';
 
 injectGlobalCss(css`
   .vaadin-theme-editor-highlight {
-    outline: solid 3px #9e2cc6;
+    outline: solid 2px #9e2cc6;
     outline-offset: 3px;
   }
 `);
