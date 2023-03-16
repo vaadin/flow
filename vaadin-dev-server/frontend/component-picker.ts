@@ -56,7 +56,8 @@ export class ComponentPicker extends LitElement {
     const globalStyles = new CSSStyleSheet();
     globalStyles.replaceSync(`
     .vaadin-dev-tools-highlight {
-      outline: 1px solid red
+      outline: solid 2px #9e2cc6;
+      outline-offset: 3px;
     }`);
 
     document.adoptedStyleSheets = [...document.adoptedStyleSheets, globalStyles];

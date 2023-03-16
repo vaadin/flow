@@ -1,8 +1,8 @@
 package com.vaadin.base.devserver.themeeditor.handlers;
 
 import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
-import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
 import com.vaadin.base.devserver.themeeditor.messages.RulesRequest;
+import com.vaadin.base.devserver.themeeditor.messages.RulesResponse;
 import com.vaadin.base.devserver.themeeditor.utils.*;
 import com.vaadin.flow.internal.JsonUtils;
 import elemental.json.JsonObject;
@@ -14,6 +14,10 @@ public class RulesHandler implements MessageHandler {
     private final HasThemeModifier hasThemeModifier;
 
     private final HasSourceModifier hasSourceModifier;
+
+    private class FinalsHolder {
+        private String className;
+    }
 
     public RulesHandler(HasThemeModifier hasThemeModifier,
             HasSourceModifier hasSourceModifier) {
@@ -28,15 +32,17 @@ public class RulesHandler implements MessageHandler {
         // needs to be final for ExecuteAndUndo lambdas
         final List<CssRule> rules = new ArrayList<>(request.getRules());
 
+        FinalsHolder holder = new FinalsHolder();
+
         // in case of instance request - load or generate unique class name
         if (request.isInstanceRequest()) {
             boolean accessible = hasSourceModifier.getSourceModifier()
                     .isAccessible(request.getUiId(), request.getNodeId());
             if (accessible) {
-                String uniqueClassName = hasSourceModifier.getSourceModifier()
+                holder.className = hasSourceModifier.getSourceModifier()
                         .getUniqueClassName(request.getUiId(),
                                 request.getNodeId(), true);
-                rules.forEach(rule -> rule.setClassName(uniqueClassName));
+                rules.forEach(rule -> rule.setClassName(holder.className));
             } else {
                 throw new ThemeEditorException(
                         "Cannot modify unique CSS rules on inaccessible component.");
@@ -57,11 +63,11 @@ public class RulesHandler implements MessageHandler {
         }
         return new ExecuteAndUndo(() -> {
             hasThemeModifier.getThemeModifier().setThemeProperties(rules);
-            return BaseResponse.ok();
+            return new RulesResponse(holder.className);
         }, Optional.of(() -> {
             hasThemeModifier.getThemeModifier()
                     .setThemeProperties(currentRules);
-            return BaseResponse.ok();
+            return new RulesResponse(holder.className);
         }));
     }
 

@@ -20,6 +20,12 @@ public class LoadRulesHandler implements MessageHandler {
 
     private final HasSourceModifier hasSourceModifier;
 
+    private class FinalsHolder {
+        private Predicate<String> filter;
+        private Boolean accessible;
+        private String className;
+    }
+
     public LoadRulesHandler(HasThemeModifier hasThemeModifier,
             HasSourceModifier hasSourceModifier) {
         this.hasThemeModifier = hasThemeModifier;
@@ -31,41 +37,40 @@ public class LoadRulesHandler implements MessageHandler {
         LoadRulesRequest request = JsonUtils.readToObject(data,
                 LoadRulesRequest.class);
 
+        FinalsHolder holder = new FinalsHolder();
+
         // no filter by default
-        Predicate<String> filter = selector -> true;
+        holder.filter = selector -> true;
 
         // add selector filter
         if (request.getSelectorFilter() != null) {
-            filter = filter.and(selector -> selector
+            holder.filter = holder.filter.and(selector -> selector
                     .startsWith(request.getSelectorFilter()));
         }
 
-        Boolean accessible = null;
-
         // add classname filter
         if (request.isInstanceRequest()) {
-            accessible = hasSourceModifier.getSourceModifier()
+            holder.accessible = hasSourceModifier.getSourceModifier()
                     .isAccessible(request.getUiId(), request.getNodeId());
-            if (accessible) {
-                String uniqueClassName = hasSourceModifier.getSourceModifier()
+            if (holder.accessible) {
+                holder.className = hasSourceModifier.getSourceModifier()
                         .getUniqueClassName(request.getUiId(),
                                 request.getNodeId(), false);
-                if (uniqueClassName != null) {
-                    filter = filter.and(selector -> selector
-                            .contains("." + uniqueClassName));
+                if (holder.className != null) {
+                    holder.filter = holder.filter.and(selector -> selector
+                            .contains("." + holder.className));
                 } else {
                     // user requests rules for instance but there are none
-                    filter = selector -> false;
+                    holder.filter = selector -> false;
                 }
             }
         }
 
-        final Predicate<String> filterFinal = filter;
-        final Boolean accessibleFinal = accessible;
         return new ExecuteAndUndo(() -> {
             List<CssRule> rules = hasThemeModifier.getThemeModifier()
-                    .getCssRules(filterFinal);
-            return new LoadRulesResponse(rules, accessibleFinal);
+                    .getCssRules(holder.filter);
+            return new LoadRulesResponse(rules, holder.accessible,
+                    holder.className);
         }, Optional.empty());
     }
 
