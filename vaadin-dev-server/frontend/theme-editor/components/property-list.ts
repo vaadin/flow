@@ -1,8 +1,8 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { html as staticHtml, literal, StaticValue } from 'lit/static-html.js';
-import { ComponentMetadata, ComponentPartMetadata, CssPropertyMetadata, EditorType } from './metadata/model';
-import { ComponentTheme } from './model';
+import { ComponentMetadata, ComponentPartMetadata, CssPropertyMetadata, EditorType } from '../metadata/model';
+import { ComponentTheme } from '../model';
 import './editors/text-property-editor';
 import './editors/range-property-editor';
 import './editors/color-property-editor';

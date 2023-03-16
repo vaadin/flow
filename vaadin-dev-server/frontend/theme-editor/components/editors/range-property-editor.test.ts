@@ -1,8 +1,8 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
-import { CssPropertyMetadata } from '../metadata/model';
-import { ComponentTheme } from '../model';
-import { testElementMetadata } from '../tests/utils';
+import { CssPropertyMetadata } from '../../metadata/model';
+import { ComponentTheme } from '../../model';
+import { testElementMetadata } from '../../tests/utils';
 import { RangePropertyEditor } from './range-property-editor';
 import './range-property-editor';
 

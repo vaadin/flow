@@ -6,10 +6,13 @@ import java.util.List;
 
 public class LoadRulesResponse extends BaseResponse {
 
+    private Boolean accessible;
+
     private List<CssRule> rules;
 
-    public LoadRulesResponse(List<CssRule> rules) {
+    public LoadRulesResponse(List<CssRule> rules, Boolean accessible) {
         this.rules = rules;
+        this.accessible = accessible;
     }
 
     public List<CssRule> getRules() {
@@ -19,4 +22,13 @@ public class LoadRulesResponse extends BaseResponse {
     public void setRules(List<CssRule> rules) {
         this.rules = rules;
     }
+
+    public Boolean isAccessible() {
+        return accessible;
+    }
+
+    public void setAccessible(Boolean accessible) {
+        this.accessible = accessible;
+    }
+
 }

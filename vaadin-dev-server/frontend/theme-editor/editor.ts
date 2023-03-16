@@ -1,17 +1,20 @@
-import { css, html, LitElement } from 'lit';
+import { css, html, LitElement, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { PickerProvider } from '../component-picker';
-import { ComponentMetadata } from './metadata/model';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
-import './property-list';
-import { ComponentTheme, generateThemeRule, ThemeEditorState } from './model';
-import { detectTheme } from './detector';
-import { ThemePropertyValueChangeEvent } from './editors/base-property-editor';
+import { ComponentTheme, generateThemeRule, ThemeContext, ThemeEditorState, ThemeScope } from './model';
+import { detectElementDisplayName, detectTheme } from './detector';
+import { ThemePropertyValueChangeEvent } from './components/editors/base-property-editor';
 import { themePreview } from './preview';
-import { Connection } from '../vaadin-dev-tools';
+import { Connection } from '../connection';
 import { ThemeEditorApi } from './api';
 import { ThemeEditorHistory, ThemeEditorHistoryActions } from './history';
+import { ScopeChangeEvent } from './components/scope-selector';
+import './components/scope-selector';
+import './components/property-list';
+import '../component-picker.js';
+import { ComponentReference } from '../component-util';
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
@@ -26,11 +29,9 @@ export class ThemeEditor extends LitElement {
   @state()
   private historyActions?: ThemeEditorHistoryActions;
 
-  /**
-   * Metadata for the selected / picked component
-   */
   @state()
-  private selectedComponentMetadata: ComponentMetadata | null = null;
+  private context: ThemeContext | null = null;
+
   /**
    * Base theme detected from existing CSS files for the selected component
    */
@@ -57,11 +58,11 @@ export class ThemeEditor extends LitElement {
         max-height: 400px;
       }
 
-      .missing-theme {
+      .notice {
         padding: var(--theme-editor-section-horizontal-padding);
       }
 
-      .missing-theme a {
+      .notice a {
         color: var(--dev-tools-text-color-emphasis);
       }
 
@@ -70,28 +71,50 @@ export class ThemeEditor extends LitElement {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        border-bottom: solid 1px rgba(0, 0, 0, 0.2);
+        padding: var(--theme-editor-section-horizontal-padding);
       }
 
       .picker {
         flex: 0 0 auto;
         display: flex;
         align-items: center;
-        padding: var(--theme-editor-section-horizontal-padding);
-        border-bottom: solid 1px rgba(0, 0, 0, 0.2);
+        gap: 4px;
+      }
+
+      .picker .instance-name {
+        color: #e5a2fce5;
       }
 
       .picker .no-selection {
         font-style: italic;
       }
-      
+
       .actions {
         display: flex;
         align-items: center;
+        gap: 8px;
       }
 
       .property-list {
         flex: 1 1 auto;
         overflow-y: auto;
+      }
+
+      .link-button {
+        all: initial;
+        font-family: inherit;
+        font-size: var(--dev-tools-font-size-small);
+        line-height: 1;
+        white-space: nowrap;
+        color: inherit;
+        font-weight: 600;
+        text-decoration: underline;
+      }
+
+      .link-button:focus,
+      .link-button:hover {
+        color: var(--dev-tools-text-color-emphasis);
       }
 
       .icon-button {
@@ -100,7 +123,6 @@ export class ThemeEditor extends LitElement {
         border: none;
         background: none;
         color: var(--dev-tools-text-color);
-        margin-right: 0.5rem;
       }
 
       .icon-button:disabled {
@@ -126,13 +148,15 @@ export class ThemeEditor extends LitElement {
 
     return html`
       <div class="header">
-        <div class="picker">
-          <button class="icon-button" @click=${this.pickComponent}>${icons.crosshair}</button>
-          ${this.selectedComponentMetadata
-            ? html`<span>${this.selectedComponentMetadata.displayName}</span>`
-            : html`<span class="no-selection">Pick an element to get started</span>`}
-        </div>
+        ${this.renderPicker()}
         <div class="actions">
+          ${this.context
+            ? html` <vaadin-dev-tools-theme-scope-selector
+                .value=${this.context.scope}
+                .metadata=${this.context.metadata}
+                @scope-change=${this.handleScopeChange}
+              ></vaadin-dev-tools-theme-scope-selector>`
+            : null}
           <button
             class="icon-button"
             data-testid="undo"
@@ -151,20 +175,13 @@ export class ThemeEditor extends LitElement {
           </button>
         </div>
       </div>
-      ${this.selectedComponentMetadata
-        ? html` <vaadin-dev-tools-theme-property-list
-            class="property-list"
-            .metadata=${this.selectedComponentMetadata}
-            .theme=${this.effectiveTheme}
-            @theme-property-value-change=${this.handlePropertyChange}
-          ></vaadin-dev-tools-theme-property-list>`
-        : null}
+      ${this.renderPropertyList()}
     `;
   }
 
   renderMissingThemeNotice() {
     return html`
-      <div class="missing-theme">
+      <div class="notice">
         It looks like you have not set up a custom theme yet. Theme editor requires an existing theme to work with.
         Please check our
         <a href="https://vaadin.com/docs/latest/styling/custom-theme/creating-custom-theme" target="_blank"
@@ -175,10 +192,71 @@ export class ThemeEditor extends LitElement {
     `;
   }
 
-  private async pickComponent() {
-    // Ensure component picker module is loaded
-    await import('../component-picker.js');
+  renderPropertyList() {
+    if (!this.context) {
+      return null;
+    }
 
+    const inaccessible = this.context.scope === ThemeScope.local && !this.context.accessible;
+    if (inaccessible) {
+      const componentName = this.context.metadata.displayName;
+      return html`
+        <div class="notice">
+          The selected ${componentName} can not be styled locally. Currently, theme editor only supports styling
+          instances that are assigned to a local variable, like so:
+          <pre><code>Button saveButton = new Button("Save");</code></pre>
+          If you want to modify the code so that it satisfies this requirement,
+          <button class="link-button" @click=${this.handleShowComponent}>click here</button>
+          to open it in your IDE. Alternatively you can choose to style all ${componentName}s by selecting "Global" from
+          the scope dropdown above.
+        </div>
+      `;
+    }
+
+    return html` <vaadin-dev-tools-theme-property-list
+      class="property-list"
+      .metadata=${this.context.metadata}
+      .theme=${this.effectiveTheme}
+      @theme-property-value-change=${this.handlePropertyChange}
+    ></vaadin-dev-tools-theme-property-list>`;
+  }
+
+  handleShowComponent() {
+    if (!this.context) {
+      return;
+    }
+    const component = this.context.component;
+    const serializableComponentRef: ComponentReference = { nodeId: component.nodeId, uiId: component.uiId };
+    this.connection.sendShowComponentCreateLocation(serializableComponentRef);
+  }
+
+  renderPicker() {
+    let label: TemplateResult;
+
+    if (this.context) {
+      const componentDisplayName =
+        this.context.scope === ThemeScope.local
+          ? this.context.metadata.displayName
+          : `All ${this.context.metadata.displayName}s`;
+      const componentLabel = html`<span>${componentDisplayName}</span>`;
+      const instanceName =
+        this.context.scope === ThemeScope.local ? detectElementDisplayName(this.context.component) : null;
+      const instanceLabel = instanceName
+        ? html` <span class="instance-name">"${detectElementDisplayName(this.context.component)}"</span>`
+        : null;
+      label = html`${componentLabel} ${instanceLabel}`;
+    } else {
+      label = html`<span class="no-selection">Pick an element to get started</span>`;
+    }
+    return html`
+      <div class="picker">
+        <button class="icon-button" @click=${this.pickComponent}>${icons.crosshair}</button>
+        ${label}
+      </div>
+    `;
+  }
+
+  private async pickComponent() {
     this.pickerProvider().open({
       infoTemplate: html`
         <div>
@@ -191,25 +269,38 @@ export class ThemeEditor extends LitElement {
       pickCallback: async (component) => {
         const metadata = await metadataRegistry.getMetadata(component);
         if (!metadata) {
+          this.context = null;
           this.baseTheme = null;
           this.editedTheme = null;
           this.effectiveTheme = null;
           return;
         }
 
-        const scopeSelector = metadata.tagName;
-        const serverRules = await this.api.loadRules(scopeSelector);
-
-        this.selectedComponentMetadata = metadata;
+        // Detect base theme whenever a new component is picked
         this.baseTheme = detectTheme(metadata);
-        this.editedTheme = ComponentTheme.fromServerRules(metadata, serverRules.rules);
-        this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
+
+        this.refreshTheme({
+          scope: this.context?.scope || ThemeScope.local,
+          metadata,
+          component
+        });
       }
     });
   }
 
+  private handleScopeChange(e: ScopeChangeEvent) {
+    if (!this.context) {
+      return;
+    }
+
+    this.refreshTheme({
+      ...this.context,
+      scope: e.detail.value
+    });
+  }
+
   private async handlePropertyChange(e: ThemePropertyValueChangeEvent) {
-    if (!this.selectedComponentMetadata || !this.baseTheme || !this.editedTheme) {
+    if (!this.context || !this.baseTheme || !this.editedTheme) {
       return;
     }
 
@@ -220,15 +311,11 @@ export class ThemeEditor extends LitElement {
     this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
 
     // Update theme editor CSS
-    const updateRule = generateThemeRule(
-      this.selectedComponentMetadata?.tagName,
-      partName,
-      property.propertyName,
-      value
-    );
+    const updateRule = generateThemeRule(this.context.metadata.tagName, partName, property.propertyName, value);
+    const component = this.context.scope === ThemeScope.local ? this.context.component : null;
     try {
       this.preventLiveReload();
-      const response = await this.api.setCssRules([updateRule]);
+      const response = await this.api.setCssRules([updateRule], component);
       this.historyActions = this.history.push(response.requestId);
       await this.updateThemePreview();
     } catch (error) {
@@ -248,15 +335,26 @@ export class ThemeEditor extends LitElement {
     await this.refreshTheme();
   }
 
-  private async refreshTheme() {
-    if (!this.selectedComponentMetadata || !this.baseTheme) {
+  private async refreshTheme(newContext?: ThemeContext) {
+    // Load server rules for new or existing context
+    const context = newContext || this.context;
+    if (!context) {
       return;
     }
-    const scopeSelector = this.selectedComponentMetadata.tagName;
-    const serverRules = await this.api.loadRules(scopeSelector);
 
-    this.editedTheme = ComponentTheme.fromServerRules(this.selectedComponentMetadata, serverRules.rules);
-    this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
+    const scopeSelector = context.metadata.tagName;
+    const component = context.scope === ThemeScope.local ? context.component : null;
+    const serverRules = await this.api.loadRules(scopeSelector, component);
+
+    // Update state properties after data has loaded, so that everything
+    // consistently updates at once - this avoids re-rendering the editor with
+    // new metadata but without matching theme data
+    this.context = {
+      ...context,
+      accessible: serverRules.accessible
+    };
+    this.editedTheme = ComponentTheme.fromServerRules(context.metadata, serverRules.rules);
+    this.effectiveTheme = ComponentTheme.combine(this.baseTheme!, this.editedTheme);
     await this.updateThemePreview();
   }
 

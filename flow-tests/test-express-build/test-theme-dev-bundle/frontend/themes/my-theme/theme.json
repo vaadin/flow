@@ -1,4 +1,5 @@
 {
+  "parent": "parent-theme",
   "assets": {
     "line-awesome": {
       "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
