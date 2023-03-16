@@ -28,7 +28,7 @@ export class RangePropertyEditor extends BasePropertyEditor {
 
         .input {
           flex: 0 0 auto;
-          width: 80px;
+          width: 60px;
         }
 
         .slider-wrapper {
