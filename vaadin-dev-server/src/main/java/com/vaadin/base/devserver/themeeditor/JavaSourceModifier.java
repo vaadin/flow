@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class JavaSourceModifier {
 
-    public static final String UNIQUE_CLASSNAME_PREFIX = "tb-";
+    public static final String UNIQUE_CLASSNAME_PREFIX = "te-";
 
     private VaadinContext context;
 
@@ -319,7 +319,7 @@ public class JavaSourceModifier {
                 .map(e -> e.getExpression().asMethodCallExpr().getArgument(0)
                         .asStringLiteralExpr().asString()) // get first argument
                 .filter(arg -> arg.startsWith(UNIQUE_CLASSNAME_PREFIX)) // filter
-                                                                        // tb-*
+                                                                        // te-*
                                                                         // arguments
                 .findFirst();
     }
@@ -392,7 +392,7 @@ public class JavaSourceModifier {
     }
 
     protected String generateUniqueClassName() {
-        return UNIQUE_CLASSNAME_PREFIX + UUID.randomUUID().hashCode();
+        return UNIQUE_CLASSNAME_PREFIX + UUID.randomUUID();
     }
 
 }
