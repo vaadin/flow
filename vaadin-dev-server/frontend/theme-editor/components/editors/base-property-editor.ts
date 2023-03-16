@@ -1,7 +1,7 @@
 import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { ComponentPartMetadata, CssPropertyMetadata } from '../metadata/model';
-import { ComponentTheme, ThemePropertyValue } from '../model';
+import { ComponentPartMetadata, CssPropertyMetadata } from '../../metadata/model';
+import { ComponentTheme, ThemePropertyValue } from '../../model';
 
 export class ThemePropertyValueChangeEvent extends CustomEvent<{
   part: ComponentPartMetadata | null;

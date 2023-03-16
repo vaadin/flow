@@ -1,5 +1,6 @@
 import { ComponentTheme } from './model';
 import { ComponentMetadata } from './metadata/model';
+import { ComponentReference } from '../component-util';
 
 export function detectTheme(metadata: ComponentMetadata): ComponentTheme {
   const componentTheme = new ComponentTheme(metadata);
@@ -34,4 +35,25 @@ export function detectTheme(metadata: ComponentMetadata): ComponentTheme {
   }
 
   return componentTheme;
+}
+
+function sanitizeText(text: string) {
+  return text.trim();
+}
+
+export function detectElementDisplayName(component: ComponentReference) {
+  const element = component.element;
+  if (!element) {
+    return null;
+  }
+
+  // check for label
+  const label = element.shadowRoot && element.shadowRoot.querySelector('label');
+  if (label && label.textContent) {
+    return sanitizeText(label.textContent);
+  }
+
+  // use text content
+  const text = element.textContent;
+  return text ? sanitizeText(text) : null;
 }
