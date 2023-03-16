@@ -764,8 +764,8 @@ public class ShortcutRegistration implements Registration, Serializable {
          * can be based on browser implementations.
          */
 
-        final boolean altAdded = modifiers
-                .contains(new HashableKey(KeyModifier.ALT));
+        final boolean altAdded = modifiers.stream()
+                .anyMatch(key -> key.matches(Key.ALT.getKeys().get(0)));
 
         return Arrays.stream(KeyModifier.values()).map(modifier -> {
             String modKey = modifier.getKeys().get(0);
@@ -778,7 +778,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                 return (modifierRequired ? "" : "!")
                         + "event.getModifierState('" + modKey + "')";
             }
-        }).filter(Objects::nonNull).filter(s -> !s.isBlank())
+        }).filter(Objects::nonNull).filter(s -> !s.trim().isEmpty())
                 .collect(Collectors.joining(" && "));
 
     }
