@@ -517,4 +517,75 @@ describe('theme-editor', () => {
       expect(beforeSaveSpy.calledOnce).to.be.true;
     });
   });
+
+  describe('theme detection', () => {
+    it('should detect base theme when changing scope', async () => {
+      await pickComponent();
+      await changeThemeScope(ThemeScope.global);
+      await editProperty('label', 'color', 'red');
+      apiMock.loadPreview.returns(
+        Promise.resolve({
+          css: 'test-element::part(label) { color: red }'
+        })
+      );
+      await changeThemeScope(ThemeScope.local);
+
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(255, 0, 0)');
+    });
+
+    it('should detect base theme on undo', async () => {
+      await pickComponent();
+      await changeThemeScope(ThemeScope.global);
+      await editProperty('label', 'color', 'red');
+      apiMock.loadPreview.returns(
+          Promise.resolve({
+            css: 'test-element::part(label) { color: red }'
+          })
+      );
+      await changeThemeScope(ThemeScope.local);
+
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(255, 0, 0)');
+
+      apiMock.loadPreview.returns(
+        Promise.resolve({
+          css: ''
+        })
+      );
+      await undo();
+
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(0, 0, 0)');
+    });
+
+    it('should detect base theme on redo', async () => {
+      await pickComponent();
+      await changeThemeScope(ThemeScope.global);
+      await editProperty('label', 'color', 'red');
+      apiMock.loadPreview.returns(
+          Promise.resolve({
+            css: 'test-element::part(label) { color: red }'
+          })
+      );
+      await changeThemeScope(ThemeScope.local);
+
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(255, 0, 0)');
+
+      apiMock.loadPreview.returns(
+        Promise.resolve({
+          css: ''
+        })
+      );
+      await undo();
+
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(0, 0, 0)');
+
+      apiMock.loadPreview.returns(
+        Promise.resolve({
+          css: 'test-element::part(label) { color: red }'
+        })
+      );
+      await redo();
+
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(255, 0, 0)');
+    });
+  });
 });

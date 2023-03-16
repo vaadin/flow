@@ -276,9 +276,6 @@ export class ThemeEditor extends LitElement {
           return;
         }
 
-        // Detect base theme whenever a new component is picked
-        this.baseTheme = detectTheme(metadata);
-
         this.refreshTheme({
           scope: this.context?.scope || ThemeScope.local,
           metadata,
@@ -346,6 +343,10 @@ export class ThemeEditor extends LitElement {
     const component = context.scope === ThemeScope.local ? context.component : null;
     const serverRules = await this.api.loadRules(scopeSelector, component);
 
+    // Update preview, which can result in changes to the base theme
+    await this.updateThemePreview();
+    this.baseTheme = detectTheme(context.metadata);
+
     // Update state properties after data has loaded, so that everything
     // consistently updates at once - this avoids re-rendering the editor with
     // new metadata but without matching theme data
@@ -355,7 +356,6 @@ export class ThemeEditor extends LitElement {
     };
     this.editedTheme = ComponentTheme.fromServerRules(context.metadata, serverRules.rules);
     this.effectiveTheme = ComponentTheme.combine(this.baseTheme!, this.editedTheme);
-    await this.updateThemePreview();
   }
 
   private async updateThemePreview() {
