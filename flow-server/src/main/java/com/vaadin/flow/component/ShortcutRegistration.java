@@ -765,7 +765,7 @@ public class ShortcutRegistration implements Registration, Serializable {
          */
 
         final boolean altAdded = modifiers.stream()
-                .anyMatch(key -> key.matches(Key.ALT.toString()));
+                .anyMatch(key -> key.matches(Key.ALT.getKeys().get(0)));
 
         return Arrays.stream(KeyModifier.values()).map(modifier -> {
             String modKey = modifier.getKeys().get(0);
