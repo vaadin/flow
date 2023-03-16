@@ -355,6 +355,32 @@ public class UITest {
     }
 
     @Test
+    public void navigateWithQueryAndRouteParameters_afterServerNavigation()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        Optional<FooBarParamNavigationTarget> newView = ui.navigate(
+                FooBarParamNavigationTarget.class,
+                new RouteParameters(new RouteParam("fooParam", "flu"),
+                        new RouteParam("barParam", "beer")),
+                QueryParameters.of("bigBeer", "forMePlease"));
+
+        assertEquals(FooBarParamNavigationTarget.class,
+                newView.get().getClass());
+
+        assertEquals("foo/flu/beer/bar?bigBeer=forMePlease", ui.getInternals()
+                .getActiveViewLocation().getPathWithQueryParameters());
+        List<HasElement> chain = ui.getInternals()
+                .getActiveRouterTargetsChain();
+        Assert.assertEquals(2, chain.size());
+        MatcherAssert.assertThat(chain.get(0),
+                CoreMatchers.instanceOf(FooBarParamNavigationTarget.class));
+        MatcherAssert.assertThat(chain.get(1), CoreMatchers
+                .instanceOf(FooBarParamParentNavigationTarget.class));
+    }
+
+    @Test
     public void localeSet_directionUpdated() {
         MockUI ui = new MockUI();
 

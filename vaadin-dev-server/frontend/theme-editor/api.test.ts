@@ -1,6 +1,6 @@
 import { aTimeout, expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import {Commands, ResponseCode, ServerCssRule, ThemeEditorApi} from './api';
+import { Commands, ResponseCode, ServerCssRule, ThemeEditorApi } from './api';
 
 describe('theme editor API', () => {
   let api: ThemeEditorApi;
@@ -41,8 +41,10 @@ describe('theme editor API', () => {
   });
 
   it('should send messages', () => {
-    const rules: ServerCssRule[] = [{ selector: 'vaadin-button', properties: {'background': 'red' }},
-      { selector: 'vaadin-text-field', properties: {'color': '' }}];
+    const rules: ServerCssRule[] = [
+      { tagName: 'vaadin-button', partName: null, properties: { background: 'red' } },
+      { tagName: 'vaadin-text-field', partName: null, properties: { color: '' } }
+    ];
 
     api.setCssRules(rules);
 

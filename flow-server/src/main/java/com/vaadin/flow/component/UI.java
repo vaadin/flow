@@ -1064,6 +1064,52 @@ public class UI extends Component
 
     /**
      * Updates this UI to show the view corresponding to the given navigation
+     * target with the specified parameters. The route parameters needs to
+     * comply with the ones defined in one of the
+     * {@link com.vaadin.flow.router.Route} or
+     * {@link com.vaadin.flow.router.RouteAlias} annotating the navigationTarget
+     * and with any {@link com.vaadin.flow.router.RoutePrefix} annotating the
+     * parent layouts of the navigationTarget.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
+     * <p>
+     * If the view change actually happens (e.g. the view itself doesn't cancel
+     * the navigation), all navigation listeners are notified and a reference of
+     * the new view is returned for additional configuration.
+     *
+     * @param navigationTarget
+     *            navigation target to navigate to
+     * @param routeParameter
+     *            route parameters to pass to view
+     * @param queryParameters
+     *            additional query parameters to pass to view
+     * @param <C>
+     *            navigation target type
+     * @return the view instance, if navigation actually happened
+     * @throws IllegalArgumentException
+     *             if a {@code null} parameter is given while navigationTarget's
+     *             parameter is not annotated with @OptionalParameter
+     *             or @WildcardParameter.
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
+     */
+    @SuppressWarnings("unchecked")
+    public <C extends Component> Optional<C> navigate(
+            Class<? extends C> navigationTarget, RouteParameters routeParameter,
+            QueryParameters queryParameters) {
+        RouteConfiguration configuration = RouteConfiguration
+                .forRegistry(getInternals().getRouter().getRegistry());
+        String url = configuration.getUrl(navigationTarget, routeParameter);
+        getInternals().getRouter().navigate(this,
+                new Location(url, queryParameters),
+                NavigationTrigger.UI_NAVIGATE);
+        return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
+    }
+
+    /**
+     * Updates this UI to show the view corresponding to the given navigation
      * target and query parameters.
      * <p>
      * Besides the navigation to the {@code location} this method also updates

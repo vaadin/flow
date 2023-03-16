@@ -1,4 +1,5 @@
-import { Connection } from '../vaadin-dev-tools';
+import { Connection } from '../connection';
+import { ComponentReference } from '../component-util';
 
 export enum Commands {
   response = 'themeEditorResponse',
@@ -23,11 +24,13 @@ export interface LoadPreviewResponse extends BaseResponse {
 }
 
 export interface ServerCssRule {
-  selector: string;
+  tagName: string;
+  partName: string | null;
   properties: { [key: string]: string };
 }
 
 export interface LoadRulesResponse {
+  accessible?: boolean;
   rules: ServerCssRule[];
 }
 
@@ -87,18 +90,24 @@ export class ThemeEditorApi {
     }
   }
 
-  public setCssRules(rules: ServerCssRule[]): Promise<BaseResponse> {
-    return this.sendRequest(Commands.setCssRules, {
-      rules
-    });
+  public setCssRules(rules: ServerCssRule[], componentRef?: ComponentReference | null): Promise<BaseResponse> {
+    const payload: any = { rules };
+    if (componentRef?.nodeId) {
+      payload.nodeId = componentRef?.nodeId;
+    }
+    return this.sendRequest(Commands.setCssRules, payload);
   }
 
   public loadPreview(): Promise<LoadPreviewResponse> {
     return this.sendRequest(Commands.loadPreview, {});
   }
 
-  public loadRules(selectorFilter: string): Promise<LoadRulesResponse> {
-    return this.sendRequest(Commands.loadRules, { selectorFilter });
+  public loadRules(selectorFilter: string, componentRef?: ComponentReference | null): Promise<LoadRulesResponse> {
+    const payload: any = { selectorFilter };
+    if (componentRef?.nodeId) {
+      payload.nodeId = componentRef?.nodeId;
+    }
+    return this.sendRequest(Commands.loadRules, payload);
   }
 
   public undo(requestId: string) {

@@ -12,8 +12,6 @@ public interface ThemeEditorCommand {
 
     String CLASS_NAMES = "themeEditorClassNames";
 
-    String COMPONENT_METADATA = "themeEditorComponentMetadata";
-
     String HISTORY = "themeEditorHistory";
 
     String RULES = "themeEditorRules";
