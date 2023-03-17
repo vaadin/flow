@@ -605,7 +605,7 @@ const DEV_MODE_CODE_REGEXP =
 
 function preserveUsageStats() {
   return {
-    name: "transform-file",
+    name: 'vaadin:preserve-usage-stats',
 
     transform(src: string, id: string) {
       if (id.includes("usage-stat")) {
