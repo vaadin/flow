@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # Find eclipse binary
 if [ "$ECLIPSE" = "" ]
 then
