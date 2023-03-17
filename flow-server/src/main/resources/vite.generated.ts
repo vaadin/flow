@@ -599,6 +599,37 @@ function showRecompileReason(): PluginOption {
   };
 }
 
+const DEV_MODE_START_REGEXP = /\/\*[\*!]\s+vaadin-dev-mode:start/;
+const DEV_MODE_CODE_REGEXP =
+  /\/\*[\*!]\s+vaadin-dev-mode:start([\s\S]*)vaadin-dev-mode:end\s+\*\*\//i;
+
+function preserveUsageStats() {
+  return {
+    name: "transform-file",
+
+    transform(src: string, id: string) {
+      if (id.includes("usage-stat")) {
+        if (src.includes("vaadin-dev-mode:start")) {
+          const newSrc = src.replace(
+            DEV_MODE_START_REGEXP,
+            "/*! vaadin-dev-mode:start"
+          );
+          if (newSrc === src) {
+            throw new Error("Comment replacement failed to change anything");
+          }
+          if (!newSrc.match(DEV_MODE_CODE_REGEXP)) {
+            throw new Error("New comment fails to match original regexp");
+          }
+          return { code: newSrc };
+        }
+      }
+
+      return { code: src };
+    },
+  };
+}
+
+
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
 
@@ -673,6 +704,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       devMode && showRecompileReason(),
       settings.offlineEnabled && buildSWPlugin({ devMode }),
       !devMode && statsExtracterPlugin(),
+      devBundle && preserveUsageStats(),
       themePlugin({devMode}),
       lenientLitImportPlugin(),
       postcssLit({
