@@ -608,17 +608,14 @@ function preserveUsageStats() {
     name: 'vaadin:preserve-usage-stats',
 
     transform(src: string, id: string) {
-      if (id.includes("usage-stat")) {
-        if (src.includes("vaadin-dev-mode:start")) {
-          const newSrc = src.replace(
-            DEV_MODE_START_REGEXP,
-            "/*! vaadin-dev-mode:start"
-          );
+      if (id.includes('vaadin-usage-statistics')) {
+        if (src.includes('vaadin-dev-mode:start')) {
+          const newSrc = src.replace(DEV_MODE_START_REGEXP, '/*! vaadin-dev-mode:start');
           if (newSrc === src) {
-            throw new Error("Comment replacement failed to change anything");
+            throw new Error('Comment replacement failed to change anything');
           }
           if (!newSrc.match(DEV_MODE_CODE_REGEXP)) {
-            throw new Error("New comment fails to match original regexp");
+            throw new Error('New comment fails to match original regexp');
           }
           return { code: newSrc };
         }
