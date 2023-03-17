@@ -612,12 +612,12 @@ function preserveUsageStats() {
         if (src.includes('vaadin-dev-mode:start')) {
           const newSrc = src.replace(DEV_MODE_START_REGEXP, '/*! vaadin-dev-mode:start');
           if (newSrc === src) {
-            throw new Error('Comment replacement failed to change anything');
+            console.error('Comment replacement failed to change anything');
+          } else if (!newSrc.match(DEV_MODE_CODE_REGEXP)) {
+            console.error('New comment fails to match original regexp');
+          } else {
+            return { code: newSrc };
           }
-          if (!newSrc.match(DEV_MODE_CODE_REGEXP)) {
-            throw new Error('New comment fails to match original regexp');
-          }
-          return { code: newSrc };
         }
       }
 
