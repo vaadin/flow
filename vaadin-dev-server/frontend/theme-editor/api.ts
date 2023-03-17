@@ -29,9 +29,14 @@ export interface ServerCssRule {
   properties: { [key: string]: string };
 }
 
-export interface LoadRulesResponse {
+export interface LoadRulesResponse extends BaseResponse {
   accessible?: boolean;
+  className?: string;
   rules: ServerCssRule[];
+}
+
+export interface SetRulesResponse extends BaseResponse {
+  className?: string;
 }
 
 interface RequestHandle {
@@ -90,7 +95,7 @@ export class ThemeEditorApi {
     }
   }
 
-  public setCssRules(rules: ServerCssRule[], componentRef?: ComponentReference | null): Promise<BaseResponse> {
+  public setCssRules(rules: ServerCssRule[], componentRef?: ComponentReference | null): Promise<SetRulesResponse> {
     const payload: any = { rules };
     if (componentRef?.nodeId) {
       payload.nodeId = componentRef?.nodeId;
