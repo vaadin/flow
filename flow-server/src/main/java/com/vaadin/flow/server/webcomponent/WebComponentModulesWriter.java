@@ -66,9 +66,6 @@ public final class WebComponentModulesWriter implements Serializable {
      *            classes
      * @param outputDirectory
      *            target directory for the generated web component module files
-     * @param compatibilityMode
-     *            {@code true} to generated html modules, {@code false} to
-     *            generate JavaScript modules
      * @param themeName
      *            the theme defined using {@link Theme} or {@code null} if not
      *            defined
@@ -80,7 +77,7 @@ public final class WebComponentModulesWriter implements Serializable {
      */
     private static Set<File> writeWebComponentsToDirectory( // NOSONAR
             Set<Class<?>> exporterClasses, File outputDirectory,
-            boolean compatibilityMode, String themeName) {
+            String themeName) {
         // this method is used via reflection by DirectoryWriter
         Objects.requireNonNull(exporterClasses,
                 "Parameter 'exporterClasses' must not be null");
@@ -95,7 +92,7 @@ public final class WebComponentModulesWriter implements Serializable {
 
         return WebComponentExporterUtils.getFactories(exporterClasses).stream()
                 .map(factory -> writeWebComponentToDirectory(factory,
-                        outputDirectory, compatibilityMode, themeName))
+                        outputDirectory, themeName))
                 .collect(Collectors.toSet());
     }
 
@@ -114,16 +111,16 @@ public final class WebComponentModulesWriter implements Serializable {
      */
     private static File writeWebComponentToDirectory(
             WebComponentExporterFactory<?> factory, File outputDirectory,
-            boolean compatibilityMode, String themeName) {
+            String themeName) {
         String tag = getTag(factory);
 
-        String fileName = compatibilityMode ? tag + ".html" : tag + ".js";
+        String fileName = tag + ".js";
         Path generatedFile = outputDirectory.toPath().resolve(fileName);
         try {
             FileUtils.forceMkdir(generatedFile.getParent().toFile());
             Files.write(generatedFile,
-                    Collections.singletonList(generateModule(factory,
-                            compatibilityMode, themeName)),
+                    Collections
+                            .singletonList(generateModule(factory, themeName)),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
@@ -135,9 +132,8 @@ public final class WebComponentModulesWriter implements Serializable {
 
     private static String generateModule(
             WebComponentExporterFactory<? extends Component> factory,
-            boolean compatibilityMode, String themeName) {
-        return WebComponentGenerator.generateModule(factory, "../",
-                compatibilityMode, themeName);
+            String themeName) {
+        return WebComponentGenerator.generateModule(factory, "../", themeName);
     }
 
     private static String getTag(
@@ -172,9 +168,6 @@ public final class WebComponentModulesWriter implements Serializable {
          * @param outputDirectory
          *            target directory for the generated web component module
          *            files
-         * @param compatibilityMode
-         *            {@code true} to generated html modules, {@code false} to *
-         *            generate JavaScript modules
          * @param themeName
          *            the theme defined using {@link Theme} or {@code null} if
          *            not defined
@@ -200,8 +193,7 @@ public final class WebComponentModulesWriter implements Serializable {
         @SuppressWarnings("unchecked")
         public static Set<File> generateWebComponentsToDirectory(
                 Class<?> writerClass, Set<Class<?>> exporterClasses,
-                File outputDirectory, boolean compatibilityMode,
-                String themeName) {
+                File outputDirectory, String themeName) {
             Objects.requireNonNull(writerClass,
                     "Parameter 'writerClassSupplier' must not null");
             Objects.requireNonNull(exporterClasses,
@@ -248,8 +240,7 @@ public final class WebComponentModulesWriter implements Serializable {
                 final boolean accessible = writeMethod.isAccessible();
                 writeMethod.setAccessible(true);
                 Set<File> files = ((Set<File>) writeMethod.invoke(null,
-                        exporterClasses, outputDirectory, compatibilityMode,
-                        themeName));
+                        exporterClasses, outputDirectory, themeName));
                 writeMethod.setAccessible(accessible);
                 return files;
             } catch (IllegalAccessException exception) {
