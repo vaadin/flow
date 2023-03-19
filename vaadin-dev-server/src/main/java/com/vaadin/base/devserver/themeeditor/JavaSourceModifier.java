@@ -74,17 +74,26 @@ public class JavaSourceModifier extends Editor {
             File sourceFile = new File(sourceFolder, createLocation.filename());
 
             try {
+                int sourceOffset = 0;
                 List<String> existingClassNames = getClassNames(sourceFile,
                         createLocation.lineNumber());
                 for (String className : classNames) {
                     if (!existingClassNames.contains(className)) {
-                        addComponentAttribute(sourceFile,
+                        sourceOffset += addComponentAttribute(sourceFile,
                                 createLocation.lineNumber(),
                                 attachLocation.lineNumber(),
                                 ComponentType.BUTTON, "addClassName",
                                 className);
                     }
                 }
+
+                if (sourceOffset != 0) {
+                    ComponentTracker.refreshCreateLocation(createLocation,
+                            sourceOffset);
+                    ComponentTracker.refreshAttachLocation(attachLocation,
+                            sourceOffset);
+                }
+
             } catch (UnsupportedOperationException ex) {
                 throw new ThemeEditorException(ex);
             }
@@ -131,11 +140,18 @@ public class JavaSourceModifier extends Editor {
                         holder.className = className.get();
                     } else if (createIfNotPresent) {
                         holder.className = generateUniqueClassName();
-                        addComponentAttribute(sourceFile,
+                        int sourceOffset = addComponentAttribute(sourceFile,
                                 createLocation.lineNumber(),
                                 attachLocation.lineNumber(),
                                 ComponentType.BUTTON, "addClassName",
                                 holder.className);
+
+                        if (sourceOffset != 0) {
+                            ComponentTracker.refreshCreateLocation(
+                                    createLocation, sourceOffset);
+                            ComponentTracker.refreshAttachLocation(
+                                    attachLocation, sourceOffset);
+                        }
                     }
                 } catch (UnsupportedOperationException ex) {
                     throw new ThemeEditorException(ex);
@@ -175,11 +191,19 @@ public class JavaSourceModifier extends Editor {
             File sourceFile = new File(sourceFolder, createLocation.filename());
 
             try {
+                int sourceOffset = 0;
                 for (String className : classNames) {
-                    removeComponentAttribute(sourceFile,
+                    sourceOffset += removeComponentAttribute(sourceFile,
                             createLocation.lineNumber(),
                             attachLocation.lineNumber(), ComponentType.BUTTON,
                             "addClassName", className);
+                }
+
+                if (sourceOffset != 0) {
+                    ComponentTracker.refreshCreateLocation(createLocation,
+                            sourceOffset);
+                    ComponentTracker.refreshAttachLocation(attachLocation,
+                            sourceOffset);
                 }
             } catch (UnsupportedOperationException ex) {
                 throw new ThemeEditorException(ex);

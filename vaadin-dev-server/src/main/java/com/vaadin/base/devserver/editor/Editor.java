@@ -121,6 +121,19 @@ public class Editor {
             throw new RuntimeException("Unknown type");
         }
 
+        public int sourceOffset() {
+            return switch (type) {
+            case INSERT_LINE_AFTER -> 1;
+            case INSERT_LINE_BEFORE -> 1;
+            case INSERT_AT_END_OF_BLOCK -> 1;
+            case INSERT_AFTER_STRING -> 0;
+            case INSERT_AFTER -> 0;
+            case INSERT_BEFORE -> 0;
+            case REPLACE -> 0;
+            case REMOVE -> 0; // TODO: Remove empty lines?
+            };
+        }
+
         private static int sourcePosition(String source, Position pos) {
             // javaparse lines are 1-based
             int lines = pos.line - 1;
@@ -1032,10 +1045,10 @@ public class Editor {
         }
     }
 
-    public void addComponent(File f, int referenceComponentCreateLineNumber,
+    public int addComponent(File f, int referenceComponentCreateLineNumber,
             int referenceComponentAttachLineNumber, Where where,
             ComponentType componentType, String... constructorArguments) {
-        modifyClass(f,
+        return modifyClass(f,
                 (cu) -> addComponent(cu, referenceComponentCreateLineNumber,
                         referenceComponentAttachLineNumber, where,
                         componentType, constructorArguments));
@@ -1058,13 +1071,13 @@ public class Editor {
     // constructorArguments);
     // }
 
-    public void addListener(File f, int componentCreateLineNumber,
+    public int addListener(File f, int componentCreateLineNumber,
             int componentAttachLineNumber, String listenerType) {
-        modifyClass(f, (cu) -> addListener(cu, componentCreateLineNumber,
+        return modifyClass(f, (cu) -> addListener(cu, componentCreateLineNumber,
                 componentAttachLineNumber, listenerType));
     }
 
-    public void modifyClass(File f,
+    public int modifyClass(File f,
             Function<CompilationUnit, List<Modification>> modifier) {
         try {
             String source = readFile(f);
@@ -1073,8 +1086,10 @@ public class Editor {
             List<Modification> mods = modifier.apply(cu);
             Collections.sort(mods);
             String newSource = source;
+            int sourceOffset = 0;
             for (Modification mod : mods) {
                 newSource = mod.apply(newSource);
+                sourceOffset += mod.sourceOffset();
             }
 
             if (newSource.equals(source)) {
@@ -1084,44 +1099,44 @@ public class Editor {
             try (FileWriter fw = new FileWriter(f)) {
                 fw.write(newSource);
             }
+            return sourceOffset;
         } catch (IOException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+            throw new UnsupportedOperationException(e1);
         }
 
     }
 
-    public void setComponentAttribute(String className,
+    public int setComponentAttribute(String className,
             int componentCreateLineNumber, int componentAttachLineNumber,
             ComponentType componentType, String methodName,
             String methodParam) {
-        setComponentAttribute(getSourceFile(className),
+        return setComponentAttribute(getSourceFile(className),
                 componentCreateLineNumber, componentAttachLineNumber,
                 componentType, methodName, methodParam);
     }
 
-    public void setComponentAttribute(File f, int componentCreateLineNumber,
+    public int setComponentAttribute(File f, int componentCreateLineNumber,
             int componentAttachLineNumber, ComponentType componentType,
             String methodName, String methodParam) {
-        modifyClass(f,
+        return modifyClass(f,
                 cu -> modifyOrAddCall(cu, componentCreateLineNumber,
                         componentAttachLineNumber, componentType, methodName,
                         methodParam));
     }
 
-    public void addComponentAttribute(File f, int componentCreateLineNumber,
+    public int addComponentAttribute(File f, int componentCreateLineNumber,
             int componentAttachLineNumber, ComponentType componentType,
             String methodName, String methodParam) {
-        modifyClass(f,
+        return modifyClass(f,
                 cu -> addCall(cu, componentCreateLineNumber,
                         componentAttachLineNumber, componentType, methodName,
                         methodParam));
     }
 
-    public void removeComponentAttribute(File f, int componentCreateLineNumber,
+    public int removeComponentAttribute(File f, int componentCreateLineNumber,
             int componentAttachLineNumber, ComponentType componentType,
             String methodName, String methodParam) {
-        modifyClass(f,
+        return modifyClass(f,
                 cu -> removeCall(cu, componentCreateLineNumber,
                         componentAttachLineNumber, componentType, methodName,
                         methodParam));

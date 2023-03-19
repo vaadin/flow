@@ -82,21 +82,29 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
     @Test
     public void testHandleThemeEditorRules() {
-        prepareComponentTracker(TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
+        prepareComponentTracker(0, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
+        prepareComponentTracker(1, PINFIELD2_CREATE, PINFIELD2_ATTACH);
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         // set global rules for vaadin-button
         BaseResponse response = setRule(0, null, "id1", handler,
                 "vaadin-button", "label", "color", "red");
         assertResponseOk(response, "id1");
-        // set instance specific rules for given vaadin-button
+
+        // set instance specific rules for given vaadin-button, should update
+        // source offset in ComponentLocator
         response = setRule(0, 0, "id2", handler, "vaadin-button", "label",
                 "color", "brown");
         assertResponseOk(response, "id2");
+
+        // set instance specific rules for another component
+        response = setRule(0, 1, "id3", handler, "vaadin-text-field", "label",
+                "color", "white");
+        assertResponseOk(response, "id3");
     }
 
     @Test
     public void testHandleThemeEditorClassNames() {
-        prepareComponentTracker(TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
+        prepareComponentTracker(0, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         setClassNames(0, "id1", handler, new String[] { "bold", "beautiful" },
                 new String[] { "ugly" });
@@ -117,7 +125,7 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
     @Test
     public void testHandleLoadRules() {
-        prepareComponentTracker(TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
+        prepareComponentTracker(0, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
 
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         BaseResponse response = setRule(0, null, "id1", handler,
@@ -143,7 +151,7 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
     @Test
     public void testHandleRules_notAccessible_exceptionIsThrown() {
-        prepareComponentTracker(42, 42);
+        prepareComponentTracker(0, 42, 42);
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         // set instance specific rules for given vaadin-button
         BaseResponse response = setRule(0, 0, "id1", handler, "vaadin-button",
@@ -153,7 +161,7 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
     @Test
     public void testHandleRules_noUniqueRules() {
-        prepareComponentTracker(TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
+        prepareComponentTracker(0, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
 
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         BaseResponse response = setRule(0, null, "id1", handler,
@@ -170,7 +178,7 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
     @Test
     public void testError() {
-        prepareComponentTracker(42, 42);
+        prepareComponentTracker(0, 42, 42);
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
         JsonObject data = Json.createObject();
         String requestId = UUID.randomUUID().toString();
@@ -285,7 +293,7 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
 
     @Test
     public void testHistoryUndo_attributeRemoved() {
-        prepareComponentTracker(TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
+        prepareComponentTracker(0, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
         JavaSourceModifier javaSourceModifierMock = Mockito
                 .mock(JavaSourceModifier.class);
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler() {

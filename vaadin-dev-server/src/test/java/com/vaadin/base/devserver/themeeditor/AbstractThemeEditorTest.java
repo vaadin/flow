@@ -99,6 +99,8 @@ public abstract class AbstractThemeEditorTest {
 
         protected static Span pickedComponent = new Span("test");
 
+        protected static Span pickedComponent2 = new Span("test");
+
         public MockVaadinSession(VaadinService service) {
             super(service);
         }
@@ -113,6 +115,9 @@ public abstract class AbstractThemeEditorTest {
         @Override
         public Element findElement(int uiId, int nodeId)
                 throws IllegalArgumentException {
+            if (nodeId == 1) {
+                return pickedComponent2.getElement();
+            }
             return pickedComponent.getElement();
         }
     }
@@ -160,7 +165,8 @@ public abstract class AbstractThemeEditorTest {
         }
     }
 
-    protected void prepareComponentTracker(int createLine, int attachLine) {
+    protected void prepareComponentTracker(int nodeId, int createLine,
+            int attachLine) {
         try {
             Field createLocationField = ComponentTracker.class
                     .getDeclaredField("createLocation");
@@ -172,7 +178,10 @@ public abstract class AbstractThemeEditorTest {
                     "org.vaadin.example.TestView", "TestView.java", "TestView",
                     createLine);
 
-            createMap.put(MockVaadinSession.pickedComponent, createLocation);
+            createMap.put(
+                    nodeId == 1 ? MockVaadinSession.pickedComponent2
+                            : MockVaadinSession.pickedComponent,
+                    createLocation);
 
             Field attachLocationField = ComponentTracker.class
                     .getDeclaredField("attachLocation");
@@ -184,7 +193,10 @@ public abstract class AbstractThemeEditorTest {
                     "org.vaadin.example.TestView", "TestView.java", "TestView",
                     attachLine);
 
-            attachMap.put(MockVaadinSession.pickedComponent, attachLocation);
+            attachMap.put(
+                    nodeId == 1 ? MockVaadinSession.pickedComponent2
+                            : MockVaadinSession.pickedComponent,
+                    attachLocation);
         } catch (Exception ex) {
 
         }
