@@ -638,7 +638,8 @@ public abstract class Component
     public String getTranslation(String key, Object... params) {
         final Optional<I18NProvider> i18NProvider = getI18NProvider();
         return i18NProvider
-                .map(i18n -> i18n.getTranslation(key, getLocale(() -> i18NProvider), params))
+                .map(i18n -> i18n.getTranslation(key,
+                        getLocale(() -> i18NProvider), params))
                 .orElseGet(() -> "!{" + key + "}!");
     }
 
@@ -661,7 +662,8 @@ public abstract class Component
     public String getTranslation(Object key, Object... params) {
         final Optional<I18NProvider> i18NProvider = getI18NProvider();
         return i18NProvider
-                .map(i18n -> i18n.getTranslation(key, getLocale(() -> i18NProvider), params))
+                .map(i18n -> i18n.getTranslation(key,
+                        getLocale(() -> i18NProvider), params))
                 .orElseGet(() -> "!{" + key + "}!");
     }
 
