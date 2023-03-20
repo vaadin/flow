@@ -322,9 +322,8 @@ public class JavaSourceModifier extends Editor {
             for (MethodCallExpr methodCallExpr : existingCalls) {
                 if (methodCallExpr.getName().asString()
                         .equals("addClassName")) {
-                    existingCalls.forEach(
-                            m -> m.getArguments().forEach(a -> classNames
-                                    .add(a.asStringLiteralExpr().asString())));
+                    methodCallExpr.getArguments().forEach(a -> classNames
+                            .add(a.asStringLiteralExpr().asString()));
                 }
             }
             return classNames;
