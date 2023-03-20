@@ -134,28 +134,11 @@ public class WebComponentGeneratorTest {
     }
 
     @Test
-    public void providesHTMLModuleInBowerMode() {
-        String module = WebComponentGenerator.generateModule(
-                new DefaultWebComponentExporterFactory<MyComponent>(
-                        MyComponentExporter.class),
-                "", true, null);
-        // make sure that the test works on windows machines:
-        module = module.replace("\r", "");
-        MatcherAssert.assertThat(module, startsWith(
-                "\n" + "<script>\n" + "  class Tag extends HTMLElement {\n"));
-        // this part is from the
-        // com.vaadin.flow.webcomponent-script-template
-        // .js to verify successful import
-        MatcherAssert.assertThat(module,
-                containsString("customElements.define('tag', Tag);\n"));
-    }
-
-    @Test
     public void providesJSModulesInNpmMode() {
         String module = WebComponentGenerator.generateModule(
                 new DefaultWebComponentExporterFactory<MyComponent>(
                         MyComponentExporter.class),
-                "", false, null);
+                "", null);
         // make sure that the test works on windows machines:
         module = module.replace("\r", "");
         MatcherAssert.assertThat(module,
@@ -174,10 +157,8 @@ public class WebComponentGeneratorTest {
     @Test
     public void providedJSModuleContainsCorrectThemeReplacements() {
         String module = WebComponentGenerator
-                .generateModule(
-                        new DefaultWebComponentExporterFactory<>(
-                                MyComponentExporter.class),
-                        "", false, "my-theme");
+                .generateModule(new DefaultWebComponentExporterFactory<>(
+                        MyComponentExporter.class), "", "my-theme");
         // make sure that the test works on windows machines:
         module = module.replace("\r", "");
         MatcherAssert.assertThat(module,
