@@ -81,7 +81,6 @@
             <version>2.1.0</version>
             <scope>provided</scope>
         </dependency>
-
     </dependencies>
 
     <build>

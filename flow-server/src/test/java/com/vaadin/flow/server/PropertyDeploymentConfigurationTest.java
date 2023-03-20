@@ -348,11 +348,13 @@ public class PropertyDeploymentConfigurationTest {
     public void allDefaultAbstractConfigurationMethodsAreOverridden() {
         Method[] methods = PropertyDeploymentConfiguration.class.getMethods();
         for (Method method : methods) {
-            if (method.getName().equals("getProjectFolder")) {
-                // You cannot override the project folder
+            String methodName = method.getName();
+            if (methodName.equals("getProjectFolder")
+                    || methodName.equals("getMode")) {
+                // You cannot override these
                 continue;
             }
-            Assert.assertNotEquals("There is a method '" + method.getName()
+            Assert.assertNotEquals("There is a method '" + methodName
                     + "' which is declared in  " + AbstractConfiguration.class
                     + " interface but it's not overriden in the "
                     + PropertyDeploymentConfiguration.class

@@ -17,6 +17,8 @@ public class TestView extends VerticalLayout {
 
     private TextField pinField = new TextField("Cant touch this");
 
+    private TextField pinField2;
+
     public TestView() {
         // Use TextField for standard text input
         TextField textField = new TextField("Your name");
@@ -40,6 +42,8 @@ public class TestView extends VerticalLayout {
 
         // ugly style, so ugly...
         textField.addClassName("ugly");
+
+        pinField2 = new TextField("Can touch this!");
 
         add(textField, button, new TextField("Cant touch this either"));
     }

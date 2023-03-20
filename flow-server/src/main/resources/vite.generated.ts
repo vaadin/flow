@@ -41,6 +41,11 @@ import checker from 'vite-plugin-checker';
 import postcssLit
   from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 
+import { createRequire } from 'module';
+
+// Make `require` compatible with ES modules
+const require = createRequire(import.meta.url);
+
 const appShellUrl = '.';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
@@ -277,9 +282,16 @@ function statsExtracterPlugin(): PluginOption {
 
       const projectThemeJson = path.resolve(frontendFolder, settings.themeFolder, settings.themeName, "theme.json")
       if (existsSync(projectThemeJson)) {
-        themeJsonContents[ settings.themeName ] = readFileSync(projectThemeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+        const themeJson = readFileSync(projectThemeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+        themeJsonContents[ settings.themeName ] = themeJson;
+        const themeJsonObject = JSON.parse(themeJson);
+        if (themeJsonObject.parent) {
+          const parentThemeJson = path.resolve(frontendFolder, settings.themeFolder, themeJsonObject.parent, "theme.json");
+          if (existsSync(parentThemeJson)) {
+            themeJsonContents[ themeJsonObject.parent ] = readFileSync(parentThemeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+          }
+        }
       }
-
 
       let webComponents: string[] = [];
       if (webComponentTags) {
@@ -587,6 +599,34 @@ function showRecompileReason(): PluginOption {
   };
 }
 
+const DEV_MODE_START_REGEXP = /\/\*[\*!]\s+vaadin-dev-mode:start/;
+const DEV_MODE_CODE_REGEXP =
+  /\/\*[\*!]\s+vaadin-dev-mode:start([\s\S]*)vaadin-dev-mode:end\s+\*\*\//i;
+
+function preserveUsageStats() {
+  return {
+    name: 'vaadin:preserve-usage-stats',
+
+    transform(src: string, id: string) {
+      if (id.includes('vaadin-usage-statistics')) {
+        if (src.includes('vaadin-dev-mode:start')) {
+          const newSrc = src.replace(DEV_MODE_START_REGEXP, '/*! vaadin-dev-mode:start');
+          if (newSrc === src) {
+            console.error('Comment replacement failed to change anything');
+          } else if (!newSrc.match(DEV_MODE_CODE_REGEXP)) {
+            console.error('New comment fails to match original regexp');
+          } else {
+            return { code: newSrc };
+          }
+        }
+      }
+
+      return { code: src };
+    },
+  };
+}
+
+
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
 
@@ -661,6 +701,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       devMode && showRecompileReason(),
       settings.offlineEnabled && buildSWPlugin({ devMode }),
       !devMode && statsExtracterPlugin(),
+      devBundle && preserveUsageStats(),
       themePlugin({devMode}),
       lenientLitImportPlugin(),
       postcssLit({

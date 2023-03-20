@@ -270,19 +270,17 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             throws IOException {
         Map<String, JsonObject> themeJsonContents = new HashMap<>();
 
-        if (options.getJarFiles() == null) {
-            return false;
+        if (options.getJarFiles() != null) {
+            options.getJarFiles().stream().filter(File::exists)
+                    .filter(file -> !file.isDirectory())
+                    .forEach(jarFile -> getPackagedThemeJsonContents(jarFile,
+                            themeJsonContents));
         }
-
-        options.getJarFiles().stream().filter(File::exists)
-                .filter(file -> !file.isDirectory())
-                .forEach(jarFile -> getPackagedThemeJsonContents(jarFile,
-                        themeJsonContents));
 
         ThemeDefinition themeDefinition = frontendDependencies
                 .getThemeDefinition();
-        Optional<JsonObject> projectThemeJson = getContentForProjectThemeJson(
-                options, themeDefinition);
+        Optional<JsonObject> projectThemeJson = FrontendUtils
+                .getThemeJsonInFrontend(options, themeDefinition);
 
         JsonObject contentsInStats = statsJson.getObject("themeJsonContents");
         if (contentsInStats == null && (!themeJsonContents.isEmpty()
@@ -307,15 +305,28 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             }
 
             List<String> missedKeys = new ArrayList<>();
-            JsonObject content = Json.parse(contentsInStats.getString(key));
-            if (!objectIncludesEntry(content, projectThemeJson.get(),
+            JsonObject themeJsonContent = Json
+                    .parse(contentsInStats.getString(key));
+            if (!objectIncludesEntry(themeJsonContent, projectThemeJson.get(),
                     missedKeys)) {
                 getLogger().info(
                         "Project custom theme '{}' has imports/assets in 'theme.json' not present in the bundle",
                         projectThemeName);
-                Collections.reverse(missedKeys);
-                logChangedFiles(missedKeys, "Detected missed entries:");
+                logMissedEntries(missedKeys);
                 return true;
+            }
+
+            Optional<String> parentThemeInFrontend = FrontendUtils
+                    .getParentThemeNameInFrontend(
+                            options.getFrontendDirectory(),
+                            projectThemeJson.get());
+            if (parentThemeInFrontend.isPresent()) {
+                String parentThemeName = parentThemeInFrontend.get();
+                Optional<JsonObject> themeJson = FrontendUtils
+                        .getThemeJsonInFrontend(options.getFrontendDirectory(),
+                                parentThemeName);
+                themeJson.ifPresent(jsonObject -> themeJsonContents
+                        .put(parentThemeName, jsonObject));
             }
         }
 
@@ -333,8 +344,9 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 if (!objectIncludesEntry(content, themeContent.getValue(),
                         missedKeys)) {
                     getLogger().info(
-                            "Packaged custom theme '{}' has imports/assets in 'theme.json' not present in the bundle",
+                            "Parent theme '{}' has imports/assets in 'theme.json' not present in the bundle",
                             themeContent.getKey());
+                    logMissedEntries(missedKeys);
                     return true;
                 }
             }
@@ -562,6 +574,11 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             handledFiles.append(" - ").append(file).append("\n");
         }
         getLogger().info(message, handledFiles);
+    }
+
+    private static void logMissedEntries(List<String> missedKeys) {
+        Collections.reverse(missedKeys);
+        logChangedFiles(missedKeys, "Detected missed entries:");
     }
 
     private static void compareFrontendHashes(JsonObject frontendHashes,
@@ -856,24 +873,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
     }
 
-    private static Optional<JsonObject> getContentForProjectThemeJson(
-            Options options, ThemeDefinition themeDefinition)
-            throws IOException {
-        if (themeDefinition != null) {
-            String themeName = themeDefinition.getName();
-            File projectThemeJson = new File(options.getFrontendDirectory(),
-                    Constants.APPLICATION_THEME_ROOT + "/" + themeName + "/"
-                            + "theme.json");
-            if (projectThemeJson.exists()) {
-                String content = FileUtils.readFileToString(projectThemeJson,
-                        StandardCharsets.UTF_8);
-                content = content.replaceAll("\\r\\n", "\n");
-                return Optional.of(Json.parse(content));
-            }
-        }
-        return Optional.empty();
-    }
-
     private static Logger getLogger() {
         return LoggerFactory.getLogger(TaskRunDevBundleBuild.class);
     }
@@ -919,6 +918,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("devBundle", "true");
+        builder.environment().put("NODE_ENV", "development");
 
         Process process = null;
         try {

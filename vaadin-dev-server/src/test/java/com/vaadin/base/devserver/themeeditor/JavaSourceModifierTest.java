@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Arrays;
 
+import static com.vaadin.base.devserver.themeeditor.JavaSourceModifier.UNIQUE_CLASSNAME_PREFIX;
+
 public class JavaSourceModifierTest extends AbstractThemeEditorTest {
 
     @Before
@@ -38,14 +40,21 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
 
     @Test
     public void classNameAdd_javaUpdated_clean() {
-        classNameAdd_javaUpdated(22, 23, 24);
+        classNameAdd_javaUpdated(TEXTFIELD_LINE, TEXTFIELD_LINE + 1,
+                TEXTFIELD_LINE + 2, "textField", "beautiful");
+    }
+
+    @Test
+    public void classNameAdd2_javaUpdated_clean() {
+        classNameAdd_javaUpdated(PINFIELD2_LINE, PINFIELD2_LINE + 1,
+                PINFIELD2_LINE + 2, "pinField2", "beautiful");
     }
 
     public void classNameAdd_javaUpdated(int declarationLine, int expectedLine1,
-            int expectedLine2) {
+            int expectedLine2, String variableName, String className) {
         prepareComponentTracker(declarationLine);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
-        modifier.setClassNames(0, 0, Arrays.asList("bold", "beautiful"));
+        modifier.setClassNames(0, 0, Arrays.asList("bold", className));
 
         CompilationUnit cu = getCompilationUnit();
         Node n1 = cu.accept(new LineNumberVisitor(), expectedLine1);
@@ -54,10 +63,10 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         Assert.assertTrue(n1 instanceof ExpressionStmt);
         Assert.assertTrue(n2 instanceof ExpressionStmt);
 
-        ExpressionStmt expr1 = modifier.createMethodCallExprStmt("textField",
+        ExpressionStmt expr1 = modifier.createMethodCallExprStmt(variableName,
                 "addClassName", "bold");
-        ExpressionStmt expr2 = modifier.createMethodCallExprStmt("textField",
-                "addClassName", "beautiful");
+        ExpressionStmt expr2 = modifier.createMethodCallExprStmt(variableName,
+                "addClassName", className);
 
         Assert.assertEquals(expr1, n1);
         Assert.assertEquals(expr2, n2);
@@ -65,13 +74,13 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
 
     @Test
     public void sameClassNameAdd_javaUpdated_singlePresent() {
-        prepareComponentTracker(22);
+        prepareComponentTracker(TEXTFIELD_LINE);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
         modifier.setClassNames(0, 0, Arrays.asList("bold", "bold"));
 
         CompilationUnit cu = getCompilationUnit();
-        Node n1 = cu.accept(new LineNumberVisitor(), 23);
-        Node n2 = cu.accept(new LineNumberVisitor(), 24);
+        Node n1 = cu.accept(new LineNumberVisitor(), TEXTFIELD_LINE + 1);
+        Node n2 = cu.accept(new LineNumberVisitor(), TEXTFIELD_LINE + 2);
 
         Assert.assertTrue(n1 instanceof ExpressionStmt);
         Assert.assertTrue(n2 instanceof ExpressionStmt);
@@ -85,7 +94,7 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
 
     @Test
     public void classNameRemove_javaUpdated() {
-        classNameRemove_javaUpdated(22, 42);
+        classNameRemove_javaUpdated(TEXTFIELD_LINE, TEXTFIELD_CALL_LINE);
     }
 
     public void classNameRemove_javaUpdated(int declarationLine,
@@ -110,21 +119,21 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
 
     @Test
     public void nonExistingClassNameRemove_noException() {
-        prepareComponentTracker(22);
+        prepareComponentTracker(TEXTFIELD_LINE);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
         modifier.removeClassNames(0, 0, Arrays.asList("very-ugly"));
     }
 
     @Test(expected = ThemeEditorException.class)
     public void declarationAsClassProperty_exceptionIsThrown() {
-        prepareComponentTracker(18);
+        prepareComponentTracker(PINFIELD_LINE);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
         modifier.setClassNames(0, 0, Arrays.asList("bold", "beautiful"));
     }
 
     @Test(expected = ThemeEditorException.class)
     public void declarationAsInlineArgument_exceptionIsThrown() {
-        prepareComponentTracker(44);
+        prepareComponentTracker(INLINEADD_LINE);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
         modifier.setClassNames(0, 0, Arrays.asList("bold", "beautiful"));
     }
@@ -133,7 +142,7 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
     public void messedFileModified_structurePreserved() {
         copy("TestView_messed.java", "TestView.java");
         classNameRemove_javaUpdated(25, 47);
-        classNameAdd_javaUpdated(25, 27, 28);
+        classNameAdd_javaUpdated(25, 27, 28, "textField", "beautiful");
         try {
             File javaFolder = TestUtils
                     .getTestFolder("java/org/vaadin/example");
@@ -149,20 +158,46 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
 
     @Test
     public void componentPicked_componentAccessible() {
-        prepareComponentTracker(22);
+        prepareComponentTracker(TEXTFIELD_LINE);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
-        JavaSourceModifier.ComponentMetadata metadata = modifier.getMetadata(0,
-                0);
-        Assert.assertTrue(metadata.isAccessible());
+        Assert.assertTrue(modifier.isAccessible(0, 0));
     }
 
     @Test
     public void componentPicked_componentNotAccessible() {
-        prepareComponentTracker(44);
+        prepareComponentTracker(INLINEADD_LINE);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
-        JavaSourceModifier.ComponentMetadata metadata = modifier.getMetadata(0,
-                0);
-        Assert.assertFalse(metadata.isAccessible());
+        Assert.assertFalse(modifier.isAccessible(0, 0));
+    }
+
+    @Test
+    public void uniqueClassNameNotExists_javaUpdated() {
+        prepareComponentTracker(TEXTFIELD_LINE);
+        JavaSourceModifier modifier = new TestJavaSourceModifier();
+        String uniqueClassName = modifier.getUniqueClassName(0, 0, true);
+        Assert.assertNotNull(uniqueClassName);
+        Assert.assertTrue(uniqueClassName.startsWith(UNIQUE_CLASSNAME_PREFIX));
+
+        CompilationUnit cu = getCompilationUnit();
+        Node n1 = cu.accept(new LineNumberVisitor(), TEXTFIELD_LINE + 1);
+
+        Assert.assertTrue(n1 instanceof ExpressionStmt);
+
+        ExpressionStmt expr1 = modifier.createMethodCallExprStmt("textField",
+                "addClassName", uniqueClassName);
+
+        Assert.assertEquals(expr1, n1);
+    }
+
+    @Test
+    public void uniqueClassNameExists_valueRetrieved() {
+        String expectedClassName = "te-123456789";
+        classNameAdd_javaUpdated(TEXTFIELD_LINE, TEXTFIELD_LINE + 1,
+                TEXTFIELD_LINE + 2, "textField", expectedClassName);
+
+        JavaSourceModifier modifier = new TestJavaSourceModifier();
+        String uniqueClassName = modifier.getUniqueClassName(0, 0, false);
+        Assert.assertEquals(expectedClassName, uniqueClassName);
     }
 
     private CompilationUnit getCompilationUnit() {
