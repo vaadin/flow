@@ -1,15 +1,15 @@
 package com.vaadin.base.devserver.themeeditor;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.github.javaparser.utils.SourceRoot;
-import com.vaadin.base.devserver.themeeditor.utils.LineNumberVisitor;
+import com.vaadin.base.devserver.editor.ComponentType;
+import com.vaadin.base.devserver.editor.Editor;
 import com.vaadin.base.devserver.themeeditor.utils.ThemeEditorException;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.internal.ComponentTracker;
@@ -17,17 +17,20 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import org.apache.commons.io.IOUtils;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class JavaSourceModifier {
+public class JavaSourceModifier extends Editor {
 
     public static final String UNIQUE_CLASSNAME_PREFIX = "te-";
 
@@ -43,10 +46,6 @@ public class JavaSourceModifier {
 
     public JavaSourceModifier(VaadinContext context) {
         this.context = context;
-    }
-
-    public boolean isEnabled() {
-        return true;
     }
 
     /**
@@ -67,33 +66,38 @@ public class JavaSourceModifier {
         VaadinSession session = getSession();
         getSession().access(() -> {
             Component component = getComponent(session, uiId, nodeId);
-            ComponentTracker.Location location = getComponentLocation(
+            ComponentTracker.Location createLocation = getCreateLocation(
                     component);
+            ComponentTracker.Location attachLocation = getAttachLocation(
+                    component);
+            File sourceFolder = getSourceFolder(createLocation);
+            File sourceFile = new File(sourceFolder, createLocation.filename());
 
-            File sourceFolder = getSourceFolder(location);
-            File sourceFile = new File(sourceFolder, location.filename());
-            SourceRoot root = new SourceRoot(sourceFolder.toPath());
-            CompilationUnit cu = LexicalPreservingPrinter
-                    .setup(root.parse("", location.filename()));
-
-            ExpressionStmt node = getVariableDeclarationExpressionStmt(cu,
-                    location);
-
-            BlockStmt parentBlock = getParentBlockStmt(node).get();
-            AtomicInteger index = new AtomicInteger(
-                    getIndexOfNode(parentBlock, node));
-            String variableName = getVariableName(node);
-            classNames.forEach(className -> {
-                ExpressionStmt methodCall = createMethodCallExprStmt(
-                        variableName, "addClassName", className);
-                if (findExpressionStmtInBlockStmt(parentBlock, methodCall)
-                        .isEmpty()) {
-                    parentBlock.addStatement(index.incrementAndGet(),
-                            methodCall);
+            try {
+                int sourceOffset = 0;
+                List<String> existingClassNames = getClassNames(sourceFile,
+                        createLocation.lineNumber());
+                for (String className : classNames) {
+                    if (!existingClassNames.contains(className)) {
+                        sourceOffset += addComponentAttribute(sourceFile,
+                                createLocation.lineNumber(),
+                                attachLocation.lineNumber(),
+                                ComponentType.BUTTON, "addClassName",
+                                className);
+                    }
                 }
-            });
 
-            writeFile(cu, sourceFile);
+                if (sourceOffset != 0) {
+                    ComponentTracker.refreshCreateLocation(createLocation,
+                            sourceOffset);
+                    ComponentTracker.refreshAttachLocation(attachLocation,
+                            sourceOffset);
+                }
+
+            } catch (UnsupportedOperationException ex) {
+                throw new ThemeEditorException(ex);
+            }
+
         });
     }
 
@@ -118,32 +122,39 @@ public class JavaSourceModifier {
             VaadinSession session = getSession();
             getSession().access(() -> {
                 Component component = getComponent(session, uiId, nodeId);
-                ComponentTracker.Location location = getComponentLocation(
+                ComponentTracker.Location createLocation = getCreateLocation(
                         component);
+                ComponentTracker.Location attachLocation = getAttachLocation(
+                        component);
+                File sourceFolder = getSourceFolder(createLocation);
+                File sourceFile = new File(sourceFolder,
+                        createLocation.filename());
 
-                File sourceFolder = getSourceFolder(location);
-                File sourceFile = new File(sourceFolder, location.filename());
-                SourceRoot root = new SourceRoot(sourceFolder.toPath());
-                CompilationUnit cu = LexicalPreservingPrinter
-                        .setup(root.parse("", location.filename()));
+                try {
+                    List<String> existingClassNames = getClassNames(sourceFile,
+                            createLocation.lineNumber());
+                    Optional<String> className = existingClassNames.stream()
+                            .filter(s -> s.startsWith(UNIQUE_CLASSNAME_PREFIX))
+                            .findFirst();
+                    if (className.isPresent()) {
+                        holder.className = className.get();
+                    } else if (createIfNotPresent) {
+                        holder.className = generateUniqueClassName();
+                        int sourceOffset = addComponentAttribute(sourceFile,
+                                createLocation.lineNumber(),
+                                attachLocation.lineNumber(),
+                                ComponentType.BUTTON, "addClassName",
+                                holder.className);
 
-                ExpressionStmt node = getVariableDeclarationExpressionStmt(cu,
-                        location);
-
-                BlockStmt parentBlock = getParentBlockStmt(node).get();
-                String variableName = getVariableName(node);
-
-                Optional<String> className = findThemeEditorClassNameInBlockStmt(
-                        parentBlock, variableName);
-                if (className.isPresent()) {
-                    holder.className = className.get();
-                } else if (createIfNotPresent) {
-                    holder.className = generateUniqueClassName();
-                    ExpressionStmt methodCall = createMethodCallExprStmt(
-                            variableName, "addClassName", holder.className);
-                    parentBlock.addStatement(
-                            getIndexOfNode(parentBlock, node) + 1, methodCall);
-                    writeFile(cu, sourceFile);
+                        if (sourceOffset != 0) {
+                            ComponentTracker.refreshCreateLocation(
+                                    createLocation, sourceOffset);
+                            ComponentTracker.refreshAttachLocation(
+                                    attachLocation, sourceOffset);
+                        }
+                    }
+                } catch (UnsupportedOperationException ex) {
+                    throw new ThemeEditorException(ex);
                 }
 
             }).get(5, TimeUnit.SECONDS);
@@ -172,28 +183,31 @@ public class JavaSourceModifier {
         VaadinSession session = getSession();
         getSession().access(() -> {
             Component component = getComponent(session, uiId, nodeId);
-            ComponentTracker.Location location = getComponentLocation(
+            ComponentTracker.Location createLocation = getCreateLocation(
                     component);
+            ComponentTracker.Location attachLocation = getAttachLocation(
+                    component);
+            File sourceFolder = getSourceFolder(createLocation);
+            File sourceFile = new File(sourceFolder, createLocation.filename());
 
-            File sourceFolder = getSourceFolder(location);
-            File sourceFile = new File(sourceFolder, location.filename());
-            SourceRoot root = new SourceRoot(sourceFolder.toPath());
-            CompilationUnit cu = LexicalPreservingPrinter
-                    .setup(root.parse("", location.filename()));
+            try {
+                int sourceOffset = 0;
+                for (String className : classNames) {
+                    sourceOffset += removeComponentAttribute(sourceFile,
+                            createLocation.lineNumber(),
+                            attachLocation.lineNumber(), ComponentType.BUTTON,
+                            "addClassName", className);
+                }
 
-            ExpressionStmt node = getVariableDeclarationExpressionStmt(cu,
-                    location);
-
-            BlockStmt parentBlock = getParentBlockStmt(node).get();
-            String variableName = getVariableName(node);
-            classNames.forEach(className -> {
-                ExpressionStmt methodCall = createMethodCallExprStmt(
-                        variableName, "addClassName", className);
-                findExpressionStmtInBlockStmt(parentBlock, methodCall)
-                        .ifPresent(parentBlock.getStatements()::remove);
-            });
-
-            writeFile(cu, sourceFile);
+                if (sourceOffset != 0) {
+                    ComponentTracker.refreshCreateLocation(createLocation,
+                            sourceOffset);
+                    ComponentTracker.refreshAttachLocation(attachLocation,
+                            sourceOffset);
+                }
+            } catch (UnsupportedOperationException ex) {
+                throw new ThemeEditorException(ex);
+            }
         });
     }
 
@@ -214,53 +228,27 @@ public class JavaSourceModifier {
             VaadinSession session = getSession();
             getSession().access(() -> {
                 Component component = getComponent(session, uiId, nodeId);
-                ComponentTracker.Location location = getComponentLocation(
+                ComponentTracker.Location createLocation = getCreateLocation(
                         component);
 
-                File sourceFolder = getSourceFolder(location);
+                File sourceFolder = getSourceFolder(createLocation);
                 SourceRoot root = new SourceRoot(sourceFolder.toPath());
                 CompilationUnit cu = LexicalPreservingPrinter
-                        .setup(root.parse("", location.filename()));
+                        .setup(root.parse("", createLocation.filename()));
 
-                try {
-                    getVariableDeclarationExpressionStmt(cu, location);
-                    holder.accessible = true;
-                } catch (Exception ex) {
-
+                Statement stmt = findStatement(cu, createLocation.lineNumber());
+                if (stmt != null && stmt instanceof ExpressionStmt exp) {
+                    holder.accessible = exp.getExpression().isAssignExpr()
+                            || exp.getExpression().isVariableDeclarationExpr();
+                } else {
+                    holder.accessible = false;
                 }
+
             }).get(5, TimeUnit.SECONDS);
             return holder.accessible;
         } catch (Exception e) {
             throw new ThemeEditorException("Cannot generate metadata.", e);
         }
-    }
-
-    protected String getVariableName(ExpressionStmt node) {
-        if (node.getExpression().isVariableDeclarationExpr()) {
-            return node.getExpression().asVariableDeclarationExpr()
-                    .getVariables().get(0).getNameAsString();
-        } else if (node.getExpression().isMethodCallExpr()) {
-            return node.getExpression().asMethodCallExpr().getScope()
-                    .map(e -> e.asNameExpr().getNameAsString()).stream()
-                    .findFirst().orElse(null);
-        } else if (node.getExpression().isAssignExpr()) {
-            return node.getExpression().asAssignExpr().getTarget().toString();
-        }
-        throw new ThemeEditorException(
-                "Cannot find variable name for given component.");
-    }
-
-    // finds variable declaration on given location line
-    protected ExpressionStmt getVariableDeclarationExpressionStmt(
-            CompilationUnit cu, ComponentTracker.Location location) {
-        Node node = cu.accept(new LineNumberVisitor(), location.lineNumber());
-        if (!nodeIsSingleVariableDeclaration(node)) {
-            throw new ThemeEditorException(
-                    "Cannot modify className of selected component. Only single declaration in code block is supported currently. "
-                            + "Cannot apply changes at: "
-                            + toStackTraceElement(location));
-        }
-        return (ExpressionStmt) node;
     }
 
     protected Component getComponent(VaadinSession session, int uiId,
@@ -274,7 +262,7 @@ public class JavaSourceModifier {
         return c.get();
     }
 
-    protected ComponentTracker.Location getComponentLocation(Component c) {
+    protected ComponentTracker.Location getCreateLocation(Component c) {
         ComponentTracker.Location location = ComponentTracker.findCreate(c);
         if (location == null) {
             throw new ThemeEditorException(
@@ -284,53 +272,18 @@ public class JavaSourceModifier {
         return location;
     }
 
-    protected void writeFile(CompilationUnit cu, File sourceFile) {
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter(sourceFile);
-            IOUtils.write(LexicalPreservingPrinter.print(cu), writer);
-        } catch (IOException e) {
+    protected ComponentTracker.Location getAttachLocation(Component c) {
+        ComponentTracker.Location location = ComponentTracker.findAttach(c);
+        if (location == null) {
             throw new ThemeEditorException(
-                    "Cannot update file: " + sourceFile.getPath(), e);
-        } finally {
-            IOUtils.closeQuietly(writer);
+                    "Unable to find the location where the component "
+                            + c.getClass().getName() + " was attached");
         }
+        return location;
     }
 
     protected VaadinSession getSession() {
         return VaadinSession.getCurrent();
-    }
-
-    protected Optional<String> findThemeEditorClassNameInBlockStmt(BlockStmt n,
-            String variableName) {
-        return n.getStatements().stream()
-                .filter(ExpressionStmt.class::isInstance)
-                .map(ExpressionStmt.class::cast)
-                .filter(e -> e.getExpression().isMethodCallExpr()) // filter
-                                                                   // method
-                                                                   // calls
-                .filter(e -> Objects.equals(variableName, getVariableName(e))) // filter
-                                                                               // variable
-                                                                               // scope
-                .filter(e -> Objects.equals("addClassName",
-                        e.getExpression().asMethodCallExpr().getNameAsString())) // filter
-                                                                                 // .addClassName
-                                                                                 // calls
-                .map(e -> e.getExpression().asMethodCallExpr().getArgument(0)
-                        .asStringLiteralExpr().asString()) // get first argument
-                .filter(arg -> arg.startsWith(UNIQUE_CLASSNAME_PREFIX)) // filter
-                                                                        // te-*
-                                                                        // arguments
-                .findFirst();
-    }
-
-    protected Optional<ExpressionStmt> findExpressionStmtInBlockStmt(
-            BlockStmt n, ExpressionStmt stmt) {
-        return n.getStatements().stream()
-                .filter(ExpressionStmt.class::isInstance)
-                .map(ExpressionStmt.class::cast).filter(e -> Objects
-                        .equals(e.getExpression(), stmt.getExpression()))
-                .findFirst();
     }
 
     protected File getSourceFolder(ComponentTracker.Location location) {
@@ -341,58 +294,44 @@ public class JavaSourceModifier {
                 Arrays.copyOf(splitted, splitted.length - 1)).toFile();
     }
 
-    protected Optional<BlockStmt> getParentBlockStmt(Node n) {
-        return n.getParentNode().filter(BlockStmt.class::isInstance)
-                .map(BlockStmt.class::cast);
-    }
-
-    protected int getIndexOfNode(BlockStmt blockStmt, Node n) {
-        for (int i = 0; i < blockStmt.getStatements().size(); ++i) {
-            if (n.equals(blockStmt.getStatement(i))) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    protected ExpressionStmt createMethodCallExprStmt(String variableName,
-            String methodName, String className) {
-        return new ExpressionStmt(new MethodCallExpr(methodName)
-                .setScope(new NameExpr(variableName)).addArgument(
-                        new StringLiteralExpr().setEscapedValue(className)));
-    }
-
-    protected boolean nodeIsSingleVariableDeclaration(Node n) {
-        if (n instanceof ExpressionStmt expr) {
-            // check if inside block statement
-            if (!n.getParentNode().filter(BlockStmt.class::isInstance)
-                    .isPresent()) {
-                return false;
-            }
-            // assignment expression
-            if (expr.getExpression().isAssignExpr()) {
-                return true;
-            }
-            // general expression statement
-            if (expr.getExpression().isVariableDeclarationExpr()
-                    && expr.getExpression().asVariableDeclarationExpr()
-                            .getVariables().size() == 1) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    protected StackTraceElement toStackTraceElement(
-            ComponentTracker.Location location) {
-        return new StackTraceElement("", "", "", location.className(),
-                location.methodName(), location.filename(),
-                location.lineNumber());
-
-    }
-
     protected String generateUniqueClassName() {
         return UNIQUE_CLASSNAME_PREFIX + UUID.randomUUID();
+    }
+
+    public List<String> getClassNames(File f, int componentCreateLineNumber) {
+
+        try {
+            String source = readFile(f);
+            CompilationUnit cu = parseSource(source);
+            Statement node = findStatement(cu, componentCreateLineNumber);
+            if (node == null) {
+                throw new UnsupportedOperationException(
+                        "Cannot add method call for given component.");
+            }
+            SimpleName localVariableOrField = findLocalVariableOrField(cu,
+                    componentCreateLineNumber);
+            BlockStmt codeBlock = (BlockStmt) node.getParentNode().get();
+
+            List<MethodCallExpr> existingCalls = findMethodCalls(codeBlock,
+                    localVariableOrField);
+            if (existingCalls.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            List<String> classNames = new ArrayList<>();
+            for (MethodCallExpr methodCallExpr : existingCalls) {
+                if (methodCallExpr.getName().asString()
+                        .equals("addClassName")) {
+                    methodCallExpr.getArguments().forEach(a -> classNames
+                            .add(a.asStringLiteralExpr().asString()));
+                }
+            }
+            return classNames;
+
+        } catch (IOException e1) {
+            throw new ThemeEditorException(e1);
+        }
+
     }
 
 }

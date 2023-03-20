@@ -37,8 +37,7 @@ public class ThemeEditorMessageHandler
     }
 
     public boolean isEnabled() {
-        return getThemeModifier().isEnabled()
-                && getSourceModifier().isEnabled();
+        return getThemeModifier().isEnabled();
     }
 
     public String getState() {
