@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # Must use gsed on Mac
 if [[ "$OSTYPE" == "darwin"* ]]
 then

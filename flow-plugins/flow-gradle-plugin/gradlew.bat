@@ -1,3 +1,12 @@
+@REM
+@REM Copyright (C) 2000-2023 Vaadin Ltd
+@REM
+@REM This program is available under Vaadin Commercial License and Service Terms.
+@REM
+@REM See <https://vaadin.com/commercial-license-and-service-terms> for the full
+@REM license.
+@REM
+
 @rem
 @rem Copyright 2015 the original author or authors.
 @rem
