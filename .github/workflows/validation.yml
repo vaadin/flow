@@ -21,11 +21,6 @@ jobs:
       - run: |
          echo "Concurrency Group = ${{ github.ref_name || github.ref }}"
          echo "event_name=${{github.event_name}} base_ref=${{github.base_ref}} head_ref=${{github.head_ref}} run_id=${{github.run_id}} ref_name=${{github.ref_name}} ref=${{github.ref}}]"
-      - run: |
-          echo "Start LOOP"
-          a=1; while [ $a -lt 180 ]; do echo $a; a=`expr $a + 1`; sleep 1; done
-          echo "DONE"
-
       - uses: actions-cool/check-user-permission@main
         id: checkUser
         with:
