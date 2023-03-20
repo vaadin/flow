@@ -69,7 +69,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
     themeFile += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';\n`;
   }
 
-  themeFile += `import { injectGlobalCss } from 'Frontend/generated/theme-util.js';\n`;
+  themeFile += `import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
 
   const imports = [];
   const globalCssCode = [];
