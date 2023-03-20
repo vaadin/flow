@@ -1,9 +1,9 @@
 import { TemplateResult } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { ComponentTheme } from '../model';
-import { CssPropertyMetadata } from '../metadata/model';
-import { testElementMetadata } from '../tests/utils';
+import { ComponentTheme } from '../../model';
+import { CssPropertyMetadata } from '../../metadata/model';
+import { testElementMetadata } from '../../tests/utils';
 import { BasePropertyEditor } from './base-property-editor';
 
 @customElement('test-property-editor')
