@@ -18,6 +18,9 @@ jobs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
+      - run: |
+         echo "Concurrency Group = ${{ github.ref_name || github.ref }}"
+         echo "event_name=${{github.event_name}} base_ref=${{github.base_ref}} head_ref=${{github.head_ref}} run_id=${{github.run_id}} ref_name=${{github.ref_name}} ref=${{github.ref}}]"
       - uses: actions-cool/check-user-permission@main
         id: checkUser
         with:
