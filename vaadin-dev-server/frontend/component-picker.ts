@@ -28,6 +28,7 @@ export class ComponentPicker extends LitElement {
   selected: number = 0;
 
   highlighted?: HTMLElement;
+  overlayElement!: HTMLElement;
 
   @query('vaadin-dev-tools-shim')
   shim!: Shim;
@@ -55,11 +56,16 @@ export class ComponentPicker extends LitElement {
     super.connectedCallback();
     const globalStyles = new CSSStyleSheet();
     globalStyles.replaceSync(`
-    .vaadin-dev-tools-highlight {
-      outline: 1px solid red
+    .vaadin-dev-tools-highlight-overlay {
+      pointer-events: none;
+      position: absolute;
+      z-index: 10000;
+      background: rgba(158,44,198,0.25);
     }`);
-
     document.adoptedStyleSheets = [...document.adoptedStyleSheets, globalStyles];
+
+    this.overlayElement = document.createElement('div');
+    this.overlayElement.classList.add('vaadin-dev-tools-highlight-overlay');
   }
   render() {
     if (!this.active) {
@@ -160,12 +166,21 @@ export class ComponentPicker extends LitElement {
   }
 
   highlight(element: HTMLElement | undefined) {
-    if (this.highlighted) {
-      this.highlighted.classList.remove('vaadin-dev-tools-highlight');
+    if (this.highlighted !== element) {
+      if (element) {
+        const clientRect = element.getBoundingClientRect();
+        const computedStyles = getComputedStyle(element);
+
+        this.overlayElement.style.top = `${clientRect.top}px`;
+        this.overlayElement.style.left = `${clientRect.left}px`;
+        this.overlayElement.style.width = `${clientRect.width}px`;
+        this.overlayElement.style.height = `${clientRect.height}px`;
+        this.overlayElement.style.borderRadius = computedStyles.borderRadius;
+        document.body.append(this.overlayElement);
+      } else {
+        this.overlayElement.remove();
+      }
     }
     this.highlighted = element;
-    if (this.highlighted) {
-      this.highlighted.classList.add('vaadin-dev-tools-highlight');
-    }
   }
 }

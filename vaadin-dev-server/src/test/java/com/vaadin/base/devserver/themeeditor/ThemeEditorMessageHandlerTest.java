@@ -163,7 +163,8 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
                 "font-size", "12px");
         assertResponseOk(response, "id2");
 
-        List<CssRule> rules = loadRules(0, 0, "id3", handler, "vaadin-button");
+        List<CssRule> rules = loadRules(0, 0, "id3", handler, "vaadin-button",
+                false);
         Assert.assertEquals(0, rules.size());
     }
 
@@ -321,6 +322,12 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
     private List<CssRule> loadRules(Integer uiId, Integer nodeId,
             String requestId, ThemeEditorMessageHandler handler,
             String selector) {
+        return loadRules(uiId, nodeId, requestId, handler, selector, true);
+    }
+
+    private List<CssRule> loadRules(Integer uiId, Integer nodeId,
+            String requestId, ThemeEditorMessageHandler handler,
+            String selector, boolean hasUniqueClassName) {
         JsonObject request = Json.createObject();
         request.put("requestId", requestId);
         request.put("uiId", uiId);
@@ -332,8 +339,14 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
                 .handleDebugMessageData(ThemeEditorCommand.LOAD_RULES, request);
         assertResponseOk(response, requestId);
         Assert.assertTrue(response instanceof LoadRulesResponse);
-        Assert.assertEquals(nodeId != null ? Boolean.TRUE : null,
-                ((LoadRulesResponse) response).isAccessible());
+        if (nodeId != null) {
+            Assert.assertEquals(Boolean.TRUE,
+                    ((LoadRulesResponse) response).isAccessible());
+            if (hasUniqueClassName) {
+                Assert.assertNotNull(
+                        ((LoadRulesResponse) response).getClassName());
+            }
+        }
         return ((LoadRulesResponse) response).getRules();
     }
 

@@ -517,4 +517,141 @@ describe('theme-editor', () => {
       expect(beforeSaveSpy.calledOnce).to.be.true;
     });
   });
+
+  describe('theme detection', () => {
+    it('should detect base theme when changing scope', async () => {
+      await pickComponent();
+      await changeThemeScope(ThemeScope.global);
+      await editProperty('label', 'color', 'red');
+      apiMock.loadPreview.returns(
+        Promise.resolve({
+          css: 'test-element::part(label) { color: red }'
+        })
+      );
+      await changeThemeScope(ThemeScope.local);
+
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(255, 0, 0)');
+    });
+
+    it('should detect base theme on undo', async () => {
+      await pickComponent();
+      await changeThemeScope(ThemeScope.global);
+      await editProperty('label', 'color', 'red');
+      apiMock.loadPreview.returns(
+        Promise.resolve({
+          css: 'test-element::part(label) { color: red }'
+        })
+      );
+      await changeThemeScope(ThemeScope.local);
+
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(255, 0, 0)');
+
+      apiMock.loadPreview.returns(
+        Promise.resolve({
+          css: ''
+        })
+      );
+      await undo();
+
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(0, 0, 0)');
+    });
+
+    it('should detect base theme on redo', async () => {
+      await pickComponent();
+      await changeThemeScope(ThemeScope.global);
+      await editProperty('label', 'color', 'red');
+      apiMock.loadPreview.returns(
+        Promise.resolve({
+          css: 'test-element::part(label) { color: red }'
+        })
+      );
+      await changeThemeScope(ThemeScope.local);
+
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(255, 0, 0)');
+
+      apiMock.loadPreview.returns(
+        Promise.resolve({
+          css: ''
+        })
+      );
+      await undo();
+
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(0, 0, 0)');
+
+      apiMock.loadPreview.returns(
+        Promise.resolve({
+          css: 'test-element::part(label) { color: red }'
+        })
+      );
+      await redo();
+
+      expect(getPropertyValue('label', 'color')).to.equal('rgb(255, 0, 0)');
+    });
+  });
+
+  describe('highlighting', () => {
+    it('should highlight selected component', async () => {
+      await pickComponent();
+      expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.true;
+    });
+
+    it('should update highlight when selecting a different component', async () => {
+      await pickComponent();
+      expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.true;
+
+      const anotherElement = (await fixture(html` <test-element></test-element>`)) as HTMLElement;
+      testComponentRef = { nodeId: 123, uiId: 456, element: anotherElement };
+      await pickComponent();
+
+      expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.false;
+      expect(anotherElement.classList.contains('vaadin-theme-editor-highlight')).to.be.true;
+    });
+
+    it('should remove highlight when removing editor from DOM', async () => {
+      await pickComponent();
+      expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.true;
+
+      editor.remove();
+      expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.false;
+    });
+  });
+
+  describe('optimistic class name update', () => {
+    it('should add generated className from set rules response to selected component', async () => {
+      apiMock.setCssRules.returns({
+        className: 'tb-1234567890'
+      });
+      await pickComponent();
+      await editProperty('label', 'color', 'red');
+
+      expect(testElement.classList.contains('tb-1234567890')).to.be.true;
+    });
+
+    it('should add generated className from load rules response to selected component', async () => {
+      apiMock.loadRules.returns({
+        accessible: true,
+        className: 'tb-1234567890',
+        rules: []
+      });
+      await pickComponent();
+
+      expect(testElement.classList.contains('tb-1234567890')).to.be.true;
+    });
+
+    it('should not add generated className from load rules response to previously selected component', async () => {
+      await pickComponent();
+
+      const anotherElement = (await fixture(html` <test-element></test-element>`)) as HTMLElement;
+      testComponentRef = { nodeId: 123, uiId: 456, element: anotherElement };
+      apiMock.loadRules.returns({
+        accessible: true,
+        className: 'tb-1234567890',
+        rules: []
+      });
+      await pickComponent();
+
+      expect(testElement.classList.contains('tb-1234567890')).to.be.false;
+      expect(anotherElement.classList.contains('tb-1234567890')).to.be.true;
+    });
+  });
 });

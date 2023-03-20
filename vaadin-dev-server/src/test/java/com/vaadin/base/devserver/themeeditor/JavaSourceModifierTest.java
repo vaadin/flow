@@ -191,7 +191,7 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
 
     @Test
     public void uniqueClassNameExists_valueRetrieved() {
-        String expectedClassName = "tb-123456789";
+        String expectedClassName = "te-123456789";
         classNameAdd_javaUpdated(TEXTFIELD_LINE, TEXTFIELD_LINE + 1,
                 TEXTFIELD_LINE + 2, "textField", expectedClassName);
 

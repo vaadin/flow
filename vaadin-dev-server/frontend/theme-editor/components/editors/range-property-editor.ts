@@ -49,12 +49,12 @@ export class RangePropertyEditor extends BasePropertyEditor {
         }
 
         .slider {
+          flex: 1 1 0;
           -webkit-appearance: none;
           background: linear-gradient(to right, #666, #666 2px, transparent 2px);
           background-size: calc((100% - 13px) / (var(--preset-count) - 1)) 8px;
           background-position: 5px 50%;
           background-repeat: repeat-x;
-          width: 15em;
         }
 
         .slider::-webkit-slider-runnable-track {

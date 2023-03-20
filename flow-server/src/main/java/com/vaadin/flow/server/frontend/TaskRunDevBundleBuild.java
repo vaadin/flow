@@ -918,6 +918,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("devBundle", "true");
+        builder.environment().put("NODE_ENV", "development");
 
         Process process = null;
         try {
