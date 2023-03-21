@@ -16,11 +16,6 @@ public class NoAppBundleIT extends ChromeBrowserTest {
         open();
     }
 
-    @Override
-    protected String getTestPath() {
-        return "/run/com.vaadin.flow.testnpmonlyfeatures.nobuildmojo.MultipleNpmPackageAnnotationsView";
-    }
-
     @Test
     public void noFrontendFilesCreated() {
         File baseDir = new File(System.getProperty("user.dir", "."));
