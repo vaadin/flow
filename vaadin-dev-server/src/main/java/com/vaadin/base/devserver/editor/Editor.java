@@ -66,24 +66,28 @@ public class Editor {
         private Node referenceNode;
         private Type type;
         private Node node;
+        private int sourceOffset;
 
         public void apply() {
-            if (type == Type.IMPORT
-                    && referenceNode instanceof CompilationUnit cu
-                    && node instanceof ImportDeclaration id) {
-                cu.getImports().add(id);
-            } else if (type == Type.INSERT_LINE_AFTER
-                    && node instanceof Statement stmt) {
-                Editor.addStatement(referenceNode, Where.AFTER, stmt);
+            if (type == Type.IMPORT) {
+                if (referenceNode instanceof CompilationUnit cu
+                        && node instanceof ImportDeclaration id) {
+                    cu.getImports().add(id);
+                }
+            } else if (type == Type.INSERT_LINE_AFTER) {
+                if (node instanceof Statement stmt) {
+                    Editor.addStatement(referenceNode, Where.AFTER, stmt);
+                }
             } else if (type == Type.INSERT_AFTER) {
                 Node parent = referenceNode.getParentNode().orElse(null);
                 if (parent instanceof MethodCallExpr mce) {
                     mce.getArguments().addAfter((Expression) node,
                             (Expression) referenceNode);
                 }
-            } else if (type == Type.INSERT_LINE_BEFORE
-                    && node instanceof Statement stmt) {
-                Editor.addStatement(referenceNode, Where.BEFORE, stmt);
+            } else if (type == Type.INSERT_LINE_BEFORE) {
+                if (node instanceof Statement stmt) {
+                    Editor.addStatement(referenceNode, Where.BEFORE, stmt);
+                }
             } else if (type == Type.INSERT_BEFORE) {
                 Node parent = referenceNode.getParentNode().orElse(null);
                 if (parent instanceof MethodCallExpr mce) {
@@ -93,12 +97,13 @@ public class Editor {
             } else if (type == Type.REPLACE) {
                 referenceNode.getParentNode()
                         .ifPresent(p -> p.replace(referenceNode, node));
-            } else if (type == Type.INSERT_AT_END_OF_BLOCK
-                    && node instanceof Statement stmt) {
-                if (referenceNode instanceof BlockStmt block) {
-                    block.addStatement(stmt);
-                } else {
-                    Editor.addStatement(referenceNode, null, stmt);
+            } else if (type == Type.INSERT_AT_END_OF_BLOCK) {
+                if (node instanceof Statement stmt) {
+                    if (referenceNode instanceof BlockStmt block) {
+                        block.addStatement(stmt);
+                    } else {
+                        Editor.addStatement(referenceNode, null, stmt);
+                    }
                 }
             } else if (type == Type.REMOVE_NODE) {
                 // comments are part of Node, will be removed also
@@ -109,17 +114,7 @@ public class Editor {
         }
 
         public int sourceOffset() {
-            return switch (type) {
-            case IMPORT -> 1;
-            case INSERT_LINE_AFTER -> 1;
-            case INSERT_LINE_BEFORE -> 1;
-            case INSERT_AT_END_OF_BLOCK -> 1;
-            case INSERT_AFTER -> 0;
-            case INSERT_BEFORE -> 0;
-            case REPLACE -> 0;
-            case REMOVE_NODE -> -1; // for inline = no offset, with comments =
-                                    // more than 1 line...
-            };
+            return sourceOffset;
         }
 
         public static Modification addImport(Node referenceNode, Node node) {
@@ -127,6 +122,7 @@ public class Editor {
             mod.referenceNode = referenceNode;
             mod.type = Type.IMPORT;
             mod.node = node;
+            mod.sourceOffset = getLinesCount(node);
             return mod;
         }
 
@@ -135,6 +131,7 @@ public class Editor {
             mod.referenceNode = referenceNode;
             mod.type = Type.INSERT_AFTER;
             mod.node = node;
+            mod.sourceOffset = 0; // modifies same line, no offset
             return mod;
         }
 
@@ -144,6 +141,7 @@ public class Editor {
             mod.referenceNode = referenceNode;
             mod.type = Type.INSERT_AT_END_OF_BLOCK;
             mod.node = node;
+            mod.sourceOffset = getLinesCount(node);
             return mod;
         }
 
@@ -152,6 +150,7 @@ public class Editor {
             mod.referenceNode = referenceNode;
             mod.type = Type.INSERT_BEFORE;
             mod.node = node;
+            mod.sourceOffset = 0; // modifies same line, no offset
             return mod;
         }
 
@@ -161,6 +160,7 @@ public class Editor {
             mod.referenceNode = referenceNode;
             mod.type = Type.INSERT_LINE_BEFORE;
             mod.node = node;
+            mod.sourceOffset = getLinesCount(node);
             return mod;
         }
 
@@ -170,6 +170,7 @@ public class Editor {
             mod.referenceNode = referenceNode;
             mod.type = Type.INSERT_LINE_AFTER;
             mod.node = node;
+            mod.sourceOffset = getLinesCount(node);
             return mod;
         }
 
@@ -178,6 +179,8 @@ public class Editor {
             mod.referenceNode = referenceNode;
             mod.type = Type.REPLACE;
             mod.node = node;
+            mod.sourceOffset = getLinesCount(node)
+                    - getLinesCount(referenceNode);
             return mod;
         }
 
@@ -185,6 +188,7 @@ public class Editor {
             Modification mod = new Modification();
             mod.referenceNode = referenceNode;
             mod.type = Type.REMOVE_NODE;
+            mod.sourceOffset = -getLinesCount(referenceNode);
             return mod;
         }
 
@@ -911,6 +915,11 @@ public class Editor {
     private String getSimpleName(ComponentType type) {
         String className = type.getClassName();
         return className.substring(className.lastIndexOf('.') + 1);
+    }
+
+    private static int getLinesCount(Node node) {
+        return node.getRange().map(r -> r.getLineCount())
+                .orElseGet(() -> node.toString().split("\n").length);
     }
 
     protected ExpressionStmt findMethodCall(BlockStmt codeBlock, Node afterThis,
