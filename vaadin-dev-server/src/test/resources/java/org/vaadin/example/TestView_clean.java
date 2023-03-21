@@ -45,7 +45,7 @@ public class TestView extends VerticalLayout {
 
         pinField2 = new TextField("Can touch this!");
 
-        add(textField, button, new TextField("Cant touch this either"));
+        add(textField, button, new TextField("Cant touch this either"), pinField);
     }
 
     public void doSth() {
