@@ -56,6 +56,8 @@ public class NodeInstaller {
 
     public static final String PROVIDED_VERSION = "provided";
 
+    private static final int MAX_DOWNLOAD_ATTEMPS = 3;
+
     private final Object lock = new Object();
 
     private String npmVersion = PROVIDED_VERSION;
@@ -250,12 +252,10 @@ public class NodeInstaller {
 
             extractFile(data.getArchive(), data.getTmpDirectory());
         } catch (DownloadException e) {
-            getLogger().error(
+            throw new InstallationException(
                     "Node.js download failed. This may be due to loss of internet connection.\n"
                             + "If you are behind a proxy server you should configure your proxy settings.\n"
-                            + "Verify connection and proxy settings or follow the https://nodejs.org/en/download/ guide to install Node.js globally.");
-            throw new InstallationException(
-                    "Could not download Node.js. Check your connection and proxy settings.",
+                            + "Verify connection and proxy settings or follow the https://nodejs.org/en/download/ guide to install Node.js globally.",
                     e);
         } catch (ArchiveExtractionException e) {
             throw new InstallationException(
@@ -501,8 +501,22 @@ public class NodeInstaller {
             String userName, String password) throws DownloadException {
         if (!destination.exists()) {
             getLogger().info("Downloading {} to {}", downloadUrl, destination);
-            fileDownloader.download(downloadUrl, destination, userName,
-                    password);
+            for (int i = 0; i < MAX_DOWNLOAD_ATTEMPS; i++) {
+                try {
+                    fileDownloader.download(downloadUrl, destination, userName,
+                            password);
+                    return;
+                } catch (DownloadException e) {
+                    if (i == MAX_DOWNLOAD_ATTEMPS - 1) {
+                        throw e;
+                    }
+
+                    getLogger().debug("Error during downloading " + downloadUrl,
+                            e);
+                    getLogger().warn("Download failed, retrying...");
+                }
+
+            }
         }
     }
 
