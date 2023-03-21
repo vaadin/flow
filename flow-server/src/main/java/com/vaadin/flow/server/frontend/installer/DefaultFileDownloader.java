@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 
 import org.apache.commons.io.FileUtils;
