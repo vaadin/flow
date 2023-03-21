@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1663,13 +1664,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return references;
         }
 
+        final String mainTheme = themeName.get();
+
         final SerializableConsumer<String> addThemeReferenceCallback = (
                 theme) -> {
             T reference = referenceProvider.apply(theme, fileName);
             references.add(reference);
         };
 
-        // First check if project has a packaged themes and add a link if any
+        // need ordered collection to ensure styles priority
+        final Set<String> foundThemes = new LinkedHashSet<>();
+
+        // First collect parent themes in the JARs
         File frontendFolder = new File(config.getProjectFolder(),
                 FrontendUtils.FRONTEND);
         File jarResourcesFolder = FrontendUtils
@@ -1677,40 +1683,40 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         File packagedThemesFolder = new File(jarResourcesFolder,
                 Constants.APPLICATION_THEME_ROOT);
 
-        boolean projectCustomThemeAdded = false;
         if (packagedThemesFolder.exists()) {
             for (File themeFolder : Objects.requireNonNull(
                     packagedThemesFolder.listFiles(File::isDirectory),
                     "Expected at least one theme in the front-end generated themes folder")) {
-                String packagedThemeName = themeFolder.getName();
-                projectCustomThemeAdded = projectCustomThemeAdded
-                        || packagedThemeName.equals(themeName.get());
-                addThemeReferenceCallback.accept(packagedThemeName);
+                foundThemes.add(themeFolder.getName());
             }
         }
 
-        // Secondly, add links for the themes from frontend/themes, including
-        // main theme and parent themes
-        referenceParentThemeInFrontend(themeName.get(), frontendFolder,
-                addThemeReferenceCallback, projectCustomThemeAdded);
+        // Secondly, collect the themes in {project.root}/frontend/themes,
+        // including main theme and parent themes
+        referenceParentThemeInFrontend(mainTheme, frontendFolder, foundThemes);
+
+        // Ensure main theme is always the last to have higher priority
+        if (foundThemes.size() > 1) {
+            foundThemes.remove(mainTheme);
+            foundThemes.add(mainTheme);
+        }
+
+        // Add link references for all the found themes
+        foundThemes.forEach(addThemeReferenceCallback);
 
         return references;
     }
 
     private static <T> void referenceParentThemeInFrontend(String themeName,
-            File frontendFolder,
-            SerializableConsumer<String> addReferenceCallback,
-            boolean themeAlreadyAdded) throws IOException {
+            File frontendFolder, Set<String> foundThemes) throws IOException {
         Optional<String> parentThemeName = FrontendUtils
                 .getParentThemeNameInFrontend(frontendFolder, themeName);
         if (parentThemeName.isPresent()) {
             referenceParentThemeInFrontend(parentThemeName.get(),
-                    frontendFolder, addReferenceCallback, false);
+                    frontendFolder, foundThemes);
         }
 
-        if (!themeAlreadyAdded) {
-            addReferenceCallback.accept(themeName);
-        }
+        foundThemes.add(themeName);
     }
 
     private static String getThemeFilePath(String themeName, String fileName) {
