@@ -1120,8 +1120,7 @@ public class Editor {
         // Configure JavaParser to use type resolution
         JavaSymbolSolver symbolSolver = new JavaSymbolSolver(
                 combinedTypeSolver);
-        StaticJavaParser.getParserConfiguration()
-                .setSymbolResolver(symbolSolver);
+        StaticJavaParser.getConfiguration().setSymbolResolver(symbolSolver);
 
         return LexicalPreservingPrinter.setup(StaticJavaParser.parse(source));
     }
