@@ -25,6 +25,7 @@ import java.nio.channels.ReadableByteChannel;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -108,11 +109,22 @@ public final class DefaultFileDownloader implements FileDownloader {
                 FilenameUtils.getFullPathNoEndSeparator(destination.toString()))
                 .mkdirs();
 
+        HttpEntity responseEntity = response.getEntity();
+        long expected = responseEntity.getContentLength();
         try (ReadableByteChannel rbc = Channels
-                .newChannel(response.getEntity().getContent());
+                .newChannel(responseEntity.getContent());
                 FileOutputStream fos = new FileOutputStream(destination)) {
-            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            long transferred = fos.getChannel().transferFrom(rbc, 0,
+                    Long.MAX_VALUE);
+            if (expected > 0 && transferred != expected) {
+                // Download failed and channel.transferFrom does not rethrow the
+                // exception
+                throw new DownloadException(
+                        "Error downloading from " + downloadUri + ". Expected "
+                                + expected + " bytes but got " + transferred);
+            }
         }
+
     }
 
     private CloseableHttpResponse execute(URI requestUri) throws IOException {
