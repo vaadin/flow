@@ -17,6 +17,7 @@ package com.vaadin.flow.server;
 
 import java.io.File;
 import java.io.Serializable;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -187,6 +188,17 @@ public interface AbstractConfiguration extends Serializable {
         }
 
         String folder = getStringProperty(FrontendUtils.PROJECT_BASEDIR, null);
+        if (folder == null) {
+            /* Try determining the project folder from the classpath. */
+            URL url = getClass().getClassLoader().getResource(".");
+            if (url != null && url.getProtocol().equals("file")) {
+                String path = url.getPath();
+                if (path.endsWith("/target/classes/")) {
+                    folder = path.replaceFirst("/target/classes/$", "");
+                }
+            }
+        }
+
         if (folder == null) {
             /*
              * Accept user.dir or cwd as a fallback only if the directory seems
