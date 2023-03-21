@@ -41,6 +41,7 @@ const moduleWeights = {
   'flow-tests/test-express-build/test-dev-bundle-java-add-on': { pos: 1, weight: 2 },
   'flow-tests/test-express-build/test-reusing-theme-express-build': { pos: 1, weight: 2 },
   'flow-tests/test-express-build/test-parent-theme-express-build': { pos: 1, weight: 2 },
+  'flow-tests/test-express-build/test-parent-theme-in-frontend': { pos: 1, weight: 2 },
   'flow-tests/test-express-build/test-embedding-express-build': { pos: 1, weight: 2 },
   'flow-tests/test-custom-route-registry': { pos: 1, weight: 2 },
   'flow-tests/test-frontend/test-npm': { pos: 1, weight: 2 },

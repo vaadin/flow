@@ -42,6 +42,7 @@ import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -135,6 +136,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // modify the page based on registered IndexHtmlRequestListener:s
         service.modifyIndexHtmlResponse(indexHtmlResponse);
 
+        if (!config.isProductionMode()) {
+            // Ensure no older tools incorrectly detect a bundle as production
+            // mode
+            addScript(indexDocument,
+                    "window.Vaadin = window.Vaadin || {}; window.Vaadin.developmentMode = true;");
+        }
         if (config.isDevToolsEnabled()) {
             addDevTools(indexDocument, config, session, request);
             catchErrorsInDevMode(indexDocument);
@@ -351,10 +358,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
 
         Document indexHtmlDocument = Jsoup.parse(index);
-        if (config.isProductionMode()) {
+        Mode mode = config.getMode();
+        if (mode == Mode.PRODUCTION) {
             // The index.html is fetched from the bundle so it includes the
             // entry point javascripts
-        } else if (!service.getDeploymentConfiguration().frontendHotdeploy()) {
+        } else if (mode == Mode.DEVELOPMENT_BUNDLE) {
             // When running without a frontend server, the index.html comes
             // directly from the frontend folder and the JS entrypoint(s) need
             // to be added

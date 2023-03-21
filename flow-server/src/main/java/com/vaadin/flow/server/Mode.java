@@ -13,22 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
-
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.router.Route;
+package com.vaadin.flow.server;
 
 /**
- * @author Vaadin Ltd
- * @since 1.0
+ * The mode the application is running in.
  *
+ * One of production, development using livereload or development using bundle
  */
-@Route("com.vaadin.flow.uitest.ui.WebComponentsView")
-public class WebComponentsView extends AbstractDivView {
-
-    public WebComponentsView() {
-        Element div = ElementFactory.createDiv("Web components v1");
-        getElement().appendChild(div);
-    }
+public enum Mode {
+    PRODUCTION, DEVELOPMENT_FRONTEND_LIVERELOAD, DEVELOPMENT_BUNDLE
 }

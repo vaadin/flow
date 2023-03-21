@@ -34,6 +34,9 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 @NotThreadSafe
 public class DevBundleThemeIT extends ChromeBrowserTest {
 
@@ -47,9 +50,13 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
     private File stylesCss;
     private File themeAssetsInBundle;
 
+    private File statsJson;
+
     @Before
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
+        File bundle = new File(baseDir, Constants.DEV_BUNDLE_LOCATION);
+        statsJson = new File(bundle, "config/stats.json");
         themeAssetsInBundle = new File(baseDir,
                 Constants.DEV_BUNDLE_LOCATION + "/assets/themes/my-theme");
         final File themeFolder = new File(baseDir, THEME_FOLDER);
@@ -108,9 +115,35 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
                 .findElement(By.xpath("/html/head"));
         final List<WebElement> links = documentHead
                 .findElements(By.tagName("link"));
-        Assert.assertEquals(1, links.size());
+        Assert.assertEquals(2, links.size());
         Assert.assertTrue(links.get(0).getAttribute("href")
+                .contains("VAADIN/themes/parent-theme/styles.css"));
+        Assert.assertTrue(links.get(1).getAttribute("href")
                 .contains("VAADIN/themes/my-theme/styles.css"));
+    }
+
+    @Test
+    public void themeJsonContentAddedToStats() {
+        // check that the bundle has entries in stats.json for custom and
+        // parent theme
+        try {
+            String themeJsonContent = FileUtils.readFileToString(statsJson,
+                    StandardCharsets.UTF_8);
+            JsonObject json = Json.parse(themeJsonContent);
+            Assert.assertTrue(json.hasKey("themeJsonContents"));
+            JsonObject themeJsonContents = json.getObject("themeJsonContents");
+
+            Assert.assertTrue(themeJsonContents.hasKey("my-theme"));
+            Assert.assertFalse(
+                    themeJsonContents.getString("my-theme").isBlank());
+
+            Assert.assertTrue(themeJsonContents.hasKey("parent-theme"));
+            Assert.assertFalse(
+                    themeJsonContents.getString("parent-theme").isBlank());
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "Failed to verify theme.json content in stats.json", e);
+        }
     }
 
     private void waitUntilImportedFrontendStyles() {

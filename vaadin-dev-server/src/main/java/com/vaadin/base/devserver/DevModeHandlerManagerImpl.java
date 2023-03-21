@@ -21,7 +21,6 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
 
-import jakarta.servlet.annotation.HandlesTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,10 +31,13 @@ import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
+
+import jakarta.servlet.annotation.HandlesTypes;
 
 /**
  * Provides API to access to the {@link DevModeHandler} instance.
@@ -98,7 +100,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     private void startWatchingThemeFolder(VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
 
-        if (config.isProductionMode() || config.frontendHotdeploy()) {
+        if (config.getMode() != Mode.DEVELOPMENT_BUNDLE) {
             // Theme files are watched by Vite or app runs in prod mode
             return;
         }
