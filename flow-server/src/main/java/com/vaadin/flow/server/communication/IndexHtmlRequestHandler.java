@@ -52,7 +52,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
-import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
@@ -142,6 +141,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             addScript(indexDocument,
                     "window.Vaadin = window.Vaadin || {}; window.Vaadin.developmentMode = true;");
         }
+
+        applyThemeVariant(indexDocument, context);
+
         if (config.isDevToolsEnabled()) {
             addDevTools(indexDocument, config, session, request);
             catchErrorsInDevMode(indexDocument);
@@ -157,6 +159,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    private void applyThemeVariant(Document indexDocument,
+            VaadinContext context) throws IOException {
+        FrontendUtils.getThemeAnnotation(context)
+                .ifPresent(theme -> indexDocument.head().parent().attr("theme",
+                        theme.variant()));
     }
 
     private void redirectToOldBrowserPageWhenNeeded(Document indexDocument) {
