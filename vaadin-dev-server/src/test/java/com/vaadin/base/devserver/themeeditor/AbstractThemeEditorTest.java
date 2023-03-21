@@ -34,11 +34,16 @@ public abstract class AbstractThemeEditorTest {
     protected final String TAG_NAME = "vaadin-text-field";
     protected final String PART_NAME = "label";
     protected final String SELECTOR_WITH_PART = "vaadin-text-field::part(label)";
-    protected final int TEXTFIELD_LINE = 24;
-    protected final int TEXTFIELD_CALL_LINE = 44;
-    protected final int PINFIELD_LINE = 18;
-    protected final int PINFIELD2_LINE = 46;
-    protected final int INLINEADD_LINE = 48;
+
+    protected final int TEXTFIELD_CREATE = 24;
+    protected final int TEXTFIELD_ATTACH = 48;
+    protected final int TEXTFIELD_CALL = 44;
+    protected final int PINFIELD_CREATE = 18;
+    protected final int PINFIELD_ATTACH = 48;
+    protected final int PINFIELD2_CREATE = 46;
+    protected final int PINFIELD2_ATTACH = 48;
+    protected final int INLINEADD_CREATE = 48;
+    protected final int INLINEADD_ATTACH = 48;
 
     protected class TestThemeModifier extends ThemeModifier {
 
@@ -94,6 +99,8 @@ public abstract class AbstractThemeEditorTest {
 
         protected static Span pickedComponent = new Span("test");
 
+        protected static Span pickedComponent2 = new Span("test");
+
         public MockVaadinSession(VaadinService service) {
             super(service);
         }
@@ -108,6 +115,9 @@ public abstract class AbstractThemeEditorTest {
         @Override
         public Element findElement(int uiId, int nodeId)
                 throws IllegalArgumentException {
+            if (nodeId == 1) {
+                return pickedComponent2.getElement();
+            }
             return pickedComponent.getElement();
         }
     }
@@ -155,7 +165,8 @@ public abstract class AbstractThemeEditorTest {
         }
     }
 
-    protected void prepareComponentTracker(int line) {
+    protected void prepareComponentTracker(int nodeId, int createLine,
+            int attachLine) {
         try {
             Field createLocationField = ComponentTracker.class
                     .getDeclaredField("createLocation");
@@ -163,11 +174,29 @@ public abstract class AbstractThemeEditorTest {
             Map<Component, ComponentTracker.Location> createMap = (Map<Component, ComponentTracker.Location>) createLocationField
                     .get(null);
 
-            ComponentTracker.Location location = new ComponentTracker.Location(
+            ComponentTracker.Location createLocation = new ComponentTracker.Location(
                     "org.vaadin.example.TestView", "TestView.java", "TestView",
-                    line);
+                    createLine);
 
-            createMap.put(MockVaadinSession.pickedComponent, location);
+            createMap.put(
+                    nodeId == 1 ? MockVaadinSession.pickedComponent2
+                            : MockVaadinSession.pickedComponent,
+                    createLocation);
+
+            Field attachLocationField = ComponentTracker.class
+                    .getDeclaredField("attachLocation");
+            attachLocationField.setAccessible(true);
+            Map<Component, ComponentTracker.Location> attachMap = (Map<Component, ComponentTracker.Location>) attachLocationField
+                    .get(null);
+
+            ComponentTracker.Location attachLocation = new ComponentTracker.Location(
+                    "org.vaadin.example.TestView", "TestView.java", "TestView",
+                    attachLine);
+
+            attachMap.put(
+                    nodeId == 1 ? MockVaadinSession.pickedComponent2
+                            : MockVaadinSession.pickedComponent,
+                    attachLocation);
         } catch (Exception ex) {
 
         }
