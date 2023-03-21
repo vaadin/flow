@@ -170,15 +170,15 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
   if (lumoImports && lumoImports.length > 0) {
     lumoImports.forEach((lumoImport) => {
       imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles/${lumoImport}.js';\n`);
+      if (lumoImport === 'utility' || lumoImport === 'badge') {
+        // Inject into main document the same way as other Lumo styles are injected
+        imports.push(`import '@vaadin/vaadin-lumo-styles/${lumoImport}-global.js';\n`);
+      }
     });
 
     lumoImports.forEach((lumoImport) => {
-      // Lumo is injected to the document by Lumo itself, except for the utility and badge modules
-      if (lumoImport === 'utility' || lumoImport === 'badge') {
-        lumoCssCode.push(`injectGlobalCss(${lumoImport}.cssText, target, true);\n`);
-      } else {
-        lumoCssShadowOnlyCode.push(`injectGlobalCss(${lumoImport}.cssText, target, true);\n`);
-      }
+      // Lumo is injected to the document by Lumo itself
+      lumoCssShadowOnlyCode.push(`injectGlobalCss(${lumoImport}.cssText, target, true);\n`);
     });
   }
 
