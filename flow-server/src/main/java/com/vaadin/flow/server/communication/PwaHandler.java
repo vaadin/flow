@@ -108,7 +108,8 @@ public class PwaHandler implements RequestHandler {
         requestHandlerMap.put(
                 pwaRegistry.getPwaConfiguration().relManifestPath(),
                 (session, request, response) -> {
-                    response.setContentType("application/manifest+json");
+                    response.setContentType(
+                            "application/manifest+json;charset=utf-8");
                     try (PrintWriter writer = response.getWriter()) {
                         writer.write(pwaRegistry.getManifestJson());
                     }
