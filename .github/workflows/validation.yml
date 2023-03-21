@@ -7,6 +7,9 @@ on:
     types: [opened, synchronize, reopened, edited]
 permissions:
   contents: read
+concurrency:
+  group: ${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 jobs:
   build:
     timeout-minutes: 30
@@ -15,6 +18,7 @@ jobs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
+      - run: echo "Concurrency Group = ${{ github.head_ref || github.ref_name }}"
       - uses: actions-cool/check-user-permission@main
         id: checkUser
         with:
