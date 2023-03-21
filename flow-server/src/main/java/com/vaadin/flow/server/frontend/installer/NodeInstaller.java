@@ -512,6 +512,7 @@ public class NodeInstaller {
                 try {
                     fileDownloader.download(downloadUrl, destination, userName,
                             password);
+                    return;
                 } catch (DownloadException e) {
                     if (i == MAX_DOWNLOAD_ATTEMPS - 1) {
                         throw e;
