@@ -136,6 +136,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // modify the page based on registered IndexHtmlRequestListener:s
         service.modifyIndexHtmlResponse(indexHtmlResponse);
 
+        if (!config.isProductionMode()) {
+            // Ensure no older tools incorrectly detect a bundle as production
+            // mode
+            addScript(indexDocument,
+                    "window.Vaadin = window.Vaadin || {}; window.Vaadin.developmentMode = true;");
+        }
         if (config.isDevToolsEnabled()) {
             addDevTools(indexDocument, config, session, request);
             catchErrorsInDevMode(indexDocument);
