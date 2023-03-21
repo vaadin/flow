@@ -21,6 +21,7 @@
     "typescript": "5.0.2",
     "workbox-core": "6.5.4",
     "workbox-precaching": "6.5.4",
-    "strip-css-comments": "5.0.0"
+    "strip-css-comments": "5.0.0",
+    "@vaadin/vaadin-development-mode-detector": "2.0.6"
   }
 }
