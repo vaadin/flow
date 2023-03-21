@@ -353,8 +353,7 @@ public class BuildFrontendMojoTest {
                 " tpl.innerHTML = block;",
                 " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
                 "};",
-                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);"
-                ));
+                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);"));
 
         expectedLines.addAll(getExpectedImports());
 
