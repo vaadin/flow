@@ -1493,6 +1493,7 @@ export class VaadinDevTools extends LitElement {
 
   renderThemeEditor() {
     return html` <vaadin-dev-tools-theme-editor
+      .expanded=${this.expanded}  
       .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
       .connection=${this.frontendConnection}

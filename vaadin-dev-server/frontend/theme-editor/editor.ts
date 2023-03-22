@@ -1,4 +1,4 @@
-import { css, html, LitElement, TemplateResult } from 'lit';
+import { css, html, LitElement, PropertyValues, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { PickerProvider } from '../component-picker';
 import { metadataRegistry } from './metadata/registry';
@@ -26,6 +26,8 @@ injectGlobalCss(css`
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
+  @property({})
+  public expanded: boolean = false;
   @property({})
   public themeEditorState: ThemeEditorState = ThemeEditorState.enabled;
   @property({})
@@ -147,6 +149,19 @@ export class ThemeEditor extends LitElement {
     this.api = new ThemeEditorApi(this.connection);
     this.history = new ThemeEditorHistory(this.api);
     this.historyActions = this.history.allowedActions;
+  }
+
+  protected update(changedProperties: PropertyValues) {
+    super.update(changedProperties);
+
+    // Remove or restore selected element highlight when expanded state changes
+    if (changedProperties.has('expanded')) {
+      if (this.expanded) {
+        this.highlightElement(this.context?.component.element);
+      } else {
+        this.removeElementHighlight(this.context?.component.element);
+      }
+    }
   }
 
   disconnectedCallback() {
