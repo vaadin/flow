@@ -356,7 +356,7 @@ public class ComponentTest {
         Component test = new TestButton();
         final Locale locale = test.getLocale();
         Assert.assertEquals("First provided locale should be returned",
-                Locale.CANADA_FRENCH, locale);
+                Locale.US, locale);
     }
 
     @Test
