@@ -1,18 +1,18 @@
 import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { ComponentPartMetadata, CssPropertyMetadata } from '../../metadata/model';
+import { ComponentElementMetadata, CssPropertyMetadata } from '../../metadata/model';
 import { ComponentTheme, ThemePropertyValue } from '../../model';
 
 export class ThemePropertyValueChangeEvent extends CustomEvent<{
-  part: ComponentPartMetadata | null;
+  element: ComponentElementMetadata;
   property: CssPropertyMetadata;
   value: string;
 }> {
-  constructor(part: ComponentPartMetadata | null, property: CssPropertyMetadata, value: string) {
+  constructor(element: ComponentElementMetadata, property: CssPropertyMetadata, value: string) {
     super('theme-property-value-change', {
       bubbles: true,
       composed: true,
-      detail: { part, property, value }
+      detail: { element, property, value }
     });
   }
 }
@@ -61,7 +61,7 @@ export abstract class BasePropertyEditor extends LitElement {
   }
 
   @property({})
-  public partMetadata?: ComponentPartMetadata;
+  public elementMetadata!: ComponentElementMetadata;
   @property({})
   public propertyMetadata!: CssPropertyMetadata;
   @property({})
@@ -95,13 +95,12 @@ export abstract class BasePropertyEditor extends LitElement {
   protected abstract renderEditor(): TemplateResult;
 
   protected updateValueFromTheme() {
-    const partName = this.partMetadata?.partName || null;
-    this.propertyValue = this.theme.getPropertyValue(partName, this.propertyMetadata.propertyName);
+    this.propertyValue = this.theme.getPropertyValue(this.elementMetadata.selector, this.propertyMetadata.propertyName);
     this.value = this.propertyValue?.value || '';
   }
 
   protected dispatchChange(value: string) {
-    this.dispatchEvent(new ThemePropertyValueChangeEvent(this.partMetadata || null, this.propertyMetadata, value));
+    this.dispatchEvent(new ThemePropertyValueChangeEvent(this.elementMetadata, this.propertyMetadata, value));
   }
 }
 
