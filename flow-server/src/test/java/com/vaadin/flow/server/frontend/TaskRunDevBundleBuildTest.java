@@ -117,7 +117,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -128,7 +128,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -149,20 +149,20 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Map<String, String> packages = new HashMap<>();
-        packages.put("@vaadin/router", "1.7.4");
+        packages.put("@vaadin/router", "1.7.5");
         packages.put("@vaadin/text", "1.0.0");
         Mockito.when(depScanner.getPackages()).thenReturn(packages);
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -183,7 +183,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"1.7.4\", \"@vaadin/text\":\"1.0.0\"}, "
+                + "\"@vaadin/router\": \"1.7.5\", \"@vaadin/text\":\"1.0.0\"}, "
                 + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -194,7 +194,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -215,7 +215,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -226,7 +226,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "1.0.0");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
@@ -249,7 +249,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -299,7 +299,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\",\n"
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\",\n"
                         + "\"@vaadin/text\": \"1.0.0\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
@@ -337,7 +337,7 @@ public class TaskRunDevBundleBuildTest {
 
         FileUtils.write(packageJson, "{\n" + "  \"name\": \"no-name\",\n"
                 + "  \"license\": \"UNLICENSED\",\n" + "  \"dependencies\": {\n"
-                + "    \"@vaadin/router\": \"1.7.4\"" + "  },\n"
+                + "    \"@vaadin/router\": \"1.7.5\"" + "  },\n"
                 + "  \"devDependencies\": {\n" + "  }\n" + "}",
                 StandardCharsets.UTF_8);
 
@@ -348,7 +348,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "1.0.0");
         stats.put(PACKAGE_JSON_HASH,
                 "af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6");
@@ -376,7 +376,7 @@ public class TaskRunDevBundleBuildTest {
 
         FileUtils.write(packageJson, "{\n" + "  \"name\": \"no-name\",\n"
                 + "  \"license\": \"UNLICENSED\",\n" + "  \"dependencies\": {\n"
-                + "    \"@vaadin/router\": \"1.7.4\"" + "  },\n"
+                + "    \"@vaadin/router\": \"1.7.5\"" + "  },\n"
                 + "  \"devDependencies\": {\n" + "  }\n" + "}",
                 StandardCharsets.UTF_8);
 
@@ -387,7 +387,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -409,7 +409,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -420,7 +420,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -442,7 +442,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"~1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"~1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -487,7 +487,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -576,7 +576,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "1.0.0");
         stats.put(PACKAGE_JSON_HASH, defaultHash);
 
@@ -607,7 +607,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
         stats.put(PACKAGE_JSON_HASH, defaultHash);
 
         try (MockedStatic<FrontendUtils> utils = Mockito
@@ -637,7 +637,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
         stats.put(PACKAGE_JSON_HASH, defaultHash);
 
         try (MockedStatic<FrontendUtils> utils = Mockito
@@ -660,7 +660,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -701,7 +701,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -742,7 +742,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -786,7 +786,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -831,7 +831,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -873,7 +873,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
