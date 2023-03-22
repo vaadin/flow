@@ -15,6 +15,12 @@
  */
 package com.vaadin.flow.component.internal;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,12 +31,6 @@ import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
  * Tracks the location in source code where components were instantiated.
@@ -183,7 +183,7 @@ public class ComponentTracker {
     }
 
     /**
-     * Refreshes location of all components that had create location below given
+     * Refreshes location of all components that had create or attach location below given
      * reference component by given offset value. Location may change due to
      * dynamic code updates conducted by Vaadin developer tools.
      *
@@ -192,21 +192,8 @@ public class ComponentTracker {
      * @param offset
      *            difference in lines to be applied
      */
-    public static void refreshCreateLocation(Location location, int offset) {
+    public static void refreshLocation(Location location, int offset) {
         refreshLocation(createLocation, location, offset);
-    }
-
-    /**
-     * Refreshes location of all components that had attach location below given
-     * reference component by given offset value. Location may change due to
-     * dynamic code updates conducted by Vaadin developer tools.
-     *
-     * @param location
-     *            reference component location
-     * @param offset
-     *            difference in lines to be applied
-     */
-    public static void refreshAttachLocation(Location location, int offset) {
         refreshLocation(attachLocation, location, offset);
     }
 

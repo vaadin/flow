@@ -15,18 +15,17 @@
  */
 package com.vaadin.flow;
 
-import java.lang.reflect.Field;
-import java.util.Map;
-
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.internal.ComponentTracker;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasComponents;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.internal.ComponentTracker;
+import java.lang.reflect.Field;
+import java.util.Map;
 
 /**
  * Note that this is intentionally in the "wrong" package as internal packages
@@ -118,13 +117,13 @@ public class ComponentTrackerTest {
         Assert.assertEquals(113, c1Location.lineNumber());
         Assert.assertEquals(getClass().getName(), c1Location.className());
 
-        ComponentTracker.refreshCreateLocation(c1Location, 3);
+        ComponentTracker.refreshLocation(c1Location, 3);
 
         ComponentTracker.Location c2Location = ComponentTracker.findCreate(c2);
         Assert.assertEquals(114 + 3, c2Location.lineNumber());
         Assert.assertEquals(getClass().getName(), c2Location.className());
 
-        ComponentTracker.refreshCreateLocation(c2Location, 1);
+        ComponentTracker.refreshLocation(c2Location, 1);
 
         ComponentTracker.Location c3Location = ComponentTracker.findCreate(c3);
         Assert.assertEquals(115 + 3 + 1, c3Location.lineNumber());

@@ -1,15 +1,19 @@
 package com.vaadin.base.devserver.themeeditor;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.comments.LineComment;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.SimpleName;
-import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.github.javaparser.utils.SourceRoot;
-import com.vaadin.base.devserver.editor.ComponentType;
 import com.vaadin.base.devserver.editor.Editor;
+import com.vaadin.base.devserver.themeeditor.utils.ComponentClassNamesVisitor;
+import com.vaadin.base.devserver.themeeditor.utils.LocalClassNameVisitor;
 import com.vaadin.base.devserver.themeeditor.utils.ThemeEditorException;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.internal.ComponentTracker;
@@ -19,29 +23,25 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 public class JavaSourceModifier extends Editor {
 
-    public static final String UNIQUE_CLASSNAME_PREFIX = "te-";
+    public static final LineComment LOCAL_CLASSNAME_COMMENT = new LineComment(
+            "<theme-editor-local-classname>");
 
     private VaadinContext context;
 
-    private static class ClassNameHolder {
-        String className;
-    }
-
-    private static class AccessibleHolder {
+    private static class FinalsHolder {
         boolean accessible;
+        String className;
+        String suggestedClassName;
     }
 
     public JavaSourceModifier(VaadinContext context) {
@@ -49,164 +49,127 @@ public class JavaSourceModifier extends Editor {
     }
 
     /**
-     * Modifies class names of given component by adding addClassName method
-     * calls.
+     * Adds local component class name if not already present, updates value
+     * otherwise.
      *
      * @param uiId
      *            uiId of target component's UI
      * @param nodeId
      *            nodeIf of target component
-     * @param classNames
-     *            list of classes to be added
+     * @param className
+     *            className to be set
      */
-    public void setClassNames(Integer uiId, Integer nodeId,
-            Collection<String> classNames) {
-        assert uiId != null && nodeId != null && classNames != null;
-
+    public void setLocalClassName(Integer uiId, Integer nodeId,
+            String className) {
+        assert uiId != null && nodeId != null && className != null;
         VaadinSession session = getSession();
         getSession().access(() -> {
-            Component component = getComponent(session, uiId, nodeId);
-            ComponentTracker.Location createLocation = getCreateLocation(
-                    component);
-            ComponentTracker.Location attachLocation = getAttachLocation(
-                    component);
-            File sourceFolder = getSourceFolder(createLocation);
-            File sourceFile = new File(sourceFolder, createLocation.filename());
-
             try {
-                int sourceOffset = 0;
-                List<String> existingClassNames = getClassNames(sourceFile,
-                        createLocation.lineNumber());
-                for (String className : classNames) {
-                    if (!existingClassNames.contains(className)) {
-                        sourceOffset += addComponentAttribute(sourceFile,
-                                createLocation.lineNumber(),
-                                attachLocation.lineNumber(), null,
-                                "addClassName", className);
+                Component component = getComponent(session, uiId, nodeId);
+                ComponentTracker.Location createLocation = getCreateLocation(
+                        component);
+                File sourceFile = getSourceFile(createLocation);
+                int sourceOffset = modifyClass(sourceFile, cu -> {
+                    Statement ref = findStatement(cu,
+                            createLocation.lineNumber());
+                    SimpleName scope = findLocalVariableOrField(cu,
+                            createLocation.lineNumber());
+                    if (scope == null) {
+                        throw new ThemeEditorException(
+                                "Variable not accessible.");
                     }
-                }
+
+                    Node newNode = createAddClassNameStatement(scope.asString(),
+                            className);
+                    Modification mod;
+                    ExpressionStmt stmt = findLocalClassNameStmt(cu, component);
+                    if (stmt == null) {
+                        mod = Modification.insertLineAfter(ref, newNode);
+                    } else {
+                        mod = Modification.replace(stmt, newNode);
+                    }
+                    return Collections.singletonList(mod);
+                });
 
                 if (sourceOffset != 0) {
-                    ComponentTracker.refreshCreateLocation(createLocation,
-                            sourceOffset);
-                    ComponentTracker.refreshAttachLocation(attachLocation,
+                    ComponentTracker.refreshLocation(createLocation,
                             sourceOffset);
                 }
 
             } catch (UnsupportedOperationException ex) {
                 throw new ThemeEditorException(ex);
             }
-
         });
     }
 
     /**
-     * Gets instance unique classname if exists otherwise generates and sets
-     * new.
+     * Gets component local classname if exists.
      *
      * @param uiId
      *            uiId of target component's UI
      * @param nodeId
      *            nodeIf of target component
-     * @param createIfNotPresent
-     *            append classname if not present yet
-     * @return component unique classname
+     * @return component local classname
      */
-    public String getUniqueClassName(Integer uiId, Integer nodeId,
-            boolean createIfNotPresent) {
+    public String getLocalClassName(Integer uiId, Integer nodeId) {
         assert uiId != null && nodeId != null;
-
         try {
-            ClassNameHolder holder = new ClassNameHolder();
+            FinalsHolder holder = new FinalsHolder();
+            VaadinSession session = getSession();
+            getSession().access(() -> {
+                Component component = getComponent(session, uiId, nodeId);
+                CompilationUnit cu = getCompilationUnit(component);
+                ExpressionStmt localClassNameStmt = findLocalClassNameStmt(cu,
+                        component);
+                if (localClassNameStmt != null) {
+                    holder.className = localClassNameStmt.getExpression()
+                            .asMethodCallExpr().getArgument(0)
+                            .asStringLiteralExpr().asString();
+                }
+            }).get(5, TimeUnit.SECONDS);
+            return holder.className;
+        } catch (Exception e) {
+            throw new ThemeEditorException("Cannot get local classname.", e);
+        }
+    }
+
+    /**
+     * Removes local class name of given component.
+     *
+     * @param uiId
+     *            uiId of target component's UI
+     * @param nodeId
+     *            nodeIf of target component
+     */
+    public void removeLocalClassName(Integer uiId, Integer nodeId) {
+        assert uiId != null && nodeId != null;
+        try {
             VaadinSession session = getSession();
             getSession().access(() -> {
                 Component component = getComponent(session, uiId, nodeId);
                 ComponentTracker.Location createLocation = getCreateLocation(
                         component);
-                ComponentTracker.Location attachLocation = getAttachLocation(
-                        component);
-                File sourceFolder = getSourceFolder(createLocation);
-                File sourceFile = new File(sourceFolder,
-                        createLocation.filename());
-
-                try {
-                    List<String> existingClassNames = getClassNames(sourceFile,
-                            createLocation.lineNumber());
-                    Optional<String> className = existingClassNames.stream()
-                            .filter(s -> s.startsWith(UNIQUE_CLASSNAME_PREFIX))
-                            .findFirst();
-                    if (className.isPresent()) {
-                        holder.className = className.get();
-                    } else if (createIfNotPresent) {
-                        holder.className = generateUniqueClassName();
-                        int sourceOffset = addComponentAttribute(sourceFile,
-                                createLocation.lineNumber(),
-                                attachLocation.lineNumber(), null,
-                                "addClassName", holder.className);
-
-                        if (sourceOffset != 0) {
-                            ComponentTracker.refreshCreateLocation(
-                                    createLocation, sourceOffset);
-                            ComponentTracker.refreshAttachLocation(
-                                    attachLocation, sourceOffset);
-                        }
+                File sourceFile = getSourceFile(createLocation);
+                int sourceOffset = modifyClass(sourceFile, cu -> {
+                    ExpressionStmt localClassNameStmt = findLocalClassNameStmt(
+                            cu, component);
+                    if (localClassNameStmt != null) {
+                        return Collections.singletonList(
+                                Modification.remove(localClassNameStmt));
                     }
-                } catch (UnsupportedOperationException ex) {
-                    throw new ThemeEditorException(ex);
+                    throw new ThemeEditorException(
+                            "Local classname not present.");
+                });
+
+                if (sourceOffset != 0) {
+                    ComponentTracker.refreshLocation(createLocation,
+                            sourceOffset);
                 }
 
             }).get(5, TimeUnit.SECONDS);
-            return holder.className;
         } catch (Exception e) {
-            throw new ThemeEditorException(
-                    "Cannot get or set unique class name.", e);
+            throw new ThemeEditorException("Cannot remove local classname.", e);
         }
-    }
-
-    /**
-     * Modifies class names of given component by removing addClassName method
-     * calls.
-     *
-     * @param uiId
-     *            uiId of target component's UI
-     * @param nodeId
-     *            nodeIf of target component
-     * @param classNames
-     *            list of classes to be removed
-     */
-    public void removeClassNames(Integer uiId, Integer nodeId,
-            Collection<String> classNames) {
-        assert uiId != null && nodeId != null && classNames != null;
-
-        VaadinSession session = getSession();
-        getSession().access(() -> {
-            Component component = getComponent(session, uiId, nodeId);
-            ComponentTracker.Location createLocation = getCreateLocation(
-                    component);
-            ComponentTracker.Location attachLocation = getAttachLocation(
-                    component);
-            File sourceFolder = getSourceFolder(createLocation);
-            File sourceFile = new File(sourceFolder, createLocation.filename());
-
-            try {
-                int sourceOffset = 0;
-                for (String className : classNames) {
-                    sourceOffset += removeComponentAttribute(sourceFile,
-                            createLocation.lineNumber(),
-                            attachLocation.lineNumber(), null, "addClassName",
-                            className);
-                }
-
-                if (sourceOffset != 0) {
-                    ComponentTracker.refreshCreateLocation(createLocation,
-                            sourceOffset);
-                    ComponentTracker.refreshAttachLocation(attachLocation,
-                            sourceOffset);
-                }
-            } catch (UnsupportedOperationException ex) {
-                throw new ThemeEditorException(ex);
-            }
-        });
     }
 
     /**
@@ -221,18 +184,14 @@ public class JavaSourceModifier extends Editor {
     public boolean isAccessible(Integer uiId, Integer nodeId) {
         assert uiId != null && nodeId != null;
 
-        AccessibleHolder holder = new AccessibleHolder();
+        FinalsHolder holder = new FinalsHolder();
         try {
             VaadinSession session = getSession();
             getSession().access(() -> {
                 Component component = getComponent(session, uiId, nodeId);
                 ComponentTracker.Location createLocation = getCreateLocation(
                         component);
-
-                File sourceFolder = getSourceFolder(createLocation);
-                SourceRoot root = new SourceRoot(sourceFolder.toPath());
-                CompilationUnit cu = LexicalPreservingPrinter
-                        .setup(root.parse("", createLocation.filename()));
+                CompilationUnit cu = getCompilationUnit(component);
 
                 Statement stmt = findStatement(cu, createLocation.lineNumber());
                 if (stmt != null && stmt instanceof ExpressionStmt exp) {
@@ -249,15 +208,45 @@ public class JavaSourceModifier extends Editor {
         }
     }
 
-    protected Component getComponent(VaadinSession session, int uiId,
-            int nodeId) {
-        Element element = session.findElement(uiId, nodeId);
-        Optional<Component> c = element.getComponent();
-        if (!c.isPresent()) {
-            throw new ThemeEditorException(
-                    "Only component locations are tracked. The given node id refers to an element and not a component.");
+    /**
+     * Creates suggested local classname based on component tag.
+     *
+     * @param uiId
+     *            uiId of target component's UI
+     * @param nodeId
+     *            nodeIf of target component
+     * @return suggested local classname
+     */
+    public String getSuggestedClassName(Integer uiId, Integer nodeId) {
+        assert uiId != null && nodeId != null;
+
+        FinalsHolder holder = new FinalsHolder();
+        try {
+            VaadinSession session = getSession();
+            getSession().access(() -> {
+                Component component = getComponent(session, uiId, nodeId);
+                ComponentTracker.Location createLocation = getCreateLocation(
+                        component);
+                String tag = component.getElement().getTag().replace("vaadin-",
+                        "") + "-";
+
+                CompilationUnit cu = getCompilationUnit(component);
+                SimpleName scope = findLocalVariableOrField(cu,
+                        createLocation.lineNumber());
+                ComponentClassNamesVisitor visitor = new ComponentClassNamesVisitor();
+                cu.accept(visitor, scope.getIdentifier());
+                List<String> existingClassNames = visitor.getArguments();
+                // suggest classname "tag-name" + (1 : 99)
+                holder.suggestedClassName = IntStream.range(1, 100)
+                        .mapToObj(i -> tag + i)
+                        .filter(i -> !existingClassNames.contains(i))
+                        .findFirst().orElse(null);
+
+            }).get(5, TimeUnit.SECONDS);
+            return holder.suggestedClassName;
+        } catch (Exception e) {
+            throw new ThemeEditorException("Cannot generate metadata.", e);
         }
-        return c.get();
     }
 
     protected ComponentTracker.Location getCreateLocation(Component c) {
@@ -266,16 +255,6 @@ public class JavaSourceModifier extends Editor {
             throw new ThemeEditorException(
                     "Unable to find the location where the component "
                             + c.getClass().getName() + " was created");
-        }
-        return location;
-    }
-
-    protected ComponentTracker.Location getAttachLocation(Component c) {
-        ComponentTracker.Location location = ComponentTracker.findAttach(c);
-        if (location == null) {
-            throw new ThemeEditorException(
-                    "Unable to find the location where the component "
-                            + c.getClass().getName() + " was attached");
         }
         return location;
     }
@@ -292,44 +271,46 @@ public class JavaSourceModifier extends Editor {
                 Arrays.copyOf(splitted, splitted.length - 1)).toFile();
     }
 
-    protected String generateUniqueClassName() {
-        return UNIQUE_CLASSNAME_PREFIX + UUID.randomUUID();
+    protected Statement createAddClassNameStatement(String scope,
+            String className) {
+        MethodCallExpr methodCallExpr = new MethodCallExpr("addClassName");
+        methodCallExpr.setScope(new NameExpr(scope));
+        methodCallExpr.getArguments().add(new StringLiteralExpr(className));
+        Statement statement = new ExpressionStmt(methodCallExpr);
+        statement.setComment(LOCAL_CLASSNAME_COMMENT);
+        return statement;
     }
 
-    public List<String> getClassNames(File f, int componentCreateLineNumber) {
+    protected File getSourceFile(ComponentTracker.Location createLocation) {
+        File sourceFolder = getSourceFolder(createLocation);
+        return new File(sourceFolder, createLocation.filename());
+    }
 
-        try {
-            String source = readFile(f);
-            CompilationUnit cu = parseSource(source);
-            Statement node = findStatement(cu, componentCreateLineNumber);
-            if (node == null) {
-                throw new UnsupportedOperationException(
-                        "Cannot add method call for given component.");
-            }
-            SimpleName localVariableOrField = findLocalVariableOrField(cu,
-                    componentCreateLineNumber);
-            BlockStmt codeBlock = (BlockStmt) node.getParentNode().get();
-
-            List<MethodCallExpr> existingCalls = findMethodCalls(codeBlock,
-                    localVariableOrField);
-            if (existingCalls.isEmpty()) {
-                return Collections.emptyList();
-            }
-
-            List<String> classNames = new ArrayList<>();
-            for (MethodCallExpr methodCallExpr : existingCalls) {
-                if (methodCallExpr.getName().asString()
-                        .equals("addClassName")) {
-                    methodCallExpr.getArguments().forEach(a -> classNames
-                            .add(a.asStringLiteralExpr().asString()));
-                }
-            }
-            return classNames;
-
-        } catch (IOException e1) {
-            throw new ThemeEditorException(e1);
+    protected Component getComponent(VaadinSession session, int uiId,
+            int nodeId) {
+        Element element = session.findElement(uiId, nodeId);
+        Optional<Component> c = element.getComponent();
+        if (!c.isPresent()) {
+            throw new ThemeEditorException(
+                    "Only component locations are tracked. The given node id refers to an element and not a component.");
         }
+        return c.get();
+    }
 
+    protected CompilationUnit getCompilationUnit(Component component) {
+        ComponentTracker.Location createLocation = getCreateLocation(component);
+        File sourceFolder = getSourceFolder(createLocation);
+        SourceRoot root = new SourceRoot(sourceFolder.toPath());
+        return LexicalPreservingPrinter
+                .setup(root.parse("", createLocation.filename()));
+    }
+
+    protected ExpressionStmt findLocalClassNameStmt(CompilationUnit cu,
+            Component component) {
+        ComponentTracker.Location createLocation = getCreateLocation(component);
+        SimpleName scope = findLocalVariableOrField(cu,
+                createLocation.lineNumber());
+        return cu.accept(new LocalClassNameVisitor(), scope.getIdentifier());
     }
 
 }
