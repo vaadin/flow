@@ -225,8 +225,6 @@ public class JavaSourceModifier extends Editor {
             VaadinSession session = getSession();
             getSession().access(() -> {
                 Component component = getComponent(session, uiId, nodeId);
-                ComponentTracker.Location createLocation = getCreateLocation(
-                        component);
                 String tag = component.getElement().getTag().replace("vaadin-",
                         "") + "-";
 
