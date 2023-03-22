@@ -1,8 +1,8 @@
 package com.vaadin.base.devserver.themeeditor.handlers;
 
 import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
+import com.vaadin.base.devserver.themeeditor.messages.BaseRequest;
 import com.vaadin.base.devserver.themeeditor.messages.ComponentMetadataResponse;
-import com.vaadin.base.devserver.themeeditor.messages.LoadRulesRequest;
 import com.vaadin.base.devserver.themeeditor.utils.HasSourceModifier;
 import com.vaadin.base.devserver.themeeditor.utils.MessageHandler;
 import com.vaadin.base.devserver.themeeditor.utils.ThemeEditorException;
@@ -27,8 +27,7 @@ public class ComponentMetadataHandler implements MessageHandler {
 
     @Override
     public ExecuteAndUndo handle(JsonObject data) {
-        LoadRulesRequest request = JsonUtils.readToObject(data,
-                LoadRulesRequest.class);
+        BaseRequest request = JsonUtils.readToObject(data, BaseRequest.class);
 
         if (!request.isInstanceRequest()) {
             throw new ThemeEditorException(
