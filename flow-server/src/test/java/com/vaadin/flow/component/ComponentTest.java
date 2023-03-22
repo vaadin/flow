@@ -340,17 +340,19 @@ public class ComponentTest {
     public void getComponentLocale_noCurrentUI_returnsFirstLocaleFromProvidedLocales() {
         UI.setCurrent(null);
         Instantiator instantiator = mocks.getService().getInstantiator();
-        Mockito.when(instantiator.getI18NProvider()).thenReturn(new I18NProvider() {
-            @Override
-            public List<Locale> getProvidedLocales() {
-                return List.of(Locale.US, Locale.CANADA_FRENCH);
-            }
+        Mockito.when(instantiator.getI18NProvider())
+                .thenReturn(new I18NProvider() {
+                    @Override
+                    public List<Locale> getProvidedLocales() {
+                        return List.of(Locale.US, Locale.CANADA_FRENCH);
+                    }
 
-            @Override
-            public String getTranslation(String key, Locale locale, Object... params) {
-                return null;
-            }
-        });
+                    @Override
+                    public String getTranslation(String key, Locale locale,
+                            Object... params) {
+                        return null;
+                    }
+                });
         Component test = new TestButton();
         final Locale locale = test.getLocale();
         Assert.assertEquals("First provided locale should be returned",
@@ -361,23 +363,24 @@ public class ComponentTest {
     public void getComponentLocale_noCurrentUI_returnsDefaultLocale_ifNoProvidedLocale() {
         UI.setCurrent(null);
         Instantiator instantiator = mocks.getService().getInstantiator();
-        Mockito.when(instantiator.getI18NProvider()).thenReturn(new I18NProvider() {
-            @Override
-            public List<Locale> getProvidedLocales() {
-                return List.of();
-            }
+        Mockito.when(instantiator.getI18NProvider())
+                .thenReturn(new I18NProvider() {
+                    @Override
+                    public List<Locale> getProvidedLocales() {
+                        return List.of();
+                    }
 
-            @Override
-            public String getTranslation(String key, Locale locale, Object... params) {
-                return null;
-            }
-        });
+                    @Override
+                    public String getTranslation(String key, Locale locale,
+                            Object... params) {
+                        return null;
+                    }
+                });
         Component test = new TestButton();
         final Locale locale = test.getLocale();
         Assert.assertEquals("System default locale should be returned",
                 Locale.getDefault(), locale);
     }
-
 
     @Test
     public void getElement() {
