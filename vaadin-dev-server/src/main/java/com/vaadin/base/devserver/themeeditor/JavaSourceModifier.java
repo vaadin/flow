@@ -12,8 +12,8 @@ import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.github.javaparser.utils.SourceRoot;
 import com.vaadin.base.devserver.editor.Editor;
-import com.vaadin.base.devserver.themeeditor.utils.ComponentClassNamesVisitor;
 import com.vaadin.base.devserver.themeeditor.utils.LocalClassNameVisitor;
+import com.vaadin.base.devserver.themeeditor.utils.LocalClassNamesVisitor;
 import com.vaadin.base.devserver.themeeditor.utils.ThemeEditorException;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.internal.ComponentTracker;
@@ -231,10 +231,8 @@ public class JavaSourceModifier extends Editor {
                         "") + "-";
 
                 CompilationUnit cu = getCompilationUnit(component);
-                SimpleName scope = findLocalVariableOrField(cu,
-                        createLocation.lineNumber());
-                ComponentClassNamesVisitor visitor = new ComponentClassNamesVisitor();
-                cu.accept(visitor, scope.getIdentifier());
+                LocalClassNamesVisitor visitor = new LocalClassNamesVisitor();
+                cu.accept(visitor, null);
                 List<String> existingClassNames = visitor.getArguments();
                 // suggest classname "tag-name" + (1 : 99)
                 holder.suggestedClassName = IntStream.range(1, 100)
