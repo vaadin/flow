@@ -4,7 +4,7 @@
   "dependencies": {
     "@polymer/polymer": "3.5.1",
     "@vaadin/common-frontend": "0.0.17",
-    "@vaadin/router": "1.7.4",
+    "@vaadin/router": "1.7.5",
     "@vaadin/vaadin-text-field": "23.3.0-alpha2",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "2.6.1"
@@ -37,7 +37,7 @@
     "dependencies": {
       "@polymer/polymer": "3.5.1",
       "@vaadin/common-frontend": "0.0.17",
-      "@vaadin/router": "1.7.4",
+      "@vaadin/router": "1.7.5",
       "@vaadin/vaadin-text-field": "23.3.0-alpha2",
       "construct-style-sheets-polyfill": "3.1.0",
       "lit": "2.6.1"
