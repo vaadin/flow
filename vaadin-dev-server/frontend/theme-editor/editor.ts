@@ -1,4 +1,4 @@
-import { css, html, LitElement, TemplateResult } from 'lit';
+import { css, html, LitElement, PropertyValues, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { PickerProvider } from '../component-picker';
 import { metadataRegistry } from './metadata/registry';
@@ -26,6 +26,8 @@ injectGlobalCss(css`
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
+  @property({})
+  public expanded: boolean = false;
   @property({})
   public themeEditorState: ThemeEditorState = ThemeEditorState.enabled;
   @property({})
@@ -87,7 +89,21 @@ export class ThemeEditor extends LitElement {
         flex: 0 0 auto;
         display: flex;
         align-items: center;
+      }
+
+      .picker button {
+        display: inline-flex;
+        align-items: center;
         gap: 4px;
+        padding: 0;
+        line-height: 0;
+        border: none;
+        background: none;
+        color: var(--dev-tools-text-color);
+      }
+
+      .picker button:not(:disabled):hover {
+        color: var(--dev-tools-text-color-emphasis);
       }
 
       .picker .instance-name {
@@ -147,6 +163,19 @@ export class ThemeEditor extends LitElement {
     this.api = new ThemeEditorApi(this.connection);
     this.history = new ThemeEditorHistory(this.api);
     this.historyActions = this.history.allowedActions;
+  }
+
+  protected update(changedProperties: PropertyValues) {
+    super.update(changedProperties);
+
+    // Remove or restore selected element highlight when expanded state changes
+    if (changedProperties.has('expanded')) {
+      if (this.expanded) {
+        this.highlightElement(this.context?.component.element);
+      } else {
+        this.removeElementHighlight(this.context?.component.element);
+      }
+    }
   }
 
   disconnectedCallback() {
@@ -264,8 +293,7 @@ export class ThemeEditor extends LitElement {
     }
     return html`
       <div class="picker">
-        <button class="icon-button" @click=${this.pickComponent}>${icons.crosshair}</button>
-        ${label}
+        <button @click=${this.pickComponent}>${icons.crosshair} ${label}</button>
       </div>
     `;
   }
