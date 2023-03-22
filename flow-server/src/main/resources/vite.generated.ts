@@ -698,7 +698,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       ]
     },
     plugins: [
-      !devMode && brotli(),
+      !devMode && !devBundle && brotli(),
       devMode && vaadinBundlesPlugin(),
       devMode && showRecompileReason(),
       settings.offlineEnabled && buildSWPlugin({ devMode }),
