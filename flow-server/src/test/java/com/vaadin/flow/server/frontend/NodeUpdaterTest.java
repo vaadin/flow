@@ -347,7 +347,7 @@ public class NodeUpdaterTest {
                 + "\"vaadin\": {"
                   + "\"dependencies\": {"
                     + "\"lit\": \"2.0.0\","
-                    + "\"@vaadin/router\": \"1.7.4\","
+                    + "\"@vaadin/router\": \"1.7.5\","
                     + "\"@polymer/polymer\": \"3.4.1\","
                   + "},"
                   + "\"devDependencies\": {"
@@ -357,7 +357,7 @@ public class NodeUpdaterTest {
                 + "},"
                 + "\"dependencies\": {"
                   + "\"lit\": \"2.0.0\","
-                  + "\"@vaadin/router\": \"1.7.4\","
+                  + "\"@vaadin/router\": \"1.7.5\","
                   + "\"@polymer/polymer\": \"3.4.1\","
                 + "},"
                 + "\"devDependencies\": {"
@@ -376,7 +376,7 @@ public class NodeUpdaterTest {
         final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
                 generatedVersionsFile, StandardCharsets.UTF_8));
         Assert.assertEquals(
-                "{" + "\"lit\":\"2.0.0\"," + "\"@vaadin/router\":\"1.7.4\","
+                "{" + "\"lit\":\"2.0.0\"," + "\"@vaadin/router\":\"1.7.5\","
                         + "\"@polymer/polymer\":\"3.4.1\","
                         + "\"css-loader\":\"4.2.1\","
                         + "\"file-loader\":\"6.1.0\"" + "}",
