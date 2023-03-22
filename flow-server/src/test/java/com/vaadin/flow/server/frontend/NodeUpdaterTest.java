@@ -136,7 +136,6 @@ public class NodeUpdaterTest {
         expectedDependencies.add("workbox-build");
         expectedDependencies.add("transform-ast");
         expectedDependencies.add("strip-css-comments");
-        expectedDependencies.add("@vaadin/vaadin-development-mode-detector");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
