@@ -24,6 +24,7 @@ import './components/property-list';
 import '../component-picker.js';
 import { ComponentReference } from '../component-util';
 import { injectGlobalCss } from './styles';
+import {suggestUniqueClassName} from "./utils";
 
 injectGlobalCss(css`
   .vaadin-theme-editor-highlight {
@@ -307,7 +308,6 @@ export class ThemeEditor extends LitElement {
           metadata,
           component,
           localClassName: componentResponse.className,
-          suggestedClassName: componentResponse.suggestedClassName,
           accessible: componentResponse.accessible
         });
       }
@@ -337,8 +337,8 @@ export class ThemeEditor extends LitElement {
 
     // If we are theming locally, and the component does not have a local class
     // name yet, then apply suggested class name from server first
-    if (this.context.scope === ThemeScope.local && !this.context.localClassName && this.context.suggestedClassName) {
-      const newClassName = this.context.suggestedClassName;
+    if (this.context.scope === ThemeScope.local && !this.context.localClassName) {
+      const newClassName = suggestUniqueClassName(this.context.component.element!);
       this.context.localClassName = newClassName;
       await this.api.setLocalClassName(this.context.component, newClassName);
       this.previewGeneratedClassName(this.context.component.element, newClassName);

@@ -24,7 +24,6 @@ export interface ThemeContext {
   component: ComponentReference;
   accessible?: boolean;
   localClassName?: string;
-  suggestedClassName?: string;
 }
 
 export interface ThemePropertyValue {
