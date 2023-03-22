@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.i18n.I18NProvider;
-import net.bytebuddy.asm.Advice;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.After;
@@ -340,11 +339,15 @@ public class ComponentTest {
     public void getComponentLocale_noCurrentUI_returnsFirstLocaleFromProvidedLocales() {
         UI.setCurrent(null);
         Instantiator instantiator = mocks.getService().getInstantiator();
+        List<Locale> providedLocales = new ArrayList<>(
+                List.of(Locale.US, Locale.CANADA_FRENCH, Locale.FRANCE));
+        providedLocales.remove(Locale.getDefault());
+
         Mockito.when(instantiator.getI18NProvider())
                 .thenReturn(new I18NProvider() {
                     @Override
                     public List<Locale> getProvidedLocales() {
-                        return List.of(Locale.US, Locale.CANADA_FRENCH);
+                        return providedLocales;
                     }
 
                     @Override
@@ -356,7 +359,7 @@ public class ComponentTest {
         Component test = new TestButton();
         final Locale locale = test.getLocale();
         Assert.assertEquals("First provided locale should be returned",
-                Locale.US, locale);
+                providedLocales.get(0), locale);
     }
 
     @Test
