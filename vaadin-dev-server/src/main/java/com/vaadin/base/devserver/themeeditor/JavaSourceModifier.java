@@ -81,9 +81,8 @@ public class JavaSourceModifier extends Editor {
                     if (!existingClassNames.contains(className)) {
                         sourceOffset += addComponentAttribute(sourceFile,
                                 createLocation.lineNumber(),
-                                attachLocation.lineNumber(),
-                                ComponentType.BUTTON, "addClassName",
-                                className);
+                                attachLocation.lineNumber(), null,
+                                "addClassName", className);
                     }
                 }
 
@@ -142,9 +141,8 @@ public class JavaSourceModifier extends Editor {
                         holder.className = generateUniqueClassName();
                         int sourceOffset = addComponentAttribute(sourceFile,
                                 createLocation.lineNumber(),
-                                attachLocation.lineNumber(),
-                                ComponentType.BUTTON, "addClassName",
-                                holder.className);
+                                attachLocation.lineNumber(), null,
+                                "addClassName", holder.className);
 
                         if (sourceOffset != 0) {
                             ComponentTracker.refreshCreateLocation(
@@ -195,8 +193,8 @@ public class JavaSourceModifier extends Editor {
                 for (String className : classNames) {
                     sourceOffset += removeComponentAttribute(sourceFile,
                             createLocation.lineNumber(),
-                            attachLocation.lineNumber(), ComponentType.BUTTON,
-                            "addClassName", className);
+                            attachLocation.lineNumber(), null, "addClassName",
+                            className);
                 }
 
                 if (sourceOffset != 0) {
