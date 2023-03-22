@@ -59,7 +59,7 @@ describe('metadata-registry', () => {
     expect(metadata).to.not.be.null;
     expect(metadata!.tagName).to.equal('vaadin-button');
     expect(metadata!.displayName).to.equal('Button');
-    expect(metadata!.parts).to.be.instanceof(Array);
+    expect(metadata!.elements).to.be.instanceof(Array);
   });
 
   it('should cache metadata', async () => {

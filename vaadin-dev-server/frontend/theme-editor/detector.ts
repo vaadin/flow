@@ -1,33 +1,46 @@
-import { ComponentTheme } from './model';
+import { ComponentTheme, createScopedSelector, SelectorScope, ThemeScope } from './model';
 import { ComponentMetadata } from './metadata/model';
 import { ComponentReference } from '../component-util';
+
+const measureElementClassname = '__vaadin-theme-editor-measure-element';
+const partNameRegex = /::part\(([\w\d_-]+)\)$/;
 
 export function detectTheme(metadata: ComponentMetadata): ComponentTheme {
   const componentTheme = new ComponentTheme(metadata);
   const element = document.createElement(metadata.tagName);
+  element.classList.add(measureElementClassname);
   element.style.visibility = 'hidden';
   document.body.append(element);
 
+  const scope: SelectorScope = {
+    themeScope: ThemeScope.local,
+    localClassName: measureElementClassname
+  };
+
   try {
-    // Host
-    const hostStyles = getComputedStyle(element);
+    metadata.elements.forEach((elementMetadata) => {
+      const scopedSelector = createScopedSelector(elementMetadata, scope);
+      // We can not access shadow DOM parts using document.querySelector, so we
+      // need to split accessing those into a second query
+      const partNameMatch = scopedSelector.match(/::part\(([\w\d-]+)\)$/);
+      const lightDomSelector = scopedSelector.replace(partNameRegex, '');
 
-    metadata.properties.forEach((property) => {
-      const propertyValue = hostStyles.getPropertyValue(property.propertyName);
-      componentTheme.updatePropertyValue(null, property.propertyName, propertyValue);
-    });
+      let element = document.querySelector(lightDomSelector);
+      // If we target a part in shadow DOM, query for that within shadow DOM
+      if (element && partNameMatch) {
+        const partName = partNameMatch[1];
+        const shadowDomSelector = `[part~="${partName}"]`;
+        element = element!.shadowRoot!.querySelector(shadowDomSelector);
+      }
 
-    // Parts
-    metadata.parts.forEach((part) => {
-      const partElement = element.shadowRoot?.querySelector(`[part~="${part.partName}"]`);
-      if (!partElement) {
+      if (!element) {
         return;
       }
-      const partStyles = getComputedStyle(partElement);
+      const elementStyles = getComputedStyle(element);
 
-      part.properties.forEach((property) => {
-        const propertyValue = partStyles.getPropertyValue(property.propertyName);
-        componentTheme.updatePropertyValue(part.partName, property.propertyName, propertyValue);
+      elementMetadata.properties.forEach((property) => {
+        const propertyValue = elementStyles.getPropertyValue(property.propertyName);
+        componentTheme.updatePropertyValue(elementMetadata.selector, property.propertyName, propertyValue);
       });
     });
   } finally {

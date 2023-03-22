@@ -1,7 +1,7 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { html as staticHtml, literal, StaticValue } from 'lit/static-html.js';
-import { ComponentMetadata, ComponentPartMetadata, CssPropertyMetadata, EditorType } from '../metadata/model';
+import { ComponentMetadata, ComponentElementMetadata, CssPropertyMetadata, EditorType } from '../metadata/model';
 import { ComponentTheme } from '../model';
 import './editors/text-property-editor';
 import './editors/range-property-editor';
@@ -29,26 +29,23 @@ export class PropertyList extends LitElement {
   public theme!: ComponentTheme;
 
   render() {
-    const sections = [
-      this.renderSection(null, this.metadata.properties),
-      ...this.metadata.parts.map((part) => this.renderSection(part, part.properties))
-    ];
+    const sections = this.metadata.elements.map((element) => this.renderSection(element));
 
     return html` <div>${sections}</div> `;
   }
 
-  private renderSection(part: ComponentPartMetadata | null, properties: CssPropertyMetadata[]) {
-    const propertiesList = properties.map((property) => this.renderPropertyEditor(part, property));
+  private renderSection(element: ComponentElementMetadata) {
+    const propertiesList = element.properties.map((property) => this.renderPropertyEditor(element, property));
 
     return html`
-      <div class="section" data-testid=${part?.partName || 'host'}>
-        ${part ? html` <div class="header">${part.displayName}</div>` : null}
+      <div class="section" data-testid=${element?.displayName}>
+        ${element ? html` <div class="header">${element.displayName}</div>` : null}
         <div class="property-list">${propertiesList}</div>
       </div>
     `;
   }
 
-  private renderPropertyEditor(part: ComponentPartMetadata | null, property: CssPropertyMetadata) {
+  private renderPropertyEditor(part: ComponentElementMetadata | null, property: CssPropertyMetadata) {
     let editorTagName: StaticValue;
     switch (property.editorType) {
       case EditorType.range:
