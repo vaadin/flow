@@ -30,6 +30,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.i18n.I18NProvider;
+import net.bytebuddy.asm.Advice;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.After;
@@ -322,6 +324,60 @@ public class ComponentTest {
         Assert.assertEquals("System default locale should be returned",
                 Locale.getDefault(), locale);
     }
+
+    @Test
+    public void getComponentLocale_hasCurrentUI_returnsUILocale() {
+        UI ui = new UI();
+        ui.setLocale(Locale.CANADA_FRENCH);
+        UI.setCurrent(ui);
+        Component test = new TestButton();
+        final Locale locale = test.getLocale();
+        Assert.assertEquals("Component getLocale returns the UI locale",
+                Locale.CANADA_FRENCH, locale);
+    }
+
+    @Test
+    public void getComponentLocale_noCurrentUI_returnsFirstLocaleFromProvidedLocales() {
+        UI.setCurrent(null);
+        Instantiator instantiator = mocks.getService().getInstantiator();
+        Mockito.when(instantiator.getI18NProvider()).thenReturn(new I18NProvider() {
+            @Override
+            public List<Locale> getProvidedLocales() {
+                return List.of(Locale.US, Locale.CANADA_FRENCH);
+            }
+
+            @Override
+            public String getTranslation(String key, Locale locale, Object... params) {
+                return null;
+            }
+        });
+        Component test = new TestButton();
+        final Locale locale = test.getLocale();
+        Assert.assertEquals("First provided locale should be returned",
+                Locale.getDefault(), locale);
+    }
+
+    @Test
+    public void getComponentLocale_noCurrentUI_returnsDefaultLocale_ifNoProvidedLocale() {
+        UI.setCurrent(null);
+        Instantiator instantiator = mocks.getService().getInstantiator();
+        Mockito.when(instantiator.getI18NProvider()).thenReturn(new I18NProvider() {
+            @Override
+            public List<Locale> getProvidedLocales() {
+                return List.of();
+            }
+
+            @Override
+            public String getTranslation(String key, Locale locale, Object... params) {
+                return null;
+            }
+        });
+        Component test = new TestButton();
+        final Locale locale = test.getLocale();
+        Assert.assertEquals("System default locale should be returned",
+                Locale.getDefault(), locale);
+    }
+
 
     @Test
     public void getElement() {
