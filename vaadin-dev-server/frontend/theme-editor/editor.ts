@@ -340,12 +340,12 @@ export class ThemeEditor extends LitElement {
     if (this.context.scope === ThemeScope.local && !this.context.localClassName && this.context.suggestedClassName) {
       const newClassName = this.context.suggestedClassName;
       this.context.localClassName = newClassName;
-      await this.api.setComponentClassName(this.context.component, newClassName);
+      await this.api.setLocalClassName(this.context.component, newClassName);
       this.previewGeneratedClassName(this.context.component.element, newClassName);
     }
 
     // Can't generate a local scoped selector without a local classname
-    if (this.context.scope === ThemeScope.global && !this.context.localClassName) {
+    if (this.context.scope === ThemeScope.local && !this.context.localClassName) {
       console.error('Failed to update property value because selected component does not have a local class name');
       return;
     }
