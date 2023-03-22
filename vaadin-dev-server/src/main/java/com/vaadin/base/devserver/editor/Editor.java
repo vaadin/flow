@@ -14,6 +14,7 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.comments.LineComment;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.AssignExpr.Operator;
 import com.github.javaparser.ast.expr.Expression;
@@ -25,14 +26,15 @@ import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithBlockStmt;
+import com.github.javaparser.ast.nodeTypes.NodeWithStatements;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import com.vaadin.base.devserver.themeeditor.utils.LineNumberVisitor;
 import com.vaadin.flow.shared.util.SharedUtil;
 import org.apache.commons.io.IOUtils;
 
@@ -57,176 +59,136 @@ public class Editor {
     public static class Modification implements Comparable<Modification> {
 
         private enum Type {
-            INSERT_AFTER, INSERT_BEFORE, INSERT_LINE_AFTER, INSERT_LINE_BEFORE, REPLACE, INSERT_AFTER_STRING, INSERT_AT_END_OF_BLOCK, REMOVE
+            IMPORT, INSERT_AFTER, INSERT_BEFORE, INSERT_LINE_AFTER, INSERT_LINE_BEFORE, //
+            REPLACE, INSERT_AT_END_OF_BLOCK, REMOVE_NODE
         };
 
         private Node referenceNode;
         private Type type;
-        private String code;
-        private String needle;
+        private Node node;
+        private int sourceOffset;
 
-        public String apply(String source) {
-            if (type == Type.INSERT_LINE_AFTER) {
-                int insertPoint = sourcePosition(source,
-                        referenceNode.getEnd().get().nextLine());
-                int i = referenceNode.getRange().get().begin.column - 1;
-
-                return source.substring(0, insertPoint) + indent(i, code)
-                        + source.substring(insertPoint);
+        public void apply() {
+            if (type == Type.IMPORT) {
+                if (referenceNode instanceof CompilationUnit cu
+                        && node instanceof ImportDeclaration id) {
+                    cu.getImports().add(id);
+                }
+            } else if (type == Type.INSERT_LINE_AFTER) {
+                if (node instanceof Statement stmt) {
+                    Editor.addStatement(referenceNode, Where.AFTER, stmt);
+                }
             } else if (type == Type.INSERT_AFTER) {
-                int insertPoint = sourcePosition(source,
-                        referenceNode.getEnd().get().right(1));
-                return source.substring(0, insertPoint) + code
-                        + source.substring(insertPoint);
+                Node parent = referenceNode.getParentNode().orElse(null);
+                if (parent instanceof MethodCallExpr mce) {
+                    mce.getArguments().addAfter((Expression) node,
+                            (Expression) referenceNode);
+                }
             } else if (type == Type.INSERT_LINE_BEFORE) {
-                int insertPoint = sourcePosition(source,
-                        referenceNode.getBegin().get());
-                int i = referenceNode.getRange().get().begin.column - 1;
-                insertPoint -= i; // Insert at start of line
-
-                return source.substring(0, insertPoint) + indent(i, code)
-                        + source.substring(insertPoint);
+                if (node instanceof Statement stmt) {
+                    Editor.addStatement(referenceNode, Where.BEFORE, stmt);
+                }
             } else if (type == Type.INSERT_BEFORE) {
-                int insertPoint = sourcePosition(source,
-                        referenceNode.getBegin().get());
-                return source.substring(0, insertPoint) + code
-                        + source.substring(insertPoint);
+                Node parent = referenceNode.getParentNode().orElse(null);
+                if (parent instanceof MethodCallExpr mce) {
+                    mce.getArguments().addBefore((Expression) node,
+                            (Expression) referenceNode);
+                }
             } else if (type == Type.REPLACE) {
-                int nodeStart = sourcePosition(source,
-                        referenceNode.getRange().get().begin);
-                int nodeEnd = sourcePosition(source,
-                        referenceNode.getRange().get().end);
-                return source.substring(0, nodeStart) + code
-                        + source.substring(nodeEnd + 1);
-            } else if (type == Type.INSERT_AFTER_STRING) {
-                int nodeBegin = sourcePosition(source,
-                        referenceNode.getBegin().get().right(1));
-                int insertPoint = findNext(source, nodeBegin, needle) + 1;
-                return source.substring(0, insertPoint) + code
-                        + source.substring(insertPoint);
+                referenceNode.getParentNode()
+                        .ifPresent(p -> p.replace(referenceNode, node));
             } else if (type == Type.INSERT_AT_END_OF_BLOCK) {
-                int blockEnd = sourcePosition(source,
-                        referenceNode.getEnd().get().right(1));
-                int insertPoint = findPrevious(source, blockEnd, "}");
-                return source.substring(0, insertPoint) + code
-                        + source.substring(insertPoint);
-            } else if (type == Type.REMOVE) {
-                int nodeBegin = sourcePosition(source,
-                        referenceNode.getBegin().get());
-                int nodeEnd = sourcePosition(source,
-                        referenceNode.getEnd().get().right(1));
-                return source.substring(0, nodeBegin)
-                        + source.substring(nodeEnd);
+                if (node instanceof Statement stmt) {
+                    if (referenceNode instanceof BlockStmt block) {
+                        block.addStatement(stmt);
+                    } else {
+                        Editor.addStatement(referenceNode, null, stmt);
+                    }
+                }
+            } else if (type == Type.REMOVE_NODE) {
+                // comments are part of Node, will be removed also
+                referenceNode.remove();
+            } else {
+                throw new RuntimeException("Failed to perform: " + this);
             }
-            throw new RuntimeException("Unknown type");
         }
 
         public int sourceOffset() {
-            return switch (type) {
-            case INSERT_LINE_AFTER -> 1;
-            case INSERT_LINE_BEFORE -> 1;
-            case INSERT_AT_END_OF_BLOCK -> 1;
-            case INSERT_AFTER_STRING -> 0;
-            case INSERT_AFTER -> 0;
-            case INSERT_BEFORE -> 0;
-            case REPLACE -> 0;
-            case REMOVE -> 0; // TODO: Remove empty lines?
-            };
+            return sourceOffset;
         }
 
-        private static int sourcePosition(String source, Position pos) {
-            // javaparse lines are 1-based
-            int lines = pos.line - 1;
-            int sourcePos = 0;
-            while (lines > 0) {
-                sourcePos = source.indexOf("\n", sourcePos + 1);
-                lines--;
-            }
-            sourcePos += pos.column;
-            return sourcePos;
-        }
-
-        private static int findNext(String source, int insertPoint,
-                String needle) {
-            return source.indexOf(needle, insertPoint);
-        }
-
-        private static int findPrevious(String source, int from,
-                String needle) {
-            return source.lastIndexOf(needle, from);
-        }
-
-        public static Modification insertAfter(Node node, Node code) {
-            return insertAfter(node, code.toString() + ";");
-        }
-
-        public static Modification insertAfter(Node node, String code) {
+        public static Modification addImport(Node referenceNode, Node node) {
             Modification mod = new Modification();
-            mod.referenceNode = node;
+            mod.referenceNode = referenceNode;
+            mod.type = Type.IMPORT;
+            mod.node = node;
+            mod.sourceOffset = getLinesCount(node);
+            return mod;
+        }
+
+        public static Modification insertAfter(Node referenceNode, Node node) {
+            Modification mod = new Modification();
+            mod.referenceNode = referenceNode;
             mod.type = Type.INSERT_AFTER;
-            mod.code = code;
+            mod.node = node;
+            mod.sourceOffset = 0; // modifies same line, no offset
             return mod;
         }
 
-        public static Modification insertAfterString(Node node, String needle,
-                String code) {
+        public static Modification insertAtEndOfBlock(Node referenceNode,
+                Node node) {
             Modification mod = new Modification();
-            mod.referenceNode = node;
-            mod.type = Type.INSERT_AFTER_STRING;
-            mod.code = code;
-            mod.needle = needle;
-            return mod;
-        }
-
-        public static Modification insertAtEndOfBlock(Node node, String code) {
-            Modification mod = new Modification();
-            mod.referenceNode = node;
+            mod.referenceNode = referenceNode;
             mod.type = Type.INSERT_AT_END_OF_BLOCK;
-            mod.code = code;
+            mod.node = node;
+            mod.sourceOffset = getLinesCount(node);
             return mod;
         }
 
-        public static Modification insertBefore(Node node, String code) {
+        public static Modification insertBefore(Node referenceNode, Node node) {
             Modification mod = new Modification();
-            mod.referenceNode = node;
+            mod.referenceNode = referenceNode;
             mod.type = Type.INSERT_BEFORE;
-            mod.code = code;
+            mod.node = node;
+            mod.sourceOffset = 0; // modifies same line, no offset
             return mod;
         }
 
-        public static Modification insertLineBefore(Node node, String code) {
+        public static Modification insertLineBefore(Node referenceNode,
+                Node node) {
             Modification mod = new Modification();
-            mod.referenceNode = node;
+            mod.referenceNode = referenceNode;
             mod.type = Type.INSERT_LINE_BEFORE;
-            mod.code = code;
+            mod.node = node;
+            mod.sourceOffset = getLinesCount(node);
             return mod;
         }
 
-        public static Modification insertLineAfter(Node node, String code) {
+        public static Modification insertLineAfter(Node referenceNode,
+                Node node) {
             Modification mod = new Modification();
-            mod.referenceNode = node;
+            mod.referenceNode = referenceNode;
             mod.type = Type.INSERT_LINE_AFTER;
-            mod.code = code;
+            mod.node = node;
+            mod.sourceOffset = getLinesCount(node);
             return mod;
         }
 
-        public static Modification replace(Node node, String code) {
+        public static Modification replace(Node referenceNode, Node node) {
             Modification mod = new Modification();
-            mod.referenceNode = node;
+            mod.referenceNode = referenceNode;
             mod.type = Type.REPLACE;
-            mod.code = code;
+            mod.node = node;
+            mod.sourceOffset = getLinesCount(node)
+                    - getLinesCount(referenceNode);
             return mod;
         }
 
-        public static Modification replace(Node node, Node code) {
-            return replace(node, code.toString());
-        }
-
-        public static Modification remove(Node node) {
+        public static Modification remove(Node referenceNode) {
             Modification mod = new Modification();
-            mod.referenceNode = node;
-            mod.type = Type.REMOVE;
-            mod.needle = ";";
+            mod.referenceNode = referenceNode;
+            mod.type = Type.REMOVE_NODE;
+            mod.sourceOffset = -getLinesCount(referenceNode);
             return mod;
         }
 
@@ -248,25 +210,21 @@ public class Editor {
         public String toString() {
             if (type == Type.INSERT_LINE_AFTER) {
                 return "Modification INSERT_LINE_AFTER at position "
-                        + referenceNode.getEnd().get() + ": " + code;
+                        + referenceNode.getEnd().get() + ": " + node;
             } else if (type == Type.INSERT_AFTER) {
                 return "Modification INSERT_AFTER at position "
-                        + referenceNode.getEnd().get() + ": " + code;
-            } else if (type == Type.INSERT_AFTER_STRING) {
-                return "Modification INSERT_AFTER_STRING at position "
-                        + referenceNode.getBegin().get() + " after string "
-                        + needle + ": " + code;
+                        + referenceNode.getEnd().get() + ": " + node;
             } else if (type == Type.INSERT_BEFORE) {
                 return "Modification INSERT_BEFORE at position "
-                        + referenceNode.getBegin().get() + ": " + code;
+                        + referenceNode.getBegin().get() + ": " + node;
             } else if (type == Type.REPLACE) {
                 return "Modification REPLACE position "
                         + referenceNode.getBegin().get() + "-"
-                        + referenceNode.getEnd().get() + ": " + code;
-            } else if (type == Type.REMOVE) {
+                        + referenceNode.getEnd().get() + ": " + node;
+            } else if (type == Type.REMOVE_NODE) {
                 return "Modification REMOVE position "
                         + referenceNode.getBegin().get() + "-"
-                        + referenceNode.getEnd().get() + ": " + code;
+                        + referenceNode.getEnd().get() + ": " + node;
             }
             return "Modification UNKNOWN TYPE";
         }
@@ -424,7 +382,7 @@ public class Editor {
             Statement componentNode, ComponentType componentType,
             String methodName, String methodParameter,
             List<Modification> mods) {
-        if (!componentNode.isExpressionStmt()) {
+        if (!componentNode.isExpressionStmt() || componentType == null) {
             return;
         }
         Expression expression = componentNode.asExpressionStmt()
@@ -513,12 +471,12 @@ public class Editor {
         ExpressionStmt componentConstructCode = assignToLocalVariable(
                 componentType, localVariableName,
                 getConstructorCode(componentType, constructorArguments));
-        String componentAttachCode = new NameExpr(localVariableName).toString();
+        Node componentAttachNode = new NameExpr(localVariableName);
         SimpleName referenceLocalVariableOrField = findLocalVariableOrField(cu,
                 componentCreateLineNumber);
 
         mods.add(Modification.insertLineBefore(attachStatement,
-                componentConstructCode.toString() + "\n"));
+                componentConstructCode));
         if (referenceLocalVariableOrField == null
                 && attachStatement.equals(createStatement)
                 && attachStatement.isExpressionStmt()) {
@@ -535,10 +493,10 @@ public class Editor {
                     if (referenceComponentAdd.equals(args.get(i))) {
                         if (where == Where.BEFORE) {
                             mods.add(Modification.insertBefore(args.get(i),
-                                    componentAttachCode + ", "));
+                                    componentAttachNode));
                         } else {
                             mods.add(Modification.insertAfter(args.get(i),
-                                    ", " + componentAttachCode));
+                                    componentAttachNode));
                         }
                         break;
                     }
@@ -564,10 +522,10 @@ public class Editor {
                         // cu.getClassByName(componentType.getName()).get();
                         if (where == Where.BEFORE) {
                             mods.add(Modification.insertBefore(args.get(i),
-                                    componentAttachCode + ", "));
+                                    componentAttachNode));
                         } else {
                             mods.add(Modification.insertAfter(args.get(i),
-                                    ", " + componentAttachCode));
+                                    componentAttachNode));
                         }
                         break;
                     }
@@ -638,8 +596,8 @@ public class Editor {
     }
 
     private Modification addImport(CompilationUnit cu, String className) {
-        return Modification.insertAfter(cu.getImports().getLast().get(),
-                "\nimport " + className + ";");
+        return Modification.addImport(cu,
+                new ImportDeclaration(className, false, false));
     }
 
     private boolean hasImport(CompilationUnit cu, String className) {
@@ -676,10 +634,10 @@ public class Editor {
         ExpressionStmt addComponent = addToLayout(variableName);
 
         if (constructor != null) {
-            String code = createComponent.toString() + "\n"
-                    + addComponent.toString() + "\n";
             mods.add(Modification.insertAtEndOfBlock(constructor.getBody(),
-                    code));
+                    createComponent));
+            mods.add(Modification.insertAtEndOfBlock(constructor.getBody(),
+                    addComponent));
         } else if (classDefinition != null) {
             if (!classDefinition.getConstructors().isEmpty()) {
                 // This should not happen as create location refers to the class
@@ -694,11 +652,6 @@ public class Editor {
                     .addConstructor(Keyword.PUBLIC);
             defaultConstructor.getBody().addStatement(createComponent);
             defaultConstructor.getBody().addStatement(addComponent);
-
-            // We should aim to insert after any fields but before any methods
-
-            mods.add(Modification.insertAfterString(classDefinition, "{",
-                    "\n" + indent(4, defaultConstructor.toString())));
         }
         return mods;
 
@@ -732,8 +685,8 @@ public class Editor {
                 new NameExpr(referenceLocalVariableOrField), listenerType,
                 new NodeList<>(emptyCallback));
         // Add an empty row where the code can be written
-        String listenerCode = addNewLineToBody(
-                new ExpressionStmt(listener).toString()) + "\n";
+        Node listenerNode = new ExpressionStmt(listener)
+                .setComment(new LineComment(" TODO: Implement listener"));
         Node parent = createStatement.getParentNode().get();
         if (parent instanceof BlockStmt) {
             // Find last method call for the local variable and add after that
@@ -741,16 +694,16 @@ public class Editor {
                     (BlockStmt) parent, referenceLocalVariableOrField);
             if (methodCalls.isEmpty()) {
                 mods.add(Modification.insertLineAfter(createStatement,
-                        listenerCode));
+                        listenerNode));
             } else {
                 mods.add(Modification.insertLineAfter(methodCalls
                         .get(methodCalls.size() - 1).getParentNode().get(),
-                        listenerCode));
+                        listenerNode));
             }
 
         } else {
             // Add after create. Not sure what the code looks like
-            mods.add(Modification.insertAfter(createStatement, listenerCode));
+            mods.add(Modification.insertAfter(createStatement, listenerNode));
         }
         return mods;
     }
@@ -860,13 +813,12 @@ public class Editor {
         ExpressionStmt existingCall = findMethodCall(codeBlock, afterThisNode,
                 variableName, methodName);
         if (existingCall != null) {
-            Modification mod = Modification.replace(existingCall,
-                    setTextCall.toString());
+            Modification mod = Modification.replace(existingCall, setTextCall);
             mods.add(mod);
 
         } else {
             Modification mod = Modification.insertLineAfter(afterThisNode,
-                    setTextCall.toString() + "\n");
+                    setTextCall);
             mods.add(mod);
         }
 
@@ -894,14 +846,14 @@ public class Editor {
     private void addCall(Node afterThisNode, SimpleName variableName,
             String methodName, Expression methodArgument,
             List<Modification> mods) {
-        NodeList<Expression> arguments = new NodeList<Expression>();
+        NodeList<Expression> arguments = new NodeList<>();
         arguments.add(methodArgument);
 
         ExpressionStmt setTextCall = new ExpressionStmt(new MethodCallExpr(
                 new NameExpr(variableName), methodName, arguments));
 
         Modification mod = Modification.insertLineAfter(afterThisNode,
-                setTextCall.toString() + "\n");
+                setTextCall);
         mods.add(mod);
 
     }
@@ -965,6 +917,11 @@ public class Editor {
         return className.substring(className.lastIndexOf('.') + 1);
     }
 
+    private static int getLinesCount(Node node) {
+        return node.getRange().map(r -> r.getLineCount())
+                .orElseGet(() -> node.toString().split("\n").length);
+    }
+
     protected ExpressionStmt findMethodCall(BlockStmt codeBlock, Node afterThis,
             SimpleName leftHandSide, String string) {
         boolean refFound = false;
@@ -1015,6 +972,20 @@ public class Editor {
             return true;
         }
         return false;
+    }
+
+    private static void addStatement(Node referenceNode, Where where,
+            Statement stmt) {
+        if (referenceNode.getParentNode()
+                .orElse(null) instanceof NodeWithStatements nws) {
+            if (where == null) {
+                nws.addStatement(stmt);
+            } else {
+                int index = nws.getStatements().indexOf(referenceNode)
+                        + (Where.AFTER.equals(where) ? 1 : 0);
+                nws.addStatement(index, stmt);
+            }
+        }
     }
 
     private Statement findStatement(TypeDeclaration<?> type, int lineNumber) {
@@ -1085,13 +1056,13 @@ public class Editor {
 
             List<Modification> mods = modifier.apply(cu);
             Collections.sort(mods);
-            String newSource = source;
             int sourceOffset = 0;
             for (Modification mod : mods) {
-                newSource = mod.apply(newSource);
+                mod.apply();
                 sourceOffset += mod.sourceOffset();
             }
 
+            String newSource = LexicalPreservingPrinter.print(cu);
             if (newSource.equals(source)) {
                 throw new UnsupportedOperationException("Unable to edit file");
             }
@@ -1149,9 +1120,9 @@ public class Editor {
         // Configure JavaParser to use type resolution
         JavaSymbolSolver symbolSolver = new JavaSymbolSolver(
                 combinedTypeSolver);
-        StaticJavaParser.getParserConfiguration()
-                .setSymbolResolver(symbolSolver);
-        return StaticJavaParser.parse(source);
+        StaticJavaParser.getConfiguration().setSymbolResolver(symbolSolver);
+
+        return LexicalPreservingPrinter.setup(StaticJavaParser.parse(source));
     }
 
     public File getSourceFile(Class<?> cls) {
