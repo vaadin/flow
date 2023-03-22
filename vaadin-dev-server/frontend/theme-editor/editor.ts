@@ -87,7 +87,21 @@ export class ThemeEditor extends LitElement {
         flex: 0 0 auto;
         display: flex;
         align-items: center;
+      }
+
+      .picker button {
+        display: inline-flex;
+        align-items: center;
         gap: 4px;
+        padding: 0;
+        line-height: 0;
+        border: none;
+        background: none;
+        color: var(--dev-tools-text-color);
+      }
+
+      .picker button:not(:disabled):hover {
+        color: var(--dev-tools-text-color-emphasis);
       }
 
       .picker .instance-name {
@@ -264,8 +278,7 @@ export class ThemeEditor extends LitElement {
     }
     return html`
       <div class="picker">
-        <button class="icon-button" @click=${this.pickComponent}>${icons.crosshair}</button>
-        ${label}
+        <button @click=${this.pickComponent}>${icons.crosshair} ${label}</button>
       </div>
     `;
   }
