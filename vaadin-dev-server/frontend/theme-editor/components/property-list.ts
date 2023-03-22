@@ -45,7 +45,7 @@ export class PropertyList extends LitElement {
     `;
   }
 
-  private renderPropertyEditor(part: ComponentElementMetadata | null, property: CssPropertyMetadata) {
+  private renderPropertyEditor(element: ComponentElementMetadata, property: CssPropertyMetadata) {
     let editorTagName: StaticValue;
     switch (property.editorType) {
       case EditorType.range:
@@ -60,7 +60,7 @@ export class PropertyList extends LitElement {
 
     return staticHtml` <${editorTagName}
           class="property-editor"
-          .partMetadata=${part}
+          .elementMetadata=${element}
           .propertyMetadata=${property}
           .theme=${this.theme}
           data-testid=${property.propertyName}

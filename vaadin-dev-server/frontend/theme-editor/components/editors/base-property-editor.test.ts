@@ -2,7 +2,7 @@ import { TemplateResult } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { ComponentTheme } from '../../model';
-import { CssPropertyMetadata } from '../../metadata/model';
+import { ComponentElementMetadata, CssPropertyMetadata } from '../../metadata/model';
 import { testElementMetadata } from '../../tests/utils';
 import { BasePropertyEditor } from './base-property-editor';
 
@@ -16,6 +16,12 @@ class TestPropertyEditor extends BasePropertyEditor {
 const colorMetadata: CssPropertyMetadata = {
   propertyName: 'color',
   displayName: 'Color'
+};
+
+const labelMetadata: ComponentElementMetadata = {
+  selector: 'test-element::part(label)',
+  displayName: 'Label',
+  properties: [colorMetadata]
 };
 
 describe('base property editor', () => {
@@ -34,9 +40,13 @@ describe('base property editor', () => {
 
   beforeEach(async () => {
     theme = new ComponentTheme(testElementMetadata);
-    theme.updatePropertyValue(null, 'color', 'black');
+    theme.updatePropertyValue(labelMetadata.selector, 'color', 'black');
 
-    editor = await fixture(html` <test-property-editor .theme=${theme} .propertyMetadata=${colorMetadata}>
+    editor = await fixture(html` <test-property-editor
+      .theme=${theme}
+      .elementMetadata=${labelMetadata}
+      .propertyMetadata=${colorMetadata}
+    >
     </test-property-editor>`);
   });
 
@@ -46,7 +56,7 @@ describe('base property editor', () => {
     expect(input.value).to.equal('black');
 
     const updatedTheme = cloneTheme();
-    updatedTheme.updatePropertyValue(null, 'color', 'red', true);
+    updatedTheme.updatePropertyValue(labelMetadata.selector, 'color', 'red', true);
     editor.theme = updatedTheme;
     await elementUpdated(editor);
 
@@ -61,7 +71,7 @@ describe('base property editor', () => {
 
   it('should show modified indicator if property value is modified', async () => {
     const updatedTheme = cloneTheme();
-    updatedTheme.updatePropertyValue(null, 'color', 'red', true);
+    updatedTheme.updatePropertyValue(labelMetadata.selector, 'color', 'red', true);
     editor.theme = updatedTheme;
     await elementUpdated(editor);
 
