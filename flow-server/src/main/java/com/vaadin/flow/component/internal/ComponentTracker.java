@@ -183,9 +183,9 @@ public class ComponentTracker {
     }
 
     /**
-     * Refreshes location of all components that had create or attach location below given
-     * reference component by given offset value. Location may change due to
-     * dynamic code updates conducted by Vaadin developer tools.
+     * Refreshes location of all components that had create or attach location
+     * below given reference component by given offset value. Location may
+     * change due to dynamic code updates conducted by Vaadin developer tools.
      *
      * @param location
      *            reference component location
