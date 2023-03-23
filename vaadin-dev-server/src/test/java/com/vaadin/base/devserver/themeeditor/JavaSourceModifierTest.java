@@ -148,7 +148,7 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         Assert.assertNotNull(suggestedClassName);
         // suggested classname is derived from tag; span is used in mocks
         // because TextField is not available
-        Assert.assertEquals("span-1", suggestedClassName);
+        Assert.assertEquals("TestView-span-1", suggestedClassName);
 
         // set suggested classname
         modifier.setLocalClassName(0, 0, suggestedClassName);
@@ -159,7 +159,7 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         // suggest new classname
         suggestedClassName = modifier.getSuggestedClassName(0, 0);
         Assert.assertNotNull(suggestedClassName);
-        Assert.assertEquals("span-2", suggestedClassName);
+        Assert.assertEquals("TestView-span-2", suggestedClassName);
 
         // update suggested classname
         modifier.setLocalClassName(0, 0, suggestedClassName);

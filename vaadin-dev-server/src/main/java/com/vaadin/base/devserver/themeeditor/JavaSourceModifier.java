@@ -225,16 +225,21 @@ public class JavaSourceModifier extends Editor {
             VaadinSession session = getSession();
             getSession().access(() -> {
                 Component component = getComponent(session, uiId, nodeId);
-                String tag = component.getElement().getTag().replace("vaadin-",
-                        "") + "-";
+                ComponentTracker.Location createLocation = getCreateLocation(
+                        component);
+                String fileName = createLocation.filename().substring(0,
+                        createLocation.filename().indexOf("."));
+                String tagName = component.getElement().getTag()
+                        .replace("vaadin-", "");
 
                 CompilationUnit cu = getCompilationUnit(component);
                 LocalClassNamesVisitor visitor = new LocalClassNamesVisitor();
                 cu.accept(visitor, null);
                 List<String> existingClassNames = visitor.getArguments();
-                // suggest classname "tag-name" + (1 : 99)
+                String suggestion = fileName + "-" + tagName + "-";
+                // suggest classname "filename-tagname-" + (1 : 99)
                 holder.suggestedClassName = IntStream.range(1, 100)
-                        .mapToObj(i -> tag + i)
+                        .mapToObj(i -> suggestion + i)
                         .filter(i -> !existingClassNames.contains(i))
                         .findFirst().orElse(null);
 

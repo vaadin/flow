@@ -1,6 +1,7 @@
 package com.vaadin.base.devserver.themeeditor.utils;
 
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import com.vaadin.base.devserver.themeeditor.JavaSourceModifier;
@@ -21,7 +22,9 @@ public class LocalClassNameVisitor
                         .isPresent()
                 && n.getExpression().asMethodCallExpr().getScope()
                         .map(Expression::toString).filter(arg::equals)
-                        .isPresent()) {
+                        .isPresent()
+                && n.getExpression().asMethodCallExpr().getName()
+                        .equals(new SimpleName("addClassName"))) {
             return n;
         }
         return super.visit(n, arg);

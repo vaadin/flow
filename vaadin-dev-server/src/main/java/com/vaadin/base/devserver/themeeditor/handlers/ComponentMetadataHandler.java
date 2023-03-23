@@ -15,7 +15,7 @@ public class ComponentMetadataHandler implements MessageHandler {
 
     private final HasSourceModifier hasSourceModifier;
 
-    private class FinalsHolder {
+    private static class FinalsHolder {
         private Boolean accessible;
         private String className;
         private String suggestedClassName;

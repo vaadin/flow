@@ -112,17 +112,25 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
         Assert.assertTrue(metadataResponse.isAccessible());
         Assert.assertNull(metadataResponse.getClassName());
         Assert.assertNotNull(metadataResponse.getSuggestedClassName());
-        Assert.assertEquals("span-1", metadataResponse.getSuggestedClassName());
+        Assert.assertEquals("TestView-span-1",
+                metadataResponse.getSuggestedClassName());
     }
 
     @Test
     public void testHandle_LocalClassName() {
         prepareComponentTracker(0, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
         ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
+        setLocalClassName(0, "id1", handler, "nice-button");
         JsonObject data = Json.createObject();
-        data.put("requestId", "id1");
+        data.put("requestId", "id2");
         data.put("uiId", 0);
         data.put("nodeId", 0);
+        BaseResponse response = handler.handleDebugMessageData(
+                ThemeEditorCommand.COMPONENT_METADATA, data);
+        assertResponseOk(response, "id2");
+        Assert.assertTrue(response instanceof ComponentMetadataResponse);
+        ComponentMetadataResponse metadataResponse = (ComponentMetadataResponse) response;
+        Assert.assertEquals("nice-button", metadataResponse.getClassName());
     }
 
     @Test
@@ -320,13 +328,6 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
     }
 
     private BaseResponse setRule(Integer uiId, String requestId,
-            ThemeEditorMessageHandler handler, String selector, String property,
-            String value) {
-        return setRule(uiId, null, requestId, handler, selector, property,
-                value);
-    }
-
-    private BaseResponse setRule(Integer uiId, Integer nodeId, String requestId,
             ThemeEditorMessageHandler handler, String selector, String property,
             String value) {
         JsonObject data = Json.createObject();
