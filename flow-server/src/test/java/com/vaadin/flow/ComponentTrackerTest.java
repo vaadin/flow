@@ -109,6 +109,29 @@ public class ComponentTrackerTest {
     }
 
     @Test
+    public void offsetApplied() {
+        Component1 c1 = new Component1();
+        Component c2 = new Component1();
+        Component c3 = new Component1();
+
+        ComponentTracker.Location c1Location = ComponentTracker.findCreate(c1);
+        Assert.assertEquals(113, c1Location.lineNumber());
+        Assert.assertEquals(getClass().getName(), c1Location.className());
+
+        ComponentTracker.refreshCreateLocation(c1Location, 3);
+
+        ComponentTracker.Location c2Location = ComponentTracker.findCreate(c2);
+        Assert.assertEquals(114 + 3, c2Location.lineNumber());
+        Assert.assertEquals(getClass().getName(), c2Location.className());
+
+        ComponentTracker.refreshCreateLocation(c2Location, 1);
+
+        ComponentTracker.Location c3Location = ComponentTracker.findCreate(c3);
+        Assert.assertEquals(115 + 3 + 1, c3Location.lineNumber());
+        Assert.assertEquals(getClass().getName(), c3Location.className());
+    }
+
+    @Test
     public void memoryIsReleased() throws Exception {
         Field createLocationField = ComponentTracker.class
                 .getDeclaredField("createLocation");
