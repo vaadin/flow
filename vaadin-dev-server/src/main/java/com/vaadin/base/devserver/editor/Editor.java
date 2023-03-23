@@ -1,19 +1,20 @@
 package com.vaadin.base.devserver.editor;
 
 import com.github.javaparser.Position;
+import com.github.javaparser.Range;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier.Keyword;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
-import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.comments.Comment;
 import com.github.javaparser.ast.comments.LineComment;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.AssignExpr.Operator;
@@ -25,16 +26,13 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
-import com.github.javaparser.ast.nodeTypes.NodeWithBlockStmt;
 import com.github.javaparser.ast.nodeTypes.NodeWithStatements;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
-import com.github.javaparser.symbolsolver.JavaSymbolSolver;
-import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
-import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
+import com.vaadin.base.devserver.themeeditor.utils.StatementLineNumberVisitor;
 import com.vaadin.flow.shared.util.SharedUtil;
 import org.apache.commons.io.IOUtils;
 
@@ -224,7 +222,7 @@ public class Editor {
             } else if (type == Type.REMOVE_NODE) {
                 return "Modification REMOVE position "
                         + referenceNode.getBegin().get() + "-"
-                        + referenceNode.getEnd().get() + ": " + node;
+                        + referenceNode.getEnd().get() + ": " + referenceNode;
             }
             return "Modification UNKNOWN TYPE";
         }
@@ -453,7 +451,7 @@ public class Editor {
 
         Statement createStatement = findStatement(cu,
                 componentCreateLineNumber);
-        if (createStatement == null) {
+        if (createStatement == null || createStatement.isBlockStmt()) {
             if (where == Where.INSIDE) {
                 // Potentially a @Route class
                 mods.addAll(addComponentToClass(cu, componentCreateLineNumber,
@@ -918,8 +916,13 @@ public class Editor {
     }
 
     private static int getLinesCount(Node node) {
-        return node.getRange().map(r -> r.getLineCount())
+        int nodeLines = node.getRange().map(r -> r.getLineCount())
                 .orElseGet(() -> node.toString().split("\n").length);
+        if (node.getComment().isPresent()) {
+            Comment comment = node.getComment().get();
+            nodeLines += comment.getRange().map(Range::getLineCount).orElse(0);
+        }
+        return nodeLines;
     }
 
     protected ExpressionStmt findMethodCall(BlockStmt codeBlock, Node afterThis,
@@ -958,12 +961,7 @@ public class Editor {
     }
 
     protected Statement findStatement(CompilationUnit cu, int lineNumber) {
-        for (TypeDeclaration<?> type : cu.getTypes()) {
-            if (contains(type, lineNumber)) {
-                return findStatement(type, lineNumber);
-            }
-        }
-        return null;
+        return cu.accept(new StatementLineNumberVisitor(), lineNumber);
     }
 
     private boolean contains(Node node, int lineNumber) {
@@ -986,28 +984,6 @@ public class Editor {
                 nws.addStatement(index, stmt);
             }
         }
-    }
-
-    private Statement findStatement(TypeDeclaration<?> type, int lineNumber) {
-        for (BodyDeclaration<?> member : type.getMembers()) {
-            if (contains(member, lineNumber)) {
-                if (member instanceof NodeWithBlockStmt) {
-                    return findStatement((NodeWithBlockStmt<?>) member,
-                            lineNumber);
-                }
-            }
-        }
-        return null;
-    }
-
-    private Statement findStatement(NodeWithBlockStmt<?> hasBlock,
-            int lineNumber) {
-        for (Statement statement : hasBlock.getBody().getStatements()) {
-            if (contains(statement, lineNumber)) {
-                return statement;
-            }
-        }
-        return null;
     }
 
     protected String readFile(File file) throws IOException {
@@ -1114,14 +1090,6 @@ public class Editor {
     }
 
     protected CompilationUnit parseSource(String source) throws IOException {
-        CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
-        combinedTypeSolver.add(new ReflectionTypeSolver());
-
-        // Configure JavaParser to use type resolution
-        JavaSymbolSolver symbolSolver = new JavaSymbolSolver(
-                combinedTypeSolver);
-        StaticJavaParser.getConfiguration().setSymbolResolver(symbolSolver);
-
         return LexicalPreservingPrinter.setup(StaticJavaParser.parse(source));
     }
 

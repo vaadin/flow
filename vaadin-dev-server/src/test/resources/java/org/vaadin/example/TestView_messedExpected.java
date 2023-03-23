@@ -24,8 +24,8 @@ public class TestView extends VerticalLayout {
         // Use TextField for standard text input
         TextField textField =
                 new TextField("Your name");
-        textField.addClassName("beautiful");
-        textField.addClassName("bold");
+        //<theme-editor-local-classname>
+        textField.addClassName("bold-field");
         textField
                 .addThemeName("bordered");
              // Button click listeners can be defined as lambda expressions
@@ -46,6 +46,7 @@ Button button = new Button("Say hello", e -> Notification.show(greetService.gree
         addClassName("centered-content");
 
 
+        textField       .addClassName("ugly");
 
         add(textField, button, new TextField("Cant touch this either"));}
 
