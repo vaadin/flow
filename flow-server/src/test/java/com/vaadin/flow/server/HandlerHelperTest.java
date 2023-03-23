@@ -331,7 +331,6 @@ public class HandlerHelperTest {
     @Test
     public void publicResources() {
         Set<String> expected = new HashSet<>();
-        expected.add("/favicon.ico");
         expected.add("/manifest.webmanifest");
         expected.add("/sw.js");
         expected.add("/sw-runtime-resources-precache.js");
@@ -376,5 +375,11 @@ public class HandlerHelperTest {
         Set<String> actual = new HashSet<>();
         Collections.addAll(actual, HandlerHelper.getPublicResources());
         Assert.assertEquals(expected, actual);
+
+        Set<String> expectedRoot = Set.of("/favicon.ico");
+
+        Set<String> actualRoot = new HashSet<>();
+        Collections.addAll(actualRoot, HandlerHelper.getPublicResourcesRoot());
+        Assert.assertEquals(expectedRoot, actualRoot);
     }
 }
