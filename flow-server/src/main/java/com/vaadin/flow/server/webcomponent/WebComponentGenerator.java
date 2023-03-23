@@ -71,13 +71,8 @@ public class WebComponentGenerator {
         }
     }
 
-    private static String getTemplate(boolean compatibilityMode) {
-        String templateHead;
-        if (compatibilityMode) {
-            templateHead = getStringResource(HTML_TEMPLATE);
-        } else {
-            templateHead = getStringResource(JS_TEMPLATE);
-        }
+    private static String getTemplate() {
+        String templateHead = getStringResource(JS_TEMPLATE);
         String scriptTemplate = getStringResource(SCRIPT_TEMPLATE);
         return templateHead.replace("_script_template_", scriptTemplate);
     }
@@ -89,9 +84,6 @@ public class WebComponentGenerator {
      *            web component exporter factory, not {@code null}
      * @param frontendURI
      *            the frontend resources URI, not {@code null}
-     * @param compatibilityMode
-     *            {@code true} to generate Polymer2 template, {@code false} to
-     *            generate Polymer3 template
      * @param themeName
      *            the theme defined using {@link Theme} or {@code null} if not
      *            defined
@@ -99,15 +91,14 @@ public class WebComponentGenerator {
      */
     public static String generateModule(
             WebComponentExporterFactory<? extends Component> factory,
-            String frontendURI, boolean compatibilityMode, String themeName) {
+            String frontendURI, String themeName) {
         Objects.requireNonNull(factory);
         Objects.requireNonNull(frontendURI);
 
         WebComponentConfiguration<? extends Component> config = new WebComponentExporter.WebComponentConfigurationFactory()
                 .create(factory.create());
 
-        return generateModule(config, frontendURI, false, compatibilityMode,
-                themeName);
+        return generateModule(config, frontendURI, false, themeName);
     }
 
     /**
@@ -117,9 +108,6 @@ public class WebComponentGenerator {
      *            web component class implementation, not {@code null}
      * @param frontendURI
      *            the frontend resources URI, not {@code null}
-     * @param compatibilityMode
-     *            {@code true} to generate Polymer2 template, {@code false} to
-     *            generate Polymer3 template
      * @param themeName
      *            the theme defined using {@link Theme} or {@code null} if not
      *            defined
@@ -127,18 +115,17 @@ public class WebComponentGenerator {
      */
     public static String generateModule(
             WebComponentConfiguration<? extends Component> webComponentConfiguration,
-            String frontendURI, boolean compatibilityMode, String themeName) {
+            String frontendURI, String themeName) {
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
 
         return generateModule(webComponentConfiguration, frontendURI, true,
-                compatibilityMode, themeName);
+                themeName);
     }
 
     private static String generateModule(
             WebComponentConfiguration<? extends Component> webComponentConfiguration,
-            String frontendURI, boolean generateUiImport,
-            boolean compatibilityMode, String themeName) {
+            String frontendURI, boolean generateUiImport, String themeName) {
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
 
@@ -149,7 +136,7 @@ public class WebComponentGenerator {
                 webComponentConfiguration.getTag(), propertyDataSet,
                 frontendURI, generateUiImport, themeName);
 
-        String template = getTemplate(compatibilityMode);
+        String template = getTemplate();
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
             template = template.replace("_" + replacement.getKey() + "_",
                     replacement.getValue());
