@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -163,24 +164,23 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         return LexicalPreservingPrinter.setup(root.parse("", "TestView.java"));
     }
 
-    private void compareTestView(String otherFile) {
+    private void compareTestView(String expectedFile) {
         try {
             File javaFolder = TestUtils
                     .getTestFolder("java/org/vaadin/example");
-            Reader fileReader1 = new FileReader(
-                    new File(javaFolder, "TestView.java"));
-            Reader fileReader2 = new FileReader(
-                    new File(javaFolder, otherFile));
-            BufferedReader br1 = new BufferedReader(fileReader1);
-            BufferedReader br2 = new BufferedReader(fileReader2);
-
-            String contents1 = br1.lines()
-                    .collect(Collectors.joining(System.lineSeparator()));
-            String contents2 = br2.lines()
-                    .collect(Collectors.joining(System.lineSeparator()));
-            Assert.assertEquals(contents1, contents2);
+            String expected = readFile(new File(javaFolder, expectedFile));
+            String current = readFile(new File(javaFolder, "TestView.java"));
+            Assert.assertEquals(expected, current);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private String readFile(File file) throws IOException {
+        try (Reader fileReader = new FileReader(file);
+                BufferedReader br = new BufferedReader(fileReader)) {
+            return br.lines()
+                    .collect(Collectors.joining(System.lineSeparator()));
         }
     }
 
