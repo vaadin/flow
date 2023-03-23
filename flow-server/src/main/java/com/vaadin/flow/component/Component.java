@@ -18,9 +18,9 @@ package com.vaadin.flow.component;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
@@ -636,7 +636,11 @@ public abstract class Component
      *         null)
      */
     public String getTranslation(String key, Object... params) {
-        return getTranslation(key, getLocale(), params);
+        final Optional<I18NProvider> i18NProvider = getI18NProvider();
+        return i18NProvider
+                .map(i18n -> i18n.getTranslation(key,
+                        getLocale(() -> i18NProvider), params))
+                .orElseGet(() -> "!{" + key + "}!");
     }
 
     /**
@@ -656,7 +660,11 @@ public abstract class Component
      *         null)
      */
     public String getTranslation(Object key, Object... params) {
-        return getTranslation(key, getLocale(), params);
+        final Optional<I18NProvider> i18NProvider = getI18NProvider();
+        return i18NProvider
+                .map(i18n -> i18n.getTranslation(key,
+                        getLocale(() -> i18NProvider), params))
+                .orElseGet(() -> "!{" + key + "}!");
     }
 
     /**
@@ -678,10 +686,9 @@ public abstract class Component
      */
     @Deprecated
     public String getTranslation(String key, Locale locale, Object... params) {
-        if (getI18NProvider() == null) {
-            return "!{" + key + "}!";
-        }
-        return getI18NProvider().getTranslation(key, locale, params);
+        return getI18NProvider()
+                .map(i18n -> i18n.getTranslation(key, locale, params))
+                .orElseGet(() -> "!{" + key + "}!");
     }
 
     /**
@@ -703,10 +710,9 @@ public abstract class Component
      */
     @Deprecated
     public String getTranslation(Object key, Locale locale, Object... params) {
-        if (getI18NProvider() == null) {
-            return "!{" + key + "}!";
-        }
-        return getI18NProvider().getTranslation(key, locale, params);
+        return getI18NProvider()
+                .map(i18n -> i18n.getTranslation(key, locale, params))
+                .orElseGet(() -> "!{" + key + "}!");
     }
 
     /**
@@ -747,8 +753,9 @@ public abstract class Component
         return getTranslation(key, locale, params);
     }
 
-    private I18NProvider getI18NProvider() {
-        return VaadinService.getCurrent().getInstantiator().getI18NProvider();
+    private Optional<I18NProvider> getI18NProvider() {
+        return Optional.ofNullable(
+                VaadinService.getCurrent().getInstantiator().getI18NProvider());
     }
 
     /**
@@ -762,23 +769,15 @@ public abstract class Component
      * @return the component locale
      */
     protected Locale getLocale() {
-        UI currentUi = UI.getCurrent();
-        Locale locale = currentUi == null ? null : currentUi.getLocale();
-        if (locale == null) {
-            final I18NProvider i18NProvider = getI18NProvider();
-            // If a i18nProvider is not defined we should just return the
-            // default locale.
-            if (i18NProvider == null) {
-                return Locale.getDefault();
-            }
-            List<Locale> locales = i18NProvider.getProvidedLocales();
-            if (locales != null && !locales.isEmpty()) {
-                locale = locales.get(0);
-            } else {
-                locale = Locale.getDefault();
-            }
-        }
-        return locale;
+        return getLocale(() -> getI18NProvider());
+    }
+
+    private Locale getLocale(Supplier<Optional<I18NProvider>> i18NProvider) {
+        return Optional.ofNullable(UI.getCurrent()).map(UI::getLocale)
+                .or(() -> i18NProvider.get()
+                        .map(I18NProvider::getProvidedLocales)
+                        .flatMap(locales -> locales.stream().findFirst()))
+                .orElseGet(Locale::getDefault);
     }
 
     /**
