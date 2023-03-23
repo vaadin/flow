@@ -311,7 +311,8 @@ public abstract class VaadinWebSecurity {
                 .map(path -> RequestUtil.applyUrlMapping(urlMapping, path));
         Stream<String> rootPaths = Stream
                 .of(HandlerHelper.getPublicResourcesRoot());
-        return new OrRequestMatcher(Stream.concat(mappingRelativePaths, rootPaths)
+        return new OrRequestMatcher(Stream
+                .concat(mappingRelativePaths, rootPaths)
                 .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
     }
 
