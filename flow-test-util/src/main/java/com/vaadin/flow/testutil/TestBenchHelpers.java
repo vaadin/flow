@@ -342,9 +342,8 @@ public class TestBenchHelpers extends ParallelTest {
                             .contains(WEB_SOCKET_CONNECTION_ERROR_PREFIX)
                     && !acceptableMessagePredicate
                             .test(logEntry.getMessage())) {
-                throw new AssertionError(String.format(
-                        "Error message in browser log: %s",
-                        logEntry));
+                throw new AssertionError(String
+                        .format("Error message in browser log: %s", logEntry));
             } else {
                 LoggerFactory.getLogger(TestBenchHelpers.class.getName()).warn(
                         "This message in browser log console may be a potential error: '{}'",
