@@ -63,6 +63,10 @@ public class SecurityConfig extends VaadinWebSecurity {
         http.authorizeHttpRequests()
                 .requestMatchers(new AntPathRequestMatcher("/public/**"))
                 .permitAll();
+        http.authorizeHttpRequests()
+                .requestMatchers(new AntPathRequestMatcher("/error"))
+                .permitAll();
+
         super.configure(http);
         if (getLogoutSuccessUrl().equals("/")) {
             // Test the default url with empty context path
