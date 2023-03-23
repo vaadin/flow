@@ -368,7 +368,8 @@ export class ThemeEditor extends LitElement {
     if (this.context.scope === ThemeScope.local && !this.context.localClassName && this.context.suggestedClassName) {
       const newClassName = this.context.suggestedClassName;
       this.context.localClassName = newClassName;
-      await this.api.setLocalClassName(this.context.component, newClassName);
+      const classNameResponse = await this.api.setLocalClassName(this.context.component, newClassName);
+      this.historyActions = this.history.push(classNameResponse.requestId);
       this.previewGeneratedClassName(this.context.component.element, newClassName);
     }
 

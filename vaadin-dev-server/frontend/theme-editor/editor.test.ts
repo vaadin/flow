@@ -452,6 +452,25 @@ describe('theme-editor', () => {
       expect(historySpy.push.args).to.deep.equal([['request1']]);
     });
 
+    it('should add history entry for setting class name when editing property', async () => {
+      // Simulate selected component not having a class name yet
+      apiMock.loadComponentMetadata.returns(
+        Promise.resolve({
+          accessible: true,
+          suggestedClassName: 'suggested-class'
+        })
+      );
+      apiMock.setLocalClassName.returns(Promise.resolve({ requestId: 'request1' }));
+      apiMock.setCssRules.returns(Promise.resolve({ requestId: 'request2' }));
+
+      // edit something
+      await pickComponent();
+      await editProperty('Label', 'color', 'red');
+
+      expect(historySpy.push.calledTwice).to.be.true;
+      expect(historySpy.push.args).to.deep.equal([['request1'], ['request2']]);
+    });
+
     it('should call undo when clicking undo button', async () => {
       apiMock.setCssRules.returns(Promise.resolve({ requestId: 'request1' }));
 
