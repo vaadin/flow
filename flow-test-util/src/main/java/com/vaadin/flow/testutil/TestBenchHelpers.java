@@ -343,7 +343,7 @@ public class TestBenchHelpers extends ParallelTest {
                     && !acceptableMessagePredicate
                             .test(logEntry.getMessage())) {
                 throw new AssertionError(String.format(
-                        "Received error message in browser log console right after opening the page, message: %s",
+                        "Error message in browser log: %s",
                         logEntry));
             } else {
                 LoggerFactory.getLogger(TestBenchHelpers.class.getName()).warn(
