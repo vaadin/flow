@@ -86,6 +86,7 @@ export class ThemeEditor extends LitElement {
 
       .header {
         flex: 0 0 auto;
+        gap: 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -94,17 +95,18 @@ export class ThemeEditor extends LitElement {
       }
 
       .picker {
-        flex: 0 0 auto;
+        flex: 1 1 0;
+        min-width: 0;
         display: flex;
         align-items: center;
       }
 
       .picker button {
+        min-width: 0;
         display: inline-flex;
         align-items: center;
-        gap: 4px;
         padding: 0;
-        line-height: 0;
+        line-height: 20px;
         border: none;
         background: none;
         color: var(--dev-tools-text-color);
@@ -114,7 +116,20 @@ export class ThemeEditor extends LitElement {
         color: var(--dev-tools-text-color-emphasis);
       }
 
+      .picker svg,
+      .picker .component-type {
+        flex: 0 0 auto;
+        margin-right: 4px;
+      }
+
       .picker .instance-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #e5a2fce5;
+      }
+
+      .picker .instance-name-quote {
         color: #e5a2fce5;
       }
 
@@ -289,10 +304,13 @@ export class ThemeEditor extends LitElement {
         this.context.scope === ThemeScope.local
           ? this.context.metadata.displayName
           : `All ${this.context.metadata.displayName}s`;
-      const componentLabel = html`<span>${componentDisplayName}</span>`;
+      const componentLabel = html`<span class="component-type">${componentDisplayName}</span>`;
       const instanceName =
         this.context.scope === ThemeScope.local ? detectElementDisplayName(this.context.component) : null;
-      const instanceLabel = instanceName ? html` <span class="instance-name">"${instanceName}"</span>` : null;
+      const instanceLabel = instanceName
+        ? html` <span class="instance-name-quote">"</span><span class="instance-name">${instanceName}</span
+            ><span class="instance-name-quote">"</span>`
+        : null;
       label = html`${componentLabel} ${instanceLabel}`;
     } else {
       label = html`<span class="no-selection">Pick an element to get started</span>`;
