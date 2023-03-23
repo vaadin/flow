@@ -48,7 +48,7 @@ public abstract class AbstractIT extends AbstractSpringTest {
                 || msg.contains(
                         "admin-only/secret.txt?continue - Failed to load resource: the server responded with a status of 403")
                 || msg.matches(
-                        ".*VAADIN/push?v-r=push&.*X-Atmosphere-Transport=close.* - Failed to load resource: the server responded with a status of 403"));
+                        ".*VAADIN/push\\?v-r=push&.*X-Atmosphere-Transport=close.* - Failed to load resource: the server responded with a status of 403"));
     }
 
     /**
