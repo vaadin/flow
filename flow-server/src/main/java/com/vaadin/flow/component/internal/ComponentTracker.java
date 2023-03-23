@@ -17,6 +17,7 @@ package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -179,6 +180,48 @@ public class ComponentTracker {
             location = createLocation.get(component);
         }
         attachLocation.put(component, location);
+    }
+
+    /**
+     * Refreshes location of all components that had create location below given
+     * reference component by given offset value. Location may change due to
+     * dynamic code updates conducted by Vaadin developer tools.
+     *
+     * @param location
+     *            reference component location
+     * @param offset
+     *            difference in lines to be applied
+     */
+    public static void refreshCreateLocation(Location location, int offset) {
+        refreshLocation(createLocation, location, offset);
+    }
+
+    /**
+     * Refreshes location of all components that had attach location below given
+     * reference component by given offset value. Location may change due to
+     * dynamic code updates conducted by Vaadin developer tools.
+     *
+     * @param location
+     *            reference component location
+     * @param offset
+     *            difference in lines to be applied
+     */
+    public static void refreshAttachLocation(Location location, int offset) {
+        refreshLocation(attachLocation, location, offset);
+    }
+
+    private static void refreshLocation(Map<Component, Location> targetRef,
+            Location location, int offset) {
+        Map<Component, Location> updatedLocations = new HashMap<>();
+        targetRef.entrySet().stream().filter(
+                e -> Objects.equals(e.getValue().className, location.className))
+                .filter(e -> e.getValue().lineNumber > location.lineNumber)
+                .forEach(e -> {
+                    Location l = e.getValue();
+                    updatedLocations.put(e.getKey(), new Location(l.className,
+                            l.filename, l.methodName, l.lineNumber + offset));
+                });
+        targetRef.putAll(updatedLocations);
     }
 
     private static boolean isNavigatorCreate(Location location) {
