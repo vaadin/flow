@@ -698,7 +698,6 @@ describe('theme-editor', () => {
 
     it('should apply suggested class name before setting rules', async () => {
       await pickComponent();
-      debugger;
       await editProperty('Label', 'color', 'red');
 
       // should make API call to apply class name
