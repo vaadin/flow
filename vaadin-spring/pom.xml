@@ -148,13 +148,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.stephenc.jcip</groupId>
-            <artifactId>jcip-annotations</artifactId>
-            <version>1.0-1</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-generic</artifactId>
             <version>${project.version}</version>
