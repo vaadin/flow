@@ -4,7 +4,7 @@ import { ComponentReference } from '../component-util';
 export enum Commands {
   response = 'themeEditorResponse',
   loadComponentMetadata = 'themeEditorComponentMetadata',
-  setComponentClassName = 'themeEditorSetComponentClassName',
+  setLocalClassName = 'themeEditorLocalClassName',
   setCssRules = 'themeEditorRules',
   loadPreview = 'themeEditorLoadPreview',
   loadRules = 'themeEditorLoadRules',
@@ -100,8 +100,8 @@ export class ThemeEditorApi {
     return this.sendRequest(Commands.loadComponentMetadata, { nodeId: componentRef.nodeId });
   }
 
-  public setComponentClassName(componentRef: ComponentReference, className: string): Promise<BaseResponse> {
-    return this.sendRequest(Commands.setComponentClassName, { nodeId: componentRef.nodeId, className });
+  public setLocalClassName(componentRef: ComponentReference, className: string): Promise<BaseResponse> {
+    return this.sendRequest(Commands.setLocalClassName, { nodeId: componentRef.nodeId, className });
   }
 
   public setCssRules(rules: ServerCssRule[]): Promise<BaseResponse> {

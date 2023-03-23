@@ -23,7 +23,7 @@ describe('theme-editor', () => {
   };
   let apiMock: {
     loadComponentMetadata: sinon.SinonStub;
-    setComponentClassName: sinon.SinonStub;
+    setLocalClassName: sinon.SinonStub;
     setCssRules: sinon.SinonStub;
     loadPreview: sinon.SinonStub;
     loadRules: sinon.SinonStub;
@@ -56,7 +56,7 @@ describe('theme-editor', () => {
 
     apiMock = {
       loadComponentMetadata: sinon.stub((editor as any).api as ThemeEditorApi, 'loadComponentMetadata'),
-      setComponentClassName: sinon.stub((editor as any).api as ThemeEditorApi, 'setComponentClassName'),
+      setLocalClassName: sinon.stub((editor as any).api as ThemeEditorApi, 'setLocalClassName'),
       setCssRules: sinon.stub((editor as any).api as ThemeEditorApi, 'setCssRules'),
       loadPreview: sinon.stub((editor as any).api as ThemeEditorApi, 'loadPreview'),
       loadRules: sinon.stub((editor as any).api as ThemeEditorApi, 'loadRules'),
@@ -64,7 +64,7 @@ describe('theme-editor', () => {
       redo: sinon.stub((editor as any).api as ThemeEditorApi, 'redo')
     };
     apiMock.loadComponentMetadata.returns(Promise.resolve({ accessible: true, className: 'test-class' }));
-    apiMock.setComponentClassName.returns(Promise.resolve({}));
+    apiMock.setLocalClassName.returns(Promise.resolve({}));
     apiMock.setCssRules.returns(Promise.resolve({}));
     apiMock.loadPreview.returns(Promise.resolve({ css: '' }));
     apiMock.loadRules.returns(Promise.resolve({ rules: [], accessible: true }));
@@ -683,8 +683,8 @@ describe('theme-editor', () => {
       await editProperty('Label', 'color', 'red');
 
       // should make API call to apply class name
-      expect(apiMock.setComponentClassName.calledOnce).to.be.true;
-      expect(apiMock.setComponentClassName.args[0]).to.deep.equal([testComponentRef, 'suggested-class']);
+      expect(apiMock.setLocalClassName.calledOnce).to.be.true;
+      expect(apiMock.setLocalClassName.args[0]).to.deep.equal([testComponentRef, 'suggested-class']);
       // should add class name to selected component
       expect(testElement.classList.contains('suggested-class')).to.be.true;
     });
