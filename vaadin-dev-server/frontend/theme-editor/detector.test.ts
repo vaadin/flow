@@ -1,10 +1,24 @@
 import { expect, fixture, html } from '@open-wc/testing';
+import sinon from 'sinon';
 import { detectTheme } from './detector';
 import { testElementMetadata } from './tests/utils';
 
 describe('theme-detector', () => {
-  it('should include all CSS property values from component metadata', () => {
-    const theme = detectTheme(testElementMetadata);
+  let setupElementStub: sinon.SinonStub;
+  let cleanupElementStub: sinon.SinonStub;
+
+  beforeEach(() => {
+    setupElementStub = sinon.stub(testElementMetadata, 'setupElement');
+    cleanupElementStub = sinon.stub(testElementMetadata, 'cleanupElement');
+  });
+
+  afterEach(() => {
+    setupElementStub.restore();
+    cleanupElementStub.restore();
+  });
+
+  it('should include all CSS property values from component metadata', async () => {
+    const theme = await detectTheme(testElementMetadata);
     let propertyCount = 0;
 
     testElementMetadata.elements.forEach((element) => {
@@ -19,7 +33,7 @@ describe('theme-detector', () => {
   });
 
   it('should detect default CSS property values', async () => {
-    const theme = detectTheme(testElementMetadata);
+    const theme = await detectTheme(testElementMetadata);
 
     expect(theme.getPropertyValue('test-element', 'padding').value).to.equal('10px');
     expect(theme.getPropertyValue('test-element::part(label)', 'color').value).to.equal('rgb(0, 0, 0)');
@@ -47,7 +61,7 @@ describe('theme-detector', () => {
         }
       </style>
     `);
-    const theme = detectTheme(testElementMetadata);
+    const theme = await detectTheme(testElementMetadata);
 
     expect(theme.getPropertyValue('test-element', 'padding').value).to.equal('20px');
     expect(theme.getPropertyValue('test-element::part(label)', 'color').value).to.equal('rgb(0, 128, 0)');
@@ -55,9 +69,16 @@ describe('theme-detector', () => {
     expect(theme.getPropertyValue('test-element::part(helper-text)', 'color').value).to.equal('rgb(0, 0, 255)');
   });
 
-  it('should remove test component from DOM', () => {
-    detectTheme(testElementMetadata);
+  it('should remove test component from DOM', async () => {
+    await detectTheme(testElementMetadata);
 
     expect(document.querySelector('test-element')).to.not.exist;
   });
+
+  it('should call custom setup and cleanup functions', async () => {
+    await detectTheme(testElementMetadata);
+
+    expect(setupElementStub.calledOnce).to.be.true;
+    expect(cleanupElementStub.calledOnce).to.be.true;
+  })
 });

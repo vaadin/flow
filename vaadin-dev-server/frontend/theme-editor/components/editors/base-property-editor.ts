@@ -130,6 +130,8 @@ export class PropertyPresets {
       // and in reverse allows to select a preset in the slider from a computed
       // style value such as `2.25rem`.
       const measureElement = document.createElement('div');
+      // Enable borders so that measuring border styles works properly
+      measureElement.style.borderStyle = 'solid';
       measureElement.style.visibility = 'hidden';
       document.body.append(measureElement);
 

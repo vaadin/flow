@@ -150,6 +150,14 @@ export function generateThemeRule(
 ): ServerCssRule {
   const scopedSelector = createScopedSelector(element, scope);
   const properties = { [propertyName]: value };
+
+  // Individual property handling
+
+  // Enable border style when setting a border width
+  if (propertyName === 'border-width' && parseInt(value) > 0) {
+    properties['border-style'] = 'solid';
+  }
+
   return {
     selector: scopedSelector,
     properties

@@ -393,5 +393,27 @@ describe('model', () => {
 
       expect(rules).to.deep.equal(expectedRules);
     });
+
+    describe('individual property handling', () => {
+      it('should add border-style when setting border-width to larger than zero', () => {
+        const rules = [
+          generateThemeRule(hostElement, globalScope, 'border-width', '0'),
+          generateThemeRule(hostElement, globalScope, 'border-width', '0px'),
+          generateThemeRule(hostElement, globalScope, 'border-width', '0rem'),
+          generateThemeRule(hostElement, globalScope, 'border-width', '1px'),
+          generateThemeRule(hostElement, globalScope, 'border-width', '1rem')
+        ];
+
+        const expectedRules: ServerCssRule[] = [
+          { selector: 'test-element', properties: { 'border-width': '0' } },
+          { selector: 'test-element', properties: { 'border-width': '0px' } },
+          { selector: 'test-element', properties: { 'border-width': '0rem' } },
+          { selector: 'test-element', properties: { 'border-width': '1px', 'border-style': 'solid' } },
+          { selector: 'test-element', properties: { 'border-width': '1rem', 'border-style': 'solid' } }
+        ];
+
+        expect(rules).to.deep.equal(expectedRules);
+      });
+    });
   });
 });
