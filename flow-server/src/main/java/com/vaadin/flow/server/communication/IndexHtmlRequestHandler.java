@@ -22,8 +22,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
+import com.vaadin.flow.i18n.I18NProvider;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -70,7 +73,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
+                                             VaadinRequest request, VaadinResponse response) throws IOException {
         if (writeErrorCodeIfRequestLocationIsInvalid(request, response)) {
             return true;
         }
@@ -84,6 +87,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 : getIndexHtmlDocument(service);
 
         prependBaseHref(request, indexDocument);
+
+        // similar to Component implementation:
+        // worth to extract the getLocale to LocaleUtil potentially?
+        Locale locale = getLocale();
+        indexDocument.getElementsByTag("html").get(0).attr("lan", locale.getLanguage());
 
         JsonObject initialJson = Json.createObject();
 
@@ -160,9 +168,32 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
         return true;
     }
+    private I18NProvider getI18NProvider() {
+        return VaadinService.getCurrent().getInstantiator().getI18NProvider();
+    }
+
+    protected Locale getLocale() {
+        UI currentUi = UI.getCurrent();
+        Locale locale = currentUi == null ? null : currentUi.getLocale();
+        if (locale == null) {
+            final I18NProvider i18NProvider = getI18NProvider();
+            // If a i18nProvider is not defined we should just return the
+            // default locale.
+            if (i18NProvider == null) {
+                return Locale.getDefault();
+            }
+            List<Locale> locales = i18NProvider.getProvidedLocales();
+            if (locales != null && !locales.isEmpty()) {
+                locale = locales.get(0);
+            } else {
+                locale = Locale.getDefault();
+            }
+        }
+        return locale;
+    }
 
     private void applyThemeVariant(Document indexDocument,
-            VaadinContext context) throws IOException {
+                                   VaadinContext context) throws IOException {
         FrontendUtils.getThemeAnnotation(context)
                 .ifPresent(theme -> indexDocument.head().parent().attr("theme",
                         theme.variant()));
@@ -256,8 +287,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void addDevTools(Document indexDocument,
-            DeploymentConfiguration config, VaadinSession session,
-            VaadinRequest request) {
+                             DeploymentConfiguration config, VaadinSession session,
+                             VaadinRequest request) {
         VaadinService service = session.getService();
         Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                 .getLiveReloadFromService(service);
@@ -289,7 +320,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void addInitialFlow(JsonObject initialJson, Document indexDocument,
-            VaadinRequest request) {
+                                VaadinRequest request) {
         SpringCsrfTokenUtil.addTokenAsMetaTagsToHeadIfPresentInRequest(
                 indexDocument.head(), request);
         Element elm = new Element(SCRIPT);
@@ -301,8 +332,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void includeInitialUidl(JsonObject initialJson,
-            VaadinSession session, VaadinRequest request,
-            VaadinResponse response) {
+                                    VaadinSession session, VaadinRequest request,
+                                    VaadinResponse response) {
         JsonObject initial = getInitialJson(request, response, session);
         initialJson.put(SCRIPT_INITIAL, initial);
     }
@@ -313,7 +344,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 && !BootstrapHandler.isFrameworkInternalRequest(request)
                 && !BootstrapHandler.isVaadinStaticFileRequest(request)
                 && request.getService().getBootstrapUrlPredicate()
-                        .isValidUrl(request);
+                .isValidUrl(request);
     }
 
     @Override
@@ -337,7 +368,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private static void prependBaseHref(VaadinRequest request,
-            Document indexDocument) {
+                                        Document indexDocument) {
         Elements base = indexDocument.head().getElementsByTag("base");
         String baseHref = getServiceUrl(request);
         if (base.isEmpty()) {
