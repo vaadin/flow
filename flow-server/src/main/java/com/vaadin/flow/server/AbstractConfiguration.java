@@ -18,8 +18,6 @@ package com.vaadin.flow.server;
 import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
