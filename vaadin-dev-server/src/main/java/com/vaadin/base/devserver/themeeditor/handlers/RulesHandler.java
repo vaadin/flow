@@ -1,28 +1,27 @@
 package com.vaadin.base.devserver.themeeditor.handlers;
 
 import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
+import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
 import com.vaadin.base.devserver.themeeditor.messages.RulesRequest;
-import com.vaadin.base.devserver.themeeditor.messages.RulesResponse;
-import com.vaadin.base.devserver.themeeditor.utils.*;
+import com.vaadin.base.devserver.themeeditor.utils.CssRule;
+import com.vaadin.base.devserver.themeeditor.utils.HasThemeModifier;
+import com.vaadin.base.devserver.themeeditor.utils.MessageHandler;
 import com.vaadin.flow.internal.JsonUtils;
 import elemental.json.JsonObject;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class RulesHandler implements MessageHandler {
 
     private final HasThemeModifier hasThemeModifier;
 
-    private final HasSourceModifier hasSourceModifier;
-
-    private class FinalsHolder {
-        private String className;
-    }
-
-    public RulesHandler(HasThemeModifier hasThemeModifier,
-            HasSourceModifier hasSourceModifier) {
+    public RulesHandler(HasThemeModifier hasThemeModifier) {
         this.hasThemeModifier = hasThemeModifier;
-        this.hasSourceModifier = hasSourceModifier;
     }
 
     @Override
@@ -32,27 +31,13 @@ public class RulesHandler implements MessageHandler {
         // needs to be final for ExecuteAndUndo lambdas
         final List<CssRule> rules = new ArrayList<>(request.getRules());
 
-        FinalsHolder holder = new FinalsHolder();
-
-        // in case of instance request - load or generate unique class name
-        if (request.isInstanceRequest()) {
-            boolean accessible = hasSourceModifier.getSourceModifier()
-                    .isAccessible(request.getUiId(), request.getNodeId());
-            if (accessible) {
-                holder.className = hasSourceModifier.getSourceModifier()
-                        .getUniqueClassName(request.getUiId(),
-                                request.getNodeId(), true);
-                rules.forEach(rule -> rule.setClassName(holder.className));
-            } else {
-                throw new ThemeEditorException(
-                        "Cannot modify unique CSS rules on inaccessible component.");
-            }
-        }
+        List<String> selectors = request.getRules().stream()
+                .map(CssRule::getSelector).collect(Collectors.toList());
 
         List<CssRule> currentRules = new ArrayList<>();
         for (CssRule rule : rules) {
             List<CssRule> existingRules = hasThemeModifier.getThemeModifier()
-                    .getCssRules(rule.getSelector()::equals);
+                    .getCssRules(selectors);
             if (!existingRules.isEmpty()) {
                 // rule exists, calculate undo rule
                 currentRules.add(buildUndoRule(rule, existingRules.get(0)));
@@ -63,11 +48,11 @@ public class RulesHandler implements MessageHandler {
         }
         return new ExecuteAndUndo(() -> {
             hasThemeModifier.getThemeModifier().setThemeProperties(rules);
-            return new RulesResponse(holder.className);
+            return BaseResponse.ok();
         }, Optional.of(() -> {
             hasThemeModifier.getThemeModifier()
                     .setThemeProperties(currentRules);
-            return new RulesResponse(holder.className);
+            return BaseResponse.ok();
         }));
     }
 

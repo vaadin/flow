@@ -1,14 +1,16 @@
 package com.vaadin.base.devserver.themeeditor.messages;
 
+import java.util.List;
+
 public class LoadRulesRequest extends BaseRequest {
 
-    private String selectorFilter;
+    private List<String> selectors;
 
-    public String getSelectorFilter() {
-        return selectorFilter;
+    public List<String> getSelectors() {
+        return selectors;
     }
 
-    public void setSelectorFilter(String selectorFilter) {
-        this.selectorFilter = selectorFilter;
+    public void setSelectors(List<String> selectors) {
+        this.selectors = selectors;
     }
 }

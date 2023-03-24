@@ -3,7 +3,15 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { PickerProvider } from '../component-picker';
 import { metadataRegistry } from './metadata/registry';
 import { icons } from './icons';
-import { ComponentTheme, generateThemeRule, ThemeContext, ThemeEditorState, ThemeScope } from './model';
+import {
+  ComponentTheme,
+  createScopedSelector,
+  generateThemeRule,
+  SelectorScope,
+  ThemeContext,
+  ThemeEditorState,
+  ThemeScope
+} from './model';
 import { detectElementDisplayName, detectTheme } from './detector';
 import { ThemePropertyValueChangeEvent } from './components/editors/base-property-editor';
 import { themePreview } from './preview';
@@ -78,6 +86,7 @@ export class ThemeEditor extends LitElement {
 
       .header {
         flex: 0 0 auto;
+        gap: 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -86,17 +95,18 @@ export class ThemeEditor extends LitElement {
       }
 
       .picker {
-        flex: 0 0 auto;
+        flex: 1 1 0;
+        min-width: 0;
         display: flex;
         align-items: center;
       }
 
       .picker button {
+        min-width: 0;
         display: inline-flex;
         align-items: center;
-        gap: 4px;
         padding: 0;
-        line-height: 0;
+        line-height: 20px;
         border: none;
         background: none;
         color: var(--dev-tools-text-color);
@@ -106,7 +116,20 @@ export class ThemeEditor extends LitElement {
         color: var(--dev-tools-text-color-emphasis);
       }
 
+      .picker svg,
+      .picker .component-type {
+        flex: 0 0 auto;
+        margin-right: 4px;
+      }
+
       .picker .instance-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #e5a2fce5;
+      }
+
+      .picker .instance-name-quote {
         color: #e5a2fce5;
       }
 
@@ -281,11 +304,12 @@ export class ThemeEditor extends LitElement {
         this.context.scope === ThemeScope.local
           ? this.context.metadata.displayName
           : `All ${this.context.metadata.displayName}s`;
-      const componentLabel = html`<span>${componentDisplayName}</span>`;
+      const componentLabel = html`<span class="component-type">${componentDisplayName}</span>`;
       const instanceName =
         this.context.scope === ThemeScope.local ? detectElementDisplayName(this.context.component) : null;
       const instanceLabel = instanceName
-        ? html` <span class="instance-name">"${detectElementDisplayName(this.context.component)}"</span>`
+        ? html` <span class="instance-name-quote">"</span><span class="instance-name">${instanceName}</span
+            ><span class="instance-name-quote">"</span>`
         : null;
       label = html`${componentLabel} ${instanceLabel}`;
     } else {
@@ -321,11 +345,16 @@ export class ThemeEditor extends LitElement {
         }
 
         this.highlightElement(component.element);
+        const componentResponse = await this.api.loadComponentMetadata(component);
+        this.previewGeneratedClassName(component.element, componentResponse.className);
 
         this.refreshTheme({
           scope: this.context?.scope || ThemeScope.local,
           metadata,
-          component
+          component,
+          localClassName: componentResponse.className,
+          suggestedClassName: componentResponse.suggestedClassName,
+          accessible: componentResponse.accessible
         });
       }
     });
@@ -347,20 +376,37 @@ export class ThemeEditor extends LitElement {
       return;
     }
 
-    // Update local theme state
-    const { part, property, value } = e.detail;
-    const partName = part?.partName || null;
-    this.editedTheme.updatePropertyValue(partName, property.propertyName, value, true);
+    // Update theme state
+    const { element, property, value } = e.detail;
+    this.editedTheme.updatePropertyValue(element.selector, property.propertyName, value, true);
     this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
 
+    // If we are theming locally, and the component does not have a local class
+    // name yet, then apply suggested class name from server first
+    if (this.context.scope === ThemeScope.local && !this.context.localClassName && this.context.suggestedClassName) {
+      const newClassName = this.context.suggestedClassName;
+      this.context.localClassName = newClassName;
+      const classNameResponse = await this.api.setLocalClassName(this.context.component, newClassName);
+      this.historyActions = this.history.push(classNameResponse.requestId);
+      this.previewGeneratedClassName(this.context.component.element, newClassName);
+    }
+
+    // Can't generate a local scoped selector without a local classname
+    if (this.context.scope === ThemeScope.local && !this.context.localClassName) {
+      console.error('Failed to update property value because selected component does not have a local class name');
+      return;
+    }
+
     // Update theme editor CSS
-    const updateRule = generateThemeRule(this.context.metadata.tagName, partName, property.propertyName, value);
-    const component = this.context.scope === ThemeScope.local ? this.context.component : null;
+    const selectorScope: SelectorScope = {
+      themeScope: this.context.scope,
+      localClassName: this.context.localClassName
+    };
+    const updateRule = generateThemeRule(element, selectorScope, property.propertyName, value);
     try {
       this.preventLiveReload();
-      const response = await this.api.setCssRules([updateRule], component);
+      const response = await this.api.setCssRules([updateRule]);
       this.historyActions = this.history.push(response.requestId);
-      this.previewGeneratedClassName(this.context.component.element, response.className);
       await this.updateThemePreview();
     } catch (error) {
       console.error('Failed to update property value', error);
@@ -380,30 +426,50 @@ export class ThemeEditor extends LitElement {
   }
 
   private async refreshTheme(newContext?: ThemeContext) {
-    // Load server rules for new or existing context
     const context = newContext || this.context;
     if (!context) {
       return;
     }
 
-    const scopeSelector = context.metadata.tagName;
-    const component = context.scope === ThemeScope.local ? context.component : null;
-    const rulesResponse = await this.api.loadRules(scopeSelector, component);
-
-    // Update preview, which can result in changes to the base theme
-    this.previewGeneratedClassName(context.component.element, rulesResponse.className);
+    // Always update preview, this can always change even if there is no
+    // selected component, or it's inaccessible. For example after an undo or
+    // redo. Also preview styles need to be updated before detecting the base
+    // theme / default property values for property editors.
     await this.updateThemePreview();
-    this.baseTheme = detectTheme(context.metadata);
 
-    // Update state properties after data has loaded, so that everything
-    // consistently updates at once - this avoids re-rendering the editor with
-    // new metadata but without matching theme data
-    this.context = {
-      ...context,
-      accessible: rulesResponse.accessible
-    };
-    this.editedTheme = ComponentTheme.fromServerRules(context.metadata, rulesResponse.rules);
-    this.effectiveTheme = ComponentTheme.combine(this.baseTheme!, this.editedTheme);
+    // Skip refreshing the theme state if the component is not accessible
+    const inaccessible = context.scope === ThemeScope.local && !context.accessible;
+    if (inaccessible) {
+      this.context = context;
+      this.baseTheme = null;
+      this.editedTheme = null;
+      this.effectiveTheme = null;
+    }
+
+    // Load rules for current scope
+    // Can be skipped when using local scope and element does not have a local
+    // class name yet
+    let editedTheme: ComponentTheme = new ComponentTheme(context.metadata);
+
+    const hasNoPreviousRules = context.scope === ThemeScope.local && !context.localClassName;
+    if (!hasNoPreviousRules) {
+      const selectorScope: SelectorScope = {
+        themeScope: context.scope,
+        localClassName: context.localClassName
+      };
+      const scopedSelectors = context.metadata.elements.map((element) => createScopedSelector(element, selectorScope));
+      const rulesResponse = await this.api.loadRules(scopedSelectors);
+      editedTheme = ComponentTheme.fromServerRules(context.metadata, selectorScope, rulesResponse.rules);
+    }
+
+    // Update theme state after data has loaded, so that everything consistently
+    // updates at once - this avoids re-rendering the editor with new metadata
+    // but without matching theme state
+    const baseTheme = await detectTheme(context.metadata);
+    this.context = context;
+    this.baseTheme = baseTheme;
+    this.editedTheme = editedTheme;
+    this.effectiveTheme = ComponentTheme.combine(baseTheme, this.editedTheme);
   }
 
   private async updateThemePreview() {

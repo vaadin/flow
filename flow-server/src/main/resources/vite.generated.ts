@@ -528,43 +528,6 @@ function themePlugin(opts): PluginOption {
     }
   };
 }
-function lenientLitImportPlugin(): PluginOption {
-  return {
-    name: 'vaadin:lenient-lit-import',
-    async transform(code, id) {
-      const decoratorImports = [
-        /import (.*?) from (['"])(lit\/decorators)(['"])/,
-        /import (.*?) from (['"])(lit-element\/decorators)(['"])/
-      ];
-      const directiveImports = [
-        /import (.*?) from (['"])(lit\/directives\/)([^\\.]*?)(['"])/,
-        /import (.*?) from (['"])(lit-html\/directives\/)([^\\.]*?)(['"])/
-      ];
-
-      decoratorImports.forEach((decoratorImport) => {
-        let decoratorMatch;
-        while ((decoratorMatch = code.match(decoratorImport))) {
-          console.warn(
-              `Warning: the file ${id} imports from '${decoratorMatch[3]}' when it should import from '${decoratorMatch[3]}.js'`
-          );
-          code = code.replace(decoratorImport, 'import $1 from $2$3.js$4');
-        }
-      });
-
-      directiveImports.forEach((directiveImport) => {
-        let directiveMatch;
-        while ((directiveMatch = code.match(directiveImport))) {
-          console.warn(
-              `Warning: the file ${id} imports from '${directiveMatch[3]}${directiveMatch[4]}' when it should import from '${directiveMatch[3]}${directiveMatch[4]}.js'`
-          );
-          code = code.replace(directiveImport, 'import $1 from $2$3$4.js$5');
-        }
-      });
-
-      return code;
-    }
-  };
-}
 
 function runWatchDog(watchDogPort, watchDogHost) {
   const client = net.Socket();
@@ -703,7 +666,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
       !devMode && statsExtracterPlugin(),
       devBundle && preserveUsageStats(),
       themePlugin({devMode}),
-      lenientLitImportPlugin(),
       postcssLit({
         include: ['**/*.css', /.*\/.*\.css\?.*/],
         exclude: [

@@ -3,25 +3,26 @@ import { ComponentTheme } from '../../model';
 import { ComponentElementMetadata, CssPropertyMetadata } from '../../metadata/model';
 import { testElementMetadata } from '../../tests/utils';
 import { TextPropertyEditor } from './text-property-editor';
-import './text-property-editor';
+import './checkbox-property-editor';
 import sinon from 'sinon';
 
-const colorMetadata: CssPropertyMetadata = {
-  propertyName: 'color',
-  displayName: 'Color'
+const fontWeightMetadata: CssPropertyMetadata = {
+  propertyName: 'font-weight',
+  displayName: 'Bold',
+  checkedValue: 'bold'
 };
 const labelMetadata: ComponentElementMetadata = {
   selector: 'test-element::part(label)',
   displayName: 'Label',
-  properties: [colorMetadata]
+  properties: [fontWeightMetadata]
 };
 
-describe('text property editor', () => {
+describe('checkbox property editor', () => {
   let theme: ComponentTheme;
   let editor: TextPropertyEditor;
   let valueChangeSpy: sinon.SinonSpy;
 
-  function getInput() {
+  function getCheckbox() {
     return editor.shadowRoot!.querySelector('input') as HTMLInputElement;
   }
 
@@ -33,37 +34,42 @@ describe('text property editor', () => {
 
   beforeEach(async () => {
     theme = new ComponentTheme(testElementMetadata);
-    theme.updatePropertyValue(labelMetadata.selector, 'color', 'black');
+    theme.updatePropertyValue(labelMetadata.selector, 'font-weight', 'bold');
     valueChangeSpy = sinon.spy();
 
-    editor = await fixture(html` <vaadin-dev-tools-theme-text-property-editor
+    editor = await fixture(html` <vaadin-dev-tools-theme-checkbox-property-editor
       .theme=${theme}
       .elementMetadata=${labelMetadata}
-      .propertyMetadata=${colorMetadata}
+      .propertyMetadata=${fontWeightMetadata}
       @theme-property-value-change=${valueChangeSpy}
     >
-    </vaadin-dev-tools-theme-text-property-editor>`);
+    </vaadin-dev-tools-theme-checkbox-property-editor>`);
   });
 
-  it('should update input from theme', async () => {
-    const input = getInput();
+  it('should update checkbox from theme', async () => {
+    const input = getCheckbox();
 
-    expect(input.value).to.equal('black');
+    expect(input.checked).to.be.true;
 
     const updatedTheme = cloneTheme();
-    updatedTheme.updatePropertyValue(labelMetadata.selector, 'color', 'red', true);
+    updatedTheme.updatePropertyValue(labelMetadata.selector, 'font-weight', '', true);
     editor.theme = updatedTheme;
     await elementUpdated(editor);
 
-    expect(input.value).to.equal('red');
+    expect(input.checked).to.be.false;
   });
 
-  it('should dispatch event when changing input value', () => {
-    const input = getInput();
-    input.value = 'red';
-    input.dispatchEvent(new CustomEvent('change'));
+  it('should dispatch event when changing checkbox value', () => {
+    const checkbox = getCheckbox();
+    checkbox.click();
 
     expect(valueChangeSpy.calledOnce).to.be.true;
-    expect(valueChangeSpy.args[0][0].detail.value).to.equal('red');
+    expect(valueChangeSpy.args[0][0].detail.value).to.equal('');
+
+    valueChangeSpy.resetHistory();
+    checkbox.click();
+
+    expect(valueChangeSpy.calledOnce).to.be.true;
+    expect(valueChangeSpy.args[0][0].detail.value).to.equal('bold');
   });
 });

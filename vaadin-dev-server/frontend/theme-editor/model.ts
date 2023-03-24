@@ -1,4 +1,4 @@
-import { ComponentMetadata } from './metadata/model';
+import { ComponentElementMetadata, ComponentMetadata } from './metadata/model';
 import { ServerCssRule } from './api';
 import { ComponentReference } from '../component-util';
 
@@ -13,15 +13,22 @@ export enum ThemeScope {
   global = 'global'
 }
 
+export interface SelectorScope {
+  themeScope: ThemeScope;
+  localClassName?: string;
+}
+
 export interface ThemeContext {
   scope: ThemeScope;
   metadata: ComponentMetadata;
   component: ComponentReference;
   accessible?: boolean;
+  localClassName?: string;
+  suggestedClassName?: string;
 }
 
 export interface ThemePropertyValue {
-  partName: string | null;
+  elementSelector: string;
   propertyName: string;
   value: string;
   modified: boolean;
@@ -29,8 +36,8 @@ export interface ThemePropertyValue {
 
 type PropertyValueMap = { [key: string]: ThemePropertyValue };
 
-function propertyKey(partName: string | null, propertyName: string) {
-  return `${partName}|${propertyName}`;
+function propertyKey(elementSelector: string, propertyName: string) {
+  return `${elementSelector}|${propertyName}`;
 }
 
 export class ComponentTheme {
@@ -49,20 +56,20 @@ export class ComponentTheme {
     return Object.values(this._properties);
   }
 
-  public getPropertyValue(partName: string | null, propertyName: string): ThemePropertyValue {
-    return this._properties[propertyKey(partName, propertyName)] || null;
+  public getPropertyValue(elementSelector: string, propertyName: string): ThemePropertyValue {
+    return this._properties[propertyKey(elementSelector, propertyName)] || null;
   }
 
-  public updatePropertyValue(partName: string | null, propertyName: string, value: string, modified?: boolean) {
-    let propertyValue = this.getPropertyValue(partName, propertyName);
+  public updatePropertyValue(elementSelector: string, propertyName: string, value: string, modified?: boolean) {
+    let propertyValue = this.getPropertyValue(elementSelector, propertyName);
     if (!propertyValue) {
       propertyValue = {
-        partName,
+        elementSelector,
         propertyName,
         value,
         modified: modified || false
       };
-      this._properties[propertyKey(partName, propertyName)] = propertyValue;
+      this._properties[propertyKey(elementSelector, propertyName)] = propertyValue;
     } else {
       propertyValue.value = value;
       propertyValue.modified = modified || false;
@@ -71,12 +78,12 @@ export class ComponentTheme {
 
   public addPropertyValues(values: ThemePropertyValue[]) {
     values.forEach((value) => {
-      this.updatePropertyValue(value.partName, value.propertyName, value.value, value.modified);
+      this.updatePropertyValue(value.elementSelector, value.propertyName, value.value, value.modified);
     });
   }
 
-  public getPropertyValuesForPart(partName: string | null) {
-    return this.properties.filter((property) => property.partName === partName);
+  public getPropertyValuesForElement(elementSelector: string) {
+    return this.properties.filter((property) => property.elementSelector === elementSelector);
   }
 
   static combine(...themes: ComponentTheme[]) {
@@ -90,27 +97,18 @@ export class ComponentTheme {
     return resultTheme;
   }
 
-  static fromServerRules(metadata: ComponentMetadata, rules: ServerCssRule[]) {
+  static fromServerRules(metadata: ComponentMetadata, scope: SelectorScope, rules: ServerCssRule[]) {
     const theme = new ComponentTheme(metadata);
 
-    const hostRule = rules.find((rule) => !rule.partName);
-    if (hostRule) {
-      metadata.properties.forEach((property) => {
-        const value = hostRule.properties[property.propertyName];
-        if (value) {
-          theme.updatePropertyValue(null, property.propertyName, value, true);
-        }
-      });
-    }
+    metadata.elements.forEach((element) => {
+      const scopedSelector = createScopedSelector(element, scope);
+      const elementRule = rules.find((rule) => rule.selector === scopedSelector);
 
-    metadata.parts.forEach((part) => {
-      const partRule = rules.find((rule) => rule.partName === part.partName);
-
-      if (partRule) {
-        part.properties.forEach((property) => {
-          const value = partRule.properties[property.propertyName];
+      if (elementRule) {
+        element.properties.forEach((property) => {
+          const value = elementRule.properties[property.propertyName];
           if (value) {
-            theme.updatePropertyValue(part.partName, property.propertyName, value, true);
+            theme.updatePropertyValue(element.selector, property.propertyName, value, true);
           }
         });
       }
@@ -120,16 +118,48 @@ export class ComponentTheme {
   }
 }
 
+export function createScopedSelector(element: ComponentElementMetadata, scope: SelectorScope) {
+  const baseSelector = element.selector;
+
+  // Use base selector for global scope
+  if (scope.themeScope === ThemeScope.global) {
+    return baseSelector;
+  }
+
+  // Local scope needs a classname
+  if (!scope.localClassName) {
+    throw new Error('Can not build local scoped selector without instance class name');
+  }
+
+  // Insert classname into selector
+  const tagNameMatch = baseSelector.match(/^[\w\d-_]+/);
+  const tagName = tagNameMatch && tagNameMatch[0];
+
+  if (!tagName) {
+    throw new Error(`Selector does not start with a tag name: ${baseSelector}`);
+  }
+
+  return `${tagName}.${scope.localClassName}${baseSelector.substring(tagName.length, baseSelector.length)}`;
+}
+
 export function generateThemeRule(
-  tagName: string,
-  partName: string | null,
+  element: ComponentElementMetadata,
+  scope: SelectorScope,
   propertyName: string,
   value: string
 ): ServerCssRule {
+  const scopedSelector = createScopedSelector(element, scope);
   const properties = { [propertyName]: value };
+
+  // Individual property handling
+
+  // Enable border style when setting a border width
+  if (propertyName === 'border-width' && parseInt(value) > 0) {
+    properties['border-style'] = 'solid';
+  }
+
   return {
-    tagName,
-    partName,
+    selector: scopedSelector,
     properties
   };
 }
