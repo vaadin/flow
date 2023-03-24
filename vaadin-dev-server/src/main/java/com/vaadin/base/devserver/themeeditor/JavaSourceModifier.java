@@ -123,7 +123,7 @@ public class JavaSourceModifier extends Editor {
             }).get(5, TimeUnit.SECONDS);
             return holder.tagName;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new ThemeEditorException("Cannot get tag of component.", e);
         }
     }
 
