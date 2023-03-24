@@ -91,7 +91,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // similar to Component implementation:
         // worth to extract the getLocale to LocaleUtil potentially?
         Locale locale = getLocale();
-        indexDocument.getElementsByTag("html").get(0).attr("lan",
+        indexDocument.getElementsByTag("html").get(0).attr("lang",
                 locale.getLanguage());
 
         JsonObject initialJson = Json.createObject();
