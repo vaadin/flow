@@ -104,5 +104,11 @@ export const testElementMetadata: ComponentMetadata = {
         }
       ]
     }
-  ]
+  ],
+  setupElement() {
+    return Promise.resolve();
+  },
+  cleanupElement() {
+    return Promise.resolve();
+  }
 };

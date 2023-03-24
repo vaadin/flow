@@ -465,10 +465,11 @@ export class ThemeEditor extends LitElement {
     // Update theme state after data has loaded, so that everything consistently
     // updates at once - this avoids re-rendering the editor with new metadata
     // but without matching theme state
+    const baseTheme = await detectTheme(context.metadata);
     this.context = context;
-    this.baseTheme = detectTheme(context.metadata);
+    this.baseTheme = baseTheme;
     this.editedTheme = editedTheme;
-    this.effectiveTheme = ComponentTheme.combine(this.baseTheme!, this.editedTheme);
+    this.effectiveTheme = ComponentTheme.combine(baseTheme, this.editedTheme);
   }
 
   private async updateThemePreview() {

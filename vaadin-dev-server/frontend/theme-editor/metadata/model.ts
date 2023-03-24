@@ -1,5 +1,6 @@
 export enum EditorType {
   text = 'text',
+  checkbox = 'checkbox',
   range = 'range',
   color = 'color'
 }
@@ -11,6 +12,7 @@ export interface CssPropertyMetadata {
   editorType?: EditorType;
   presets?: string[];
   icon?: string;
+  checkedValue?: string;
 }
 
 export interface ComponentElementMetadata {
@@ -25,4 +27,6 @@ export interface ComponentMetadata {
   displayName: string;
   description?: string;
   elements: ComponentElementMetadata[];
+  setupElement?: (element: any) => Promise<void>;
+  cleanupElement?: (element: any) => Promise<void>;
 }

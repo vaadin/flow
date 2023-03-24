@@ -3,6 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { html as staticHtml, literal, StaticValue } from 'lit/static-html.js';
 import { ComponentMetadata, ComponentElementMetadata, CssPropertyMetadata, EditorType } from '../metadata/model';
 import { ComponentTheme } from '../model';
+import './editors/checkbox-property-editor';
 import './editors/text-property-editor';
 import './editors/range-property-editor';
 import './editors/color-property-editor';
@@ -48,6 +49,9 @@ export class PropertyList extends LitElement {
   private renderPropertyEditor(element: ComponentElementMetadata, property: CssPropertyMetadata) {
     let editorTagName: StaticValue;
     switch (property.editorType) {
+      case EditorType.checkbox:
+        editorTagName = literal`vaadin-dev-tools-theme-checkbox-property-editor`;
+        break;
       case EditorType.range:
         editorTagName = literal`vaadin-dev-tools-theme-range-property-editor`;
         break;

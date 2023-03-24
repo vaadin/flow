@@ -1,16 +1,31 @@
+import { css } from 'lit';
 import { ComponentTheme, createScopedSelector, SelectorScope, ThemeScope } from './model';
 import { ComponentMetadata } from './metadata/model';
 import { ComponentReference } from '../component-util';
+import { injectGlobalCss } from './styles';
 
 const measureElementClassname = '__vaadin-theme-editor-measure-element';
 const partNameRegex = /::part\(([\w\d_-]+)\)$/;
 
-export function detectTheme(metadata: ComponentMetadata): ComponentTheme {
+injectGlobalCss(css`
+  .__vaadin-theme-editor-measure-element {
+    position: absolute;
+    top: 0;
+    left: 0;
+    visibility: hidden;
+  }
+`);
+
+export async function detectTheme(metadata: ComponentMetadata): Promise<ComponentTheme> {
   const componentTheme = new ComponentTheme(metadata);
   const element = document.createElement(metadata.tagName);
   element.classList.add(measureElementClassname);
-  element.style.visibility = 'hidden';
   document.body.append(element);
+
+  // If component has a custom setup function, run it
+  if (metadata.setupElement) {
+    await metadata.setupElement(element);
+  }
 
   const scope: SelectorScope = {
     themeScope: ThemeScope.local,
@@ -44,7 +59,14 @@ export function detectTheme(metadata: ComponentMetadata): ComponentTheme {
       });
     });
   } finally {
-    element.remove();
+    try {
+      // If component has a custom cleanup function, run it
+      if (metadata.cleanupElement) {
+        await metadata.cleanupElement(element);
+      }
+    } finally {
+      element.remove();
+    }
   }
 
   return componentTheme;
