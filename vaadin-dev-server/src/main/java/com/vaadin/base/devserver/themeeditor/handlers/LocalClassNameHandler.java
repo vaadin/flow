@@ -38,6 +38,8 @@ public class LocalClassNameHandler implements MessageHandler {
         int nodeId = request.getNodeId();
         String currentLocalClassName = hasSourceModifier.getSourceModifier()
                 .getLocalClassName(uiId, nodeId);
+        String tagName = hasSourceModifier.getSourceModifier().getTag(uiId,
+                nodeId);
         return new ExecuteAndUndo(() -> {
             // set classname in Java files
             hasSourceModifier.getSourceModifier().setLocalClassName(uiId,
@@ -45,7 +47,7 @@ public class LocalClassNameHandler implements MessageHandler {
 
             // update CSS if local classname already present
             if (currentLocalClassName != null) {
-                hasThemeModifier.getThemeModifier().replaceClassName(
+                hasThemeModifier.getThemeModifier().replaceClassName(tagName,
                         currentLocalClassName, request.getClassName());
             }
 
@@ -55,7 +57,7 @@ public class LocalClassNameHandler implements MessageHandler {
                 // set previous value and rollback theme change
                 hasSourceModifier.getSourceModifier().setLocalClassName(uiId,
                         nodeId, currentLocalClassName);
-                hasThemeModifier.getThemeModifier().replaceClassName(
+                hasThemeModifier.getThemeModifier().replaceClassName(tagName,
                         request.getClassName(), currentLocalClassName);
             } else {
                 // remove current value

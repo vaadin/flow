@@ -131,9 +131,10 @@ public class ThemeModifier {
      * @param newClassName
      *            new classname
      */
-    public void replaceClassName(String oldClassName, String newClassName) {
+    public void replaceClassName(String tagName, String oldClassName,
+            String newClassName) {
         CascadingStyleSheet styleSheet = getCascadingStyleSheet();
-        replaceClassName(styleSheet, oldClassName, newClassName);
+        replaceClassName(styleSheet, tagName, oldClassName, newClassName);
         writeStylesheet(styleSheet);
     }
 
@@ -294,11 +295,15 @@ public class ThemeModifier {
     }
 
     protected void replaceClassName(CascadingStyleSheet styleSheet,
-            String oldClassName, String newClassName) {
+            String tagName, String oldClassName, String newClassName) {
         String dotOldClassName = "." + oldClassName;
         String dotNewClassName = "." + newClassName;
         for (CSSStyleRule rule : styleSheet.getAllStyleRules()) {
             for (CSSSelector selector : rule.getAllSelectors()) {
+                if (selector.getAllMembers().containsNone(
+                        m -> tagName.equals(m.getAsCSSString()))) {
+                    continue;
+                }
                 List<ICSSSelectorMember> members = new ArrayList<>();
                 selector.getAllMembers().findAll(
                         m -> dotOldClassName.equals(m.getAsCSSString()),

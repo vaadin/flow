@@ -329,13 +329,21 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
                 .add(new CssRule("span.nice.nice.nice.strong", "color", "red"));
         modifier.setThemeProperties(toBeAdded);
 
-        modifier.replaceClassName("nice", "nicer");
-
+        modifier.replaceClassName("vaadin-button", "nice", "nicer");
         List<CssRule> rules = modifier.getCssRules(Arrays.asList(
+                "vaadin-button.nicer", "vaadin-button.nicer::part(label)",
                 "vaadin-button.nicer", "vaadin-button.nicer::part(label)",
                 "vaadin-text-field.perfect.nicer",
                 "span.nicer.nicer.nicer.strong"));
-        assertEquals(4, rules.size());
+        assertEquals(2, rules.size());
+
+        modifier.replaceClassName("span", "nice", "nicer");
+        rules = modifier.getCssRules(Arrays.asList("vaadin-button.nicer",
+                "vaadin-button.nicer::part(label)", "vaadin-button.nicer",
+                "vaadin-button.nicer::part(label)",
+                "vaadin-text-field.perfect.nicer",
+                "span.nicer.nicer.nicer.strong"));
+        assertEquals(3, rules.size());
     }
 
     private File getThemeFile(String fileName) {
