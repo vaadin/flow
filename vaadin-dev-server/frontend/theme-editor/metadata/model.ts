@@ -13,8 +13,8 @@ export interface CssPropertyMetadata {
   icon?: string;
 }
 
-export interface ComponentPartMetadata {
-  partName: string;
+export interface ComponentElementMetadata {
+  selector: string;
   displayName: string;
   description?: string;
   properties: CssPropertyMetadata[];
@@ -24,6 +24,5 @@ export interface ComponentMetadata {
   tagName: string;
   displayName: string;
   description?: string;
-  properties: CssPropertyMetadata[];
-  parts: ComponentPartMetadata[];
+  elements: ComponentElementMetadata[];
 }

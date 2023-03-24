@@ -1,6 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { ComponentTheme } from '../../model';
-import { CssPropertyMetadata } from '../../metadata/model';
+import { ComponentElementMetadata, CssPropertyMetadata } from '../../metadata/model';
 import { testElementMetadata } from '../../tests/utils';
 import { TextPropertyEditor } from './text-property-editor';
 import './text-property-editor';
@@ -9,6 +9,11 @@ import sinon from 'sinon';
 const colorMetadata: CssPropertyMetadata = {
   propertyName: 'color',
   displayName: 'Color'
+};
+const labelMetadata: ComponentElementMetadata = {
+  selector: 'test-element::part(label)',
+  displayName: 'Label',
+  properties: [colorMetadata]
 };
 
 describe('text property editor', () => {
@@ -28,11 +33,12 @@ describe('text property editor', () => {
 
   beforeEach(async () => {
     theme = new ComponentTheme(testElementMetadata);
-    theme.updatePropertyValue(null, 'color', 'black');
+    theme.updatePropertyValue(labelMetadata.selector, 'color', 'black');
     valueChangeSpy = sinon.spy();
 
     editor = await fixture(html` <vaadin-dev-tools-theme-text-property-editor
       .theme=${theme}
+      .elementMetadata=${labelMetadata}
       .propertyMetadata=${colorMetadata}
       @theme-property-value-change=${valueChangeSpy}
     >
@@ -45,7 +51,7 @@ describe('text property editor', () => {
     expect(input.value).to.equal('black');
 
     const updatedTheme = cloneTheme();
-    updatedTheme.updatePropertyValue(null, 'color', 'red', true);
+    updatedTheme.updatePropertyValue(labelMetadata.selector, 'color', 'red', true);
     editor.theme = updatedTheme;
     await elementUpdated(editor);
 
