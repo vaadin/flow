@@ -22,6 +22,8 @@ import java.net.HttpURLConnection;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.jsoup.nodes.Document;
+
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -169,8 +171,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
         config.put("requestURL", requestURL);
 
-        addLinkTagForTheme(session);
-
         return context;
     }
 
@@ -307,22 +307,4 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         return initial;
     }
 
-    private static void addLinkTagForTheme(VaadinSession session) {
-        DeploymentConfiguration deploymentConfiguration = session
-                .getConfiguration();
-        if (deploymentConfiguration.getMode() == Mode.DEVELOPMENT_BUNDLE) {
-            try {
-                BootstrapHandler
-                        .getStylesheetLinks(deploymentConfiguration,
-                                "styles.css")
-                        .forEach(link -> UI.getCurrent().getPage().executeJs(
-                                BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG,
-                                link));
-            } catch (IOException e) {
-                throw new UncheckedIOException(
-                        "Failed to add a link tag for 'styles.css' to the document",
-                        e);
-            }
-        }
-    }
 }

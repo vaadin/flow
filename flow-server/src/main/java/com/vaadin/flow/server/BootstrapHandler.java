@@ -1621,8 +1621,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *             if theme name cannot be extracted from file
      */
     protected static Collection<Element> getStylesheetTags(
-            DeploymentConfiguration config, String fileName)
-            throws IOException {
+            AbstractConfiguration config, String fileName) throws IOException {
         return getStylesheetReferences(config, fileName,
                 BootstrapHandler::getLinkTagWithStyleRef);
     }
@@ -1641,14 +1640,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *             if theme name cannot be extracted from file
      */
     protected static Collection<String> getStylesheetLinks(
-            DeploymentConfiguration config, String fileName)
-            throws IOException {
+            AbstractConfiguration config, String fileName) throws IOException {
         return getStylesheetReferences(config, fileName,
                 BootstrapHandler::getThemeFilePath);
     }
 
     private static <T> Collection<T> getStylesheetReferences(
-            DeploymentConfiguration config, String fileName,
+            AbstractConfiguration config, String fileName,
             SerializableBiFunction<String, String, T> referenceProvider)
             throws IOException {
         List<T> references = new ArrayList<>();
