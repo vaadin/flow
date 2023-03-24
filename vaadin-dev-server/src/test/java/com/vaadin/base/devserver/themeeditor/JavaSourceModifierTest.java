@@ -168,6 +168,14 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         Assert.assertEquals(suggestedClassName, localClassName);
     }
 
+    @Test
+    public void componentTagName() {
+        prepareComponentTracker(0, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
+        JavaSourceModifier modifier = new TestJavaSourceModifier();
+        String tagName = modifier.getTag(0, 0);
+        Assert.assertEquals("span", tagName); // Span used in tests
+    }
+
     private CompilationUnit getCompilationUnit() {
         File javaFolder = TestUtils.getTestFolder("java/org/vaadin/example");
         SourceRoot root = new SourceRoot(javaFolder.toPath());
