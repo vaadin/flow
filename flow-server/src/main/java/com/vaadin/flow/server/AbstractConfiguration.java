@@ -197,9 +197,8 @@ public interface AbstractConfiguration extends Serializable {
             try {
                 URL url = getClass().getClassLoader().getResource(".");
                 if (url != null && url.getProtocol().equals("file")) {
-                    String path = url.toURI().getPath(); // This gets the
-                                                         // decoded path, which
-                                                         // we need
+                    // URI decodes the path so that e.g. " " works correctly
+                    String path = url.toURI().getPath();
                     if (path.endsWith("/target/classes/")) {
                         folder = path.replaceFirst("/target/classes/$", "");
                     }
