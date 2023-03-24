@@ -926,10 +926,6 @@ public abstract class VaadinService implements Serializable {
     private void setLocale(VaadinRequest request, VaadinSession session) {
         I18NProvider provider = getInstantiator().getI18NProvider();
         List<Locale> providedLocales = provider.getProvidedLocales();
-        // TODO: put here the Locale.getDefault() as the first option or the
-        // system.env stuff
-        String languageEnv = System.getenv("LANG").split("_")[0]; // e.g. en_US
-        String languageProp = System.getProperty("user.language"); // e.g. en
 
         if (providedLocales.size() == 1) {
             session.setLocale(providedLocales.get(0));
