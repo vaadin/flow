@@ -4,6 +4,7 @@ import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
 import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
 import com.vaadin.base.devserver.themeeditor.messages.SetClassNameRequest;
 import com.vaadin.base.devserver.themeeditor.utils.HasSourceModifier;
+import com.vaadin.base.devserver.themeeditor.utils.HasThemeModifier;
 import com.vaadin.base.devserver.themeeditor.utils.MessageHandler;
 import com.vaadin.base.devserver.themeeditor.utils.ThemeEditorException;
 import com.vaadin.flow.internal.JsonUtils;
@@ -15,8 +16,12 @@ public class LocalClassNameHandler implements MessageHandler {
 
     private final HasSourceModifier hasSourceModifier;
 
-    public LocalClassNameHandler(HasSourceModifier hasSourceModifier) {
+    private final HasThemeModifier hasThemeModifier;
+
+    public LocalClassNameHandler(HasSourceModifier hasSourceModifier,
+            HasThemeModifier hasThemeModifier) {
         this.hasSourceModifier = hasSourceModifier;
+        this.hasThemeModifier = hasThemeModifier;
     }
 
     @Override
@@ -34,14 +39,24 @@ public class LocalClassNameHandler implements MessageHandler {
         String currentLocalClassName = hasSourceModifier.getSourceModifier()
                 .getLocalClassName(uiId, nodeId);
         return new ExecuteAndUndo(() -> {
+            // set classname in Java files
             hasSourceModifier.getSourceModifier().setLocalClassName(uiId,
                     nodeId, request.getClassName());
+
+            // update CSS if local classname already present
+            if (currentLocalClassName != null) {
+                hasThemeModifier.getThemeModifier().replaceClassName(
+                        currentLocalClassName, request.getClassName());
+            }
+
             return BaseResponse.ok();
         }, Optional.of(() -> {
             if (currentLocalClassName != null) {
-                // set previous value
+                // set previous value and rollback theme change
                 hasSourceModifier.getSourceModifier().setLocalClassName(uiId,
                         nodeId, currentLocalClassName);
+                hasThemeModifier.getThemeModifier().replaceClassName(
+                        request.getClassName(), currentLocalClassName);
             } else {
                 // remove current value
                 hasSourceModifier.getSourceModifier().removeLocalClassName(uiId,
