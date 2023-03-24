@@ -48,7 +48,7 @@ const headerImport = `import 'construct-style-sheets-polyfill';
  */
 function generateThemeFile(themeFolder, themeName, themeProperties, options) {
   const productionMode = !options.devMode;
-  const useDevServer = !options.useDevBundle;
+  const useDevServerOrInProductionMode = !options.useDevBundle;
   const styles = resolve(themeFolder, stylesCssFilename);
   const documentCssFile = resolve(themeFolder, documentCssFilename);
   const autoInjectComponents = themeProperties.autoInjectComponents ?? true;
@@ -74,7 +74,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
 
   const imports = [];
   const globalCssCode = [];
-  const lumoCssShadowOnlyCode = [];
+  const shadowOnlyCss = [];
   const componentCssCode = [];
   const parentTheme = themeProperties.parent ? 'applyBaseTheme(target);\n' : '';
 
@@ -111,22 +111,24 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
 
     lumoImports.forEach((lumoImport) => {
       // Lumo is injected to the document by Lumo itself
-      lumoCssShadowOnlyCode.push(`injectGlobalCss(${lumoImport}.cssText, '', target, true);\n`);
+      shadowOnlyCss.push(`injectGlobalCss(${lumoImport}.cssText, '', target, true);\n`);
     });
   }
 
   /* Theme */
-  if (useDevServer) {
+  if (useDevServerOrInProductionMode) {
+    imports.push(`import 'themes/${themeName}/${filename}';\n`); // For Vite hotdeploy
     imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
-    globalCssCode.push(`injectGlobalCss(${variable}.toString(), '', target);\n    `);
+    shadowOnlyCss.push(`injectGlobalCss(${variable}.toString(), '', target);\n    `);
   }
   if (existsSync(documentCssFile)) {
     filename = basename(documentCssFile);
     variable = camelCase(filename);
 
-    if (useDevServer) {
+    if (useDevServerOrInProductionMode) {
+      imports.push(`import 'themes/${themeName}/${filename}';\n`);
       imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
-      globalCssCode.push(`injectGlobalCss(${variable}.toString(),'', document);\n    `);
+      shadowOnlyCss.push(`injectGlobalCss(${variable}.toString(),'', document);\n    `);
     }
   }
 
@@ -191,7 +193,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
   // If targets check that we only register the style parts once, checks exist for global css and component css
   const themeFileApply = `export const applyTheme = (target) => {
     if (target !== document) {
-      ${lumoCssShadowOnlyCode.join('')}
+      ${shadowOnlyCss.join('')}
     }
     ${parentTheme}
     ${globalCssCode.join('')}
