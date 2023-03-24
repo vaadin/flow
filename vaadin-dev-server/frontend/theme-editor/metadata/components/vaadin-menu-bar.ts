@@ -21,7 +21,17 @@ export default {
         },
         {
           propertyName: 'border-width',
-          displayName: 'Border width'
+          displayName: 'Border width',
+          editorType: EditorType.range,
+          presets: presets.basicBorderSize,
+          icon: 'square'
+        },
+        {
+          propertyName: 'border-radius',
+          displayName: 'Border radius',
+          editorType: EditorType.range,
+          presets: presets.lumoBorderRadius,
+          icon: 'square'
         },
         {
           propertyName: '--lumo-button-size',
@@ -33,13 +43,6 @@ export default {
         {
           propertyName: 'padding-inline',
           displayName: 'Padding',
-          editorType: EditorType.range,
-          presets: presets.lumoSpace,
-          icon: 'square'
-        },
-        {
-          propertyName: 'margin',
-          displayName: 'Margin',
           editorType: EditorType.range,
           presets: presets.lumoSpace,
           icon: 'square'
@@ -68,12 +71,6 @@ export default {
           displayName: 'Bold',
           editorType: EditorType.checkbox,
           checkedValue: 'bold'
-        },
-        {
-          propertyName: 'font-style',
-          displayName: 'Italic',
-          editorType: EditorType.checkbox,
-          checkedValue: 'italic'
         }
       ]
     },
@@ -93,7 +90,17 @@ export default {
         },
         {
           propertyName: 'border-width',
-          displayName: 'Border width'
+          displayName: 'Border width',
+          editorType: EditorType.range,
+          presets: presets.basicBorderSize,
+          icon: 'square'
+        },
+        {
+          propertyName: 'border-radius',
+          displayName: 'Border radius',
+          editorType: EditorType.range,
+          presets: presets.lumoBorderRadius,
+          icon: 'square'
         },
         {
           propertyName: 'padding',
@@ -126,12 +133,6 @@ export default {
           displayName: 'Bold',
           editorType: EditorType.checkbox,
           checkedValue: 'bold'
-        },
-        {
-          propertyName: 'font-style',
-          displayName: 'Italic',
-          editorType: EditorType.checkbox,
-          checkedValue: 'italic'
         }
       ]
     }
