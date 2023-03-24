@@ -1,11 +1,11 @@
 import { css, html, LitElement, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { ComponentReference } from './component-util';
+import { ComponentReference } from './component-util.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
-import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product, licenseInit } from './License';
+import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product, licenseInit } from './License.js';
 
 interface ServerInfo {
   vaadinVersion: string;
