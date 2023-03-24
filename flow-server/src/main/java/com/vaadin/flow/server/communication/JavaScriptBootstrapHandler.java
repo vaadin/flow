@@ -54,8 +54,8 @@ import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 
 /**
  * Processes a 'start' request type from the client to initialize server session
- * and UI. It returns a JSON response with everything needed to bootstrap
- * flow views.
+ * and UI. It returns a JSON response with everything needed to bootstrap flow
+ * views.
  * <p>
  * The handler is for client driven projects where `index.html` does not contain
  * bootstrap data. Bootstrapping is the responsibility of the `@vaadin/flow`
