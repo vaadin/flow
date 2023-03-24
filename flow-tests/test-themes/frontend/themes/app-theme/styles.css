@@ -24,6 +24,9 @@ body.bg {
     background-image: url("./img/bg.jpg");
     font-family: "Ostrich";
 }
+#test-text {
+    font-family: "Itim";
+}
 
 #butterfly {
     /* This shouldn't be translated */
