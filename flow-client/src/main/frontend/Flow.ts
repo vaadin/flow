@@ -146,40 +146,28 @@ export class Flow {
       return;
     }
     $wnd.Vaadin.listener = {};
-    // Listen for click and popstate events (navigation triggers).
+    // Listen for click on router-links -> 'link' navigation trigger
+    // and on <a> nodes -> 'client' navigation trigger.
     // Use capture phase to detect prevented / stopped events.
     document.addEventListener(
       'click',
       (_e) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        if (_e.target && _e.target.hasAttribute('router-link')) {
-          this.navigation = 'link';
-        } else {
-          this.navigation = 'client';
+        if (_e.target) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          if (_e.target.hasAttribute('router-link')) {
+            this.navigation = 'link';
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+          } else if (_e.composedPath().some((node) => node.nodeName === 'A')) {
+            this.navigation = 'client';
+          }
         }
       },
       {
         capture: true
       }
     );
-
-    window.addEventListener(
-      'popstate',
-      (_e) => {
-        this.navigation = 'history';
-      },
-      {
-        capture: true
-      }
-    );
-
-    // Router navigation should show up as link navigation.
-    window.addEventListener('vaadin-router-go', () => {
-      if (this.navigation === 'client') {
-        this.navigation = 'link';
-      }
-    });
   }
 
   private get action(): (params: NavigationParameters) => Promise<HTMLRouterContainer> {
@@ -265,7 +253,9 @@ export class Flow {
           history.state,
           this.navigation
         );
-        this.navigation = 'client';
+        // Default to history navigation trigger.
+        // Link and client cases are handled by click listener in loadingFinished().
+        this.navigation = 'history';
       });
     } else {
       // No server response => offline or erroneous connection

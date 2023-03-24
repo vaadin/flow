@@ -1692,12 +1692,12 @@ public class UI extends Component
         NavigationTrigger navigationTrigger;
         if (trigger.isEmpty()) {
             navigationTrigger = NavigationTrigger.PAGE_LOAD;
-        } else if (trigger.equalsIgnoreCase(NavigationTrigger.HISTORY.name())) {
-            navigationTrigger = NavigationTrigger.HISTORY;
-        } else if (trigger.equals("link")) {
+        } else if (trigger.equalsIgnoreCase("link")) {
             navigationTrigger = NavigationTrigger.ROUTER_LINK;
-        } else {
+        } else if (trigger.equalsIgnoreCase("client")) {
             navigationTrigger = NavigationTrigger.CLIENT_SIDE;
+        } else {
+            navigationTrigger = NavigationTrigger.HISTORY;
         }
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
