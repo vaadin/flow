@@ -106,6 +106,33 @@ public class VaadinConfigurationProperties {
      */
     private List<String> excludeUrls;
 
+    @ConfigurationProperties(prefix = "vaadin.frontend")
+    public static class Frontend {
+        /**
+         * Whether a frontend development server (Vite) is used in development
+         * mode or not.
+         */
+        private boolean hotdeploy = false;
+
+        /*
+         * Checks if frontend hotdeploy is enabled.
+         *
+         * @return true if hotdeploy is enabled
+         */
+        public boolean isHotdeploy() {
+            return hotdeploy;
+        }
+
+        /*
+         * Enables/disables frontend hotdeploy mode.
+         *
+         * @param hotdeploy true to enable, false to disable
+         */
+        public void setHotdeploy(boolean hotdeploy) {
+            this.hotdeploy = hotdeploy;
+        }
+    }
+
     public static class Pnpm {
         private boolean enable;
 
