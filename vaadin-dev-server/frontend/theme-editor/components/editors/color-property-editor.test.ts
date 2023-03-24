@@ -1,7 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
 import '@vaadin/overlay';
-import { CssPropertyMetadata } from '../../metadata/model';
+import { ComponentElementMetadata, CssPropertyMetadata } from '../../metadata/model';
 import { ComponentTheme } from '../../model';
 import { testElementMetadata } from '../../tests/utils';
 import { ColorPropertyEditor } from './color-property-editor';
@@ -20,6 +20,12 @@ const backgroundColorMetadata: CssPropertyMetadata = {
   presets: ['yellow', 'orange', 'brown']
 };
 
+const inputMetadata: ComponentElementMetadata = {
+  selector: 'test-element > input',
+  displayName: 'Input',
+  properties: [colorMetadata, backgroundColorMetadata]
+};
+
 describe('color property editor', () => {
   let theme: ComponentTheme;
   let editor: ColorPropertyEditor;
@@ -36,12 +42,13 @@ describe('color property editor', () => {
     </style>`);
 
     theme = new ComponentTheme(testElementMetadata);
-    theme.updatePropertyValue(null, 'color', 'black');
-    theme.updatePropertyValue(null, 'background-color', 'white');
+    theme.updatePropertyValue(inputMetadata.selector, 'color', 'black');
+    theme.updatePropertyValue(inputMetadata.selector, 'background-color', 'white');
     valueChangeSpy = sinon.spy();
 
     editor = await fixture(html` <vaadin-dev-tools-theme-color-property-editor
       .theme=${theme}
+      .elementMetadata=${inputMetadata}
       .propertyMetadata=${colorMetadata}
       @theme-property-value-change=${valueChangeSpy}
     >
@@ -69,7 +76,7 @@ describe('color property editor', () => {
 
   it('should update value when theme changes', async () => {
     const updatedTheme = cloneTheme();
-    updatedTheme.updatePropertyValue(null, 'color', 'red');
+    updatedTheme.updatePropertyValue(inputMetadata.selector, 'color', 'red');
     editor.theme = updatedTheme;
     await elementUpdated(editor);
 
@@ -79,7 +86,7 @@ describe('color property editor', () => {
 
   it('should display raw preset value if theme value is a preset value', async () => {
     const updatedTheme = cloneTheme();
-    updatedTheme.updatePropertyValue(null, 'color', 'var(--test-primary-color)');
+    updatedTheme.updatePropertyValue(inputMetadata.selector, 'color', 'var(--test-primary-color)');
     editor.theme = updatedTheme;
     await elementUpdated(editor);
 

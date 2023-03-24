@@ -1,16 +1,8 @@
 package com.vaadin.base.devserver.themeeditor.messages;
 
-public class RulesResponse extends BaseResponse {
+public class SetClassNameRequest extends BaseRequest {
 
     private String className;
-
-    public RulesResponse() {
-
-    }
-
-    public RulesResponse(String className) {
-        this.className = className;
-    }
 
     public String getClassName() {
         return className;

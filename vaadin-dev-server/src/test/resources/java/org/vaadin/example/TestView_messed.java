@@ -43,7 +43,7 @@ Button button = new Button("Say hello", e -> Notification.show(greetService.gree
         // shared-styles.css. **/
         addClassName("centered-content");
 
-        // ugly style, so ugly...
+
         textField       .addClassName("ugly");
 
         add(textField, button, new TextField("Cant touch this either"));}

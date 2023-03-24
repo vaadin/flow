@@ -17,7 +17,9 @@ package com.vaadin.flow.spring.security;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -304,9 +306,13 @@ public abstract class VaadinWebSecurity {
             String urlMapping) {
         Objects.requireNonNull(urlMapping,
                 "Vaadin servlet url mapping is required");
-        return new OrRequestMatcher(Stream
+        Stream<String> mappingRelativePaths = Stream
                 .of(HandlerHelper.getPublicResources())
-                .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
+                .map(path -> RequestUtil.applyUrlMapping(urlMapping, path));
+        Stream<String> rootPaths = Stream
+                .of(HandlerHelper.getPublicResourcesRoot());
+        return new OrRequestMatcher(Stream
+                .concat(mappingRelativePaths, rootPaths)
                 .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
     }
 

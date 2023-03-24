@@ -36,12 +36,6 @@
             <artifactId>flow-test-lumo</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>annotations</artifactId>
-            <version>3.0.1</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

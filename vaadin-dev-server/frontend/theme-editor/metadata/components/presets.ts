@@ -1,6 +1,7 @@
 export const presets = {
   lumoSize: ['--lumo-size-xs', '--lumo-size-s', '--lumo-size-m', '--lumo-size-l', '--lumo-size-xl'],
   lumoSpace: ['--lumo-space-xs', '--lumo-space-s', '--lumo-space-m', '--lumo-space-l', '--lumo-space-xl'],
+  lumoBorderRadius: ['0', '--lumo-border-radius-m', '--lumo-border-radius-l'],
   lumoFontSize: [
     '--lumo-font-size-xxs',
     '--lumo-font-size-xs',
@@ -20,5 +21,6 @@ export const presets = {
     '--lumo-primary-text-color',
     '--lumo-error-text-color',
     '--lumo-success-text-color'
-  ]
+  ],
+  basicBorderSize: ['0px', '1px', '2px', '3px']
 };

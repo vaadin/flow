@@ -22,6 +22,8 @@ describe('theme-editor', () => {
     send: sinon.SinonSpy;
   };
   let apiMock: {
+    loadComponentMetadata: sinon.SinonStub;
+    setLocalClassName: sinon.SinonStub;
     setCssRules: sinon.SinonStub;
     loadPreview: sinon.SinonStub;
     loadRules: sinon.SinonStub;
@@ -47,17 +49,22 @@ describe('theme-editor', () => {
     };
     const pickerProvider: PickerProvider = () => pickerMock as any;
     const editor = (await fixture(html` <vaadin-dev-tools-theme-editor
+      .expanded=${true}
       .pickerProvider=${pickerProvider}
       .connection=${connectionMock}
     ></vaadin-dev-tools-theme-editor>`)) as ThemeEditor;
 
     apiMock = {
+      loadComponentMetadata: sinon.stub((editor as any).api as ThemeEditorApi, 'loadComponentMetadata'),
+      setLocalClassName: sinon.stub((editor as any).api as ThemeEditorApi, 'setLocalClassName'),
       setCssRules: sinon.stub((editor as any).api as ThemeEditorApi, 'setCssRules'),
       loadPreview: sinon.stub((editor as any).api as ThemeEditorApi, 'loadPreview'),
       loadRules: sinon.stub((editor as any).api as ThemeEditorApi, 'loadRules'),
       undo: sinon.stub((editor as any).api as ThemeEditorApi, 'undo'),
       redo: sinon.stub((editor as any).api as ThemeEditorApi, 'redo')
     };
+    apiMock.loadComponentMetadata.returns(Promise.resolve({ accessible: true, className: 'test-class' }));
+    apiMock.setLocalClassName.returns(Promise.resolve({}));
     apiMock.setCssRules.returns(Promise.resolve({}));
     apiMock.loadPreview.returns(Promise.resolve({ css: '' }));
     apiMock.loadRules.returns(Promise.resolve({ rules: [], accessible: true }));
@@ -84,17 +91,16 @@ describe('theme-editor', () => {
     await aTimeout(50);
   }
 
-  function findPropertyEditor(partName: string | null, propertyName: string) {
-    const partTestId = partName || 'host';
+  function findPropertyEditor(elementName: string, propertyName: string) {
     return editor
       .shadowRoot!.querySelector('.property-list')
       ?.shadowRoot!.querySelector(
-        `.section[data-testid="${partTestId}"] .property-editor[data-testid="${propertyName}"]`
+        `.section[data-testid="${elementName}"] .property-editor[data-testid="${propertyName}"]`
       )!;
   }
 
-  async function editProperty(partName: string, propertyName: string, value: string) {
-    const propertyEditor = findPropertyEditor(partName, propertyName);
+  async function editProperty(elementName: string, propertyName: string, value: string) {
+    const propertyEditor = findPropertyEditor(elementName, propertyName);
 
     expect(propertyEditor).to.exist;
 
@@ -104,8 +110,8 @@ describe('theme-editor', () => {
     await elementUpdated(editor);
   }
 
-  function getPropertyValue(partName: string, propertyName: string) {
-    const propertyEditor = findPropertyEditor(partName, propertyName);
+  function getPropertyValue(elementName: string, propertyName: string) {
+    const propertyEditor = findPropertyEditor(elementName, propertyName);
     const input = propertyEditor.shadowRoot!.querySelector('input')! as HTMLInputElement;
     return input.value;
   }
@@ -152,13 +158,11 @@ describe('theme-editor', () => {
     };
   }
 
-  function mockRulesResponse(partName: string, propertyName: string, value: string) {
+  function mockRulesResponse(selector: string, propertyName: string, value: string) {
     return Promise.resolve({
-      accessible: true,
       rules: [
         {
-          tagName: 'test-element',
-          partName,
+          selector,
           properties: {
             [propertyName]: value
           }
@@ -218,7 +222,7 @@ describe('theme-editor', () => {
       await pickComponent();
       apiMock.loadPreview.resetHistory();
 
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
 
       expect(apiMock.loadPreview.calledOnce).to.be.true;
       expect(getTestElementStyles().label.color).to.equal('rgb(255, 0, 0)');
@@ -227,15 +231,9 @@ describe('theme-editor', () => {
     it('should show property editors for picked component', async () => {
       await pickComponent();
 
-      // Host properties
-      testElementMetadata.properties.forEach((property) => {
-        const propertyEditor = findPropertyEditor(null, property.propertyName);
-        expect(propertyEditor).to.exist;
-      });
-      // Part properties
-      testElementMetadata.parts.forEach((part) => {
-        part.properties.forEach((property) => {
-          const propertyEditor = findPropertyEditor(part.partName, property.propertyName);
+      testElementMetadata.elements.forEach((element) => {
+        element.properties.forEach((property) => {
+          const propertyEditor = findPropertyEditor(element.displayName, property.propertyName);
           expect(propertyEditor).to.exist;
         });
       });
@@ -244,17 +242,15 @@ describe('theme-editor', () => {
     it('should initialize property editors with base theme values when there are no custom rules', async () => {
       await pickComponent();
 
-      expect(getPropertyValue('label', 'color')).to.equal('rgb(0, 0, 0)');
+      expect(getPropertyValue('Label', 'color')).to.equal('rgb(0, 0, 0)');
     });
 
     it('should initialize property editors with values from custom rules', async () => {
       apiMock.loadRules.returns(
         Promise.resolve({
-          accessible: true,
           rules: [
             {
-              tagName: 'test-element',
-              partName: 'label',
+              selector: 'test-element.test-class::part(label)',
               properties: {
                 color: 'red'
               }
@@ -264,21 +260,21 @@ describe('theme-editor', () => {
       );
       await pickComponent();
 
-      expect(getPropertyValue('label', 'color')).to.equal('red');
+      expect(getPropertyValue('Label', 'color')).to.equal('red');
     });
 
     it('should update property editors with edited theme values', async () => {
       await pickComponent();
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
 
-      expect(getPropertyValue('label', 'color')).to.equal('red');
+      expect(getPropertyValue('Label', 'color')).to.equal('red');
     });
 
     it('should mark property as modified', async () => {
       await pickComponent();
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
 
-      const modifiedIndicator = findPropertyEditor('label', 'color').shadowRoot!.querySelector(
+      const modifiedIndicator = findPropertyEditor('Label', 'color').shadowRoot!.querySelector(
         '.property-name .modified'
       );
       expect(modifiedIndicator).to.exist;
@@ -287,23 +283,21 @@ describe('theme-editor', () => {
     it('should send theme rules when changing properties', async () => {
       await pickComponent();
 
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
       expect(apiMock.setCssRules.calledOnce).to.be.true;
       expect(apiMock.setCssRules.args[0][0]).to.deep.equal([
         {
-          tagName: 'test-element',
-          partName: 'label',
+          selector: 'test-element.test-class::part(label)',
           properties: { color: 'red' }
         }
       ]);
       apiMock.setCssRules.resetHistory();
 
-      await editProperty('label', 'color', 'green');
+      await editProperty('Label', 'color', 'green');
       expect(apiMock.setCssRules.calledOnce).to.be.true;
       expect(apiMock.setCssRules.args[0][0]).to.deep.equal([
         {
-          tagName: 'test-element',
-          partName: 'label',
+          selector: 'test-element.test-class::part(label)',
           properties: { color: 'green' }
         }
       ]);
@@ -311,7 +305,7 @@ describe('theme-editor', () => {
 
     it('should dispatch event before saving changes', async () => {
       await pickComponent();
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
 
       expect(beforeSaveSpy.calledOnce).to.be.true;
     });
@@ -321,35 +315,65 @@ describe('theme-editor', () => {
     it('should load rules for instance', async () => {
       await pickComponent();
 
-      expect(apiMock.loadRules.calledOnce);
-      expect(apiMock.loadRules.args).to.deep.equal([['test-element', testComponentRef]]);
+      expect(apiMock.loadRules.calledOnce).to.be.true;
+      expect(apiMock.loadRules.args).to.deep.equal([
+        [
+          [
+            'test-element.test-class',
+            'test-element.test-class::part(label)',
+            'test-element.test-class input[slot="input"]',
+            'test-element.test-class::part(helper-text)'
+          ]
+        ]
+      ]);
     });
 
     it('should update rules for instance', async () => {
       await pickComponent();
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
 
       const expectedRules = [
         {
-          tagName: 'test-element',
-          partName: 'label',
+          selector: 'test-element.test-class::part(label)',
           properties: {
             color: 'red'
           }
         }
       ];
 
-      expect(apiMock.setCssRules.calledOnce);
-      expect(apiMock.setCssRules.args).to.deep.equal([[expectedRules, testComponentRef]]);
+      expect(apiMock.setCssRules.calledOnce).to.be.true;
+      expect(apiMock.setCssRules.args).to.deep.equal([[expectedRules]]);
     });
 
     it('should show notice if instance is inaccessible', async () => {
-      apiMock.loadRules.returns(Promise.resolve({ rules: [], accessible: false }));
+      apiMock.loadComponentMetadata.returns(Promise.resolve({ accessible: false }));
       await pickComponent();
 
       const propertyList = editor.shadowRoot!.querySelector('.property-list');
       expect(propertyList).to.not.exist;
       expect(editor.shadowRoot!.textContent).to.contain('The selected Test element can not be styled locally');
+    });
+
+    it('should not load rules if instance is inaccessible', async () => {
+      apiMock.loadComponentMetadata.returns(Promise.resolve({ accessible: false }));
+      await pickComponent();
+
+      expect(apiMock.loadRules.calledOnce).to.be.false;
+    });
+
+    it('should not load rules if instance does not have local class name', async () => {
+      apiMock.loadComponentMetadata.returns(Promise.resolve({ accessible: true }));
+      await pickComponent();
+
+      expect(apiMock.loadRules.calledOnce).to.be.false;
+    });
+
+    it('should render property list if instance does not have local class name', async () => {
+      apiMock.loadComponentMetadata.returns(Promise.resolve({ accessible: true }));
+      await pickComponent();
+
+      findPropertyEditor('Label', 'color');
+      findPropertyEditor('Input', 'color');
     });
   });
 
@@ -359,28 +383,36 @@ describe('theme-editor', () => {
       apiMock.loadRules.resetHistory();
       await changeThemeScope(ThemeScope.global);
 
-      expect(apiMock.loadRules.calledOnce);
-      expect(apiMock.loadRules.args).to.deep.equal([['test-element', null]]);
+      expect(apiMock.loadRules.calledOnce).to.be.true;
+      expect(apiMock.loadRules.args).to.deep.equal([
+        [
+          [
+            'test-element',
+            'test-element::part(label)',
+            'test-element input[slot="input"]',
+            'test-element::part(helper-text)'
+          ]
+        ]
+      ]);
     });
 
-    it('should update rules for instance', async () => {
+    it('should update global rules', async () => {
       await pickComponent();
       apiMock.loadRules.resetHistory();
       await changeThemeScope(ThemeScope.global);
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
 
       const expectedRules = [
         {
-          tagName: 'test-element',
-          partName: 'label',
+          selector: 'test-element::part(label)',
           properties: {
             color: 'red'
           }
         }
       ];
 
-      expect(apiMock.setCssRules.calledOnce);
-      expect(apiMock.setCssRules.args).to.deep.equal([[expectedRules, null]]);
+      expect(apiMock.setCssRules.calledOnce).to.be.true;
+      expect(apiMock.setCssRules.args).to.deep.equal([[expectedRules]]);
     });
   });
 
@@ -395,7 +427,7 @@ describe('theme-editor', () => {
 
       // edit something
       await pickComponent();
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
 
       // undo allowed
       expect(undoButton.getAttribute('disabled')).to.be.null;
@@ -414,10 +446,29 @@ describe('theme-editor', () => {
 
       // edit something
       await pickComponent();
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
 
       expect(historySpy.push.calledOnce).to.be.true;
       expect(historySpy.push.args).to.deep.equal([['request1']]);
+    });
+
+    it('should add history entry for setting class name when editing property', async () => {
+      // Simulate selected component not having a class name yet
+      apiMock.loadComponentMetadata.returns(
+        Promise.resolve({
+          accessible: true,
+          suggestedClassName: 'suggested-class'
+        })
+      );
+      apiMock.setLocalClassName.returns(Promise.resolve({ requestId: 'request1' }));
+      apiMock.setCssRules.returns(Promise.resolve({ requestId: 'request2' }));
+
+      // edit something
+      await pickComponent();
+      await editProperty('Label', 'color', 'red');
+
+      expect(historySpy.push.calledTwice).to.be.true;
+      expect(historySpy.push.args).to.deep.equal([['request1'], ['request2']]);
     });
 
     it('should call undo when clicking undo button', async () => {
@@ -425,7 +476,7 @@ describe('theme-editor', () => {
 
       // edit something
       await pickComponent();
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
 
       // undo
       await undo();
@@ -437,10 +488,10 @@ describe('theme-editor', () => {
     it('should refresh theme on undo', async () => {
       // edit something
       await pickComponent();
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
 
       // mock theme responses
-      const rulesResponse = mockRulesResponse('label', 'color', 'green');
+      const rulesResponse = mockRulesResponse('test-element.test-class::part(label)', 'color', 'green');
       apiMock.loadRules.returns(rulesResponse);
       const previewResponse = mockPreviewResponse('test-element::part(label) { color: green }');
       apiMock.loadPreview.returns(previewResponse);
@@ -448,14 +499,14 @@ describe('theme-editor', () => {
       // undo
       await undo();
 
-      expect(getPropertyValue('label', 'color')).to.equal('green');
+      expect(getPropertyValue('Label', 'color')).to.equal('green');
       expect(getTestElementStyles().label.color).to.equal('rgb(0, 128, 0)');
     });
 
     it('should prevent live reload on undo', async () => {
       // edit something
       await pickComponent();
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
 
       // undo
       beforeSaveSpy.resetHistory();
@@ -469,7 +520,7 @@ describe('theme-editor', () => {
 
       // edit something
       await pickComponent();
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
 
       // undo
       await undo();
@@ -484,13 +535,13 @@ describe('theme-editor', () => {
     it('should refresh theme on redo', async () => {
       // edit something
       await pickComponent();
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
 
       // undo
       await undo();
 
       // mock theme responses
-      const rulesResponse = mockRulesResponse('label', 'color', 'green');
+      const rulesResponse = mockRulesResponse('test-element.test-class::part(label)', 'color', 'green');
       apiMock.loadRules.returns(rulesResponse);
       const previewResponse = mockPreviewResponse('test-element::part(label) { color: green }');
       apiMock.loadPreview.returns(previewResponse);
@@ -498,14 +549,14 @@ describe('theme-editor', () => {
       // redo
       await redo();
 
-      expect(getPropertyValue('label', 'color')).to.equal('green');
+      expect(getPropertyValue('Label', 'color')).to.equal('green');
       expect(getTestElementStyles().label.color).to.equal('rgb(0, 128, 0)');
     });
 
     it('should prevent live reload on redo', async () => {
       // edit something
       await pickComponent();
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
 
       // undo
       await undo();
@@ -522,7 +573,7 @@ describe('theme-editor', () => {
     it('should detect base theme when changing scope', async () => {
       await pickComponent();
       await changeThemeScope(ThemeScope.global);
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
       apiMock.loadPreview.returns(
         Promise.resolve({
           css: 'test-element::part(label) { color: red }'
@@ -530,13 +581,13 @@ describe('theme-editor', () => {
       );
       await changeThemeScope(ThemeScope.local);
 
-      expect(getPropertyValue('label', 'color')).to.equal('rgb(255, 0, 0)');
+      expect(getPropertyValue('Label', 'color')).to.equal('rgb(255, 0, 0)');
     });
 
     it('should detect base theme on undo', async () => {
       await pickComponent();
       await changeThemeScope(ThemeScope.global);
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
       apiMock.loadPreview.returns(
         Promise.resolve({
           css: 'test-element::part(label) { color: red }'
@@ -544,7 +595,7 @@ describe('theme-editor', () => {
       );
       await changeThemeScope(ThemeScope.local);
 
-      expect(getPropertyValue('label', 'color')).to.equal('rgb(255, 0, 0)');
+      expect(getPropertyValue('Label', 'color')).to.equal('rgb(255, 0, 0)');
 
       apiMock.loadPreview.returns(
         Promise.resolve({
@@ -553,13 +604,13 @@ describe('theme-editor', () => {
       );
       await undo();
 
-      expect(getPropertyValue('label', 'color')).to.equal('rgb(0, 0, 0)');
+      expect(getPropertyValue('Label', 'color')).to.equal('rgb(0, 0, 0)');
     });
 
     it('should detect base theme on redo', async () => {
       await pickComponent();
       await changeThemeScope(ThemeScope.global);
-      await editProperty('label', 'color', 'red');
+      await editProperty('Label', 'color', 'red');
       apiMock.loadPreview.returns(
         Promise.resolve({
           css: 'test-element::part(label) { color: red }'
@@ -567,7 +618,7 @@ describe('theme-editor', () => {
       );
       await changeThemeScope(ThemeScope.local);
 
-      expect(getPropertyValue('label', 'color')).to.equal('rgb(255, 0, 0)');
+      expect(getPropertyValue('Label', 'color')).to.equal('rgb(255, 0, 0)');
 
       apiMock.loadPreview.returns(
         Promise.resolve({
@@ -576,7 +627,7 @@ describe('theme-editor', () => {
       );
       await undo();
 
-      expect(getPropertyValue('label', 'color')).to.equal('rgb(0, 0, 0)');
+      expect(getPropertyValue('Label', 'color')).to.equal('rgb(0, 0, 0)');
 
       apiMock.loadPreview.returns(
         Promise.resolve({
@@ -585,7 +636,7 @@ describe('theme-editor', () => {
       );
       await redo();
 
-      expect(getPropertyValue('label', 'color')).to.equal('rgb(255, 0, 0)');
+      expect(getPropertyValue('Label', 'color')).to.equal('rgb(255, 0, 0)');
     });
   });
 
@@ -614,44 +665,71 @@ describe('theme-editor', () => {
       editor.remove();
       expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.false;
     });
+
+    it('should remove highlight when editor is closed', async () => {
+      await pickComponent();
+
+      editor.expanded = false;
+      await elementUpdated(editor);
+      expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.false;
+    });
+
+    it('should restore highlight when editor is opened again', async () => {
+      await pickComponent();
+
+      editor.expanded = false;
+      await elementUpdated(editor);
+      editor.expanded = true;
+      await elementUpdated(editor);
+      expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.true;
+    });
   });
 
-  describe('optimistic class name update', () => {
-    it('should add generated className from set rules response to selected component', async () => {
-      apiMock.setCssRules.returns({
-        className: 'tb-1234567890'
-      });
-      await pickComponent();
-      await editProperty('label', 'color', 'red');
-
-      expect(testElement.classList.contains('tb-1234567890')).to.be.true;
+  describe('applying class name', () => {
+    beforeEach(() => {
+      // Simulate selected component not having a class name yet
+      apiMock.loadComponentMetadata.returns(
+        Promise.resolve({
+          accessible: true,
+          suggestedClassName: 'suggested-class'
+        })
+      );
     });
 
-    it('should add generated className from load rules response to selected component', async () => {
-      apiMock.loadRules.returns({
+    it('should apply suggested class name before setting rules', async () => {
+      await pickComponent();
+      await editProperty('Label', 'color', 'red');
+
+      // should make API call to apply class name
+      expect(apiMock.setLocalClassName.calledOnce).to.be.true;
+      expect(apiMock.setLocalClassName.args[0]).to.deep.equal([testComponentRef, 'suggested-class']);
+      // should add class name to selected component
+      expect(testElement.classList.contains('suggested-class')).to.be.true;
+    });
+
+    it('should add existing className from component metadata response to selected component', async () => {
+      apiMock.loadComponentMetadata.returns({
         accessible: true,
-        className: 'tb-1234567890',
-        rules: []
+        className: 'existing-class'
       });
       await pickComponent();
 
-      expect(testElement.classList.contains('tb-1234567890')).to.be.true;
+      expect(testElement.classList.contains('existing-class')).to.be.true;
     });
 
-    it('should not add generated className from load rules response to previously selected component', async () => {
+    it('should not add existing className from component metadata response to previously selected component', async () => {
       await pickComponent();
 
       const anotherElement = (await fixture(html` <test-element></test-element>`)) as HTMLElement;
       testComponentRef = { nodeId: 123, uiId: 456, element: anotherElement };
-      apiMock.loadRules.returns({
+      apiMock.loadComponentMetadata.returns({
         accessible: true,
-        className: 'tb-1234567890',
-        rules: []
+        className: 'existing-class'
       });
       await pickComponent();
 
-      expect(testElement.classList.contains('tb-1234567890')).to.be.false;
-      expect(anotherElement.classList.contains('tb-1234567890')).to.be.true;
+      expect(testElement.classList.contains('existing-class')).to.be.false;
+      expect(anotherElement.classList.contains('existing-class')).to.be.true;
     });
   });
 });
