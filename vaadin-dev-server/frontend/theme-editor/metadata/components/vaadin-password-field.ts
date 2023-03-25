@@ -8,41 +8,33 @@ import {
 import { iconProperties } from './defaults';
 
 export default {
-  tagName: 'vaadin-number-field',
-  displayName: 'NumberField',
+  tagName: 'vaadin-password-field',
+  displayName: 'PasswordField',
   elements: [
     {
-      selector: 'vaadin-number-field::part(input-field)',
+      selector: 'vaadin-password-field::part(input-field)',
       displayName: 'Input field',
       properties: inputFieldProperties
     },
     {
-      selector: 'vaadin-number-field::part(decrease-button)',
-      displayName: 'Decrease button',
+      selector: 'vaadin-password-field::part(reveal-button)',
+      displayName: 'Reveal button',
       properties: [iconProperties.iconColor, iconProperties.iconSize]
     },
     {
-      selector: 'vaadin-number-field::part(increase-button)',
-      displayName: 'Increase button',
-      properties: [iconProperties.iconColor, iconProperties.iconSize]
-    },
-    {
-      selector: 'vaadin-number-field::part(label)',
+      selector: 'vaadin-password-field::part(label)',
       displayName: 'Label',
       properties: labelProperties
     },
     {
-      selector: 'vaadin-number-field::part(helper-text)',
+      selector: 'vaadin-password-field::part(helper-text)',
       displayName: 'Helper text',
       properties: helperTextProperties
     },
     {
-      selector: 'vaadin-number-field::part(error-message)',
+      selector: 'vaadin-password-field::part(error-message)',
       displayName: 'Error message',
       properties: errorMessageProperties
     }
-  ],
-  setupElement(numberField) {
-    numberField.stepButtonsVisible = true;
-  }
+  ]
 } as ComponentMetadata;

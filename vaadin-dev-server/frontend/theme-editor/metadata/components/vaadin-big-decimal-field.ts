@@ -7,26 +7,26 @@ import {
 } from './vaadin-text-field';
 
 export default {
-  tagName: 'vaadin-text-area',
-  displayName: 'TextArea',
+  tagName: 'vaadin-big-decimal-field',
+  displayName: 'BigDecimalField',
   elements: [
     {
-      selector: 'vaadin-text-area::part(input-field)',
+      selector: 'vaadin-big-decimal-field::part(input-field)',
       displayName: 'Input field',
       properties: inputFieldProperties
     },
     {
-      selector: 'vaadin-text-area::part(label)',
+      selector: 'vaadin-big-decimal-field::part(label)',
       displayName: 'Label',
       properties: labelProperties
     },
     {
-      selector: 'vaadin-text-area::part(helper-text)',
+      selector: 'vaadin-big-decimal-field::part(helper-text)',
       displayName: 'Helper text',
       properties: helperTextProperties
     },
     {
-      selector: 'vaadin-text-area::part(error-message)',
+      selector: 'vaadin-big-decimal-field::part(error-message)',
       displayName: 'Error message',
       properties: errorMessageProperties
     }

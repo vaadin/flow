@@ -1,88 +1,34 @@
-import { ComponentMetadata, CssPropertyMetadata, EditorType } from '../model';
-import { presets } from './presets';
-
-export const labelProperties: CssPropertyMetadata[] = [
-  {
-    propertyName: 'color',
-    displayName: 'Text color',
-    editorType: EditorType.color,
-    presets: presets.lumoTextColor
-  },
-  {
-    propertyName: 'font-size',
-    displayName: 'Font size',
-    editorType: EditorType.range,
-    presets: presets.lumoFontSize,
-    icon: 'font'
-  },
-  {
-    propertyName: 'background-color',
-    displayName: 'Background color',
-    editorType: EditorType.color
-  }
-];
+import { ComponentMetadata, CssPropertyMetadata } from '../model';
+import { fieldProperties, shapeProperties, textProperties } from './defaults';
 
 export const inputFieldProperties: CssPropertyMetadata[] = [
-  {
-    propertyName: 'color',
-    displayName: 'Text color',
-    editorType: EditorType.color,
-    presets: presets.lumoTextColor
-  },
-  {
-    propertyName: 'font-size',
-    displayName: 'Font size',
-    editorType: EditorType.range,
-    presets: presets.lumoFontSize,
-    icon: 'font'
-  },
-  {
-    propertyName: 'background-color',
-    displayName: 'Background color',
-    editorType: EditorType.color
-  }
+  shapeProperties.backgroundColor,
+  shapeProperties.borderColor,
+  shapeProperties.borderWidth,
+  shapeProperties.borderRadius,
+  fieldProperties.height,
+  fieldProperties.paddingInline,
+  textProperties.textColor,
+  textProperties.fontSize,
+  textProperties.fontWeight
+];
+
+export const labelProperties: CssPropertyMetadata[] = [
+  textProperties.textColor,
+  textProperties.fontSize,
+  textProperties.fontWeight
 ];
 
 export const helperTextProperties: CssPropertyMetadata[] = [
-  {
-    propertyName: 'color',
-    displayName: 'Text color',
-    editorType: EditorType.color,
-    presets: presets.lumoTextColor
-  },
-  {
-    propertyName: 'font-size',
-    displayName: 'Font size',
-    editorType: EditorType.range,
-    presets: presets.lumoFontSize,
-    icon: 'font'
-  },
-  {
-    propertyName: 'background-color',
-    displayName: 'Background color',
-    editorType: EditorType.color
-  }
+  textProperties.textColor,
+  textProperties.fontSize,
+  textProperties.fontWeight
 ];
 
 export const errorMessageProperties: CssPropertyMetadata[] = [
-  {
-    propertyName: 'color',
-    displayName: 'Text color',
-    editorType: EditorType.color,
-    presets: presets.lumoTextColor
-  },
-  {
-    propertyName: 'font-size',
-    displayName: 'Font size',
-    editorType: EditorType.range,
-    presets: presets.lumoFontSize,
-    icon: 'font'
-  },
-  {
-    propertyName: 'background-color',
-    displayName: 'Background color',
-    editorType: EditorType.color
-  }
+  textProperties.textColor,
+  textProperties.fontSize,
+  textProperties.fontWeight
 ];
 
 export default {
@@ -90,14 +36,14 @@ export default {
   displayName: 'TextField',
   elements: [
     {
-      selector: 'vaadin-text-field::part(label)',
-      displayName: 'Label',
-      properties: labelProperties
-    },
-    {
       selector: 'vaadin-text-field::part(input-field)',
       displayName: 'Input field',
       properties: inputFieldProperties
+    },
+    {
+      selector: 'vaadin-text-field::part(label)',
+      displayName: 'Label',
+      properties: labelProperties
     },
     {
       selector: 'vaadin-text-field::part(helper-text)',

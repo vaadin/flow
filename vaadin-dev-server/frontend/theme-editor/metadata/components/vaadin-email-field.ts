@@ -7,26 +7,26 @@ import {
 } from './vaadin-text-field';
 
 export default {
-  tagName: 'vaadin-text-area',
-  displayName: 'TextArea',
+  tagName: 'vaadin-email-field',
+  displayName: 'EmailField',
   elements: [
     {
-      selector: 'vaadin-text-area::part(input-field)',
+      selector: 'vaadin-email-field::part(input-field)',
       displayName: 'Input field',
       properties: inputFieldProperties
     },
     {
-      selector: 'vaadin-text-area::part(label)',
+      selector: 'vaadin-email-field::part(label)',
       displayName: 'Label',
       properties: labelProperties
     },
     {
-      selector: 'vaadin-text-area::part(helper-text)',
+      selector: 'vaadin-email-field::part(helper-text)',
       displayName: 'Helper text',
       properties: helperTextProperties
     },
     {
-      selector: 'vaadin-text-area::part(error-message)',
+      selector: 'vaadin-email-field::part(error-message)',
       displayName: 'Error message',
       properties: errorMessageProperties
     }
