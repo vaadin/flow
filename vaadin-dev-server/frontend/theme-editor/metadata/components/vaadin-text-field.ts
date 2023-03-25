@@ -1,5 +1,5 @@
 import { ComponentMetadata, CssPropertyMetadata } from '../model';
-import { fieldProperties, shapeProperties, textProperties } from './defaults';
+import { fieldProperties, iconProperties, shapeProperties, textProperties } from './defaults';
 
 export const inputFieldProperties: CssPropertyMetadata[] = [
   shapeProperties.backgroundColor,
@@ -31,6 +31,8 @@ export const errorMessageProperties: CssPropertyMetadata[] = [
   textProperties.fontWeight
 ];
 
+export const clearButtonProperties: CssPropertyMetadata[] = [iconProperties.iconColor, iconProperties.iconSize];
+
 export default {
   tagName: 'vaadin-text-field',
   displayName: 'TextField',
@@ -54,6 +56,11 @@ export default {
       selector: 'vaadin-text-field::part(error-message)',
       displayName: 'Error message',
       properties: errorMessageProperties
+    },
+    {
+      selector: 'vaadin-text-field::part(clear-button)',
+      displayName: 'Clear button',
+      properties: clearButtonProperties
     }
   ]
 } as ComponentMetadata;

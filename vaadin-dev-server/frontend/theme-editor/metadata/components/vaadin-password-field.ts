@@ -1,5 +1,6 @@
 import { ComponentMetadata } from '../model';
 import {
+  clearButtonProperties,
   errorMessageProperties,
   helperTextProperties,
   inputFieldProperties,
@@ -17,11 +18,6 @@ export default {
       properties: inputFieldProperties
     },
     {
-      selector: 'vaadin-password-field::part(reveal-button)',
-      displayName: 'Reveal button',
-      properties: [iconProperties.iconColor, iconProperties.iconSize]
-    },
-    {
       selector: 'vaadin-password-field::part(label)',
       displayName: 'Label',
       properties: labelProperties
@@ -35,6 +31,16 @@ export default {
       selector: 'vaadin-password-field::part(error-message)',
       displayName: 'Error message',
       properties: errorMessageProperties
+    },
+    {
+      selector: 'vaadin-password-field::part(clear-button)',
+      displayName: 'Clear button',
+      properties: clearButtonProperties
+    },
+    {
+      selector: 'vaadin-password-field::part(reveal-button)',
+      displayName: 'Reveal button',
+      properties: [iconProperties.iconColor, iconProperties.iconSize]
     }
   ]
 } as ComponentMetadata;
