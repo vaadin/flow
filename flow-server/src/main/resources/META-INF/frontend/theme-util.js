@@ -42,8 +42,34 @@ const createLinkReferences = (css, target) => {
   return styleCss;
 };
 
+const addAdoptedStyle = (cssText, target, first) => {
+  const sheet = new CSSStyleSheet();
+  sheet.replaceSync(cssText);
+  if (first) {
+    target.adoptedStyleSheets = [sheet, ...target.adoptedStyleSheets];
+  } else {
+    target.adoptedStyleSheets = [...target.adoptedStyleSheets, sheet];
+  }
+};
+
+const addStyleTag = (cssText, referenceComment) => {
+  const styleTag = document.createElement('style');
+  styleTag.type = 'text/css';
+  styleTag.textContent = cssText;
+
+  let beforeThis = undefined;
+  if (referenceComment) {
+    const comments = Array.from(document.head.childNodes).filter(elem => elem.nodeType === Node.COMMENT_NODE);
+    const container = comments.find(comment => comment.data.trim() === referenceComment);
+    if (container) {
+      beforeThis = container;
+    }
+  }
+  document.head.insertBefore(styleTag, beforeThis);
+};
+
 // target: Document | ShadowRoot
-export const injectGlobalCss = (css, target, first) => {
+export const injectGlobalCss = (css, referenceComment, target, first) => {
   if (target === document) {
     const hash = getHash(css);
     if (window.Vaadin.theme.injectedGlobalCss.indexOf(hash) !== -1) {
@@ -51,12 +77,13 @@ export const injectGlobalCss = (css, target, first) => {
     }
     window.Vaadin.theme.injectedGlobalCss.push(hash);
   }
-  const sheet = new CSSStyleSheet();
-  sheet.replaceSync(createLinkReferences(css, target));
-  if (first) {
-    target.adoptedStyleSheets = [sheet, ...target.adoptedStyleSheets];
+  const cssText = createLinkReferences(css, target);
+
+  // We avoid mixing style tags and adoptedStyleSheets to make override order clear
+  if (target === document) {
+    addStyleTag(cssText, referenceComment);
   } else {
-    target.adoptedStyleSheets = [...target.adoptedStyleSheets, sheet];
+    addAdoptedStyle(cssText, target, first);
   }
 };
 
