@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,12 +40,29 @@ public class TaskRunDevBundleBuildTest {
     public static final String FRONTEND_HASHES = "frontendHashes";
     public static final String THEME_JSON_CONTENTS = "themeJsonContents";
     public static final String PACKAGE_JSON_HASH = "packageJsonHash";
+
+    private static final String THEME_UTIL_JS;
+    static {
+        try {
+            THEME_UTIL_JS = IOUtils.toString(
+                    TaskRunDevBundleBuildTest.class.getClassLoader()
+                            .getResourceAsStream(
+                                    "META-INF/frontend/theme-util.js"),
+                    StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+
+    }
+
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private Options options;
 
     ClassFinder finder;
+
+    private Map<String, String> jarResources = new HashMap<>();
 
     @Before
     public void init() {
@@ -78,6 +96,11 @@ public class TaskRunDevBundleBuildTest {
                     dependency.getValue());
         }
 
+        bundleImports.set(bundleImports.length(),
+                "./generated/jar-resources/theme-util.js");
+        frontendHashes.put("theme-util.js",
+                TaskRunDevBundleBuild.calculateHash(THEME_UTIL_JS));
+        jarResources.put("theme-util.js", THEME_UTIL_JS);
         return stats;
     }
 
@@ -117,7 +140,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -128,7 +151,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -149,20 +172,20 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Map<String, String> packages = new HashMap<>();
-        packages.put("@vaadin/router", "1.7.4");
+        packages.put("@vaadin/router", "1.7.5");
         packages.put("@vaadin/text", "1.0.0");
         Mockito.when(depScanner.getPackages()).thenReturn(packages);
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -183,7 +206,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, "{\"dependencies\": {"
-                + "\"@vaadin/router\": \"1.7.4\", \"@vaadin/text\":\"1.0.0\"}, "
+                + "\"@vaadin/router\": \"1.7.5\", \"@vaadin/text\":\"1.0.0\"}, "
                 + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -194,7 +217,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -215,7 +238,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -226,7 +249,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "1.0.0");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
@@ -249,7 +272,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -299,7 +322,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.4\",\n"
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\",\n"
                         + "\"@vaadin/text\": \"1.0.0\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
@@ -337,7 +360,7 @@ public class TaskRunDevBundleBuildTest {
 
         FileUtils.write(packageJson, "{\n" + "  \"name\": \"no-name\",\n"
                 + "  \"license\": \"UNLICENSED\",\n" + "  \"dependencies\": {\n"
-                + "    \"@vaadin/router\": \"1.7.4\"" + "  },\n"
+                + "    \"@vaadin/router\": \"1.7.5\"" + "  },\n"
                 + "  \"devDependencies\": {\n" + "  }\n" + "}",
                 StandardCharsets.UTF_8);
 
@@ -348,7 +371,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "1.0.0");
         stats.put(PACKAGE_JSON_HASH,
                 "af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6");
@@ -376,7 +399,7 @@ public class TaskRunDevBundleBuildTest {
 
         FileUtils.write(packageJson, "{\n" + "  \"name\": \"no-name\",\n"
                 + "  \"license\": \"UNLICENSED\",\n" + "  \"dependencies\": {\n"
-                + "    \"@vaadin/router\": \"1.7.4\"" + "  },\n"
+                + "    \"@vaadin/router\": \"1.7.5\"" + "  },\n"
                 + "  \"devDependencies\": {\n" + "  }\n" + "}",
                 StandardCharsets.UTF_8);
 
@@ -387,7 +410,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -409,7 +432,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -420,7 +443,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
@@ -442,7 +465,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"~1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"~1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -467,10 +490,6 @@ public class TaskRunDevBundleBuildTest {
 
             stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                     "1.8.1");
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
-
             needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
                     depScanner, finder);
             Assert.assertTrue(
@@ -487,7 +506,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -512,9 +531,6 @@ public class TaskRunDevBundleBuildTest {
 
             stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                     "2.0.0");
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
 
             needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
                     depScanner, finder);
@@ -576,7 +592,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "1.0.0");
         stats.put(PACKAGE_JSON_HASH, defaultHash);
 
@@ -607,7 +623,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
         stats.put(PACKAGE_JSON_HASH, defaultHash);
 
         try (MockedStatic<FrontendUtils> utils = Mockito
@@ -637,7 +653,7 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                "1.7.4");
+                "1.7.5");
         stats.put(PACKAGE_JSON_HASH, defaultHash);
 
         try (MockedStatic<FrontendUtils> utils = Mockito
@@ -660,7 +676,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -701,7 +717,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -716,10 +732,13 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "1.8.6");
         JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(0, "@polymer/paper-checkbox/paper-checkbox.js");
-        bundleImports.set(1, "@polymer/paper-input/paper-input.js");
-        bundleImports.set(2, "@vaadin/grid/theme/lumo/vaadin-grid.js");
-        bundleImports.set(3,
+        bundleImports.set(bundleImports.length(),
+                "@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.set(bundleImports.length(),
+                "@polymer/paper-input/paper-input.js");
+        bundleImports.set(bundleImports.length(),
+                "@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports.set(bundleImports.length(),
                 "Frontend/generated/jar-resources/dndConnector-es6.js");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
@@ -742,7 +761,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -759,10 +778,13 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "1.8.6");
         JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
-        bundleImports.set(0, "@polymer/paper-checkbox/paper-checkbox.js");
-        bundleImports.set(1, "@polymer/paper-input/paper-input.js");
-        bundleImports.set(2, "@vaadin/grid/theme/lumo/vaadin-grid.js");
-        bundleImports.set(3,
+        bundleImports.set(bundleImports.length(),
+                "@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.set(bundleImports.length(),
+                "@polymer/paper-input/paper-input.js");
+        bundleImports.set(bundleImports.length(),
+                "@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports.set(bundleImports.length(),
                 "Frontend/generated/jar-resources/dndConnector-es6.js");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
@@ -786,7 +808,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -799,21 +821,18 @@ public class TaskRunDevBundleBuildTest {
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "1.8.6");
-        stats.getArray(BUNDLE_IMPORTS).set(0,
-                "Frontend/generated/jar-resources/TodoTemplate.js");
+        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
+        bundleImports.set(bundleImports.length(),
+                "./generated/jar-resources/TodoTemplate.js");
         stats.getObject(FRONTEND_HASHES).put("TodoTemplate.js",
-                "dea5180dd21d2f18d1472074cd5305f60b824e557dae480fb66cdf3ea73edc65");
+                TaskRunDevBundleBuild.calculateHash(fileContent));
+        jarResources.put("TodoTemplate.js", fileContent);
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
+            setupFrontendUtilsMock(stats, utils);
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
-            utils.when(
-                    () -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
-                    .thenReturn(fileContent);
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -831,7 +850,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -873,7 +892,7 @@ public class TaskRunDevBundleBuildTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.4\"}, "
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
@@ -929,20 +948,15 @@ public class TaskRunDevBundleBuildTest {
                 Collections.singletonList("Frontend/my-styles.css?inline"));
 
         JsonObject stats = getBasicStats();
-        stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/my-styles.css");
+        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
+        bundleImports.set(bundleImports.length(), "Frontend/my-styles.css");
         stats.getObject(FRONTEND_HASHES).put("my-styles.css",
                 "0d94fe659d24e1e56872b47fc98d9f09227e19816c62a3db709bad347fbd0cdd");
 
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(
-                    () -> FrontendUtils.getJarResourceString("my-styles.css"))
-                    .thenReturn("body{color:yellow}");
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+            setupFrontendUtilsMock(stats, utils);
+            jarResources.put("my-styles.css", "body{color:yellow}");
 
             boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(options, depScanner, finder);
@@ -990,7 +1004,8 @@ public class TaskRunDevBundleBuildTest {
                 Collections.singletonList("Frontend/views/lit-view.ts"));
 
         JsonObject stats = getBasicStats();
-        stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/views/lit-view.ts");
+        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
+        bundleImports.set(bundleImports.length(), "Frontend/views/lit-view.ts");
         stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts",
                 "eaf04adbc43cb363f6b58c45c6e0e8151084941247abac9493beed8d29f08add");
 
@@ -1570,7 +1585,8 @@ public class TaskRunDevBundleBuildTest {
                 .mock(FrontendDependenciesScanner.class);
 
         JsonObject stats = getBasicStats();
-        stats.getArray(BUNDLE_IMPORTS).set(0,
+        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
+        bundleImports.set(bundleImports.length(),
                 "Frontend/generated/jar-resources/vaadin-spreadsheet/vaadin-spreadsheet.js");
         stats.getObject(FRONTEND_HASHES).put(
                 "vaadin-spreadsheet/vaadin-spreadsheet.js",
@@ -1669,12 +1685,12 @@ public class TaskRunDevBundleBuildTest {
     }
 
     private void setupFrontendUtilsMock(JsonObject stats,
-            MockedStatic<FrontendUtils> utils) {
+            MockedStatic<FrontendUtils> utils) throws IOException {
         utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
         utils.when(() -> FrontendUtils
                 .findBundleStatsJson(temporaryFolder.getRoot()))
-                .thenReturn(stats.toJson());
+                .thenAnswer(q -> stats.toJson());
         utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
                 Mockito.any(Options.class), Mockito.any(ThemeDefinition.class)))
                 .thenCallRealMethod();
@@ -1684,5 +1700,10 @@ public class TaskRunDevBundleBuildTest {
         utils.when(() -> FrontendUtils.getParentThemeNameInFrontend(
                 Mockito.any(File.class), Mockito.any(JsonObject.class)))
                 .thenCallRealMethod();
+        utils.when(
+                () -> FrontendUtils.getJarResourceString(Mockito.anyString()))
+                .thenAnswer(q -> {
+                    return jarResources.get(q.getArgument(0));
+                });
     }
 }

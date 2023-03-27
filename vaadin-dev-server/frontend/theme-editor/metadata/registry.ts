@@ -1,5 +1,6 @@
 import { ComponentReference } from '../../component-util';
 import { ComponentMetadata } from './model';
+import { createGenericMetadata } from './components/generic';
 
 type MetadataMap = { [key: string]: ComponentMetadata };
 
@@ -16,10 +17,15 @@ export class MetadataRegistry {
   constructor(private loader: ModuleLoader = defaultModuleLoader) {}
 
   async getMetadata(component: ComponentReference): Promise<ComponentMetadata | null> {
-    // Ignore if there is no element, or it's not a Vaadin component
+    // Ignore if there is no element
     const tagName = component.element?.localName;
-    if (!tagName || !tagName.startsWith('vaadin-')) {
+    if (!tagName) {
       return null;
+    }
+
+    // For non-Vaadin elements, return generic metadata
+    if (!tagName.startsWith('vaadin-')) {
+      return createGenericMetadata(tagName);
     }
 
     // Check for existing metadata

@@ -48,16 +48,22 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.AbstractConfiguration;
+import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.VaadinConfig;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.Json;
@@ -195,7 +201,7 @@ public class FrontendUtils {
      * feature flags as globals that might be used by Vaadin web components or
      * application code.
      */
-    public static final String FEATURE_FLAGS_FILE_NAME = "vaadin-featureflags.ts";
+    public static final String FEATURE_FLAGS_FILE_NAME = "vaadin-featureflags.js";
 
     /**
      * File name of the index.html in client side.
@@ -1265,6 +1271,22 @@ public class FrontendUtils {
             throw new IllegalStateException(
                     "Couldn't extract theme name from theme imports file 'theme.js'");
         }
+    }
+
+    /**
+     * Gets the theme annotation for the project.
+     *
+     * @param context
+     *            the Vaadin context
+     * @return the theme annotation or an empty optional
+     */
+    public static Optional<Theme> getThemeAnnotation(VaadinContext context) {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        Class<? extends AppShellConfigurator> shell = registry.getShell();
+        if (shell == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(shell.getAnnotation(Theme.class));
     }
 
     public static Optional<JsonObject> getThemeJsonInFrontend(

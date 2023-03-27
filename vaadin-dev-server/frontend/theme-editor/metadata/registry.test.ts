@@ -2,6 +2,7 @@ import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import { MetadataRegistry } from './registry';
 import { ComponentReference } from '../../component-util';
+import { createGenericMetadata } from './components/generic';
 
 describe('metadata-registry', () => {
   let moduleLoaderSpy: sinon.SinonSpy;
@@ -21,19 +22,21 @@ describe('metadata-registry', () => {
     registry = new MetadataRegistry(moduleLoaderSpy);
   });
 
-  it('should not load metadata for unknown elements', async () => {
-    // No element
-    let componentRef = mockComponentReference();
-    let metadata = await registry.getMetadata(componentRef);
+  it('should not load metadata for null element', async () => {
+    const componentRef = mockComponentReference();
+    const metadata = await registry.getMetadata(componentRef);
 
     expect(metadata).to.be.null;
     expect(moduleLoaderSpy.called).to.be.false;
+  });
 
-    // Unknown element
-    componentRef = mockComponentReference('unknown-element');
-    metadata = await registry.getMetadata(componentRef);
+  it('should return generic metadata for non-Vaadin element', async () => {
+    const componentRef = mockComponentReference('h2');
+    const metadata = await registry.getMetadata(componentRef);
+    const expectedMetadata = createGenericMetadata('h2');
 
-    expect(metadata).to.be.null;
+    expect(metadata).to.deep.equal(expectedMetadata);
+    expect(metadata?.displayName).to.equal('H2');
     expect(moduleLoaderSpy.called).to.be.false;
   });
 
@@ -59,7 +62,7 @@ describe('metadata-registry', () => {
     expect(metadata).to.not.be.null;
     expect(metadata!.tagName).to.equal('vaadin-button');
     expect(metadata!.displayName).to.equal('Button');
-    expect(metadata!.parts).to.be.instanceof(Array);
+    expect(metadata!.elements).to.be.instanceof(Array);
   });
 
   it('should cache metadata', async () => {

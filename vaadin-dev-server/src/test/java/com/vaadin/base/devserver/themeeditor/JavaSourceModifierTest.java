@@ -3,23 +3,24 @@ package com.vaadin.base.devserver.themeeditor;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.github.javaparser.utils.SourceRoot;
 import com.vaadin.base.devserver.themeeditor.utils.LineNumberVisitor;
 import com.vaadin.base.devserver.themeeditor.utils.ThemeEditorException;
 import com.vaadin.flow.testutil.TestUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Arrays;
-
-import static com.vaadin.base.devserver.themeeditor.JavaSourceModifier.UNIQUE_CLASSNAME_PREFIX;
+import java.util.stream.Collectors;
 
 public class JavaSourceModifierTest extends AbstractThemeEditorTest {
 
@@ -39,171 +40,164 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
     }
 
     @Test
-    public void classNameAdd_javaUpdated_clean() {
-        classNameAdd_javaUpdated(TEXTFIELD_LINE, TEXTFIELD_LINE + 1,
-                TEXTFIELD_LINE + 2, "textField", "beautiful");
-    }
-
-    @Test
-    public void classNameAdd2_javaUpdated_clean() {
-        classNameAdd_javaUpdated(PINFIELD2_LINE, PINFIELD2_LINE + 1,
-                PINFIELD2_LINE + 2, "pinField2", "beautiful");
-    }
-
-    public void classNameAdd_javaUpdated(int declarationLine, int expectedLine1,
-            int expectedLine2, String variableName, String className) {
-        prepareComponentTracker(declarationLine);
+    public void classNameAdded_javaUpdated_componentLocatorRefreshed() {
+        prepareComponentTracker(0, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
+        prepareComponentTracker(1, PINFIELD2_CREATE, PINFIELD2_ATTACH);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
-        modifier.setClassNames(0, 0, Arrays.asList("bold", className));
+
+        modifier.setLocalClassName(0, 0, "bold-field");
 
         CompilationUnit cu = getCompilationUnit();
-        Node n1 = cu.accept(new LineNumberVisitor(), expectedLine1);
-        Node n2 = cu.accept(new LineNumberVisitor(), expectedLine2);
-
+        Node n1 = cu.accept(new LineNumberVisitor(), TEXTFIELD_CREATE + 2);
         Assert.assertTrue(n1 instanceof ExpressionStmt);
-        Assert.assertTrue(n2 instanceof ExpressionStmt);
 
-        ExpressionStmt expr1 = modifier.createMethodCallExprStmt(variableName,
-                "addClassName", "bold");
-        ExpressionStmt expr2 = modifier.createMethodCallExprStmt(variableName,
-                "addClassName", className);
-
+        Statement expr1 = modifier.createAddClassNameStatement("textField",
+                "bold-field");
         Assert.assertEquals(expr1, n1);
-        Assert.assertEquals(expr2, n2);
-    }
 
-    @Test
-    public void sameClassNameAdd_javaUpdated_singlePresent() {
-        prepareComponentTracker(TEXTFIELD_LINE);
-        JavaSourceModifier modifier = new TestJavaSourceModifier();
-        modifier.setClassNames(0, 0, Arrays.asList("bold", "bold"));
+        modifier.setLocalClassName(0, 1, "even-bolder-field");
 
-        CompilationUnit cu = getCompilationUnit();
-        Node n1 = cu.accept(new LineNumberVisitor(), TEXTFIELD_LINE + 1);
-        Node n2 = cu.accept(new LineNumberVisitor(), TEXTFIELD_LINE + 2);
-
+        cu = getCompilationUnit();
+        n1 = cu.accept(new LineNumberVisitor(), PINFIELD2_CREATE + 4);
         Assert.assertTrue(n1 instanceof ExpressionStmt);
-        Assert.assertTrue(n2 instanceof ExpressionStmt);
 
-        ExpressionStmt expr1 = modifier.createMethodCallExprStmt("textField",
-                "addClassName", "bold");
-
+        expr1 = modifier.createAddClassNameStatement("pinField2",
+                "even-bolder-field");
         Assert.assertEquals(expr1, n1);
-        Assert.assertNotEquals(expr1, n2);
     }
 
-    @Test
-    public void classNameRemove_javaUpdated() {
-        classNameRemove_javaUpdated(TEXTFIELD_LINE, TEXTFIELD_CALL_LINE);
-    }
-
-    public void classNameRemove_javaUpdated(int declarationLine,
-            int methodCallLine) {
-        prepareComponentTracker(declarationLine);
+    @Test(expected = ThemeEditorException.class)
+    public void nonExistingClassNameRemove_exceptionIsThrown() {
+        prepareComponentTracker(0, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
-
-        // check if statement exists
-        Node n1 = getCompilationUnit().accept(new LineNumberVisitor(),
-                methodCallLine);
-        ExpressionStmt expr1 = modifier.createMethodCallExprStmt("textField",
-                "addClassName", "ugly");
-        Assert.assertEquals(((ExpressionStmt) n1).getExpression(),
-                expr1.getExpression());
-
-        modifier.removeClassNames(0, 0, Arrays.asList("ugly"));
-
-        n1 = getCompilationUnit().accept(new LineNumberVisitor(),
-                methodCallLine);
-        Assert.assertNull(n1);
-    }
-
-    @Test
-    public void nonExistingClassNameRemove_noException() {
-        prepareComponentTracker(TEXTFIELD_LINE);
-        JavaSourceModifier modifier = new TestJavaSourceModifier();
-        modifier.removeClassNames(0, 0, Arrays.asList("very-ugly"));
+        modifier.removeLocalClassName(0, 0);
     }
 
     @Test(expected = ThemeEditorException.class)
     public void declarationAsClassProperty_exceptionIsThrown() {
-        prepareComponentTracker(PINFIELD_LINE);
+        prepareComponentTracker(0, PINFIELD_CREATE, PINFIELD_ATTACH);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
-        modifier.setClassNames(0, 0, Arrays.asList("bold", "beautiful"));
+        modifier.setLocalClassName(0, 0, "bold-field");
     }
 
     @Test(expected = ThemeEditorException.class)
     public void declarationAsInlineArgument_exceptionIsThrown() {
-        prepareComponentTracker(INLINEADD_LINE);
+        prepareComponentTracker(0, INLINEADD_CREATE, INLINEADD_ATTACH);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
-        modifier.setClassNames(0, 0, Arrays.asList("bold", "beautiful"));
+        modifier.setLocalClassName(0, 0, "bold-field");
     }
 
     @Test
     public void messedFileModified_structurePreserved() {
         copy("TestView_messed.java", "TestView.java");
-        classNameRemove_javaUpdated(25, 47);
-        classNameAdd_javaUpdated(25, 27, 28, "textField", "beautiful");
-        try {
-            File javaFolder = TestUtils
-                    .getTestFolder("java/org/vaadin/example");
-            Reader fileReader1 = new FileReader(
-                    new File(javaFolder, "TestView.java"));
-            Reader fileReader2 = new FileReader(
-                    new File(javaFolder, "TestView_messedExpected.java"));
-            Assert.assertTrue(IOUtils.contentEquals(fileReader1, fileReader2));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        prepareComponentTracker(0, 25, 49);
+        JavaSourceModifier modifier = new TestJavaSourceModifier();
+        modifier.setLocalClassName(0, 0, "bold-field");
+        compareTestView("TestView_messedExpected.java");
     }
 
     @Test
     public void componentPicked_componentAccessible() {
-        prepareComponentTracker(TEXTFIELD_LINE);
+        prepareComponentTracker(0, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
         Assert.assertTrue(modifier.isAccessible(0, 0));
     }
 
     @Test
     public void componentPicked_componentNotAccessible() {
-        prepareComponentTracker(INLINEADD_LINE);
+        prepareComponentTracker(0, INLINEADD_CREATE, INLINEADD_ATTACH);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
         Assert.assertFalse(modifier.isAccessible(0, 0));
     }
 
     @Test
-    public void uniqueClassNameNotExists_javaUpdated() {
-        prepareComponentTracker(TEXTFIELD_LINE);
+    public void localClassName_set_get_remove_replace_suggest() {
+        prepareComponentTracker(0, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
-        String uniqueClassName = modifier.getUniqueClassName(0, 0, true);
-        Assert.assertNotNull(uniqueClassName);
-        Assert.assertTrue(uniqueClassName.startsWith(UNIQUE_CLASSNAME_PREFIX));
 
-        CompilationUnit cu = getCompilationUnit();
-        Node n1 = cu.accept(new LineNumberVisitor(), TEXTFIELD_LINE + 1);
+        // local classname does not exist
+        String localClassName = modifier.getLocalClassName(0, 0);
+        Assert.assertNull(localClassName);
 
-        Assert.assertTrue(n1 instanceof ExpressionStmt);
+        // set local classname
+        modifier.setLocalClassName(0, 0, "test-name");
+        localClassName = modifier.getLocalClassName(0, 0);
+        Assert.assertNotNull(localClassName);
+        Assert.assertEquals("test-name", localClassName);
 
-        ExpressionStmt expr1 = modifier.createMethodCallExprStmt("textField",
-                "addClassName", uniqueClassName);
+        // remove local classname
+        modifier.removeLocalClassName(0, 0);
+        localClassName = modifier.getLocalClassName(0, 0);
+        Assert.assertNull(localClassName);
 
-        Assert.assertEquals(expr1, n1);
+        // check if file structure is not changed
+        compareTestView("TestView_clean.java");
+
+        // suggest new local classname
+        String suggestedClassName = modifier.getSuggestedClassName(0, 0);
+        Assert.assertNotNull(suggestedClassName);
+        // suggested classname is derived from tag; span is used in mocks
+        // because TextField is not available
+        Assert.assertEquals("TestView-span-1", suggestedClassName);
+
+        // set suggested classname
+        modifier.setLocalClassName(0, 0, suggestedClassName);
+        localClassName = modifier.getLocalClassName(0, 0);
+        Assert.assertNotNull(localClassName);
+        Assert.assertEquals(suggestedClassName, localClassName);
+
+        // suggest new classname
+        suggestedClassName = modifier.getSuggestedClassName(0, 0);
+        Assert.assertNotNull(suggestedClassName);
+        Assert.assertEquals("TestView-span-2", suggestedClassName);
+
+        // update suggested classname
+        modifier.setLocalClassName(0, 0, suggestedClassName);
+        localClassName = modifier.getLocalClassName(0, 0);
+        Assert.assertNotNull(localClassName);
+        Assert.assertEquals(suggestedClassName, localClassName);
+
+        // remove local classname
+        modifier.removeLocalClassName(0, 0);
+        localClassName = modifier.getLocalClassName(0, 0);
+        Assert.assertNull(localClassName);
+
+        // check if file structure is not changed
+        compareTestView("TestView_clean.java");
     }
 
     @Test
-    public void uniqueClassNameExists_valueRetrieved() {
-        String expectedClassName = "te-123456789";
-        classNameAdd_javaUpdated(TEXTFIELD_LINE, TEXTFIELD_LINE + 1,
-                TEXTFIELD_LINE + 2, "textField", expectedClassName);
-
+    public void componentTagName() {
+        prepareComponentTracker(0, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
-        String uniqueClassName = modifier.getUniqueClassName(0, 0, false);
-        Assert.assertEquals(expectedClassName, uniqueClassName);
+        String tagName = modifier.getTag(0, 0);
+        Assert.assertEquals("span", tagName); // Span used in tests
     }
 
     private CompilationUnit getCompilationUnit() {
         File javaFolder = TestUtils.getTestFolder("java/org/vaadin/example");
         SourceRoot root = new SourceRoot(javaFolder.toPath());
-        return root.parse("", "TestView.java");
+        return LexicalPreservingPrinter.setup(root.parse("", "TestView.java"));
+    }
+
+    private void compareTestView(String expectedFile) {
+        try {
+            File javaFolder = TestUtils
+                    .getTestFolder("java/org/vaadin/example");
+            String expected = readFile(new File(javaFolder, expectedFile));
+            String current = readFile(new File(javaFolder, "TestView.java"));
+            Assert.assertEquals(expected, current);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String readFile(File file) throws IOException {
+        try (Reader fileReader = new FileReader(file);
+                BufferedReader br = new BufferedReader(fileReader)) {
+            return br.lines()
+                    .collect(Collectors.joining(System.lineSeparator()));
+        }
     }
 
 }

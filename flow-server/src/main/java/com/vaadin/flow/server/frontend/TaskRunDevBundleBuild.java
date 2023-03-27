@@ -594,7 +594,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
     }
 
-    private static String calculateHash(String fileContent) {
+    static String calculateHash(String fileContent) {
         String content = fileContent.replaceAll("\\r\\n", "\n");
         return StringUtil.getHash(content, StandardCharsets.UTF_8);
     }
@@ -918,6 +918,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("devBundle", "true");
+        builder.environment().put("NODE_ENV", "development");
 
         Process process = null;
         try {

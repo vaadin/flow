@@ -1,37 +1,78 @@
-import { ComponentTheme } from './model';
+import { css } from 'lit';
+import { ComponentTheme, createScopedSelector, SelectorScope, ThemeScope } from './model';
 import { ComponentMetadata } from './metadata/model';
 import { ComponentReference } from '../component-util';
+import { injectGlobalCss } from './styles';
 
-export function detectTheme(metadata: ComponentMetadata): ComponentTheme {
+const measureElementClassname = '__vaadin-theme-editor-measure-element';
+const pseudoRegex = /((::before)|(::after))$/;
+const partNameRegex = /::part\(([\w\d_-]+)\)$/;
+
+injectGlobalCss(css`
+  .__vaadin-theme-editor-measure-element {
+    position: absolute;
+    top: 0;
+    left: 0;
+    visibility: hidden;
+  }
+`);
+
+export async function detectTheme(metadata: ComponentMetadata): Promise<ComponentTheme> {
   const componentTheme = new ComponentTheme(metadata);
   const element = document.createElement(metadata.tagName);
-  element.style.visibility = 'hidden';
+  element.classList.add(measureElementClassname);
   document.body.append(element);
 
+  // If component has a custom setup function, run it
+  if (metadata.setupElement) {
+    await metadata.setupElement(element);
+  }
+
+  const scope: SelectorScope = {
+    themeScope: ThemeScope.local,
+    localClassName: measureElementClassname
+  };
+
   try {
-    // Host
-    const hostStyles = getComputedStyle(element);
+    metadata.elements.forEach((elementMetadata) => {
+      let scopedSelector = createScopedSelector(elementMetadata, scope);
+      // Pseudo-element needs to be queried in getComputedStyle separately
+      const pseudoMatch = scopedSelector.match(pseudoRegex);
+      scopedSelector = scopedSelector.replace(pseudoRegex, '');
 
-    metadata.properties.forEach((property) => {
-      const propertyValue = hostStyles.getPropertyValue(property.propertyName);
-      componentTheme.updatePropertyValue(null, property.propertyName, propertyValue);
-    });
+      // We can not access shadow DOM parts using document.querySelector, so we
+      // need to split accessing those into a second query
+      const partNameMatch = scopedSelector.match(partNameRegex);
+      const lightDomSelector = scopedSelector.replace(partNameRegex, '');
 
-    // Parts
-    metadata.parts.forEach((part) => {
-      const partElement = element.shadowRoot?.querySelector(`[part~="${part.partName}"]`);
-      if (!partElement) {
+      let element = document.querySelector(lightDomSelector);
+      // If we target a part in shadow DOM, query for that within shadow DOM
+      if (element && partNameMatch) {
+        const partName = partNameMatch[1];
+        const shadowDomSelector = `[part~="${partName}"]`;
+        element = element.shadowRoot!.querySelector(shadowDomSelector);
+      }
+
+      if (!element) {
         return;
       }
-      const partStyles = getComputedStyle(partElement);
+      const pseudoName = pseudoMatch ? pseudoMatch[1] : null;
+      const elementStyles = getComputedStyle(element, pseudoName);
 
-      part.properties.forEach((property) => {
-        const propertyValue = partStyles.getPropertyValue(property.propertyName);
-        componentTheme.updatePropertyValue(part.partName, property.propertyName, propertyValue);
+      elementMetadata.properties.forEach((property) => {
+        const propertyValue = elementStyles.getPropertyValue(property.propertyName);
+        componentTheme.updatePropertyValue(elementMetadata.selector, property.propertyName, propertyValue);
       });
     });
   } finally {
-    element.remove();
+    try {
+      // If component has a custom cleanup function, run it
+      if (metadata.cleanupElement) {
+        await metadata.cleanupElement(element);
+      }
+    } finally {
+      element.remove();
+    }
   }
 
   return componentTheme;
@@ -48,7 +89,7 @@ export function detectElementDisplayName(component: ComponentReference) {
   }
 
   // check for label
-  const label = element.shadowRoot && element.shadowRoot.querySelector('label');
+  const label = element.querySelector('label');
   if (label && label.textContent) {
     return sanitizeText(label.textContent);
   }

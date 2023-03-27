@@ -25,6 +25,7 @@ import java.io.UncheckedIOException;
 import java.util.Optional;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -52,7 +53,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
-import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
@@ -109,6 +109,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureHiddenElementStyles(indexDocument);
 
+        addStyleTagReferences(indexDocument);
+
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         VaadinContext context = session.getService().getContext();
@@ -136,6 +138,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // modify the page based on registered IndexHtmlRequestListener:s
         service.modifyIndexHtmlResponse(indexHtmlResponse);
 
+        if (!config.isProductionMode()) {
+            // Ensure no older tools incorrectly detect a bundle as production
+            // mode
+            addScript(indexDocument,
+                    "window.Vaadin = window.Vaadin || {}; window.Vaadin.developmentMode = true;");
+        }
+
+        applyThemeVariant(indexDocument, context);
+
         if (config.isDevToolsEnabled()) {
             addDevTools(indexDocument, config, session, request);
             catchErrorsInDevMode(indexDocument);
@@ -151,6 +162,21 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    private void applyThemeVariant(Document indexDocument,
+            VaadinContext context) throws IOException {
+        FrontendUtils.getThemeAnnotation(context)
+                .ifPresent(theme -> indexDocument.head().parent().attr("theme",
+                        theme.variant()));
+    }
+
+    private void addStyleTagReferences(Document indexDocument) {
+        Comment cssImportComment = new Comment("CSSImport end");
+        indexDocument.head().appendChild(cssImportComment);
+
+        Comment stylesheetComment = new Comment("Stylesheet end");
+        indexDocument.head().appendChild(stylesheetComment);
     }
 
     private void redirectToOldBrowserPageWhenNeeded(Document indexDocument) {

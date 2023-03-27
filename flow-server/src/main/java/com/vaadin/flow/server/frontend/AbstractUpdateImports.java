@@ -63,21 +63,26 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIA
  */
 abstract class AbstractUpdateImports implements Runnable {
 
+    private static final String IMPORT_INJECT = "import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n";
     private static final String EXPORT_MODULES = "export const addCssBlock = function(block, before = false) {\n"
             + " const tpl = document.createElement('template');\n"
             + " tpl.innerHTML = block;\n"
             + " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);\n"
             + "};";
 
-    private static final String CSS_IMPORT = "import $cssFromFile_%d from '%s';%n" //
+    private static final String CSS_IMPORT = "import $cssFromFile_%d from '%s';%n";
+    private static final String CSS_IMPORT_AND_MAKE_LIT_CSS = CSS_IMPORT
             + "const $css_%1$d = typeof $cssFromFile_%1$d  === 'string' ? unsafeCSS($cssFromFile_%1$d) : $cssFromFile_%1$d;";
-    private static final String CSS_PRE = CSS_IMPORT + "%n" + "addCssBlock(`";
+    private static final String CSS_PRE = CSS_IMPORT_AND_MAKE_LIT_CSS + "%n"
+            + "addCssBlock(`";
     private static final String CSS_POST = "`);";
     private static final String CSS_BASIC_TPL = CSS_PRE
             + "<style%s>${$css_%1$d}</style>" + CSS_POST;
+    private static final String INJECT_CSS = CSS_IMPORT
+            + "%ninjectGlobalCss($cssFromFile_%1$d.toString(), 'CSSImport end', document);%n";
     private static final String THEMABLE_MIXIN_IMPORT = "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';";
-    private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT + "%n"
-            + "registerStyles('%s', $css_%1$d%s);";
+    private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT_AND_MAKE_LIT_CSS
+            + "%n" + "registerStyles('%s', $css_%1$d%s);";
 
     private static final String IMPORT_TEMPLATE = "import '%s';";
 
@@ -159,6 +164,7 @@ abstract class AbstractUpdateImports implements Runnable {
     protected Collection<String> getExportLines() {
         Collection<String> lines = new ArrayList<>();
         addLines(lines, EXPORT_MODULES);
+        addLines(lines, IMPORT_INJECT);
         return lines;
     }
 
@@ -553,12 +559,14 @@ abstract class AbstractUpdateImports implements Runnable {
                     : "";
             addLines(lines, String.format(REGISTER_STYLES_FOR_TEMPLATE, i,
                     cssImport, themeFor, optionals));
-        } else {
+        } else if (cssData.getInclude() != null) {
             String include = cssData.getInclude() != null
                     ? " include=\"" + cssData.getInclude() + "\""
                     : "";
             addLines(lines,
                     String.format(CSS_BASIC_TPL, i, cssImport, include));
+        } else {
+            addLines(lines, String.format(INJECT_CSS, i, cssImport));
         }
         return found;
     }

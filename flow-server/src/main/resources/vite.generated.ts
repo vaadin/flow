@@ -528,43 +528,6 @@ function themePlugin(opts): PluginOption {
     }
   };
 }
-function lenientLitImportPlugin(): PluginOption {
-  return {
-    name: 'vaadin:lenient-lit-import',
-    async transform(code, id) {
-      const decoratorImports = [
-        /import (.*?) from (['"])(lit\/decorators)(['"])/,
-        /import (.*?) from (['"])(lit-element\/decorators)(['"])/
-      ];
-      const directiveImports = [
-        /import (.*?) from (['"])(lit\/directives\/)([^\\.]*?)(['"])/,
-        /import (.*?) from (['"])(lit-html\/directives\/)([^\\.]*?)(['"])/
-      ];
-
-      decoratorImports.forEach((decoratorImport) => {
-        let decoratorMatch;
-        while ((decoratorMatch = code.match(decoratorImport))) {
-          console.warn(
-              `Warning: the file ${id} imports from '${decoratorMatch[3]}' when it should import from '${decoratorMatch[3]}.js'`
-          );
-          code = code.replace(decoratorImport, 'import $1 from $2$3.js$4');
-        }
-      });
-
-      directiveImports.forEach((directiveImport) => {
-        let directiveMatch;
-        while ((directiveMatch = code.match(directiveImport))) {
-          console.warn(
-              `Warning: the file ${id} imports from '${directiveMatch[3]}${directiveMatch[4]}' when it should import from '${directiveMatch[3]}${directiveMatch[4]}.js'`
-          );
-          code = code.replace(directiveImport, 'import $1 from $2$3$4.js$5');
-        }
-      });
-
-      return code;
-    }
-  };
-}
 
 function runWatchDog(watchDogPort, watchDogHost) {
   const client = net.Socket();
@@ -598,6 +561,34 @@ function showRecompileReason(): PluginOption {
     }
   };
 }
+
+const DEV_MODE_START_REGEXP = /\/\*[\*!]\s+vaadin-dev-mode:start/;
+const DEV_MODE_CODE_REGEXP =
+  /\/\*[\*!]\s+vaadin-dev-mode:start([\s\S]*)vaadin-dev-mode:end\s+\*\*\//i;
+
+function preserveUsageStats() {
+  return {
+    name: 'vaadin:preserve-usage-stats',
+
+    transform(src: string, id: string) {
+      if (id.includes('vaadin-usage-statistics')) {
+        if (src.includes('vaadin-dev-mode:start')) {
+          const newSrc = src.replace(DEV_MODE_START_REGEXP, '/*! vaadin-dev-mode:start');
+          if (newSrc === src) {
+            console.error('Comment replacement failed to change anything');
+          } else if (!newSrc.match(DEV_MODE_CODE_REGEXP)) {
+            console.error('New comment fails to match original regexp');
+          } else {
+            return { code: newSrc };
+          }
+        }
+      }
+
+      return { code: src };
+    },
+  };
+}
+
 
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
@@ -668,13 +659,13 @@ export const vaadinConfig: UserConfigFn = (env) => {
       ]
     },
     plugins: [
-      !devMode && brotli(),
+      !devMode && !devBundle && brotli(),
       devMode && vaadinBundlesPlugin(),
       devMode && showRecompileReason(),
       settings.offlineEnabled && buildSWPlugin({ devMode }),
       !devMode && statsExtracterPlugin(),
+      devBundle && preserveUsageStats(),
       themePlugin({devMode}),
-      lenientLitImportPlugin(),
       postcssLit({
         include: ['**/*.css', /.*\/.*\.css\?.*/],
         exclude: [

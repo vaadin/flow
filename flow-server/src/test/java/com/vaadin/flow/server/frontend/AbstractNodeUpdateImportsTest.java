@@ -118,8 +118,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 " tpl.innerHTML = block;",
                 " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
                 "};",
-                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);",
-                "document.documentElement.setAttribute('theme', 'dark');"));
+                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);"));
         expectedLines.addAll(getExpectedImports());
 
         // An import without `.js` extension
@@ -144,8 +143,10 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 .add("import $cssFromFile_6 from 'Frontend/foo.css?inline';");
         expectedLines.add(
                 "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';");
-        expectedLines.add("addCssBlock(`<style>${$css_0}</style>`);");
-        expectedLines.add("addCssBlock(`<style>${$css_1}</style>`);");
+        expectedLines.add(
+                "injectGlobalCss($cssFromFile_0.toString(), 'CSSImport end', document);");
+        expectedLines.add(
+                "injectGlobalCss($cssFromFile_1.toString(), 'CSSImport end', document);");
         expectedLines.add(
                 "addCssBlock(`<style include=\"bar\">${$css_2}</style>`);");
         expectedLines.add("registerStyles('', $css_3, {moduleId: 'baz'});");

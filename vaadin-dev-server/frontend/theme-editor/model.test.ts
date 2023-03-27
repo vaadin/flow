@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { ComponentTheme, generateThemeRule, ThemePropertyValue } from './model';
+import { ComponentTheme, generateThemeRule, SelectorScope, ThemePropertyValue, ThemeScope } from './model';
 import buttonMetadata from './metadata/components/vaadin-button';
 import { ComponentMetadata } from './metadata/model';
 import { ServerCssRule } from './api';
@@ -14,22 +14,22 @@ describe('model', () => {
     });
 
     it('should return null for unset properties', () => {
-      expect(theme.getPropertyValue(null, 'background')).to.be.null;
-      expect(theme.getPropertyValue('label', 'color')).to.be.null;
+      expect(theme.getPropertyValue('vaadin-button', 'background')).to.be.null;
+      expect(theme.getPropertyValue('vaadin-button::part(label)', 'color')).to.be.null;
     });
 
     it('should add and return property values', () => {
-      theme.updatePropertyValue(null, 'background', 'cornflowerblue');
-      theme.updatePropertyValue('label', 'color', 'white');
+      theme.updatePropertyValue('vaadin-button', 'background', 'cornflowerblue');
+      theme.updatePropertyValue('vaadin-button::part(label)', 'color', 'white');
 
       const expectedHostBackgroundValue: ThemePropertyValue = {
-        partName: null,
+        elementSelector: 'vaadin-button',
         propertyName: 'background',
         value: 'cornflowerblue',
         modified: false
       };
       const expectedLabelColorValue: ThemePropertyValue = {
-        partName: 'label',
+        elementSelector: 'vaadin-button::part(label)',
         propertyName: 'color',
         value: 'white',
         modified: false
@@ -37,83 +37,108 @@ describe('model', () => {
 
       expect(theme.properties).to.deep.equal([expectedHostBackgroundValue, expectedLabelColorValue]);
 
-      const hostBackgroundValue = theme.getPropertyValue(null, 'background');
+      const hostBackgroundValue = theme.getPropertyValue('vaadin-button', 'background');
       expect(hostBackgroundValue).to.exist;
       expect(hostBackgroundValue).to.deep.equal(expectedHostBackgroundValue);
 
-      const labelColorValue = theme.getPropertyValue('label', 'color');
+      const labelColorValue = theme.getPropertyValue('vaadin-button::part(label)', 'color');
       expect(labelColorValue).to.exist;
       expect(labelColorValue).to.deep.equal(expectedLabelColorValue);
     });
 
     it('should update property values', () => {
-      theme.updatePropertyValue('label', 'color', 'white');
-      theme.updatePropertyValue('label', 'color', 'green');
-      theme.updatePropertyValue('label', 'color', 'red');
+      theme.updatePropertyValue('vaadin-button::part(label)', 'color', 'white');
+      theme.updatePropertyValue('vaadin-button::part(label)', 'color', 'green');
+      theme.updatePropertyValue('vaadin-button::part(label)', 'color', 'red');
 
       expect(theme.properties.length).to.equal(1);
 
-      const labelColorValue = theme.getPropertyValue('label', 'color');
+      const labelColorValue = theme.getPropertyValue('vaadin-button::part(label)', 'color');
       expect(labelColorValue.value).to.equal('red');
     });
 
     it('should merge a list of theme property values', () => {
-      theme.updatePropertyValue(null, 'background', 'cornflowerblue');
-      theme.updatePropertyValue('label', 'color', 'white');
+      theme.updatePropertyValue('vaadin-button', 'background', 'cornflowerblue');
+      theme.updatePropertyValue('vaadin-button::part(label)', 'color', 'white');
 
       theme.addPropertyValues([
         // Add new host prop
-        { partName: null, propertyName: 'padding', value: '3px', modified: false },
+        { elementSelector: 'vaadin-button', propertyName: 'padding', value: '3px', modified: false },
         // Update existing part prop
-        { partName: 'label', propertyName: 'color', value: 'red', modified: false },
+        { elementSelector: 'vaadin-button::part(label)', propertyName: 'color', value: 'red', modified: false },
         // Add new part prop
-        { partName: 'label', propertyName: 'font-size', value: '20px', modified: false }
+        {
+          elementSelector: 'vaadin-button::part(label)',
+          propertyName: 'font-size',
+          value: '20px',
+          modified: false
+        }
       ]);
 
-      const expectedValues = [
-        { partName: null, propertyName: 'background', value: 'cornflowerblue', modified: false },
-        { partName: 'label', propertyName: 'color', value: 'red', modified: false },
-        { partName: null, propertyName: 'padding', value: '3px', modified: false },
-        { partName: 'label', propertyName: 'font-size', value: '20px', modified: false }
+      const expectedValues: ThemePropertyValue[] = [
+        {
+          elementSelector: 'vaadin-button',
+          propertyName: 'background',
+          value: 'cornflowerblue',
+          modified: false
+        },
+        { elementSelector: 'vaadin-button::part(label)', propertyName: 'color', value: 'red', modified: false },
+        { elementSelector: 'vaadin-button', propertyName: 'padding', value: '3px', modified: false },
+        {
+          elementSelector: 'vaadin-button::part(label)',
+          propertyName: 'font-size',
+          value: '20px',
+          modified: false
+        }
       ];
 
       expect(theme.properties).to.deep.equal(expectedValues);
     });
 
     it('should update modified state when merging properties', () => {
-      theme.updatePropertyValue(null, 'background', 'cornflowerblue');
+      theme.updatePropertyValue('vaadin-button', 'background', 'cornflowerblue');
 
       theme.addPropertyValues([
-        { partName: null, propertyName: 'background', value: 'red', modified: true },
-        { partName: null, propertyName: 'padding', value: '3px', modified: true }
+        { elementSelector: 'vaadin-button', propertyName: 'background', value: 'red', modified: true },
+        { elementSelector: 'vaadin-button', propertyName: 'padding', value: '3px', modified: true }
       ]);
 
-      const expectedValues = [
-        { partName: null, propertyName: 'background', value: 'red', modified: true },
-        { partName: null, propertyName: 'padding', value: '3px', modified: true }
+      const expectedValues: ThemePropertyValue[] = [
+        { elementSelector: 'vaadin-button', propertyName: 'background', value: 'red', modified: true },
+        { elementSelector: 'vaadin-button', propertyName: 'padding', value: '3px', modified: true }
       ];
 
       expect(theme.properties).to.deep.equal(expectedValues);
     });
 
     it('should return a list of properties for a part', () => {
-      theme.updatePropertyValue(null, 'background', 'cornflowerblue');
-      theme.updatePropertyValue(null, 'padding', '3px');
-      theme.updatePropertyValue('label', 'color', 'white');
-      theme.updatePropertyValue('label', 'font-size', '20px');
+      theme.updatePropertyValue('vaadin-button', 'background', 'cornflowerblue');
+      theme.updatePropertyValue('vaadin-button', 'padding', '3px');
+      theme.updatePropertyValue('vaadin-button::part(label)', 'color', 'white');
+      theme.updatePropertyValue('vaadin-button::part(label)', 'font-size', '20px');
 
-      const expectedHostProperties = [
-        { partName: null, propertyName: 'background', value: 'cornflowerblue', modified: false },
-        { partName: null, propertyName: 'padding', value: '3px', modified: false }
+      const expectedHostProperties: ThemePropertyValue[] = [
+        {
+          elementSelector: 'vaadin-button',
+          propertyName: 'background',
+          value: 'cornflowerblue',
+          modified: false
+        },
+        { elementSelector: 'vaadin-button', propertyName: 'padding', value: '3px', modified: false }
       ];
-      const expectedLabelProperties = [
-        { partName: 'label', propertyName: 'color', value: 'white', modified: false },
-        { partName: 'label', propertyName: 'font-size', value: '20px', modified: false }
+      const expectedLabelProperties: ThemePropertyValue[] = [
+        { elementSelector: 'vaadin-button::part(label)', propertyName: 'color', value: 'white', modified: false },
+        {
+          elementSelector: 'vaadin-button::part(label)',
+          propertyName: 'font-size',
+          value: '20px',
+          modified: false
+        }
       ];
 
-      expect(theme.getPropertyValuesForPart(null)).to.deep.equal(expectedHostProperties);
-      expect(theme.getPropertyValuesForPart('label')).to.deep.equal(expectedLabelProperties);
-      expect(theme.getPropertyValuesForPart('unknown-part')).to.deep.equal([]);
+      expect(theme.getPropertyValuesForElement('vaadin-button')).to.deep.equal(expectedHostProperties);
+      expect(theme.getPropertyValuesForElement('vaadin-button::part(label)')).to.deep.equal(expectedLabelProperties);
+      expect(theme.getPropertyValuesForElement('vaadin-button::part(unknown-part)')).to.deep.equal([]);
     });
   });
 
@@ -129,20 +154,30 @@ describe('model', () => {
 
     it('should merge theme properties', () => {
       const theme1 = new ComponentTheme(buttonMetadata);
-      theme1.updatePropertyValue(null, 'background', 'cornflowerblue');
-      theme1.updatePropertyValue('label', 'color', 'white');
+      theme1.updatePropertyValue('vaadin-button', 'background', 'cornflowerblue');
+      theme1.updatePropertyValue('vaadin-button::part(label)', 'color', 'white');
 
       const theme2 = new ComponentTheme(buttonMetadata);
-      theme2.updatePropertyValue(null, 'padding', '3px');
-      theme2.updatePropertyValue('label', 'color', 'red');
-      theme2.updatePropertyValue('label', 'font-size', '20px');
+      theme2.updatePropertyValue('vaadin-button', 'padding', '3px');
+      theme2.updatePropertyValue('vaadin-button::part(label)', 'color', 'red');
+      theme2.updatePropertyValue('vaadin-button::part(label)', 'font-size', '20px');
 
       const result = ComponentTheme.combine(theme1, theme2);
-      const expectedValues = [
-        { partName: null, propertyName: 'background', value: 'cornflowerblue', modified: false },
-        { partName: 'label', propertyName: 'color', value: 'red', modified: false },
-        { partName: null, propertyName: 'padding', value: '3px', modified: false },
-        { partName: 'label', propertyName: 'font-size', value: '20px', modified: false }
+      const expectedValues: ThemePropertyValue[] = [
+        {
+          elementSelector: 'vaadin-button',
+          propertyName: 'background',
+          value: 'cornflowerblue',
+          modified: false
+        },
+        { elementSelector: 'vaadin-button::part(label)', propertyName: 'color', value: 'red', modified: false },
+        { elementSelector: 'vaadin-button', propertyName: 'padding', value: '3px', modified: false },
+        {
+          elementSelector: 'vaadin-button::part(label)',
+          propertyName: 'font-size',
+          value: '20px',
+          modified: false
+        }
       ];
 
       expect(result.properties).to.deep.equal(expectedValues);
@@ -157,8 +192,7 @@ describe('model', () => {
       const fooMetadata: ComponentMetadata = {
         tagName: 'foo-component',
         displayName: 'Foo',
-        properties: [],
-        parts: []
+        elements: []
       };
       const buttonTheme = new ComponentTheme(buttonMetadata);
       const fooTheme = new ComponentTheme(fooMetadata);
@@ -169,39 +203,109 @@ describe('model', () => {
   });
 
   describe('fromServerRules', () => {
+    const globalScope: SelectorScope = {
+      themeScope: ThemeScope.global
+    };
+
+    const localScope: SelectorScope = {
+      themeScope: ThemeScope.local,
+      localClassName: 'foo'
+    };
+
     it('should create empty theme from empty rules', () => {
-      const theme = ComponentTheme.fromServerRules(buttonMetadata, []);
+      const theme = ComponentTheme.fromServerRules(testElementMetadata, globalScope, []);
 
       expect(theme.properties.length).to.equal(0);
     });
 
-    it('should create theme from rules', () => {
+    it('should create theme from global scoped rules', () => {
       const serverRules: ServerCssRule[] = [
         {
-          tagName: 'test-element',
-          partName: null,
+          selector: 'test-element',
           properties: {
             background: 'cornflowerblue',
             padding: '3px'
           }
         },
         {
-          tagName: 'test-element',
-          partName: 'label',
+          selector: 'test-element::part(label)',
           properties: {
             color: 'red',
             'font-size': '20px'
           }
+        },
+        {
+          selector: 'test-element input[slot="input"]',
+          properties: {
+            'border-radius': '10px'
+          }
         }
       ];
-      const expectedProperties = [
-        { partName: null, propertyName: 'padding', value: '3px', modified: true },
-        { partName: null, propertyName: 'background', value: 'cornflowerblue', modified: true },
-        { partName: 'label', propertyName: 'color', value: 'red', modified: true },
-        { partName: 'label', propertyName: 'font-size', value: '20px', modified: true }
+      const expectedProperties: ThemePropertyValue[] = [
+        { elementSelector: 'test-element', propertyName: 'padding', value: '3px', modified: true },
+        { elementSelector: 'test-element', propertyName: 'background', value: 'cornflowerblue', modified: true },
+        { elementSelector: 'test-element::part(label)', propertyName: 'color', value: 'red', modified: true },
+        {
+          elementSelector: 'test-element::part(label)',
+          propertyName: 'font-size',
+          value: '20px',
+          modified: true
+        },
+        {
+          elementSelector: 'test-element input[slot="input"]',
+          propertyName: 'border-radius',
+          value: '10px',
+          modified: true
+        }
       ];
 
-      const theme = ComponentTheme.fromServerRules(testElementMetadata, serverRules);
+      const theme = ComponentTheme.fromServerRules(testElementMetadata, globalScope, serverRules);
+      expect(theme.metadata).to.equal(testElementMetadata);
+      expect(theme.properties).to.deep.equal(expectedProperties);
+    });
+
+    it('should create theme from local scoped rules', () => {
+      const serverRules: ServerCssRule[] = [
+        {
+          selector: 'test-element.foo',
+          properties: {
+            background: 'cornflowerblue',
+            padding: '3px'
+          }
+        },
+        {
+          selector: 'test-element.foo::part(label)',
+          properties: {
+            color: 'red',
+            'font-size': '20px'
+          }
+        },
+        {
+          selector: 'test-element.foo input[slot="input"]',
+          properties: {
+            'border-radius': '10px'
+          }
+        }
+      ];
+      const expectedProperties: ThemePropertyValue[] = [
+        { elementSelector: 'test-element', propertyName: 'padding', value: '3px', modified: true },
+        { elementSelector: 'test-element', propertyName: 'background', value: 'cornflowerblue', modified: true },
+        { elementSelector: 'test-element::part(label)', propertyName: 'color', value: 'red', modified: true },
+        {
+          elementSelector: 'test-element::part(label)',
+          propertyName: 'font-size',
+          value: '20px',
+          modified: true
+        },
+        {
+          elementSelector: 'test-element input[slot="input"]',
+          propertyName: 'border-radius',
+          value: '10px',
+          modified: true
+        }
+      ];
+
+      const theme = ComponentTheme.fromServerRules(testElementMetadata, localScope, serverRules);
       expect(theme.metadata).to.equal(testElementMetadata);
       expect(theme.properties).to.deep.equal(expectedProperties);
     });
@@ -209,22 +313,19 @@ describe('model', () => {
     it('should ignore unknown selectors and properties', () => {
       const serverRules: ServerCssRule[] = [
         {
-          tagName: 'test-element',
-          partName: null,
+          selector: 'test-element.foo',
           properties: {
             foo: 'cornflowerblue'
           }
         },
         {
-          tagName: 'test-element',
-          partName: 'label',
+          selector: 'test-element.foo::part(label)',
           properties: {
             bar: '20px'
           }
         },
         {
-          tagName: 'test-element',
-          partName: 'foo',
+          selector: 'test-element.foo::part(foo)',
           properties: {
             color: 'cornflowerblue',
             background: 'cornflowerblue'
@@ -232,28 +333,87 @@ describe('model', () => {
         }
       ];
 
-      const theme = ComponentTheme.fromServerRules(testElementMetadata, serverRules);
+      const theme = ComponentTheme.fromServerRules(testElementMetadata, localScope, serverRules);
       expect(theme.properties.length).to.equal(0);
     });
   });
 
   describe('generateRule', () => {
-    it('should generate rules for property changes', () => {
+    const globalScope: SelectorScope = {
+      themeScope: ThemeScope.global
+    };
+    const localScope: SelectorScope = {
+      themeScope: ThemeScope.local,
+      localClassName: 'foo'
+    };
+    const hostElement = testElementMetadata.elements.find((element) => element.selector === 'test-element')!;
+    const labelElement = testElementMetadata.elements.find(
+      (element) => element.selector === 'test-element::part(label)'
+    )!;
+    const inputElement = testElementMetadata.elements.find(
+      (element) => element.selector === 'test-element input[slot="input"]'
+    )!;
+
+    it('should generate rules for global scope', () => {
       const rules = [
-        generateThemeRule('vaadin-button', null, 'background', 'cornflowerblue'),
-        generateThemeRule('vaadin-button', null, 'padding', '3px'),
-        generateThemeRule('vaadin-button', 'label', 'color', 'white'),
-        generateThemeRule('vaadin-button', 'label', 'font-size', '20px')
+        generateThemeRule(hostElement, globalScope, 'background', 'cornflowerblue'),
+        generateThemeRule(hostElement, globalScope, 'padding', '3px'),
+        generateThemeRule(labelElement, globalScope, 'color', 'white'),
+        generateThemeRule(labelElement, globalScope, 'font-size', '20px'),
+        generateThemeRule(inputElement, globalScope, 'border-radius', '10px')
       ];
 
       const expectedRules: ServerCssRule[] = [
-        { tagName: 'vaadin-button', partName: null, properties: { background: 'cornflowerblue' } },
-        { tagName: 'vaadin-button', partName: null, properties: { padding: '3px' } },
-        { tagName: 'vaadin-button', partName: 'label', properties: { color: 'white' } },
-        { tagName: 'vaadin-button', partName: 'label', properties: { 'font-size': '20px' } }
+        { selector: 'test-element', properties: { background: 'cornflowerblue' } },
+        { selector: 'test-element', properties: { padding: '3px' } },
+        { selector: 'test-element::part(label)', properties: { color: 'white' } },
+        { selector: 'test-element::part(label)', properties: { 'font-size': '20px' } },
+        { selector: 'test-element input[slot="input"]', properties: { 'border-radius': '10px' } }
       ];
 
       expect(rules).to.deep.equal(expectedRules);
+    });
+
+    it('should generate rules for local scope', () => {
+      const rules = [
+        generateThemeRule(hostElement, localScope, 'background', 'cornflowerblue'),
+        generateThemeRule(hostElement, localScope, 'padding', '3px'),
+        generateThemeRule(labelElement, localScope, 'color', 'white'),
+        generateThemeRule(labelElement, localScope, 'font-size', '20px'),
+        generateThemeRule(inputElement, localScope, 'border-radius', '10px')
+      ];
+
+      const expectedRules: ServerCssRule[] = [
+        { selector: 'test-element.foo', properties: { background: 'cornflowerblue' } },
+        { selector: 'test-element.foo', properties: { padding: '3px' } },
+        { selector: 'test-element.foo::part(label)', properties: { color: 'white' } },
+        { selector: 'test-element.foo::part(label)', properties: { 'font-size': '20px' } },
+        { selector: 'test-element.foo input[slot="input"]', properties: { 'border-radius': '10px' } }
+      ];
+
+      expect(rules).to.deep.equal(expectedRules);
+    });
+
+    describe('individual property handling', () => {
+      it('should add border-style when setting border-width to larger than zero', () => {
+        const rules = [
+          generateThemeRule(hostElement, globalScope, 'border-width', '0'),
+          generateThemeRule(hostElement, globalScope, 'border-width', '0px'),
+          generateThemeRule(hostElement, globalScope, 'border-width', '0rem'),
+          generateThemeRule(hostElement, globalScope, 'border-width', '1px'),
+          generateThemeRule(hostElement, globalScope, 'border-width', '1rem')
+        ];
+
+        const expectedRules: ServerCssRule[] = [
+          { selector: 'test-element', properties: { 'border-width': '0' } },
+          { selector: 'test-element', properties: { 'border-width': '0px' } },
+          { selector: 'test-element', properties: { 'border-width': '0rem' } },
+          { selector: 'test-element', properties: { 'border-width': '1px', 'border-style': 'solid' } },
+          { selector: 'test-element', properties: { 'border-width': '1rem', 'border-style': 'solid' } }
+        ];
+
+        expect(rules).to.deep.equal(expectedRules);
+      });
     });
   });
 });
