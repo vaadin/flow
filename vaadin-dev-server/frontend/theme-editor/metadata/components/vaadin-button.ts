@@ -4,36 +4,40 @@ import { presets } from './presets';
 export default {
   tagName: 'vaadin-button',
   displayName: 'Button',
-  properties: [
+  elements: [
     {
-      propertyName: 'background-color',
-      displayName: 'Background color',
-      editorType: EditorType.color
+      selector: 'vaadin-button',
+      displayName: 'Host',
+      properties: [
+        {
+          propertyName: 'background-color',
+          displayName: 'Background color',
+          editorType: EditorType.color
+        },
+        {
+          propertyName: 'color',
+          displayName: 'Text color',
+          editorType: EditorType.color,
+          presets: presets.lumoTextColor
+        },
+        {
+          propertyName: '--lumo-button-size',
+          displayName: 'Size',
+          editorType: EditorType.range,
+          presets: presets.lumoSize,
+          icon: 'square'
+        },
+        {
+          propertyName: 'padding-inline',
+          displayName: 'Padding',
+          editorType: EditorType.range,
+          presets: presets.lumoSpace,
+          icon: 'square'
+        }
+      ]
     },
     {
-      propertyName: 'color',
-      displayName: 'Text color',
-      editorType: EditorType.color,
-      presets: presets.lumoTextColor
-    },
-    {
-      propertyName: '--lumo-button-size',
-      displayName: 'Size',
-      editorType: EditorType.range,
-      presets: presets.lumoSize,
-      icon: 'square'
-    },
-    {
-      propertyName: 'padding-inline',
-      displayName: 'Padding',
-      editorType: EditorType.range,
-      presets: presets.lumoSpace,
-      icon: 'square'
-    }
-  ],
-  parts: [
-    {
-      partName: 'label',
+      selector: 'vaadin-button::part(label)',
       displayName: 'Label',
       properties: [
         {

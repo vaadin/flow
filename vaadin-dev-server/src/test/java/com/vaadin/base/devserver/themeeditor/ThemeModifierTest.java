@@ -313,6 +313,39 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
                 cssRules.get(1).getProperties().get("font-family"));
     }
 
+    @Test
+    public void testClassNameReplace() {
+        ThemeModifier modifier = new TestThemeModifier();
+
+        List<CssRule> toBeAdded = new ArrayList<>();
+        toBeAdded.add(new CssRule("vaadin-button.nice", "color", "red"));
+        toBeAdded.add(
+                new CssRule("vaadin-button.not-nice", "background", "black"));
+        toBeAdded.add(new CssRule("vaadin-button.nice::part(label)",
+                "font-family", "serif"));
+        toBeAdded.add(
+                new CssRule("vaadin-text-field.perfect.nice", "color", "red"));
+        toBeAdded
+                .add(new CssRule("span.nice.nice.nice.strong", "color", "red"));
+        modifier.setThemeProperties(toBeAdded);
+
+        modifier.replaceClassName("vaadin-button", "nice", "nicer");
+        List<CssRule> rules = modifier.getCssRules(Arrays.asList(
+                "vaadin-button.nicer", "vaadin-button.nicer::part(label)",
+                "vaadin-button.nicer", "vaadin-button.nicer::part(label)",
+                "vaadin-text-field.perfect.nicer",
+                "span.nicer.nicer.nicer.strong"));
+        assertEquals(2, rules.size());
+
+        modifier.replaceClassName("span", "nice", "nicer");
+        rules = modifier.getCssRules(Arrays.asList("vaadin-button.nicer",
+                "vaadin-button.nicer::part(label)", "vaadin-button.nicer",
+                "vaadin-button.nicer::part(label)",
+                "vaadin-text-field.perfect.nicer",
+                "span.nicer.nicer.nicer.strong"));
+        assertEquals(3, rules.size());
+    }
+
     private File getThemeFile(String fileName) {
         File themeFolder = TestUtils
                 .getTestFolder(FRONTEND_FOLDER + "/themes/my-theme");

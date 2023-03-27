@@ -4,8 +4,10 @@ import com.helger.css.ECSSVersion;
 import com.helger.css.decl.CSSDeclaration;
 import com.helger.css.decl.CSSImportRule;
 import com.helger.css.decl.CSSSelector;
+import com.helger.css.decl.CSSSelectorSimpleMember;
 import com.helger.css.decl.CSSStyleRule;
 import com.helger.css.decl.CascadingStyleSheet;
+import com.helger.css.decl.ICSSSelectorMember;
 import com.helger.css.reader.CSSReader;
 import com.helger.css.writer.CSSWriter;
 import com.vaadin.base.devserver.themeeditor.utils.CssRule;
@@ -121,6 +123,21 @@ public class ThemeModifier {
                 .map(this::toCssRule).toList();
     }
 
+    /**
+     * Replaces classname with new classname in all matching rules.
+     *
+     * @param oldClassName
+     *            classname to be replaced
+     * @param newClassName
+     *            new classname
+     */
+    public void replaceClassName(String tagName, String oldClassName,
+            String newClassName) {
+        CascadingStyleSheet styleSheet = getCascadingStyleSheet();
+        replaceClassName(styleSheet, tagName, oldClassName, newClassName);
+        writeStylesheet(styleSheet);
+    }
+
     protected String getCssFileName() {
         return THEME_EDITOR_CSS;
     }
@@ -130,7 +147,6 @@ public class ThemeModifier {
     }
 
     protected State init() {
-        // for development purposes only
         if (!FeatureFlags.get(context).isEnabled(FeatureFlags.THEME_EDITOR)) {
             return State.DISABLED;
         }
@@ -276,6 +292,30 @@ public class ThemeModifier {
         return styleSheet.getAllStyleRules().stream().filter(
                 r -> r.getAllSelectors().containsAll(rule.getAllSelectors()))
                 .findFirst().orElse(null);
+    }
+
+    protected void replaceClassName(CascadingStyleSheet styleSheet,
+            String tagName, String oldClassName, String newClassName) {
+        String dotOldClassName = "." + oldClassName;
+        String dotNewClassName = "." + newClassName;
+        for (CSSStyleRule rule : styleSheet.getAllStyleRules()) {
+            for (CSSSelector selector : rule.getAllSelectors()) {
+                if (selector.getAllMembers().containsNone(
+                        m -> tagName.equals(m.getAsCSSString()))) {
+                    continue;
+                }
+                List<ICSSSelectorMember> members = new ArrayList<>();
+                selector.getAllMembers().findAll(
+                        m -> dotOldClassName.equals(m.getAsCSSString()),
+                        members::add);
+                members.forEach(m -> {
+                    int index = selector.getAllMembers().indexOf(m);
+                    selector.removeMember(m);
+                    selector.addMember(index,
+                            new CSSSelectorSimpleMember(dotNewClassName));
+                });
+            }
+        }
     }
 
     protected void insertImportIfNotExists() {

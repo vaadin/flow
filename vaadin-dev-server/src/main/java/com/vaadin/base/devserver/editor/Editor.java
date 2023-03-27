@@ -93,8 +93,7 @@ public class Editor {
                             (Expression) referenceNode);
                 }
             } else if (type == Type.REPLACE) {
-                referenceNode.getParentNode()
-                        .ifPresent(p -> p.replace(referenceNode, node));
+                referenceNode.replace(node);
             } else if (type == Type.INSERT_AT_END_OF_BLOCK) {
                 if (node instanceof Statement stmt) {
                     if (referenceNode instanceof BlockStmt block) {
@@ -104,7 +103,9 @@ public class Editor {
                     }
                 }
             } else if (type == Type.REMOVE_NODE) {
-                // comments are part of Node, will be removed also
+                // comment need to be removed separately not to leave empty line
+                // while using LexicalPreservingPrinter
+                referenceNode.getComment().ifPresent(Node::remove);
                 referenceNode.remove();
             } else {
                 throw new RuntimeException("Failed to perform: " + this);
@@ -1089,7 +1090,7 @@ public class Editor {
                         methodParam));
     }
 
-    protected CompilationUnit parseSource(String source) throws IOException {
+    protected CompilationUnit parseSource(String source) {
         return LexicalPreservingPrinter.setup(StaticJavaParser.parse(source));
     }
 

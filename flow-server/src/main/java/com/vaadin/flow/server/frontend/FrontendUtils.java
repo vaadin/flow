@@ -201,7 +201,7 @@ public class FrontendUtils {
      * feature flags as globals that might be used by Vaadin web components or
      * application code.
      */
-    public static final String FEATURE_FLAGS_FILE_NAME = "vaadin-featureflags.ts";
+    public static final String FEATURE_FLAGS_FILE_NAME = "vaadin-featureflags.js";
 
     /**
      * File name of the index.html in client side.

@@ -42,8 +42,8 @@ describe('theme editor API', () => {
 
   it('should send messages', () => {
     const rules: ServerCssRule[] = [
-      { tagName: 'vaadin-button', partName: null, properties: { background: 'red' } },
-      { tagName: 'vaadin-text-field', partName: null, properties: { color: '' } }
+      { selector: 'vaadin-button', properties: { background: 'red' } },
+      { selector: 'vaadin-text-field', properties: { color: '' } }
     ];
 
     api.setCssRules(rules);
