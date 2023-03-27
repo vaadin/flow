@@ -42,6 +42,7 @@ public class JavaSourceModifier extends Editor {
         boolean accessible;
         String className;
         String suggestedClassName;
+        String tagName;
     }
 
     public JavaSourceModifier(VaadinContext context) {
@@ -100,6 +101,30 @@ public class JavaSourceModifier extends Editor {
                 throw new ThemeEditorException(ex);
             }
         });
+    }
+
+    /**
+     * Gets tag name of given component.
+     *
+     * @param uiId
+     *            uiId of target component's UI
+     * @param nodeId
+     *            nodeIf of target component
+     * @return
+     */
+    public String getTag(Integer uiId, Integer nodeId) {
+        assert uiId != null && nodeId != null;
+        try {
+            FinalsHolder holder = new FinalsHolder();
+            VaadinSession session = getSession();
+            getSession().access(() -> {
+                Component component = getComponent(session, uiId, nodeId);
+                holder.tagName = component.getElement().getTag();
+            }).get(5, TimeUnit.SECONDS);
+            return holder.tagName;
+        } catch (Exception e) {
+            throw new ThemeEditorException("Cannot get tag of component.", e);
+        }
     }
 
     /**

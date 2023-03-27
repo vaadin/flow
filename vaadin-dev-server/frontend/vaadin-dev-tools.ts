@@ -873,9 +873,6 @@ export class VaadinDevTools extends LitElement {
 
     const onConnectionError = (msg: string) => this.log(MessageType.ERROR, msg);
     const onReload = () => {
-      if (this.liveReloadDisabled) {
-        return;
-      }
       this.showSplashMessage('Reloading…');
       const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
       const nextReload = lastReload ? parseInt(lastReload, 10) + 1 : 1;
