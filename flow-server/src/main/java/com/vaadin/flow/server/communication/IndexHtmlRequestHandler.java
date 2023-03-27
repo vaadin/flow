@@ -25,6 +25,7 @@ import java.io.UncheckedIOException;
 import java.util.Optional;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -108,6 +109,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureHiddenElementStyles(indexDocument);
 
+        addStyleTagReferences(indexDocument);
+
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         VaadinContext context = session.getService().getContext();
@@ -166,6 +169,14 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         FrontendUtils.getThemeAnnotation(context)
                 .ifPresent(theme -> indexDocument.head().parent().attr("theme",
                         theme.variant()));
+    }
+
+    private void addStyleTagReferences(Document indexDocument) {
+        Comment cssImportComment = new Comment("CSSImport end");
+        indexDocument.head().appendChild(cssImportComment);
+
+        Comment stylesheetComment = new Comment("Stylesheet end");
+        indexDocument.head().appendChild(stylesheetComment);
     }
 
     private void redirectToOldBrowserPageWhenNeeded(Document indexDocument) {
