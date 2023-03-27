@@ -152,11 +152,10 @@ describe('theme-editor', () => {
   }
 
   async function editLocalClassName(className: string) {
-    const classNameInput = editor.shadowRoot!.querySelector(
-      '.header .editor-row.local-class-name input'
-    ) as HTMLInputElement;
-
-    expect(classNameInput).to.exist;
+    const classNameEditor = editor.shadowRoot!.querySelector(
+      '.header vaadin-dev-tools-theme-class-name-editor'
+    ) as HTMLElement;
+    const classNameInput = classNameEditor.shadowRoot!.querySelector('input') as HTMLInputElement;
 
     classNameInput.value = className;
     classNameInput.dispatchEvent(new Event('change'));
@@ -369,7 +368,7 @@ describe('theme-editor', () => {
     it('should show local class name editor if instance is accessible', async () => {
       await pickComponent();
 
-      const localClassNameEditor = editor.shadowRoot!.querySelector('.header .editor-row.local-class-name');
+      const localClassNameEditor = editor.shadowRoot!.querySelector('.header vaadin-dev-tools-theme-class-name-editor');
       expect(localClassNameEditor).to.exist;
     });
 
@@ -377,7 +376,7 @@ describe('theme-editor', () => {
       apiMock.loadComponentMetadata.returns(Promise.resolve({ accessible: false }));
       await pickComponent();
 
-      const localClassNameEditor = editor.shadowRoot!.querySelector('.header .editor-row.local-class-name');
+      const localClassNameEditor = editor.shadowRoot!.querySelector('.header vaadin-dev-tools-theme-class-name-editor');
       expect(localClassNameEditor).to.not.exist;
     });
 
@@ -446,7 +445,7 @@ describe('theme-editor', () => {
       await pickComponent();
       await changeThemeScope(ThemeScope.global);
 
-      const localClassNameEditor = editor.shadowRoot!.querySelector('.header .editor-row.local-class-name');
+      const localClassNameEditor = editor.shadowRoot!.querySelector('.header vaadin-dev-tools-theme-class-name-editor');
       expect(localClassNameEditor).to.not.exist;
     });
   });
@@ -845,16 +844,9 @@ describe('theme-editor', () => {
       expect(testElement.classList.contains('test-class')).to.be.false;
     });
 
-    it('should not allow submitting invalid class names', async () => {
+    it('should not submit invalid class name', async () => {
       await pickComponent();
       await editLocalClassName('custom class');
-      await editLocalClassName(' custom-class');
-      await editLocalClassName('custom-class ');
-      await editLocalClassName('1custom-class');
-      await editLocalClassName('.custom-class');
-      await editLocalClassName('custom/class');
-      await editLocalClassName('custom:class');
-      await editLocalClassName('custom+class');
 
       expect(apiMock.setLocalClassName.called).to.be.false;
     });

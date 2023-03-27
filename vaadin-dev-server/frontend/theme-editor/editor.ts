@@ -19,12 +19,14 @@ import { Connection } from '../connection';
 import { ThemeEditorApi } from './api';
 import { ThemeEditorHistory, ThemeEditorHistoryActions } from './history';
 import { ScopeChangeEvent } from './components/scope-selector';
+import './components/class-name-editor';
 import './components/scope-selector';
 import './components/property-list';
 import '../component-picker.js';
 import { ComponentReference } from '../component-util';
-import { editorRowStyles, injectGlobalCss } from './styles';
+import { injectGlobalCss } from './styles';
 import { ComponentMetadata } from './metadata/model';
+import { ClassNameChangeEvent } from './components/class-name-editor';
 
 injectGlobalCss(css`
   .vaadin-theme-editor-highlight {
@@ -68,129 +70,122 @@ export class ThemeEditor extends LitElement {
   private effectiveTheme: ComponentTheme | null = null;
 
   static get styles() {
-    return [
-      editorRowStyles,
-      css`
-        :host {
-          animation: fade-in var(--dev-tools-transition-duration) ease-in;
-          --theme-editor-section-horizontal-padding: 0.75rem;
-          display: flex;
-          flex-direction: column;
-          max-height: 400px;
-        }
+    return css`
+      :host {
+        animation: fade-in var(--dev-tools-transition-duration) ease-in;
+        --theme-editor-section-horizontal-padding: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        max-height: 400px;
+      }
 
-        .notice {
-          padding: var(--theme-editor-section-horizontal-padding);
-        }
+      .notice {
+        padding: var(--theme-editor-section-horizontal-padding);
+      }
 
-        .notice a {
-          color: var(--dev-tools-text-color-emphasis);
-        }
+      .notice a {
+        color: var(--dev-tools-text-color-emphasis);
+      }
 
-        .header {
-          flex: 0 0 auto;
-          border-bottom: solid 1px rgba(0, 0, 0, 0.2);
-        }
+      .header {
+        flex: 0 0 auto;
+        border-bottom: solid 1px rgba(0, 0, 0, 0.2);
+      }
 
-        .header .picker-row {
-          padding: var(--theme-editor-section-horizontal-padding);
-          display: flex;
-          gap: 20px;
-          align-items: center;
-          justify-content: space-between;
-        }
+      .header .picker-row {
+        padding: var(--theme-editor-section-horizontal-padding);
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        justify-content: space-between;
+      }
 
-        .header .editor-row.local-class-name {
-          padding-top: 0;
-        }
+      .picker {
+        flex: 1 1 0;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+      }
 
-        .picker {
-          flex: 1 1 0;
-          min-width: 0;
-          display: flex;
-          align-items: center;
-        }
+      .picker button {
+        min-width: 0;
+        display: inline-flex;
+        align-items: center;
+        padding: 0;
+        line-height: 20px;
+        border: none;
+        background: none;
+        color: var(--dev-tools-text-color);
+      }
 
-        .picker button {
-          min-width: 0;
-          display: inline-flex;
-          align-items: center;
-          padding: 0;
-          line-height: 20px;
-          border: none;
-          background: none;
-          color: var(--dev-tools-text-color);
-        }
+      .picker button:not(:disabled):hover {
+        color: var(--dev-tools-text-color-emphasis);
+      }
 
-        .picker button:not(:disabled):hover {
-          color: var(--dev-tools-text-color-emphasis);
-        }
+      .picker svg,
+      .picker .component-type {
+        flex: 0 0 auto;
+        margin-right: 4px;
+      }
 
-        .picker svg,
-        .picker .component-type {
-          flex: 0 0 auto;
-          margin-right: 4px;
-        }
+      .picker .instance-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #e5a2fce5;
+      }
 
-        .picker .instance-name {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          color: #e5a2fce5;
-        }
+      .picker .instance-name-quote {
+        color: #e5a2fce5;
+      }
 
-        .picker .instance-name-quote {
-          color: #e5a2fce5;
-        }
+      .picker .no-selection {
+        font-style: italic;
+      }
 
-        .picker .no-selection {
-          font-style: italic;
-        }
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
 
-        .actions {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
+      .property-list {
+        flex: 1 1 auto;
+        overflow-y: auto;
+      }
 
-        .property-list {
-          flex: 1 1 auto;
-          overflow-y: auto;
-        }
+      .link-button {
+        all: initial;
+        font-family: inherit;
+        font-size: var(--dev-tools-font-size-small);
+        line-height: 1;
+        white-space: nowrap;
+        color: inherit;
+        font-weight: 600;
+        text-decoration: underline;
+      }
 
-        .link-button {
-          all: initial;
-          font-family: inherit;
-          font-size: var(--dev-tools-font-size-small);
-          line-height: 1;
-          white-space: nowrap;
-          color: inherit;
-          font-weight: 600;
-          text-decoration: underline;
-        }
+      .link-button:focus,
+      .link-button:hover {
+        color: var(--dev-tools-text-color-emphasis);
+      }
 
-        .link-button:focus,
-        .link-button:hover {
-          color: var(--dev-tools-text-color-emphasis);
-        }
+      .icon-button {
+        padding: 0;
+        line-height: 0;
+        border: none;
+        background: none;
+        color: var(--dev-tools-text-color);
+      }
 
-        .icon-button {
-          padding: 0;
-          line-height: 0;
-          border: none;
-          background: none;
-          color: var(--dev-tools-text-color);
-        }
+      .icon-button:disabled {
+        opacity: 0.5;
+      }
 
-        .icon-button:disabled {
-          opacity: 0.5;
-        }
-
-        .icon-button:not(:disabled):hover {
-          color: var(--dev-tools-text-color-emphasis);
-        }
-      `
-    ];
+      .icon-button:not(:disabled):hover {
+        color: var(--dev-tools-text-color-emphasis);
+      }
+    `;
   }
 
   protected firstUpdated() {
@@ -344,34 +339,24 @@ export class ThemeEditor extends LitElement {
 
     const instanceClassName = this.context.localClassName || this.context.suggestedClassName;
 
-    return html` <div class="editor-row local-class-name">
-      <div class="label">Class name</div>
-      <div class="editor">
-        <input class="input" type="text" .value=${instanceClassName} @change=${this.handleClassNameChange} />
-      </div>
-    </div>`;
+    return html` <vaadin-dev-tools-theme-class-name-editor
+      .className=${instanceClassName}
+      @class-name-change=${this.handleClassNameChange}
+    >
+    </vaadin-dev-tools-theme-class-name-editor>`;
   }
 
-  private async handleClassNameChange(e: Event) {
+  private async handleClassNameChange(e: ClassNameChangeEvent) {
     if (!this.context) {
       return;
     }
 
-    const input = e.target as HTMLInputElement;
-    const newClassName = input.value;
-
-    // Validate class name, just roll back value if it is invalid
-    const classNameRegex = /^-?[_a-zA-Z]+[_a-zA-Z0-9-]*$/;
-    if (!newClassName.match(classNameRegex)) {
-      input.value = (this.context.localClassName || this.context.suggestedClassName)!;
-      return;
-    }
-
-    if (this.context.localClassName) {
+    const previousClassName = this.context.localClassName;
+    const newClassName = e.detail.value;
+    if (previousClassName) {
       // Update local class name if there is an existing one
       this.preventLiveReload();
       const element = this.context.component.element;
-      const previousClassName = this.context.localClassName;
       this.context.localClassName = newClassName;
       const classNameResponse = await this.api.setLocalClassName(this.context.component, newClassName);
       this.historyActions = this.history.push(

@@ -18,11 +18,12 @@ export const editorRowStyles = css`
     display: flex;
     align-items: baseline;
     padding: var(--theme-editor-section-horizontal-padding);
+    gap: 10px;
   }
 
   .editor-row > .label {
     flex: 0 0 auto;
-    width: 100px;
+    width: 120px;
   }
 
   .editor-row > .editor {
