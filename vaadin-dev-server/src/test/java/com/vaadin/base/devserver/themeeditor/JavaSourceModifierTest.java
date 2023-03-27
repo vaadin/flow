@@ -156,6 +156,14 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         localClassName = modifier.getLocalClassName(0, 0);
         Assert.assertNotNull(localClassName);
         Assert.assertEquals(suggestedClassName, localClassName);
+
+        // remove local classname
+        modifier.removeLocalClassName(0, 0);
+        localClassName = modifier.getLocalClassName(0, 0);
+        Assert.assertNull(localClassName);
+
+        // check if file structure is not changed
+        compareTestView("TestView_clean.java");
     }
 
     @Test
