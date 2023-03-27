@@ -20,6 +20,12 @@ export const textProperties = {
     displayName: 'Bold',
     editorType: EditorType.checkbox,
     checkedValue: 'bold'
+  },
+  fontStyle: {
+    propertyName: 'font-style',
+    displayName: 'Italic',
+    editorType: EditorType.checkbox,
+    checkedValue: 'italic'
   }
 };
 
@@ -48,6 +54,13 @@ export const shapeProperties = {
     presets: presets.lumoBorderRadius,
     icon: 'square'
   },
+  padding: {
+    propertyName: 'padding',
+    displayName: 'Padding',
+    editorType: EditorType.range,
+    presets: presets.lumoSpace,
+    icon: 'square'
+  }
 };
 
 export const fieldProperties = {
