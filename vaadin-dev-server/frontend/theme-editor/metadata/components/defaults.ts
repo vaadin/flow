@@ -60,6 +60,13 @@ export const shapeProperties = {
     editorType: EditorType.range,
     presets: presets.lumoSpace,
     icon: 'square'
+  },
+  gap: {
+    propertyName: 'gap',
+    displayName: 'Spacing',
+    editorType: EditorType.range,
+    presets: presets.lumoSpace,
+    icon: 'square'
   }
 };
 
@@ -78,7 +85,7 @@ export const fieldProperties = {
     presets: presets.lumoSpace,
     icon: 'square'
   }
-}
+};
 
 export const iconProperties = {
   iconColor: {
