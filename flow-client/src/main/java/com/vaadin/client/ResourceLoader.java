@@ -603,7 +603,7 @@ public class ResourceLoader {
                 }
             }
 
-            addBeforeComment(linkElement, "Stylesheet end");
+            addInHeadBeforeComment(linkElement, "Stylesheet end");
         }
     }
 
@@ -638,16 +638,20 @@ public class ResourceLoader {
 
             addCssLoadHandler(styleSheetContents, event, styleSheetElement);
 
-            addBeforeComment(styleSheetElement, "Stylesheet end");
+            addInHeadBeforeComment(styleSheetElement, "Stylesheet end");
         }
     }
 
-    private void addBeforeComment(Element element, String comment) {
-        elemental.dom.Node commentNode = findComment(getHead(), comment);
+    private void addInHeadBeforeComment(Element element, String comment) {
+        elemental.dom.Node commentNode = findCommentInHead(comment);
+        if (commentNode == null) {
+            Console.error("Expected to find a '" + comment
+                    + "' comment inside <head> but none was found. Appending instead.");
+        }
         getHead().insertBefore(element, commentNode);
     }
 
-    private elemental.dom.Node findComment(HeadElement head, String comment) {
+    private elemental.dom.Node findCommentInHead(String comment) {
         NodeList childNodes = getHead().getChildNodes();
         int count = childNodes.getLength();
         for (int i = 0; i < count; i++) {
