@@ -475,7 +475,7 @@ function themePlugin(opts): PluginOption {
     configureServer(server) {
       function handleThemeFileCreateDelete(themeFile, stats) {
         if (themeFile.startsWith(themeFolder)) {
-          const changed = path.relative(themeFolder, themeFile)
+          const changed = path.relative(themeFolder, themeFile);
           console.debug('Theme file ' + (!!stats ? 'created' : 'deleted'), changed);
           processThemeResources(fullThemeOptions, console);
         }
@@ -493,6 +493,12 @@ function themePlugin(opts): PluginOption {
 
         if (changed.startsWith(settings.themeName)) {
           processThemeResources(fullThemeOptions, console);
+        }
+
+        const parts = changed.split(path.sep);
+        if (parts.length >= 2 && parts[1] === 'components') {
+          // Changes to component themes need a full reload
+          context.server.ws.send({ type: 'full-reload' });
         }
       }
     },

@@ -75,6 +75,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
 
   themeFileContent += `import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
 
+  themeFileContent += `let needsReloadOnChanges = false;\n`;
   const imports = [];
   const globalFileContent = [];
   const globalCssCode = [];
@@ -205,6 +206,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   // If targets check that we only register the style parts once, checks exist for global css and component css
   const themeFileApply = `export const applyTheme = (target) => {
     if (target !== document) {
+      needsReloadOnChanges = true;
       ${shadowOnlyCss.join('')}
     }
     ${parentTheme}
@@ -219,6 +221,16 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
 `;
 
   themeFileContent += themeFileApply;
+  themeFileContent += `
+if (import.meta.hot) {
+  import.meta.hot.accept((module) => {
+    if (needsReloadOnChanges) {
+      window.location.reload();
+    }
+  })
+}
+
+`;
 
   globalImportContent += `
 ${globalFileContent.join('')}
