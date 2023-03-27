@@ -652,7 +652,7 @@ public class ResourceLoader {
         int count = childNodes.getLength();
         for (int i = 0; i < count; i++) {
             elemental.dom.Node childNode = childNodes.item(i);
-            if (childNode.getNodeType() == 8
+            if (childNode.getNodeType() == elemental.dom.Node.COMMENT_NODE
                     && comment.equals(childNode.getNodeValue())) {
                 return childNode;
             }
