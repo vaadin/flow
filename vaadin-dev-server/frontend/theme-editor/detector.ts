@@ -5,6 +5,7 @@ import { ComponentReference } from '../component-util';
 import { injectGlobalCss } from './styles';
 
 const measureElementClassname = '__vaadin-theme-editor-measure-element';
+const pseudoRegex = /((::before)|(::after))$/;
 const partNameRegex = /::part\(([\w\d_-]+)\)$/;
 
 injectGlobalCss(css`
@@ -34,10 +35,14 @@ export async function detectTheme(metadata: ComponentMetadata): Promise<Componen
 
   try {
     metadata.elements.forEach((elementMetadata) => {
-      const scopedSelector = createScopedSelector(elementMetadata, scope);
+      let scopedSelector = createScopedSelector(elementMetadata, scope);
+      // Pseudo-element needs to be queried in getComputedStyle separately
+      const pseudoMatch = scopedSelector.match(pseudoRegex);
+      scopedSelector = scopedSelector.replace(pseudoRegex, '');
+
       // We can not access shadow DOM parts using document.querySelector, so we
       // need to split accessing those into a second query
-      const partNameMatch = scopedSelector.match(/::part\(([\w\d-]+)\)$/);
+      const partNameMatch = scopedSelector.match(partNameRegex);
       const lightDomSelector = scopedSelector.replace(partNameRegex, '');
 
       let element = document.querySelector(lightDomSelector);
@@ -45,13 +50,14 @@ export async function detectTheme(metadata: ComponentMetadata): Promise<Componen
       if (element && partNameMatch) {
         const partName = partNameMatch[1];
         const shadowDomSelector = `[part~="${partName}"]`;
-        element = element!.shadowRoot!.querySelector(shadowDomSelector);
+        element = element.shadowRoot!.querySelector(shadowDomSelector);
       }
 
       if (!element) {
         return;
       }
-      const elementStyles = getComputedStyle(element);
+      const pseudoName = pseudoMatch ? pseudoMatch[1] : null;
+      const elementStyles = getComputedStyle(element, pseudoName);
 
       elementMetadata.properties.forEach((property) => {
         const propertyValue = elementStyles.getPropertyValue(property.propertyName);
@@ -83,7 +89,7 @@ export function detectElementDisplayName(component: ComponentReference) {
   }
 
   // check for label
-  const label = element.shadowRoot && element.shadowRoot.querySelector('label');
+  const label = element.querySelector('label');
   if (label && label.textContent) {
     return sanitizeText(label.textContent);
   }
