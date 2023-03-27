@@ -218,7 +218,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         Assert.assertEquals(
                 "document.css adds 2 font links and those should not duplicate",
                 2l, getCommandExecutor().executeScript(
-                        "return document.head.querySelectorAll(\"link[rel=stylesheet]\").length"));
+                        "return document.head.querySelectorAll('link[rel=stylesheet][href^=\"https://fonts.googleapis.com\"]').length"));
         Assert.assertEquals(
                 "Project contains 2 css injections to document and both should be hashed",
                 2l, getCommandExecutor().executeScript(

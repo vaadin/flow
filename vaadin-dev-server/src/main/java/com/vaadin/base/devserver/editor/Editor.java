@@ -93,6 +93,9 @@ public class Editor {
                             (Expression) referenceNode);
                 }
             } else if (type == Type.REPLACE) {
+                // comment need to be removed separately not to leave empty line
+                // while using LexicalPreservingPrinter
+                referenceNode.getComment().ifPresent(Node::remove);
                 referenceNode.replace(node);
             } else if (type == Type.INSERT_AT_END_OF_BLOCK) {
                 if (node instanceof Statement stmt) {
