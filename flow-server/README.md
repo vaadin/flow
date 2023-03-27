@@ -121,3 +121,7 @@ For debug level logs one should have the settings as:
     }
   }
 ```
+
+## Java version
+Java 17 version is needed for compiling the project:
+`mvn clean install -DskipTests`
