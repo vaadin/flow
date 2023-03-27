@@ -344,8 +344,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .add("import $cssFromFile_5 from 'Frontend/foo.css?inline';");
         expectedLines
                 .add("import $cssFromFile_6 from 'Frontend/foo.css?inline';");
-        expectedLines.add("addCssBlock(`<style>${$css_0}</style>`);");
-        expectedLines.add("addCssBlock(`<style>${$css_1}</style>`);");
+        expectedLines.add(
+                "injectGlobalCss($cssFromFile_0.toString(), 'CSSImport end', document);");
+        expectedLines.add(
+                "injectGlobalCss($cssFromFile_1.toString(), 'CSSImport end', document);");
         expectedLines.add(
                 "addCssBlock(`<style include=\"bar\">${$css_2}</style>`);");
         expectedLines.add("registerStyles('', $css_3, {moduleId: 'baz'});");
@@ -464,24 +466,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void plainCssImportWorks() throws MalformedURLException {
-        Class<?>[] testClasses = { SimpleCssImport.class };
-        ClassFinder classFinder = getClassFinder(testClasses);
-
-        options.withTokenFile(new File(tmpRoot, TOKEN_FILE));
-        updater = new UpdateImports(classFinder, getScanner(classFinder),
-                options);
-        updater.run();
-
-        Assert.assertTrue("Should import unsafeCSS",
-                updater.getCssLines().stream()
-                        .anyMatch(line -> line.matches("import.*unsafeCSS.*")));
-        Assert.assertTrue("Should use unsafeCSS",
-                updater.getCssLines().stream().anyMatch(line -> line
-                        .matches(".*unsafeCSS\\(\\$cssFromFile_.*")));
-    }
-
-    @Test
     public void assertFullSortOrder() throws MalformedURLException {
         Class[] testClasses = { MainView.class,
                 NodeTestComponents.TranslatedImports.class,
@@ -514,6 +498,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         List<String> internals = expectedImports.stream()
                 .filter(importValue -> importValue
                         .contains(FrontendUtils.FRONTEND_FOLDER_ALIAS))
+                .filter(importValue -> !importValue.contains("theme-util.js"))
                 .sorted().collect(Collectors.toList());
         updater.getGeneratedModules().stream().map(this::updateToImport)
                 .forEach(expectedImports::add);

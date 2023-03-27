@@ -594,7 +594,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
     }
 
-    private static String calculateHash(String fileContent) {
+    static String calculateHash(String fileContent) {
         String content = fileContent.replaceAll("\\r\\n", "\n");
         return StringUtil.getHash(content, StandardCharsets.UTF_8);
     }

@@ -6,35 +6,41 @@ import {
   inputFieldProperties,
   labelProperties
 } from './vaadin-text-field';
+import { iconProperties } from './defaults';
 
 export default {
-  tagName: 'vaadin-text-area',
-  displayName: 'TextArea',
+  tagName: 'vaadin-password-field',
+  displayName: 'PasswordField',
   elements: [
     {
-      selector: 'vaadin-text-area::part(input-field)',
+      selector: 'vaadin-password-field::part(input-field)',
       displayName: 'Input field',
       properties: inputFieldProperties
     },
     {
-      selector: 'vaadin-text-area::part(label)',
+      selector: 'vaadin-password-field::part(label)',
       displayName: 'Label',
       properties: labelProperties
     },
     {
-      selector: 'vaadin-text-area::part(helper-text)',
+      selector: 'vaadin-password-field::part(helper-text)',
       displayName: 'Helper text',
       properties: helperTextProperties
     },
     {
-      selector: 'vaadin-text-area::part(error-message)',
+      selector: 'vaadin-password-field::part(error-message)',
       displayName: 'Error message',
       properties: errorMessageProperties
     },
     {
-      selector: 'vaadin-text-area::part(clear-button)',
+      selector: 'vaadin-password-field::part(clear-button)',
       displayName: 'Clear button',
       properties: clearButtonProperties
+    },
+    {
+      selector: 'vaadin-password-field::part(reveal-button)',
+      displayName: 'Reveal button',
+      properties: [iconProperties.iconColor, iconProperties.iconSize]
     }
   ]
 } as ComponentMetadata;
