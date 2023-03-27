@@ -9,46 +9,46 @@ import {
 import { iconProperties } from './defaults';
 
 export default {
-  tagName: 'vaadin-number-field',
-  displayName: 'NumberField',
+  tagName: 'vaadin-integer-field',
+  displayName: 'IntegerField',
   elements: [
     {
-      selector: 'vaadin-number-field::part(input-field)',
+      selector: 'vaadin-integer-field::part(input-field)',
       displayName: 'Input field',
       properties: inputFieldProperties
     },
     {
-      selector: 'vaadin-number-field::part(label)',
+      selector: 'vaadin-integer-field::part(label)',
       displayName: 'Label',
       properties: labelProperties
     },
     {
-      selector: 'vaadin-number-field::part(helper-text)',
+      selector: 'vaadin-integer-field::part(helper-text)',
       displayName: 'Helper text',
       properties: helperTextProperties
     },
     {
-      selector: 'vaadin-number-field::part(error-message)',
+      selector: 'vaadin-integer-field::part(error-message)',
       displayName: 'Error message',
       properties: errorMessageProperties
     },
     {
-      selector: 'vaadin-number-field::part(clear-button)',
+      selector: 'vaadin-integer-field::part(clear-button)',
       displayName: 'Clear button',
       properties: clearButtonProperties
     },
     {
-      selector: 'vaadin-number-field::part(increase-button)',
-      displayName: 'Increase button',
+      selector: 'vaadin-integer-field::part(decrease-button)',
+      displayName: 'Decrease button',
       properties: [iconProperties.iconColor, iconProperties.iconSize]
     },
     {
-      selector: 'vaadin-number-field::part(decrease-button)',
-      displayName: 'Decrease button',
+      selector: 'vaadin-integer-field::part(increase-button)',
+      displayName: 'Increase button',
       properties: [iconProperties.iconColor, iconProperties.iconSize]
     }
   ],
-  setupElement(numberField) {
-    numberField.stepButtonsVisible = true;
+  setupElement(integerField) {
+    integerField.stepButtonsVisible = true;
   }
 } as ComponentMetadata;
