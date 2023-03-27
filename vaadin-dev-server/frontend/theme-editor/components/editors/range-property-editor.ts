@@ -16,17 +16,17 @@ export class RangePropertyEditor extends BasePropertyEditor {
           --slider-border: #333;
         }
 
-        .property {
+        .editor-row {
           align-items: center;
         }
 
-        .property .property-editor {
+        .editor-row > .editor {
           display: flex;
           align-items: center;
           gap: 1rem;
         }
 
-        .input {
+        .editor-row .input {
           flex: 0 0 auto;
           width: 80px;
         }

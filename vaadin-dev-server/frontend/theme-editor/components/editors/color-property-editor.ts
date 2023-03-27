@@ -10,11 +10,11 @@ export class ColorPropertyEditor extends BasePropertyEditor {
     return [
       BasePropertyEditor.styles,
       css`
-        .property {
+        .editor-row {
           align-items: center;
         }
 
-        .property .property-editor {
+        .editor-row > .editor {
           display: flex;
           align-items: center;
           gap: 0.5rem;

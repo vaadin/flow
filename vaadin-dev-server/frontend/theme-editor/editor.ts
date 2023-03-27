@@ -23,7 +23,8 @@ import './components/scope-selector';
 import './components/property-list';
 import '../component-picker.js';
 import { ComponentReference } from '../component-util';
-import { injectGlobalCss } from './styles';
+import { editorRowStyles, injectGlobalCss } from './styles';
+import { ComponentMetadata } from './metadata/model';
 
 injectGlobalCss(css`
   .vaadin-theme-editor-highlight {
@@ -67,119 +68,129 @@ export class ThemeEditor extends LitElement {
   private effectiveTheme: ComponentTheme | null = null;
 
   static get styles() {
-    return css`
-      :host {
-        animation: fade-in var(--dev-tools-transition-duration) ease-in;
-        --theme-editor-section-horizontal-padding: 0.75rem;
-        display: flex;
-        flex-direction: column;
-        max-height: 400px;
-      }
+    return [
+      editorRowStyles,
+      css`
+        :host {
+          animation: fade-in var(--dev-tools-transition-duration) ease-in;
+          --theme-editor-section-horizontal-padding: 0.75rem;
+          display: flex;
+          flex-direction: column;
+          max-height: 400px;
+        }
 
-      .notice {
-        padding: var(--theme-editor-section-horizontal-padding);
-      }
+        .notice {
+          padding: var(--theme-editor-section-horizontal-padding);
+        }
 
-      .notice a {
-        color: var(--dev-tools-text-color-emphasis);
-      }
+        .notice a {
+          color: var(--dev-tools-text-color-emphasis);
+        }
 
-      .header {
-        flex: 0 0 auto;
-        gap: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        border-bottom: solid 1px rgba(0, 0, 0, 0.2);
-        padding: var(--theme-editor-section-horizontal-padding);
-      }
+        .header {
+          flex: 0 0 auto;
+          border-bottom: solid 1px rgba(0, 0, 0, 0.2);
+        }
 
-      .picker {
-        flex: 1 1 0;
-        min-width: 0;
-        display: flex;
-        align-items: center;
-      }
+        .header .picker-row {
+          padding: var(--theme-editor-section-horizontal-padding);
+          display: flex;
+          gap: 20px;
+          align-items: center;
+          justify-content: space-between;
+        }
 
-      .picker button {
-        min-width: 0;
-        display: inline-flex;
-        align-items: center;
-        padding: 0;
-        line-height: 20px;
-        border: none;
-        background: none;
-        color: var(--dev-tools-text-color);
-      }
+        .header .editor-row.local-class-name {
+          padding-top: 0;
+        }
 
-      .picker button:not(:disabled):hover {
-        color: var(--dev-tools-text-color-emphasis);
-      }
+        .picker {
+          flex: 1 1 0;
+          min-width: 0;
+          display: flex;
+          align-items: center;
+        }
 
-      .picker svg,
-      .picker .component-type {
-        flex: 0 0 auto;
-        margin-right: 4px;
-      }
+        .picker button {
+          min-width: 0;
+          display: inline-flex;
+          align-items: center;
+          padding: 0;
+          line-height: 20px;
+          border: none;
+          background: none;
+          color: var(--dev-tools-text-color);
+        }
 
-      .picker .instance-name {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        color: #e5a2fce5;
-      }
+        .picker button:not(:disabled):hover {
+          color: var(--dev-tools-text-color-emphasis);
+        }
 
-      .picker .instance-name-quote {
-        color: #e5a2fce5;
-      }
+        .picker svg,
+        .picker .component-type {
+          flex: 0 0 auto;
+          margin-right: 4px;
+        }
 
-      .picker .no-selection {
-        font-style: italic;
-      }
+        .picker .instance-name {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          color: #e5a2fce5;
+        }
 
-      .actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
+        .picker .instance-name-quote {
+          color: #e5a2fce5;
+        }
 
-      .property-list {
-        flex: 1 1 auto;
-        overflow-y: auto;
-      }
+        .picker .no-selection {
+          font-style: italic;
+        }
 
-      .link-button {
-        all: initial;
-        font-family: inherit;
-        font-size: var(--dev-tools-font-size-small);
-        line-height: 1;
-        white-space: nowrap;
-        color: inherit;
-        font-weight: 600;
-        text-decoration: underline;
-      }
+        .actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
 
-      .link-button:focus,
-      .link-button:hover {
-        color: var(--dev-tools-text-color-emphasis);
-      }
+        .property-list {
+          flex: 1 1 auto;
+          overflow-y: auto;
+        }
 
-      .icon-button {
-        padding: 0;
-        line-height: 0;
-        border: none;
-        background: none;
-        color: var(--dev-tools-text-color);
-      }
+        .link-button {
+          all: initial;
+          font-family: inherit;
+          font-size: var(--dev-tools-font-size-small);
+          line-height: 1;
+          white-space: nowrap;
+          color: inherit;
+          font-weight: 600;
+          text-decoration: underline;
+        }
 
-      .icon-button:disabled {
-        opacity: 0.5;
-      }
+        .link-button:focus,
+        .link-button:hover {
+          color: var(--dev-tools-text-color-emphasis);
+        }
 
-      .icon-button:not(:disabled):hover {
-        color: var(--dev-tools-text-color-emphasis);
-      }
-    `;
+        .icon-button {
+          padding: 0;
+          line-height: 0;
+          border: none;
+          background: none;
+          color: var(--dev-tools-text-color);
+        }
+
+        .icon-button:disabled {
+          opacity: 0.5;
+        }
+
+        .icon-button:not(:disabled):hover {
+          color: var(--dev-tools-text-color-emphasis);
+        }
+      `
+    ];
   }
 
   protected firstUpdated() {
@@ -214,32 +225,35 @@ export class ThemeEditor extends LitElement {
 
     return html`
       <div class="header">
-        ${this.renderPicker()}
-        <div class="actions">
-          ${this.context
-            ? html` <vaadin-dev-tools-theme-scope-selector
-                .value=${this.context.scope}
-                .metadata=${this.context.metadata}
-                @scope-change=${this.handleScopeChange}
-              ></vaadin-dev-tools-theme-scope-selector>`
-            : null}
-          <button
-            class="icon-button"
-            data-testid="undo"
-            ?disabled=${!this.historyActions?.allowUndo}
-            @click=${this.handleUndo}
-          >
-            ${icons.undo}
-          </button>
-          <button
-            class="icon-button"
-            data-testid="redo"
-            ?disabled=${!this.historyActions?.allowRedo}
-            @click=${this.handleRedo}
-          >
-            ${icons.redo}
-          </button>
+        <div class="picker-row">
+          ${this.renderPicker()}
+          <div class="actions">
+            ${this.context
+              ? html` <vaadin-dev-tools-theme-scope-selector
+                  .value=${this.context.scope}
+                  .metadata=${this.context.metadata}
+                  @scope-change=${this.handleScopeChange}
+                ></vaadin-dev-tools-theme-scope-selector>`
+              : null}
+            <button
+              class="icon-button"
+              data-testid="undo"
+              ?disabled=${!this.historyActions?.allowUndo}
+              @click=${this.handleUndo}
+            >
+              ${icons.undo}
+            </button>
+            <button
+              class="icon-button"
+              data-testid="redo"
+              ?disabled=${!this.historyActions?.allowRedo}
+              @click=${this.handleRedo}
+            >
+              ${icons.redo}
+            </button>
+          </div>
         </div>
+        ${this.renderLocalClassNameEditor()}
       </div>
       ${this.renderPropertyList()}
     `;
@@ -322,6 +336,61 @@ export class ThemeEditor extends LitElement {
     `;
   }
 
+  renderLocalClassNameEditor() {
+    const allowEditing = this.context?.scope === ThemeScope.local && this.context.accessible;
+    if (!this.context || !allowEditing) {
+      return null;
+    }
+
+    const instanceClassName = this.context.localClassName || this.context.suggestedClassName;
+
+    return html` <div class="editor-row local-class-name">
+      <div class="label">Class name</div>
+      <div class="editor">
+        <input class="input" type="text" .value=${instanceClassName} @change=${this.handleClassNameChange} />
+      </div>
+    </div>`;
+  }
+
+  private async handleClassNameChange(e: Event) {
+    if (!this.context) {
+      return;
+    }
+
+    const input = e.target as HTMLInputElement;
+    const newClassName = input.value;
+
+    // Validate class name, just roll back value if it is invalid
+    const classNameRegex = /^-?[_a-zA-Z]+[_a-zA-Z0-9-]*$/;
+    if (!newClassName.match(classNameRegex)) {
+      input.value = (this.context.localClassName || this.context.suggestedClassName)!;
+      return;
+    }
+
+    if (this.context.localClassName) {
+      // Update local class name if there is an existing one
+      this.preventLiveReload();
+      const element = this.context.component.element;
+      const previousClassName = this.context.localClassName;
+      this.context.localClassName = newClassName;
+      const classNameResponse = await this.api.setLocalClassName(this.context.component, newClassName);
+      this.historyActions = this.history.push(
+        classNameResponse.requestId,
+        () => themePreview.previewLocalClassName(element, newClassName),
+        () => themePreview.previewLocalClassName(element, previousClassName)
+      );
+      // Update preview, as class names in CSS have changed
+      await this.updateThemePreview();
+    } else {
+      // Update suggested class name for now, will effectively be applied when
+      // changing a property
+      this.context = {
+        ...this.context,
+        suggestedClassName: newClassName
+      };
+    }
+  }
+
   private async pickComponent() {
     this.removeElementHighlight(this.context?.component.element);
 
@@ -345,17 +414,7 @@ export class ThemeEditor extends LitElement {
         }
 
         this.highlightElement(component.element);
-        const componentResponse = await this.api.loadComponentMetadata(component);
-        this.previewGeneratedClassName(component.element, componentResponse.className);
-
-        this.refreshTheme({
-          scope: this.context?.scope || ThemeScope.local,
-          metadata,
-          component,
-          localClassName: componentResponse.className,
-          suggestedClassName: componentResponse.suggestedClassName,
-          accessible: componentResponse.accessible
-        });
+        this.refreshComponentAndTheme(component, metadata);
       }
     });
   }
@@ -384,11 +443,15 @@ export class ThemeEditor extends LitElement {
     // If we are theming locally, and the component does not have a local class
     // name yet, then apply suggested class name from server first
     if (this.context.scope === ThemeScope.local && !this.context.localClassName && this.context.suggestedClassName) {
+      const element = this.context.component.element;
       const newClassName = this.context.suggestedClassName;
       this.context.localClassName = newClassName;
       const classNameResponse = await this.api.setLocalClassName(this.context.component, newClassName);
-      this.historyActions = this.history.push(classNameResponse.requestId);
-      this.previewGeneratedClassName(this.context.component.element, newClassName);
+      this.historyActions = this.history.push(
+        classNameResponse.requestId,
+        () => themePreview.previewLocalClassName(element, newClassName),
+        () => themePreview.previewLocalClassName(element)
+      );
     }
 
     // Can't generate a local scoped selector without a local classname
@@ -416,13 +479,33 @@ export class ThemeEditor extends LitElement {
   private async handleUndo() {
     this.preventLiveReload();
     this.historyActions = await this.history.undo();
-    await this.refreshTheme();
+    await this.refreshComponentAndTheme();
   }
 
   private async handleRedo() {
     this.preventLiveReload();
     this.historyActions = await this.history.redo();
-    await this.refreshTheme();
+    await this.refreshComponentAndTheme();
+  }
+
+  private async refreshComponentAndTheme(component?: ComponentReference, metadata?: ComponentMetadata) {
+    component = component || this.context?.component;
+    metadata = metadata || this.context?.metadata;
+    if (!component || !metadata) {
+      return;
+    }
+
+    const componentResponse = await this.api.loadComponentMetadata(component);
+    themePreview.previewLocalClassName(component.element, componentResponse.className);
+
+    await this.refreshTheme({
+      scope: this.context?.scope || ThemeScope.local,
+      metadata,
+      component,
+      localClassName: componentResponse.className,
+      suggestedClassName: componentResponse.suggestedClassName,
+      accessible: componentResponse.accessible
+    });
   }
 
   private async refreshTheme(newContext?: ThemeContext) {
@@ -493,20 +576,5 @@ export class ThemeEditor extends LitElement {
     if (element) {
       element.classList.remove('vaadin-theme-editor-highlight');
     }
-  }
-
-  /**
-   * Adds instance class name generated by the server to the specified element,
-   * so that instance-specific styles can be previewed.
-   * @param element
-   * @param className
-   * @private
-   */
-  private previewGeneratedClassName(element?: HTMLElement, className?: string) {
-    if (!className || !element) {
-      return;
-    }
-
-    element.classList.add(className);
   }
 }
