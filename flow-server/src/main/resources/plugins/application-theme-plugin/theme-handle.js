@@ -129,6 +129,11 @@ function findThemeFolderAndHandleTheme(themeName, options, logger) {
   return themeFound;
 }
 
+function writeIfChanged(file, data) {
+  if (!existsSync(file) || readFileSync(file, {encoding: 'utf-8'}) !== data) {
+    writeFileSync(file, data);
+  }
+}
 /**
  * Copies static resources for theme and generates/writes the
  * [theme-name].generated.js for webpack to handle.
@@ -167,9 +172,9 @@ function handleThemes(themeName, themesFolder, options, logger) {
     }
     copyStaticAssets(themeName, themeProperties, options.projectStaticAssetsOutputFolder, logger);
     copyThemeResources(themeFolder, options.projectStaticAssetsOutputFolder, logger);
-    const themeFile = generateThemeFile(themeFolder, themeName, themeProperties, options);
+    const themeFileContent = generateThemeFile(themeFolder, themeName, themeProperties, options);
 
-    writeFileSync(resolve(options.frontendGeneratedFolder, 'theme-' + themeName + '.generated.js'), themeFile);
+    writeIfChanged(resolve(options.frontendGeneratedFolder, 'theme-' + themeName + '.generated.js'), themeFileContent);
     return true;
   }
   return false;

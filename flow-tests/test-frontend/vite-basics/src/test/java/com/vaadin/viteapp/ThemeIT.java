@@ -48,20 +48,12 @@ public class ThemeIT extends ViteDevModeIT {
     }
 
     @Test
-    public void documentCssImport_externalAddedToHeadAsLink() {
+    public void documentCssImport_externalUrlLoaded() {
         checkLogsForErrors();
-
-        final WebElement documentHead = getDriver()
-                .findElement(By.tagName("head"));
-        final List<WebElement> links = documentHead
-                .findElements(By.tagName("link"));
-
-        List<String> linkUrls = links.stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
-
-        Assert.assertTrue("Missing link for external url", linkUrls
-                .contains("https://fonts.googleapis.com/css?family=Itim"));
+        Assert.assertTrue("Font should have been loaded",
+                (boolean) executeScript(
+                        "return document.fonts.check(arguments[0])",
+                        "10px Itim"));
     }
 
 }
