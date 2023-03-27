@@ -108,6 +108,7 @@
         <testbench.version>9.0.1</testbench.version>
         <jetty.version>11.0.14</jetty.version>
         <properties-maven-plugin.version>1.1.0</properties-maven-plugin.version>
+        <license.checker.version>1.12.3</license.checker.version>
 
         <!-- Frontend -->
         <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
@@ -240,7 +241,7 @@
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>license-checker</artifactId>
-                <version>1.12.3</version>
+                <version>${license.checker.version}</version>
             </dependency>
 
             <!-- Test dependencies -->
