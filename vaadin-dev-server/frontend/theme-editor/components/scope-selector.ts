@@ -11,42 +11,6 @@ export class ScopeChangeEvent extends CustomEvent<{ value: ThemeScope }> {
   }
 }
 
-injectGlobalCss(css`
-  vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] {
-    --lumo-primary-color-50pct: rgba(255, 255, 255, 0.5);
-    z-index: 100000;
-  }
-
-  vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector']::part(overlay) {
-    background: #333;
-  }
-
-  vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] vaadin-item {
-    color: rgba(255, 255, 255, 0.8);
-  }
-
-  vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] vaadin-item::part(content) {
-    font-size: 13px;
-  }
-
-  vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] vaadin-item .title {
-    color: rgba(255, 255, 255, 0.95);
-    font-weight: bold;
-  }
-
-  vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] vaadin-item::part(checkmark) {
-    margin: 6px;
-  }
-
-  vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] vaadin-item::part(checkmark)::before {
-    color: rgba(255, 255, 255, 0.95);
-  }
-
-  vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] vaadin-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
-`);
-
 @customElement('vaadin-dev-tools-theme-scope-selector')
 export class ScopeSelector extends LitElement {
   static get styles() {
@@ -82,6 +46,52 @@ export class ScopeSelector extends LitElement {
   public metadata?: ComponentMetadata;
   @query('vaadin-select')
   private select?: Select;
+
+  connectedCallback() {
+    super.connectedCallback();
+    // Lazily init global styles
+    // Injecting global styles uses a constructed stylesheet, which requires a
+    // polyfill in Safari. The polyfill might not be loaded yet when this module
+    // loads, so we only run this when the component created.
+    injectGlobalCss(
+      'scope-selector',
+      css`
+        vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] {
+          --lumo-primary-color-50pct: rgba(255, 255, 255, 0.5);
+          z-index: 100000;
+        }
+
+        vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector']::part(overlay) {
+          background: #333;
+        }
+
+        vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] vaadin-item {
+          color: rgba(255, 255, 255, 0.8);
+        }
+
+        vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] vaadin-item::part(content) {
+          font-size: 13px;
+        }
+
+        vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] vaadin-item .title {
+          color: rgba(255, 255, 255, 0.95);
+          font-weight: bold;
+        }
+
+        vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] vaadin-item::part(checkmark) {
+          margin: 6px;
+        }
+
+        vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] vaadin-item::part(checkmark)::before {
+          color: rgba(255, 255, 255, 0.95);
+        }
+
+        vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] vaadin-item:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+      `
+    );
+  }
 
   protected update(changedProperties: PropertyValues) {
     super.update(changedProperties);

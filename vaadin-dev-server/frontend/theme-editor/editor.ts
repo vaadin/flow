@@ -12,7 +12,7 @@ import {
   ThemeEditorState,
   ThemeScope
 } from './model';
-import { detectElementDisplayName, detectTheme } from './detector';
+import { detectElementDisplayName, detectTheme, setupThemeDetectorCss } from './detector';
 import { ThemePropertyValueChangeEvent } from './components/editors/base-property-editor';
 import { themePreview } from './preview';
 import { Connection } from '../connection';
@@ -24,13 +24,6 @@ import './components/property-list';
 import '../component-picker.js';
 import { ComponentReference } from '../component-util';
 import { injectGlobalCss } from './styles';
-
-injectGlobalCss(css`
-  .vaadin-theme-editor-highlight {
-    outline: solid 2px #9e2cc6;
-    outline-offset: 3px;
-  }
-`);
 
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
@@ -180,6 +173,24 @@ export class ThemeEditor extends LitElement {
         color: var(--dev-tools-text-color-emphasis);
       }
     `;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    // Lazily init global styles
+    // Injecting global styles uses a constructed stylesheet, which requires a
+    // polyfill in Safari. The polyfill might not be loaded yet when this module
+    // loads, so we only run this when the component created.
+    setupThemeDetectorCss();
+    injectGlobalCss(
+      'editor',
+      css`
+        .vaadin-theme-editor-highlight {
+          outline: solid 2px #9e2cc6;
+          outline-offset: 3px;
+        }
+      `
+    );
   }
 
   protected firstUpdated() {

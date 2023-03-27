@@ -8,14 +8,19 @@ const measureElementClassname = '__vaadin-theme-editor-measure-element';
 const pseudoRegex = /((::before)|(::after))$/;
 const partNameRegex = /::part\(([\w\d_-]+)\)$/;
 
-injectGlobalCss(css`
-  .__vaadin-theme-editor-measure-element {
-    position: absolute;
-    top: 0;
-    left: 0;
-    visibility: hidden;
-  }
-`);
+export function setupThemeDetectorCss() {
+  injectGlobalCss(
+    'theme-detector',
+    css`
+      .__vaadin-theme-editor-measure-element {
+        position: absolute;
+        top: 0;
+        left: 0;
+        visibility: hidden;
+      }
+    `
+  );
+}
 
 export async function detectTheme(metadata: ComponentMetadata): Promise<ComponentTheme> {
   const componentTheme = new ComponentTheme(metadata);

@@ -1,11 +1,15 @@
 import { expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
-import { detectTheme } from './detector';
+import { detectTheme, setupThemeDetectorCss } from './detector';
 import { testElementMetadata } from './tests/utils';
 
 describe('theme-detector', () => {
   let setupElementStub: sinon.SinonStub;
   let cleanupElementStub: sinon.SinonStub;
+
+  before(() => {
+    setupThemeDetectorCss();
+  });
 
   beforeEach(() => {
     setupElementStub = sinon.stub(testElementMetadata, 'setupElement');
@@ -80,5 +84,5 @@ describe('theme-detector', () => {
 
     expect(setupElementStub.calledOnce).to.be.true;
     expect(cleanupElementStub.calledOnce).to.be.true;
-  })
+  });
 });
