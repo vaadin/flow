@@ -11,8 +11,8 @@ describe('history', () => {
 
   beforeEach(() => {
     apiMock = {
-      undo: sinon.spy(),
-      redo: sinon.spy()
+      undo: sinon.spy(() => Promise.resolve()),
+      redo: sinon.spy(() => Promise.resolve())
     };
 
     ThemeEditorHistory.clear();
@@ -153,5 +153,43 @@ describe('history', () => {
 
     expect(apiMock.undo.calledOnce).to.be.true;
     expect(apiMock.undo.args).to.deep.equal([['request1']]);
+  });
+
+  describe('customizer functions', () => {
+    let execute: sinon.SinonSpy;
+    let rollback: sinon.SinonSpy;
+
+    beforeEach(() => {
+      execute = sinon.spy();
+      rollback = sinon.spy();
+    });
+
+    it('should run execute customizer when pushing history entry', () => {
+      history.push('request1', execute, rollback);
+
+      expect(execute.calledOnce).to.be.true;
+      expect(rollback.called).to.be.false;
+    });
+
+    it('should run rollback customizer on undo', async () => {
+      history.push('request1', execute, rollback);
+      execute.resetHistory();
+      rollback.resetHistory();
+
+      await history.undo();
+      expect(execute.called).to.be.false;
+      expect(rollback.calledOnce).to.be.true;
+    });
+
+    it('should run execute customizer on redo', async () => {
+      history.push('request1', execute, rollback);
+      await history.undo();
+      execute.resetHistory();
+      rollback.resetHistory();
+
+      await history.redo();
+      expect(execute.calledOnce).to.be.true;
+      expect(rollback.called).to.be.false;
+    });
   });
 });
