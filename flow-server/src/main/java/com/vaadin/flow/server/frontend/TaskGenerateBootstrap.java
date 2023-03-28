@@ -93,7 +93,8 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         Collection<String> lines = new ArrayList<>();
         ThemeDefinition themeDef = frontDeps.getThemeDefinition();
         if (themeDef != null && !"".equals(themeDef.getName())) {
-            lines.add("import './theme-" + themeDef.getName() + ".global.generated.js';");
+            lines.add("import './theme-" + themeDef.getName()
+                    + ".global.generated.js';");
             lines.add("import { applyTheme } from './theme.js';");
             lines.add("applyTheme(document);");
             lines.add("");
