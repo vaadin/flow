@@ -4,6 +4,8 @@ import { applyTheme } from './generated/theme';
 
 @customElement('component-with-theme')
 export class ComponentWithTheme extends LitElement {
+  applied = false;
+
   static get styles() {
     return css`
       #inside {
@@ -16,6 +18,9 @@ export class ComponentWithTheme extends LitElement {
   }
   connectedCallback() {
     super.connectedCallback();
-    applyTheme(this.renderRoot);
+    if (!this.applied) {
+      applyTheme(this.renderRoot);
+      this.applied = true;
+    }
   }
 }
