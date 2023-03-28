@@ -31,7 +31,6 @@ import com.vaadin.flow.server.PwaConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;

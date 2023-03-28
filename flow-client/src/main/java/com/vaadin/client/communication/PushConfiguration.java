@@ -25,7 +25,6 @@ import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
-import com.vaadin.flow.server.Constants;
 
 /**
  * Provides the push configuration stored in the root node with an easier to use
