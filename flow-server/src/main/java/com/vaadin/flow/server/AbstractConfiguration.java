@@ -21,6 +21,8 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -190,12 +192,19 @@ public interface AbstractConfiguration extends Serializable {
         String folder = getStringProperty(FrontendUtils.PROJECT_BASEDIR, null);
         if (folder == null) {
             /* Try determining the project folder from the classpath. */
-            URL url = getClass().getClassLoader().getResource(".");
-            if (url != null && url.getProtocol().equals("file")) {
-                String path = url.getPath();
-                if (path.endsWith("/target/classes/")) {
-                    folder = path.replaceFirst("/target/classes/$", "");
+            try {
+                URL url = getClass().getClassLoader().getResource(".");
+                if (url != null && url.getProtocol().equals("file")) {
+                    // URI decodes the path so that e.g. " " works correctly
+                    String path = url.toURI().getPath();
+                    if (path.endsWith("/target/classes/")) {
+                        folder = path.replaceFirst("/target/classes/$", "");
+                    }
                 }
+            } catch (Exception e) {
+                LoggerFactory.getLogger(getClass()).warn(
+                        "Unable to determine project folder using classpath",
+                        e);
             }
         }
 

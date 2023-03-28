@@ -2,6 +2,7 @@ package com.vaadin.base.devserver.themeeditor;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
@@ -50,8 +51,8 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         Node n1 = cu.accept(new LineNumberVisitor(), TEXTFIELD_CREATE + 2);
         Assert.assertTrue(n1 instanceof ExpressionStmt);
 
-        Statement expr1 = modifier.createAddClassNameStatement("textField",
-                "bold-field");
+        Statement expr1 = modifier.createAddClassNameStatement("bold-field",
+                new SimpleName("textField"));
         Assert.assertEquals(expr1, n1);
 
         modifier.setLocalClassName(0, 1, "even-bolder-field");
@@ -60,8 +61,8 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         n1 = cu.accept(new LineNumberVisitor(), PINFIELD2_CREATE + 4);
         Assert.assertTrue(n1 instanceof ExpressionStmt);
 
-        expr1 = modifier.createAddClassNameStatement("pinField2",
-                "even-bolder-field");
+        expr1 = modifier.createAddClassNameStatement("even-bolder-field",
+                new SimpleName("pinField2"));
         Assert.assertEquals(expr1, n1);
     }
 
@@ -92,26 +93,20 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         prepareComponentTracker(0, 25, 49);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
         modifier.setLocalClassName(0, 0, "bold-field");
-        try {
-            File javaFolder = TestUtils
-                    .getTestFolder("java/org/vaadin/example");
-            Reader fileReader1 = new FileReader(
-                    new File(javaFolder, "TestView.java"));
-            Reader fileReader2 = new FileReader(
-                    new File(javaFolder, "TestView_messedExpected.java"));
-            BufferedReader br1 = new BufferedReader(fileReader1);
-            BufferedReader br2 = new BufferedReader(fileReader2);
-
-            Assert.assertEquals(br1.lines().collect(Collectors.toList()),
-                    br2.lines().collect(Collectors.toList()));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        compareTestView("TestView_messedExpected.java");
     }
 
     @Test
     public void componentPicked_componentAccessible() {
         prepareComponentTracker(0, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
+        JavaSourceModifier modifier = new TestJavaSourceModifier();
+        Assert.assertTrue(modifier.isAccessible(0, 0));
+    }
+
+    @Test
+    public void componentPicked_componentAccessible_constructor() {
+        prepareComponentTracker(0, TESTVIEW_CREATE_AND_ATTACH,
+                TESTVIEW_CREATE_AND_ATTACH);
         JavaSourceModifier modifier = new TestJavaSourceModifier();
         Assert.assertTrue(modifier.isAccessible(0, 0));
     }
@@ -126,6 +121,17 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
     @Test
     public void localClassName_set_get_remove_replace_suggest() {
         prepareComponentTracker(0, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
+        testLocalClassName();
+    }
+
+    @Test
+    public void localClassName_constructor_set_get_remove_replace_suggest() {
+        prepareComponentTracker(0, TESTVIEW_CREATE_AND_ATTACH,
+                TESTVIEW_CREATE_AND_ATTACH);
+        testLocalClassName();
+    }
+
+    private void testLocalClassName() {
         JavaSourceModifier modifier = new TestJavaSourceModifier();
 
         // local classname does not exist
@@ -142,6 +148,9 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         modifier.removeLocalClassName(0, 0);
         localClassName = modifier.getLocalClassName(0, 0);
         Assert.assertNull(localClassName);
+
+        // check if file structure is not changed
+        compareTestView("TestView_clean.java");
 
         // suggest new local classname
         String suggestedClassName = modifier.getSuggestedClassName(0, 0);
@@ -166,6 +175,14 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         localClassName = modifier.getLocalClassName(0, 0);
         Assert.assertNotNull(localClassName);
         Assert.assertEquals(suggestedClassName, localClassName);
+
+        // remove local classname
+        modifier.removeLocalClassName(0, 0);
+        localClassName = modifier.getLocalClassName(0, 0);
+        Assert.assertNull(localClassName);
+
+        // check if file structure is not changed
+        compareTestView("TestView_clean.java");
     }
 
     @Test
@@ -180,6 +197,26 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         File javaFolder = TestUtils.getTestFolder("java/org/vaadin/example");
         SourceRoot root = new SourceRoot(javaFolder.toPath());
         return LexicalPreservingPrinter.setup(root.parse("", "TestView.java"));
+    }
+
+    private void compareTestView(String expectedFile) {
+        try {
+            File javaFolder = TestUtils
+                    .getTestFolder("java/org/vaadin/example");
+            String expected = readFile(new File(javaFolder, expectedFile));
+            String current = readFile(new File(javaFolder, "TestView.java"));
+            Assert.assertEquals(expected, current);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String readFile(File file) throws IOException {
+        try (Reader fileReader = new FileReader(file);
+                BufferedReader br = new BufferedReader(fileReader)) {
+            return br.lines()
+                    .collect(Collectors.joining(System.lineSeparator()));
+        }
     }
 
 }

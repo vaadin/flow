@@ -25,17 +25,10 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
 
 import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Base64;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -81,17 +74,13 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void nodeAssetInCss_pathIsSetCorrectly() {
+    public void nodeAssetInCss_pathIsSetCorrectly() throws IOException {
         open();
-        final String resourceUrl = getRootURL()
-                + "/path/themes/app-theme/fortawesome/icons/snowflake.svg";
         WebElement cssNodeSnowflake = findElement(By.id(CSS_SNOWFLAKE));
-        final String expectedImgUrl = "url(\"" + resourceUrl + "\")";
-        Assert.assertEquals(
-                "Background image has been referenced in styles.css and "
-                        + "expected to be applied",
-                expectedImgUrl,
-                cssNodeSnowflake.getCssValue("background-image"));
+        String imageUrl = cssNodeSnowflake.getCssValue("background-image");
+        assertImageEquals(Paths.get("target", "classes", "META-INF", "VAADIN",
+                "webapp", "VAADIN", "static", "themes", "app-theme",
+                "fortawesome", "icons", "snowflake.svg"), imageUrl);
     }
 
     @Test
@@ -223,23 +212,27 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void documentCssImport_onlyExternalAddedToHeadAsLink() {
+    public void documentCssImport_externalUrlLoaded() {
         open();
         checkLogsForErrors();
 
-        final WebElement documentHead = getDriver()
-                .findElement(By.xpath("/html/head"));
-        final List<WebElement> links = documentHead
-                .findElements(By.tagName("link"));
+        Assert.assertTrue("Font should have been loaded",
+                (boolean) executeScript(
+                        "return document.fonts.check(arguments[0])",
+                        "10px Itim"));
+    }
 
-        List<String> linkUrls = links.stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
+    @Test
+    public void documentCssImport_subImportApplied() {
+        open();
+        checkLogsForErrors();
 
-        Assert.assertTrue("Missing link for external url", linkUrls
-                .contains("https://fonts.googleapis.com/css?family=Itim"));
-        Assert.assertFalse("Found import that webpack should have resolved",
-                linkUrls.contains("sub-css/sub.css"));
+        TestBenchElement subComponent = $("*").id("sub-component");
+        Assert.assertEquals("Width for sub.css should have been applied",
+                "10px",
+                (String) executeScript(
+                        "return getComputedStyle(arguments[0]).width",
+                        subComponent));
     }
 
     @Override
