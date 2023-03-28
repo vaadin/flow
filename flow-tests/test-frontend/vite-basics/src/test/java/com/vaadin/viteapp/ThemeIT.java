@@ -47,10 +47,7 @@ public class ThemeIT extends ViteDevModeIT {
     @Test
     public void documentCssImport_externalUrlLoaded() {
         checkLogsForErrors();
-        Assert.assertTrue("Font should have been loaded",
-                (boolean) executeScript(
-                        "return document.fonts.check(arguments[0])",
-                        "10px Itim"));
+        waitForFont("10px Itim");
     }
 
 }
