@@ -81,6 +81,9 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   const shadowOnlyCss = [];
   const componentCssCode = [];
   const parentTheme = themeProperties.parent ? 'applyBaseTheme(target);\n' : '';
+  const parentThemeGlobalImport = themeProperties.parent
+    ? `import './theme-${themeProperties.parent}.global.generated.js';\n`
+    : '';
 
   const themeIdentifier = '_vaadintheme_' + themeName + '_';
   const lumoCssFlag = '_vaadinthemelumoimports_';
@@ -123,7 +126,9 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
 
   /* Theme */
   if (useDevServerOrInProductionMode) {
-    globalFileContent.push(`import 'themes/${themeName}/${filename}';\n`); // For Vite hotdeploy
+    globalFileContent.push(parentThemeGlobalImport);
+    globalFileContent.push(`import 'themes/${themeName}/${filename}';\n`);
+
     imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
     shadowOnlyCss.push(`injectGlobalCss(${variable}.toString(), '', target);\n    `);
   }
