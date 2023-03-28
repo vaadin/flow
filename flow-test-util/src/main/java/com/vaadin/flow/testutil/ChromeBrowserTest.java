@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;

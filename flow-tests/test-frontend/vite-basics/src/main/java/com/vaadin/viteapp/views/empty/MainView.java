@@ -1,8 +1,6 @@
 package com.vaadin.viteapp.views.empty;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.HtmlComponent;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
