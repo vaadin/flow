@@ -55,7 +55,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void applicationTheme_GlobalCss_isUsedOnlyInEmbeddeComponent() {
+    public void applicationTheme_GlobalCss_isUsedOnlyInEmbeddedComponent() {
         open();
         // No exception for bg-image should exist
         checkLogsForErrors();
@@ -74,9 +74,14 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         Assert.assertNotEquals("Ostrich", body.getCssValue("font-family"));
 
         Assert.assertEquals(
-                "Embedded style should not match external component",
+                "Document style should be applied outside embedded component",
                 "rgba(0, 0, 255, 1)",
-                $(SpanElement.class).id("overflow").getCssValue("color"));
+                $("*").id("global").getCssValue("color"));
+        Assert.assertEquals(
+                "Theme style should not be applied outside embedded component",
+                "rgba(24, 39, 57, 0.94)",
+                $("*").id("internal").getCssValue("color"));
+
         getDriver().get(getRootURL() + "/themes/embedded-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
                 driver.getPageSource().contains("Could not navigate"));
