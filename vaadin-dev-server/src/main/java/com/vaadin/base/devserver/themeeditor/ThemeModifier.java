@@ -87,7 +87,7 @@ public class ThemeModifier {
             }
         }
         sortStylesheet(styleSheet);
-        writeStylesheet(styleSheet, true);
+        writeStylesheet(styleSheet);
     }
 
     /**
@@ -137,7 +137,7 @@ public class ThemeModifier {
             String newClassName) {
         CascadingStyleSheet styleSheet = getCascadingStyleSheet();
         replaceClassName(styleSheet, tagName, oldClassName, newClassName);
-        writeStylesheet(styleSheet, true);
+        writeStylesheet(styleSheet);
     }
 
     /**
@@ -167,7 +167,7 @@ public class ThemeModifier {
         CSSStyleRule rule = new CSSStyleRule().addSelector(newSelector);
         styleSheet.addRule(rule);
         sortStylesheet(styleSheet);
-        writeStylesheet(styleSheet, false);
+        writeStylesheet(styleSheet);
     }
 
     protected String getCssFileName() {
@@ -269,14 +269,12 @@ public class ThemeModifier {
         }
     }
 
-    protected void writeStylesheet(CascadingStyleSheet styleSheet,
-            boolean removeUnnecessaryCode) {
+    protected void writeStylesheet(CascadingStyleSheet styleSheet) {
         File styles = getStyleSheetFile();
         try {
             CSSWriter writer = new CSSWriter().setWriteHeaderText(true)
                     .setHeaderText(getHeaderText());
-            writer.getSettings().setOptimizedOutput(false)
-                    .setRemoveUnnecessaryCode(removeUnnecessaryCode);
+            writer.getSettings().setOptimizedOutput(false);
             writer.writeCSS(styleSheet, new FileWriter(styles));
         } catch (IOException e) {
             throw new ThemeEditorException("Cannot write " + styles.getPath(),
