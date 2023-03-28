@@ -44,6 +44,10 @@ export class Connection extends Object {
     // Intentionally empty
   }
 
+  onUpdate(_path: string) {
+    // Intentionally empty
+  }
+
   onConnectionError(_: string) {
     // Intentionally empty
   }
@@ -71,6 +75,10 @@ export class Connection extends Object {
     } else if (json.command === 'reload') {
       if (this.status === ConnectionStatus.ACTIVE) {
         this.onReload();
+      }
+    } else if (json.command === 'update') {
+      if (this.status === ConnectionStatus.ACTIVE) {
+        this.onUpdate(json.path);
       }
     } else if (json.command === 'license-check-ok') {
       licenseCheckOk(json.data);

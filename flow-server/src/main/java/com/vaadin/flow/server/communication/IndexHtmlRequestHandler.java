@@ -184,7 +184,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
         if (config.getMode() == Mode.DEVELOPMENT_BUNDLE) {
             try {
-                BootstrapHandler.getStylesheetTags(config, "styles.css")
+                BootstrapHandler.getStylesheetTags(config, "styles.css?1")
                         .forEach(link -> document.head().appendChild(link));
             } catch (IOException e) {
                 throw new UncheckedIOException(

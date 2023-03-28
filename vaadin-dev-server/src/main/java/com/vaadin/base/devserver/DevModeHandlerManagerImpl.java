@@ -118,16 +118,29 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
             // TODO: frontend folder to be taken from config
             // see https://github.com/vaadin/flow/pull/15552
-            File watchDirectory = new File(projectFolder,
-                    Path.of(FrontendUtils.FRONTEND,
-                            Constants.APPLICATION_THEME_ROOT, themeName.get())
-                            .toString());
+            File frontendFolder = new File(projectFolder,
+                    FrontendUtils.FRONTEND);
+            File themeFolder = new File(
+                    new File(frontendFolder, Constants.APPLICATION_THEME_ROOT),
+                    themeName.get());
 
             Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                     .getLiveReloadFromContext(context);
             if (liveReload.isPresent()) {
-                themeFilesWatcher = new FileWatcher(
-                        file -> liveReload.get().reload(), watchDirectory);
+                themeFilesWatcher = new FileWatcher(file -> {
+                    if (file.getName().endsWith(".css")) {
+                        // As the styles.css is included with a link tag, we
+                        // always send an update for that file, even though
+                        // another file changed
+                        Path frontendRelative = frontendFolder.toPath()
+                                .relativize(themeFolder.toPath()
+                                        .resolve("styles.css"));
+                        liveReload.get().update("VAADIN/"
+                                + FrontendUtils.getUnixPath(frontendRelative));
+                    } else {
+                        liveReload.get().reload();
+                    }
+                }, themeFolder);
                 themeFilesWatcher.start();
             } else {
                 getLogger().error(
