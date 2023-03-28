@@ -107,7 +107,7 @@
                 <plugin>
                     <groupId>com.mycila</groupId>
                     <artifactId>license-maven-plugin</artifactId>
-                    <version>4.1</version>
+                    <version>4.2</version>
                     <configuration>
                         <header>src/license/vclst/header.txt</header>
                         <quiet>false</quiet>
