@@ -10,24 +10,40 @@ import com.vaadin.base.devserver.themeeditor.JavaSourceModifier;
  * Implementation of {@link com.github.javaparser.ast.visitor.GenericVisitor}
  * that searches for local classname by comparing expression type, method call
  * scope and expression comment.
+ *
+ * Scope may be null in case of own instance method calls.
  */
 public class LocalClassNameVisitor
         extends GenericVisitorAdapter<ExpressionStmt, String> {
 
     @Override
-    public ExpressionStmt visit(ExpressionStmt n, String arg) {
-        if (n.getExpression().isMethodCallExpr()
-                && n.getComment().filter(
-                        JavaSourceModifier.LOCAL_CLASSNAME_COMMENT::equals)
-                        .isPresent()
-                && n.getExpression().asMethodCallExpr().getScope()
-                        .map(Expression::toString).filter(arg::equals)
-                        .isPresent()
-                && n.getExpression().asMethodCallExpr().getName()
-                        .equals(new SimpleName("addClassName"))) {
-            return n;
+    public ExpressionStmt visit(ExpressionStmt n, String scope) {
+        // filter anything other than method calls
+        if (!n.getExpression().isMethodCallExpr()) {
+            return super.visit(n, scope);
         }
-        return super.visit(n, arg);
+
+        // and anything without matching comment
+        if (n.getComment()
+                .filter(JavaSourceModifier.LOCAL_CLASSNAME_COMMENT::equals)
+                .isEmpty()) {
+            return super.visit(n, scope);
+        }
+
+        // and not 'addClassName' method calls
+        if (!n.getExpression().asMethodCallExpr().getName()
+                .equals(new SimpleName("addClassName"))) {
+            return super.visit(n, scope);
+        }
+
+        // and with not matching scope (if defined)
+        if (scope != null && n.getExpression().asMethodCallExpr().getScope()
+                .map(Expression::toString).filter(scope::equals).isEmpty()) {
+            return super.visit(n, scope);
+        }
+
+        // voila!
+        return n;
     }
 
 }
