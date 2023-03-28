@@ -454,4 +454,9 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         }
     }
 
+    protected void waitForFont(String fontSizeAndName) {
+        waitUntil(d -> (boolean) executeScript(
+                "return document.fonts.check(arguments[0])", fontSizeAndName));
+
+    }
 }
