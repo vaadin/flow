@@ -1,3 +1,4 @@
+import 'construct-style-sheets-polyfill';
 import { css, html, LitElement, nothing, TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
