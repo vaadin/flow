@@ -2,7 +2,6 @@ package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 

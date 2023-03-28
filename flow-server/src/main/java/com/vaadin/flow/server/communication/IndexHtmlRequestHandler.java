@@ -51,6 +51,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -145,6 +146,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     "window.Vaadin = window.Vaadin || {}; window.Vaadin.developmentMode = true;");
         }
 
+        addLinkTagForTheme(indexDocument, context);
         applyThemeVariant(indexDocument, context);
 
         if (config.isDevToolsEnabled()) {
@@ -162,6 +164,21 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    private static void addLinkTagForTheme(Document document,
+            VaadinContext context) {
+        ApplicationConfiguration config = ApplicationConfiguration.get(context);
+        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE) {
+            try {
+                BootstrapHandler.getStylesheetTags(config, "styles.css")
+                        .forEach(link -> document.head().appendChild(link));
+            } catch (IOException e) {
+                throw new UncheckedIOException(
+                        "Failed to add a link tag for 'styles.css' to the document",
+                        e);
+            }
+        }
     }
 
     private void applyThemeVariant(Document indexDocument,

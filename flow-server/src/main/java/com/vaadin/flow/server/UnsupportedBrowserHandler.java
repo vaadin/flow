@@ -16,9 +16,7 @@
 package com.vaadin.flow.server;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 

@@ -34,6 +34,7 @@
         </dependency>
     </dependencies>
     <build>
+        <defaultGoal>jetty:run</defaultGoal>
         <plugins>
             <plugin>
                 <groupId>com.vaadin</groupId>
