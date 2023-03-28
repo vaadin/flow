@@ -16,17 +16,15 @@
 
 package com.vaadin.flow.server.communication;
 
+import static com.vaadin.flow.component.UI.SERVER_ROUTING;
+
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.jsoup.nodes.Document;
-
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
@@ -38,7 +36,6 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.HandlerHelper;
-import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -51,8 +48,6 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 
 /**
  * Processes a 'start' request type from the client to initialize server session
