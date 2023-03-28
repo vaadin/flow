@@ -162,10 +162,10 @@ public class ThemeModifier {
      */
     public void createEmptyStyleRule(String selector) {
         CascadingStyleSheet styleSheet = getCascadingStyleSheet();
-        CSSSelector newSelector = new CSSSelector()
+        CSSSelector cssSelector = new CSSSelector()
                 .addMember(new CSSSelectorSimpleMember(selector));
-        CSSStyleRule rule = new CSSStyleRule().addSelector(newSelector);
-        styleSheet.addRule(rule);
+        CSSStyleRule cssStyleRule = new CSSStyleRule().addSelector(cssSelector);
+        styleSheet.addRule(cssStyleRule);
         sortStylesheet(styleSheet);
         writeStylesheet(styleSheet);
     }
