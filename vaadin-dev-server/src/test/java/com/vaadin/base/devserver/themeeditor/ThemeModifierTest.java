@@ -129,6 +129,26 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
     }
 
     @Test
+    public void locateLines() {
+        ThemeModifier modifier = new TestThemeModifier();
+        modifier.setThemeProperties(Collections.singletonList(
+                new CssRule(SELECTOR_WITH_PART, "color", "red")));
+
+        CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
+        assertEquals(1, styleSheet.getStyleRuleCount());
+
+        CSSStyleRule expected = modifier.createStyleRule(SELECTOR_WITH_PART,
+                "color", "red");
+        assertTrue(styleSheet.getAllStyleRules().contains(expected));
+
+        int line = modifier.getRuleLocationLine(SELECTOR_WITH_PART);
+        assertEquals(5, line); // 4-line comment before
+
+        line = modifier.getRuleLocationLine("vaadin-app-layout");
+        assertEquals(-1, line); // not found
+    }
+
+    @Test
     public void ruleExists_ruleIsUpdated() {
         ThemeModifier modifier = new TestThemeModifier();
         List<CssRule> toBeAdded = new ArrayList<>();
