@@ -42,11 +42,9 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.HandlesTypes;

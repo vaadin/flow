@@ -16,11 +16,8 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
@@ -31,7 +28,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -50,8 +46,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_GENERATED_CONFIG;
-import static com.vaadin.flow.server.frontend.installer.Platform.ALPINE_RELEASE_FILE_PATH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
