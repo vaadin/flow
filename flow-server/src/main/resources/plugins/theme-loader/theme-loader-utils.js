@@ -79,7 +79,7 @@ function rewriteCssUrls(source, handledResourceFolder, themeFolder, logger, opti
       logger.log("No rewrite for '", match, "' as the file was not found.");
     } else {
       // In production, the css is in VAADIN/build but the theme files are in .
-      return url + (quoteMark ?? '') + '../../' + fileUrl+endString;
+      return url + (quoteMark ?? '') + '../../' + fileUrl + endString;
     }
     return match;
   });
