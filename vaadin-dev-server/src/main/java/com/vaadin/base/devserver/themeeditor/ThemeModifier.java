@@ -87,7 +87,7 @@ public class ThemeModifier {
             }
         }
         sortStylesheet(styleSheet);
-        writeStylesheet(styleSheet);
+        writeStylesheet(styleSheet, true);
     }
 
     /**
@@ -137,14 +137,13 @@ public class ThemeModifier {
             String newClassName) {
         CascadingStyleSheet styleSheet = getCascadingStyleSheet();
         replaceClassName(styleSheet, tagName, oldClassName, newClassName);
-        writeStylesheet(styleSheet);
+        writeStylesheet(styleSheet, true);
     }
 
     /**
      * Gets location line of rule with given selector
      *
      * @param selector
-     *            selector to be located
      * @return line number when located, -1 otherwise
      */
     public int getRuleLocationLine(String selector) {
@@ -154,6 +153,21 @@ public class ThemeModifier {
             return -1;
         }
         return rule.getSourceLocation().getFirstTokenBeginLineNumber();
+    }
+
+    /**
+     * Creates empty rule with given selector
+     *
+     * @param selector
+     */
+    public void createEmptyStyleRule(String selector) {
+        CascadingStyleSheet styleSheet = getCascadingStyleSheet();
+        CSSSelector newSelector = new CSSSelector()
+                .addMember(new CSSSelectorSimpleMember(selector));
+        CSSStyleRule rule = new CSSStyleRule().addSelector(newSelector);
+        styleSheet.addRule(rule);
+        sortStylesheet(styleSheet);
+        writeStylesheet(styleSheet, false);
     }
 
     protected String getCssFileName() {
@@ -255,12 +269,14 @@ public class ThemeModifier {
         }
     }
 
-    protected void writeStylesheet(CascadingStyleSheet styleSheet) {
+    protected void writeStylesheet(CascadingStyleSheet styleSheet,
+            boolean removeUnnecessaryCode) {
         File styles = getStyleSheetFile();
         try {
             CSSWriter writer = new CSSWriter().setWriteHeaderText(true)
                     .setHeaderText(getHeaderText());
-            writer.getSettings().setOptimizedOutput(false);
+            writer.getSettings().setOptimizedOutput(false)
+                    .setRemoveUnnecessaryCode(removeUnnecessaryCode);
             writer.writeCSS(styleSheet, new FileWriter(styles));
         } catch (IOException e) {
             throw new ThemeEditorException("Cannot write " + styles.getPath(),

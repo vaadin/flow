@@ -281,23 +281,55 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
         BaseResponse response = setRule(0, "id1", handler, "vaadin-button",
                 "color", "red");
         assertResponseOk(response, "id1");
-        response = setRule(0, "id2", handler, "vaadin-button::part(label)",
-                "font-size", "12px");
-        assertResponseOk(response, "id2");
 
+        // request existing selector
+        // expected: 4 lines of comment + 1 = 5
         JsonObject data = Json.createObject();
-        data.put("requestId", "id3");
+        data.put("requestId", "id2");
         data.put("uiId", 0);
         data.put("selector", "vaadin-button");
-
         try (MockedStatic<OpenInCurrentIde> openInIde = Mockito
                 .mockStatic(OpenInCurrentIde.class)) {
-            openInIde.when(() -> OpenInCurrentIde.openFile(Mockito.any(),
-                    Mockito.anyInt())).thenReturn(true);
+            MockedStatic.Verification verification = () -> OpenInCurrentIde
+                    .openFile(Mockito.any(), Mockito.eq(5));
+            openInIde.when(verification).thenReturn(true);
             response = handler
                     .handleDebugMessageData(ThemeEditorCommand.OPEN_CSS, data);
+            openInIde.verify(verification);
+            assertResponseOk(response, "id2");
+        }
+
+        // request non-existing selector
+        // expected: 4 lines of comment + 2 lines of vaadin-button with empty
+        // line + 1 = 7
+        data.put("requestId", "id3");
+        data.put("selector", "vaadin-text-field");
+        try (MockedStatic<OpenInCurrentIde> openInIde = Mockito
+                .mockStatic(OpenInCurrentIde.class)) {
+            MockedStatic.Verification verification = () -> OpenInCurrentIde
+                    .openFile(Mockito.any(), Mockito.eq(7));
+            openInIde.when(verification).thenReturn(true);
+            response = handler
+                    .handleDebugMessageData(ThemeEditorCommand.OPEN_CSS, data);
+            openInIde.verify(verification);
             assertResponseOk(response, "id3");
         }
+
+        // request non-existing selector, CSS is sorted - should be on top
+        // expected: 4 lines of comment + 1 = 5
+        data.put("requestId", "id4");
+        data.put("selector", "vaadin-app-layout");
+        try (MockedStatic<OpenInCurrentIde> openInIde = Mockito
+                .mockStatic(OpenInCurrentIde.class)) {
+            MockedStatic.Verification verification = () -> OpenInCurrentIde
+                    .openFile(Mockito.any(), Mockito.eq(5));
+            openInIde.when(verification).thenReturn(true);
+            response = handler
+                    .handleDebugMessageData(ThemeEditorCommand.OPEN_CSS, data);
+            openInIde.verify(verification);
+            assertResponseOk(response, "id4");
+        }
+
     }
 
     @Test

@@ -149,6 +149,15 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
     }
 
     @Test
+    public void emptyRuleAdded_ruleIsPresent() {
+        ThemeModifier modifier = new TestThemeModifier();
+        modifier.createEmptyStyleRule("vaadin-button");
+        List<CssRule> rules = modifier.getCssRules(List.of("vaadin-button"));
+        assertEquals(1, rules.size());
+        assertTrue(rules.get(0).getProperties().isEmpty());
+    }
+
+    @Test
     public void ruleExists_ruleIsUpdated() {
         ThemeModifier modifier = new TestThemeModifier();
         List<CssRule> toBeAdded = new ArrayList<>();

@@ -25,12 +25,29 @@ public class OpenCssHandler implements MessageHandler {
     public ExecuteAndUndo handle(JsonObject data) {
         OpenCssRequest request = JsonUtils.readToObject(data,
                 OpenCssRequest.class);
+        String selector = request.getSelector();
         return new ExecuteAndUndo(() -> {
             File stylesheet = hasThemeModifier.getThemeModifier()
                     .getStyleSheetFile();
             int line = hasThemeModifier.getThemeModifier()
-                    .getRuleLocationLine(request.getSelector());
-            if (line == -1 || !OpenInCurrentIde.openFile(stylesheet, line)) {
+                    .getRuleLocationLine(selector);
+
+            // rule not found, create empty for given selector
+            if (line == -1) {
+                hasThemeModifier.getThemeModifier()
+                        .createEmptyStyleRule(selector);
+
+                // locate new empty rule
+                line = hasThemeModifier.getThemeModifier()
+                        .getRuleLocationLine(selector);
+                if (line == -1) {
+                    throw new ThemeEditorException(
+                            "Cannot create empty rule for " + selector);
+                }
+            }
+
+            // open in IDE
+            if (!OpenInCurrentIde.openFile(stylesheet, line)) {
                 throw new ThemeEditorException("Cannot open "
                         + stylesheet.getAbsolutePath() + ":" + line);
             }
