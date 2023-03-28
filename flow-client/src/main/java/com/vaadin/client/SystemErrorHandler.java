@@ -27,7 +27,6 @@ import com.vaadin.client.bootstrap.ErrorMessage;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.gwt.elemental.js.util.Xhr;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.client.Browser;
