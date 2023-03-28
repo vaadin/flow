@@ -75,8 +75,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
         Assert.assertEquals(
                 "Document style should be applied outside embedded component",
-                "rgba(0, 0, 255, 1)",
-                $("*").id("global").getCssValue("color"));
+                "rgba(0, 0, 255, 1)", $("*").id("global").getCssValue("color"));
         Assert.assertEquals(
                 "Theme style should not be applied outside embedded component",
                 "rgba(24, 39, 57, 0.94)",
