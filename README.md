@@ -22,4 +22,4 @@ Since [Vaadin platform 23.0](https://github.com/vaadin/platform), Flow major and
 | 23.2   | 23.2.x                                                          | 23.2.x                                                  |
 | 23.3   | 23.3 (LATEST with Java 11+ support)                             | 23.3                                                    |
 | 24.0   | 24.0.x (LATEST release, Java 17+, Jakarta EE 10, Spring-boot 3.0)  | 24.0                                                    |
-| master | 24.1 (Vaadin 24.1 preparations)                                 | 24.1                                                    |
+| main | 24.1 (Vaadin 24.1 preparations)                                 | 24.1                                                    |
