@@ -18,7 +18,6 @@ package com.vaadin.flow.router;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 
-
 /**
  * Default implementation for {@link RoutePathProvider}.
  *
