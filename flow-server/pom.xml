@@ -41,6 +41,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>license-checker</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- DefaultApplicationConfigurationFactory is declared as an OSGi
@@ -236,6 +237,9 @@
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
+                        <manifestEntries>
+                            <CvdlName>${cvdlName}</CvdlName>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>

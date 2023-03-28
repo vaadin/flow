@@ -29,6 +29,7 @@ import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 
 /**
@@ -46,12 +47,6 @@ import com.vaadin.pro.licensechecker.LicenseChecker;
  * @since 1.0
  */
 public class VaadinServlet extends HttpServlet {
-
-    static {
-        LicenseChecker.checkLicenseFromStaticBlock("flow",
-                Version.getFullVersion(), null);
-    }
-
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
 
@@ -115,6 +110,7 @@ public class VaadinServlet extends HttpServlet {
 
             try {
                 servletService = createServletService();
+                validateLicense(servletService.getDeploymentConfiguration());
             } catch (ServiceException e) {
                 throw new ServletException("Could not initialize VaadinServlet",
                         e);
@@ -546,6 +542,16 @@ public class VaadinServlet extends HttpServlet {
             initializer.initialize(vaadinServletContext);
         }
         return vaadinServletContext;
+    }
+
+    private void validateLicense(
+            DeploymentConfiguration deploymentConfiguration) {
+        // Check the license at runtime if in development mode
+        if (!deploymentConfiguration.isProductionMode()) {
+            // Using a null BuildType to allow trial licensing builds
+            LicenseChecker.checkLicense("flow", Version.getFullVersion(),
+                    (BuildType) null);
+        }
     }
 
 }
