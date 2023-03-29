@@ -20,7 +20,7 @@
  */
 import glob from 'glob';
 import { resolve, basename } from 'path';
-import { existsSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { checkModules } from './theme-copy.js';
 
 const { sync } = glob;
@@ -46,13 +46,15 @@ const headerImport = `import 'construct-style-sheets-polyfill';
  * @param {Object} options build options (e.g. prod or dev mode)
  * @returns {string} theme file content
  */
-function generateThemeFile(themeFolder, themeName, themeProperties, options) {
+function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   const productionMode = !options.devMode;
-  const useDevServer = !options.useDevBundle;
+  const useDevServerOrInProductionMode = !options.useDevBundle;
+  const outputFolder = options.frontendGeneratedFolder;
   const styles = resolve(themeFolder, stylesCssFilename);
   const documentCssFile = resolve(themeFolder, documentCssFilename);
   const autoInjectComponents = themeProperties.autoInjectComponents ?? true;
-  let themeFile = headerImport;
+  let themeFileContent = headerImport;
+  let globalImportContent = '// When this file is imported, global styles are automatically applied\n';
   var componentsFiles;
 
   if (autoInjectComponents) {
@@ -62,26 +64,33 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
     });
 
     if (componentsFiles.length > 0) {
-      themeFile += "import { unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin/register-styles';\n";
+      themeFileContent +=
+        "import { unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin/register-styles';\n";
     }
   }
 
   if (themeProperties.parent) {
-    themeFile += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';\n`;
+    themeFileContent += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';\n`;
   }
 
-  themeFile += `import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
+  themeFileContent += `import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
 
   const imports = [];
+  const globalFileContent = [];
   const globalCssCode = [];
-  const lumoCssShadowOnlyCode = [];
+  const shadowOnlyCss = [];
   const componentCssCode = [];
   const parentTheme = themeProperties.parent ? 'applyBaseTheme(target);\n' : '';
+  const parentThemeGlobalImport = themeProperties.parent
+    ? `import './theme-${themeProperties.parent}.global.generated.js';\n`
+    : '';
 
   const themeIdentifier = '_vaadintheme_' + themeName + '_';
   const lumoCssFlag = '_vaadinthemelumoimports_';
   const globalCssFlag = themeIdentifier + 'globalCss';
   const componentCssFlag = themeIdentifier + 'componentCss';
+  const globalFilename = 'theme-' + themeName + '.global.generated.js';
+  const themeFilename = 'theme-' + themeName + '.generated.js';
 
   if (!existsSync(styles)) {
     if (productionMode) {
@@ -111,22 +120,27 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
 
     lumoImports.forEach((lumoImport) => {
       // Lumo is injected to the document by Lumo itself
-      lumoCssShadowOnlyCode.push(`injectGlobalCss(${lumoImport}.cssText, '', target, true);\n`);
+      shadowOnlyCss.push(`injectGlobalCss(${lumoImport}.cssText, '', target, true);\n`);
     });
   }
 
   /* Theme */
-  if (useDevServer) {
+  if (useDevServerOrInProductionMode) {
+    globalFileContent.push(parentThemeGlobalImport);
+    globalFileContent.push(`import 'themes/${themeName}/${filename}';\n`);
+
     imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
-    globalCssCode.push(`injectGlobalCss(${variable}.toString(), '', target);\n    `);
+    shadowOnlyCss.push(`injectGlobalCss(${variable}.toString(), '', target);\n    `);
   }
   if (existsSync(documentCssFile)) {
     filename = basename(documentCssFile);
     variable = camelCase(filename);
 
-    if (useDevServer) {
+    if (useDevServerOrInProductionMode) {
+      globalFileContent.push(`import 'themes/${themeName}/${filename}';\n`);
+
       imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
-      globalCssCode.push(`injectGlobalCss(${variable}.toString(),'', document);\n    `);
+      shadowOnlyCss.push(`injectGlobalCss(${variable}.toString(),'', document);\n    `);
     }
   }
 
@@ -185,13 +199,13 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
     });
   }
 
-  themeFile += imports.join('');
+  themeFileContent += imports.join('');
 
   // Don't format as the generated file formatting will get wonky!
   // If targets check that we only register the style parts once, checks exist for global css and component css
   const themeFileApply = `export const applyTheme = (target) => {
     if (target !== document) {
-      ${lumoCssShadowOnlyCode.join('')}
+      ${shadowOnlyCss.join('')}
     }
     ${parentTheme}
     ${globalCssCode.join('')}
@@ -201,11 +215,23 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
       document['${componentCssFlag}'] = true;
     }
   }
+  
 `;
 
-  themeFile += themeFileApply;
+  themeFileContent += themeFileApply;
 
-  return themeFile;
+  globalImportContent += `
+${globalFileContent.join('')}
+`;
+
+  writeIfChanged(resolve(outputFolder, globalFilename), globalImportContent);
+  writeIfChanged(resolve(outputFolder, themeFilename), themeFileContent);
+}
+
+function writeIfChanged(file, data) {
+  if (!existsSync(file) || readFileSync(file, { encoding: 'utf-8' }) !== data) {
+    writeFileSync(file, data);
+  }
 }
 
 /**
@@ -223,4 +249,4 @@ function camelCase(str) {
     .replace(/\.|\-/g, '');
 }
 
-export { generateThemeFile };
+export { writeThemeFiles };
