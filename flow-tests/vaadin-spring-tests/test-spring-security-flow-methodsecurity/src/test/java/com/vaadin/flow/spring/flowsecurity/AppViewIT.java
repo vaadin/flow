@@ -5,7 +5,6 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.notification.testbench.NotificationElement;
-import com.vaadin.testbench.TestBenchElement;
 
 public class AppViewIT extends AbstractIT {
 
