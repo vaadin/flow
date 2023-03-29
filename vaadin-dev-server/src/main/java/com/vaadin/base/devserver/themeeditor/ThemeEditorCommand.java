@@ -22,4 +22,6 @@ public interface ThemeEditorCommand {
 
     String LOAD_PREVIEW = "themeEditorLoadPreview";
 
+    String OPEN_CSS = "themeEditorOpenCss";
+
 }

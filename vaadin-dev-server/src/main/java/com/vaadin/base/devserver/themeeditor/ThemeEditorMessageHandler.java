@@ -5,6 +5,7 @@ import com.vaadin.base.devserver.themeeditor.handlers.HistoryHandler;
 import com.vaadin.base.devserver.themeeditor.handlers.LoadPreviewHandler;
 import com.vaadin.base.devserver.themeeditor.handlers.LoadRulesHandler;
 import com.vaadin.base.devserver.themeeditor.handlers.LocalClassNameHandler;
+import com.vaadin.base.devserver.themeeditor.handlers.OpenCssHandler;
 import com.vaadin.base.devserver.themeeditor.handlers.RulesHandler;
 import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
 import com.vaadin.base.devserver.themeeditor.messages.ErrorResponse;
@@ -44,6 +45,7 @@ public class ThemeEditorMessageHandler
         this.handlers.add(new HistoryHandler());
         this.handlers.add(new LoadRulesHandler(this));
         this.handlers.add(new LoadPreviewHandler(this));
+        this.handlers.add((new OpenCssHandler(this)));
     }
 
     public boolean isEnabled() {
