@@ -29,6 +29,7 @@ describe('theme-editor', () => {
     loadRules: sinon.SinonStub;
     undo: sinon.SinonStub;
     redo: sinon.SinonStub;
+    openCss: sinon.SinonStub;
   };
   let historySpy: {
     push: sinon.SinonSpy;
@@ -61,7 +62,8 @@ describe('theme-editor', () => {
       loadPreview: sinon.stub((editor as any).api as ThemeEditorApi, 'loadPreview'),
       loadRules: sinon.stub((editor as any).api as ThemeEditorApi, 'loadRules'),
       undo: sinon.stub((editor as any).api as ThemeEditorApi, 'undo'),
-      redo: sinon.stub((editor as any).api as ThemeEditorApi, 'redo')
+      redo: sinon.stub((editor as any).api as ThemeEditorApi, 'redo'),
+      openCss: sinon.stub((editor as any).api as ThemeEditorApi, 'openCss')
     };
     apiMock.loadComponentMetadata.returns(Promise.resolve({ accessible: true, className: 'test-class' }));
     apiMock.setLocalClassName.returns(Promise.resolve({}));
@@ -70,6 +72,7 @@ describe('theme-editor', () => {
     apiMock.loadRules.returns(Promise.resolve({ rules: [], accessible: true }));
     apiMock.undo.returns(Promise.resolve({}));
     apiMock.redo.returns(Promise.resolve({}));
+    apiMock.openCss.returns(Promise.resolve({}));
 
     historySpy = {
       push: sinon.spy((editor as any).history as ThemeEditorHistory, 'push')
@@ -108,6 +111,15 @@ describe('theme-editor', () => {
     input.value = value;
     input.dispatchEvent(new Event('change'));
     await elementUpdated(editor);
+  }
+
+  async function openCss(elementName: string) {
+    const openCssButton = editor
+      .shadowRoot!.querySelector('.property-list')
+      ?.shadowRoot!.querySelector(`.section[data-testid="${elementName}"] button.open-css`) as HTMLElement;
+    openCssButton.click();
+    // Wait for async state updates to resolve
+    await aTimeout(0);
   }
 
   function getPropertyValue(elementName: string, propertyName: string) {
@@ -865,6 +877,75 @@ describe('theme-editor', () => {
       await editLocalClassName('custom-class');
 
       expect(beforeSaveSpy.calledOnce).to.be.true;
+    });
+  });
+
+  describe('open CSS', () => {
+    describe('local scope', () => {
+      it('should open CSS', async () => {
+        await pickComponent();
+        await openCss('Label');
+
+        expect(apiMock.openCss.calledOnce).to.be.true;
+        expect(apiMock.openCss.args).to.deep.equal([['test-element.test-class::part(label)']]);
+      });
+
+      it('should apply local class name before attempting to open CSS', async () => {
+        // Simulate selected component not having a class name yet
+        apiMock.loadComponentMetadata.returns(
+          Promise.resolve({
+            accessible: true,
+            suggestedClassName: 'suggested-class'
+          })
+        );
+        await pickComponent();
+        await openCss('Label');
+
+        expect(apiMock.setLocalClassName.calledOnce).to.be.true;
+        expect(apiMock.setLocalClassName.args[0]).to.deep.equal([testComponentRef, 'suggested-class']);
+        expect(apiMock.openCss.calledOnce).to.be.true;
+        expect(apiMock.openCss.args).to.deep.equal([['test-element.suggested-class::part(label)']]);
+      });
+
+      it('should fail if local class name can not be applied', async () => {
+        // Simulate selected component not having a class name and no suggestion
+        apiMock.loadComponentMetadata.returns(
+          Promise.resolve({
+            accessible: true
+          })
+        );
+        await pickComponent();
+
+        expect(async () => openCss('Label')).to.throw;
+      });
+    });
+
+    describe('global scope', () => {
+      it('should open CSS', async () => {
+        await pickComponent();
+        await changeThemeScope(ThemeScope.global);
+        await openCss('Label');
+
+        expect(apiMock.openCss.calledOnce).to.be.true;
+        expect(apiMock.openCss.args).to.deep.equal([['test-element::part(label)']]);
+      });
+
+      it('should not apply local class name before attempting to open CSS', async () => {
+        // Simulate selected component not having a class name yet
+        apiMock.loadComponentMetadata.returns(
+          Promise.resolve({
+            accessible: true,
+            suggestedClassName: 'suggested-class'
+          })
+        );
+        await pickComponent();
+        await changeThemeScope(ThemeScope.global);
+        await openCss('Label');
+
+        expect(apiMock.setLocalClassName.called).to.be.false;
+        expect(apiMock.openCss.calledOnce).to.be.true;
+        expect(apiMock.openCss.args).to.deep.equal([['test-element::part(label)']]);
+      });
     });
   });
 });
