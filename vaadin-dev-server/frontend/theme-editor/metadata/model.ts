@@ -17,6 +17,7 @@ export interface CssPropertyMetadata {
 
 export interface ComponentElementMetadata {
   selector: string;
+  stateAttribute?: string;
   displayName: string;
   description?: string;
   properties: CssPropertyMetadata[];
