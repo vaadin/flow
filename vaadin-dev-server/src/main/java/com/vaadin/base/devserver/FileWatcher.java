@@ -18,23 +18,18 @@ package com.vaadin.base.devserver;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
 import java.util.Objects;
 
 import com.vaadin.flow.function.SerializableConsumer;
+
+import io.methvin.watcher.DirectoryWatcher;
 
 /**
  * Watches for the file or sub-directory changes in the given directory.
  */
 public class FileWatcher implements Serializable {
 
-    private Thread watchThread;
+    private DirectoryWatcher watcher;
 
     /**
      * Creates an instance of the file watcher for the given directory.
@@ -56,26 +51,10 @@ public class FileWatcher implements Serializable {
                 "Watch directory cannot be null");
         Objects.requireNonNull(onChangeConsumer,
                 "Change listener cannot be null");
-        FileSystem fileSystem = FileSystems.getDefault();
-        WatchService watchService = fileSystem.newWatchService();
-        watchDirectory.toPath().register(watchService,
-                StandardWatchEventKinds.ENTRY_CREATE,
-                StandardWatchEventKinds.ENTRY_MODIFY,
-                StandardWatchEventKinds.ENTRY_DELETE);
-        watchThread = new Thread(() -> {
-            WatchKey key;
-            try {
-                while ((key = watchService.take()) != null) {
-                    for (WatchEvent<?> event : key.pollEvents()) {
-                        Path path = (Path) event.context();
-                        onChangeConsumer.accept(path.toFile());
-                    }
-                    key.reset();
-                }
-            } catch (InterruptedException e) {
-
-            }
-        });
+        watcher = DirectoryWatcher.builder().path(watchDirectory.toPath())
+                .listener(e -> {
+                    onChangeConsumer.accept(e.path().toFile());
+                }).build();
     }
 
     /**
@@ -85,7 +64,7 @@ public class FileWatcher implements Serializable {
      *             if an error occurs during startup
      */
     public void start() throws Exception {
-        watchThread.start();
+        watcher.watchAsync();
     }
 
     /**
@@ -95,7 +74,7 @@ public class FileWatcher implements Serializable {
      *             if an error occurs during stop
      */
     public void stop() throws Exception {
-        watchThread.interrupt();
+        watcher.close();
     }
 
 }

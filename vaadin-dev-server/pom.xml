@@ -40,6 +40,11 @@
             <artifactId>javaparser-core</artifactId>
             <version>3.24.10</version>
         </dependency>
+        <dependency>
+            <groupId>io.methvin</groupId>
+            <artifactId>directory-watcher</artifactId>
+            <version>0.18.0</version>
+        </dependency>
 
         <!-- API dependencies -->
 
