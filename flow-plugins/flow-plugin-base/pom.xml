@@ -19,10 +19,6 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>license-checker</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
             <artifactId>fusion-endpoint</artifactId>
             <version>${project.version}</version>
         </dependency>

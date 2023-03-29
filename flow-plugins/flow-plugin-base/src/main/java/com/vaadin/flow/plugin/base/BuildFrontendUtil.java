@@ -403,6 +403,8 @@ public class BuildFrontendUtil {
             Map<String, String> environment, String... params)
             throws TimeoutException, URISyntaxException {
 
+        validateLicense();
+
         File buildExecutable = new File(adapter.npmFolder(),
                 NODE_MODULES + executable);
         if (!buildExecutable.isFile()) {
@@ -447,8 +449,6 @@ public class BuildFrontendUtil {
             throw new IllegalStateException(
                     "Failed to run webpack due to an error", e);
         }
-
-        validateLicense();
     }
 
     /**

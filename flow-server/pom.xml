@@ -41,7 +41,6 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>license-checker</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <!-- DefaultApplicationConfigurationFactory is declared as an OSGi
