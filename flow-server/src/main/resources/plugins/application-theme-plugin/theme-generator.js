@@ -53,8 +53,13 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   const styles = resolve(themeFolder, stylesCssFilename);
   const documentCssFile = resolve(themeFolder, documentCssFilename);
   const autoInjectComponents = themeProperties.autoInjectComponents ?? true;
+  const globalFilename = 'theme-' + themeName + '.global.generated.js';
+  const componentsFilename = 'theme-' + themeName + '.components.generated.js';
+  const themeFilename = 'theme-' + themeName + '.generated.js';
+
   let themeFileContent = headerImport;
   let globalImportContent = '// When this file is imported, global styles are automatically applied\n';
+  let componentsFileContent = '';
   var componentsFiles;
 
   if (autoInjectComponents) {
@@ -64,19 +69,21 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     });
 
     if (componentsFiles.length > 0) {
-      themeFileContent +=
+      componentsFileContent +=
         "import { unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin/register-styles';\n";
     }
   }
 
   if (themeProperties.parent) {
-    themeFileContent += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';\n`;
+    themeFileContent += `import { applyTheme as applyBaseTheme } from './theme-${themeProperties.parent}.generated.js';\n`;
   }
 
   themeFileContent += `import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
+  themeFileContent += `import './${componentsFilename}';\n`;
 
   themeFileContent += `let needsReloadOnChanges = false;\n`;
   const imports = [];
+  const componentCssImports = [];
   const globalFileContent = [];
   const globalCssCode = [];
   const shadowOnlyCss = [];
@@ -90,8 +97,6 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   const lumoCssFlag = '_vaadinthemelumoimports_';
   const globalCssFlag = themeIdentifier + 'globalCss';
   const componentCssFlag = themeIdentifier + 'componentCss';
-  const globalFilename = 'theme-' + themeName + '.global.generated.js';
-  const themeFilename = 'theme-' + themeName + '.generated.js';
 
   if (!existsSync(styles)) {
     if (productionMode) {
@@ -189,7 +194,9 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
       const filename = basename(componentCss);
       const tag = filename.replace('.css', '');
       const variable = camelCase(filename);
-      imports.push(`import ${variable} from 'themes/${themeName}/${themeComponentsFolder}/${filename}?inline';\n`);
+      componentCssImports.push(
+        `import ${variable} from 'themes/${themeName}/${themeComponentsFolder}/${filename}?inline';\n`
+      );
       // Don't format as the generated file formatting will get wonky!
       const componentString = `registerStyles(
         '${tag}',
@@ -211,13 +218,23 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     }
     ${parentTheme}
     ${globalCssCode.join('')}
-    
-    if (!document['${componentCssFlag}']) {
-      ${componentCssCode.join('')}
-      document['${componentCssFlag}'] = true;
-    }
   }
   
+`;
+  componentsFileContent += `
+${componentCssImports.join('')}
+
+if (!document['${componentCssFlag}']) {
+  ${componentCssCode.join('')}
+  document['${componentCssFlag}'] = true;
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept((module) => {
+    window.location.reload();
+  });
+}
+
 `;
 
   themeFileContent += themeFileApply;
@@ -227,7 +244,7 @@ if (import.meta.hot) {
     if (needsReloadOnChanges) {
       window.location.reload();
     }
-  })
+  });
 }
 
 `;
@@ -238,6 +255,7 @@ ${globalFileContent.join('')}
 
   writeIfChanged(resolve(outputFolder, globalFilename), globalImportContent);
   writeIfChanged(resolve(outputFolder, themeFilename), themeFileContent);
+  writeIfChanged(resolve(outputFolder, componentsFilename), componentsFileContent);
 }
 
 function writeIfChanged(file, data) {
