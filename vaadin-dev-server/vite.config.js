@@ -15,9 +15,10 @@ export default defineConfig({
         // Ensure consistent file name for dev tools bundle
         entryFileNames: 'vaadin-dev-tools.js'
       },
-      // Do not resolve imports for Lit and Vaadin components, these modules
+      // Do not resolve the following imports, these modules
       // will be provided by the application that hosts the dev tools.
       external: [
+        /^construct-style-sheets-polyfill.*/,
         /^lit.*/,
         /^@vaadin.*/,
       ]

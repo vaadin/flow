@@ -7,11 +7,15 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithBlockStmt;
+import com.github.javaparser.ast.nodeTypes.NodeWithExpression;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.github.javaparser.utils.SourceRoot;
 import com.vaadin.base.devserver.editor.Editor;
+import com.vaadin.base.devserver.editor.Where;
+import com.vaadin.base.devserver.themeeditor.utils.LineNumberVisitor;
 import com.vaadin.base.devserver.themeeditor.utils.LocalClassNameVisitor;
 import com.vaadin.base.devserver.themeeditor.utils.LocalClassNamesVisitor;
 import com.vaadin.base.devserver.themeeditor.utils.ThemeEditorException;
@@ -42,6 +46,7 @@ public class JavaSourceModifier extends Editor {
         boolean accessible;
         String className;
         String suggestedClassName;
+        String tagName;
     }
 
     public JavaSourceModifier(VaadinContext context) {
@@ -70,21 +75,23 @@ public class JavaSourceModifier extends Editor {
                         component);
                 File sourceFile = getSourceFile(createLocation);
                 int sourceOffset = modifyClass(sourceFile, cu -> {
-                    Statement ref = findStatement(cu,
-                            createLocation.lineNumber());
                     SimpleName scope = findLocalVariableOrField(cu,
                             createLocation.lineNumber());
-                    if (scope == null) {
-                        throw new ThemeEditorException(
-                                "Variable not accessible.");
-                    }
-
-                    Node newNode = createAddClassNameStatement(scope.asString(),
-                            className);
+                    Node newNode = createAddClassNameStatement(className,
+                            scope);
                     Modification mod;
                     ExpressionStmt stmt = findLocalClassNameStmt(cu, component);
                     if (stmt == null) {
-                        mod = Modification.insertLineAfter(ref, newNode);
+                        Node node = findNode(cu, component);
+                        Where where = findModificationWhere(cu, component);
+                        mod = switch (where) {
+                        case AFTER ->
+                            Modification.insertLineAfter(node, newNode);
+                        case INSIDE ->
+                            Modification.insertAtEndOfBlock(node, newNode);
+                        case BEFORE ->
+                            Modification.insertLineBefore(node, newNode);
+                        };
                     } else {
                         mod = Modification.replace(stmt, newNode);
                     }
@@ -100,6 +107,30 @@ public class JavaSourceModifier extends Editor {
                 throw new ThemeEditorException(ex);
             }
         });
+    }
+
+    /**
+     * Gets tag name of given component.
+     *
+     * @param uiId
+     *            uiId of target component's UI
+     * @param nodeId
+     *            nodeIf of target component
+     * @return
+     */
+    public String getTag(Integer uiId, Integer nodeId) {
+        assert uiId != null && nodeId != null;
+        try {
+            FinalsHolder holder = new FinalsHolder();
+            VaadinSession session = getSession();
+            getSession().access(() -> {
+                Component component = getComponent(session, uiId, nodeId);
+                holder.tagName = component.getElement().getTag();
+            }).get(5, TimeUnit.SECONDS);
+            return holder.tagName;
+        } catch (Exception e) {
+            throw new ThemeEditorException("Cannot get tag of component.", e);
+        }
     }
 
     /**
@@ -189,18 +220,13 @@ public class JavaSourceModifier extends Editor {
             VaadinSession session = getSession();
             getSession().access(() -> {
                 Component component = getComponent(session, uiId, nodeId);
-                ComponentTracker.Location createLocation = getCreateLocation(
-                        component);
                 CompilationUnit cu = getCompilationUnit(component);
-
-                Statement stmt = findStatement(cu, createLocation.lineNumber());
-                if (stmt != null && stmt instanceof ExpressionStmt exp) {
-                    holder.accessible = exp.getExpression().isAssignExpr()
-                            || exp.getExpression().isVariableDeclarationExpr();
-                } else {
+                try {
+                    findModificationWhere(cu, component);
+                    holder.accessible = true;
+                } catch (ThemeEditorException ex) {
                     holder.accessible = false;
                 }
-
             }).get(5, TimeUnit.SECONDS);
             return holder.accessible;
         } catch (Exception e) {
@@ -272,10 +298,12 @@ public class JavaSourceModifier extends Editor {
                 Arrays.copyOf(splitted, splitted.length - 1)).toFile();
     }
 
-    protected Statement createAddClassNameStatement(String scope,
-            String className) {
+    protected Statement createAddClassNameStatement(String className,
+            SimpleName scope) {
         MethodCallExpr methodCallExpr = new MethodCallExpr("addClassName");
-        methodCallExpr.setScope(new NameExpr(scope));
+        if (scope != null) {
+            methodCallExpr.setScope(new NameExpr(scope));
+        }
         methodCallExpr.getArguments().add(new StringLiteralExpr(className));
         Statement statement = new ExpressionStmt(methodCallExpr);
         statement.setComment(LOCAL_CLASSNAME_COMMENT);
@@ -311,7 +339,32 @@ public class JavaSourceModifier extends Editor {
         ComponentTracker.Location createLocation = getCreateLocation(component);
         SimpleName scope = findLocalVariableOrField(cu,
                 createLocation.lineNumber());
-        return cu.accept(new LocalClassNameVisitor(), scope.getIdentifier());
+        return cu.accept(new LocalClassNameVisitor(),
+                scope != null ? scope.getIdentifier() : null);
+    }
+
+    protected Where findModificationWhere(CompilationUnit cu,
+            Component component) {
+        Node node = findNode(cu, component);
+        if (node instanceof NodeWithBlockStmt<?>) {
+            return Where.INSIDE;
+        }
+        if (node instanceof NodeWithExpression<?> expr
+                && (expr.getExpression().isAssignExpr()
+                        || expr.getExpression().isVariableDeclarationExpr())) {
+            return Where.AFTER;
+        }
+        throw new ThemeEditorException("Cannot apply classname for " + node);
+    }
+
+    protected Node findNode(CompilationUnit cu, Component component) {
+        ComponentTracker.Location createLocation = getCreateLocation(component);
+        Node node = cu.accept(new LineNumberVisitor(),
+                createLocation.lineNumber());
+        if (node == null) {
+            throw new ThemeEditorException("Cannot find component.");
+        }
+        return node;
     }
 
 }

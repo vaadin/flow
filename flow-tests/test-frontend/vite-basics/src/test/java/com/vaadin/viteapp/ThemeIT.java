@@ -1,12 +1,9 @@
 package com.vaadin.viteapp;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 public class ThemeIT extends ViteDevModeIT {
 
@@ -21,11 +18,9 @@ public class ThemeIT extends ViteDevModeIT {
                 "return Array.from(document.querySelectorAll('style')).map(style => style.textContent).filter(text => text.includes(arguments[0]))",
                 styleFromTheme);
 
-        Assert.assertEquals(
-                "Theme rule should have been added once using adoptedStyleSheets",
-                1, adoptedStyleSheetsWithString.size());
-        Assert.assertEquals("Theme rule should not have been added to <head>",
-                0, styleTagsWithString.size());
+        Assert.assertEquals("Theme rule should have been added once in total",
+                1, adoptedStyleSheetsWithString.size()
+                        + styleTagsWithString.size());
     }
 
     @Test
@@ -50,20 +45,9 @@ public class ThemeIT extends ViteDevModeIT {
     }
 
     @Test
-    public void documentCssImport_externalAddedToHeadAsLink() {
+    public void documentCssImport_externalUrlLoaded() {
         checkLogsForErrors();
-
-        final WebElement documentHead = getDriver()
-                .findElement(By.tagName("head"));
-        final List<WebElement> links = documentHead
-                .findElements(By.tagName("link"));
-
-        List<String> linkUrls = links.stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
-
-        Assert.assertTrue("Missing link for external url", linkUrls
-                .contains("https://fonts.googleapis.com/css?family=Itim"));
+        waitForFont("10px Itim");
     }
 
 }

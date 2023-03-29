@@ -8,7 +8,7 @@
         <artifactId>flow-tests</artifactId>
         <version>24.1-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-themes</artifactId>
+    <artifactId>flow-test-themes-hotdeploy</artifactId>
     <name>Flow themes tests, dev hotdeploy</name>
     <packaging>war</packaging>
     <properties>
@@ -39,6 +39,7 @@
         </dependency>
     </dependencies>
     <build>
+        <defaultGoal>jetty:run</defaultGoal>
         <plugins>
             <plugin>
                 <groupId>com.vaadin</groupId>
@@ -58,12 +59,4 @@
         </plugins>
     </build>
 
-    <profiles>
-        <profile>
-            <id>dev-bundle</id>
-            <properties>
-                <vaadin.frontend.hotdeploy>false</vaadin.frontend.hotdeploy>
-            </properties>
-        </profile>
-    </profiles>
 </project>

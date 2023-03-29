@@ -25,6 +25,7 @@ import java.io.UncheckedIOException;
 import java.util.Optional;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -50,6 +51,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -108,6 +110,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureHiddenElementStyles(indexDocument);
 
+        addStyleTagReferences(indexDocument);
+
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         VaadinContext context = session.getService().getContext();
@@ -142,6 +146,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     "window.Vaadin = window.Vaadin || {}; window.Vaadin.developmentMode = true;");
         }
 
+        addLinkTagForTheme(indexDocument, context);
         applyThemeVariant(indexDocument, context);
 
         if (config.isDevToolsEnabled()) {
@@ -161,11 +166,34 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return true;
     }
 
+    private static void addLinkTagForTheme(Document document,
+            VaadinContext context) {
+        ApplicationConfiguration config = ApplicationConfiguration.get(context);
+        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE) {
+            try {
+                BootstrapHandler.getStylesheetTags(config, "styles.css")
+                        .forEach(link -> document.head().appendChild(link));
+            } catch (IOException e) {
+                throw new UncheckedIOException(
+                        "Failed to add a link tag for 'styles.css' to the document",
+                        e);
+            }
+        }
+    }
+
     private void applyThemeVariant(Document indexDocument,
             VaadinContext context) throws IOException {
         FrontendUtils.getThemeAnnotation(context)
                 .ifPresent(theme -> indexDocument.head().parent().attr("theme",
                         theme.variant()));
+    }
+
+    private void addStyleTagReferences(Document indexDocument) {
+        Comment cssImportComment = new Comment("CSSImport end");
+        indexDocument.head().appendChild(cssImportComment);
+
+        Comment stylesheetComment = new Comment("Stylesheet end");
+        indexDocument.head().appendChild(stylesheetComment);
     }
 
     private void redirectToOldBrowserPageWhenNeeded(Document indexDocument) {

@@ -2,6 +2,7 @@ import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult }
 import { property, state } from 'lit/decorators.js';
 import { ComponentElementMetadata, CssPropertyMetadata } from '../../metadata/model';
 import { ComponentTheme, ThemePropertyValue } from '../../model';
+import { editorRowStyles } from '../../styles';
 
 export class ThemePropertyValueChangeEvent extends CustomEvent<{
   element: ComponentElementMetadata;
@@ -19,45 +20,23 @@ export class ThemePropertyValueChangeEvent extends CustomEvent<{
 
 export abstract class BasePropertyEditor extends LitElement {
   static get styles(): CSSResultGroup {
-    return css`
-      :host {
-        display: block;
-      }
+    return [
+      editorRowStyles,
+      css`
+        :host {
+          display: block;
+        }
 
-      .property {
-        display: flex;
-        align-items: baseline;
-        padding: var(--theme-editor-section-horizontal-padding);
-      }
-
-      .property .property-name {
-        flex: 0 0 auto;
-        width: 100px;
-      }
-
-      .property .property-name .modified {
-        display: inline-block;
-        width: 6px;
-        height: 6px;
-        background: orange;
-        border-radius: 3px;
-        margin-left: 3px;
-      }
-
-      .property .property-editor {
-        flex: 1 1 0;
-      }
-
-      .input {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 0.25rem 0.375rem;
-        color: inherit;
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 0.25rem;
-        border: none;
-      }
-    `;
+        .editor-row .label .modified {
+          display: inline-block;
+          width: 6px;
+          height: 6px;
+          background: orange;
+          border-radius: 3px;
+          margin-left: 3px;
+        }
+      `
+    ];
   }
 
   @property({})
@@ -82,12 +61,12 @@ export abstract class BasePropertyEditor extends LitElement {
 
   render() {
     return html`
-      <div class="property">
-        <div class="property-name">
+      <div class="editor-row">
+        <div class="label">
           ${this.propertyMetadata.displayName}
           ${this.propertyValue?.modified ? html`<span class="modified"></span>` : null}
         </div>
-        <div class="property-editor">${this.renderEditor()}</div>
+        <div class="editor">${this.renderEditor()}</div>
       </div>
     `;
   }

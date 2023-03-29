@@ -157,8 +157,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         // Contains CSS import lines
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css?inline';"));
-        MatcherAssert.assertThat(mainContent, CoreMatchers
-                .containsString("addCssBlock(`<style>${$css_0}</style>`);"));
+        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
+                "injectGlobalCss($cssFromFile_0.toString(), 'CSSImport end', document);"));
 
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "import $cssFromFile_5 from 'Frontend/foo.css?inline';"));

@@ -8,7 +8,7 @@ export class CheckboxPropertyEditor extends BasePropertyEditor {
     return [
       BasePropertyEditor.styles,
       css`
-        .property {
+        .editor-row {
           align-items: center;
         }
       `

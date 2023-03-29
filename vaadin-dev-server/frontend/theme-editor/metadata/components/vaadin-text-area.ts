@@ -1,5 +1,6 @@
 import { ComponentMetadata } from '../model';
 import {
+  clearButtonProperties,
   errorMessageProperties,
   helperTextProperties,
   inputFieldProperties,
@@ -11,14 +12,14 @@ export default {
   displayName: 'TextArea',
   elements: [
     {
-      selector: 'vaadin-text-area::part(label)',
-      displayName: 'Label',
-      properties: labelProperties
-    },
-    {
       selector: 'vaadin-text-area::part(input-field)',
       displayName: 'Input field',
       properties: inputFieldProperties
+    },
+    {
+      selector: 'vaadin-text-area::part(label)',
+      displayName: 'Label',
+      properties: labelProperties
     },
     {
       selector: 'vaadin-text-area::part(helper-text)',
@@ -29,6 +30,11 @@ export default {
       selector: 'vaadin-text-area::part(error-message)',
       displayName: 'Error message',
       properties: errorMessageProperties
+    },
+    {
+      selector: 'vaadin-text-area::part(clear-button)',
+      displayName: 'Clear button',
+      properties: clearButtonProperties
     }
   ]
 } as ComponentMetadata;
