@@ -23,6 +23,10 @@
             <artifactId>flow-server</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>license-checker</artifactId>
+        </dependency>
 
 
         <!-- API dependencies -->
