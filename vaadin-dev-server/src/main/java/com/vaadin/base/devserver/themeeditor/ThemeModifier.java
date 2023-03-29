@@ -29,6 +29,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ThemeModifier {
@@ -138,6 +140,36 @@ public class ThemeModifier {
         writeStylesheet(styleSheet);
     }
 
+    /**
+     * Gets location line of rule with given selector
+     *
+     * @param selector
+     * @return line number when located, -1 otherwise
+     */
+    public int getRuleLocationLine(String selector) {
+        CascadingStyleSheet styleSheet = getCascadingStyleSheet();
+        CSSStyleRule rule = findRuleBySelector(styleSheet, selector);
+        if (rule == null) {
+            return -1;
+        }
+        return rule.getSourceLocation().getFirstTokenBeginLineNumber();
+    }
+
+    /**
+     * Creates empty rule with given selector
+     *
+     * @param selector
+     */
+    public void createEmptyStyleRule(String selector) {
+        CascadingStyleSheet styleSheet = getCascadingStyleSheet();
+        CSSSelector cssSelector = new CSSSelector()
+                .addMember(new CSSSelectorSimpleMember(selector));
+        CSSStyleRule cssStyleRule = new CSSStyleRule().addSelector(cssSelector);
+        styleSheet.addRule(cssStyleRule);
+        sortStylesheet(styleSheet);
+        writeStylesheet(styleSheet);
+    }
+
     protected String getCssFileName() {
         return THEME_EDITOR_CSS;
     }
@@ -164,7 +196,7 @@ public class ThemeModifier {
                 FrontendUtils.PROJECT_BASEDIR, null), "frontend");
     }
 
-    protected File getStyleSheetFile() {
+    public File getStyleSheetFile() {
         File themes = new File(getFrontendFolder(), "themes");
         String themeName = getThemeName(themes);
         File theme = new File(themes, themeName);
@@ -291,6 +323,15 @@ public class ThemeModifier {
             CSSStyleRule rule) {
         return styleSheet.getAllStyleRules().stream().filter(
                 r -> r.getAllSelectors().containsAll(rule.getAllSelectors()))
+                .findFirst().orElse(null);
+    }
+
+    protected CSSStyleRule findRuleBySelector(CascadingStyleSheet styleSheet,
+            String selector) {
+        Predicate<CSSSelector> selectorPredicate = s -> Objects.equals(selector,
+                s.getAsCSSString());
+        return styleSheet.getAllStyleRules().stream()
+                .filter(r -> r.getAllSelectors().containsAny(selectorPredicate))
                 .findFirst().orElse(null);
     }
 
