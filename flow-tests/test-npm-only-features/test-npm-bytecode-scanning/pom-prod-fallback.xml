@@ -31,6 +31,7 @@
         <maven.deploy.skip>true</maven.deploy.skip>
         <vaadin.productionMode>true</vaadin.productionMode>
         <exclude.it.tests>FullCPScanningIT,ByteCodeScanningIT</exclude.it.tests>
+        <surefire.reportNameSuffix>prodfallback</surefire.reportNameSuffix>
     </properties>
 
     <dependencies>

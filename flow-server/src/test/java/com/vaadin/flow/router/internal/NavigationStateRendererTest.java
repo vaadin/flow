@@ -74,6 +74,7 @@ import com.vaadin.tests.util.MockUI;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 
 @NotThreadSafe
 public class NavigationStateRendererTest {
@@ -579,6 +580,7 @@ public class NavigationStateRendererTest {
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
         session.setConfiguration(new MockDeploymentConfiguration());
+        session.setAttribute(SERVER_ROUTING, true);
 
         // given a NavigationStateRenderer mapping to RegularView
         new NavigationStateBuilder(router).withTarget(RegularView.class)
@@ -631,6 +633,7 @@ public class NavigationStateRendererTest {
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
         session.setConfiguration(new MockDeploymentConfiguration());
+        session.setAttribute(SERVER_ROUTING, true);
 
         // given a NavigationStateRenderer mapping to RegularView
         new NavigationStateBuilder(router).withTarget(RegularView.class)
