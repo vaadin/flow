@@ -12,6 +12,10 @@ describe('vaadin-dev-tools', function () {
     // @ts-ignore
     window.Vaadin = {};
     // @ts-ignore
+    window.Vaadin.Flow = {};
+    // @ts-ignore
+    window.Vaadin.Flow.clients = {};
+    // @ts-ignore
     window.Vaadin.ConsoleErrors = [];
     // @ts-ignore
     window.Vaadin.devTools = {};

@@ -102,7 +102,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>3.3.0</version>
                 <configuration>
                     <archive>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
@@ -295,6 +295,7 @@
                 <module>test-servlet</module>
                 <module>test-themes</module>
                 <module>test-themes/pom-production.xml</module>
+                <module>test-themes/pom-devbundle.xml</module>
                 <module>servlet-containers</module>
 
                 <!-- web component embedding -->

@@ -19,11 +19,15 @@ import { Connection } from '../connection';
 import { ThemeEditorApi } from './api';
 import { ThemeEditorHistory, ThemeEditorHistoryActions } from './history';
 import { ScopeChangeEvent } from './components/scope-selector';
+import './components/class-name-editor';
 import './components/scope-selector';
 import './components/property-list';
 import '../component-picker.js';
 import { ComponentReference } from '../component-util';
 import { injectGlobalCss } from './styles';
+import { ComponentMetadata } from './metadata/model';
+import { ClassNameChangeEvent } from './components/class-name-editor';
+import { OpenCssEvent } from './components/property-list';
 
 injectGlobalCss(css`
   .vaadin-theme-editor-highlight {
@@ -86,12 +90,15 @@ export class ThemeEditor extends LitElement {
 
       .header {
         flex: 0 0 auto;
-        gap: 20px;
+        border-bottom: solid 1px rgba(0, 0, 0, 0.2);
+      }
+
+      .header .picker-row {
+        padding: var(--theme-editor-section-horizontal-padding);
         display: flex;
+        gap: 20px;
         align-items: center;
         justify-content: space-between;
-        border-bottom: solid 1px rgba(0, 0, 0, 0.2);
-        padding: var(--theme-editor-section-horizontal-padding);
       }
 
       .picker {
@@ -214,32 +221,35 @@ export class ThemeEditor extends LitElement {
 
     return html`
       <div class="header">
-        ${this.renderPicker()}
-        <div class="actions">
-          ${this.context
-            ? html` <vaadin-dev-tools-theme-scope-selector
-                .value=${this.context.scope}
-                .metadata=${this.context.metadata}
-                @scope-change=${this.handleScopeChange}
-              ></vaadin-dev-tools-theme-scope-selector>`
-            : null}
-          <button
-            class="icon-button"
-            data-testid="undo"
-            ?disabled=${!this.historyActions?.allowUndo}
-            @click=${this.handleUndo}
-          >
-            ${icons.undo}
-          </button>
-          <button
-            class="icon-button"
-            data-testid="redo"
-            ?disabled=${!this.historyActions?.allowRedo}
-            @click=${this.handleRedo}
-          >
-            ${icons.redo}
-          </button>
+        <div class="picker-row">
+          ${this.renderPicker()}
+          <div class="actions">
+            ${this.context
+              ? html` <vaadin-dev-tools-theme-scope-selector
+                  .value=${this.context.scope}
+                  .metadata=${this.context.metadata}
+                  @scope-change=${this.handleScopeChange}
+                ></vaadin-dev-tools-theme-scope-selector>`
+              : null}
+            <button
+              class="icon-button"
+              data-testid="undo"
+              ?disabled=${!this.historyActions?.allowUndo}
+              @click=${this.handleUndo}
+            >
+              ${icons.undo}
+            </button>
+            <button
+              class="icon-button"
+              data-testid="redo"
+              ?disabled=${!this.historyActions?.allowRedo}
+              @click=${this.handleRedo}
+            >
+              ${icons.redo}
+            </button>
+          </div>
         </div>
+        ${this.renderLocalClassNameEditor()}
       </div>
       ${this.renderPropertyList()}
     `;
@@ -284,6 +294,7 @@ export class ThemeEditor extends LitElement {
       .metadata=${this.context.metadata}
       .theme=${this.effectiveTheme}
       @theme-property-value-change=${this.handlePropertyChange}
+      @open-css=${this.handleOpenCss}
     ></vaadin-dev-tools-theme-property-list>`;
   }
 
@@ -294,6 +305,24 @@ export class ThemeEditor extends LitElement {
     const component = this.context.component;
     const serializableComponentRef: ComponentReference = { nodeId: component.nodeId, uiId: component.uiId };
     this.connection.sendShowComponentCreateLocation(serializableComponentRef);
+  }
+
+  async handleOpenCss(event: OpenCssEvent) {
+    if (!this.context) {
+      return;
+    }
+
+    // If we are theming locally, and the component does not have a local class
+    // name yet, then apply suggested class name from server first
+    await this.ensureLocalClassName();
+
+    const selectorScope: SelectorScope = {
+      themeScope: this.context.scope,
+      localClassName: this.context.localClassName
+    };
+    const scopedSelector = createScopedSelector(event.detail.element, selectorScope);
+    this.preventLiveReload();
+    await this.api.openCss(scopedSelector);
   }
 
   renderPicker() {
@@ -322,6 +351,51 @@ export class ThemeEditor extends LitElement {
     `;
   }
 
+  renderLocalClassNameEditor() {
+    const allowEditing = this.context?.scope === ThemeScope.local && this.context.accessible;
+    if (!this.context || !allowEditing) {
+      return null;
+    }
+
+    const instanceClassName = this.context.localClassName || this.context.suggestedClassName;
+
+    return html` <vaadin-dev-tools-theme-class-name-editor
+      .className=${instanceClassName}
+      @class-name-change=${this.handleClassNameChange}
+    >
+    </vaadin-dev-tools-theme-class-name-editor>`;
+  }
+
+  private async handleClassNameChange(e: ClassNameChangeEvent) {
+    if (!this.context) {
+      return;
+    }
+
+    const previousClassName = this.context.localClassName;
+    const newClassName = e.detail.value;
+    if (previousClassName) {
+      // Update local class name if there is an existing one
+      this.preventLiveReload();
+      const element = this.context.component.element;
+      this.context.localClassName = newClassName;
+      const classNameResponse = await this.api.setLocalClassName(this.context.component, newClassName);
+      this.historyActions = this.history.push(
+        classNameResponse.requestId,
+        () => themePreview.previewLocalClassName(element, newClassName),
+        () => themePreview.previewLocalClassName(element, previousClassName)
+      );
+      // Update preview, as class names in CSS have changed
+      await this.updateThemePreview();
+    } else {
+      // Update suggested class name for now, will effectively be applied when
+      // changing a property
+      this.context = {
+        ...this.context,
+        suggestedClassName: newClassName
+      };
+    }
+  }
+
   private async pickComponent() {
     this.removeElementHighlight(this.context?.component.element);
 
@@ -345,17 +419,7 @@ export class ThemeEditor extends LitElement {
         }
 
         this.highlightElement(component.element);
-        const componentResponse = await this.api.loadComponentMetadata(component);
-        this.previewGeneratedClassName(component.element, componentResponse.className);
-
-        this.refreshTheme({
-          scope: this.context?.scope || ThemeScope.local,
-          metadata,
-          component,
-          localClassName: componentResponse.className,
-          suggestedClassName: componentResponse.suggestedClassName,
-          accessible: componentResponse.accessible
-        });
+        this.refreshComponentAndTheme(component, metadata);
       }
     });
   }
@@ -383,19 +447,7 @@ export class ThemeEditor extends LitElement {
 
     // If we are theming locally, and the component does not have a local class
     // name yet, then apply suggested class name from server first
-    if (this.context.scope === ThemeScope.local && !this.context.localClassName && this.context.suggestedClassName) {
-      const newClassName = this.context.suggestedClassName;
-      this.context.localClassName = newClassName;
-      const classNameResponse = await this.api.setLocalClassName(this.context.component, newClassName);
-      this.historyActions = this.history.push(classNameResponse.requestId);
-      this.previewGeneratedClassName(this.context.component.element, newClassName);
-    }
-
-    // Can't generate a local scoped selector without a local classname
-    if (this.context.scope === ThemeScope.local && !this.context.localClassName) {
-      console.error('Failed to update property value because selected component does not have a local class name');
-      return;
-    }
+    await this.ensureLocalClassName();
 
     // Update theme editor CSS
     const selectorScope: SelectorScope = {
@@ -416,13 +468,58 @@ export class ThemeEditor extends LitElement {
   private async handleUndo() {
     this.preventLiveReload();
     this.historyActions = await this.history.undo();
-    await this.refreshTheme();
+    await this.refreshComponentAndTheme();
   }
 
   private async handleRedo() {
     this.preventLiveReload();
     this.historyActions = await this.history.redo();
-    await this.refreshTheme();
+    await this.refreshComponentAndTheme();
+  }
+
+  private async ensureLocalClassName() {
+    // Don't need to do anything if we are theming globally, or a class name is
+    // already defined
+    if (!this.context || this.context.scope === ThemeScope.global || this.context.localClassName) {
+      return;
+    }
+
+    // Fail if there is neither a class name, nor a suggested class name
+    if (!this.context.localClassName && !this.context.suggestedClassName) {
+      throw new Error(
+        'Cannot assign local class name for the component because it does not have a suggested class name'
+      );
+    }
+
+    const element = this.context.component.element;
+    const newClassName = this.context.suggestedClassName!;
+    this.context.localClassName = newClassName;
+    const classNameResponse = await this.api.setLocalClassName(this.context.component, newClassName);
+    this.historyActions = this.history.push(
+      classNameResponse.requestId,
+      () => themePreview.previewLocalClassName(element, newClassName),
+      () => themePreview.previewLocalClassName(element)
+    );
+  }
+
+  private async refreshComponentAndTheme(component?: ComponentReference, metadata?: ComponentMetadata) {
+    component = component || this.context?.component;
+    metadata = metadata || this.context?.metadata;
+    if (!component || !metadata) {
+      return;
+    }
+
+    const componentResponse = await this.api.loadComponentMetadata(component);
+    themePreview.previewLocalClassName(component.element, componentResponse.className);
+
+    await this.refreshTheme({
+      scope: this.context?.scope || ThemeScope.local,
+      metadata,
+      component,
+      localClassName: componentResponse.className,
+      suggestedClassName: componentResponse.suggestedClassName,
+      accessible: componentResponse.accessible
+    });
   }
 
   private async refreshTheme(newContext?: ThemeContext) {
@@ -493,20 +590,5 @@ export class ThemeEditor extends LitElement {
     if (element) {
       element.classList.remove('vaadin-theme-editor-highlight');
     }
-  }
-
-  /**
-   * Adds instance class name generated by the server to the specified element,
-   * so that instance-specific styles can be previewed.
-   * @param element
-   * @param className
-   * @private
-   */
-  private previewGeneratedClassName(element?: HTMLElement, className?: string) {
-    if (!className || !element) {
-      return;
-    }
-
-    element.classList.add(className);
   }
 }

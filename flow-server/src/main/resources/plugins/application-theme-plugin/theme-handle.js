@@ -18,9 +18,9 @@
  * This file contains functions for look up and handle the theme resources
  * for application theme plugin.
  */
-import { existsSync, writeFileSync, readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
-import { generateThemeFile } from './theme-generator.js';
+import { writeThemeFiles } from './theme-generator.js';
 import { copyStaticAssets, copyThemeResources } from './theme-copy.js';
 
 // matches theme name in './theme-my-theme.generated.js'
@@ -129,11 +129,6 @@ function findThemeFolderAndHandleTheme(themeName, options, logger) {
   return themeFound;
 }
 
-function writeIfChanged(file, data) {
-  if (!existsSync(file) || readFileSync(file, {encoding: 'utf-8'}) !== data) {
-    writeFileSync(file, data);
-  }
-}
 /**
  * Copies static resources for theme and generates/writes the
  * [theme-name].generated.js for webpack to handle.
@@ -172,9 +167,8 @@ function handleThemes(themeName, themesFolder, options, logger) {
     }
     copyStaticAssets(themeName, themeProperties, options.projectStaticAssetsOutputFolder, logger);
     copyThemeResources(themeFolder, options.projectStaticAssetsOutputFolder, logger);
-    const themeFileContent = generateThemeFile(themeFolder, themeName, themeProperties, options);
 
-    writeIfChanged(resolve(options.frontendGeneratedFolder, 'theme-' + themeName + '.generated.js'), themeFileContent);
+    writeThemeFiles(themeFolder, themeName, themeProperties, options);
     return true;
   }
   return false;

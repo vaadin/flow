@@ -8,11 +8,13 @@
         <artifactId>flow-tests</artifactId>
         <version>24.1-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-themes-hotdeploy</artifactId>
-    <name>Flow themes tests, dev hotdeploy</name>
+    <artifactId>flow-test-themes-devbundle</artifactId>
+    <name>Flow themes tests, dev bundle</name>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <vaadin.frontend.hotdeploy>false</vaadin.frontend.hotdeploy>
+        <surefire.reportNameSuffix>devbundle</surefire.reportNameSuffix>
     </properties>
 
     <dependencies>
@@ -55,6 +57,16 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <!-- This does not work because of https://github.com/vaadin/flow/issues/16366 -->
+                        <exclude>**/ThemeIT.java</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>

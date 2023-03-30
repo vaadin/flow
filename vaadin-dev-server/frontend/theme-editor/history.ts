@@ -1,7 +1,11 @@
 import { ThemeEditorApi } from './api';
 
+type HistoryCustomizerFn = () => void;
+
 export interface HistoryEntry {
   requestId: string;
+  execute?: HistoryCustomizerFn;
+  rollback?: HistoryCustomizerFn;
 }
 
 export interface ThemeEditorHistoryActions {
@@ -38,13 +42,23 @@ export class ThemeEditorHistory {
     };
   }
 
-  push(requestId: string): ThemeEditorHistoryActions {
+  push(requestId: string, execute?: HistoryCustomizerFn, rollback?: HistoryCustomizerFn): ThemeEditorHistoryActions {
     const entry = {
-      requestId
+      requestId,
+      execute,
+      rollback
     };
     state.index++;
     state.entries = state.entries.slice(0, state.index);
     state.entries.push(entry);
+
+    if (execute) {
+      try {
+        execute();
+      } catch (error) {
+        console.error('Execute history entry failed', error);
+      }
+    }
 
     return this.allowedActions;
   }
@@ -58,6 +72,9 @@ export class ThemeEditorHistory {
 
     try {
       await this.api.undo(entry.requestId);
+      if (entry.rollback) {
+        entry.rollback();
+      }
     } catch (error) {
       console.error('Undo failed', error);
     }
@@ -73,6 +90,9 @@ export class ThemeEditorHistory {
 
     try {
       await this.api.redo(entry.requestId);
+      if (entry.execute) {
+        entry.execute();
+      }
     } catch (error) {
       console.error('Redo failed', error);
     }

@@ -19,7 +19,6 @@ package com.vaadin.flow.server.communication;
 import java.io.Serializable;
 import java.util.EventListener;
 
-import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
