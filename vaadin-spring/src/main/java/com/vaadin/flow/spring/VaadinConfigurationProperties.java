@@ -318,7 +318,7 @@ public class VaadinConfigurationProperties {
 
     /**
      * Gets the pnpm specific configuration.
-     * 
+     *
      * @return the pnpm configuration
      */
     public Pnpm getPnpm() {
@@ -327,7 +327,7 @@ public class VaadinConfigurationProperties {
 
     /**
      * Gets the frontend specific configuration.
-     * 
+     *
      * @return the frontend configuration
      */
     public Frontend getFrontend() {
