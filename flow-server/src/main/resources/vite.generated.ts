@@ -135,13 +135,14 @@ function buildSWPlugin(opts): PluginOption {
       return includedPluginNames.includes(p.name);
     });
     const resolver = config.createResolver();
-    plugins.push({
-      name: 'resolve-things',
-      resolveId(source, importer, options) {
+    const resolvePlugin:rollup.Plugin = {
+      name: 'resolver',
+      resolveId(source, importer, _options) {
         const result = resolver(source, importer);
         return result;
       }
-    });
+    };
+    plugins.unshift(resolvePlugin); // Put resolve first
     plugins.push(
         replace({
           values: {
