@@ -74,6 +74,7 @@ public final class OpenInCurrentIde {
             try {
                 run(getBinary(processInfo), "--line", lineNumber + "",
                         absolutePath);
+                return true;
             } catch (Exception e) {
                 getLogger().error("Unable to launch IntelliJ IDEA", e);
             }
@@ -82,6 +83,7 @@ public final class OpenInCurrentIde {
             if (OSUtils.isMac()) {
                 try {
                     run("open", "-a", getBinary(processInfo), absolutePath);
+                    return true;
                 } catch (Exception e) {
                     getLogger().error("Unable to launch Eclipse", e);
                 }
@@ -89,11 +91,11 @@ public final class OpenInCurrentIde {
                 try {
                     run(getBinary(processInfo),
                             absolutePath + ":" + lineNumber);
+                    return true;
                 } catch (Exception e) {
                     getLogger().error("Unable to launch Eclipse", e);
                 }
             }
-            return true;
         }
 
         return false;

@@ -950,7 +950,7 @@ export class VaadinDevTools extends LitElement {
       const isFlowApp = !!(window as any).Vaadin.Flow;
       this.themeEditorState = message.data;
       if (isFlowApp && this.themeEditorState !== ThemeEditorState.disabled) {
-        this.tabs.push({ id: 'theme-editor', title: 'Theme Editor', render: () => this.renderThemeEditor() });
+        this.tabs.push({ id: 'theme-editor', title: 'Theme Editor (Free Preview)', render: () => this.renderThemeEditor() });
         this.requestUpdate();
       }
     } else {

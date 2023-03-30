@@ -58,12 +58,13 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.AppShellWithPWA;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
 import com.vaadin.flow.theme.Theme;
@@ -72,7 +73,6 @@ import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 
 public class IndexHtmlRequestHandlerTest {
@@ -86,7 +86,7 @@ public class IndexHtmlRequestHandlerTest {
     private VaadinResponse response;
     private ByteArrayOutputStream responseOutput;
     private MockDeploymentConfiguration deploymentConfiguration;
-    private VaadinServletContext context;
+    private VaadinContext context;
 
     private String springTokenString;
     private String springTokenHeaderName = "x-CSRF-TOKEN";
@@ -108,12 +108,13 @@ public class IndexHtmlRequestHandlerTest {
         deploymentConfiguration.setFrontendHotdeploy(false);
         deploymentConfiguration.setProductionMode(true);
         indexHtmlRequestHandler = new IndexHtmlRequestHandler();
-        context = Mockito.mock(VaadinServletContext.class);
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(context.getContext()).thenReturn(servletContext);
-        Mockito.when(context.getAttribute(Mockito.any(), Mockito.any()))
-                .thenCallRealMethod();
+        context = service.getContext();
         springTokenString = UUID.randomUUID().toString();
+
+        ApplicationConfiguration applicationConfiguration = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(context.getAttribute(ApplicationConfiguration.class))
+                .thenReturn(applicationConfiguration);
     }
 
     @Test
@@ -523,7 +524,7 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
                 Boolean.FALSE);
 
-        UI.getCurrent().connectClient("foo", "bar", "/foo", "", "", null);
+        UI.getCurrent().connectClient("foo", "bar", "/foo", "", "", null, "");
 
         Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
                 Boolean.FALSE);
