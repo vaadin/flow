@@ -30,7 +30,6 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
     @Test
     public void testNavigationTriggers() {
         String url = getTestURL() + "/abc/";
-        System.err.println(url);
         getDriver().get(url);
 
         assertMessageCount(1);
