@@ -63,6 +63,7 @@ const $wnd = window as any as {
     Flow: any;
     TypeScript: any;
     connectionState: ConnectionStateStore;
+    listener: any;
   };
 } & EventTarget;
 
@@ -81,6 +82,8 @@ export class Flow {
 
   private baseRegex = /^\//;
   private appShellTitle: string;
+
+  private navigation: string = '';
 
   constructor(config?: FlowConfig) {
     flowRoot.$ = flowRoot.$ || [];
@@ -137,6 +140,34 @@ export class Flow {
     // Make Testbench know that server request has finished
     this.isActive = false;
     $wnd.Vaadin.connectionState.loadingFinished();
+
+    if ($wnd.Vaadin.listener) {
+      // Listeners registered, do not register again.
+      return;
+    }
+    $wnd.Vaadin.listener = {};
+    // Listen for click on router-links -> 'link' navigation trigger
+    // and on <a> nodes -> 'client' navigation trigger.
+    // Use capture phase to detect prevented / stopped events.
+    document.addEventListener(
+      'click',
+      (_e) => {
+        if (_e.target) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          if (_e.target.hasAttribute('router-link')) {
+            this.navigation = 'link';
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+          } else if (_e.composedPath().some((node) => node.nodeName === 'A')) {
+            this.navigation = 'client';
+          }
+        }
+      },
+      {
+        capture: true
+      }
+    );
   }
 
   private get action(): (params: NavigationParameters) => Promise<HTMLRouterContainer> {
@@ -219,8 +250,12 @@ export class Flow {
           this.getFlowRoutePath(ctx),
           this.getFlowRouteQuery(ctx),
           this.appShellTitle,
-          history.state
+          history.state,
+          this.navigation
         );
+        // Default to history navigation trigger.
+        // Link and client cases are handled by click listener in loadingFinished().
+        this.navigation = 'history';
       });
     } else {
       // No server response => offline or erroneous connection
