@@ -33,6 +33,7 @@ import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.VaadinService;
@@ -636,10 +637,11 @@ public abstract class Component
      *         null)
      */
     public String getTranslation(String key, Object... params) {
-        final Optional<I18NProvider> i18NProvider = getI18NProvider();
+        final Optional<I18NProvider> i18NProvider = LocaleUtil
+                .getI18NProvider();
         return i18NProvider
                 .map(i18n -> i18n.getTranslation(key,
-                        getLocale(() -> i18NProvider), params))
+                        LocaleUtil.getLocale(() -> i18NProvider), params))
                 .orElseGet(() -> "!{" + key + "}!");
     }
 
@@ -660,10 +662,11 @@ public abstract class Component
      *         null)
      */
     public String getTranslation(Object key, Object... params) {
-        final Optional<I18NProvider> i18NProvider = getI18NProvider();
+        final Optional<I18NProvider> i18NProvider = LocaleUtil
+                .getI18NProvider();
         return i18NProvider
                 .map(i18n -> i18n.getTranslation(key,
-                        getLocale(() -> i18NProvider), params))
+                        LocaleUtil.getLocale(() -> i18NProvider), params))
                 .orElseGet(() -> "!{" + key + "}!");
     }
 
@@ -686,7 +689,7 @@ public abstract class Component
      */
     @Deprecated
     public String getTranslation(String key, Locale locale, Object... params) {
-        return getI18NProvider()
+        return LocaleUtil.getI18NProvider()
                 .map(i18n -> i18n.getTranslation(key, locale, params))
                 .orElseGet(() -> "!{" + key + "}!");
     }
@@ -710,7 +713,7 @@ public abstract class Component
      */
     @Deprecated
     public String getTranslation(Object key, Locale locale, Object... params) {
-        return getI18NProvider()
+        return LocaleUtil.getI18NProvider()
                 .map(i18n -> i18n.getTranslation(key, locale, params))
                 .orElseGet(() -> "!{" + key + "}!");
     }
@@ -753,11 +756,6 @@ public abstract class Component
         return getTranslation(key, locale, params);
     }
 
-    private Optional<I18NProvider> getI18NProvider() {
-        return Optional.ofNullable(
-                VaadinService.getCurrent().getInstantiator().getI18NProvider());
-    }
-
     /**
      * Gets the locale for this component.
      * <p>
@@ -769,15 +767,7 @@ public abstract class Component
      * @return the component locale
      */
     protected Locale getLocale() {
-        return getLocale(() -> getI18NProvider());
-    }
-
-    private Locale getLocale(Supplier<Optional<I18NProvider>> i18NProvider) {
-        return Optional.ofNullable(UI.getCurrent()).map(UI::getLocale)
-                .or(() -> i18NProvider.get()
-                        .map(I18NProvider::getProvidedLocales)
-                        .flatMap(locales -> locales.stream().findFirst()))
-                .orElseGet(Locale::getDefault);
+        return LocaleUtil.getLocale(LocaleUtil::getI18NProvider);
     }
 
     /**

@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.internal.*;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
@@ -39,10 +40,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.BootstrapHandlerHelper;
-import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
-import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -91,16 +88,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         prependBaseHref(request, indexDocument);
 
-        // similar to Component implementation:
-        // worth to extract the getLocale to LocaleUtil potentially?
-        Locale locale = getLocale();
-
-        // check if html language attribute exists or not already:
-        String lang = indexDocument.getElementsByTag("html").get(0).attr("lang");
-        // check if lang null or empty:
-        if (lang == null || lang.isEmpty()) {
-            indexDocument.getElementsByTag("html").get(0).attr("lang",
-                    locale.getLanguage());
+        Locale locale = LocaleUtil.getLocale(LocaleUtil::getI18NProvider);
+        Element htmlElement = indexDocument.getElementsByTag("html").get(0);
+        if (!htmlElement.hasAttr("lang")) {
+            htmlElement.attr("lang", locale.getLanguage());
         }
 
         JsonObject initialJson = Json.createObject();
@@ -152,7 +143,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         redirectToOldBrowserPageWhenNeeded(indexDocument);
 
-        // modify the page based on registered IndexHtmlRequestListener:s
+        // modify the page based on registered IndexHtmlRequestListener:
         service.modifyIndexHtmlResponse(indexHtmlResponse);
 
         if (!config.isProductionMode()) {
@@ -195,30 +186,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                         e);
             }
         }
-    }
-
-    private I18NProvider getI18NProvider() {
-        return VaadinService.getCurrent().getInstantiator().getI18NProvider();
-    }
-
-    protected Locale getLocale() {
-        UI currentUi = UI.getCurrent();
-        Locale locale = currentUi == null ? null : currentUi.getLocale();
-        if (locale == null) {
-            final I18NProvider i18NProvider = getI18NProvider();
-            // If a i18nProvider is not defined we should just return the
-            // default locale.
-            if (i18NProvider == null) {
-                return Locale.getDefault();
-            }
-            List<Locale> locales = i18NProvider.getProvidedLocales();
-            if (locales != null && !locales.isEmpty()) {
-                locale = locales.get(0);
-            } else {
-                locale = Locale.getDefault();
-            }
-        }
-        return locale;
     }
 
     private void applyThemeVariant(Document indexDocument,
