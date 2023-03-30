@@ -19,11 +19,6 @@ export default {
       ]
     },
     {
-      selector: 'vaadin-checkbox-group::part(group-field)',
-      displayName: 'Checkbox container',
-      properties: [shapeProperties.gap]
-    },
-    {
       selector: 'vaadin-checkbox-group::part(label)',
       displayName: 'Label',
       properties: labelProperties
