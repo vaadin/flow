@@ -179,7 +179,16 @@ public class TestBenchElement implements WrapsElement, WebElement, HasDriver,
             // Avoid strange "element not clickable at point" problems
             callFunction("click");
         } catch (Exception e) {
-            LoggerFactory.getLogger(getClass()).warn("Exception when clicking",e);
+            //
+            if (e.getMessage()
+                    .contains("Inspected target navigated or closed")) {
+                // This happens with chromedriver although e.g. navigation
+                // succeeds
+                return;
+            }
+
+            LoggerFactory.getLogger(getClass())
+                    .warn("Exception when clicking: " + e.getMessage(), e);
             // SVG elements and maybe others do not have a 'click' method
             autoScrollIntoView();
             waitForVaadin();
