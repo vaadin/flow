@@ -1671,6 +1671,8 @@ public class UI extends Component
      *            client side title of the application shell
      * @param historyState
      *            client side history state value
+     * @param trigger
+     *            navigation trigger
      */
     @ClientCallable
     @AllowInert
