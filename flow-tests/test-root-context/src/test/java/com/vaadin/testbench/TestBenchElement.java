@@ -43,6 +43,8 @@ import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.testbench.commands.CanCompareScreenshots;
 import com.vaadin.testbench.commands.ScreenshotComparator;
@@ -177,6 +179,7 @@ public class TestBenchElement implements WrapsElement, WebElement, HasDriver,
             // Avoid strange "element not clickable at point" problems
             callFunction("click");
         } catch (Exception e) {
+            LoggerFactory.getLogger(getClass()).warn("Exception when clicking",e);
             // SVG elements and maybe others do not have a 'click' method
             autoScrollIntoView();
             waitForVaadin();
