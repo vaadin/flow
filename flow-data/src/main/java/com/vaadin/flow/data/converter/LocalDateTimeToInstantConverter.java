@@ -27,8 +27,6 @@ import com.vaadin.flow.data.binder.ValueContext;
  * A converter that converts between <code>LocalDateTime</code> and
  * <code>Instant</code>.
  *
- * @author martinjunker
- * @since 24.1
  */
 public class LocalDateTimeToInstantConverter
         implements Converter<LocalDateTime, Instant> {
@@ -38,7 +36,7 @@ public class LocalDateTimeToInstantConverter
      * Creates a new converter using the given time zone.
      *
      * @param zoneId
-     *         the time zone to use, not <code>null</code>
+     *            the time zone to use, not <code>null</code>
      */
     public LocalDateTimeToInstantConverter(ZoneId zoneId) {
         this.zoneId = Objects.requireNonNull(zoneId,
@@ -46,13 +44,13 @@ public class LocalDateTimeToInstantConverter
     }
 
     @Override
-    public Result<Instant> convertToModel(LocalDateTime localDate,
+    public Result<Instant> convertToModel(LocalDateTime localDateTime,
             ValueContext context) {
-        if (localDate == null) {
+        if (localDateTime == null) {
             return Result.ok(null);
         }
 
-        return Result.ok(localDate.atZone(zoneId).toInstant());
+        return Result.ok(localDateTime.atZone(zoneId).toInstant());
     }
 
     @Override
@@ -62,8 +60,7 @@ public class LocalDateTimeToInstantConverter
             return null;
         }
 
-        return instant.atZone(zoneId)
-                .toLocalDateTime();
+        return instant.atZone(zoneId).toLocalDateTime();
     }
 
 }
