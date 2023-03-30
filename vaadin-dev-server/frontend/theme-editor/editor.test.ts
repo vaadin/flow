@@ -107,7 +107,9 @@ describe('theme-editor', () => {
 
     expect(propertyEditor).to.exist;
 
-    const input = propertyEditor.shadowRoot!.querySelector('input')!;
+    const input = propertyEditor
+      .shadowRoot!.querySelector('vaadin-dev-tools-theme-text-input')!
+      .shadowRoot!.querySelector('input') as HTMLInputElement;
     input.value = value;
     input.dispatchEvent(new Event('change'));
     await elementUpdated(editor);
@@ -124,7 +126,9 @@ describe('theme-editor', () => {
 
   function getPropertyValue(elementName: string, propertyName: string) {
     const propertyEditor = findPropertyEditor(elementName, propertyName);
-    const input = propertyEditor.shadowRoot!.querySelector('input')! as HTMLInputElement;
+    const input = propertyEditor
+      .shadowRoot!.querySelector('vaadin-dev-tools-theme-text-input')!
+      .shadowRoot!.querySelector('input') as HTMLInputElement;
     return input.value;
   }
 
@@ -167,7 +171,9 @@ describe('theme-editor', () => {
     const classNameEditor = editor.shadowRoot!.querySelector(
       '.header vaadin-dev-tools-theme-class-name-editor'
     ) as HTMLElement;
-    const classNameInput = classNameEditor.shadowRoot!.querySelector('input') as HTMLInputElement;
+    const classNameInput = classNameEditor
+      .shadowRoot!.querySelector('vaadin-dev-tools-theme-text-input')!
+      .shadowRoot!.querySelector('input') as HTMLInputElement;
 
     classNameInput.value = className;
     classNameInput.dispatchEvent(new Event('change'));

@@ -2,7 +2,7 @@ import { css, html, PropertyValues, TemplateResult } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import './color-picker';
 import { ColorPickerChangeEvent } from './color-picker';
-import { BasePropertyEditor, PropertyPresets } from './base-property-editor';
+import { BasePropertyEditor, PropertyPresets, TextInputChangeEvent } from './base-property-editor';
 
 @customElement('vaadin-dev-tools-theme-color-property-editor')
 export class ColorPropertyEditor extends BasePropertyEditor {
@@ -42,13 +42,16 @@ export class ColorPropertyEditor extends BasePropertyEditor {
         @color-picker-commit=${this.handleColorPickerCommit}
         @color-picker-cancel=${this.handleColorPickerCancel}
       ></vaadin-dev-tools-color-picker>
-      <input class="input" .value=${this.value} @change=${this.handleInputChange} />
+      <vaadin-dev-tools-theme-text-input
+        .value=${this.value}
+        .showClearButton=${this.propertyValue?.modified || false}
+        @change=${this.handleInputChange}
+      ></vaadin-dev-tools-theme-text-input>
     `;
   }
 
-  private handleInputChange(e: Event) {
-    const input = e.target as HTMLInputElement;
-    this.value = input.value;
+  private handleInputChange(e: TextInputChangeEvent) {
+    this.value = e.detail.value;
     this.dispatchChange(this.value);
   }
 
