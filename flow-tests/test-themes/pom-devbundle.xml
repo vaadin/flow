@@ -14,6 +14,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <vaadin.frontend.hotdeploy>false</vaadin.frontend.hotdeploy>
+        <surefire.reportNameSuffix>devbundle</surefire.reportNameSuffix>
     </properties>
 
     <dependencies>
