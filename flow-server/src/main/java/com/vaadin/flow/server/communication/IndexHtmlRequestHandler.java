@@ -28,6 +28,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
@@ -94,8 +95,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // similar to Component implementation:
         // worth to extract the getLocale to LocaleUtil potentially?
         Locale locale = getLocale();
-        indexDocument.getElementsByTag("html").get(0).attr("lang",
-                locale.getLanguage());
+
+        // check if html language attribute exists or not already:
+        if (StringUtils.isEmpty(indexDocument.getElementsByTag("html").get(0).attr("lang"))) {
+            indexDocument.getElementsByTag("html").get(0).attr("lang",
+                    locale.getLanguage());
+        }
 
         JsonObject initialJson = Json.createObject();
 
