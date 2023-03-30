@@ -177,7 +177,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private static void addLinkTagForTheme(Document document,
-                                           VaadinContext context) {
+            VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
         if (config.getMode() == Mode.DEVELOPMENT_BUNDLE) {
             try {
