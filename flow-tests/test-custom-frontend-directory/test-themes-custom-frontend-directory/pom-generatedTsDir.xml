@@ -12,6 +12,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <vaadin.devmode.liveReload.enabled>true</vaadin.devmode.liveReload.enabled>
+        <surefire.reportNameSuffix>generatedTsDir</surefire.reportNameSuffix>
     </properties>
 
     <dependencies>
