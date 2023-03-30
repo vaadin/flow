@@ -8,7 +8,8 @@ export enum Commands {
   setCssRules = 'themeEditorRules',
   loadPreview = 'themeEditorLoadPreview',
   loadRules = 'themeEditorLoadRules',
-  history = 'themeEditorHistory'
+  history = 'themeEditorHistory',
+  openCss = 'themeEditorOpenCss'
 }
 
 export enum ResponseCode {
@@ -122,6 +123,10 @@ export class ThemeEditorApi {
 
   public redo(requestId: string): Promise<BaseResponse> {
     return this.sendRequest(Commands.history, { redo: requestId });
+  }
+
+  public openCss(selector: string): Promise<BaseResponse> {
+    return this.sendRequest(Commands.openCss, { selector });
   }
 
   private getGlobalUiId(): number {

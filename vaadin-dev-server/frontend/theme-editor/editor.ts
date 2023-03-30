@@ -27,6 +27,7 @@ import { ComponentReference } from '../component-util';
 import { injectGlobalCss } from './styles';
 import { ComponentMetadata } from './metadata/model';
 import { ClassNameChangeEvent } from './components/class-name-editor';
+import { OpenCssEvent } from './components/property-list';
 
 injectGlobalCss(css`
   .vaadin-theme-editor-highlight {
@@ -293,6 +294,7 @@ export class ThemeEditor extends LitElement {
       .metadata=${this.context.metadata}
       .theme=${this.effectiveTheme}
       @theme-property-value-change=${this.handlePropertyChange}
+      @open-css=${this.handleOpenCss}
     ></vaadin-dev-tools-theme-property-list>`;
   }
 
@@ -303,6 +305,24 @@ export class ThemeEditor extends LitElement {
     const component = this.context.component;
     const serializableComponentRef: ComponentReference = { nodeId: component.nodeId, uiId: component.uiId };
     this.connection.sendShowComponentCreateLocation(serializableComponentRef);
+  }
+
+  async handleOpenCss(event: OpenCssEvent) {
+    if (!this.context) {
+      return;
+    }
+
+    // If we are theming locally, and the component does not have a local class
+    // name yet, then apply suggested class name from server first
+    await this.ensureLocalClassName();
+
+    const selectorScope: SelectorScope = {
+      themeScope: this.context.scope,
+      localClassName: this.context.localClassName
+    };
+    const scopedSelector = createScopedSelector(event.detail.element, selectorScope);
+    this.preventLiveReload();
+    await this.api.openCss(scopedSelector);
   }
 
   renderPicker() {
@@ -427,23 +447,7 @@ export class ThemeEditor extends LitElement {
 
     // If we are theming locally, and the component does not have a local class
     // name yet, then apply suggested class name from server first
-    if (this.context.scope === ThemeScope.local && !this.context.localClassName && this.context.suggestedClassName) {
-      const element = this.context.component.element;
-      const newClassName = this.context.suggestedClassName;
-      this.context.localClassName = newClassName;
-      const classNameResponse = await this.api.setLocalClassName(this.context.component, newClassName);
-      this.historyActions = this.history.push(
-        classNameResponse.requestId,
-        () => themePreview.previewLocalClassName(element, newClassName),
-        () => themePreview.previewLocalClassName(element)
-      );
-    }
-
-    // Can't generate a local scoped selector without a local classname
-    if (this.context.scope === ThemeScope.local && !this.context.localClassName) {
-      console.error('Failed to update property value because selected component does not have a local class name');
-      return;
-    }
+    await this.ensureLocalClassName();
 
     // Update theme editor CSS
     const selectorScope: SelectorScope = {
@@ -471,6 +475,31 @@ export class ThemeEditor extends LitElement {
     this.preventLiveReload();
     this.historyActions = await this.history.redo();
     await this.refreshComponentAndTheme();
+  }
+
+  private async ensureLocalClassName() {
+    // Don't need to do anything if we are theming globally, or a class name is
+    // already defined
+    if (!this.context || this.context.scope === ThemeScope.global || this.context.localClassName) {
+      return;
+    }
+
+    // Fail if there is neither a class name, nor a suggested class name
+    if (!this.context.localClassName && !this.context.suggestedClassName) {
+      throw new Error(
+        'Cannot assign local class name for the component because it does not have a suggested class name'
+      );
+    }
+
+    const element = this.context.component.element;
+    const newClassName = this.context.suggestedClassName!;
+    this.context.localClassName = newClassName;
+    const classNameResponse = await this.api.setLocalClassName(this.context.component, newClassName);
+    this.historyActions = this.history.push(
+      classNameResponse.requestId,
+      () => themePreview.previewLocalClassName(element, newClassName),
+      () => themePreview.previewLocalClassName(element)
+    );
   }
 
   private async refreshComponentAndTheme(component?: ComponentReference, metadata?: ComponentMetadata) {
