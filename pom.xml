@@ -476,6 +476,17 @@
                                 </rules>
                             </configuration>
                         </execution>
+                        <execution>
+                            <id>default-cli</id>
+                            <configuration>
+                                <rules>
+                                    <dependencyConvergence />
+                                </rules>
+                            </configuration>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                        </execution>
                     </executions>
                 </plugin>
                 <plugin>
