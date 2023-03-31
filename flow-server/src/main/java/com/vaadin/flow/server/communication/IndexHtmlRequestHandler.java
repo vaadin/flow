@@ -88,9 +88,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         prependBaseHref(request, indexDocument);
 
-        Locale locale = LocaleUtil.getLocale(LocaleUtil::getI18NProvider);
         Element htmlElement = indexDocument.getElementsByTag("html").get(0);
         if (!htmlElement.hasAttr("lang")) {
+            Locale locale = LocaleUtil.getLocale(LocaleUtil::getI18NProvider);
             htmlElement.attr("lang", locale.getLanguage());
         }
 
