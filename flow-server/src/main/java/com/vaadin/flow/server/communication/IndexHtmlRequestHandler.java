@@ -15,13 +15,10 @@
  */
 package com.vaadin.flow.server.communication;
 
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
-import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.util.Locale;
 import java.util.Optional;
 
 import org.jsoup.Jsoup;
@@ -38,6 +35,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
 import com.vaadin.flow.server.AppShellRegistry;
@@ -56,6 +54,10 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
+import static com.vaadin.flow.component.UI.SERVER_ROUTING;
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * This class is responsible for serving the <code>index.html</code> according
@@ -86,6 +88,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 : getIndexHtmlDocument(service);
 
         prependBaseHref(request, indexDocument);
+
+        Element htmlElement = indexDocument.getElementsByTag("html").get(0);
+        if (!htmlElement.hasAttr("lang")) {
+            Locale locale = LocaleUtil.getLocale(LocaleUtil::getI18NProvider);
+            htmlElement.attr("lang", locale.getLanguage());
+        }
 
         JsonObject initialJson = Json.createObject();
 
@@ -136,7 +144,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         redirectToOldBrowserPageWhenNeeded(indexDocument);
 
-        // modify the page based on registered IndexHtmlRequestListener:s
+        // modify the page based on registered IndexHtmlRequestListener:
         service.modifyIndexHtmlResponse(indexHtmlResponse);
 
         if (!config.isProductionMode()) {
