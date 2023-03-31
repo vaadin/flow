@@ -17,6 +17,7 @@
 package com.vaadin.flow.component.page;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -39,6 +40,7 @@ import com.vaadin.flow.shared.ui.Transport;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Inherited
 public @interface Push {
     /**
      * The {@link PushMode} to use for the annotated root navigation target (or
