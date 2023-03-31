@@ -47,8 +47,6 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
-
 /**
  * Processes a 'start' request type from the client to initialize server session
  * and UI. It returns a JSON response with everything needed to bootstrap flow
@@ -171,12 +169,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected void initializeUIWithRouter(BootstrapContext context, UI ui) {
-        if (context.getRequest().getParameter("serverSideRouting") != null) {
-            // App is using classic server-routing, set a session attribute
-            // to know that in future navigation calls
-            ui.getSession().setAttribute(SERVER_ROUTING, Boolean.TRUE);
-            ui.getInternals().getRouter().initializeUI(ui, context.getRoute());
-        }
     }
 
     @Override

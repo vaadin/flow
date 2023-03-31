@@ -77,7 +77,6 @@ function createInitResponse(appId: string, changes = '[]', pushScript?: string):
           "debug" : true,
           "v-uiId" : 0,
           "serviceUrl" : "//localhost:8080/flow/",
-          "clientRouting" : false,
           "productionMode": false,
           "appId": "${appId}",
           "uidl": {
@@ -193,111 +192,6 @@ describe('Flow', () => {
     expect(indicator.classList.contains('first')).to.be.false;
     expect(indicator.classList.contains('second')).to.be.false;
     expect(indicator.classList.contains('third')).to.be.false;
-  });
-
-  it('should initialize Flow server navigation when calling flowInit(true)', () => {
-    stubServerRemoteFunction('FooBar-12345');
-    mockInitResponse('FooBar-12345', changesResponse);
-
-    const flow = new Flow();
-    return (flow as any).flowInit(true).then(() => {
-      if (!flow.response) {
-        expect.fail('Response should be defined');
-      }
-
-      expect(flow.response.appConfig).not.to.be.undefined;
-
-      // Check that serverside routing is enabled
-      expect(flow.response.appConfig.clientRouting).to.be.false;
-
-      // Check that bootstrap was initialized
-      expect($wnd.Vaadin.Flow.initApplication).not.to.be.undefined;
-      expect($wnd.Vaadin.Flow.registerWidgetset).not.to.be.undefined;
-      // Check that flowClient was initialized
-      expect($wnd.Vaadin.Flow.clients.FooBar.resolveUri).not.to.be.undefined;
-      expect($wnd.Vaadin.Flow.clients.FooBar.isActive()).to.be.false;
-
-      // Check that pushScript is not initialized
-      expect($wnd.vaadinPush).to.be.undefined;
-
-      // Check server added a div content with `Foo` text
-      expect('Foo').to.equal(document.body.lastElementChild.textContent);
-    });
-  });
-
-  it('should initialize UI when calling flowInit(true)', () => {
-    const initial = createInitResponse('FooBar-12345');
-    $wnd.Vaadin.TypeScript = { initial: JSON.parse(initial) };
-
-    const flow = new Flow();
-    return (flow as any).flowInit(true).then(() => {
-      if (!flow.response) {
-        expect.fail('Response should be defined');
-      }
-      expect(flow.response.appConfig).not.to.be.undefined;
-
-      // Check that serverside routing is enabled
-      expect(flow.response.appConfig.clientRouting).to.be.false;
-
-      // Check that bootstrap was initialized
-      expect($wnd.Vaadin.Flow.initApplication).not.to.be.undefined;
-      expect($wnd.Vaadin.Flow.registerWidgetset).not.to.be.undefined;
-      // Check that flowClient was initialized
-      expect($wnd.Vaadin.Flow.clients.FooBar.resolveUri).not.to.be.undefined;
-      expect($wnd.Vaadin.Flow.clients.FooBar.isActive()).to.be.false;
-
-      // Check that pushScript is not initialized
-      expect($wnd.vaadinPush).to.be.undefined;
-
-      // Check that Flow.ts doesn't inject appId script if config.imports is undefined
-      const appIdScript = document.querySelector('script[type="module"][data-app-id]');
-      expect(appIdScript).to.be.null;
-
-      // Check that initial was removed
-      expect($wnd.Vaadin.Flow.initial).to.be.undefined;
-    });
-  });
-
-  it('should inject appId script when calling flowInit(true) with custom config.imports', () => {
-    const initial = createInitResponse('FooBar-12345');
-    $wnd.Vaadin.TypeScript = { initial: JSON.parse(initial) };
-
-    const flow = new Flow({
-      imports: () => {}
-    });
-    return (flow as any).flowInit(true).then(() => {
-      if (!flow.response) {
-        expect.fail('Response should be defined');
-      }
-      expect(flow.response.appConfig).not.to.be.undefined;
-
-      // Check that serverside routing is enabled
-      expect(flow.response.appConfig.clientRouting).to.be.false;
-
-      // Check that bootstrap was initialized
-      expect($wnd.Vaadin.Flow.initApplication).not.to.be.undefined;
-      expect($wnd.Vaadin.Flow.registerWidgetset).not.to.be.undefined;
-      // Check that flowClient was initialized
-      expect($wnd.Vaadin.Flow.clients.FooBar.resolveUri).not.to.be.undefined;
-      expect($wnd.Vaadin.Flow.clients.FooBar.isActive()).to.be.false;
-
-      // Check that pushScript is not initialized
-      expect($wnd.vaadinPush).to.be.undefined;
-
-      // Check that Flow.ts inject appId script
-      const appIdScript = document.body.querySelector('script[type="module"][data-app-id]');
-      if (!appIdScript) {
-        expect.fail('appIdScript should be defined');
-      }
-      const injectedAppId = appIdScript.getAttribute('data-app-id');
-      if (!injectedAppId) {
-        expect.fail('injectedAppId should be defined');
-      }
-      expect(flow.response.appConfig.appId.startsWith(injectedAppId)).to.be.true;
-
-      // Check that initial was removed
-      expect($wnd.Vaadin.Flow.initial).to.be.undefined;
-    });
   });
 
   it('should throw when an incorrect server response is received', () => {
@@ -615,29 +509,6 @@ describe('Flow', () => {
 
     const route = flow.serverSideRoutes[0];
     await route.action({ pathname: 'Foo/Bar.baz' });
-
-    expect($wnd.vaadinPush).not.to.be.undefined;
-    expect($wnd.vaadinPush.isStub).to.be.true;
-  });
-
-  it('should load pushScript on flowInit(true) with initial response', async () => {
-    const initial = createInitResponse('FooBar-12345');
-    $wnd.Vaadin.TypeScript = { initial: JSON.parse(initial) };
-    $wnd.Vaadin.TypeScript.initial.pushScript = stubVaadinPushSrc;
-
-    const flow = new Flow();
-    await (flow as any).flowInit(true);
-
-    expect($wnd.vaadinPush).not.to.be.undefined;
-    expect($wnd.vaadinPush.isStub).to.be.true;
-  });
-
-  it('should load pushScript on flowInit(true) with server response', async () => {
-    stubServerRemoteFunction('FooBar-12345');
-    mockInitResponse('FooBar-12345', undefined, stubVaadinPushSrc);
-
-    const flow = new Flow();
-    await (flow as any).flowInit(true);
 
     expect($wnd.vaadinPush).not.to.be.undefined;
     expect($wnd.vaadinPush.isStub).to.be.true;

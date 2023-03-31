@@ -64,7 +64,6 @@ import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.JsonValue;
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -260,20 +259,6 @@ public abstract class AbstractNavigationStateRenderer
                         "this.scrollPositionHandlerAfterServerNavigation($0);",
                         s));
             }
-        } else if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
-                && Boolean.TRUE
-                        .equals(ui.getSession().getAttribute(SERVER_ROUTING))) {
-            /*
-             * When the event trigger is a RouterLink, pushing history state
-             * should be done in client-side. See
-             * ScrollPositionHandler#afterNavigation(JsonObject).
-             */
-            JsonValue state = event.getState()
-                    .orElseThrow(() -> new IllegalStateException(
-                            "When the navigation trigger is ROUTER_LINK, event state should not be null."));
-            ui.getPage().executeJs(
-                    "this.scrollPositionHandlerAfterServerNavigation($0);",
-                    state);
         } else if (!event.isForwardTo()
                 && (!ui.getInternals().hasLastHandledLocation()
                         || !event.getLocation().getPathWithQueryParameters()

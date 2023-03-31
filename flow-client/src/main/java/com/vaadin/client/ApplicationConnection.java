@@ -69,15 +69,6 @@ public class ApplicationConnection {
         rootNode.setDomNode(body);
         Binder.bind(rootNode, body);
 
-        // When app is run as a WC do not add listener for routing events.
-        // Routing is responsability of the hosting application (#6108)
-        if (!applicationConfiguration.isWebComponentMode()
-                // client router is responsible of routing events
-                && !applicationConfiguration.isClientRouting()) {
-            new PopStateHandler(registry).bind();
-            RouterLinkHandler.bind(registry, body);
-        }
-
         Console.log("Starting application "
                 + applicationConfiguration.getApplicationId());
 

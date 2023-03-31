@@ -38,7 +38,6 @@ public class ApplicationConfiguration {
     private boolean productionMode;
     private boolean requestTiming;
     private boolean webComponentMode;
-    private boolean clientRouting;
 
     private String servletVersion;
     private String atmosphereVersion;
@@ -125,25 +124,6 @@ public class ApplicationConfiguration {
      */
     public void setWebComponentMode(boolean mode) {
         this.webComponentMode = mode;
-    }
-
-    /**
-     * Checks whether the application is running vaadin-router in client.
-     *
-     * @return true if vaadin-router is running.
-     */
-    public boolean isClientRouting() {
-        return clientRouting;
-    }
-
-    /**
-     * Sets whether the application is running vaadin-router in client.
-     *
-     * @param mode
-     *            set to true if vaadin-router is running.
-     */
-    public void setClientRouting(boolean mode) {
-        this.clientRouting = mode;
     }
 
     /**
