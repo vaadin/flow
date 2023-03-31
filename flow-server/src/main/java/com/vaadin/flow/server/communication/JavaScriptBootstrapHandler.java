@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -52,13 +52,13 @@ import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_RO
 
 /**
  * Processes a 'start' request type from the client to initialize server session
- * and UI. It returns a JSON response with everything needed to bootstrapping
- * flow views.
+ * and UI. It returns a JSON response with everything needed to bootstrap flow
+ * views.
  * <p>
  * The handler is for client driven projects where `index.html` does not contain
- * bootstrap data. Bootstraping is the responsability of the `@vaadin/flow`
+ * bootstrap data. Bootstrapping is the responsibility of the `@vaadin/flow`
  * client that is able to ask the server side to create the vaadin session and
- * do the boostrapping lazily.
+ * do the bootstrapping lazily.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
