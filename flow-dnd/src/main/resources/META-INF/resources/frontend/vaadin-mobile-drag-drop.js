@@ -1,4 +1,6 @@
-(function() {
+import MobileDragDrop from 'mobile-drag-drop/index.js';
+
+(function () {
   window.Vaadin = window.Vaadin || {};
 
   // Inspired by https://github.com/timruffles/mobile-drag-drop/issues/115#issuecomment-375469457
@@ -50,11 +52,11 @@
     config.elementFromPoint = elementFromPoint;
   }
 
-  if (window.MobileDragDrop.polyfill(config)) {
-    document.addEventListener('touchstart', e => {
+  if (MobileDragDrop.polyfill(config)) {
+    document.addEventListener('touchstart', (e) => {
       window.Vaadin.__mobilePolyfillTouchStartPath = e.composedPath();
     });
-    document.addEventListener('touchmove', e => {
+    document.addEventListener('touchmove', (e) => {
       delete window.Vaadin.__mobilePolyfillTouchStartPath;
     });
   }
