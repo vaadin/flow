@@ -47,6 +47,9 @@ public enum DefaultConverterFactory implements ConverterFactory {
         registerConverter(DateToLongConverter.class, DateToLongConverter::new);
         registerConverter(DateToSqlDateConverter.class,
                 DateToSqlDateConverter::new);
+        registerConverter(LocalDateTimeToInstantConverter.class,
+                () -> new LocalDateTimeToInstantConverter(
+                        ZoneId.systemDefault()));
         registerConverter(LocalDateTimeToDateConverter.class,
                 () -> new LocalDateTimeToDateConverter(ZoneId.systemDefault()));
         registerConverter(LocalDateToDateConverter.class,
