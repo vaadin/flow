@@ -57,6 +57,19 @@ describe('model', () => {
       expect(labelColorValue.value).to.equal('red');
     });
 
+    it('should remove property values if value is an empty string', () => {
+      theme.updatePropertyValue('vaadin-button::part(label)', 'color', 'white');
+      theme.updatePropertyValue('vaadin-button::part(label)', 'color', '');
+
+      expect(theme.properties.length).to.equal(0);
+    });
+
+    it('should not add property value if value is an empty string', () => {
+      theme.updatePropertyValue('vaadin-button::part(label)', 'color', '');
+
+      expect(theme.properties.length).to.equal(0);
+    });
+
     it('should merge a list of theme property values', () => {
       theme.updatePropertyValue('vaadin-button', 'background', 'cornflowerblue');
       theme.updatePropertyValue('vaadin-button::part(label)', 'color', 'white');
@@ -395,7 +408,7 @@ describe('model', () => {
     });
 
     describe('individual property handling', () => {
-      it('should add border-style when setting border-width to larger than zero', () => {
+      it('should update border-style when setting border-width', () => {
         const rules = [
           generateThemeRule(hostElement, globalScope, 'border-width', '0'),
           generateThemeRule(hostElement, globalScope, 'border-width', '0px'),
@@ -405,9 +418,9 @@ describe('model', () => {
         ];
 
         const expectedRules: ServerCssRule[] = [
-          { selector: 'test-element', properties: { 'border-width': '0' } },
-          { selector: 'test-element', properties: { 'border-width': '0px' } },
-          { selector: 'test-element', properties: { 'border-width': '0rem' } },
+          { selector: 'test-element', properties: { 'border-width': '0', 'border-style': '' } },
+          { selector: 'test-element', properties: { 'border-width': '0px', 'border-style': '' } },
+          { selector: 'test-element', properties: { 'border-width': '0rem', 'border-style': '' } },
           { selector: 'test-element', properties: { 'border-width': '1px', 'border-style': 'solid' } },
           { selector: 'test-element', properties: { 'border-width': '1rem', 'border-style': 'solid' } }
         ];
