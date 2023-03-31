@@ -61,6 +61,12 @@ export class ComponentTheme {
   }
 
   public updatePropertyValue(elementSelector: string, propertyName: string, value: string, modified?: boolean) {
+    // Remove property when value is an empty string
+    if (!value) {
+      delete this._properties[propertyKey(elementSelector, propertyName)];
+      return;
+    }
+
     let propertyValue = this.getPropertyValue(elementSelector, propertyName);
     if (!propertyValue) {
       propertyValue = {
@@ -154,8 +160,12 @@ export function generateThemeRule(
   // Individual property handling
 
   // Enable border style when setting a border width
-  if (propertyName === 'border-width' && parseInt(value) > 0) {
-    properties['border-style'] = 'solid';
+  if (propertyName === 'border-width') {
+    if (parseInt(value) > 0) {
+      properties['border-style'] = 'solid';
+    } else {
+      properties['border-style'] = '';
+    }
   }
 
   return {
