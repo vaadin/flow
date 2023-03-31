@@ -139,7 +139,7 @@ public class JavaScriptBootstrapHandlerTest {
         jsInitHandler.handleRequest(session, request, response);
 
         UI ui = UI.getCurrent();
-        ui.connectClient("a-tag", "an-id", "a-route", "", "", null, "");
+        ui.connectClient("a-route", "", "", null, "");
 
         TestNodeVisitor visitor = new TestNodeVisitor(true);
         BasicElementStateProvider.get().visit(ui.getElement().getNode(),
@@ -147,7 +147,7 @@ public class JavaScriptBootstrapHandlerTest {
 
         Assert.assertTrue(
                 hasNodeTag(visitor, "^<body>.*", ElementType.REGULAR));
-        Assert.assertTrue(hasNodeTag(visitor, "^<a-tag>.*",
+        Assert.assertTrue(hasNodeTag(visitor, "^<flow-container-.*>.*",
                 ElementType.VIRTUAL_ATTACHED));
         Assert.assertTrue(hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
         Assert.assertTrue(

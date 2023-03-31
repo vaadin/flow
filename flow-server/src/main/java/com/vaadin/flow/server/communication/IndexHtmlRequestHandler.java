@@ -99,9 +99,18 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (service.getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
             includeInitialUidl(initialJson, session, request, response);
-
+            UI ui = UI.getCurrent();
+            var flowContainerElement = new Element(
+                    ui.getInternals().getContainerTag());
+            flowContainerElement.attr("id", ui.getInternals().getAppId());
+            Elements outlet = indexDocument.body().select("#outlet");
+            if (!outlet.isEmpty()) {
+                outlet.first().appendChild(flowContainerElement);
+            } else {
+                indexDocument.body().appendChild(flowContainerElement);
+            }
             indexHtmlResponse = new IndexHtmlResponse(request, response,
-                    indexDocument, UI.getCurrent());
+                    indexDocument, ui);
         } else {
             indexHtmlResponse = new IndexHtmlResponse(request, response,
                     indexDocument);

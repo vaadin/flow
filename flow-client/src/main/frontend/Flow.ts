@@ -244,8 +244,6 @@ export class Flow {
 
         // Call server side to navigate to the given route
         flowRoot.$server.connectClient(
-          this.container.localName,
-          this.container.id,
           this.getFlowRoutePath(ctx),
           this.getFlowRouteQuery(ctx),
           this.appShellTitle,
@@ -296,15 +294,20 @@ export class Flow {
         await this.config.imports();
       }
 
+      // we use a custom tag for the flow app container
+      const tag = `flow-container-${appId.toLowerCase()}`;
+      const serverCreatedContainer = document.querySelector(tag);
+      if (serverCreatedContainer) {
+        this.container = serverCreatedContainer as HTMLElement;
+      } else {
+        this.container = document.createElement(tag);
+        this.container.id = appId;
+      }
+      flowRoot.$[appId] = this.container;
+
       // Load flow-client module
       const clientMod = await import('./FlowClient');
       await this.flowInitClient(clientMod);
-
-      // we use a custom tag for the flow app container
-      const tag = `flow-container-${appId.toLowerCase()}`;
-      this.container = document.createElement(tag);
-      flowRoot.$[appId] = this.container;
-      this.container.id = appId;
 
       // hide flow progress indicator
       this.loadingFinished();

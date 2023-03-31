@@ -117,9 +117,6 @@ public class UI extends Component
 
     private static final String NULL_LISTENER = "Listener can not be 'null'";
 
-    private static final Pattern APP_ID_REPLACE_PATTERN = Pattern
-            .compile("-\\d+$");
-
     /**
      * The id of this UI, used to find the server side instance of the UI form
      * which a request originates. A negative value indicates that the UI id has
@@ -262,8 +259,15 @@ public class UI extends Component
         }
         this.uiId = uiId;
 
-        appId = APP_ID_REPLACE_PATTERN.matcher(appId).replaceAll("");
-        getInternals().setAppId(appId);
+        getInternals().setFullAppId(appId);
+
+        // Create flow reference for the client outlet element
+        wrapperElement = new Element(getInternals().getContainerTag());
+
+        // Connect server with client
+        getElement().getStateProvider().appendVirtualChild(
+                getElement().getNode(), wrapperElement,
+                NodeProperties.INJECT_BY_ID, appId);
 
         // Add any dependencies from the UI class
         getInternals().addComponentDependencies(getClass());
@@ -1637,6 +1641,8 @@ public class UI extends Component
 
     private String forwardToClientUrl = null;
 
+    private boolean firstNavigation = true;
+
     /**
      * Gets the new forward url.
      *
@@ -1650,10 +1656,6 @@ public class UI extends Component
      * Connect a client with the server side UI. This method is invoked each
      * time client router navigates to a server route.
      *
-     * @param clientElementTag
-     *            client side element tag
-     * @param clientElementId
-     *            client side element id
      * @param flowRoutePath
      *            flow route path that should be attached to the client element
      * @param flowRouteQuery
@@ -1667,9 +1669,8 @@ public class UI extends Component
      */
     @ClientCallable
     @AllowInert
-    public void connectClient(String clientElementTag, String clientElementId,
-            String flowRoutePath, String flowRouteQuery, String appShellTitle,
-            JsonValue historyState, String trigger) {
+    public void connectClient(String flowRoutePath, String flowRouteQuery,
+            String appShellTitle, JsonValue historyState, String trigger) {
 
         if (appShellTitle != null && !appShellTitle.isEmpty()) {
             getInternals().setAppShellTitle(appShellTitle);
@@ -1692,21 +1693,17 @@ public class UI extends Component
         } else {
             navigationTrigger = NavigationTrigger.HISTORY;
         }
-        if (wrapperElement == null) {
-            // Create flow reference for the client outlet element
-            wrapperElement = new Element(clientElementTag);
-
-            // Connect server with client
-            getElement().getStateProvider().appendVirtualChild(
-                    getElement().getNode(), wrapperElement,
-                    NodeProperties.INJECT_BY_ID, clientElementId);
-
+        if (firstNavigation) {
+            firstNavigation = false;
             getPage().getHistory().setHistoryStateChangeHandler(
                     event -> renderViewForRoute(event.getLocation(),
                             event.getTrigger()));
 
-            // Render the flow view that the user wants to navigate to.
-            renderViewForRoute(location, navigationTrigger);
+            if (!getInternals().getActiveRouterTargetsChain().isEmpty()) {
+                // The view has already been rendered eagerly
+            } else {
+                renderViewForRoute(location, navigationTrigger);
+            }
         } else {
             History.HistoryStateChangeHandler handler = getPage().getHistory()
                     .getHistoryStateChangeHandler();
