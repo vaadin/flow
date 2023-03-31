@@ -1,9 +1,10 @@
 #Organize Import Order
 #Fri Nov 10 13:24:02 EET 2017
-6=\#
-5=elemental
-4=com.vaadin
-3=com.google.gwt
-2=
-1=java
-0=javax
+7=\#
+6=elemental
+5=com.vaadin
+4=com.google.gwt
+3=
+2=java
+1=javax
+0=jakarta
