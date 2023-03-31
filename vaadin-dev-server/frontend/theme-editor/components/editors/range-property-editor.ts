@@ -2,7 +2,7 @@ import { css, html, PropertyValues, TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { icons } from '../../icons';
-import { BasePropertyEditor, PropertyPresets } from './base-property-editor';
+import { BasePropertyEditor, PropertyPresets, TextInputChangeEvent } from './base-property-editor';
 
 @customElement('vaadin-dev-tools-theme-range-property-editor')
 export class RangePropertyEditor extends BasePropertyEditor {
@@ -151,7 +151,12 @@ export class RangePropertyEditor extends BasePropertyEditor {
         />
         ${icon ? html` <div class="icon suffix">${icon}</div>` : null}
       </div>
-      <input type="text" class="input" .value=${this.value} @change=${this.handleValueChange} />
+      <vaadin-dev-tools-theme-text-input
+        class="input"
+        .value=${this.value}
+        .showClearButton=${this.propertyValue?.modified || false}
+        @change=${this.handleValueChange}
+      ></vaadin-dev-tools-theme-text-input>
     `;
   }
 
@@ -168,9 +173,8 @@ export class RangePropertyEditor extends BasePropertyEditor {
     this.dispatchChange(this.value);
   }
 
-  private handleValueChange(e: Event) {
-    const input = e.target as HTMLInputElement;
-    this.value = input.value;
+  private handleValueChange(e: TextInputChangeEvent) {
+    this.value = e.detail.value;
 
     this.updateSliderValue();
     this.dispatchChange(this.value);
