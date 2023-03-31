@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server.communication;
 
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Optional;
@@ -48,6 +46,8 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
+import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 
 /**
  * Processes a 'start' request type from the client to initialize server session
