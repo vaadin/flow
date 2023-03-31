@@ -180,7 +180,6 @@ public interface DragSource<T extends Component> extends HasElement {
             getDraggableElement().setProperty("draggable",
                     Boolean.TRUE.toString());
             DndUtil.updateDragSourceActivation(this);
-            DndUtil.addMobileDndPolyfillIfNeeded(getDragSourceComponent());
 
             // store & clear the component as active drag source for the UI
             Registration startListenerRegistration = addDragStartListener(
