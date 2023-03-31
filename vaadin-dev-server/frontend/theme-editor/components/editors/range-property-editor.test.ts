@@ -66,7 +66,21 @@ describe('range property editor', () => {
   }
 
   function getInput() {
-    return editor.shadowRoot!.querySelector('input[type="text"]') as HTMLInputElement;
+    return editor
+      .shadowRoot!.querySelector('vaadin-dev-tools-theme-text-input')!
+      .shadowRoot!.querySelector('input') as HTMLInputElement;
+  }
+
+  function getClearButton() {
+    return editor
+      .shadowRoot!.querySelector('vaadin-dev-tools-theme-text-input')!
+      .shadowRoot!.querySelector('button') as HTMLButtonElement;
+  }
+
+  function isClearButtonVisible() {
+    const button = getClearButton();
+
+    return getComputedStyle(button).display === 'block';
   }
 
   function cloneTheme() {
@@ -143,7 +157,7 @@ describe('range property editor', () => {
     const updatedTheme = cloneTheme();
     updatedTheme.updatePropertyValue(hostMetadata.selector, 'height', 'var(--test-size-xl)');
     editor.theme = updatedTheme;
-    await elementUpdated(editor);
+    await elementUpdated(getInput());
 
     expect(getInput().value).to.equal('60px');
   });
@@ -187,5 +201,24 @@ describe('range property editor', () => {
 
     expect(valueChangeSpy.calledOnce).to.be.true;
     expect(valueChangeSpy.args[0][0].detail.value).to.equal('25px');
+  });
+
+  it('should display clear button when property is modified', async () => {
+    expect(isClearButtonVisible()).to.be.false;
+
+    const updatedTheme = cloneTheme();
+    updatedTheme.updatePropertyValue(hostMetadata.selector, 'height', '35px', true);
+    editor.theme = updatedTheme;
+    await elementUpdated(editor);
+    await elementUpdated(getInput());
+
+    expect(isClearButtonVisible()).to.be.true;
+  });
+
+  it('should dispatch event with empty value when clearing value', () => {
+    getClearButton().click();
+
+    expect(valueChangeSpy.calledOnce).to.be.true;
+    expect(valueChangeSpy.args[0][0].detail.value).to.equal('');
   });
 });

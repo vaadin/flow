@@ -22,7 +22,21 @@ describe('text property editor', () => {
   let valueChangeSpy: sinon.SinonSpy;
 
   function getInput() {
-    return editor.shadowRoot!.querySelector('input') as HTMLInputElement;
+    return editor
+      .shadowRoot!.querySelector('vaadin-dev-tools-theme-text-input')!
+      .shadowRoot!.querySelector('input') as HTMLInputElement;
+  }
+
+  function getClearButton() {
+    return editor
+      .shadowRoot!.querySelector('vaadin-dev-tools-theme-text-input')!
+      .shadowRoot!.querySelector('button') as HTMLButtonElement;
+  }
+
+  function isClearButtonVisible() {
+    const button = getClearButton();
+
+    return getComputedStyle(button).display === 'block';
   }
 
   function cloneTheme() {
@@ -53,7 +67,7 @@ describe('text property editor', () => {
     const updatedTheme = cloneTheme();
     updatedTheme.updatePropertyValue(labelMetadata.selector, 'color', 'red', true);
     editor.theme = updatedTheme;
-    await elementUpdated(editor);
+    await elementUpdated(getInput());
 
     expect(input.value).to.equal('red');
   });
@@ -65,5 +79,23 @@ describe('text property editor', () => {
 
     expect(valueChangeSpy.calledOnce).to.be.true;
     expect(valueChangeSpy.args[0][0].detail.value).to.equal('red');
+  });
+
+  it('should display clear button when property is modified', async () => {
+    expect(isClearButtonVisible()).to.be.false;
+
+    const updatedTheme = cloneTheme();
+    updatedTheme.updatePropertyValue(labelMetadata.selector, 'color', 'red', true);
+    editor.theme = updatedTheme;
+    await elementUpdated(getInput());
+
+    expect(isClearButtonVisible()).to.be.true;
+  });
+
+  it('should dispatch event with empty value when clearing value', () => {
+    getClearButton().click();
+
+    expect(valueChangeSpy.calledOnce).to.be.true;
+    expect(valueChangeSpy.args[0][0].detail.value).to.equal('');
   });
 });

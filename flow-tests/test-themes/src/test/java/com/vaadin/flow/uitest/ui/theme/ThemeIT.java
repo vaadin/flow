@@ -48,8 +48,11 @@ public class ThemeIT extends ChromeBrowserTest {
 
         checkLogsForErrors();
 
-        final TestBenchElement helloWorld = $(TestBenchElement.class).first()
-                .findElement(By.tagName("hello-world-view"));
+        // This is a TypeScript view and as TestBench cannot wait for
+        // the Vaadin router to complete the routing operation (the view
+        // is imported dynamically) we need "waitForFirst" here
+        final TestBenchElement helloWorld = $("hello-world-view")
+                .waitForFirst();
 
         Assert.assertEquals(
                 "CSS was not applied as background color was not as expected.",
