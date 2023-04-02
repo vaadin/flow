@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,7 +31,6 @@ import com.vaadin.flow.server.VaadinService;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 1.0
  */
 public final class LocaleUtil {
 
@@ -103,9 +102,9 @@ public final class LocaleUtil {
     /**
      * Get the locale for the given UI.
      * <p>
-     * -> If UI is not null, then it is used to get the locale, -> if UI is
-     * null, then the I18NProvider providedLocales first match will be returned,
-     * -> if I18NProvider is null, then default locale is returned.
+     * - If UI is not null, then it is used to get the locale, - if UI is null,
+     * then the I18NProvider providedLocales first match will be returned, - if
+     * I18NProvider is null, then default locale is returned.
      *
      * @param i18NProvider
      *            - supplier for the i18n provider
