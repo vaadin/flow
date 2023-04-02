@@ -31,7 +31,6 @@ import com.vaadin.flow.server.VaadinService;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 1.0
  */
 public final class LocaleUtil {
 
@@ -103,9 +102,9 @@ public final class LocaleUtil {
     /**
      * Get the locale for the given UI.
      * <p>
-     * -> If UI is not null, then it is used to get the locale, -> if UI is
-     * null, then the I18NProvider providedLocales first match will be returned,
-     * -> if I18NProvider is null, then default locale is returned.
+     * - If UI is not null, then it is used to get the locale, - if UI is null,
+     * then the I18NProvider providedLocales first match will be returned, - if
+     * I18NProvider is null, then default locale is returned.
      *
      * @param i18NProvider
      *            - supplier for the i18n provider
