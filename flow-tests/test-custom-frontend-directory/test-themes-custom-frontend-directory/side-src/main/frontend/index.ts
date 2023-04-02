@@ -6,7 +6,7 @@ const {serverSideRoutes} = new Flow({
 });
 
 const routes = [
-    // for client-side, place routes below (more info https://vaadin.com/docs/v15/flow/typescript/creating-routes.html)
+    // for client-side, place routes below (more info https://hilla.dev/docs/lit/guides/routing#initializing-the-router)
     {
         path: 'hello',
         component: 'hello-world-view',
