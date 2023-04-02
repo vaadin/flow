@@ -38,7 +38,7 @@
         <dependency>
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-core</artifactId>
-            <version>3.25.2</version>
+            <version>3.24.10</version>
         </dependency>
 
         <!-- API dependencies -->
