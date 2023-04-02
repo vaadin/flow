@@ -21,7 +21,7 @@ const { serverSideRoutes } = new Flow({
 });
 
 const routes = [
-  // for client-side, place routes below (more info https://hilla.dev/docs/lit/guides/routing#initializing-the-router
+  // for client-side, place routes below (more info https://hilla.dev/docs/lit/guides/routing#initializing-the-router)
 
   // for server-side, the next magic line sends all unmatched routes:
   ...serverSideRoutes // IMPORTANT: this must be the last entry in the array
