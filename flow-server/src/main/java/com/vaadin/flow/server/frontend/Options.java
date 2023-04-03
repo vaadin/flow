@@ -474,7 +474,8 @@ public class Options implements Serializable {
      * Whether to run with a dev server (when not in production mode).
      *
      * @param frontendHotdeploy
-     *            true to run with a dev server, false to run in express mode
+     *            true to run with a dev server, false to run in development
+     *            bundle mode
      * @return this builder
      */
     public Options withFrontendHotdeploy(boolean frontendHotdeploy) {
@@ -485,7 +486,8 @@ public class Options implements Serializable {
     /**
      * Checks if running with a dev server (when not in production mode).
      *
-     * @return true to run with a dev server, false to run in express mode
+     * @return true to run with a dev server, false to run in development bundle
+     *         mode
      */
     public boolean isFrontendHotdeploy() {
         return frontendHotdeploy;
