@@ -116,7 +116,7 @@ public class TaskGenerateTsConfigTest {
     public void should_notGenerateTsConfig_TsConfigExist() throws Exception {
         Path tsconfig = Files
                 .createFile(new File(npmFolder, "tsconfig.json").toPath());
-        Files.writeString(tsconfig, " ", UTF_8);
+        Files.writeString(tsconfig, "text", UTF_8);
         taskGenerateTsConfig.execute();
         Assert.assertFalse(
                 "Should not generate tsconfig.json when tsconfig.json exists",
