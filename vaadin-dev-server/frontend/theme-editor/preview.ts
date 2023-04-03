@@ -7,9 +7,14 @@ class ThemePreview {
     return this._stylesheet!;
   }
 
-  update(css: string) {
+  add(css: string) {
     this.ensureStylesheet();
     this._stylesheet!.replaceSync(css);
+  }
+
+  clear() {
+    this.ensureStylesheet();
+    this._stylesheet!.replaceSync('');
   }
 
   previewLocalClassName(element?: HTMLElement, className?: string) {

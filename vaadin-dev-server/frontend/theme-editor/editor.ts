@@ -7,6 +7,7 @@ import {
   ComponentTheme,
   createScopedSelector,
   generateThemeRule,
+  generateThemeRuleCss,
   SelectorScope,
   ThemeContext,
   ThemeEditorState,
@@ -194,6 +195,14 @@ export class ThemeEditor extends LitElement {
     this.history = new ThemeEditorHistory(this.api);
     this.historyActions = this.history.allowedActions;
     this.api.markAsUsed();
+
+    // When the theme is updated due to HMR, remove optimistic updates from
+    // theme preview. Also refresh the base theme as default property values may
+    // have changed.
+    document.addEventListener('vaadin-theme-updated', () => {
+      themePreview.clear();
+      this.refreshBaseTheme();
+    });
   }
 
   protected update(changedProperties: PropertyValues) {
@@ -330,7 +339,6 @@ export class ThemeEditor extends LitElement {
       localClassName: this.context.localClassName
     };
     const scopedSelector = createScopedSelector(event.detail.element, selectorScope);
-    this.preventLiveReload();
     await this.api.openCss(scopedSelector);
   }
 
@@ -384,7 +392,6 @@ export class ThemeEditor extends LitElement {
     const newClassName = e.detail.value;
     if (previousClassName) {
       // Update local class name if there is an existing one
-      this.preventLiveReload();
       const element = this.context.component.element;
       this.context.localClassName = newClassName;
       const classNameResponse = await this.api.setLocalClassName(this.context.component, newClassName);
@@ -393,8 +400,6 @@ export class ThemeEditor extends LitElement {
         () => themePreview.previewLocalClassName(element, newClassName),
         () => themePreview.previewLocalClassName(element, previousClassName)
       );
-      // Update preview, as class names in CSS have changed
-      await this.updateThemePreview();
     } else {
       // Update suggested class name for now, will effectively be applied when
       // changing a property
@@ -465,23 +470,23 @@ export class ThemeEditor extends LitElement {
     };
     const updateRule = generateThemeRule(element, selectorScope, property.propertyName, value);
     try {
-      this.preventLiveReload();
       const response = await this.api.setCssRules([updateRule]);
       this.historyActions = this.history.push(response.requestId);
-      await this.updateThemePreview();
+      // Do optimistic update of property changes, will be cleared after HMR of
+      // theme files
+      const css = generateThemeRuleCss(updateRule);
+      themePreview.add(css);
     } catch (error) {
       console.error('Failed to update property value', error);
     }
   }
 
   private async handleUndo() {
-    this.preventLiveReload();
     this.historyActions = await this.history.undo();
     await this.refreshComponentAndTheme();
   }
 
   private async handleRedo() {
-    this.preventLiveReload();
     this.historyActions = await this.history.redo();
     await this.refreshComponentAndTheme();
   }
@@ -537,12 +542,6 @@ export class ThemeEditor extends LitElement {
       return;
     }
 
-    // Always update preview, this can always change even if there is no
-    // selected component, or it's inaccessible. For example after an undo or
-    // redo. Also preview styles need to be updated before detecting the base
-    // theme / default property values for property editors.
-    await this.updateThemePreview();
-
     // Skip refreshing the theme state if the component is not accessible
     const inaccessible = context.scope === ThemeScope.local && !context.accessible;
     if (inaccessible) {
@@ -578,15 +577,12 @@ export class ThemeEditor extends LitElement {
     this.effectiveTheme = ComponentTheme.combine(baseTheme, this.editedTheme);
   }
 
-  private async updateThemePreview() {
-    const preview = await this.api.loadPreview();
-    themePreview.update(preview.css);
-  }
-
-  private preventLiveReload() {
-    // Notify dev tools that we are about to save CSS, so that it can disable
-    // live reload temporarily
-    this.dispatchEvent(new CustomEvent('before-save'));
+  private async refreshBaseTheme() {
+    if (!this.context || !this.editedTheme) {
+      return;
+    }
+    this.baseTheme = await detectTheme(this.context.metadata);
+    this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
   }
 
   private highlightElement(element?: HTMLElement) {

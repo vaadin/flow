@@ -267,6 +267,10 @@ if (import.meta.hot) {
       })
     }
   });
+
+  import.meta.hot.on('vite:afterUpdate', (update) => {
+    document.dispatchEvent(new CustomEvent('vaadin-theme-updated', { detail: update }));
+  });
 }
 
 `;
