@@ -201,7 +201,7 @@ export class ThemeEditor extends LitElement {
     // have changed.
     document.addEventListener('vaadin-theme-updated', () => {
       themePreview.clear();
-      this.refreshBaseTheme();
+      this.refreshTheme();
     });
   }
 
@@ -575,14 +575,6 @@ export class ThemeEditor extends LitElement {
     this.baseTheme = baseTheme;
     this.editedTheme = editedTheme;
     this.effectiveTheme = ComponentTheme.combine(baseTheme, this.editedTheme);
-  }
-
-  private async refreshBaseTheme() {
-    if (!this.context || !this.editedTheme) {
-      return;
-    }
-    this.baseTheme = await detectTheme(this.context.metadata);
-    this.effectiveTheme = ComponentTheme.combine(this.baseTheme, this.editedTheme);
   }
 
   private highlightElement(element?: HTMLElement) {
