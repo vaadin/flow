@@ -55,7 +55,6 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -103,10 +102,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
             indexHtmlResponse = new IndexHtmlResponse(request, response,
                     indexDocument, UI.getCurrent());
-
-            // App might be using classic server-routing, which is true
-            // unless we detect a call to JavaScriptBootstrapUI.connectClient
-            session.setAttribute(SERVER_ROUTING, Boolean.TRUE);
         } else {
             indexHtmlResponse = new IndexHtmlResponse(request, response,
                     indexDocument);

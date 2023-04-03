@@ -41,7 +41,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -194,9 +193,6 @@ public class JavaScriptBootstrapUITest {
         ui = new UI();
         ui.getInternals().setSession(mocks.getSession());
 
-        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
-                .thenReturn(Boolean.FALSE);
-
         CurrentInstance.setCurrent(ui);
     }
 
@@ -265,31 +261,6 @@ public class JavaScriptBootstrapUITest {
     }
 
     @Test
-    public void addRemoveComponent_serverSideRouting_addsDirectlyToUI() {
-        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
-                .thenReturn(Boolean.TRUE);
-
-        assertEquals(0, ui.getElement().getChildCount());
-        assertEquals(0, ui.getChildren().count());
-
-        // use any server side route
-        ui.navigate("product");
-
-        assertEquals(1, ui.getElement().getChildCount());
-        assertEquals(1, ui.getChildren().count());
-
-        final RouterLink routerLink = new RouterLink();
-        ui.add(routerLink);
-        assertEquals(2, ui.getElement().getChildCount());
-        assertEquals(2, ui.getChildren().count());
-
-        ui.remove(routerLink);
-
-        assertEquals(1, ui.getElement().getChildCount());
-        assertEquals(1, ui.getChildren().count());
-    }
-
-    @Test
     public void addComponent_clientSideRouterAndNavigation_componentsRemain() {
         final Element uiElement = ui.getElement();
         // trigger route via client
@@ -306,27 +277,6 @@ public class JavaScriptBootstrapUITest {
         assertEquals(2, ui.getChildren().count());
         assertEquals(1, ui.getElement().getChildCount());
         assertEquals(1, uiElement.getChildCount());
-    }
-
-    @Test
-    public void addComponent_serverSideRouterAndNavigation_componentsRemain() {
-        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
-                .thenReturn(Boolean.TRUE);
-        final Element uiElement = ui.getElement();
-
-        ui.navigate("clean");
-        final RouterLink routerLink = new RouterLink();
-        ui.add(routerLink);
-
-        assertEquals(2, ui.getChildren().count());
-        assertEquals(2, ui.getElement().getChildCount());
-        assertEquals(2, uiElement.getChildCount());
-
-        ui.navigate("product");
-
-        assertEquals(2, ui.getChildren().count());
-        assertEquals(2, ui.getElement().getChildCount());
-        assertEquals(2, uiElement.getChildCount());
     }
 
     @Test
@@ -430,46 +380,6 @@ public class JavaScriptBootstrapUITest {
         assertNull(ui.wrapperElement);
         // attached to body
         assertTrue(ui.getElement().toString().contains("Available routes:"));
-    }
-
-    @Test
-    public void should_navigate_when_server_routing() {
-        ui.connectClient("foo", "bar", "/clean", "", "", null, "");
-        assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H2,
-                ui.wrapperElement.getChild(0).getChild(0).getTag());
-
-        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
-                .thenReturn(Boolean.TRUE);
-
-        ui.navigate("dirty");
-        assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H1,
-                ui.wrapperElement.getChild(0).getChild(0).getTag());
-    }
-
-    @Test
-    public void should_not_create_navigation_loop_when_server_routing() {
-        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
-                .thenReturn(Boolean.TRUE);
-
-        ui.navigate("product");
-        assertTrue(ui.getChildren().findFirst().isPresent());
-        assertEquals("productView",
-                ui.getChildren().findFirst().get().getId().get());
-    }
-
-    @Test
-    public void should_clearLastHandledNavigation_when_navigateToOtherViews() {
-        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
-                .thenReturn(Boolean.TRUE);
-
-        ui.navigate("clean");
-        assertFalse("Should clear lastHandledNavigation after finishing",
-                ui.getInternals().hasLastHandledLocation());
-        ui.navigate("product");
-        assertFalse("Should clear lastHandledNavigation after finishing",
-                ui.getInternals().hasLastHandledLocation());
     }
 
     @Test
@@ -607,21 +517,6 @@ public class JavaScriptBootstrapUITest {
 
         ui.navigate("dirty");
         assertEquals(dynamicTitle, ui.getInternals().getTitle());
-    }
-
-    @Test
-    public void should_caught_and_show_exception_during_navigation_in_internalServerError()
-            throws InvalidRouteConfigurationException {
-        String location = "exception";
-        String validationMessage = "Failed on an exception";
-        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
-                .thenReturn(Boolean.TRUE);
-
-        ui.navigate(location);
-        String errorMessage = String.format(
-                "There was an exception while trying to navigate to '%s' with the exception message '%s'",
-                location, validationMessage);
-        assertExceptionComponent(InternalServerError.class, errorMessage);
     }
 
     @Test

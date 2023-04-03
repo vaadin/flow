@@ -1189,13 +1189,6 @@ public class UI extends Component
         Objects.requireNonNull(queryParameters,
                 "Query parameters must not be null");
         Location location = new Location(locationString, queryParameters);
-        if (Boolean.TRUE.equals(getSession().getAttribute(SERVER_ROUTING))) {
-            // server-side routing
-            renderViewForRoute(location, NavigationTrigger.UI_NAVIGATE);
-            return;
-        }
-
-        // client-side routing
 
         // There is an in-progress navigation or there are no changes,
         // prevent looping
@@ -1635,8 +1628,6 @@ public class UI extends Component
         return childComponents.build();
     }
 
-    public static final String SERVER_ROUTING = "clientRoutingMode";
-
     static final String SERVER_CONNECTED = "this.serverConnected($0)";
     public static final String CLIENT_NAVIGATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
 
@@ -1733,11 +1724,6 @@ public class UI extends Component
         } else {
             acknowledgeClient();
         }
-
-        // If this call happens, there is a client-side routing, thus
-        // it's needed to remove the flag that might be set in
-        // IndexHtmlRequestHandler
-        getSession().setAttribute(SERVER_ROUTING, Boolean.FALSE);
     }
 
     /**
