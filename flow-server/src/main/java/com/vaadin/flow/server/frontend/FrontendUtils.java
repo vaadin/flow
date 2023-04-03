@@ -1182,8 +1182,7 @@ public class FrontendUtils {
     }
 
     /**
-     * Finds the given file inside the express mode development bundle that is
-     * used.
+     * Finds the given file inside the current development bundle.
      * <p>
      *
      * @param projectDir
