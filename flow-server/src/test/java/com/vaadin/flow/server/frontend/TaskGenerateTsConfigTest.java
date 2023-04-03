@@ -22,6 +22,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 
 import org.apache.commons.io.FileUtils;
@@ -113,7 +114,9 @@ public class TaskGenerateTsConfigTest {
 
     @Test
     public void should_notGenerateTsConfig_TsConfigExist() throws Exception {
-        Files.createFile(new File(npmFolder, "tsconfig.json").toPath());
+        Path tsconfig = Files
+                .createFile(new File(npmFolder, "tsconfig.json").toPath());
+        Files.writeString(tsconfig, "text", UTF_8);
         taskGenerateTsConfig.execute();
         Assert.assertFalse(
                 "Should not generate tsconfig.json when tsconfig.json exists",
