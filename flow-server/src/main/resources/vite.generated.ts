@@ -135,11 +135,10 @@ function buildSWPlugin(opts): PluginOption {
       return includedPluginNames.includes(p.name);
     });
     const resolver = config.createResolver();
-    const resolvePlugin:rollup.Plugin = {
+    const resolvePlugin: rollup.Plugin = {
       name: 'resolver',
       resolveId(source, importer, _options) {
-        const result = resolver(source, importer);
-        return result;
+        return resolver(source, importer);
       }
     };
     plugins.unshift(resolvePlugin); // Put resolve first
