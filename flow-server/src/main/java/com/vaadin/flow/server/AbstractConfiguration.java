@@ -45,8 +45,8 @@ public interface AbstractConfiguration extends Serializable {
     boolean isProductionMode();
 
     /**
-     * Get if the dev server should be enabled. false by default as express mode
-     * should be used.
+     * Get if the dev server should be enabled. false by default as a
+     * development bundle is used.
      *
      * @return true if dev server should be used
      * @deprecated Use {@link #getMode()} instead

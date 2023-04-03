@@ -198,7 +198,7 @@ public class LitTemplateParserImpl implements LitTemplateParser {
             content = getResourceStream(service, resourceUrl);
         }
         if (content == null) {
-            // In express mode, template sources are stored in
+            // In dev bundle mode, template sources are stored in
             // src/main/dev-bundle/config/templates
             String pathWithoutPrefix = url.replaceFirst("^\\./", "");
             Path subFolder = Path.of(Constants.DEV_BUNDLE_LOCATION, "config",
