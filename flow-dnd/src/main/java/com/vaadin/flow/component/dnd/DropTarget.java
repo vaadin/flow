@@ -152,7 +152,6 @@ public interface DropTarget<T extends Component> extends HasElement {
             getElement().setProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY,
                     active);
             DndUtil.updateDropTargetActivation(this);
-            DndUtil.addMobileDndPolyfillIfNeeded(getDropTargetComponent());
             // only onetime thing when in development mode
             DndUtil.reportUsage();
         }

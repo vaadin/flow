@@ -203,18 +203,12 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     private void deleteCurrentThemeComponentStyles() {
         Assert.assertTrue("Expected theme generated file to be present",
                 currentThemeGeneratedFile.exists());
-        // workaround for https://github.com/vaadin/flow/issues/9948
-        // delete theme generated with component styles in one run
-        deleteFile(currentThemeGeneratedFile);
         deleteFile(currentThemeComponentCSSFile);
     }
 
     private void deleteParentThemeComponentStyles() {
         Assert.assertTrue("Expected parent theme generated file to be present",
                 parentThemeGeneratedFile.exists());
-        // workaround for https://github.com/vaadin/flow/issues/9948
-        // delete theme generated with component styles in one run
-        deleteFile(parentThemeGeneratedFile);
         deleteFile(parentThemeComponentCSSFile);
     }
 

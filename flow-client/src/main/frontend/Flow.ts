@@ -15,7 +15,6 @@ interface AppConfig {
   productionMode: boolean;
   appId: string;
   uidl: any;
-  clientRouting: boolean;
 }
 
 interface AppInitResponse {
@@ -271,17 +270,14 @@ export class Flow {
   }
 
   // import flow client modules and initialize UI in server side.
-  private async flowInit(serverSideRouting = false): Promise<AppInitResponse> {
+  private async flowInit(): Promise<AppInitResponse> {
     // Do not start flow twice
     if (!this.isFlowClientLoaded()) {
       // show flow progress indicator
       this.loadingStarted();
 
       // Initialize server side UI
-      this.response = await this.flowInitUi(serverSideRouting);
-
-      // Enable or disable server side routing
-      this.response.appConfig.clientRouting = !serverSideRouting;
+      this.response = await this.flowInitUi();
 
       const { pushScript, appConfig } = this.response;
 
@@ -304,13 +300,11 @@ export class Flow {
       const clientMod = await import('./FlowClient');
       await this.flowInitClient(clientMod);
 
-      if (!serverSideRouting) {
-        // we use a custom tag for the flow app container
-        const tag = `flow-container-${appId.toLowerCase()}`;
-        this.container = document.createElement(tag);
-        flowRoot.$[appId] = this.container;
-        this.container.id = appId;
-      }
+      // we use a custom tag for the flow app container
+      const tag = `flow-container-${appId.toLowerCase()}`;
+      this.container = document.createElement(tag);
+      flowRoot.$[appId] = this.container;
+      this.container.id = appId;
 
       // hide flow progress indicator
       this.loadingFinished();
@@ -364,7 +358,7 @@ export class Flow {
   }
 
   // Returns the `appConfig` object
-  private async flowInitUi(serverSideRouting: boolean): Promise<AppInitResponse> {
+  private async flowInitUi(): Promise<AppInitResponse> {
     // appConfig was sent in the index.html request
     const initial = $wnd.Vaadin && $wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.initial;
     if (initial) {
@@ -376,10 +370,9 @@ export class Flow {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       const httpRequest = xhr as any;
-      const serverRoutingParam = serverSideRouting ? '&serverSideRouting' : '';
       const requestPath = `?v-r=init&location=${encodeURIComponent(
         this.getFlowRoutePath(location)
-      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${serverRoutingParam}`;
+      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}`;
 
       httpRequest.open('GET', requestPath);
 

@@ -262,7 +262,7 @@ public class StaticFileServer implements StaticFileHandler {
         if (deploymentConfiguration.getMode() == Mode.DEVELOPMENT_BUNDLE) {
             if (filenameWithPath.startsWith(EXPRESS_MODE_BUNDLE_PATH_PREFIX)
                     || filenameWithPath.startsWith("/sw.js")) {
-                // Express mode bundle file
+                // Development bundle file
                 String filenameInsideBundle = filenameWithPath
                         .replaceFirst(EXPRESS_MODE_BUNDLE_PATH_PREFIX, "/");
                 resourceUrl = FrontendUtils.findBundleFile(
