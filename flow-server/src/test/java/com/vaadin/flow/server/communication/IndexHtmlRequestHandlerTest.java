@@ -15,15 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.jsoup.Jsoup;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
@@ -56,15 +48,15 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.AppShellRegistry;
-import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.AppShellWithPWA;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
 import com.vaadin.flow.theme.Theme;
@@ -73,8 +65,15 @@ import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpServletRequest;
+
+import static com.vaadin.flow.component.UI.SERVER_ROUTING;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class IndexHtmlRequestHandlerTest {
     private static final String SPRING_CSRF_ATTRIBUTE_IN_SESSION = "org.springframework.security.web.csrf.CsrfToken";
@@ -87,7 +86,7 @@ public class IndexHtmlRequestHandlerTest {
     private VaadinResponse response;
     private ByteArrayOutputStream responseOutput;
     private MockDeploymentConfiguration deploymentConfiguration;
-    private VaadinServletContext context;
+    private VaadinContext context;
 
     private String springTokenString;
     private String springTokenHeaderName = "x-CSRF-TOKEN";
@@ -109,12 +108,13 @@ public class IndexHtmlRequestHandlerTest {
         deploymentConfiguration.setFrontendHotdeploy(false);
         deploymentConfiguration.setProductionMode(true);
         indexHtmlRequestHandler = new IndexHtmlRequestHandler();
-        context = Mockito.mock(VaadinServletContext.class);
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(context.getContext()).thenReturn(servletContext);
-        Mockito.when(context.getAttribute(Mockito.any(), Mockito.any()))
-                .thenCallRealMethod();
+        context = service.getContext();
         springTokenString = UUID.randomUUID().toString();
+
+        ApplicationConfiguration applicationConfiguration = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(context.getAttribute(ApplicationConfiguration.class))
+                .thenReturn(applicationConfiguration);
     }
 
     @Test
@@ -165,6 +165,17 @@ public class IndexHtmlRequestHandlerTest {
                 () -> indexHtmlRequestHandler.synchronizedHandleRequest(session,
                         vaadinRequest, response));
         Assert.assertEquals(expectedError, expectedException.getMessage());
+    }
+
+    @Test
+    public void serveIndexHtml_language_attribute_is_present()
+            throws IOException {
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Assert.assertTrue("Response should have a language attribute",
+                indexHtml.contains("<html lang"));
     }
 
     @Test
@@ -524,7 +535,7 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
                 Boolean.FALSE);
 
-        UI.getCurrent().connectClient("foo", "bar", "/foo", "", "", null);
+        UI.getCurrent().connectClient("foo", "bar", "/foo", "", "", null, "");
 
         Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
                 Boolean.FALSE);

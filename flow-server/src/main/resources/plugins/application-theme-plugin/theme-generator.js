@@ -20,7 +20,7 @@
  */
 import glob from 'glob';
 import { resolve, basename } from 'path';
-import { existsSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { checkModules } from './theme-copy.js';
 
 const { sync } = glob;
@@ -29,10 +29,11 @@ const { sync } = glob;
 const themeComponentsFolder = 'components';
 // The contents of a global CSS file with this name in a theme is always added to
 // the document. E.g. @font-face must be in this
-const documentCssFile = 'document.css';
+const documentCssFilename = 'document.css';
 // styles.css is the only entrypoint css file with document.css. Everything else should be imported using css @import
-const stylesCssFile = 'styles.css';
+const stylesCssFilename = 'styles.css';
 
+const CSSIMPORT_COMMENT = 'CSSImport end';
 const headerImport = `import 'construct-style-sheets-polyfill';
 `;
 
@@ -45,13 +46,20 @@ const headerImport = `import 'construct-style-sheets-polyfill';
  * @param {Object} options build options (e.g. prod or dev mode)
  * @returns {string} theme file content
  */
-function generateThemeFile(themeFolder, themeName, themeProperties, options) {
+function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   const productionMode = !options.devMode;
-  const useDevServer = !options.useDevBundle;
-  const styles = resolve(themeFolder, stylesCssFile);
-  const document = resolve(themeFolder, documentCssFile);
+  const useDevServerOrInProductionMode = !options.useDevBundle;
+  const outputFolder = options.frontendGeneratedFolder;
+  const styles = resolve(themeFolder, stylesCssFilename);
+  const documentCssFile = resolve(themeFolder, documentCssFilename);
   const autoInjectComponents = themeProperties.autoInjectComponents ?? true;
-  let themeFile = headerImport;
+  const globalFilename = 'theme-' + themeName + '.global.generated.js';
+  const componentsFilename = 'theme-' + themeName + '.components.generated.js';
+  const themeFilename = 'theme-' + themeName + '.generated.js';
+
+  let themeFileContent = headerImport;
+  let globalImportContent = '// When this file is imported, global styles are automatically applied\n';
+  let componentsFileContent = '';
   var componentsFiles;
 
   if (autoInjectComponents) {
@@ -61,22 +69,29 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
     });
 
     if (componentsFiles.length > 0) {
-      themeFile += "import { unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin/register-styles';\n";
+      componentsFileContent +=
+        "import { unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin/register-styles';\n";
     }
   }
 
   if (themeProperties.parent) {
-    themeFile += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';\n`;
+    themeFileContent += `import { applyTheme as applyBaseTheme } from './theme-${themeProperties.parent}.generated.js';\n`;
   }
 
-  themeFile += `import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
+  themeFileContent += `import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
+  themeFileContent += `import './${componentsFilename}';\n`;
 
+  themeFileContent += `let needsReloadOnChanges = false;\n`;
   const imports = [];
+  const componentCssImports = [];
+  const globalFileContent = [];
   const globalCssCode = [];
-  const lumoCssCode = [];
-  const lumoCssShadowOnlyCode = [];
+  const shadowOnlyCss = [];
   const componentCssCode = [];
   const parentTheme = themeProperties.parent ? 'applyBaseTheme(target);\n' : '';
+  const parentThemeGlobalImport = themeProperties.parent
+    ? `import './theme-${themeProperties.parent}.global.generated.js';\n`
+    : '';
 
   const themeIdentifier = '_vaadintheme_' + themeName + '_';
   const lumoCssFlag = '_vaadinthemelumoimports_';
@@ -97,12 +112,10 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
   // styles.css will always be available as we write one if it doesn't exist.
   let filename = basename(styles);
   let variable = camelCase(filename);
-  if (useDevServer) {
-    imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
-  }
-  /* Lumo must be first so that custom styles override Lumo styles */
+
+  /* LUMO */
   const lumoImports = themeProperties.lumoImports || ['color', 'typography'];
-  if (lumoImports && lumoImports.length > 0) {
+  if (lumoImports) {
     lumoImports.forEach((lumoImport) => {
       imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles/${lumoImport}.js';\n`);
       if (lumoImport === 'utility' || lumoImport === 'badge') {
@@ -113,20 +126,27 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
 
     lumoImports.forEach((lumoImport) => {
       // Lumo is injected to the document by Lumo itself
-      lumoCssShadowOnlyCode.push(`injectGlobalCss(${lumoImport}.cssText, target, true);\n`);
+      shadowOnlyCss.push(`injectGlobalCss(${lumoImport}.cssText, '', target, true);\n`);
     });
   }
 
-  if (useDevServer) {
-    globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n    `);
+  /* Theme */
+  if (useDevServerOrInProductionMode) {
+    globalFileContent.push(parentThemeGlobalImport);
+    globalFileContent.push(`import 'themes/${themeName}/${filename}';\n`);
+
+    imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
+    shadowOnlyCss.push(`injectGlobalCss(${variable}.toString(), '', target);\n    `);
   }
-  if (existsSync(document)) {
-    filename = basename(document);
+  if (existsSync(documentCssFile)) {
+    filename = basename(documentCssFile);
     variable = camelCase(filename);
 
-    if (useDevServer) {
+    if (useDevServerOrInProductionMode) {
+      globalFileContent.push(`import 'themes/${themeName}/${filename}';\n`);
+
       imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
-      globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n    `);
+      shadowOnlyCss.push(`injectGlobalCss(${variable}.toString(),'', document);\n    `);
     }
   }
 
@@ -147,9 +167,9 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
       // Due to chrome bug https://bugs.chromium.org/p/chromium/issues/detail?id=336876 font-face will not work
       // inside shadowRoot so we need to inject it there also.
       globalCssCode.push(`if(target !== document) {
-      injectGlobalCss(${variable}.toString(), target);
+      injectGlobalCss(${variable}.toString(), '', target);
     }\n    `);
-      globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n    `);
+      globalCssCode.push(`injectGlobalCss(${variable}.toString(), '${CSSIMPORT_COMMENT}', document);\n    `);
     });
   }
   if (themeProperties.importCss) {
@@ -165,7 +185,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
     themeProperties.importCss.forEach((cssPath) => {
       const variable = 'module' + i++;
       imports.push(`import ${variable} from '${cssPath}';\n`);
-      globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n`);
+      globalCssCode.push(`injectGlobalCss(${variable}.toString(), '${CSSIMPORT_COMMENT}', target);\n`);
     });
   }
 
@@ -174,7 +194,9 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
       const filename = basename(componentCss);
       const tag = filename.replace('.css', '');
       const variable = camelCase(filename);
-      imports.push(`import ${variable} from 'themes/${themeName}/${themeComponentsFolder}/${filename}?inline';\n`);
+      componentCssImports.push(
+        `import ${variable} from 'themes/${themeName}/${themeComponentsFolder}/${filename}?inline';\n`
+      );
       // Don't format as the generated file formatting will get wonky!
       const componentString = `registerStyles(
         '${tag}',
@@ -185,29 +207,61 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
     });
   }
 
-  themeFile += imports.join('');
+  themeFileContent += imports.join('');
 
   // Don't format as the generated file formatting will get wonky!
   // If targets check that we only register the style parts once, checks exist for global css and component css
   const themeFileApply = `export const applyTheme = (target) => {
     if (target !== document) {
-      // Lumo is injected to the document by Lumo itself, except for the utility module
-      ${lumoCssShadowOnlyCode.join('')}
+      needsReloadOnChanges = true;
+      ${shadowOnlyCss.join('')}
     }
-    ${lumoCssCode.join('')}
     ${parentTheme}
     ${globalCssCode.join('')}
-    
-    if (!document['${componentCssFlag}']) {
-      ${componentCssCode.join('')}
-      document['${componentCssFlag}'] = true;
-    }
   }
+  
+`;
+  componentsFileContent += `
+${componentCssImports.join('')}
+
+if (!document['${componentCssFlag}']) {
+  ${componentCssCode.join('')}
+  document['${componentCssFlag}'] = true;
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept((module) => {
+    window.location.reload();
+  });
+}
+
 `;
 
-  themeFile += themeFileApply;
+  themeFileContent += themeFileApply;
+  themeFileContent += `
+if (import.meta.hot) {
+  import.meta.hot.accept((module) => {
+    if (needsReloadOnChanges) {
+      window.location.reload();
+    }
+  });
+}
 
-  return themeFile;
+`;
+
+  globalImportContent += `
+${globalFileContent.join('')}
+`;
+
+  writeIfChanged(resolve(outputFolder, globalFilename), globalImportContent);
+  writeIfChanged(resolve(outputFolder, themeFilename), themeFileContent);
+  writeIfChanged(resolve(outputFolder, componentsFilename), componentsFileContent);
+}
+
+function writeIfChanged(file, data) {
+  if (!existsSync(file) || readFileSync(file, { encoding: 'utf-8' }) !== data) {
+    writeFileSync(file, data);
+  }
 }
 
 /**
@@ -225,4 +279,4 @@ function camelCase(str) {
     .replace(/\.|\-/g, '');
 }
 
-export { generateThemeFile };
+export { writeThemeFiles };

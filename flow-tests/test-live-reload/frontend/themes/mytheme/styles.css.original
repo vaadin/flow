@@ -1,0 +1,11 @@
+#div1 {
+  background: rgba(144, 238, 144, 1);
+}
+#div2 {
+  background: blue;
+  color: white;
+}
+
+#inside {
+  color: rgba(255, 255, 255, 1);
+}

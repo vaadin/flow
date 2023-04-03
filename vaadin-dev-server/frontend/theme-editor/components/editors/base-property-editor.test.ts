@@ -64,7 +64,7 @@ describe('base property editor', () => {
   });
 
   it('should not show modified indicator if property value is not modified', () => {
-    const modifiedIndicator = editor.shadowRoot!.querySelector('.property-name .modified');
+    const modifiedIndicator = editor.shadowRoot!.querySelector('.label .modified');
 
     expect(modifiedIndicator).to.not.exist;
   });
@@ -75,7 +75,7 @@ describe('base property editor', () => {
     editor.theme = updatedTheme;
     await elementUpdated(editor);
 
-    const modifiedIndicator = editor.shadowRoot!.querySelector('.property-name .modified');
+    const modifiedIndicator = editor.shadowRoot!.querySelector('.label .modified');
 
     expect(modifiedIndicator).to.exist;
   });

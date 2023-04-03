@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Locale;
 

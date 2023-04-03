@@ -38,7 +38,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 
 public class TaskGenerateTsConfigTest {
-    static private String LATEST_VERSION = "23.3.4";
+    static private String LATEST_VERSION = "9";
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -143,7 +143,7 @@ public class TaskGenerateTsConfigTest {
                 StandardCharsets.UTF_8);
 
         Assert.assertEquals("tsconfig.json content has been updated. "
-                + "Please also: 1. Increment version in tsconfig.json (\"flow_version\" property) "
+                + "Please also: 1. Increment version in tsconfig.json (\"_version\" property) "
                 + "2. create a new tsconfig-vX.Y.json template in flow-server resources and put the old content there "
                 + "3. update vaadinVersion array in TaskGenerateTsConfig with X.Y "
                 + "4. put a new content in tsconfig-reference.json in tests "

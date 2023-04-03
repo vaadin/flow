@@ -4,14 +4,14 @@
 // You might want to change the configurations to fit your preferences
 // For more information about the configurations, please refer to http://www.typescriptlang.org/docs/handbook/tsconfig-json.html
 {
-  "flow_version": "23.3.4",
+  "_version": "9",
   "compilerOptions": {
     "sourceMap": true,
     "jsx": "react-jsx",
     "inlineSources": true,
     "module": "esNext",
     "target": "es2020",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "strict": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,

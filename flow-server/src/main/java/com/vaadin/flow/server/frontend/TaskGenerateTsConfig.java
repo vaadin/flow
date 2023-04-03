@@ -44,11 +44,12 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     static final String TSCONFIG_JSON = "tsconfig.json";
 
-    private static final String VERSION = "flow_version";
+    private static final String OLD_VERSION_KEY = "flow_version";
+    private static final String VERSION = "_version";
     private static final String ES_TARGET_VERSION = "target";
     private static final String TSCONFIG_JSON_OLDER_VERSIONS_TEMPLATE = "tsconfig-%s.json";
-    private static final String[] vaadinVersions = { "latest", "v23.3.0.1",
-            "v23.3.0", "v23.2", "v23.1", "v22", "v14", "osgi" };
+    private static final String[] tsconfigVersions = { "latest", "v23.3.0.1",
+            "v23.3.0", "v23.2", "v23.1", "v22", "v14", "osgi", "v23.3.4" };
 
     //@formatter:off
     static final String ERROR_MESSAGE =
@@ -174,22 +175,22 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             JsonObject latestTsConfigTemplateJson = parseTsConfig(
                     latestTsConfigTemplate);
 
-            if (projectTsConfigContent.hasKey(VERSION)) {
-                assert latestTsConfigTemplateJson.hasKey(VERSION)
-                        : "Latest tsconfig.json template should have version";
-                String version = projectTsConfigContent.getString(VERSION);
-                String templateVersion = latestTsConfigTemplateJson
-                        .getString(VERSION);
+            String projectTsConfigVersion = getConfigVersion(
+                    projectTsConfigContent);
+            if (projectTsConfigVersion != null) {
+                String templateVersion = getConfigVersion(
+                        latestTsConfigTemplateJson);
 
                 // If the project has a newest version of TS config - do nothing
-                if (templateVersion.equals(version)) {
+                if (templateVersion.equals(projectTsConfigVersion)) {
                     return;
                 }
             }
 
             // TS config is of an old version
-            for (String version : vaadinVersions) {
-                String oldTsConfigContent = getFileContentForVersion(version);
+            for (String tsconfigVersion : tsconfigVersions) {
+                String oldTsConfigContent = getFileContentForVersion(
+                        tsconfigVersion);
                 JsonObject tsConfigTemplateJson = parseTsConfig(
                         oldTsConfigContent);
                 if (tsConfigsEqual(tsConfigTemplateJson,
@@ -208,6 +209,16 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private String getConfigVersion(JsonObject projectTsConfigContent) {
+        if (projectTsConfigContent.hasKey(VERSION)) {
+            return projectTsConfigContent.getString(VERSION);
+        }
+        if (projectTsConfigContent.hasKey(OLD_VERSION_KEY)) {
+            return projectTsConfigContent.getString(OLD_VERSION_KEY);
+        }
+        return null;
     }
 
     private boolean tsConfigsEqual(JsonObject template,

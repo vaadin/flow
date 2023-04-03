@@ -57,12 +57,10 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -201,7 +199,7 @@ public class FrontendUtils {
      * feature flags as globals that might be used by Vaadin web components or
      * application code.
      */
-    public static final String FEATURE_FLAGS_FILE_NAME = "vaadin-featureflags.ts";
+    public static final String FEATURE_FLAGS_FILE_NAME = "vaadin-featureflags.js";
 
     /**
      * File name of the index.html in client side.

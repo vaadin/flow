@@ -129,6 +129,35 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
     }
 
     @Test
+    public void locateLines() {
+        ThemeModifier modifier = new TestThemeModifier();
+        modifier.setThemeProperties(Collections.singletonList(
+                new CssRule(SELECTOR_WITH_PART, "color", "red")));
+
+        CascadingStyleSheet styleSheet = getStylesheet("theme-editor.css");
+        assertEquals(1, styleSheet.getStyleRuleCount());
+
+        CSSStyleRule expected = modifier.createStyleRule(SELECTOR_WITH_PART,
+                "color", "red");
+        assertTrue(styleSheet.getAllStyleRules().contains(expected));
+
+        int line = modifier.getRuleLocationLine(SELECTOR_WITH_PART);
+        assertEquals(5, line); // 4-line comment before
+
+        line = modifier.getRuleLocationLine("vaadin-app-layout");
+        assertEquals(-1, line); // not found
+    }
+
+    @Test
+    public void emptyRuleAdded_ruleIsPresent() {
+        ThemeModifier modifier = new TestThemeModifier();
+        modifier.createEmptyStyleRule("vaadin-button");
+        List<CssRule> rules = modifier.getCssRules(List.of("vaadin-button"));
+        assertEquals(1, rules.size());
+        assertTrue(rules.get(0).getProperties().isEmpty());
+    }
+
+    @Test
     public void ruleExists_ruleIsUpdated() {
         ThemeModifier modifier = new TestThemeModifier();
         List<CssRule> toBeAdded = new ArrayList<>();
@@ -311,6 +340,39 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
         assertTrue(cssRules.get(1).getProperties().containsKey("font-family"));
         assertEquals("serif",
                 cssRules.get(1).getProperties().get("font-family"));
+    }
+
+    @Test
+    public void testClassNameReplace() {
+        ThemeModifier modifier = new TestThemeModifier();
+
+        List<CssRule> toBeAdded = new ArrayList<>();
+        toBeAdded.add(new CssRule("vaadin-button.nice", "color", "red"));
+        toBeAdded.add(
+                new CssRule("vaadin-button.not-nice", "background", "black"));
+        toBeAdded.add(new CssRule("vaadin-button.nice::part(label)",
+                "font-family", "serif"));
+        toBeAdded.add(
+                new CssRule("vaadin-text-field.perfect.nice", "color", "red"));
+        toBeAdded
+                .add(new CssRule("span.nice.nice.nice.strong", "color", "red"));
+        modifier.setThemeProperties(toBeAdded);
+
+        modifier.replaceClassName("vaadin-button", "nice", "nicer");
+        List<CssRule> rules = modifier.getCssRules(Arrays.asList(
+                "vaadin-button.nicer", "vaadin-button.nicer::part(label)",
+                "vaadin-button.nicer", "vaadin-button.nicer::part(label)",
+                "vaadin-text-field.perfect.nicer",
+                "span.nicer.nicer.nicer.strong"));
+        assertEquals(2, rules.size());
+
+        modifier.replaceClassName("span", "nice", "nicer");
+        rules = modifier.getCssRules(Arrays.asList("vaadin-button.nicer",
+                "vaadin-button.nicer::part(label)", "vaadin-button.nicer",
+                "vaadin-button.nicer::part(label)",
+                "vaadin-text-field.perfect.nicer",
+                "span.nicer.nicer.nicer.strong"));
+        assertEquals(3, rules.size());
     }
 
     private File getThemeFile(String fileName) {

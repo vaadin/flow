@@ -16,10 +16,8 @@
 package com.vaadin.flow.uitest.ui.theme;
 
 import java.io.File;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -258,23 +256,27 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void documentCssImport_onlyExternalAddedToHeadAsLink() {
+    public void documentCssImport_externalUrlLoaded() {
         open();
         checkLogsForErrors();
 
-        final WebElement documentHead = getDriver()
-                .findElement(By.xpath("/html/head"));
-        final List<WebElement> links = documentHead
-                .findElements(By.tagName("link"));
+        Assert.assertTrue("Font should have been loaded",
+                (boolean) executeScript(
+                        "return document.fonts.check(arguments[0])",
+                        "10px Itim"));
 
-        List<String> linkUrls = links.stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
+    }
 
-        Assert.assertTrue("Missing link for external url", linkUrls
-                .contains("https://fonts.googleapis.com/css?family=Itim"));
-        Assert.assertFalse("Found import that webpack should have resolved",
-                linkUrls.contains("sub-css/sub.css"));
+    @Test
+    public void documentCssImport_subImportApplied() {
+        open();
+        checkLogsForErrors();
+        TestBenchElement subComponent = $("*").id("sub-component");
+        Assert.assertEquals("Width for sub.css should have been applied",
+                "10px",
+                (String) executeScript(
+                        "return getComputedStyle(arguments[0]).width",
+                        subComponent));
     }
 
     @Test

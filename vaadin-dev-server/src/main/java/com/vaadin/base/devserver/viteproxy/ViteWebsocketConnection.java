@@ -19,6 +19,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.net.http.WebSocket.Listener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -39,6 +41,7 @@ public class ViteWebsocketConnection implements Listener {
     private final Consumer<String> onMessage;
     private final WebSocket clientWebSocket;
     private final Runnable onClose;
+    private List<CharSequence> parts = new ArrayList<>();
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(getClass());
@@ -94,9 +97,18 @@ public class ViteWebsocketConnection implements Listener {
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data,
             boolean last) {
         // Message from Vite
-        String msg = data.toString();
-        getLogger().debug("Message from Vite: {}", msg);
-        onMessage.accept(msg);
+        if (!last) {
+            getLogger().debug("Partial message from Vite: {}", data);
+            parts.add(data);
+        } else {
+            String msg = "";
+            while (!parts.isEmpty()) {
+                msg += parts.remove(0);
+            }
+            msg += data;
+            getLogger().debug("Message from Vite: {}", msg);
+            onMessage.accept(msg);
+        }
         return Listener.super.onText(webSocket, data, last);
     }
 
