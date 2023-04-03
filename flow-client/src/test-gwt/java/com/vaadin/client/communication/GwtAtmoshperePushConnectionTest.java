@@ -50,6 +50,7 @@ public class GwtAtmoshperePushConnectionTest extends ClientEngineTestBase {
                 set(StateTree.class, new StateTree(this));
                 set(URIResolver.class, new URIResolver(this));
                 set(UILifecycle.class, new UILifecycle());
+                set(RequestResponseTracker.class, new RequestResponseTracker(this));
                 set(ApplicationConfiguration.class,
                         new ApplicationConfiguration());
                 set(MessageHandler.class, new MessageHandler(this));

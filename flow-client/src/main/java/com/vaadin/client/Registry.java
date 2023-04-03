@@ -293,15 +293,6 @@ public class Registry {
     }
 
     /**
-     * Gets the {@link ScrollPositionHandler} singleton.
-     *
-     * @return the {@link ScrollPositionHandler} singleton
-     */
-    public ScrollPositionHandler getScrollPositionHandler() {
-        return get(ScrollPositionHandler.class);
-    }
-
-    /**
      * Gets the {@link ExistingElementMap} singleton.
      *
      * @return the {@link ExistingElementMap} singleton

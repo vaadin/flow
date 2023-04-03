@@ -28,28 +28,6 @@ import elemental.json.JsonObject;
  */
 public class GwtApplicationConnectionTest extends ClientEngineTestBase {
 
-    public void test_should_addNavigationEvents_byDefault() {
-        mockFlowBootstrapScript(false);
-
-        JsonObject windowEvents = Json.createObject();
-        addEventsObserver(Browser.getWindow(), windowEvents);
-
-        JsonObject bodyEvents = Json.createObject();
-        addEventsObserver(Browser.getDocument().getBody(), bodyEvents);
-
-        new Bootstrapper().onModuleLoad();
-
-        delayTestFinish(500);
-        new Timer() {
-            @Override
-            public void run() {
-                assertTrue(windowEvents.hasKey("popstate"));
-                assertTrue(bodyEvents.hasKey("click"));
-                finishTest();
-            }
-        }.schedule(100);
-    }
-
     public void test_should_not_addNavigationEvents_forWebComponents() {
         mockFlowBootstrapScript(true);
 
