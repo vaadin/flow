@@ -44,35 +44,6 @@ import elemental.json.JsonObject;
  */
 public class DefaultRegistry extends Registry {
 
-    private static class WebComponentScrollHandler
-            extends ScrollPositionHandler {
-
-        private WebComponentScrollHandler() {
-        }
-
-        @Override
-        public void onPopStateEvent(PopStateEvent event,
-                boolean triggersServerSideRoundtrip) {
-            // don't do anything
-        }
-
-        @Override
-        public void setIgnoreScrollRestorationOnNextPopStateEvent(
-                boolean ignoreScrollRestorationOnNextPopStateEvent) {
-            // don't do anything
-        }
-
-        @Override
-        public void beforeClientNavigation(String newHref) {
-            // don't do anything
-        }
-
-        @Override
-        public void afterServerNavigation(JsonObject state) {
-            // don't do anything
-        }
-    }
-
     /**
      * Constructs a registry based on the given application connection and
      * configuration references.

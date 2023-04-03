@@ -23,25 +23,17 @@ public class GwtDefaultConnectionStateHandlerTest extends ClientEngineTestBase {
                 UILifecycle uiLifecycle = new UILifecycle();
                 uiLifecycle.setState(UILifecycle.UIState.RUNNING);
                 set(UILifecycle.class, uiLifecycle);
-                set(RequestResponseTracker.class,
-                        new RequestResponseTracker(this));
-                set(ApplicationConfiguration.class, new ApplicationConfiguration() {
-                    {
-                        setHeartbeatInterval(10);
-                        setServiceUrl("");
-                    }
-                });
-                set(StateTree.class, new StateTree(this) {
-                    {
-                        getRootNode().getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION)
-                                .getProperty(ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY)
-                                .setValue((double) 3);
-                        // keep the timer from interfering with the test:
-                        getRootNode().getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION)
-                                .getProperty(ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY)
-                                .setValue((double) 10000000);
-                    }
-                });
+                set(ApplicationConfiguration.class, new ApplicationConfiguration() {{
+                    setHeartbeatInterval(10);
+                    setServiceUrl("");
+                }});
+                set(StateTree.class, new StateTree(this) {{
+                    getRootNode().getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION)
+                            .getProperty(ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY).setValue((double)3);
+                    // keep the timer from interfering with the test:
+                    getRootNode().getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION)
+                            .getProperty(ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY).setValue((double)10000000);
+                }});
                 set(ReconnectConfiguration.class, new ReconnectConfiguration(this));
                 set(Heartbeat.class, new Heartbeat(this));
                 set(RequestResponseTracker.class,

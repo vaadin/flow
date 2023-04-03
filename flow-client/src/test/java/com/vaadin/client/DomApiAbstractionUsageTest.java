@@ -35,8 +35,7 @@ import elemental.html.AnchorElement;
 public class DomApiAbstractionUsageTest {
     private static final Set<String> ignoredClasses = Stream
             .of(DomElement.class, DomNode.class, ResourceLoader.class,
-                    BrowserInfo.class, SystemErrorHandler.class, Profiler.class,
-                    ScrollPositionHandler.class)
+                    BrowserInfo.class, SystemErrorHandler.class, Profiler.class)
             .map(Class::getName).collect(Collectors.toSet());
 
     private static final Set<Class<?>> ignoredElementalClasses = Stream
