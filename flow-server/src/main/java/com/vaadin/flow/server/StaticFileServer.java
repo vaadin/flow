@@ -266,9 +266,9 @@ public class StaticFileServer implements StaticFileHandler {
             }
 
             if (resourceUrl == null
-                    && APP_THEME_PATTERN.matcher(filenameWithPath).find()
-                    || APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath)
-                            .find()) {
+                    && (APP_THEME_PATTERN.matcher(filenameWithPath).find()
+                            || APP_THEME_ASSETS_PATTERN
+                                    .matcher(filenameWithPath).find())) {
                 // Express mode theme file request
                 resourceUrl = findAssetInFrontendThemesOrDevBundle(
                         vaadinService,
