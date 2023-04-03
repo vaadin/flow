@@ -148,13 +148,13 @@
                                 <goal>run</goal>
                             </goals>
                             <configuration>
-                                <tasks>
+                                <target>
                                     <delete>
                                         <fileset
                                                 dir="${project.build.directory}/${project.build.finalName}/WEB-INF/lib"
                                                 includes="*.jar"/>
                                     </delete>
-                                </tasks>
+                                </target>
                             </configuration>
                         </execution>
                     </executions>
