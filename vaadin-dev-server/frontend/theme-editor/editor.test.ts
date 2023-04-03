@@ -29,6 +29,7 @@ describe('theme-editor', () => {
     loadRules: sinon.SinonStub;
     undo: sinon.SinonStub;
     redo: sinon.SinonStub;
+    openCss: sinon.SinonStub;
   };
   let historySpy: {
     push: sinon.SinonSpy;
@@ -61,7 +62,8 @@ describe('theme-editor', () => {
       loadPreview: sinon.stub((editor as any).api as ThemeEditorApi, 'loadPreview'),
       loadRules: sinon.stub((editor as any).api as ThemeEditorApi, 'loadRules'),
       undo: sinon.stub((editor as any).api as ThemeEditorApi, 'undo'),
-      redo: sinon.stub((editor as any).api as ThemeEditorApi, 'redo')
+      redo: sinon.stub((editor as any).api as ThemeEditorApi, 'redo'),
+      openCss: sinon.stub((editor as any).api as ThemeEditorApi, 'openCss')
     };
     apiMock.loadComponentMetadata.returns(Promise.resolve({ accessible: true, className: 'test-class' }));
     apiMock.setLocalClassName.returns(Promise.resolve({}));
@@ -70,6 +72,7 @@ describe('theme-editor', () => {
     apiMock.loadRules.returns(Promise.resolve({ rules: [], accessible: true }));
     apiMock.undo.returns(Promise.resolve({}));
     apiMock.redo.returns(Promise.resolve({}));
+    apiMock.openCss.returns(Promise.resolve({}));
 
     historySpy = {
       push: sinon.spy((editor as any).history as ThemeEditorHistory, 'push')
@@ -104,15 +107,28 @@ describe('theme-editor', () => {
 
     expect(propertyEditor).to.exist;
 
-    const input = propertyEditor.shadowRoot!.querySelector('input')!;
+    const input = propertyEditor
+      .shadowRoot!.querySelector('vaadin-dev-tools-theme-text-input')!
+      .shadowRoot!.querySelector('input') as HTMLInputElement;
     input.value = value;
     input.dispatchEvent(new Event('change'));
     await elementUpdated(editor);
   }
 
+  async function openCss(elementName: string) {
+    const openCssButton = editor
+      .shadowRoot!.querySelector('.property-list')
+      ?.shadowRoot!.querySelector(`.section[data-testid="${elementName}"] button.open-css`) as HTMLElement;
+    openCssButton.click();
+    // Wait for async state updates to resolve
+    await aTimeout(0);
+  }
+
   function getPropertyValue(elementName: string, propertyName: string) {
     const propertyEditor = findPropertyEditor(elementName, propertyName);
-    const input = propertyEditor.shadowRoot!.querySelector('input')! as HTMLInputElement;
+    const input = propertyEditor
+      .shadowRoot!.querySelector('vaadin-dev-tools-theme-text-input')!
+      .shadowRoot!.querySelector('input') as HTMLInputElement;
     return input.value;
   }
 
@@ -146,6 +162,21 @@ describe('theme-editor', () => {
 
   async function redo() {
     findRedoButton().click();
+    await elementUpdated(editor);
+    // Wait for async state updates to resolve
+    await aTimeout(0);
+  }
+
+  async function editLocalClassName(className: string) {
+    const classNameEditor = editor.shadowRoot!.querySelector(
+      '.header vaadin-dev-tools-theme-class-name-editor'
+    ) as HTMLElement;
+    const classNameInput = classNameEditor
+      .shadowRoot!.querySelector('vaadin-dev-tools-theme-text-input')!
+      .shadowRoot!.querySelector('input') as HTMLInputElement;
+
+    classNameInput.value = className;
+    classNameInput.dispatchEvent(new Event('change'));
     await elementUpdated(editor);
     // Wait for async state updates to resolve
     await aTimeout(0);
@@ -274,9 +305,7 @@ describe('theme-editor', () => {
       await pickComponent();
       await editProperty('Label', 'color', 'red');
 
-      const modifiedIndicator = findPropertyEditor('Label', 'color').shadowRoot!.querySelector(
-        '.property-name .modified'
-      );
+      const modifiedIndicator = findPropertyEditor('Label', 'color').shadowRoot!.querySelector('.label .modified');
       expect(modifiedIndicator).to.exist;
     });
 
@@ -354,6 +383,21 @@ describe('theme-editor', () => {
       expect(editor.shadowRoot!.textContent).to.contain('The selected Test element can not be styled locally');
     });
 
+    it('should show local class name editor if instance is accessible', async () => {
+      await pickComponent();
+
+      const localClassNameEditor = editor.shadowRoot!.querySelector('.header vaadin-dev-tools-theme-class-name-editor');
+      expect(localClassNameEditor).to.exist;
+    });
+
+    it('should not show local class name editor if instance is inaccessible', async () => {
+      apiMock.loadComponentMetadata.returns(Promise.resolve({ accessible: false }));
+      await pickComponent();
+
+      const localClassNameEditor = editor.shadowRoot!.querySelector('.header vaadin-dev-tools-theme-class-name-editor');
+      expect(localClassNameEditor).to.not.exist;
+    });
+
     it('should not load rules if instance is inaccessible', async () => {
       apiMock.loadComponentMetadata.returns(Promise.resolve({ accessible: false }));
       await pickComponent();
@@ -414,6 +458,14 @@ describe('theme-editor', () => {
       expect(apiMock.setCssRules.calledOnce).to.be.true;
       expect(apiMock.setCssRules.args).to.deep.equal([[expectedRules]]);
     });
+
+    it('should not show local class name editor', async () => {
+      await pickComponent();
+      await changeThemeScope(ThemeScope.global);
+
+      const localClassNameEditor = editor.shadowRoot!.querySelector('.header vaadin-dev-tools-theme-class-name-editor');
+      expect(localClassNameEditor).to.not.exist;
+    });
   });
 
   describe('undo and redo', () => {
@@ -468,7 +520,8 @@ describe('theme-editor', () => {
       await editProperty('Label', 'color', 'red');
 
       expect(historySpy.push.calledTwice).to.be.true;
-      expect(historySpy.push.args).to.deep.equal([['request1'], ['request2']]);
+      expect(historySpy.push.args[0][0]).to.deep.equal('request1');
+      expect(historySpy.push.args[1][0]).to.deep.equal('request2');
     });
 
     it('should call undo when clicking undo button', async () => {
@@ -685,7 +738,7 @@ describe('theme-editor', () => {
     });
   });
 
-  describe('applying class name', () => {
+  describe('applying local class name', () => {
     beforeEach(() => {
       // Simulate selected component not having a class name yet
       apiMock.loadComponentMetadata.returns(
@@ -730,6 +783,175 @@ describe('theme-editor', () => {
 
       expect(testElement.classList.contains('existing-class')).to.be.false;
       expect(anotherElement.classList.contains('existing-class')).to.be.true;
+    });
+  });
+
+  describe('editing local class name', () => {
+    it('should only update suggested class name if element has no local class name yet', async () => {
+      // Simulate selected component not having a class name yet
+      apiMock.loadComponentMetadata.returns(
+        Promise.resolve({
+          accessible: true,
+          suggestedClassName: 'suggested-class'
+        })
+      );
+      await pickComponent();
+
+      // Changing class name should not send any requests yet, but modify
+      // suggested class name
+      await editLocalClassName('custom-class');
+      expect(apiMock.setLocalClassName.called).to.be.false;
+
+      // Changing property should apply custom class name
+      await editProperty('Label', 'color', 'red');
+      expect(apiMock.setLocalClassName.calledOnce).to.be.true;
+      expect(apiMock.setLocalClassName.args).to.deep.equal([[testComponentRef, 'custom-class']]);
+    });
+
+    it('should immediately update class name if element already has a local class name', async () => {
+      await pickComponent();
+      await editLocalClassName('custom-class');
+
+      expect(apiMock.setLocalClassName.calledOnce).to.be.true;
+      expect(apiMock.setLocalClassName.args).to.deep.equal([[testComponentRef, 'custom-class']]);
+    });
+
+    it('should update local class name preview on selected component', async () => {
+      await pickComponent();
+      expect(testElement.classList.contains('test-class')).to.be.true;
+
+      await editLocalClassName('custom-class');
+      expect(testElement.classList.contains('test-class')).to.be.false;
+      expect(testElement.classList.contains('custom-class')).to.be.true;
+    });
+
+    it('should revert local class name on undo', async () => {
+      await pickComponent();
+      await editLocalClassName('custom-class');
+      expect(testElement.classList.contains('custom-class')).to.be.true;
+
+      // pick a different component
+      const anotherElement = (await fixture(html` <test-element></test-element>`)) as HTMLElement;
+      testComponentRef = { nodeId: 123, uiId: 456, element: anotherElement };
+      await pickComponent();
+
+      // undo should revert class name on previously selected component
+      await undo();
+      expect(testElement.classList.contains('custom-class')).to.be.false;
+      expect(testElement.classList.contains('test-class')).to.be.true;
+    });
+
+    it('should restore local class name on redo', async () => {
+      await pickComponent();
+      await editLocalClassName('custom-class');
+      expect(testElement.classList.contains('custom-class')).to.be.true;
+
+      // pick a different component
+      const anotherElement = (await fixture(html` <test-element></test-element>`)) as HTMLElement;
+      testComponentRef = { nodeId: 123, uiId: 456, element: anotherElement };
+      await pickComponent();
+
+      // undo should revert class name on previously selected component
+      await undo();
+      expect(testElement.classList.contains('custom-class')).to.be.false;
+      expect(testElement.classList.contains('test-class')).to.be.true;
+
+      // redo should restore class name on previously selected component
+      await redo();
+      expect(testElement.classList.contains('custom-class')).to.be.true;
+      expect(testElement.classList.contains('test-class')).to.be.false;
+    });
+
+    it('should not submit invalid class name', async () => {
+      await pickComponent();
+      await editLocalClassName('custom class');
+
+      expect(apiMock.setLocalClassName.called).to.be.false;
+    });
+
+    it('should update theme preview', async () => {
+      await pickComponent();
+      expect(testElement.classList.contains('test-class')).to.be.true;
+
+      apiMock.loadPreview.resetHistory();
+      await editLocalClassName('custom-class');
+      expect(apiMock.loadPreview.calledOnce).to.be.true;
+    });
+
+    it('should prevent live reload', async () => {
+      await pickComponent();
+      await editLocalClassName('custom-class');
+
+      expect(beforeSaveSpy.calledOnce).to.be.true;
+    });
+  });
+
+  describe('open CSS', () => {
+    describe('local scope', () => {
+      it('should open CSS', async () => {
+        await pickComponent();
+        await openCss('Label');
+
+        expect(apiMock.openCss.calledOnce).to.be.true;
+        expect(apiMock.openCss.args).to.deep.equal([['test-element.test-class::part(label)']]);
+      });
+
+      it('should apply local class name before attempting to open CSS', async () => {
+        // Simulate selected component not having a class name yet
+        apiMock.loadComponentMetadata.returns(
+          Promise.resolve({
+            accessible: true,
+            suggestedClassName: 'suggested-class'
+          })
+        );
+        await pickComponent();
+        await openCss('Label');
+
+        expect(apiMock.setLocalClassName.calledOnce).to.be.true;
+        expect(apiMock.setLocalClassName.args[0]).to.deep.equal([testComponentRef, 'suggested-class']);
+        expect(apiMock.openCss.calledOnce).to.be.true;
+        expect(apiMock.openCss.args).to.deep.equal([['test-element.suggested-class::part(label)']]);
+      });
+
+      it('should fail if local class name can not be applied', async () => {
+        // Simulate selected component not having a class name and no suggestion
+        apiMock.loadComponentMetadata.returns(
+          Promise.resolve({
+            accessible: true
+          })
+        );
+        await pickComponent();
+
+        expect(async () => openCss('Label')).to.throw;
+      });
+    });
+
+    describe('global scope', () => {
+      it('should open CSS', async () => {
+        await pickComponent();
+        await changeThemeScope(ThemeScope.global);
+        await openCss('Label');
+
+        expect(apiMock.openCss.calledOnce).to.be.true;
+        expect(apiMock.openCss.args).to.deep.equal([['test-element::part(label)']]);
+      });
+
+      it('should not apply local class name before attempting to open CSS', async () => {
+        // Simulate selected component not having a class name yet
+        apiMock.loadComponentMetadata.returns(
+          Promise.resolve({
+            accessible: true,
+            suggestedClassName: 'suggested-class'
+          })
+        );
+        await pickComponent();
+        await changeThemeScope(ThemeScope.global);
+        await openCss('Label');
+
+        expect(apiMock.setLocalClassName.called).to.be.false;
+        expect(apiMock.openCss.calledOnce).to.be.true;
+        expect(apiMock.openCss.args).to.deep.equal([['test-element::part(label)']]);
+      });
     });
   });
 });

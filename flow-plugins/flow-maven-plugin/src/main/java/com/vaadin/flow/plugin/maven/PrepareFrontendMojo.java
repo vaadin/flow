@@ -17,14 +17,15 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 
-import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.sonatype.plexus.build.incremental.BuildContext;
+import org.codehaus.plexus.build.BuildContext;
+
+import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 
 /**
  * This goal checks that node and npm tools are installed and creates or updates

@@ -26,6 +26,7 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithBlockStmt;
 import com.github.javaparser.ast.nodeTypes.NodeWithStatements;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
@@ -99,10 +100,10 @@ public class Editor {
                 referenceNode.replace(node);
             } else if (type == Type.INSERT_AT_END_OF_BLOCK) {
                 if (node instanceof Statement stmt) {
-                    if (referenceNode instanceof BlockStmt block) {
+                    if (referenceNode instanceof NodeWithStatements block) {
                         block.addStatement(stmt);
-                    } else {
-                        Editor.addStatement(referenceNode, null, stmt);
+                    } else if (referenceNode instanceof NodeWithBlockStmt block) {
+                        block.getBody().addStatement(stmt);
                     }
                 }
             } else if (type == Type.REMOVE_NODE) {

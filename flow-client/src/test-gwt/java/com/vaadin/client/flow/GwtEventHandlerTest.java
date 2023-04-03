@@ -35,10 +35,6 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
-import elemental.dom.Node;
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 
 /**
  * @author Vaadin Ltd

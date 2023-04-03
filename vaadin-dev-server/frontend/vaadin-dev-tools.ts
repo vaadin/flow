@@ -1,3 +1,4 @@
+import 'construct-style-sheets-polyfill';
 import { css, html, LitElement, nothing, TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -873,9 +874,6 @@ export class VaadinDevTools extends LitElement {
 
     const onConnectionError = (msg: string) => this.log(MessageType.ERROR, msg);
     const onReload = () => {
-      if (this.liveReloadDisabled) {
-        return;
-      }
       this.showSplashMessage('Reloading…');
       const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
       const nextReload = lastReload ? parseInt(lastReload, 10) + 1 : 1;
@@ -949,9 +947,10 @@ export class VaadinDevTools extends LitElement {
     } else if (message?.command === 'featureFlags') {
       this.features = message.data.features as Feature[];
     } else if (message?.command === 'themeEditorState') {
+      const isFlowApp = !!(window as any).Vaadin.Flow;
       this.themeEditorState = message.data;
-      if (this.themeEditorState !== ThemeEditorState.disabled) {
-        this.tabs.push({ id: 'theme-editor', title: 'Theme Editor', render: () => this.renderThemeEditor() });
+      if (isFlowApp && this.themeEditorState !== ThemeEditorState.disabled) {
+        this.tabs.push({ id: 'theme-editor', title: 'Theme Editor (Free Preview)', render: () => this.renderThemeEditor() });
         this.requestUpdate();
       }
     } else {

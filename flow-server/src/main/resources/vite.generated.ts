@@ -520,7 +520,7 @@ function themePlugin(opts): PluginOption {
     async transform(raw, id, options) {
       // rewrite urls for the application theme css files
       const [bareId, query] = id.split('?');
-      if (!bareId?.startsWith(themeFolder) || !bareId?.endsWith('.css')) {
+      if ((!bareId?.startsWith(themeFolder) && !bareId?.startsWith(themeOptions.themeResourceFolder)) || !bareId?.endsWith('.css')) {
         return;
       }
       const [themeName] = bareId.substring(themeFolder.length + 1).split('/');
