@@ -126,7 +126,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
     @Override
     public void execute() throws ExecutionFailedException {
         getLogger().info(
-                "Creating a new express mode bundle. This can take a while but will only run when the project setup is changed, addons are added or frontend files are modified");
+                "Creating a new development mode bundle. This can take a while but will only run when the project setup is changed, addons are added or frontend files are modified");
 
         runFrontendBuildTool("Vite", "vite/bin/vite.js", Collections.emptyMap(),
                 "build");
@@ -137,20 +137,22 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
     public static boolean needsBuild(Options options,
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder) {
-        getLogger().info("Checking if an express mode bundle build is needed");
+        getLogger()
+                .info("Checking if a development mode bundle build is needed");
 
         try {
             boolean needsBuild = needsBuildInternal(options,
                     frontendDependencies, finder);
             if (needsBuild) {
-                getLogger().info("An express mode bundle build is needed");
+                getLogger().info("A development mode bundle build is needed");
             } else {
-                getLogger().info("An express mode bundle build is not needed");
+                getLogger()
+                        .info("A development mode bundle build is not needed");
             }
             return needsBuild;
         } catch (Exception e) {
             getLogger().error(
-                    "Error when checking if an express mode bundle build is needed",
+                    "Error when checking if a development bundle build is needed",
                     e);
             return true;
         }
