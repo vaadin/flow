@@ -64,7 +64,6 @@ import jakarta.servlet.http.HttpServletResponse;
  * @since 1.0
  */
 public class StaticFileServer implements StaticFileHandler {
-    private static final String EXPRESS_MODE_BUNDLE_PATH_PREFIX = "/VAADIN/dev-bundle/";
     static final String PROPERTY_FIX_INCORRECT_WEBJAR_PATHS = Constants.VAADIN_PREFIX
             + "fixIncorrectWebjarPaths";
     private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern
@@ -260,17 +259,16 @@ public class StaticFileServer implements StaticFileHandler {
 
         URL resourceUrl = null;
         if (deploymentConfiguration.getMode() == Mode.DEVELOPMENT_BUNDLE) {
-            if (filenameWithPath.startsWith(EXPRESS_MODE_BUNDLE_PATH_PREFIX)
-                    || filenameWithPath.startsWith("/sw.js")) {
-                // Development bundle file
-                String filenameInsideBundle = filenameWithPath
-                        .replaceFirst(EXPRESS_MODE_BUNDLE_PATH_PREFIX, "/");
+            if (!"/index.html".equals(filenameWithPath)) {
                 resourceUrl = FrontendUtils.findBundleFile(
                         deploymentConfiguration.getProjectFolder(),
-                        "webapp" + filenameInsideBundle);
-            } else if (APP_THEME_PATTERN.matcher(filenameWithPath).find()
-                    || APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath)
-                            .find()) {
+                        "webapp" + filenameWithPath);
+            }
+
+            if (resourceUrl == null
+                    && (APP_THEME_PATTERN.matcher(filenameWithPath).find()
+                            || APP_THEME_ASSETS_PATTERN
+                                    .matcher(filenameWithPath).find())) {
                 // Express mode theme file request
                 resourceUrl = findAssetInFrontendThemesOrDevBundle(
                         vaadinService,
