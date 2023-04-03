@@ -23,7 +23,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.communication.LoadingIndicatorConfigurator;
 import com.vaadin.client.communication.PollConfigurator;
 import com.vaadin.client.communication.ReconnectConfiguration;
-import com.vaadin.client.flow.RouterLinkHandler;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.dom.DomApi;
