@@ -126,16 +126,22 @@ function buildSWPlugin(opts): PluginOption {
 
   async function build(action: 'generate' | 'write', additionalPlugins: rollup.Plugin[] = []) {
     const includedPluginNames = [
-      'alias',
-      'vite:resolve',
       'vite:esbuild',
       'rollup-plugin-dynamic-import-variables',
       'vite:esbuild-transpile',
-      'vite:terser',
-    ]
+      'vite:terser'
+    ];
     const plugins: rollup.Plugin[] = config.plugins.filter((p) => {
-      return includedPluginNames.includes(p.name)
+      return includedPluginNames.includes(p.name);
     });
+    const resolver = config.createResolver();
+    const resolvePlugin: rollup.Plugin = {
+      name: 'resolver',
+      resolveId(source, importer, _options) {
+        return resolver(source, importer);
+      }
+    };
+    plugins.unshift(resolvePlugin); // Put resolve first
     plugins.push(
         replace({
           values: {
