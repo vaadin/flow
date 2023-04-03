@@ -8,6 +8,7 @@ export enum EditorType {
 export interface CssPropertyMetadata {
   propertyName: string;
   displayName: string;
+  defaultValue?: string;
   description?: string;
   editorType?: EditorType;
   presets?: string[];

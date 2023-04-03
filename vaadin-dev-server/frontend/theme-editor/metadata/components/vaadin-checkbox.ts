@@ -2,20 +2,25 @@ import { ComponentMetadata, EditorType } from '../model';
 import { presets } from './presets';
 import { iconProperties, shapeProperties, textProperties } from './defaults';
 
-export const checkboxElement = {
-  selector: 'vaadin-checkbox::part(checkbox)',
+export const hostElement = {
+  selector: 'vaadin-checkbox',
   displayName: 'Checkbox',
   properties: [
     {
-      // Should probably use `--vaadin-checkbox-size`, however that can only
-      // be defined on the host rather than the checkbox part, and currently
-      // there is no default value for the property in the Lumo theme
-      propertyName: '--_checkbox-size',
-      displayName: 'Size',
+      propertyName: '--vaadin-checkbox-size',
+      displayName: 'Checkbox size',
+      defaultValue: 'var(--lumo-font-size-l)',
       editorType: EditorType.range,
       presets: presets.lumoFontSize,
       icon: 'square'
-    },
+    }
+  ]
+};
+
+export const checkboxElement = {
+  selector: 'vaadin-checkbox::part(checkbox)',
+  displayName: 'Checkmark box',
+  properties: [
     shapeProperties.backgroundColor,
     shapeProperties.borderColor,
     shapeProperties.borderWidth,
@@ -26,7 +31,7 @@ export const checkboxElement = {
 export const checkedCheckboxElement = {
   selector: 'vaadin-checkbox[checked]::part(checkbox)',
   stateAttribute: 'checked',
-  displayName: 'Checkbox (when checked)',
+  displayName: 'Checkmark box (when checked)',
   properties: [
     shapeProperties.backgroundColor,
     shapeProperties.borderColor,
@@ -50,5 +55,5 @@ export const labelElement = {
 export default {
   tagName: 'vaadin-checkbox',
   displayName: 'Checkbox',
-  elements: [checkboxElement, checkedCheckboxElement, checkmarkElement, labelElement]
+  elements: [hostElement, checkboxElement, checkedCheckboxElement, checkmarkElement, labelElement]
 } as ComponentMetadata;

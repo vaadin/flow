@@ -68,7 +68,7 @@ export async function detectTheme(metadata: ComponentMetadata): Promise<Componen
       const elementStyles = getComputedStyle(subElement, pseudoName);
 
       elementMetadata.properties.forEach((property) => {
-        const propertyValue = elementStyles.getPropertyValue(property.propertyName);
+        const propertyValue = elementStyles.getPropertyValue(property.propertyName) || property.defaultValue || '';
         componentTheme.updatePropertyValue(elementMetadata.selector, property.propertyName, propertyValue);
       });
 

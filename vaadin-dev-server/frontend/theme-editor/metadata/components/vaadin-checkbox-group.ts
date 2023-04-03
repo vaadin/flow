@@ -1,7 +1,13 @@
 import { ComponentMetadata } from '../model';
 import { shapeProperties } from './defaults';
 import { errorMessageProperties, helperTextProperties, labelProperties } from './vaadin-text-field';
-import { checkboxElement, checkedCheckboxElement, checkmarkElement, labelElement } from './vaadin-checkbox';
+import {
+  checkboxElement,
+  checkedCheckboxElement,
+  checkmarkElement,
+  hostElement,
+  labelElement
+} from './vaadin-checkbox';
 
 export default {
   tagName: 'vaadin-checkbox-group',
@@ -34,14 +40,19 @@ export default {
       properties: errorMessageProperties
     },
     {
+      ...hostElement,
+      selector: `vaadin-checkbox-group ${hostElement.selector}`,
+      displayName: 'Checkboxes'
+    },
+    {
       ...checkboxElement,
       selector: `vaadin-checkbox-group ${checkboxElement.selector}`,
-      displayName: 'Checkboxes'
+      displayName: 'Checkmark boxes'
     },
     {
       ...checkedCheckboxElement,
       selector: `vaadin-checkbox-group ${checkedCheckboxElement.selector}`,
-      displayName: 'Checkboxes (when checked)',
+      displayName: 'Checkmark boxes (when checked)',
       // Checked state attribute needs to be applied on checkbox rather than group
       stateElementSelector: `vaadin-checkbox-group vaadin-checkbox`
     },
