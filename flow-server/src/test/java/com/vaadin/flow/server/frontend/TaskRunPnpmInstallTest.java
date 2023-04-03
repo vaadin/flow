@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -49,6 +50,7 @@ import com.vaadin.flow.testutil.FrontendStubs;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+@NotThreadSafe
 @Category(SlowTests.class)
 public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
