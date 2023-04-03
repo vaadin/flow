@@ -1727,7 +1727,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             String entryScript = entryScripts.getString(i);
             Element elm = new Element(SCRIPT_TAG);
             elm.attr("type", "module");
-            elm.attr("src", "VAADIN/dev-bundle/" + entryScript);
+            elm.attr("src", entryScript);
             targetDocument.head().appendChild(elm);
 
             if (entryScript.contains("indexhtml")) {
