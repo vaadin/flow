@@ -223,6 +223,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.FRONTEND_HOTDEPLOY, defaultValue = "false")
     private boolean frontendHotdeploy;
 
+    @Parameter(property = InitParameters.SKIP_DEV_BUNDLE_REBUILD, defaultValue = "false")
+    private boolean skipDevBundleRebuild;
+
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
      * MavenProject.
@@ -441,5 +444,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public boolean isFrontendHotdeploy() {
         return frontendHotdeploy;
+    }
+
+    @Override
+    public boolean skipDevBundleBuild() {
+        return skipDevBundleRebuild;
     }
 }

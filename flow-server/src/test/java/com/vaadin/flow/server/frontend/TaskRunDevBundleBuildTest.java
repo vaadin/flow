@@ -1657,6 +1657,38 @@ public class TaskRunDevBundleBuildTest {
         }
     }
 
+    @Test
+    public void bundleMissesSomeEntries_skipBundleBuildSet_noBundleRebuild()
+            throws IOException {
+        options.skipDevBundleBuild(true);
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson, "{\"dependencies\": {"
+                + "\"@vaadin/router\": \"1.7.5\", \"@vaadin/text\":\"1.0.0\"}, "
+                + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages())
+                .thenReturn(Collections.emptyMap());
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
+                "1.7.5");
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            setupFrontendUtilsMock(stats, utils);
+
+            final boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse("Rebuild should be skipped", needsBuild);
+        }
+    }
+
     private void createPackageJsonStub(String content) throws IOException {
         File packageJson = new File(temporaryFolder.getRoot(),
                 Constants.PACKAGE_JSON);

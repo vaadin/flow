@@ -169,6 +169,12 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             return true;
         }
 
+        if (options.isSkipDevBundle()) {
+            // if skip dev bundle defined and we have a dev bundle,
+            // cancel all checks and trust existing bundle
+            return false;
+        }
+
         String statsJsonContent = FrontendUtils.findBundleStatsJson(npmFolder);
         if (statsJsonContent == null) {
             // without stats.json in bundle we can not say if it is up to date
