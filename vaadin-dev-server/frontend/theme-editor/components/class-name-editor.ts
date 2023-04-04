@@ -1,6 +1,8 @@
 import { css, html, LitElement, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { editorRowStyles } from '../styles';
+import { TextInputChangeEvent } from './editors/base-property-editor';
+import './editors/base-property-editor';
 
 export class ClassNameChangeEvent extends CustomEvent<{ value: string }> {
   constructor(value: string) {
@@ -48,15 +50,18 @@ export class ClassNameEditor extends LitElement {
     return html` <div class="editor-row local-class-name">
       <div class="label">CSS class name</div>
       <div class="editor">
-        <input class="input" type="text" .value=${this.editedClassName} @change=${this.handleInputChange} />
+        <vaadin-dev-tools-theme-text-input
+          type="text"
+          .value=${this.editedClassName}
+          @change=${this.handleInputChange}
+        ></vaadin-dev-tools-theme-text-input>
         ${this.invalid ? html`<br /><span class="error">Please enter a valid CSS class name</span>` : null}
       </div>
     </div>`;
   }
 
-  private handleInputChange(e: Event) {
-    const input = e.target as HTMLInputElement;
-    this.editedClassName = input.value;
+  private handleInputChange(e: TextInputChangeEvent) {
+    this.editedClassName = e.detail.value;
 
     const classNameRegex = /^-?[_a-zA-Z]+[_a-zA-Z0-9-]*$/;
     this.invalid = !this.editedClassName.match(classNameRegex);

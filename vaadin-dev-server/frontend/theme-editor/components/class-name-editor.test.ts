@@ -7,7 +7,9 @@ describe('class name editor', () => {
   let classNameChangeEventSpy: sinon.SinonSpy;
 
   function getInput() {
-    return editor.shadowRoot!.querySelector('input') as HTMLInputElement;
+    return editor
+      .shadowRoot!.querySelector('vaadin-dev-tools-theme-text-input')!
+      .shadowRoot!.querySelector('input') as HTMLInputElement;
   }
 
   function getErrorMessage() {
@@ -35,7 +37,7 @@ describe('class name editor', () => {
 
   it('should update class name', async () => {
     editor.className = 'custom-class';
-    await elementUpdated(editor);
+    await elementUpdated(getInput());
 
     expect(getInput().value).to.equal('custom-class');
   });

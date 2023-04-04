@@ -43,8 +43,6 @@ import com.vaadin.flow.shared.communication.PushMode;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
-
 @NotThreadSafe
 public class JavaScriptBootstrapHandlerTest {
 
@@ -132,10 +130,6 @@ public class JavaScriptBootstrapHandlerTest {
 
         Assert.assertNotNull(UI.getCurrent());
         Assert.assertEquals(UI.class, UI.getCurrent().getClass());
-
-        Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
-                Boolean.TRUE);
-
     }
 
     @Test
@@ -159,29 +153,6 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertTrue(
                 hasNodeTag(visitor, "^<div>.*Could not navigate to 'a-route'.*",
                         ElementType.REGULAR));
-
-    }
-
-    @Test
-    public void should_attachViewTo_Body_when_serverRouting() throws Exception {
-        VaadinRequest request = mocks.createRequest(mocks, "/",
-                "v-r=init&location=bar&query=par1%26par2&serverSideRouting");
-
-        jsInitHandler.handleRequest(session, request, response);
-
-        UI ui = UI.getCurrent();
-
-        TestNodeVisitor visitor = new TestNodeVisitor(true);
-        BasicElementStateProvider.get().visit(ui.getElement().getNode(),
-                visitor);
-
-        Assert.assertTrue(
-                hasNodeTag(visitor, "^<body>.*", ElementType.REGULAR));
-        Assert.assertTrue(hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
-        Assert.assertTrue(hasNodeTag(visitor,
-                "^<div>.*Could not navigate to 'bar'.*", ElementType.REGULAR));
-        Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
-                Boolean.TRUE);
 
     }
 

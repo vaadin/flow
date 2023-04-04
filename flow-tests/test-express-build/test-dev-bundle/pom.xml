@@ -119,7 +119,7 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <delete>
                                     <!-- Delete FakeAppConf from target/classes to
                                     avoid conflicts between default dev
@@ -128,7 +128,7 @@
                                     test-express-build with maven -->
                                     <fileset file="${project.build.directory}/classes/com/vaadin/devbundle/FakeAppConf.class"/>
                                 </delete>
-                            </tasks>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>

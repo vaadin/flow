@@ -34,7 +34,9 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.csrf.LazyCsrfTokenRepository;
+import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.savedrequest.CookieRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 
@@ -98,7 +100,14 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
             // session (double-submit cookie pattern)
             CsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository
                     .withHttpOnlyFalse();
+
+            // This XorCsrfTokenRequestAttributeHandler pattern is copied from
+            // https://docs.spring.io/spring-security/reference/5.8/migration/servlet/exploits.html#_i_am_using_angularjs_or_another_javascript_framework
+            XorCsrfTokenRequestAttributeHandler delegate = new XorCsrfTokenRequestAttributeHandler();
+            CsrfTokenRequestHandler requestHandler = delegate::handle;
             csrf.csrfTokenRepository(csrfTokenRepository);
+            csrf.csrfTokenRequestHandler(requestHandler);
+
             http.getSharedObject(
                     VaadinSavedRequestAwareAuthenticationSuccessHandler.class)
                     .setCsrfTokenRepository(csrfTokenRepository);

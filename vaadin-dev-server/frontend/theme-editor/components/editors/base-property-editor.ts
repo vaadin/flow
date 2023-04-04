@@ -1,8 +1,9 @@
 import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { ComponentElementMetadata, CssPropertyMetadata } from '../../metadata/model';
 import { ComponentTheme, ThemePropertyValue } from '../../model';
 import { editorRowStyles } from '../../styles';
+import { icons } from '../../icons';
 
 export class ThemePropertyValueChangeEvent extends CustomEvent<{
   element: ComponentElementMetadata;
@@ -137,5 +138,97 @@ export class PropertyPresets {
   findPreset(rawValue: string) {
     const sanitizedValue = rawValue ? rawValue.trim() : rawValue;
     return this.values.find((preset) => this._rawValues[preset] === sanitizedValue);
+  }
+}
+
+export class TextInputChangeEvent extends CustomEvent<{ value: string }> {
+  constructor(value: string) {
+    super('change', { detail: { value } });
+  }
+}
+
+@customElement('vaadin-dev-tools-theme-text-input')
+export class TextInput extends LitElement {
+  static get styles() {
+    return css`
+      :host {
+        display: inline-block;
+        width: 100%;
+        position: relative;
+      }
+
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.25rem 0.375rem;
+        color: inherit;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 0.25rem;
+        border: none;
+      }
+
+      button {
+        display: none;
+        position: absolute;
+        right: 4px;
+        top: 4px;
+        padding: 0;
+        line-height: 0;
+        border: none;
+        background: none;
+        color: var(--dev-tools-text-color);
+      }
+
+      button svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      button:not(:disabled):hover {
+        color: var(--dev-tools-text-color-emphasis);
+      }
+
+      :host(.show-clear-button) input {
+        padding-right: 20px;
+      }
+
+      :host(.show-clear-button) button {
+        display: block;
+      }
+    `;
+  }
+
+  @property({})
+  public value: string = '';
+  @property({})
+  public showClearButton: boolean = false;
+
+  protected update(changedProperties: PropertyValues) {
+    super.update(changedProperties);
+
+    if (changedProperties.has('showClearButton')) {
+      if (this.showClearButton) {
+        this.classList.add('show-clear-button');
+      } else {
+        this.classList.remove('show-clear-button');
+      }
+    }
+  }
+
+  render() {
+    return html`
+      <input class="input" .value=${this.value} @change=${this.handleInputChange} />
+      <button @click=${this.handleClearClick}>${icons.cross}</button>
+    `;
+  }
+
+  private handleInputChange(e: Event) {
+    const input = e.target as HTMLInputElement;
+
+    this.dispatchEvent(new TextInputChangeEvent(input.value));
+  }
+
+  private handleClearClick() {
+    this.dispatchEvent(new TextInputChangeEvent(''));
   }
 }

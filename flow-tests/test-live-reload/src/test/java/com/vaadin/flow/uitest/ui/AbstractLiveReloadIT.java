@@ -32,15 +32,22 @@ public abstract class AbstractLiveReloadIT extends ChromeDeviceTest {
         open((String[]) null);
         waitForServiceWorkerReady();
         waitForElementPresent(By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER));
-        initialAttachId = findElement(
-                By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER)).getText();
+        initialAttachId = getAttachId();
+    }
+
+    protected String getAttachId() {
+        return findElement(By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER))
+                .getText();
     }
 
     protected void waitForLiveReload() {
         waitUntil(d -> {
-            final String newViewId = findElement(
-                    By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER)).getText();
+            final String newViewId = getAttachId();
             return !initialAttachId.equals(newViewId);
         });
+    }
+
+    public String getInitialAttachId() {
+        return initialAttachId;
     }
 }
