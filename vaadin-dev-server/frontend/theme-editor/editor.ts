@@ -549,6 +549,7 @@ export class ThemeEditor extends LitElement {
       this.baseTheme = null;
       this.editedTheme = null;
       this.effectiveTheme = null;
+      return;
     }
 
     // Load rules for current scope
