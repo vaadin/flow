@@ -26,6 +26,7 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -232,6 +233,27 @@ public class ThemeIT extends ChromeBrowserTest {
                 (String) executeScript(
                         "return getComputedStyle(arguments[0]).width",
                         subComponent));
+    }
+
+    @Test
+    public void importCssAddedOnce() {
+        open();
+        assertRuleOnce(".fa-smile-beam:"); // importCss rule
+    }
+
+    private void assertRuleOnce(String style) {
+
+        List<String> adoptedStyleSheetsWithString = (List<String>) executeScript(
+                "return document.adoptedStyleSheets.map(sheet => sheet.cssRules).flatMap(rules => Array.from(rules).map(rule => rule.cssText)).filter(rule => rule.includes(arguments[0]))",
+                style);
+        List<String> styleAndLinkTagsWithString = (List<String>) executeScript(
+                "return Array.from(document.styleSheets).map(style => {try { return style.cssRules; } catch (e) {}}).filter(f => f).flatMap(rules => Array.from(rules).map(rule => rule.cssText)).filter(text => text.includes(arguments[0]))",
+                style);
+
+        Assert.assertEquals("Theme rule should have been added once", 1,
+                adoptedStyleSheetsWithString.size()
+                        + styleAndLinkTagsWithString.size());
+
     }
 
     @Override
