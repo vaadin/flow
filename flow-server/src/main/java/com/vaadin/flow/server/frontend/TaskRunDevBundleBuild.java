@@ -351,7 +351,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             Map<String, JsonObject> themeJsonContents, String themeName,
             JsonObject themeJson) throws IOException {
         Optional<String> parentThemeInFrontend = FrontendUtils
-                .getParentThemeName(options.getFrontendDirectory(), themeJson);
+                .getParentThemeName(themeJson);
         if (parentThemeInFrontend.isPresent()) {
             String parentThemeName = parentThemeInFrontend.get();
             Optional<JsonObject> parentThemeJson = FrontendUtils

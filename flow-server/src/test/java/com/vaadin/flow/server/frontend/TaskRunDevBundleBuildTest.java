@@ -1701,9 +1701,8 @@ public class TaskRunDevBundleBuildTest {
                 () -> FrontendUtils.getParentThemeName(Mockito.any(File.class),
                         Mockito.anyString()))
                 .thenCallRealMethod();
-        utils.when(
-                () -> FrontendUtils.getParentThemeName(Mockito.any(File.class),
-                        Mockito.any(JsonObject.class)))
+        utils.when(() -> FrontendUtils
+                .getParentThemeName(Mockito.any(JsonObject.class)))
                 .thenCallRealMethod();
         utils.when(
                 () -> FrontendUtils.getJarResourceString(Mockito.anyString()))

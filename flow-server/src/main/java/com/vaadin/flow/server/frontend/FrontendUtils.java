@@ -1310,19 +1310,11 @@ public class FrontendUtils {
         return Optional.empty();
     }
 
-    public static Optional<String> getParentThemeName(File themesParentFolder,
-            JsonObject themeJson) {
+    public static Optional<String> getParentThemeName(JsonObject themeJson) {
         if (themeJson != null) {
             if (themeJson.hasKey("parent")) {
                 String parentThemeName = themeJson.getString("parent");
-                File parentThemeFolder = Path
-                        .of(themesParentFolder.getAbsolutePath(),
-                                Constants.APPLICATION_THEME_ROOT,
-                                parentThemeName)
-                        .toFile();
-                if (parentThemeFolder.exists()) {
-                    return Optional.of(parentThemeName);
-                }
+                return Optional.of(parentThemeName);
             }
         }
         return Optional.empty();
@@ -1333,7 +1325,7 @@ public class FrontendUtils {
         Optional<JsonObject> themeJson = getThemeJsonForTheme(
                 themesParentFolder, themeName);
         if (themeJson.isPresent()) {
-            return getParentThemeName(themesParentFolder, themeJson.get());
+            return getParentThemeName(themeJson.get());
         }
         return Optional.empty();
     }
