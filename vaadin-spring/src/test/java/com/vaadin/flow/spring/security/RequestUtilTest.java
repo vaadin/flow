@@ -287,6 +287,19 @@ public class RequestUtilTest {
     }
 
     @Test
+    public void testRouteRequest_servletNotInited() {
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/*");
+        setupMockServlet(false);
+        MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/");
+        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        request = createRequest("other");
+        request.setServletPath("/");
+        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+    }
+
+    @Test
     public void testApplyUrlMapping_fooMappedServlet_prependMapping() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/foo/*");
@@ -336,6 +349,10 @@ public class RequestUtilTest {
     }
 
     private SpringServlet setupMockServlet() {
+        return setupMockServlet(true);
+    }
+
+    private SpringServlet setupMockServlet(boolean inited) {
         SpringServlet servlet = Mockito.mock(SpringServlet.class);
         SpringVaadinServletService service = Mockito
                 .mock(SpringVaadinServletService.class);
@@ -344,7 +361,9 @@ public class RequestUtilTest {
 
         Mockito.when(springServletRegistration.getServlet())
                 .thenReturn(servlet);
-        Mockito.when(servlet.getService()).thenReturn(service);
+        if (inited) {
+            Mockito.when(servlet.getService()).thenReturn(service);
+        }
         Mockito.when(service.getRouter()).thenReturn(router);
         Mockito.when(router.getRegistry()).thenReturn(routeRegistry);
         return servlet;

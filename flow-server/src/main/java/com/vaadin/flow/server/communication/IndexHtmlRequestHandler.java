@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.util.Locale;
 import java.util.Optional;
 
 import org.jsoup.Jsoup;
@@ -35,6 +36,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
 import com.vaadin.flow.server.AppShellRegistry;
@@ -83,6 +85,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 : getIndexHtmlDocument(service);
 
         prependBaseHref(request, indexDocument);
+
+        Element htmlElement = indexDocument.getElementsByTag("html").get(0);
+        if (!htmlElement.hasAttr("lang")) {
+            Locale locale = LocaleUtil.getLocale(LocaleUtil::getI18NProvider);
+            htmlElement.attr("lang", locale.getLanguage());
+        }
 
         JsonObject initialJson = Json.createObject();
 

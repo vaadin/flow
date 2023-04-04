@@ -395,12 +395,19 @@ public class DevModeInitializer implements Serializable {
      */
     private static String getBaseDirectoryFallback() {
         /* Try determining the project folder from the classpath. */
-        URL url = DevModeInitializer.class.getClassLoader().getResource(".");
-        if (url != null && url.getProtocol().equals("file")) {
-            String path = url.getPath();
-            if (path.endsWith("/target/classes/")) {
-                return path.replaceFirst("/target/classes/$", "");
+        try {
+            URL url = DevModeInitializer.class.getClassLoader()
+                    .getResource(".");
+            if (url != null && url.getProtocol().equals("file")) {
+                // URI decodes the path so that e.g. " " works correctly
+                String path = url.toURI().getPath();
+                if (path.endsWith("/target/classes/")) {
+                    return path.replaceFirst("/target/classes/$", "");
+                }
             }
+        } catch (Exception e) {
+            LoggerFactory.getLogger(DevModeInitializer.class).warn(
+                    "Unable to determine project folder using classpath", e);
         }
 
         String baseDirCandidate = System.getProperty("user.dir", ".");
