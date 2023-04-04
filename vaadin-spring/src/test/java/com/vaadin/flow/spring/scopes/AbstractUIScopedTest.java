@@ -68,7 +68,7 @@ public abstract class AbstractUIScopedTest extends AbstractScopeTest {
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         when(service.getMainDivId(Mockito.any(), Mockito.any()))
-                .thenReturn(" - ");
+                .thenReturn("abc");
 
         final Map<String, Object> attributeMap = new HashMap<>();
 
