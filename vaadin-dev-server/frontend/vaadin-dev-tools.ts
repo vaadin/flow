@@ -887,6 +887,7 @@ export class VaadinDevTools extends LitElement {
       if (styleTag) {
         this.log(MessageType.INFORMATION, 'Hot update of ' + path);
         styleTag.textContent = content;
+        document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
       } else {
         onReload();
       }
