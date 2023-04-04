@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.eagerbootstrap;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -25,18 +23,11 @@ import com.vaadin.flow.router.RouterLink;
 
 @Route("parameter")
 public class ParameterView extends Div implements HasUrlParameter<String> {
-    private static AtomicInteger instanceCount = new AtomicInteger(0);
 
     private Div parameters;
 
     public ParameterView() {
         setId("view");
-
-        Div instance = new Div();
-        instance.setText(
-                "This is view instance " + instanceCount.incrementAndGet());
-        instance.setId("instance");
-        add(instance);
 
         RouterLink fooLink = new RouterLink("Navigate with parameter 'foo'",
                 ParameterView.class, "foo");

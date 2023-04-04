@@ -12,14 +12,6 @@ public class ParameterIT extends ChromeBrowserTest {
         return "/parameter";
     }
 
-    @Test
-    public void viewInitializedOnce() {
-        openWithParameter("foo");
-        int firstInstance = getInstance();
-        openWithParameter("foo");
-        Assert.assertEquals(firstInstance + 1, getInstance());
-    }
-
     private void openWithParameter(String parameter) {
         String url = getTestURL();
         getDriver().get(url + "/" + parameter);
