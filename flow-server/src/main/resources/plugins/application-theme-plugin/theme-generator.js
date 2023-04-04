@@ -184,8 +184,9 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     }
     themeProperties.importCss.forEach((cssPath) => {
       const variable = 'module' + i++;
-      imports.push(`import ${variable} from '${cssPath}';\n`);
-      globalCssCode.push(`injectGlobalCss(${variable}.toString(), '${CSSIMPORT_COMMENT}', target);\n`);
+      globalFileContent.push(`import '${cssPath}';\n`);
+      imports.push(`import ${variable} from '${cssPath}?inline';\n`);
+      shadowOnlyCss.push(`injectGlobalCss(${variable}.toString(), '${CSSIMPORT_COMMENT}', target);\n`);
     });
   }
 

@@ -925,8 +925,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         Process process = null;
         try {
             builder.directory(options.getNpmFolder());
-            builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
-            builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+            builder.redirectInput(ProcessBuilder.Redirect.PIPE);
+            builder.redirectErrorStream(true);
 
             process = builder.start();
 
