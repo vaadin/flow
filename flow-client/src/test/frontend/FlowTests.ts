@@ -114,6 +114,9 @@ describe('Flow', () => {
     if (indicator) {
       indicator.remove();
     }
+    Array.from(document.body.children)
+      .filter((e) => e.tagName.toLowerCase().startsWith('flow-container'))
+      .forEach((e) => e.remove());
 
     $wnd.addEventListener = (type, listener) => {
       listeners.push({ type: type, listener: listener });
@@ -704,18 +707,13 @@ function stubServerRemoteFunction(
   flowRoot.$server = {
     timers: [],
 
-    connectClient: (localName: string, elemId: string, route: string) => {
-      expect(localName).not.to.be.undefined;
-      expect(elemId).not.to.be.undefined;
+    connectClient: (route: string) => {
       expect(route).not.to.be.undefined;
       if (routeRegex) {
         expect(route).to.match(routeRegex);
       }
 
-      expect(elemId).to.equal(id);
-      expect(localName).to.equal(`flow-container-${elemId.toLowerCase()}`);
-
-      container = flowRoot.$[elemId];
+      container = flowRoot.$[id];
 
       expect(container).not.to.be.undefined;
       expect(container.serverConnected).not.to.be.undefined;
