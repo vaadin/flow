@@ -3,10 +3,13 @@ import { ComponentReference } from '../component-util';
 
 export enum Commands {
   response = 'themeEditorResponse',
+  loadComponentMetadata = 'themeEditorComponentMetadata',
+  setLocalClassName = 'themeEditorLocalClassName',
   setCssRules = 'themeEditorRules',
   loadPreview = 'themeEditorLoadPreview',
   loadRules = 'themeEditorLoadRules',
-  history = 'themeEditorHistory'
+  history = 'themeEditorHistory',
+  openCss = 'themeEditorOpenCss'
 }
 
 export enum ResponseCode {
@@ -19,24 +22,23 @@ export interface BaseResponse {
   code: ResponseCode;
 }
 
+export interface LoadComponentMetadataResponse extends BaseResponse {
+  accessible?: boolean;
+  className?: string;
+  suggestedClassName?: string;
+}
+
 export interface LoadPreviewResponse extends BaseResponse {
   css: string;
 }
 
 export interface ServerCssRule {
-  tagName: string;
-  partName: string | null;
+  selector: string;
   properties: { [key: string]: string };
 }
 
 export interface LoadRulesResponse extends BaseResponse {
-  accessible?: boolean;
-  className?: string;
   rules: ServerCssRule[];
-}
-
-export interface SetRulesResponse extends BaseResponse {
-  className?: string;
 }
 
 interface RequestHandle {
@@ -95,32 +97,36 @@ export class ThemeEditorApi {
     }
   }
 
-  public setCssRules(rules: ServerCssRule[], componentRef?: ComponentReference | null): Promise<SetRulesResponse> {
-    const payload: any = { rules };
-    if (componentRef?.nodeId) {
-      payload.nodeId = componentRef?.nodeId;
-    }
-    return this.sendRequest(Commands.setCssRules, payload);
+  public loadComponentMetadata(componentRef: ComponentReference): Promise<LoadComponentMetadataResponse> {
+    return this.sendRequest(Commands.loadComponentMetadata, { nodeId: componentRef.nodeId });
+  }
+
+  public setLocalClassName(componentRef: ComponentReference, className: string): Promise<BaseResponse> {
+    return this.sendRequest(Commands.setLocalClassName, { nodeId: componentRef.nodeId, className });
+  }
+
+  public setCssRules(rules: ServerCssRule[]): Promise<BaseResponse> {
+    return this.sendRequest(Commands.setCssRules, { rules });
   }
 
   public loadPreview(): Promise<LoadPreviewResponse> {
     return this.sendRequest(Commands.loadPreview, {});
   }
 
-  public loadRules(selectorFilter: string, componentRef?: ComponentReference | null): Promise<LoadRulesResponse> {
-    const payload: any = { selectorFilter };
-    if (componentRef?.nodeId) {
-      payload.nodeId = componentRef?.nodeId;
-    }
-    return this.sendRequest(Commands.loadRules, payload);
+  public loadRules(selectors: string[]): Promise<LoadRulesResponse> {
+    return this.sendRequest(Commands.loadRules, { selectors });
   }
 
-  public undo(requestId: string) {
+  public undo(requestId: string): Promise<BaseResponse> {
     return this.sendRequest(Commands.history, { undo: requestId });
   }
 
-  public redo(requestId: string) {
+  public redo(requestId: string): Promise<BaseResponse> {
     return this.sendRequest(Commands.history, { redo: requestId });
+  }
+
+  public openCss(selector: string): Promise<BaseResponse> {
+    return this.sendRequest(Commands.openCss, { selector });
   }
 
   private getGlobalUiId(): number {

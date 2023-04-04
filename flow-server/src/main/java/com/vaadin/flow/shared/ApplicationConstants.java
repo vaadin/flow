@@ -61,11 +61,6 @@ public class ApplicationConstants implements Serializable {
     public static final String APP_WC_MODE = "webComponentMode";
 
     /**
-     * Whether the application is running vaadin-router in client side.
-     */
-    public static final String CLIENT_ROUTING = "clientRouting";
-
-    /**
      * Configuration parameter giving the (in some cases relative) URL to the
      * web application context root.
      */

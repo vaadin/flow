@@ -66,7 +66,6 @@ import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 import static com.vaadin.flow.router.internal.RouteModelTest.parameters;
 import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
 import static org.hamcrest.CoreMatchers.is;
@@ -2650,23 +2649,6 @@ public class RouterTest extends RoutingTestBase {
                 LoopByUINavigate.events.size());
         Assert.assertNull("Last handled location should have been cleared",
                 ui.getInternals().getLastHandledLocation());
-    }
-
-    @Test
-    public void ui_navigate_should_not_loop()
-            throws InvalidRouteConfigurationException {
-        LoopByUINavigate.events.clear();
-        RedirectToLoopByReroute.events.clear();
-        setNavigationTargets(LoopByUINavigate.class,
-                RedirectToLoopByReroute.class);
-        ui.getSession().setAttribute(SERVER_ROUTING, Boolean.TRUE);
-
-        ui.navigate("redirect/loop");
-
-        Assert.assertEquals("Expected one event", 1,
-                LoopByUINavigate.events.size());
-        Assert.assertEquals("Expected one event", 1,
-                RedirectToLoopByReroute.events.size());
     }
 
     @Test

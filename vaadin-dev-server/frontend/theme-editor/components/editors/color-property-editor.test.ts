@@ -1,7 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
 import '@vaadin/overlay';
-import { CssPropertyMetadata } from '../../metadata/model';
+import { ComponentElementMetadata, CssPropertyMetadata } from '../../metadata/model';
 import { ComponentTheme } from '../../model';
 import { testElementMetadata } from '../../tests/utils';
 import { ColorPropertyEditor } from './color-property-editor';
@@ -20,6 +20,12 @@ const backgroundColorMetadata: CssPropertyMetadata = {
   presets: ['yellow', 'orange', 'brown']
 };
 
+const inputMetadata: ComponentElementMetadata = {
+  selector: 'test-element > input',
+  displayName: 'Input',
+  properties: [colorMetadata, backgroundColorMetadata]
+};
+
 describe('color property editor', () => {
   let theme: ComponentTheme;
   let editor: ColorPropertyEditor;
@@ -36,20 +42,37 @@ describe('color property editor', () => {
     </style>`);
 
     theme = new ComponentTheme(testElementMetadata);
-    theme.updatePropertyValue(null, 'color', 'black');
-    theme.updatePropertyValue(null, 'background-color', 'white');
+    theme.updatePropertyValue(inputMetadata.selector, 'color', 'black');
+    theme.updatePropertyValue(inputMetadata.selector, 'background-color', 'white');
     valueChangeSpy = sinon.spy();
 
     editor = await fixture(html` <vaadin-dev-tools-theme-color-property-editor
       .theme=${theme}
+      .elementMetadata=${inputMetadata}
       .propertyMetadata=${colorMetadata}
       @theme-property-value-change=${valueChangeSpy}
     >
     </vaadin-dev-tools-theme-color-property-editor>`);
   });
 
+  function getTextInput() {
+    return editor.shadowRoot!.querySelector('vaadin-dev-tools-theme-text-input') as HTMLElement;
+  }
+
   function getInput() {
-    return editor.shadowRoot!.querySelector('input') as HTMLInputElement;
+    return getTextInput().shadowRoot!.querySelector('input') as HTMLInputElement;
+  }
+
+  function getClearButton() {
+    return editor
+      .shadowRoot!.querySelector('vaadin-dev-tools-theme-text-input')!
+      .shadowRoot!.querySelector('button') as HTMLButtonElement;
+  }
+
+  function isClearButtonVisible() {
+    const button = getClearButton();
+
+    return getComputedStyle(button).display === 'block';
   }
 
   function getColorPicker() {
@@ -69,9 +92,9 @@ describe('color property editor', () => {
 
   it('should update value when theme changes', async () => {
     const updatedTheme = cloneTheme();
-    updatedTheme.updatePropertyValue(null, 'color', 'red');
+    updatedTheme.updatePropertyValue(inputMetadata.selector, 'color', 'red');
     editor.theme = updatedTheme;
-    await elementUpdated(editor);
+    await elementUpdated(getInput());
 
     expect(getInput().value).to.equal('red');
     expect(getColorPicker().value).to.equal('red');
@@ -79,9 +102,9 @@ describe('color property editor', () => {
 
   it('should display raw preset value if theme value is a preset value', async () => {
     const updatedTheme = cloneTheme();
-    updatedTheme.updatePropertyValue(null, 'color', 'var(--test-primary-color)');
+    updatedTheme.updatePropertyValue(inputMetadata.selector, 'color', 'var(--test-primary-color)');
     editor.theme = updatedTheme;
-    await elementUpdated(editor);
+    await elementUpdated(getInput());
 
     expect(getInput().value).to.equal('rgb(0, 0, 255)');
     expect(getColorPicker().value).to.equal('rgb(0, 0, 255)');
@@ -89,7 +112,7 @@ describe('color property editor', () => {
 
   it('should update value when metadata changes', async () => {
     editor.propertyMetadata = backgroundColorMetadata;
-    await elementUpdated(editor);
+    await elementUpdated(getInput());
 
     expect(getInput().value).to.equal('white');
     expect(getColorPicker().value).to.equal('white');
@@ -177,5 +200,23 @@ describe('color property editor', () => {
 
     expect(valueChangeSpy.called).to.be.true;
     expect(valueChangeSpy.args[0][0].detail.value).to.be.equal('var(--test-error-color)');
+  });
+
+  it('should display clear button when property is modified', async () => {
+    expect(isClearButtonVisible()).to.be.false;
+
+    const updatedTheme = cloneTheme();
+    updatedTheme.updatePropertyValue(inputMetadata.selector, 'color', 'red', true);
+    editor.theme = updatedTheme;
+    await elementUpdated(getInput());
+
+    expect(isClearButtonVisible()).to.be.true;
+  });
+
+  it('should dispatch event with empty value when clearing value', () => {
+    getClearButton().click();
+
+    expect(valueChangeSpy.calledOnce).to.be.true;
+    expect(valueChangeSpy.args[0][0].detail.value).to.equal('');
   });
 });

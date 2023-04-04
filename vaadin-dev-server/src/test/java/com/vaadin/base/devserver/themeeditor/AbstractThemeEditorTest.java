@@ -31,10 +31,9 @@ public abstract class AbstractThemeEditorTest {
 
     protected final String FRONTEND_FOLDER = "themeeditor/META-INF/frontend";
     protected final String FRONTEND_NO_THEME_FOLDER = "themeeditor-empty/META-INF/frontend";
-    protected final String TAG_NAME = "vaadin-text-field";
-    protected final String PART_NAME = "label";
     protected final String SELECTOR_WITH_PART = "vaadin-text-field::part(label)";
 
+    protected final int TESTVIEW_CREATE_AND_ATTACH = 22;
     protected final int TEXTFIELD_CREATE = 24;
     protected final int TEXTFIELD_ATTACH = 48;
     protected final int TEXTFIELD_CALL = 44;

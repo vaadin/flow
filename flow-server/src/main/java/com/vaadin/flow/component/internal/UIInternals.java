@@ -24,20 +24,23 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HeartbeatEvent;
 import com.vaadin.flow.component.HeartbeatListener;
-import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -46,11 +49,8 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateTree;
@@ -80,9 +80,6 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
  * framework.
@@ -94,6 +91,9 @@ import org.slf4j.LoggerFactory;
  * @since 1.0
  */
 public class UIInternals implements Serializable {
+
+    private static final Pattern APP_ID_REPLACE_PATTERN = Pattern
+            .compile("-\\d+$");
 
     /**
      * A {@link Page#executeJs(String, Serializable...)} invocation that has not
@@ -204,6 +204,8 @@ public class UIInternals implements Serializable {
     private String contextRootRelativePath;
 
     private String appId;
+
+    private String fullAppId;
 
     private Component activeDragSourceComponent;
 
@@ -988,11 +990,13 @@ public class UIInternals implements Serializable {
      * Sets the application id tied with this UI. Different applications in the
      * same page have different unique ids.
      *
-     * @param appId
-     *            the id of the application tied with this UI
+     * @param fullAppId
+     *            the (full, not stripped) id of the application tied with this
+     *            UI
      */
-    public void setAppId(String appId) {
-        this.appId = appId;
+    public void setFullAppId(String fullAppId) {
+        this.fullAppId = fullAppId;
+        this.appId = APP_ID_REPLACE_PATTERN.matcher(fullAppId).replaceAll("");
     }
 
     /**
@@ -1003,6 +1007,17 @@ public class UIInternals implements Serializable {
      */
     public String getAppId() {
         return appId;
+    }
+
+    /**
+     * Gets the full app id, which funnily enough is not the same as appId. This
+     * really should be removed but not right now. Don't use this method, it
+     * will be gone.
+     *
+     * @return the full app id
+     */
+    public String getFullAppId() {
+        return fullAppId;
     }
 
     /**
@@ -1219,5 +1234,10 @@ public class UIInternals implements Serializable {
             }
             oldContent = oldChildren.get(oldContent);
         }
+    }
+
+    public String getContainerTag() {
+        return "flow-container-" + getFullAppId().toLowerCase(Locale.ENGLISH);
+
     }
 }

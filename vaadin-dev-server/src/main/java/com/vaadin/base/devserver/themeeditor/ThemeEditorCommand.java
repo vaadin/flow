@@ -10,7 +10,9 @@ public interface ThemeEditorCommand {
 
     String RESPONSE = "themeEditorResponse";
 
-    String CLASS_NAMES = "themeEditorClassNames";
+    String COMPONENT_METADATA = "themeEditorComponentMetadata";
+
+    String LOCAL_CLASS_NAME = "themeEditorLocalClassName";
 
     String HISTORY = "themeEditorHistory";
 
@@ -19,5 +21,7 @@ public interface ThemeEditorCommand {
     String LOAD_RULES = "themeEditorLoadRules";
 
     String LOAD_PREVIEW = "themeEditorLoadPreview";
+
+    String OPEN_CSS = "themeEditorOpenCss";
 
 }

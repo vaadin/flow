@@ -25,17 +25,10 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
 
 import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Base64;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -55,8 +48,11 @@ public class ThemeIT extends ChromeBrowserTest {
 
         checkLogsForErrors();
 
-        final TestBenchElement helloWorld = $(TestBenchElement.class).first()
-                .findElement(By.tagName("hello-world-view"));
+        // This is a TypeScript view and as TestBench cannot wait for
+        // the Vaadin router to complete the routing operation (the view
+        // is imported dynamically) we need "waitForFirst" here
+        final TestBenchElement helloWorld = $("hello-world-view")
+                .waitForFirst();
 
         Assert.assertEquals(
                 "CSS was not applied as background color was not as expected.",
@@ -81,17 +77,13 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void nodeAssetInCss_pathIsSetCorrectly() {
+    public void nodeAssetInCss_pathIsSetCorrectly() throws IOException {
         open();
-        final String resourceUrl = getRootURL()
-                + "/path/themes/app-theme/fortawesome/icons/snowflake.svg";
         WebElement cssNodeSnowflake = findElement(By.id(CSS_SNOWFLAKE));
-        final String expectedImgUrl = "url(\"" + resourceUrl + "\")";
-        Assert.assertEquals(
-                "Background image has been referenced in styles.css and "
-                        + "expected to be applied",
-                expectedImgUrl,
-                cssNodeSnowflake.getCssValue("background-image"));
+        String imageUrl = cssNodeSnowflake.getCssValue("background-image");
+        assertImageEquals(Paths.get("target", "classes", "META-INF", "VAADIN",
+                "webapp", "VAADIN", "static", "themes", "app-theme",
+                "fortawesome", "icons", "snowflake.svg"), imageUrl);
     }
 
     @Test
@@ -223,23 +215,23 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void documentCssImport_onlyExternalAddedToHeadAsLink() {
+    public void documentCssImport_externalUrlLoaded() {
+        open();
+        checkLogsForErrors();
+        waitForFont("10px Itim");
+    }
+
+    @Test
+    public void documentCssImport_subImportApplied() {
         open();
         checkLogsForErrors();
 
-        final WebElement documentHead = getDriver()
-                .findElement(By.xpath("/html/head"));
-        final List<WebElement> links = documentHead
-                .findElements(By.tagName("link"));
-
-        List<String> linkUrls = links.stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
-
-        Assert.assertTrue("Missing link for external url", linkUrls
-                .contains("https://fonts.googleapis.com/css?family=Itim"));
-        Assert.assertFalse("Found import that webpack should have resolved",
-                linkUrls.contains("sub-css/sub.css"));
+        TestBenchElement subComponent = $("*").id("sub-component");
+        Assert.assertEquals("Width for sub.css should have been applied",
+                "10px",
+                (String) executeScript(
+                        "return getComputedStyle(arguments[0]).width",
+                        subComponent));
     }
 
     @Override

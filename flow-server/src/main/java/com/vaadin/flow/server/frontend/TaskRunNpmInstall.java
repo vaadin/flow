@@ -481,8 +481,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
         builder.environment().put("ADBLOCK", "1");
         builder.environment().put("NO_UPDATE_NOTIFIER", "1");
         builder.directory(workingDirectory);
-        builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
-        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+        builder.redirectInput(ProcessBuilder.Redirect.PIPE);
+        builder.redirectErrorStream(true);
 
         Process process = builder.start();
 

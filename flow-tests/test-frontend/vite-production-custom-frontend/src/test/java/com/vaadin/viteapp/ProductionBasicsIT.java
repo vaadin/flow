@@ -1,7 +1,6 @@
 package com.vaadin.viteapp;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;

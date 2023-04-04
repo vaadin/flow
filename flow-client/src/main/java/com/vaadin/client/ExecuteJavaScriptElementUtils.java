@@ -195,21 +195,6 @@ public final class ExecuteJavaScriptElementUtils {
         return existingId;
     }
 
-    /**
-     * Invoke {@link ScrollPositionHandler#afterServerNavigation(JsonObject)}.
-     *
-     * @param registry
-     *            the registry
-     * @param state
-     *            includes scroll position of the previous page and the complete
-     *            href of the router link that was clicked and caused this
-     *            navigation
-     */
-    public static void scrollPositionHandlerAfterServerNavigation(
-            Registry registry, JsonObject state) {
-        registry.getScrollPositionHandler().afterServerNavigation(state);
-    }
-
     private static native boolean isPropertyDefined(Node node, String property)
     /*-{
         return !!(node["constructor"] && node["constructor"]["properties"] &&

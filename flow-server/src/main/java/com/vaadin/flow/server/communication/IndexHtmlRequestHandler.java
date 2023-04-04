@@ -15,16 +15,14 @@
  */
 package com.vaadin.flow.server.communication;
 
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
-import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.util.Locale;
 import java.util.Optional;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -37,6 +35,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
 import com.vaadin.flow.server.AppShellRegistry;
@@ -50,10 +49,14 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * This class is responsible for serving the <code>index.html</code> according
@@ -85,18 +88,29 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         prependBaseHref(request, indexDocument);
 
+        Element htmlElement = indexDocument.getElementsByTag("html").get(0);
+        if (!htmlElement.hasAttr("lang")) {
+            Locale locale = LocaleUtil.getLocale(LocaleUtil::getI18NProvider);
+            htmlElement.attr("lang", locale.getLanguage());
+        }
+
         JsonObject initialJson = Json.createObject();
 
         if (service.getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
             includeInitialUidl(initialJson, session, request, response);
-
+            UI ui = UI.getCurrent();
+            var flowContainerElement = new Element(
+                    ui.getInternals().getContainerTag());
+            flowContainerElement.attr("id", ui.getInternals().getAppId());
+            Elements outlet = indexDocument.body().select("#outlet");
+            if (!outlet.isEmpty()) {
+                outlet.first().appendChild(flowContainerElement);
+            } else {
+                indexDocument.body().appendChild(flowContainerElement);
+            }
             indexHtmlResponse = new IndexHtmlResponse(request, response,
-                    indexDocument, UI.getCurrent());
-
-            // App might be using classic server-routing, which is true
-            // unless we detect a call to JavaScriptBootstrapUI.connectClient
-            session.setAttribute(SERVER_ROUTING, Boolean.TRUE);
+                    indexDocument, ui);
         } else {
             indexHtmlResponse = new IndexHtmlResponse(request, response,
                     indexDocument);
@@ -107,6 +121,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         configureErrorDialogStyles(indexDocument);
 
         configureHiddenElementStyles(indexDocument);
+
+        addStyleTagReferences(indexDocument);
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
@@ -132,7 +148,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         redirectToOldBrowserPageWhenNeeded(indexDocument);
 
-        // modify the page based on registered IndexHtmlRequestListener:s
+        // modify the page based on registered IndexHtmlRequestListener:
         service.modifyIndexHtmlResponse(indexHtmlResponse);
 
         if (!config.isProductionMode()) {
@@ -142,6 +158,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     "window.Vaadin = window.Vaadin || {}; window.Vaadin.developmentMode = true;");
         }
 
+        addLinkTagForTheme(indexDocument, context);
         applyThemeVariant(indexDocument, context);
 
         if (config.isDevToolsEnabled()) {
@@ -161,11 +178,34 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return true;
     }
 
+    private static void addLinkTagForTheme(Document document,
+            VaadinContext context) {
+        ApplicationConfiguration config = ApplicationConfiguration.get(context);
+        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE) {
+            try {
+                BootstrapHandler.getStylesheetTags(config, "styles.css")
+                        .forEach(link -> document.head().appendChild(link));
+            } catch (IOException e) {
+                throw new UncheckedIOException(
+                        "Failed to add a link tag for 'styles.css' to the document",
+                        e);
+            }
+        }
+    }
+
     private void applyThemeVariant(Document indexDocument,
             VaadinContext context) throws IOException {
         FrontendUtils.getThemeAnnotation(context)
                 .ifPresent(theme -> indexDocument.head().parent().attr("theme",
                         theme.variant()));
+    }
+
+    private void addStyleTagReferences(Document indexDocument) {
+        Comment cssImportComment = new Comment("CSSImport end");
+        indexDocument.head().appendChild(cssImportComment);
+
+        Comment stylesheetComment = new Comment("Stylesheet end");
+        indexDocument.head().appendChild(stylesheetComment);
     }
 
     private void redirectToOldBrowserPageWhenNeeded(Document indexDocument) {

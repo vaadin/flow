@@ -17,14 +17,12 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.util.Optional;
 import java.util.function.Function;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
@@ -36,7 +34,6 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.HandlerHelper;
-import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -50,17 +47,15 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
-
 /**
  * Processes a 'start' request type from the client to initialize server session
- * and UI. It returns a JSON response with everything needed to bootstrapping
- * flow views.
+ * and UI. It returns a JSON response with everything needed to bootstrap flow
+ * views.
  * <p>
  * The handler is for client driven projects where `index.html` does not contain
- * bootstrap data. Bootstraping is the responsability of the `@vaadin/flow`
+ * bootstrap data. Bootstrapping is the responsibility of the `@vaadin/flow`
  * client that is able to ask the server side to create the vaadin session and
- * do the boostrapping lazily.
+ * do the bootstrapping lazily.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -169,19 +164,11 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
         config.put("requestURL", requestURL);
 
-        addLinkTagForTheme(session);
-
         return context;
     }
 
     @Override
     protected void initializeUIWithRouter(BootstrapContext context, UI ui) {
-        if (context.getRequest().getParameter("serverSideRouting") != null) {
-            // App is using classic server-routing, set a session attribute
-            // to know that in future navigation calls
-            ui.getSession().setAttribute(SERVER_ROUTING, Boolean.TRUE);
-            ui.getInternals().getRouter().initializeUI(ui, context.getRoute());
-        }
     }
 
     @Override
@@ -307,22 +294,4 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         return initial;
     }
 
-    private static void addLinkTagForTheme(VaadinSession session) {
-        DeploymentConfiguration deploymentConfiguration = session
-                .getConfiguration();
-        if (deploymentConfiguration.getMode() == Mode.DEVELOPMENT_BUNDLE) {
-            try {
-                BootstrapHandler
-                        .getStylesheetLinks(deploymentConfiguration,
-                                "styles.css")
-                        .forEach(link -> UI.getCurrent().getPage().executeJs(
-                                BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG,
-                                link));
-            } catch (IOException e) {
-                throw new UncheckedIOException(
-                        "Failed to add a link tag for 'styles.css' to the document",
-                        e);
-            }
-        }
-    }
 }

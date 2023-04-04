@@ -1,9 +1,19 @@
 package com.vaadin.base.devserver.themeeditor;
 
-import com.vaadin.base.devserver.themeeditor.handlers.*;
+import com.vaadin.base.devserver.themeeditor.handlers.ComponentMetadataHandler;
+import com.vaadin.base.devserver.themeeditor.handlers.HistoryHandler;
+import com.vaadin.base.devserver.themeeditor.handlers.LoadPreviewHandler;
+import com.vaadin.base.devserver.themeeditor.handlers.LoadRulesHandler;
+import com.vaadin.base.devserver.themeeditor.handlers.LocalClassNameHandler;
+import com.vaadin.base.devserver.themeeditor.handlers.OpenCssHandler;
+import com.vaadin.base.devserver.themeeditor.handlers.RulesHandler;
 import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
 import com.vaadin.base.devserver.themeeditor.messages.ErrorResponse;
-import com.vaadin.base.devserver.themeeditor.utils.*;
+import com.vaadin.base.devserver.themeeditor.utils.HasSourceModifier;
+import com.vaadin.base.devserver.themeeditor.utils.HasThemeModifier;
+import com.vaadin.base.devserver.themeeditor.utils.MessageHandler;
+import com.vaadin.base.devserver.themeeditor.utils.ThemeEditorException;
+import com.vaadin.base.devserver.themeeditor.utils.ThemeEditorHistory;
 import com.vaadin.flow.server.VaadinContext;
 import elemental.json.JsonObject;
 import org.slf4j.Logger;
@@ -29,11 +39,13 @@ public class ThemeEditorMessageHandler
     public ThemeEditorMessageHandler(VaadinContext context) {
         this.sourceModifier = new JavaSourceModifier(context);
         this.themeModifier = new ThemeModifier(context);
-        this.handlers.add(new RulesHandler(this, this));
-        this.handlers.add(new ClassNamesHandler(this));
+        this.handlers.add(new ComponentMetadataHandler(this));
+        this.handlers.add(new RulesHandler(this));
+        this.handlers.add(new LocalClassNameHandler(this, this));
         this.handlers.add(new HistoryHandler());
-        this.handlers.add(new LoadRulesHandler(this, this));
+        this.handlers.add(new LoadRulesHandler(this));
         this.handlers.add(new LoadPreviewHandler(this));
+        this.handlers.add((new OpenCssHandler(this)));
     }
 
     public boolean isEnabled() {

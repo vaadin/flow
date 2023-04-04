@@ -1,7 +1,13 @@
 package com.vaadin.base.devserver.themeeditor;
 
 import com.helger.css.ECSSVersion;
-import com.helger.css.decl.*;
+import com.helger.css.decl.CSSDeclaration;
+import com.helger.css.decl.CSSImportRule;
+import com.helger.css.decl.CSSSelector;
+import com.helger.css.decl.CSSSelectorSimpleMember;
+import com.helger.css.decl.CSSStyleRule;
+import com.helger.css.decl.CascadingStyleSheet;
+import com.helger.css.decl.ICSSSelectorMember;
 import com.helger.css.reader.CSSReader;
 import com.helger.css.writer.CSSWriter;
 import com.vaadin.base.devserver.themeeditor.utils.CssRule;
@@ -16,10 +22,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -81,34 +91,83 @@ public class ThemeModifier {
     }
 
     /**
-     * Returns the full content of the theme editor CSS file.
+     * Returns the content of the theme editor CSS file.
      *
      * @return CSS string
      */
     public String getCss() {
-        File styles = getStyleSheetFile();
         try {
-            return Files.readString(Path.of(styles.getAbsolutePath()));
+            StringWriter stringWriter = new StringWriter();
+            CascadingStyleSheet styleSheet = getCascadingStyleSheet();
+            CSSWriter cssWriter = new CSSWriter().setWriteHeaderText(false);
+            cssWriter.getSettings().setOptimizedOutput(true)
+                    .setRemoveUnnecessaryCode(true);
+            cssWriter.writeCSS(styleSheet, stringWriter);
+            return stringWriter.toString();
         } catch (IOException e) {
-            throw new ThemeEditorException("Could not read stylesheet from "
-                    + styles.getAbsolutePath());
+            throw new ThemeEditorException("Cannot read stylesheet file.");
         }
     }
 
     /**
-     * Retrieves list of {@link CssRule} for given selector filter.
+     * Retrieves list of {@link CssRule} for given selectors.
      *
-     * @param selectorFilter
-     *            selector filter
+     * @param selectors
+     *            list of selectors
      * @return list of {@link CssRule}
      */
-    public List<CssRule> getCssRules(Predicate<String> selectorFilter) {
+    public List<CssRule> getCssRules(List<String> selectors) {
         CascadingStyleSheet styleSheet = getCascadingStyleSheet();
         return styleSheet.getAllStyleRules().stream()
                 .filter(rule -> rule.getSelectorCount() > 0)
-                .filter(rule -> selectorFilter
-                        .test(rule.getSelectorAtIndex(0).getAsCSSString()))
+                .filter(rule -> selectors
+                        .contains(rule.getSelectorAtIndex(0).getAsCSSString()))
                 .map(this::toCssRule).toList();
+    }
+
+    /**
+     * Replaces classname with new classname in all matching rules.
+     *
+     * @param oldClassName
+     *            classname to be replaced
+     * @param newClassName
+     *            new classname
+     */
+    public void replaceClassName(String tagName, String oldClassName,
+            String newClassName) {
+        CascadingStyleSheet styleSheet = getCascadingStyleSheet();
+        replaceClassName(styleSheet, tagName, oldClassName, newClassName);
+        writeStylesheet(styleSheet);
+    }
+
+    /**
+     * Gets location line of rule with given selector
+     *
+     * @param selector
+     * @return line number when located, -1 otherwise
+     */
+    public int getRuleLocationLine(String selector) {
+        CascadingStyleSheet styleSheet = getCascadingStyleSheet();
+        CSSStyleRule rule = findRuleBySelector(styleSheet, selector);
+        if (rule == null) {
+            return -1;
+        }
+        return rule.getSourceLocation().getFirstTokenBeginLineNumber();
+    }
+
+    /**
+     * Creates empty rule with given selector
+     *
+     * @param selector
+     */
+    public void createEmptyStyleRule(String selector) {
+        CascadingStyleSheet styleSheet = getCascadingStyleSheet();
+        CSSSelector cssSelector = new CSSSelector()
+                .addMember(new CSSSelectorSimpleMember(selector));
+        CSSStyleRule cssStyleRule = new CSSStyleRule().addSelector(cssSelector);
+        styleSheet.addRule(cssStyleRule);
+        sortStylesheet(styleSheet);
+        writeStylesheet(styleSheet);
     }
 
     protected String getCssFileName() {
@@ -120,7 +179,6 @@ public class ThemeModifier {
     }
 
     protected State init() {
-        // for development purposes only
         if (!FeatureFlags.get(context).isEnabled(FeatureFlags.THEME_EDITOR)) {
             return State.DISABLED;
         }
@@ -138,7 +196,7 @@ public class ThemeModifier {
                 FrontendUtils.PROJECT_BASEDIR, null), "frontend");
     }
 
-    protected File getStyleSheetFile() {
+    public File getStyleSheetFile() {
         File themes = new File(getFrontendFolder(), "themes");
         String themeName = getThemeName(themes);
         File theme = new File(themes, themeName);
@@ -268,6 +326,39 @@ public class ThemeModifier {
                 .findFirst().orElse(null);
     }
 
+    protected CSSStyleRule findRuleBySelector(CascadingStyleSheet styleSheet,
+            String selector) {
+        Predicate<CSSSelector> selectorPredicate = s -> Objects.equals(selector,
+                s.getAsCSSString());
+        return styleSheet.getAllStyleRules().stream()
+                .filter(r -> r.getAllSelectors().containsAny(selectorPredicate))
+                .findFirst().orElse(null);
+    }
+
+    protected void replaceClassName(CascadingStyleSheet styleSheet,
+            String tagName, String oldClassName, String newClassName) {
+        String dotOldClassName = "." + oldClassName;
+        String dotNewClassName = "." + newClassName;
+        for (CSSStyleRule rule : styleSheet.getAllStyleRules()) {
+            for (CSSSelector selector : rule.getAllSelectors()) {
+                if (selector.getAllMembers().containsNone(
+                        m -> tagName.equals(m.getAsCSSString()))) {
+                    continue;
+                }
+                List<ICSSSelectorMember> members = new ArrayList<>();
+                selector.getAllMembers().findAll(
+                        m -> dotOldClassName.equals(m.getAsCSSString()),
+                        members::add);
+                members.forEach(m -> {
+                    int index = selector.getAllMembers().indexOf(m);
+                    selector.removeMember(m);
+                    selector.addMember(index,
+                            new CSSSelectorSimpleMember(dotNewClassName));
+                });
+            }
+        }
+    }
+
     protected void insertImportIfNotExists() {
         File themes = new File(getFrontendFolder(), "themes");
         String themeName = getThemeName(themes);
@@ -313,37 +404,12 @@ public class ThemeModifier {
 
     protected CssRule toCssRule(CSSStyleRule rule) {
         CSSSelector selector = rule.getSelectorAtIndex(0);
-        String tagName = getTagName(selector);
-        String className = getClassName(selector);
-        String partName = getPartName(selector);
         Map<String, String> properties = new HashMap<>();
         rule.getAllDeclarations()
                 .forEach(cssDeclaration -> properties.put(
                         cssDeclaration.getProperty(),
                         cssDeclaration.getExpressionAsCSSString()));
-        return new CssRule(tagName, partName, className, properties);
-    }
-
-    protected String getTagName(CSSSelector selector) {
-        // assume tag name is always first
-        return selector.getMemberAtIndex(0).getAsCSSString();
-    }
-
-    protected String getClassName(CSSSelector selector) {
-        return selector.getAllMembers().stream()
-                .filter(CSSSelectorSimpleMember.class::isInstance)
-                .map(CSSSelectorSimpleMember.class::cast)
-                .map(CSSSelectorSimpleMember::getValue)
-                .filter(v -> v.startsWith(".")).map(v -> v.substring(1))
-                .findFirst().orElse(null);
-    }
-
-    protected String getPartName(CSSSelector selector) {
-        return selector.getAllMembers().stream()
-                .filter(CSSSelectorMemberFunctionLike.class::isInstance)
-                .map(CSSSelectorMemberFunctionLike.class::cast)
-                .map(CSSSelectorMemberFunctionLike::getParameterExpression)
-                .map(CSSExpression::getAsCSSString).findFirst().orElse(null);
+        return new CssRule(selector.getAsCSSString(), properties);
     }
 
 }

@@ -1,106 +1,40 @@
-import {ComponentMetadata, EditorType} from '../model';
-import {presets} from "./presets";
+import { ComponentMetadata } from '../model';
+import {
+  clearButtonProperties,
+  errorMessageProperties,
+  helperTextProperties,
+  inputFieldProperties,
+  labelProperties
+} from './vaadin-text-field';
 
 export default {
-    tagName: 'vaadin-text-area',
-    displayName: 'TextArea',
-    properties: [],
-    parts: [
-        {
-            partName: 'label',
-            displayName: 'Label',
-            properties: [
-                {
-                    propertyName: 'color',
-                    displayName: 'Text color',
-                    editorType: EditorType.color,
-                    presets: presets.lumoTextColor
-                },
-                {
-                    propertyName: 'font-size',
-                    displayName: 'Font size',
-                    editorType: EditorType.range,
-                    presets: presets.lumoFontSize,
-                    icon: 'font'
-                },
-                {
-                    propertyName: 'background-color',
-                    displayName: 'Background color',
-                    editorType: EditorType.color
-                }
-            ]
-        },
-        {
-            partName: 'input-field',
-            displayName: 'Input field',
-            properties: [
-                {
-                    propertyName: 'color',
-                    displayName: 'Text color',
-                    editorType: EditorType.color,
-                    presets: presets.lumoTextColor
-                },
-                {
-                    propertyName: 'font-size',
-                    displayName: 'Font size',
-                    editorType: EditorType.range,
-                    presets: presets.lumoFontSize,
-                    icon: 'font'
-                },
-                {
-                    propertyName: 'background-color',
-                    displayName: 'Background color',
-                    editorType: EditorType.color
-                }
-            ]
-        },
-        {
-            partName: 'helper-text',
-            displayName: 'Helper text',
-            properties: [
-                {
-                    propertyName: 'color',
-                    displayName: 'Text color',
-                    editorType: EditorType.color,
-                    presets: presets.lumoTextColor
-                },
-                {
-                    propertyName: 'font-size',
-                    displayName: 'Font size',
-                    editorType: EditorType.range,
-                    presets: presets.lumoFontSize,
-                    icon: 'font'
-                },
-                {
-                    propertyName: 'background-color',
-                    displayName: 'Background color',
-                    editorType: EditorType.color
-                }
-            ]
-        },
-        {
-            partName: 'error-message',
-            displayName: 'Error message',
-            properties: [
-                {
-                    propertyName: 'color',
-                    displayName: 'Text color',
-                    editorType: EditorType.color,
-                    presets: presets.lumoTextColor
-                },
-                {
-                    propertyName: 'font-size',
-                    displayName: 'Font size',
-                    editorType: EditorType.range,
-                    presets: presets.lumoFontSize,
-                    icon: 'font'
-                },
-                {
-                    propertyName: 'background-color',
-                    displayName: 'Background color',
-                    editorType: EditorType.color
-                }
-            ]
-        }
-    ]
+  tagName: 'vaadin-text-area',
+  displayName: 'TextArea',
+  elements: [
+    {
+      selector: 'vaadin-text-area::part(input-field)',
+      displayName: 'Input field',
+      properties: inputFieldProperties
+    },
+    {
+      selector: 'vaadin-text-area::part(label)',
+      displayName: 'Label',
+      properties: labelProperties
+    },
+    {
+      selector: 'vaadin-text-area::part(helper-text)',
+      displayName: 'Helper text',
+      properties: helperTextProperties
+    },
+    {
+      selector: 'vaadin-text-area::part(error-message)',
+      displayName: 'Error message',
+      properties: errorMessageProperties
+    },
+    {
+      selector: 'vaadin-text-area::part(clear-button)',
+      displayName: 'Clear button',
+      properties: clearButtonProperties
+    }
+  ]
 } as ComponentMetadata;

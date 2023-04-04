@@ -1,67 +1,47 @@
 import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult } from 'lit';
-import { property, state } from 'lit/decorators.js';
-import { ComponentPartMetadata, CssPropertyMetadata } from '../../metadata/model';
+import { customElement, property, state } from 'lit/decorators.js';
+import { ComponentElementMetadata, CssPropertyMetadata } from '../../metadata/model';
 import { ComponentTheme, ThemePropertyValue } from '../../model';
+import { editorRowStyles } from '../../styles';
+import { icons } from '../../icons';
 
 export class ThemePropertyValueChangeEvent extends CustomEvent<{
-  part: ComponentPartMetadata | null;
+  element: ComponentElementMetadata;
   property: CssPropertyMetadata;
   value: string;
 }> {
-  constructor(part: ComponentPartMetadata | null, property: CssPropertyMetadata, value: string) {
+  constructor(element: ComponentElementMetadata, property: CssPropertyMetadata, value: string) {
     super('theme-property-value-change', {
       bubbles: true,
       composed: true,
-      detail: { part, property, value }
+      detail: { element, property, value }
     });
   }
 }
 
 export abstract class BasePropertyEditor extends LitElement {
   static get styles(): CSSResultGroup {
-    return css`
-      :host {
-        display: block;
-      }
+    return [
+      editorRowStyles,
+      css`
+        :host {
+          display: block;
+        }
 
-      .property {
-        display: flex;
-        align-items: baseline;
-        padding: var(--theme-editor-section-horizontal-padding);
-      }
-
-      .property .property-name {
-        flex: 0 0 auto;
-        width: 100px;
-      }
-
-      .property .property-name .modified {
-        display: inline-block;
-        width: 6px;
-        height: 6px;
-        background: orange;
-        border-radius: 3px;
-        margin-left: 3px;
-      }
-
-      .property .property-editor {
-        flex: 1 1 0;
-      }
-
-      .input {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 0.25rem 0.375rem;
-        color: inherit;
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 0.25rem;
-        border: none;
-      }
-    `;
+        .editor-row .label .modified {
+          display: inline-block;
+          width: 6px;
+          height: 6px;
+          background: orange;
+          border-radius: 3px;
+          margin-left: 3px;
+        }
+      `
+    ];
   }
 
   @property({})
-  public partMetadata?: ComponentPartMetadata;
+  public elementMetadata!: ComponentElementMetadata;
   @property({})
   public propertyMetadata!: CssPropertyMetadata;
   @property({})
@@ -82,12 +62,12 @@ export abstract class BasePropertyEditor extends LitElement {
 
   render() {
     return html`
-      <div class="property">
-        <div class="property-name">
+      <div class="editor-row">
+        <div class="label">
           ${this.propertyMetadata.displayName}
           ${this.propertyValue?.modified ? html`<span class="modified"></span>` : null}
         </div>
-        <div class="property-editor">${this.renderEditor()}</div>
+        <div class="editor">${this.renderEditor()}</div>
       </div>
     `;
   }
@@ -95,13 +75,12 @@ export abstract class BasePropertyEditor extends LitElement {
   protected abstract renderEditor(): TemplateResult;
 
   protected updateValueFromTheme() {
-    const partName = this.partMetadata?.partName || null;
-    this.propertyValue = this.theme.getPropertyValue(partName, this.propertyMetadata.propertyName);
+    this.propertyValue = this.theme.getPropertyValue(this.elementMetadata.selector, this.propertyMetadata.propertyName);
     this.value = this.propertyValue?.value || '';
   }
 
   protected dispatchChange(value: string) {
-    this.dispatchEvent(new ThemePropertyValueChangeEvent(this.partMetadata || null, this.propertyMetadata, value));
+    this.dispatchEvent(new ThemePropertyValueChangeEvent(this.elementMetadata, this.propertyMetadata, value));
   }
 }
 
@@ -131,6 +110,8 @@ export class PropertyPresets {
       // and in reverse allows to select a preset in the slider from a computed
       // style value such as `2.25rem`.
       const measureElement = document.createElement('div');
+      // Enable borders so that measuring border styles works properly
+      measureElement.style.borderStyle = 'solid';
       measureElement.style.visibility = 'hidden';
       document.body.append(measureElement);
 
@@ -157,5 +138,97 @@ export class PropertyPresets {
   findPreset(rawValue: string) {
     const sanitizedValue = rawValue ? rawValue.trim() : rawValue;
     return this.values.find((preset) => this._rawValues[preset] === sanitizedValue);
+  }
+}
+
+export class TextInputChangeEvent extends CustomEvent<{ value: string }> {
+  constructor(value: string) {
+    super('change', { detail: { value } });
+  }
+}
+
+@customElement('vaadin-dev-tools-theme-text-input')
+export class TextInput extends LitElement {
+  static get styles() {
+    return css`
+      :host {
+        display: inline-block;
+        width: 100%;
+        position: relative;
+      }
+
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.25rem 0.375rem;
+        color: inherit;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 0.25rem;
+        border: none;
+      }
+
+      button {
+        display: none;
+        position: absolute;
+        right: 4px;
+        top: 4px;
+        padding: 0;
+        line-height: 0;
+        border: none;
+        background: none;
+        color: var(--dev-tools-text-color);
+      }
+
+      button svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      button:not(:disabled):hover {
+        color: var(--dev-tools-text-color-emphasis);
+      }
+
+      :host(.show-clear-button) input {
+        padding-right: 20px;
+      }
+
+      :host(.show-clear-button) button {
+        display: block;
+      }
+    `;
+  }
+
+  @property({})
+  public value: string = '';
+  @property({})
+  public showClearButton: boolean = false;
+
+  protected update(changedProperties: PropertyValues) {
+    super.update(changedProperties);
+
+    if (changedProperties.has('showClearButton')) {
+      if (this.showClearButton) {
+        this.classList.add('show-clear-button');
+      } else {
+        this.classList.remove('show-clear-button');
+      }
+    }
+  }
+
+  render() {
+    return html`
+      <input class="input" .value=${this.value} @change=${this.handleInputChange} />
+      <button @click=${this.handleClearClick}>${icons.cross}</button>
+    `;
+  }
+
+  private handleInputChange(e: Event) {
+    const input = e.target as HTMLInputElement;
+
+    this.dispatchEvent(new TextInputChangeEvent(input.value));
+  }
+
+  private handleClearClick() {
+    this.dispatchEvent(new TextInputChangeEvent(''));
   }
 }

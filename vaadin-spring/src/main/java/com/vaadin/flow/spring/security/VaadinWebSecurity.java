@@ -15,6 +15,12 @@
  */
 package com.vaadin.flow.spring.security;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import javax.crypto.SecretKey;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
@@ -23,8 +29,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,7 +58,6 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfException;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
@@ -70,10 +73,6 @@ import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Provides basic Vaadin component-based security configuration for the project.
@@ -177,11 +176,6 @@ public abstract class VaadinWebSecurity {
                 .defaultAuthenticationEntryPointFor(
                         new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                         requestUtil::isEndpointRequest);
-
-        // Enforce the deprecated CSRF handler temporarily
-        // to make Hilla auth work.
-        http.csrf(csrf -> csrf.csrfTokenRequestHandler(
-                new CsrfTokenRequestAttributeHandler()));
 
         // Vaadin has its own CSRF protection.
         // Spring CSRF is not compatible with Vaadin internal requests
@@ -304,9 +298,13 @@ public abstract class VaadinWebSecurity {
             String urlMapping) {
         Objects.requireNonNull(urlMapping,
                 "Vaadin servlet url mapping is required");
-        return new OrRequestMatcher(Stream
+        Stream<String> mappingRelativePaths = Stream
                 .of(HandlerHelper.getPublicResources())
-                .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
+                .map(path -> RequestUtil.applyUrlMapping(urlMapping, path));
+        Stream<String> rootPaths = Stream
+                .of(HandlerHelper.getPublicResourcesRoot());
+        return new OrRequestMatcher(Stream
+                .concat(mappingRelativePaths, rootPaths)
                 .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
     }
 

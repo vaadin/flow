@@ -12,7 +12,6 @@ import com.vaadin.client.flow.GwtErrotHandlerTest;
 import com.vaadin.client.flow.GwtEventHandlerTest;
 import com.vaadin.client.flow.GwtMultipleBindingTest;
 import com.vaadin.client.flow.GwtPolymerModelTest;
-import com.vaadin.client.flow.GwtRouterLinkHandlerTest;
 import com.vaadin.client.flow.GwtStateNodeTest;
 import com.vaadin.client.flow.GwtStateTreeTest;
 import com.vaadin.client.flow.GwtTreeChangeProcessorTest;
@@ -33,7 +32,6 @@ public class GwtSuite extends GWTTestSuite {
          */
         TestSuite suite = new TestSuite("Flow GWT tests");
         suite.addTestSuite(GwtApplicationConnectionTest.class);
-        suite.addTestSuite(GwtAtmoshperePushConnectionTest.class);
         suite.addTestSuite(GwtJsArrayTest.class);
         suite.addTestSuite(GwtJsMapTest.class);
         suite.addTestSuite(GwtJsWeakMapTest.class);
@@ -43,7 +41,6 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtEventHandlerTest.class);
         suite.addTestSuite(GwtTreeChangeProcessorTest.class);
         suite.addTestSuite(GwtNativeFunctionTest.class);
-        suite.addTestSuite(GwtRouterLinkHandlerTest.class);
         suite.addTestSuite(GwtStateNodeTest.class);
         suite.addTestSuite(GwtStateTreeTest.class);
         suite.addTestSuite(GwtDomApiTest.class);
@@ -55,6 +52,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtMultipleBindingTest.class);
         suite.addTestSuite(GwtDefaultConnectionStateHandlerTest.class);
         suite.addTestSuite(GwtErrotHandlerTest.class);
+        suite.addTestSuite(GwtAtmoshperePushConnectionTest.class);
         return suite;
     }
 }

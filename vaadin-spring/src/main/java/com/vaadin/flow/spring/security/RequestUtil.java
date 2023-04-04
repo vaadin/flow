@@ -119,6 +119,11 @@ public class RequestUtil {
 
         SpringServlet servlet = springServletRegistration.getServlet();
         VaadinService service = servlet.getService();
+        if (service == null) {
+            // The service has not yet been initialized. We cannot know if this
+            // is an anonymous route, so better say it is not.
+            return false;
+        }
         Router router = service.getRouter();
         RouteRegistry routeRegistry = router.getRegistry();
 

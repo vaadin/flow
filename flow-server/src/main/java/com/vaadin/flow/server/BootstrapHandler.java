@@ -54,7 +54,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.servlet.ServletRegistration;
 import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -1622,8 +1621,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *             if theme name cannot be extracted from file
      */
     protected static Collection<Element> getStylesheetTags(
-            DeploymentConfiguration config, String fileName)
-            throws IOException {
+            AbstractConfiguration config, String fileName) throws IOException {
         return getStylesheetReferences(config, fileName,
                 BootstrapHandler::getLinkTagWithStyleRef);
     }
@@ -1642,14 +1640,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *             if theme name cannot be extracted from file
      */
     protected static Collection<String> getStylesheetLinks(
-            DeploymentConfiguration config, String fileName)
-            throws IOException {
+            AbstractConfiguration config, String fileName) throws IOException {
         return getStylesheetReferences(config, fileName,
                 BootstrapHandler::getThemeFilePath);
     }
 
     private static <T> Collection<T> getStylesheetReferences(
-            DeploymentConfiguration config, String fileName,
+            AbstractConfiguration config, String fileName,
             SerializableBiFunction<String, String, T> referenceProvider)
             throws IOException {
         List<T> references = new ArrayList<>();
@@ -1744,7 +1741,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             String entryScript = entryScripts.getString(i);
             Element elm = new Element(SCRIPT_TAG);
             elm.attr("type", "module");
-            elm.attr("src", "VAADIN/dev-bundle/" + entryScript);
+            elm.attr("src", entryScript);
             targetDocument.head().appendChild(elm);
 
             if (entryScript.contains("indexhtml")) {

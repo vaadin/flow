@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.navigate;
 
-import org.asynchttpclient.util.UriEncoder;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;

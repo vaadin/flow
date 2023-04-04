@@ -1,6 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
-import { CssPropertyMetadata } from '../../metadata/model';
+import { ComponentElementMetadata, CssPropertyMetadata } from '../../metadata/model';
 import { ComponentTheme } from '../../model';
 import { testElementMetadata } from '../../tests/utils';
 import { RangePropertyEditor } from './range-property-editor';
@@ -15,6 +15,11 @@ const paddingMetadata: CssPropertyMetadata = {
   propertyName: 'padding',
   displayName: 'Padding',
   presets: ['--test-space-s', '--test-space-m', '--test-space-l']
+};
+const hostMetadata: ComponentElementMetadata = {
+  selector: 'test-element',
+  displayName: 'Host',
+  properties: [heightMetadata, paddingMetadata]
 };
 
 describe('range property editor', () => {
@@ -39,12 +44,13 @@ describe('range property editor', () => {
     </style>`);
 
     theme = new ComponentTheme(testElementMetadata);
-    theme.updatePropertyValue(null, 'height', '40px');
-    theme.updatePropertyValue(null, 'padding', '15px');
+    theme.updatePropertyValue(hostMetadata.selector, 'height', '40px');
+    theme.updatePropertyValue(hostMetadata.selector, 'padding', '15px');
     valueChangeSpy = sinon.spy();
 
     editor = await fixture(html` <vaadin-dev-tools-theme-range-property-editor
       .theme=${theme}
+      .elementMetadata=${hostMetadata}
       .propertyMetadata=${heightMetadata}
       @theme-property-value-change=${valueChangeSpy}
     >
@@ -60,7 +66,21 @@ describe('range property editor', () => {
   }
 
   function getInput() {
-    return editor.shadowRoot!.querySelector('input[type="text"]') as HTMLInputElement;
+    return editor
+      .shadowRoot!.querySelector('vaadin-dev-tools-theme-text-input')!
+      .shadowRoot!.querySelector('input') as HTMLInputElement;
+  }
+
+  function getClearButton() {
+    return editor
+      .shadowRoot!.querySelector('vaadin-dev-tools-theme-text-input')!
+      .shadowRoot!.querySelector('button') as HTMLButtonElement;
+  }
+
+  function isClearButtonVisible() {
+    const button = getClearButton();
+
+    return getComputedStyle(button).display === 'block';
   }
 
   function cloneTheme() {
@@ -99,7 +119,7 @@ describe('range property editor', () => {
 
   it('should should mark slider as having custom value if theme value does not match a preset value', async () => {
     const updatedTheme = cloneTheme();
-    updatedTheme.updatePropertyValue(null, 'height', '25px');
+    updatedTheme.updatePropertyValue(hostMetadata.selector, 'height', '25px');
     editor.theme = updatedTheme;
     await elementUpdated(editor);
 
@@ -135,9 +155,9 @@ describe('range property editor', () => {
 
   it('should display raw preset value in input field if theme value is a preset value', async () => {
     const updatedTheme = cloneTheme();
-    updatedTheme.updatePropertyValue(null, 'height', 'var(--test-size-xl)');
+    updatedTheme.updatePropertyValue(hostMetadata.selector, 'height', 'var(--test-size-xl)');
     editor.theme = updatedTheme;
-    await elementUpdated(editor);
+    await elementUpdated(getInput());
 
     expect(getInput().value).to.equal('60px');
   });
@@ -181,5 +201,24 @@ describe('range property editor', () => {
 
     expect(valueChangeSpy.calledOnce).to.be.true;
     expect(valueChangeSpy.args[0][0].detail.value).to.equal('25px');
+  });
+
+  it('should display clear button when property is modified', async () => {
+    expect(isClearButtonVisible()).to.be.false;
+
+    const updatedTheme = cloneTheme();
+    updatedTheme.updatePropertyValue(hostMetadata.selector, 'height', '35px', true);
+    editor.theme = updatedTheme;
+    await elementUpdated(editor);
+    await elementUpdated(getInput());
+
+    expect(isClearButtonVisible()).to.be.true;
+  });
+
+  it('should dispatch event with empty value when clearing value', () => {
+    getClearButton().click();
+
+    expect(valueChangeSpy.calledOnce).to.be.true;
+    expect(valueChangeSpy.args[0][0].detail.value).to.equal('');
   });
 });

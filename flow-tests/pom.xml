@@ -102,7 +102,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>3.3.0</version>
                 <configuration>
                     <archive>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
@@ -139,7 +139,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.8</version>
+                    <version>3.1.0</version>
                     <executions>
                         <execution>
                             <id>delete-lib-folder</id>
@@ -148,13 +148,13 @@
                                 <goal>run</goal>
                             </goals>
                             <configuration>
-                                <tasks>
+                                <target>
                                     <delete>
                                         <fileset
                                                 dir="${project.build.directory}/${project.build.finalName}/WEB-INF/lib"
                                                 includes="*.jar"/>
                                     </delete>
-                                </tasks>
+                                </target>
                             </configuration>
                         </execution>
                     </executions>
@@ -295,6 +295,7 @@
                 <module>test-servlet</module>
                 <module>test-themes</module>
                 <module>test-themes/pom-production.xml</module>
+                <module>test-themes/pom-devbundle.xml</module>
                 <module>servlet-containers</module>
 
                 <!-- web component embedding -->

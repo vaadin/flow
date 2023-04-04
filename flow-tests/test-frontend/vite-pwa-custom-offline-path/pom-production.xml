@@ -12,6 +12,10 @@
     <name>Vite PWA app with a custom offline path (production mode)</name>
     <packaging>war</packaging>
 
+    <properties>
+        <surefire.reportNameSuffix>production</surefire.reportNameSuffix>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
