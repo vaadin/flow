@@ -118,7 +118,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   if (lumoImports) {
     lumoImports.forEach((lumoImport) => {
       imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles/${lumoImport}.js';\n`);
-      if (lumoImport === 'utility' || lumoImport === 'badge') {
+      if (lumoImport === 'utility' || lumoImport === 'badge' || lumoImport === 'typography' || lumoImport === 'color') {
         // Inject into main document the same way as other Lumo styles are injected
         imports.push(`import '@vaadin/vaadin-lumo-styles/${lumoImport}-global.js';\n`);
       }
