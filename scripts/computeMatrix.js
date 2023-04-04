@@ -35,7 +35,6 @@ const moduleWeights = {
   'flow-tests/test-express-build/test-dev-bundle': { pos: 1, weight: 2 },
   'flow-tests/test-express-build/test-dev-bundle-no-plugin': { pos: 1, weight: 2 },
   'flow-tests/test-express-build/test-theme-dev-bundle': { pos: 1, weight: 2 },
-  'flow-tests/test-express-build/test-theme-default-dev-bundle': { pos: 1, weight: 2 },
   'flow-tests/test-express-build/frontend-add-on': { pos: 1, weight: 2 },
   'flow-tests/test-express-build/java-add-on': { pos: 1, weight: 2 },
   'flow-tests/test-express-build/test-dev-bundle-frontend-add-on': { pos: 1, weight: 2 },
