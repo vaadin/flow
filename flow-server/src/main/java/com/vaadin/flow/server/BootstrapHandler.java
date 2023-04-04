@@ -75,7 +75,6 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableBiFunction;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.ReflectTools;
@@ -1666,57 +1665,60 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         final String mainTheme = themeName.get();
 
-        final SerializableConsumer<String> addThemeReferenceCallback = (
-                theme) -> {
-            T reference = referenceProvider.apply(theme, fileName);
-            references.add(reference);
-        };
-
-        // need ordered collection to ensure styles priority
-        final Set<String> foundThemes = new LinkedHashSet<>();
-
-        // First collect parent themes in the JARs
+        // Collect parent themes in the JARs
         File frontendFolder = new File(config.getProjectFolder(),
                 FrontendUtils.FRONTEND);
         File jarResourcesFolder = FrontendUtils
                 .getJarResourcesFolder(frontendFolder);
         File packagedThemesFolder = new File(jarResourcesFolder,
                 Constants.APPLICATION_THEME_ROOT);
+        final Set<String> packagedThemes = new HashSet<>();
 
         if (packagedThemesFolder.exists()) {
             for (File themeFolder : Objects.requireNonNull(
                     packagedThemesFolder.listFiles(File::isDirectory),
                     "Expected at least one theme in the front-end generated themes folder")) {
-                foundThemes.add(themeFolder.getName());
+                packagedThemes.add(themeFolder.getName());
             }
         }
 
-        // Secondly, collect the themes in {project.root}/frontend/themes,
-        // including main theme and parent themes
-        referenceParentThemeInFrontend(mainTheme, frontendFolder, foundThemes);
+        // need ordered collection to ensure styles priority
+        final Set<String> activeThemes = new LinkedHashSet<>();
 
-        // Ensure main theme is always the last to have higher priority
-        if (foundThemes.size() > 1) {
-            foundThemes.remove(mainTheme);
-            foundThemes.add(mainTheme);
-        }
+        collectActiveThemes(mainTheme, frontendFolder, packagedThemes,
+                activeThemes);
 
         // Add link references for all the found themes
-        foundThemes.forEach(addThemeReferenceCallback);
+        activeThemes.forEach(theme -> {
+            T reference = referenceProvider.apply(theme, fileName);
+            references.add(reference);
+        });
 
         return references;
     }
 
-    private static <T> void referenceParentThemeInFrontend(String themeName,
-            File frontendFolder, Set<String> foundThemes) throws IOException {
+    private static <T> void collectActiveThemes(String themeName,
+            File frontendFolder, Set<String> packagedThemes,
+            Set<String> activeThemes) throws IOException {
+        // Look for parent theme of themeName in {project}/frontend/themes/
         Optional<String> parentThemeName = FrontendUtils
-                .getParentThemeNameInFrontend(frontendFolder, themeName);
+                .getParentThemeName(frontendFolder, themeName);
         if (parentThemeName.isPresent()) {
-            referenceParentThemeInFrontend(parentThemeName.get(),
-                    frontendFolder, foundThemes);
+            collectActiveThemes(parentThemeName.get(), frontendFolder,
+                    packagedThemes, activeThemes);
+        } else if (packagedThemes.contains(themeName)) {
+            // Look for parent theme of themeName in packaged themes
+            File jarResourcesFolder = FrontendUtils
+                    .getJarResourcesFolder(frontendFolder);
+            parentThemeName = FrontendUtils
+                    .getParentThemeName(jarResourcesFolder, themeName);
+            if (parentThemeName.isPresent()) {
+                collectActiveThemes(parentThemeName.get(), frontendFolder,
+                        packagedThemes, activeThemes);
+            }
         }
 
-        foundThemes.add(themeName);
+        activeThemes.add(themeName);
     }
 
     private static String getThemeFilePath(String themeName, String fileName) {
