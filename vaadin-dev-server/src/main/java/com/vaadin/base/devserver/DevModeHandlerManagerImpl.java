@@ -15,9 +15,11 @@
  */
 package com.vaadin.base.devserver;
 
+import jakarta.servlet.annotation.HandlesTypes;
+
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
 
@@ -30,15 +32,13 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.frontend.CssBundler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
-
-import jakarta.servlet.annotation.HandlesTypes;
 
 /**
  * Provides API to access to the {@link DevModeHandler} instance.
@@ -108,35 +108,36 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
         try {
             File projectFolder = config.getProjectFolder();
-            Optional<String> themeName = ThemeUtils.getThemeName(projectFolder);
+            Optional<String> maybeThemeName = ThemeUtils
+                    .getThemeName(projectFolder);
 
-            if (themeName.isEmpty()) {
+            if (maybeThemeName.isEmpty()) {
                 getLogger().debug("Found no custom theme in the project. "
                         + "Skipping watching the theme files");
                 return;
             }
-
-            // TODO: frontend folder to be taken from config
-            // see https://github.com/vaadin/flow/pull/15552
-            File frontendFolder = new File(projectFolder,
-                    FrontendUtils.FRONTEND);
-            File themeFolder = new File(
-                    new File(frontendFolder, Constants.APPLICATION_THEME_ROOT),
-                    themeName.get());
+            String themeName = maybeThemeName.get();
+            File themeFolder = ThemeUtils.getThemeFolder(
+                    FrontendUtils.getProjectFrontendDir(config), themeName);
+            File stylesCss = new File(themeFolder, "styles.css");
 
             Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                     .getLiveReloadFromContext(context);
             if (liveReload.isPresent()) {
                 themeFilesWatcher = new FileWatcher(file -> {
                     if (file.getName().endsWith(".css")) {
-                        // As the styles.css is included with a link tag, we
-                        // always send an update for that file, even though
-                        // another file changed
-                        Path frontendRelative = frontendFolder.toPath()
-                                .relativize(themeFolder.toPath()
-                                        .resolve("styles.css"));
-                        liveReload.get().update("VAADIN/"
-                                + FrontendUtils.getUnixPath(frontendRelative));
+                        try {
+                            // All changes are merged into one style block
+                            liveReload.get().update(
+                                    ThemeUtils.getThemeFilePath(themeName,
+                                            "styles.css"),
+                                    CssBundler.inlineImports(stylesCss));
+                        } catch (IOException e) {
+                            getLogger().error(
+                                    "Unable to perform hot update of " + file,
+                                    e);
+                            liveReload.get().reload();
+                        }
                     } else {
                         liveReload.get().reload();
                     }

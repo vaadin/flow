@@ -38,7 +38,6 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -73,7 +72,6 @@ import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.ReflectTools;
@@ -86,6 +84,7 @@ import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
+import com.vaadin.flow.server.frontend.CssBundler;
 import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
@@ -1625,7 +1624,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     protected static Collection<Element> getStylesheetTags(
             AbstractConfiguration config, String fileName) throws IOException {
         return ThemeUtils.getActiveThemes(config).stream()
-                .map(theme -> getLinkTagWithStyleRef(theme, fileName)).toList();
+                .map(theme -> getDevModeStyleTag(theme, fileName)).toList();
     }
 
     /**
@@ -1644,20 +1643,25 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     protected static Collection<String> getStylesheetLinks(
             AbstractConfiguration config, String fileName) throws IOException {
         return ThemeUtils.getActiveThemes(config).stream()
-                .map(theme -> getThemeFilePath(theme, fileName)).toList();
+                .map(theme -> ThemeUtils.getThemeFilePath(theme, fileName))
+                .toList();
     }
 
-    private static String getThemeFilePath(String themeName, String fileName) {
-        return Constants.VAADIN_MAPPING + Constants.APPLICATION_THEME_ROOT + "/"
-                + themeName + "/" + fileName;
-    }
-
-    private static Element getLinkTagWithStyleRef(String themeName,
+    private static Element getDevModeStyleTag(String themeName,
             String fileName) {
-        Element element = new Element("link");
-        element.attr("rel", "stylesheet");
-        element.attr("type", "text/css");
-        element.attr("href", getThemeFilePath(themeName, fileName));
+        Element element = new Element("style");
+        element.attr("data-dev-id",
+                ThemeUtils.getThemeFilePath(themeName, fileName));
+        File frontendDirectory = new File("frontend");
+        File stylesCss = new File(
+                ThemeUtils.getThemeFolder(frontendDirectory, themeName),
+                fileName);
+        try {
+            element.text(CssBundler.inlineImports(stylesCss));
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         return element;
     }
 

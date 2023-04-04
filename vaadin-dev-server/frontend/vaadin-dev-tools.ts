@@ -881,11 +881,11 @@ export class VaadinDevTools extends LitElement {
       window.sessionStorage.setItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE, 'true');
       window.location.reload();
     };
-    const onUpdate = (path: string) => {
-      let linkTag = document.head.querySelector(`link[href^='${path}?']`);
-      if (linkTag) {
+    const onUpdate = (path: string, content: string) => {
+      let styleTag = document.head.querySelector(`style[data-dev-id='${path}']`);
+      if (styleTag) {
         this.log(MessageType.INFORMATION, 'Hot update of ' + path);
-        (linkTag as any).href = `${path}?${new Date().getTime()}`;
+        styleTag.textContent = content;
       } else {
         onReload();
       }
@@ -960,11 +960,7 @@ export class VaadinDevTools extends LitElement {
       const isFlowApp = !!(window as any).Vaadin.Flow;
       this.themeEditorState = message.data;
       if (isFlowApp && this.themeEditorState !== ThemeEditorState.disabled) {
-        this.tabs.push({
-          id: 'theme-editor',
-          title: 'Theme Editor (Free Preview)',
-          render: () => this.renderThemeEditor()
-        });
+        this.tabs.push({ id: 'theme-editor', title: 'Theme Editor (Free Preview)', render: () => this.renderThemeEditor() });
         this.requestUpdate();
       }
     } else {
@@ -1506,7 +1502,7 @@ export class VaadinDevTools extends LitElement {
 
   renderThemeEditor() {
     return html` <vaadin-dev-tools-theme-editor
-      .expanded=${this.expanded}
+      .expanded=${this.expanded}  
       .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
       .connection=${this.frontendConnection}

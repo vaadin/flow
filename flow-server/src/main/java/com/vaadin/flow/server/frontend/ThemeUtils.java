@@ -207,4 +207,9 @@ public class ThemeUtils {
             }
         }
     }
+
+    public static String getThemeFilePath(String themeName, String fileName) {
+        return Constants.VAADIN_MAPPING + Constants.APPLICATION_THEME_ROOT + "/"
+                + themeName + "/" + fileName;
+    }
 }

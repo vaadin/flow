@@ -193,10 +193,11 @@ public class DebugWindowConnection implements BrowserLiveReload {
     }
 
     @Override
-    public void update(String path) {
+    public void update(String path, String content) {
         JsonObject msg = Json.createObject();
         msg.put("command", "update");
         msg.put("path", path);
+        msg.put("content", content);
         send(msg);
     }
 
