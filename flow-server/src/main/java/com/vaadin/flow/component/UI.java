@@ -1699,9 +1699,8 @@ public class UI extends Component
                     event -> renderViewForRoute(event.getLocation(),
                             event.getTrigger()));
 
-            if (!getInternals().getActiveRouterTargetsChain().isEmpty()) {
-                // The view has already been rendered eagerly
-            } else {
+            if (getInternals().getActiveRouterTargetsChain().isEmpty()) {
+                // Render the route unless it was rendered eagerly
                 renderViewForRoute(location, navigationTrigger);
             }
         } else {
