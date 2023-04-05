@@ -219,12 +219,12 @@ public class JavaSourceModifier extends Editor {
         try {
             VaadinSession session = getSession();
             getSession().access(() -> {
-                Component component = getComponent(session, uiId, nodeId);
-                CompilationUnit cu = getCompilationUnit(component);
                 try {
+                    Component component = getComponent(session, uiId, nodeId);
+                    CompilationUnit cu = getCompilationUnit(component);
                     findModificationWhere(cu, component);
                     holder.accessible = true;
-                } catch (ThemeEditorException ex) {
+                } catch (ThemeEditorException | IllegalArgumentException ex) {
                     holder.accessible = false;
                 }
             }).get(5, TimeUnit.SECONDS);
