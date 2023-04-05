@@ -34,19 +34,23 @@ export default {
       properties: errorMessageProperties
     },
     {
-      selector: 'vaadin-radio-group vaadin-radio-button::part(radio)',
+      selector: 'vaadin-radio-group vaadin-radio-button',
       displayName: 'Radio buttons',
       properties: [
         {
-          // Should probably use `--vaadin-radio-button-size`, however that can only
-          // be defined on the host rather than the radio part, and currently
-          // there is no default value for the property in the Lumo theme
-          propertyName: '--_radio-button-size',
-          displayName: 'Size',
+          propertyName: '--vaadin-radio-button-size',
+          displayName: 'Radio button size',
+          defaultValue: 'var(--lumo-font-size-l)',
           editorType: EditorType.range,
           presets: presets.lumoFontSize,
           icon: 'square'
-        },
+        }
+      ]
+    },
+    {
+      selector: 'vaadin-radio-group vaadin-radio-button::part(radio)',
+      displayName: 'Radio part',
+      properties: [
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,
         shapeProperties.borderWidth,
@@ -57,7 +61,7 @@ export default {
       stateAttribute: 'checked',
       // Checked state attribute needs to be applied on radio button rather than group
       stateElementSelector: `vaadin-radio-group vaadin-radio-button`,
-      displayName: 'Radio buttons (when checked)',
+      displayName: 'Radio part (when checked)',
       properties: [
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,
@@ -66,7 +70,7 @@ export default {
     },
     {
       selector: 'vaadin-radio-group vaadin-radio-button::part(radio)::after',
-      displayName: 'Radio dots',
+      displayName: 'Selection indicator',
       properties: [{
         ...iconProperties.iconColor,
         // Radio button dot uses border-color instead of background-color
