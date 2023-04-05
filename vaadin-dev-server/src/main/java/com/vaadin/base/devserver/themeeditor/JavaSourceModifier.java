@@ -25,6 +25,8 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -219,12 +221,13 @@ public class JavaSourceModifier extends Editor {
         try {
             VaadinSession session = getSession();
             getSession().access(() -> {
-                Component component = getComponent(session, uiId, nodeId);
-                CompilationUnit cu = getCompilationUnit(component);
                 try {
+                    Component component = getComponent(session, uiId, nodeId);
+                    CompilationUnit cu = getCompilationUnit(component);
                     findModificationWhere(cu, component);
                     holder.accessible = true;
-                } catch (ThemeEditorException ex) {
+                } catch (Exception ex) {
+                    getLogger().warn(ex.getMessage(), ex);
                     holder.accessible = false;
                 }
             }).get(5, TimeUnit.SECONDS);
@@ -365,6 +368,10 @@ public class JavaSourceModifier extends Editor {
             throw new ThemeEditorException("Cannot find component.");
         }
         return node;
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(JavaSourceModifier.class);
     }
 
 }
