@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +60,8 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
+
+import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
 /**
  * Compiles the dev mode bundle if it is out of date.

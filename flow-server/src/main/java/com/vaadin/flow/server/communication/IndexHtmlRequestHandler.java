@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
@@ -59,6 +56,8 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * This class is responsible for serving the <code>index.html</code> according
  * to the template provided in the frontend folder. The handler will calculate
