@@ -244,7 +244,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
     }
     themeProperties.importCss.forEach((cssPath) => {
       const variable = 'module' + i++;
-      imports.push(`import ${variable} from '${cssPath}';\n`);
+      imports.push(`import ${variable} from '${cssPath}?inline';\n`);
       globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n`);
     });
   }
