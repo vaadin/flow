@@ -63,6 +63,11 @@ export const testElementMetadata: ComponentMetadata = {
         {
           propertyName: 'background',
           displayName: 'Background'
+        },
+        {
+          propertyName: '--custom-property',
+          displayName: 'Custom property',
+          defaultValue: 'foo'
         }
       ]
     },

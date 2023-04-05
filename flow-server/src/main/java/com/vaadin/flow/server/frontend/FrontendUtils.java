@@ -16,7 +16,6 @@
 package com.vaadin.flow.server.frontend;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
@@ -376,8 +375,7 @@ public class FrontendUtils {
                     .replaceAll("\\R", System.lineSeparator());
         } catch (IOException exception) {
             // ignore exception on close()
-            LoggerFactory.getLogger(FrontendUtils.class)
-                    .warn("Couldn't close template input stream", exception);
+            getLogger().warn("Couldn't close template input stream", exception);
         }
         return ret;
     }
@@ -1179,63 +1177,6 @@ public class FrontendUtils {
         }
 
         return mapping;
-    }
-
-    /**
-     * Finds the given file inside the current development bundle.
-     * <p>
-     *
-     * @param projectDir
-     *            the project root folder
-     * @param filename
-     *            the file name inside the bundle
-     * @return a URL referring to the file inside the bundle or {@code null} if
-     *         the file was not found
-     */
-    public static URL findBundleFile(File projectDir, String filename)
-            throws IOException {
-        File devBundleFolder = getDevBundleFolder(projectDir);
-        if (devBundleFolder.exists()) {
-            // Has an application bundle
-            File bundleFile = new File(devBundleFolder, filename);
-            if (bundleFile.exists()) {
-                return bundleFile.toURI().toURL();
-            }
-        }
-        return TaskRunDevBundleBuild.class.getClassLoader()
-                .getResource(DEV_BUNDLE_JAR_PATH + filename);
-    }
-
-    /**
-     * Get the folder where an application specific bundle is stored.
-     *
-     * @param projectDir
-     *            the project base directory
-     * @return the bundle directory
-     */
-    public static File getDevBundleFolder(File projectDir) {
-        return new File(projectDir, Constants.DEV_BUNDLE_LOCATION);
-    }
-
-    /**
-     * Get the stats.json for the application specific development bundle.
-     *
-     * @param projectDir
-     *            the project base directory
-     * @return stats.json content or {@code null} if not found
-     * @throws IOException
-     *             if an I/O exception occurs.
-     */
-    public static String findBundleStatsJson(File projectDir)
-            throws IOException {
-        URL statsJson = findBundleFile(projectDir, "config/stats.json");
-        if (statsJson == null) {
-            getLogger().warn(
-                    "There is no dev-bundle in the project or on the classpath nor is there a default bundle included.");
-            return null;
-        }
-
-        return IOUtils.toString(statsJson, StandardCharsets.UTF_8);
     }
 
     /**
