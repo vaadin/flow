@@ -13,7 +13,6 @@ import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.github.javaparser.utils.SourceRoot;
-import com.vaadin.base.devserver.AbstractDevServerRunner;
 import com.vaadin.base.devserver.editor.Editor;
 import com.vaadin.base.devserver.editor.Where;
 import com.vaadin.base.devserver.themeeditor.utils.LineNumberVisitor;
