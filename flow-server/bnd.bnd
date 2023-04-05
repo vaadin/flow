@@ -6,4 +6,3 @@ Bundle-License: https://vaadin.com/commercial-license-and-service-terms
 Import-Package: org.atmosphere*;resolution:=optional;version='${atmosphere.runtime.version}',\
     org.apache.http*;resolution:=optional;,*
 Export-Package: !com.vaadin.flow.push*, com.vaadin.flow*;-noimport:=true
-CvdlName: ${cvdlName}
