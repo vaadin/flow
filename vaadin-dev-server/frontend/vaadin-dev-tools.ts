@@ -2,6 +2,7 @@ import 'construct-style-sheets-polyfill';
 import { css, html, LitElement, nothing, TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { Overlay, OverlayOutsideClickEvent } from "@vaadin/overlay";
 import { ComponentPicker } from './component-picker';
 import { ComponentReference } from './component-util';
 import './theme-editor/editor';
@@ -1028,7 +1029,41 @@ export class VaadinDevTools extends LitElement {
     windowAny.Vaadin.devTools = Object.assign(this, windowAny.Vaadin.devTools);
 
     licenseInit();
+
+    // Prevent application overlays from closing when interacting with the dev tools
+    document.documentElement.addEventListener('vaadin-overlay-outside-click', (event: Event) => {
+      // We don't want to prevent closing the overlay if the overlay owner is
+      // part of the dev tools, for example when using the color picker of the
+      // theme editor
+      const outsideClickEvent = event as OverlayOutsideClickEvent;
+      const overlayOwner = (outsideClickEvent.target as Overlay).owner;
+      const containsOverlayOwner = overlayOwner ? this.deepContains(overlayOwner) : false;
+
+      if (containsOverlayOwner) {
+        return;
+      }
+      // Otherwise prevent closing the overlay if click is within the dev tools
+      const sourceEvent = outsideClickEvent.detail.sourceEvent;
+      const composedPath = sourceEvent.composedPath();
+      if (composedPath.includes(this)) {
+        event.preventDefault();
+      }
+    });
   }
+
+  deepContains(node: Node) {
+    if (this.contains(node)) {
+      return true;
+    }
+    let currentNode: Node | null = node;
+    const doc = node.ownerDocument;
+    // Walk from node to `this` or `document`
+    while (currentNode && currentNode !== doc && currentNode !== this) {
+      currentNode = currentNode.parentNode || (currentNode instanceof ShadowRoot ? currentNode.host : null);
+    }
+    return currentNode === this;
+  }
+
   format(o: any): string {
     return o.toString();
   }
