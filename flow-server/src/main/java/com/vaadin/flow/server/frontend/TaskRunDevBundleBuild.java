@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +54,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.server.webcomponent.WebComponentExporterTagExtractor;
 import com.vaadin.flow.server.webcomponent.WebComponentExporterUtils;
-
 import com.vaadin.flow.shared.util.SharedUtil;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -61,8 +62,6 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
-
-import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
 /**
  * Compiles the dev mode bundle if it is out of date.
@@ -281,7 +280,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         ThemeDefinition themeDefinition = frontendDependencies
                 .getThemeDefinition();
-        Optional<JsonObject> projectThemeJson = FrontendUtils
+        Optional<JsonObject> projectThemeJson = ThemeUtils
                 .getThemeJsonForTheme(options, themeDefinition);
 
         JsonObject contentsInStats = statsJson.getObject("themeJsonContents");
@@ -350,11 +349,11 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
     private static void collectThemeJsonContentsInFrontend(Options options,
             Map<String, JsonObject> themeJsonContents, String themeName,
             JsonObject themeJson) throws IOException {
-        Optional<String> parentThemeInFrontend = FrontendUtils
+        Optional<String> parentThemeInFrontend = ThemeUtils
                 .getParentThemeName(themeJson);
         if (parentThemeInFrontend.isPresent()) {
             String parentThemeName = parentThemeInFrontend.get();
-            Optional<JsonObject> parentThemeJson = FrontendUtils
+            Optional<JsonObject> parentThemeJson = ThemeUtils
                     .getThemeJsonForTheme(options.getFrontendDirectory(),
                             parentThemeName);
             if (parentThemeJson.isPresent()) {

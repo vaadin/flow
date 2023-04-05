@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.communication;
 
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
@@ -49,14 +52,12 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
-import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * This class is responsible for serving the <code>index.html</code> according
@@ -195,9 +196,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private void applyThemeVariant(Document indexDocument,
             VaadinContext context) throws IOException {
-        FrontendUtils.getThemeAnnotation(context)
-                .ifPresent(theme -> indexDocument.head().parent().attr("theme",
-                        theme.variant()));
+        ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> indexDocument
+                .head().parent().attr("theme", theme.variant()));
     }
 
     private void addStyleTagReferences(Document indexDocument) {
