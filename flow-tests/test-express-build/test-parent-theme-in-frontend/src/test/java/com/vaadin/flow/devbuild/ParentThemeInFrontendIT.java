@@ -32,6 +32,7 @@ public class ParentThemeInFrontendIT extends ChromeBrowserTest {
 
     private static final String BLUE_COLOR = "rgba(0, 0, 255, 1)";
     private static final String RED_COLOR = "rgba(255, 0, 0, 1)";
+    private static final String GREEN_COLOR = "rgba(0, 128, 0, 1)";
     private File bundle;
     private File nodeModules;
 
@@ -60,7 +61,9 @@ public class ParentThemeInFrontendIT extends ChromeBrowserTest {
         waitUntil(driver -> {
             try {
                 final WebElement p = findElement(By.tagName("p"));
-                return RED_COLOR.equals(p.getCssValue("color"));
+                final WebElement span = findElement(By.tagName("span"));
+                return RED_COLOR.equals(p.getCssValue("color"))
+                        && GREEN_COLOR.equals(span.getCssValue("color"));
             } catch (StaleElementReferenceException e) {
                 return false;
             }

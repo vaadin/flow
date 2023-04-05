@@ -1691,14 +1691,18 @@ public class TaskRunDevBundleBuildTest {
         utils.when(() -> FrontendUtils
                 .findBundleStatsJson(temporaryFolder.getRoot()))
                 .thenAnswer(q -> stats.toJson());
-        utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
+        utils.when(() -> FrontendUtils.getThemeJsonForTheme(
+                Mockito.any(File.class), Mockito.anyString()))
+                .thenCallRealMethod();
+        utils.when(() -> FrontendUtils.getThemeJsonForTheme(
                 Mockito.any(Options.class), Mockito.any(ThemeDefinition.class)))
                 .thenCallRealMethod();
-        utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
-                Mockito.any(File.class), Mockito.any(String.class)))
+        utils.when(
+                () -> FrontendUtils.getParentThemeName(Mockito.any(File.class),
+                        Mockito.anyString()))
                 .thenCallRealMethod();
-        utils.when(() -> FrontendUtils.getParentThemeNameInFrontend(
-                Mockito.any(File.class), Mockito.any(JsonObject.class)))
+        utils.when(() -> FrontendUtils
+                .getParentThemeName(Mockito.any(JsonObject.class)))
                 .thenCallRealMethod();
         utils.when(
                 () -> FrontendUtils.getJarResourceString(Mockito.anyString()))
