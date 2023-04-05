@@ -208,24 +208,22 @@ describe('theme-editor', () => {
     });
   }
 
-  before(async () => {
-    getMetadataStub = sinon.stub(metadataRegistry, 'getMetadata').returns(Promise.resolve(testElementMetadata));
-  });
-
-  after(() => {
-    getMetadataStub.restore();
-  });
-
   beforeEach(async () => {
     // Reset history
     ThemeEditorHistory.clear();
     // Reset theme preview
     themePreview.update('');
+    // Mock metadata
+    getMetadataStub = sinon.stub(metadataRegistry, 'getMetadata').returns(Promise.resolve(testElementMetadata));
     // Render editable test element
     testElement = await fixture(html` <test-element></test-element>`);
     // Render editor
     const fixtureResult = await editorFixture();
     editor = fixtureResult.editor;
+  });
+
+  afterEach(() => {
+    getMetadataStub.restore();
   });
 
   describe('theme editor states', () => {
@@ -952,6 +950,20 @@ describe('theme-editor', () => {
         expect(apiMock.openCss.calledOnce).to.be.true;
         expect(apiMock.openCss.args).to.deep.equal([['test-element::part(label)']]);
       });
+    });
+  });
+
+  describe('picking components', () => {
+    it('should show notice if there is no metadata', async () => {
+      getMetadataStub.returns(Promise.resolve(null));
+      await pickComponent();
+
+      const notice = editor.shadowRoot!.querySelector('.notice') as HTMLElement;
+      expect(notice).to.exist;
+      expect(notice.textContent).to.contain('Styling <test-element> components is not supported at the moment.');
+
+      const propertyList = editor.shadowRoot!.querySelector('.property-list');
+      expect(propertyList).to.not.exist;
     });
   });
 });

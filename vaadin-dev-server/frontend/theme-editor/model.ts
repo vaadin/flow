@@ -20,7 +20,7 @@ export interface SelectorScope {
 
 export interface ThemeContext {
   scope: ThemeScope;
-  metadata: ComponentMetadata;
+  metadata?: ComponentMetadata;
   component: ComponentReference;
   accessible?: boolean;
   localClassName?: string;
