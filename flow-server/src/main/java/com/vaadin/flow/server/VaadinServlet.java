@@ -548,9 +548,8 @@ public class VaadinServlet extends HttpServlet {
             DeploymentConfiguration deploymentConfiguration) {
         // Check the license at runtime if in development mode
         if (!deploymentConfiguration.isProductionMode()) {
-            // Using a null BuildType to allow trial licensing builds
             LicenseChecker.checkLicense("flow", Version.getFullVersion(),
-                    (BuildType) null);
+                    BuildType.DEVELOPMENT);
         }
     }
 

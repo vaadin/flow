@@ -382,7 +382,7 @@ public class VaadinServletTest {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         triggerLicenseChecking();
         licenseChecker.verify(() -> LicenseChecker.checkLicense("flow",
-                Version.getFullVersion(), (BuildType) null));
+                Version.getFullVersion(), BuildType.DEVELOPMENT));
     }
 
     @Test
