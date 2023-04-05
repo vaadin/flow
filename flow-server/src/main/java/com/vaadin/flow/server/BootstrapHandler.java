@@ -88,6 +88,7 @@ import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -1652,7 +1653,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             throws IOException {
         List<T> references = new ArrayList<>();
 
-        Optional<String> themeName = FrontendUtils
+        Optional<String> themeName = ThemeUtils
                 .getThemeName(config.getProjectFolder());
 
         if (themeName.isEmpty()) {
@@ -1699,7 +1700,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             File frontendFolder, Set<String> packagedThemes,
             Set<String> activeThemes) throws IOException {
         // Look for parent theme of themeName in {project}/frontend/themes/
-        Optional<String> parentThemeName = FrontendUtils
+        Optional<String> parentThemeName = ThemeUtils
                 .getParentThemeName(frontendFolder, themeName);
         if (parentThemeName.isPresent()) {
             collectActiveThemes(parentThemeName.get(), frontendFolder,
@@ -1708,8 +1709,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // Look for parent theme of themeName in packaged themes
             File jarResourcesFolder = FrontendUtils
                     .getJarResourcesFolder(frontendFolder);
-            parentThemeName = FrontendUtils
-                    .getParentThemeName(jarResourcesFolder, themeName);
+            parentThemeName = ThemeUtils.getParentThemeName(jarResourcesFolder,
+                    themeName);
             if (parentThemeName.isPresent()) {
                 collectActiveThemes(parentThemeName.get(), frontendFolder,
                         packagedThemes, activeThemes);

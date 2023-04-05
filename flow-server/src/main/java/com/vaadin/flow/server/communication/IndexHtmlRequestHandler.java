@@ -49,6 +49,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
@@ -195,9 +196,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private void applyThemeVariant(Document indexDocument,
             VaadinContext context) throws IOException {
-        FrontendUtils.getThemeAnnotation(context)
-                .ifPresent(theme -> indexDocument.head().parent().attr("theme",
-                        theme.variant()));
+        ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> indexDocument
+                .head().parent().attr("theme", theme.variant()));
     }
 
     private void addStyleTagReferences(Document indexDocument) {
