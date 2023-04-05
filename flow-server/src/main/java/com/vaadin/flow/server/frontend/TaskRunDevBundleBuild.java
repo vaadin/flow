@@ -280,8 +280,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         ThemeDefinition themeDefinition = frontendDependencies
                 .getThemeDefinition();
-        Optional<JsonObject> projectThemeJson = ThemeUtils
-                .getThemeJsonForTheme(options, themeDefinition);
+        Optional<JsonObject> projectThemeJson = ThemeUtils.getThemeJson(options,
+                themeDefinition);
 
         JsonObject contentsInStats = statsJson.getObject("themeJsonContents");
         if (contentsInStats == null && (!themeJsonContents.isEmpty()
@@ -353,9 +353,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 .getParentThemeName(themeJson);
         if (parentThemeInFrontend.isPresent()) {
             String parentThemeName = parentThemeInFrontend.get();
-            Optional<JsonObject> parentThemeJson = ThemeUtils
-                    .getThemeJsonForTheme(options.getFrontendDirectory(),
-                            parentThemeName);
+            Optional<JsonObject> parentThemeJson = ThemeUtils.getThemeJson(
+                    options.getFrontendDirectory(), parentThemeName);
             if (parentThemeJson.isPresent()) {
                 collectThemeJsonContentsInFrontend(options, themeJsonContents,
                         parentThemeName, parentThemeJson.get());
