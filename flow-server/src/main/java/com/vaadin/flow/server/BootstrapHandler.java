@@ -86,6 +86,7 @@ import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
+import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
@@ -1597,7 +1598,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     protected static void addJavaScriptEntryPoints(
             DeploymentConfiguration config, Document targetDocument)
             throws IOException {
-        URL statsJsonUrl = FrontendUtils
+        URL statsJsonUrl = DevBundleUtils
                 .findBundleFile(config.getProjectFolder(), "config/stats.json");
         Objects.requireNonNull(statsJsonUrl,
                 "Frontend development bundle is expected to be in the project"
