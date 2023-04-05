@@ -1182,8 +1182,7 @@ public class FrontendUtils {
     }
 
     /**
-     * Finds the given file inside the express mode development bundle that is
-     * used.
+     * Finds the given file inside the current development bundle.
      * <p>
      *
      * @param projectDir
@@ -1287,9 +1286,9 @@ public class FrontendUtils {
         return Optional.ofNullable(shell.getAnnotation(Theme.class));
     }
 
-    public static Optional<JsonObject> getThemeJsonInFrontend(
-            File frontendFolder, String themeName) throws IOException {
-        File themeJsonFile = Path.of(frontendFolder.getAbsolutePath(),
+    public static Optional<JsonObject> getThemeJsonForTheme(
+            File themesParentFolder, String themeName) throws IOException {
+        File themeJsonFile = Path.of(themesParentFolder.getAbsolutePath(),
                 Constants.APPLICATION_THEME_ROOT, themeName, "theme.json")
                 .toFile();
         if (themeJsonFile.exists()) {
@@ -1301,42 +1300,32 @@ public class FrontendUtils {
         return Optional.empty();
     }
 
-    public static Optional<JsonObject> getThemeJsonInFrontend(Options options,
+    public static Optional<JsonObject> getThemeJsonForTheme(Options options,
             ThemeDefinition themeDefinition) throws IOException {
         if (themeDefinition != null) {
             String themeName = themeDefinition.getName();
-            return getThemeJsonInFrontend(options.getFrontendDirectory(),
+            return getThemeJsonForTheme(options.getFrontendDirectory(),
                     themeName);
         }
         return Optional.empty();
     }
 
-    public static Optional<String> getParentThemeNameInFrontend(
-            File frontendFolder, JsonObject themeJson) {
+    public static Optional<String> getParentThemeName(JsonObject themeJson) {
         if (themeJson != null) {
             if (themeJson.hasKey("parent")) {
                 String parentThemeName = themeJson.getString("parent");
-                File parentThemeFolder = Path
-                        .of(frontendFolder.getAbsolutePath(),
-                                Constants.APPLICATION_THEME_ROOT,
-                                parentThemeName)
-                        .toFile();
-                if (parentThemeFolder.exists()) {
-                    return Optional.of(parentThemeName);
-                }
+                return Optional.of(parentThemeName);
             }
         }
         return Optional.empty();
     }
 
-    public static Optional<String> getParentThemeNameInFrontend(
-            File frontendFolder, String projectCustomThemeName)
-            throws IOException {
-        Optional<JsonObject> themeJson = getThemeJsonInFrontend(frontendFolder,
-                projectCustomThemeName);
+    public static Optional<String> getParentThemeName(File themesParentFolder,
+            String themeName) throws IOException {
+        Optional<JsonObject> themeJson = getThemeJsonForTheme(
+                themesParentFolder, themeName);
         if (themeJson.isPresent()) {
-            return getParentThemeNameInFrontend(frontendFolder,
-                    themeJson.get());
+            return getParentThemeName(themeJson.get());
         }
         return Optional.empty();
     }

@@ -29,14 +29,4 @@ export const editorRowStyles = css`
   .editor-row > .editor {
     flex: 1 1 0;
   }
-
-  .editor-row .input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 0.25rem 0.375rem;
-    color: inherit;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 0.25rem;
-    border: none;
-  }
 `;

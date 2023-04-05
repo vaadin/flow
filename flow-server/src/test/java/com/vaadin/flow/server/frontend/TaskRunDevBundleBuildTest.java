@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -64,12 +65,21 @@ public class TaskRunDevBundleBuildTest {
 
     private Map<String, String> jarResources = new HashMap<>();
 
+    private MockedStatic<FrontendUtils> utils;
+
     @Before
     public void init() {
         options = new Options(Mockito.mock(Lookup.class),
                 temporaryFolder.getRoot()).withBuildDirectory("target");
         options.copyResources(Collections.emptySet());
         finder = Mockito.mock(ClassFinder.class);
+        utils = Mockito.mockStatic(FrontendUtils.class,
+                Mockito.CALLS_REAL_METHODS);
+    }
+
+    @After
+    public void teardown() {
+        utils.close();
     }
 
     private JsonObject getBasicStats() {
@@ -116,20 +126,17 @@ public class TaskRunDevBundleBuildTest {
     @Test
     public void devBundleStatsJsonMissing_bundleCompilationRequires()
             throws IOException {
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(null);
+        utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                .thenReturn(temporaryFolder.getRoot());
+        utils.when(() -> FrontendUtils
+                .findBundleStatsJson(temporaryFolder.getRoot()))
+                .thenReturn(null);
 
-            final boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(
-                    options, Mockito.mock(FrontendDependenciesScanner.class),
-                    finder);
-            Assert.assertTrue("Missing stats.json should require bundling",
-                    needsBuild);
-        }
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(
+                options, Mockito.mock(FrontendDependenciesScanner.class),
+                finder);
+        Assert.assertTrue("Missing stats.json should require bundling",
+                needsBuild);
     }
 
     @Test
@@ -153,15 +160,12 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "1.7.5");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse("Missing stats.json should require bundling",
-                    needsBuild);
-        }
+        final boolean needsBuild = TaskRunDevBundleBuild
+                .needsBuildInternal(options, depScanner, finder);
+        Assert.assertFalse("Missing stats.json should require bundling",
+                needsBuild);
     }
 
     @Test
@@ -187,15 +191,12 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "1.7.5");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue("Missing npmPackage should require bundling",
-                    needsBuild);
-        }
+        final boolean needsBuild = TaskRunDevBundleBuild
+                .needsBuildInternal(options, depScanner, finder);
+        Assert.assertTrue("Missing npmPackage should require bundling",
+                needsBuild);
     }
 
     @Test
@@ -219,15 +220,12 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "1.7.5");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue("Bundle missing module dependency should rebuild",
-                    needsBuild);
-        }
+        final boolean needsBuild = TaskRunDevBundleBuild
+                .needsBuildInternal(options, depScanner, finder);
+        Assert.assertTrue("Bundle missing module dependency should rebuild",
+                needsBuild);
     }
 
     @Test
@@ -252,16 +250,13 @@ public class TaskRunDevBundleBuildTest {
                 "1.7.5");
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "1.0.0");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Not missing npmPackage in stats.json should not require compilation",
-                    needsBuild);
-        }
+        final boolean needsBuild = TaskRunDevBundleBuild
+                .needsBuildInternal(options, depScanner, finder);
+        Assert.assertFalse(
+                "Not missing npmPackage in stats.json should not require compilation",
+                needsBuild);
     }
 
     @Test
@@ -302,16 +297,13 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "2.0.3");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "vaadin-core-versions.json should have updated version to expected.",
-                    needsBuild);
-        }
+        final boolean needsBuild = TaskRunDevBundleBuild
+                .needsBuildInternal(options, depScanner, finder);
+        Assert.assertFalse(
+                "vaadin-core-versions.json should have updated version to expected.",
+                needsBuild);
     }
 
     @Test
@@ -339,16 +331,13 @@ public class TaskRunDevBundleBuildTest {
                 "1.9.2");
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "2.1.0");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Not missing npmPackage in stats.json should not require compilation",
-                    needsBuild);
-        }
+        final boolean needsBuild = TaskRunDevBundleBuild
+                .needsBuildInternal(options, depScanner, finder);
+        Assert.assertFalse(
+                "Not missing npmPackage in stats.json should not require compilation",
+                needsBuild);
     }
 
     @Test
@@ -378,16 +367,13 @@ public class TaskRunDevBundleBuildTest {
         stats.getArray(ENTRY_SCRIPTS).set(0,
                 "VAADIN/build/indexhtml-aa31f040.js");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Not missing npmPackage in stats.json should not require compilation",
-                    needsBuild);
-        }
+        final boolean needsBuild = TaskRunDevBundleBuild
+                .needsBuildInternal(options, depScanner, finder);
+        Assert.assertFalse(
+                "Not missing npmPackage in stats.json should not require compilation",
+                needsBuild);
     }
 
     @Test
@@ -412,16 +398,13 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "1.7.5");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue(
-                    "Missing npmPackage in stats.json should require compilation",
-                    needsBuild);
-        }
+        final boolean needsBuild = TaskRunDevBundleBuild
+                .needsBuildInternal(options, depScanner, finder);
+        Assert.assertTrue(
+                "Missing npmPackage in stats.json should require compilation",
+                needsBuild);
     }
 
     @Test
@@ -445,16 +428,13 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "1.7.5");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Not missing npmPackage in stats.json should not require compilation",
-                    needsBuild);
-        }
+        final boolean needsBuild = TaskRunDevBundleBuild
+                .needsBuildInternal(options, depScanner, finder);
+        Assert.assertFalse(
+                "Not missing npmPackage in stats.json should not require compilation",
+                needsBuild);
     }
 
     @Test
@@ -478,24 +458,20 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "1.7.6");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "No compilation if tilde range only patch update",
-                    needsBuild);
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse("No compilation if tilde range only patch update",
+                needsBuild);
 
-            stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                    "1.8.1");
-            needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
-                    depScanner, finder);
-            Assert.assertTrue(
-                    "Compilation required if minor version change for tilde range",
-                    needsBuild);
-        }
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
+                "1.8.1");
+        needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue(
+                "Compilation required if minor version change for tilde range",
+                needsBuild);
     }
 
     @Test
@@ -519,25 +495,22 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "1.8.6");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "No compilation if caret range only minor version update",
-                    needsBuild);
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse(
+                "No compilation if caret range only minor version update",
+                needsBuild);
 
-            stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
-                    "2.0.0");
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
+                "2.0.0");
 
-            needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
-                    depScanner, finder);
-            Assert.assertTrue(
-                    "Compilation required if major version change for caret range",
-                    needsBuild);
-        }
+        needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue(
+                "Compilation required if major version change for caret range",
+                needsBuild);
     }
 
     @Test
@@ -565,16 +538,13 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/accordion",
                 "24.0.0.beta2");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse("No compilation expected if package.json has "
-                    + "only dependencies from older Vaadin version not "
-                    + "presenting in a newer version", needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse("No compilation expected if package.json has "
+                + "only dependencies from older Vaadin version not "
+                + "presenting in a newer version", needsBuild);
     }
 
     @Test
@@ -596,16 +566,12 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/text", "1.0.0");
         stats.put(PACKAGE_JSON_HASH, defaultHash);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Default package.json should be built and validated",
-                    needsBuild);
-        }
+        final boolean needsBuild = TaskRunDevBundleBuild
+                .needsBuildInternal(options, depScanner, finder);
+        Assert.assertFalse("Default package.json should be built and validated",
+                needsBuild);
     }
 
     @Test
@@ -626,16 +592,13 @@ public class TaskRunDevBundleBuildTest {
                 "1.7.5");
         stats.put(PACKAGE_JSON_HASH, defaultHash);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue(
-                    "Missing NpmPackage with default bundle should require rebuild",
-                    needsBuild);
-        }
+        final boolean needsBuild = TaskRunDevBundleBuild
+                .needsBuildInternal(options, depScanner, finder);
+        Assert.assertTrue(
+                "Missing NpmPackage with default bundle should require rebuild",
+                needsBuild);
     }
 
     @Test
@@ -656,16 +619,12 @@ public class TaskRunDevBundleBuildTest {
                 "1.7.5");
         stats.put(PACKAGE_JSON_HASH, defaultHash);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Default package.json should be built and validated",
-                    needsBuild);
-        }
+        final boolean needsBuild = TaskRunDevBundleBuild
+                .needsBuildInternal(options, depScanner, finder);
+        Assert.assertFalse("Default package.json should be built and validated",
+                needsBuild);
     }
 
     @Test
@@ -696,17 +655,12 @@ public class TaskRunDevBundleBuildTest {
         bundleImports.set(1, "@polymer/paper-input/paper-input.js");
         bundleImports.set(2, "@vaadin/common-frontend/ConnectionIndicator.js");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue(
-                    "Compilation required as stats.json missing import",
-                    needsBuild);
-        }
-
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue("Compilation required as stats.json missing import",
+                needsBuild);
     }
 
     @Test
@@ -741,16 +695,12 @@ public class TaskRunDevBundleBuildTest {
         bundleImports.set(bundleImports.length(),
                 "Frontend/generated/jar-resources/dndConnector-es6.js");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse("All imports in stats, no compilation required",
-                    needsBuild);
-        }
-
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse("All imports in stats, no compilation required",
+                needsBuild);
     }
 
     @Test
@@ -787,17 +737,13 @@ public class TaskRunDevBundleBuildTest {
         bundleImports.set(bundleImports.length(),
                 "Frontend/generated/jar-resources/dndConnector-es6.js");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "All themed imports in stats, no compilation required",
-                    needsBuild);
-        }
-
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse(
+                "All themed imports in stats, no compilation required",
+                needsBuild);
     }
 
     @Test
@@ -828,18 +774,14 @@ public class TaskRunDevBundleBuildTest {
                 TaskRunDevBundleBuild.calculateHash(fileContent));
         jarResources.put("TodoTemplate.js", fileContent);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
+        setupFrontendUtilsMock(stats);
+        utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                .thenReturn(temporaryFolder.getRoot());
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse("Jar fronted file content hash should match.",
-                    needsBuild);
-        }
-
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse("Jar fronted file content hash should match.",
+                needsBuild);
     }
 
     @Test
@@ -866,22 +808,18 @@ public class TaskRunDevBundleBuildTest {
         stats.getArray(BUNDLE_IMPORTS).set(0,
                 "Frontend/generated/jar-resources/TodoTemplate.js");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(
-                    () -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
-                    .thenReturn(fileContent);
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+        utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                .thenReturn(temporaryFolder.getRoot());
+        utils.when(() -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
+                .thenReturn(fileContent);
+        utils.when(() -> FrontendUtils
+                .findBundleStatsJson(temporaryFolder.getRoot()))
+                .thenReturn(stats.toJson());
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue("Content should not have been validated.",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue("Content should not have been validated.",
+                needsBuild);
     }
 
     @Test
@@ -910,23 +848,19 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(FRONTEND_HASHES).put("TodoTemplate.js",
                 "dea5180dd21d2f18d1472074cd5305f60b824e557dae480fb66cdf3ea73edc65");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            utils.when(
-                    () -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
-                    .thenReturn(fileContent);
-            utils.when(() -> FrontendUtils
-                    .findBundleStatsJson(temporaryFolder.getRoot()))
-                    .thenReturn(stats.toJson());
+        utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                .thenReturn(temporaryFolder.getRoot());
+        utils.when(() -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
+                .thenReturn(fileContent);
+        utils.when(() -> FrontendUtils
+                .findBundleStatsJson(temporaryFolder.getRoot()))
+                .thenReturn(stats.toJson());
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue(
-                    "Jar fronted file content hash should not be a match.",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue(
+                "Jar fronted file content hash should not be a match.",
+                needsBuild);
     }
 
     @Test
@@ -953,17 +887,14 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(FRONTEND_HASHES).put("my-styles.css",
                 "0d94fe659d24e1e56872b47fc98d9f09227e19816c62a3db709bad347fbd0cdd");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
-            jarResources.put("my-styles.css", "body{color:yellow}");
+        setupFrontendUtilsMock(stats);
+        jarResources.put("my-styles.css", "body{color:yellow}");
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "CSS 'inline' suffix should be ignored for imports checking",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse(
+                "CSS 'inline' suffix should be ignored for imports checking",
+                needsBuild);
     }
 
     @Test
@@ -980,16 +911,12 @@ public class TaskRunDevBundleBuildTest {
         stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/views/lit-view.ts");
         stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts", "old_hash");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue(
-                    "Project frontend file change should trigger rebuild",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue("Project frontend file change should trigger rebuild",
+                needsBuild);
     }
 
     @Test
@@ -1009,16 +936,13 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts",
                 "eaf04adbc43cb363f6b58c45c6e0e8151084941247abac9493beed8d29f08add");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "No bundle rebuild expected when no changes in frontend file",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse(
+                "No bundle rebuild expected when no changes in frontend file",
+                needsBuild);
     }
 
     @Test
@@ -1035,16 +959,12 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(FRONTEND_HASHES).put("views/lit-view.ts",
                 "eaf04adbc43cb363f6b58c45c6e0e8151084941247abac9493beed8d29f08add");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue(
-                    "Project frontend file delete should trigger rebuild",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue("Project frontend file delete should trigger rebuild",
+                needsBuild);
     }
 
     @Test
@@ -1055,19 +975,15 @@ public class TaskRunDevBundleBuildTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        JsonObject basicStats = getBasicStats();
-        basicStats.remove(THEME_JSON_CONTENTS);
+        JsonObject stats = getBasicStats();
+        stats.remove(THEME_JSON_CONTENTS);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(basicStats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Shouldn't rebuild the bundle if no reused themes",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse("Shouldn't rebuild the bundle if no reused themes",
+                needsBuild);
     }
 
     @Test
@@ -1086,16 +1002,13 @@ public class TaskRunDevBundleBuildTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(getBasicStats(), utils);
+        setupFrontendUtilsMock(getBasicStats());
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Should not trigger a bundle rebuild when the new theme has no theme.json",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse(
+                "Should not trigger a bundle rebuild when the new theme has no theme.json",
+                needsBuild);
     }
 
     @Test
@@ -1110,16 +1023,13 @@ public class TaskRunDevBundleBuildTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(getBasicStats(), utils);
+        setupFrontendUtilsMock(getBasicStats());
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue(
-                    "Should trigger a bundle rebuild when a new reusable theme is added",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue(
+                "Should trigger a bundle rebuild when a new reusable theme is added",
+                needsBuild);
     }
 
     @Test
@@ -1137,16 +1047,13 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(THEME_JSON_CONTENTS).put("other-theme",
                 "other-theme-hash");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue(
-                    "Should trigger a bundle rebuild when a new reusable theme is added",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue(
+                "Should trigger a bundle rebuild when a new reusable theme is added",
+                needsBuild);
     }
 
     @Test
@@ -1162,25 +1069,22 @@ public class TaskRunDevBundleBuildTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            JsonObject stats = getBasicStats();
-            stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme", "{\n"
-                    + "  \"importCss\": [\"@fortawesome/fontawesome-free/css/all.min.css\"],\n"
-                    + "  \"assets\": {\n"
-                    + "    \"@fortawesome/fontawesome-free\": {\n"
-                    + "      \"svgs/brands/**\": \"fontawesome/svgs/brands\",\n"
-                    + "      \"webfonts/**\": \"webfonts\"\n" + "    }\n"
-                    + "  }\n" + "}");
+        JsonObject stats = getBasicStats();
+        stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme", "{\n"
+                + "  \"importCss\": [\"@fortawesome/fontawesome-free/css/all.min.css\"],\n"
+                + "  \"assets\": {\n"
+                + "    \"@fortawesome/fontawesome-free\": {\n"
+                + "      \"svgs/brands/**\": \"fontawesome/svgs/brands\",\n"
+                + "      \"webfonts/**\": \"webfonts\"\n" + "    }\n" + "  }\n"
+                + "}");
 
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue(
-                    "Should trigger a bundle rebuild when the assets updated",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue(
+                "Should trigger a bundle rebuild when the assets updated",
+                needsBuild);
     }
 
     @Test
@@ -1195,28 +1099,25 @@ public class TaskRunDevBundleBuildTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            JsonObject stats = getBasicStats();
-            stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme", "{\n"
-                    + "  \"importCss\": [\"@fortawesome/fontawesome-free/css/all.min.css\"],\n"
-                    + "  \"assets\": {\n"
-                    + "    \"@fortawesome/fontawesome-free\": {\n"
-                    + "      \"svgs/brands/**\": \"fontawesome/svgs/brands\",\n"
-                    + "      \"webfonts/**\": \"webfonts\"\n" + "    },\n"
-                    + "    \"line-awesome\": {\n"
-                    + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
-                    + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
-                    + "    }\n" + "  }\n" + "}\n");
+        JsonObject stats = getBasicStats();
+        stats.getObject(THEME_JSON_CONTENTS).put("reusable-theme", "{\n"
+                + "  \"importCss\": [\"@fortawesome/fontawesome-free/css/all.min.css\"],\n"
+                + "  \"assets\": {\n"
+                + "    \"@fortawesome/fontawesome-free\": {\n"
+                + "      \"svgs/brands/**\": \"fontawesome/svgs/brands\",\n"
+                + "      \"webfonts/**\": \"webfonts\"\n" + "    },\n"
+                + "    \"line-awesome\": {\n"
+                + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
+                + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
+                + "    }\n" + "  }\n" + "}\n");
 
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Should not trigger a bundle rebuild when the themes not changed",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse(
+                "Should not trigger a bundle rebuild when the themes not changed",
+                needsBuild);
     }
 
     @Test
@@ -1234,19 +1135,16 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            JsonObject stats = getBasicStats();
-            stats.remove(THEME_JSON_CONTENTS);
+        JsonObject stats = getBasicStats();
+        stats.remove(THEME_JSON_CONTENTS);
 
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue(
-                    "Should trigger a bundle rebuild when no themeJsonContents, but project has theme.json",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue(
+                "Should trigger a bundle rebuild when no themeJsonContents, but project has theme.json",
+                needsBuild);
     }
 
     @Test
@@ -1264,20 +1162,17 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            JsonObject stats = getBasicStats();
-            stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle",
-                    "{\"lumoImports\": [\"typography\"]}");
+        JsonObject stats = getBasicStats();
+        stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle",
+                "{\"lumoImports\": [\"typography\"]}");
 
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Should not trigger a bundle rebuild when parent theme is used",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse(
+                "Should not trigger a bundle rebuild when parent theme is used",
+                needsBuild);
     }
 
     @Test
@@ -1293,20 +1188,17 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            JsonObject stats = getBasicStats();
-            stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle",
-                    "{\"lumoImports\": [\"typography\"]}");
+        JsonObject stats = getBasicStats();
+        stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle",
+                "{\"lumoImports\": [\"typography\"]}");
 
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Should not trigger a bundle rebuild when project has no theme.json",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse(
+                "Should not trigger a bundle rebuild when project has no theme.json",
+                needsBuild);
     }
 
     @Test
@@ -1329,25 +1221,22 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            JsonObject stats = getBasicStats();
-            stats.getObject(THEME_JSON_CONTENTS).put("my-theme",
-                    "{\n\n\n\n\n\n" + "  \"boolean-property\": true,\n"
-                            + "  \"numeric-property\": 42.42,\n"
-                            + "  \"string-property\": \"foo\",\n"
-                            + "  \"array-property\": [\"one\", \"two\"],\n"
-                            + "  \"object-property\": { \"foo\": \"bar\" }\n"
-                            + "}");
+        JsonObject stats = getBasicStats();
+        stats.getObject(THEME_JSON_CONTENTS).put("my-theme",
+                "{\n\n\n\n\n\n" + "  \"boolean-property\": true,\n"
+                        + "  \"numeric-property\": 42.42,\n"
+                        + "  \"string-property\": \"foo\",\n"
+                        + "  \"array-property\": [\"one\", \"two\"],\n"
+                        + "  \"object-property\": { \"foo\": \"bar\" }\n"
+                        + "}");
 
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Should not trigger a bundle rebuild when project theme.json has the same content as in the bundle",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse(
+                "Should not trigger a bundle rebuild when project theme.json has the same content as in the bundle",
+                needsBuild);
     }
 
     @Test
@@ -1368,24 +1257,21 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            JsonObject stats = getBasicStats();
-            stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle", "{\n"
-                    + "  \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"],\n"
-                    + "  \"assets\": {\n" + "    \"line-awesome\": {\n"
-                    + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
-                    + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
-                    + "    }\n" + "  }\n" + "}");
+        JsonObject stats = getBasicStats();
+        stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle", "{\n"
+                + "  \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"],\n"
+                + "  \"assets\": {\n" + "    \"line-awesome\": {\n"
+                + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
+                + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
+                + "    }\n" + "  }\n" + "}");
 
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue(
-                    "Should rebuild when project theme.json adds extra entries",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue(
+                "Should rebuild when project theme.json adds extra entries",
+                needsBuild);
     }
 
     @Test
@@ -1404,25 +1290,22 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            JsonObject stats = getBasicStats();
-            stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle", "{\n"
-                    + "  \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"],\n"
-                    + "  \"assets\": {\n" + "    \"line-awesome\": {\n"
-                    + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
-                    + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
-                    + "    }\n" + "  }\n" + "}");
+        JsonObject stats = getBasicStats();
+        stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle", "{\n"
+                + "  \"lumoImports\": [\"typography\", \"color\", \"spacing\", \"badge\", \"utility\"],\n"
+                + "  \"assets\": {\n" + "    \"line-awesome\": {\n"
+                + "      \"dist/line-awesome/css/**\": \"line-awesome/dist/line-awesome/css\",\n"
+                + "      \"dist/line-awesome/fonts/**\": \"line-awesome/dist/line-awesome/fonts\"\n"
+                + "    }\n" + "  }\n" + "}");
 
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Shouldn't re-bundle when the dev bundle already have all"
-                            + " the entries defined in the project's theme.json",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse(
+                "Shouldn't re-bundle when the dev bundle already have all"
+                        + " the entries defined in the project's theme.json",
+                needsBuild);
     }
 
     @Test
@@ -1440,19 +1323,16 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            JsonObject stats = getBasicStats();
+        JsonObject stats = getBasicStats();
 
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue(
-                    "Should trigger a bundle rebuild when project has theme"
-                            + ".json but stats doesn't",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue(
+                "Should trigger a bundle rebuild when project has theme"
+                        + ".json but stats doesn't",
+                needsBuild);
     }
 
     @Test
@@ -1472,20 +1352,17 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            JsonObject stats = getBasicStats();
-            stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle", "{}");
+        JsonObject stats = getBasicStats();
+        stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle", "{}");
 
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue(
-                    "Should rebuild when 'theme.json' from parent theme in "
-                            + "frontend folder adds extra entries",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue(
+                "Should rebuild when 'theme.json' from parent theme in "
+                        + "frontend folder adds extra entries",
+                needsBuild);
     }
 
     @Test
@@ -1504,15 +1381,12 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue("Adding 'index.ts' should require bundling",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue("Adding 'index.ts' should require bundling",
+                needsBuild);
     }
 
     @Test
@@ -1533,25 +1407,22 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(FRONTEND_HASHES).put(FrontendUtils.INDEX_TS,
                 "15931fa8c20e3c060c8ea491831e95cc8463962700a9bfb82c8e3844cf608f04");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "'index.ts' equal content should not require bundling",
-                    needsBuild);
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse(
+                "'index.ts' equal content should not require bundling",
+                needsBuild);
 
-            FileUtils.write(indexTs, "window.alert('hello');",
-                    StandardCharsets.UTF_8);
+        FileUtils.write(indexTs, "window.alert('hello');",
+                StandardCharsets.UTF_8);
 
-            needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
-                    depScanner, finder);
-            Assert.assertTrue(
-                    "changed content for 'index.ts' should require bundling",
-                    needsBuild);
-        }
+        needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue(
+                "changed content for 'index.ts' should require bundling",
+                needsBuild);
     }
 
     @Test
@@ -1565,15 +1436,12 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(FRONTEND_HASHES).put(FrontendUtils.INDEX_TS,
                 "15931fa8c20e3c060c8ea491831e95cc8463962700a9bfb82c8e3844cf608f04");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue("'index.ts' delete should require re-bundling",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue("'index.ts' delete should require re-bundling",
+                needsBuild);
     }
 
     @Test
@@ -1592,16 +1460,13 @@ public class TaskRunDevBundleBuildTest {
                 "vaadin-spreadsheet/vaadin-spreadsheet.js",
                 "e545ad23a2d1d4b3a3370a0305dd71c15bbfc645216f50c6e327bd818b7484c4");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Should not require bundling if component JS is missing in jar-resources",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse(
+                "Should not require bundling if component JS is missing in jar-resources",
+                needsBuild);
     }
 
     @Test
@@ -1620,18 +1485,15 @@ public class TaskRunDevBundleBuildTest {
 
         JsonObject stats = getBasicStats();
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            // Should not throw an IllegalStateException:
-            // "Failed to find the following css files in the...."
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertTrue(
-                    "Should re-bundle if CSS is imported from META-INF/resources",
-                    needsBuild);
-        }
+        // Should not throw an IllegalStateException:
+        // "Failed to find the following css files in the...."
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertTrue(
+                "Should re-bundle if CSS is imported from META-INF/resources",
+                needsBuild);
     }
 
     @Test
@@ -1643,18 +1505,15 @@ public class TaskRunDevBundleBuildTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            JsonObject stats = getBasicStats();
+        JsonObject stats = getBasicStats();
 
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse(
-                    "Shouldn't re-bundle when old @vaadin/flow-frontend package is in package.json",
-                    needsBuild);
-        }
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                depScanner, finder);
+        Assert.assertFalse(
+                "Shouldn't re-bundle when old @vaadin/flow-frontend package is in package.json",
+                needsBuild);
     }
 
     private void createPackageJsonStub(String content) throws IOException {
@@ -1684,22 +1543,12 @@ public class TaskRunDevBundleBuildTest {
         FileUtils.write(frontendFile, "Some codes", StandardCharsets.UTF_8);
     }
 
-    private void setupFrontendUtilsMock(JsonObject stats,
-            MockedStatic<FrontendUtils> utils) throws IOException {
+    private void setupFrontendUtilsMock(JsonObject stats) throws IOException {
         utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
         utils.when(() -> FrontendUtils
                 .findBundleStatsJson(temporaryFolder.getRoot()))
                 .thenAnswer(q -> stats.toJson());
-        utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
-                Mockito.any(Options.class), Mockito.any(ThemeDefinition.class)))
-                .thenCallRealMethod();
-        utils.when(() -> FrontendUtils.getThemeJsonInFrontend(
-                Mockito.any(File.class), Mockito.any(String.class)))
-                .thenCallRealMethod();
-        utils.when(() -> FrontendUtils.getParentThemeNameInFrontend(
-                Mockito.any(File.class), Mockito.any(JsonObject.class)))
-                .thenCallRealMethod();
         utils.when(
                 () -> FrontendUtils.getJarResourceString(Mockito.anyString()))
                 .thenAnswer(q -> {

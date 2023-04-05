@@ -31,6 +31,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -103,11 +104,12 @@ public class RouteUtil {
     public static String getRoutePath(VaadinContext context,
             Class<?> component) {
         Route route = component.getAnnotation(Route.class);
+        String routePath = resolve(context, component);
         if (route.absolute()) {
-            return resolve(context, component);
+            return routePath;
         }
         List<String> parentRoutePrefixes = getRoutePrefixes(component,
-                route.layout(), resolve(context, component));
+                route.layout(), routePath);
         return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
     }
 
@@ -279,9 +281,17 @@ public class RouteUtil {
      *         no explicit value is given.
      */
     public static String resolve(VaadinContext context, Class<?> component) {
+        RoutePathProvider provider = null;
         Lookup lookup = context.getAttribute(Lookup.class);
-        RoutePathProvider provider = lookup.lookup(RoutePathProvider.class);
-        assert provider != null;
+        if (lookup != null) {
+            provider = lookup.lookup(RoutePathProvider.class);
+            assert provider != null;
+        }
+        if (provider == null) {
+            // This is needed especially in unit tests when no Lookup instance
+            // is available
+            provider = new DefaultRoutePathProvider();
+        }
         return provider.getRoutePath(component);
     }
 

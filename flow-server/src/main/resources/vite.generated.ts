@@ -135,11 +135,11 @@ function buildSWPlugin(opts): PluginOption {
       return includedPluginNames.includes(p.name);
     });
     const resolver = config.createResolver();
-    const resolvePlugin:rollup.Plugin = {
+
+    const resolvePlugin: rollup.Plugin = {
       name: 'resolver',
       resolveId(source, importer, _options) {
-        const result = resolver(source, importer);
-        return result;
+        return resolver(source, importer);
       }
     };
     plugins.unshift(resolvePlugin); // Put resolve first
@@ -206,6 +206,19 @@ function buildSWPlugin(opts): PluginOption {
 }
 
 function statsExtracterPlugin(): PluginOption {
+
+  function collectThemeJsonsInFrontend(themeJsonContents: Record<string, string>, themeName: string) {
+    const themeJson = path.resolve(frontendFolder, settings.themeFolder, themeName, "theme.json")
+    if (existsSync(themeJson)) {
+      const themeJsonContent = readFileSync(themeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
+      themeJsonContents[ themeName ] = themeJsonContent;
+      const themeJsonObject = JSON.parse(themeJsonContent);
+      if (themeJsonObject.parent) {
+        collectThemeJsonsInFrontend(themeJsonContents, themeJsonObject.parent);
+      }
+    }
+  }
+
   return {
     name: 'vaadin:stats',
     enforce: 'post',
@@ -287,18 +300,7 @@ function statsExtracterPlugin(): PluginOption {
         });
       }
 
-      const projectThemeJson = path.resolve(frontendFolder, settings.themeFolder, settings.themeName, "theme.json")
-      if (existsSync(projectThemeJson)) {
-        const themeJson = readFileSync(projectThemeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
-        themeJsonContents[ settings.themeName ] = themeJson;
-        const themeJsonObject = JSON.parse(themeJson);
-        if (themeJsonObject.parent) {
-          const parentThemeJson = path.resolve(frontendFolder, settings.themeFolder, themeJsonObject.parent, "theme.json");
-          if (existsSync(parentThemeJson)) {
-            themeJsonContents[ themeJsonObject.parent ] = readFileSync(parentThemeJson, {encoding: 'utf-8'}).replace(/\r\n/g, '\n');
-          }
-        }
-      }
+      collectThemeJsonsInFrontend(themeJsonContents, settings.themeName);
 
       let webComponents: string[] = [];
       if (webComponentTags) {
@@ -446,7 +448,8 @@ function vaadinBundlesPlugin(): PluginOption {
               exclude: [
                 // Vaadin bundle
                 '@vaadin/bundles',
-                ...Object.keys(vaadinBundleJson.packages)
+                ...Object.keys(vaadinBundleJson.packages),
+                '@vaadin/vaadin-material-styles'
               ]
             }
           },

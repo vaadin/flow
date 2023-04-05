@@ -126,7 +126,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
     @Override
     public void execute() throws ExecutionFailedException {
         getLogger().info(
-                "Creating a new express mode bundle. This can take a while but will only run when the project setup is changed, addons are added or frontend files are modified");
+                "Creating a new development mode bundle. This can take a while but will only run when the project setup is changed, addons are added or frontend files are modified");
 
         runFrontendBuildTool("Vite", "vite/bin/vite.js", Collections.emptyMap(),
                 "build");
@@ -137,20 +137,22 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
     public static boolean needsBuild(Options options,
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder) {
-        getLogger().info("Checking if an express mode bundle build is needed");
+        getLogger()
+                .info("Checking if a development mode bundle build is needed");
 
         try {
             boolean needsBuild = needsBuildInternal(options,
                     frontendDependencies, finder);
             if (needsBuild) {
-                getLogger().info("An express mode bundle build is needed");
+                getLogger().info("A development mode bundle build is needed");
             } else {
-                getLogger().info("An express mode bundle build is not needed");
+                getLogger()
+                        .info("A development mode bundle build is not needed");
             }
             return needsBuild;
         } catch (Exception e) {
             getLogger().error(
-                    "Error when checking if an express mode bundle build is needed",
+                    "Error when checking if a development bundle build is needed",
                     e);
             return true;
         }
@@ -280,7 +282,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         ThemeDefinition themeDefinition = frontendDependencies
                 .getThemeDefinition();
         Optional<JsonObject> projectThemeJson = FrontendUtils
-                .getThemeJsonInFrontend(options, themeDefinition);
+                .getThemeJsonForTheme(options, themeDefinition);
 
         JsonObject contentsInStats = statsJson.getObject("themeJsonContents");
         if (contentsInStats == null && (!themeJsonContents.isEmpty()
@@ -304,47 +306,25 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 return true;
             }
 
-            List<String> missedKeys = new ArrayList<>();
-            JsonObject themeJsonContent = Json
-                    .parse(contentsInStats.getString(key));
-            if (!objectIncludesEntry(themeJsonContent, projectThemeJson.get(),
-                    missedKeys)) {
-                getLogger().info(
-                        "Project custom theme '{}' has imports/assets in 'theme.json' not present in the bundle",
-                        projectThemeName);
-                logMissedEntries(missedKeys);
-                return true;
-            }
-
-            Optional<String> parentThemeInFrontend = FrontendUtils
-                    .getParentThemeNameInFrontend(
-                            options.getFrontendDirectory(),
-                            projectThemeJson.get());
-            if (parentThemeInFrontend.isPresent()) {
-                String parentThemeName = parentThemeInFrontend.get();
-                Optional<JsonObject> themeJson = FrontendUtils
-                        .getThemeJsonInFrontend(options.getFrontendDirectory(),
-                                parentThemeName);
-                themeJson.ifPresent(jsonObject -> themeJsonContents
-                        .put(parentThemeName, jsonObject));
-            }
+            collectThemeJsonContentsInFrontend(options, themeJsonContents, key,
+                    projectThemeJson.get());
         }
 
         for (Map.Entry<String, JsonObject> themeContent : themeJsonContents
                 .entrySet()) {
-            if (!contentsInStats.hasKey(themeContent.getKey())) {
+            if (hasNewAssetsOrImports(contentsInStats, themeContent)) {
                 getLogger().info(
                         "Found new configuration for theme '{}' in 'theme.json'.",
                         themeContent.getKey());
                 return true;
-            } else {
+            } else if (contentsInStats.hasKey(themeContent.getKey())) {
                 List<String> missedKeys = new ArrayList<>();
                 JsonObject content = Json.parse(
                         contentsInStats.getString(themeContent.getKey()));
                 if (!objectIncludesEntry(content, themeContent.getValue(),
                         missedKeys)) {
                     getLogger().info(
-                            "Parent theme '{}' has imports/assets in 'theme.json' not present in the bundle",
+                            "Custom theme '{}' has imports/assets in 'theme.json' not present in the bundle",
                             themeContent.getKey());
                     logMissedEntries(missedKeys);
                     return true;
@@ -353,6 +333,37 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
 
         return false;
+    }
+
+    private static boolean hasNewAssetsOrImports(JsonObject contentsInStats,
+            Map.Entry<String, JsonObject> themeContent) {
+        JsonObject json = themeContent.getValue();
+        boolean moreThanOneKey = json.keys().length > 1;
+        boolean noParentEntry = json.keys().length == 1
+                && !json.hasKey("parent");
+        // do not re-bundle immediately if theme.json is empty or has only
+        // parent reference
+        return !contentsInStats.hasKey(themeContent.getKey())
+                && (moreThanOneKey || noParentEntry);
+    }
+
+    private static void collectThemeJsonContentsInFrontend(Options options,
+            Map<String, JsonObject> themeJsonContents, String themeName,
+            JsonObject themeJson) throws IOException {
+        Optional<String> parentThemeInFrontend = FrontendUtils
+                .getParentThemeName(themeJson);
+        if (parentThemeInFrontend.isPresent()) {
+            String parentThemeName = parentThemeInFrontend.get();
+            Optional<JsonObject> parentThemeJson = FrontendUtils
+                    .getThemeJsonForTheme(options.getFrontendDirectory(),
+                            parentThemeName);
+            if (parentThemeJson.isPresent()) {
+                collectThemeJsonContentsInFrontend(options, themeJsonContents,
+                        parentThemeName, parentThemeJson.get());
+            }
+        }
+
+        themeJsonContents.put(themeName, themeJson);
     }
 
     private static boolean objectIncludesEntry(JsonValue jsonFromBundle,
@@ -923,8 +934,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         Process process = null;
         try {
             builder.directory(options.getNpmFolder());
-            builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
-            builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+            builder.redirectInput(ProcessBuilder.Redirect.PIPE);
+            builder.redirectErrorStream(true);
 
             process = builder.start();
 

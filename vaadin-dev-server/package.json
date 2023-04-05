@@ -24,6 +24,7 @@
     "@vaadin/button": "24.0.0",
     "@vaadin/overlay": "24.0.0",
     "@vaadin/select": "24.0.0",
+    "construct-style-sheets-polyfill": "^3.1.0",
     "lit": "^2.6.1",
     "vanilla-colorful": "^0.7.2"
   }

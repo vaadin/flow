@@ -223,9 +223,6 @@ public class ExecuteJavaScriptProcessor {
           object.stopApplication = $entry(function() {
               stopApplication.@java.lang.Runnable::run(*)();
           });
-          object.scrollPositionHandlerAfterServerNavigation = $entry(function(state) {
-              @com.vaadin.client.ExecuteJavaScriptElementUtils::scrollPositionHandlerAfterServerNavigation(*)(object.registry, state);
-          });
           return object;
     }-*/;
 }

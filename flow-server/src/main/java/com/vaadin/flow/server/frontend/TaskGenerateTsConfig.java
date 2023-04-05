@@ -111,7 +111,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             String current = FileUtils.readFileToString(projectTsconfig,
                     StandardCharsets.UTF_8);
             String currentEsVersion = getEsTargetVersion(current);
-            if (!currentEsVersion.equals(esVersion)) {
+            if (isOlder(currentEsVersion, esVersion)) {
                 current = current.replace(currentEsVersion, esVersion);
                 writeIfChanged(projectTsconfig, current);
             }
@@ -119,6 +119,13 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             // This could be a malformed tsconfig, leave it alone
             log().debug("Unable to modify target version in tsconfig.json", e);
         }
+    }
+
+    static boolean isOlder(String esVersion1, String esVersion2) {
+        if (esVersion1.startsWith("es") && esVersion2.startsWith("es")) {
+            return esVersion1.compareTo(esVersion2) < 0;
+        }
+        return !esVersion1.equals(esVersion2);
     }
 
     private String getDefaultEsTargetVersion() throws ExecutionFailedException {

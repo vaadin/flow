@@ -1,6 +1,6 @@
 import { css } from 'lit';
 import { ComponentTheme, createScopedSelector, SelectorScope, ThemeScope } from './model';
-import { ComponentMetadata } from './metadata/model';
+import { ComponentElementMetadata, ComponentMetadata } from './metadata/model';
 import { ComponentReference } from '../component-util';
 import { injectGlobalCss } from './styles';
 
@@ -35,6 +35,9 @@ export async function detectTheme(metadata: ComponentMetadata): Promise<Componen
 
   try {
     metadata.elements.forEach((elementMetadata) => {
+      // Apply state attribute if it is necessary for measuring sub-element
+      applyStateAttribute(element, elementMetadata, scope, true);
+
       let scopedSelector = createScopedSelector(elementMetadata, scope);
       // Pseudo-element needs to be queried in getComputedStyle separately
       const pseudoMatch = scopedSelector.match(pseudoRegex);
@@ -45,24 +48,32 @@ export async function detectTheme(metadata: ComponentMetadata): Promise<Componen
       const partNameMatch = scopedSelector.match(partNameRegex);
       const lightDomSelector = scopedSelector.replace(partNameRegex, '');
 
-      let element = document.querySelector(lightDomSelector);
+      let subElement = document.querySelector(lightDomSelector) as HTMLElement;
       // If we target a part in shadow DOM, query for that within shadow DOM
-      if (element && partNameMatch) {
+      if (subElement && partNameMatch) {
         const partName = partNameMatch[1];
         const shadowDomSelector = `[part~="${partName}"]`;
-        element = element.shadowRoot!.querySelector(shadowDomSelector);
+        subElement = subElement.shadowRoot!.querySelector(shadowDomSelector) as HTMLElement;
       }
 
-      if (!element) {
+      if (!subElement) {
         return;
       }
+
+      // Disable transitions on measured sub-element to avoid having to wait for
+      // state attribute changes to apply
+      subElement.style.transition = 'none';
+
       const pseudoName = pseudoMatch ? pseudoMatch[1] : null;
-      const elementStyles = getComputedStyle(element, pseudoName);
+      const elementStyles = getComputedStyle(subElement, pseudoName);
 
       elementMetadata.properties.forEach((property) => {
-        const propertyValue = elementStyles.getPropertyValue(property.propertyName);
+        const propertyValue = elementStyles.getPropertyValue(property.propertyName) || property.defaultValue || '';
         componentTheme.updatePropertyValue(elementMetadata.selector, property.propertyName, propertyValue);
       });
+
+      // Clear state attribute after measuring
+      applyStateAttribute(element, elementMetadata, scope, false);
     });
   } finally {
     try {
@@ -76,6 +87,41 @@ export async function detectTheme(metadata: ComponentMetadata): Promise<Componen
   }
 
   return componentTheme;
+}
+
+function applyStateAttribute(
+  element: HTMLElement,
+  elementMetadata: ComponentElementMetadata,
+  scope: SelectorScope,
+  apply: boolean
+) {
+  // Skip if metadata does not define state attribute
+  if (!elementMetadata.stateAttribute) {
+    return;
+  }
+
+  // If metadata defines custom element on which to apply the state attribute,
+  // look it up
+  if (elementMetadata.stateElementSelector) {
+    const scopedSelector = createScopedSelector(
+      {
+        ...elementMetadata,
+        selector: elementMetadata.stateElementSelector
+      },
+      scope
+    );
+    element = document.querySelector(scopedSelector) as HTMLElement;
+  }
+
+  if (!element) {
+    return;
+  }
+
+  if (apply) {
+    element.setAttribute(elementMetadata.stateAttribute, '');
+  } else {
+    element.removeAttribute(elementMetadata.stateAttribute);
+  }
 }
 
 function sanitizeText(text: string) {

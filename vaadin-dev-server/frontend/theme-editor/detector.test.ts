@@ -41,11 +41,18 @@ describe('theme-detector', () => {
     expect(theme.getPropertyValue('test-element::part(helper-text)', 'color').value).to.equal('rgb(200, 200, 200)');
   });
 
+  it('should use default value from metadata if property is not defined in computed styles', async () => {
+    const theme = await detectTheme(testElementMetadata);
+
+    expect(theme.getPropertyValue('test-element', '--custom-property').value).to.equal('foo');
+  });
+
   it('should detect themed CSS property values', async () => {
     await fixture(html`
       <style>
         test-element {
           padding: 20px;
+          --custom-property:bar;
         }
 
         test-element::part(label) {
@@ -64,6 +71,7 @@ describe('theme-detector', () => {
     const theme = await detectTheme(testElementMetadata);
 
     expect(theme.getPropertyValue('test-element', 'padding').value).to.equal('20px');
+    expect(theme.getPropertyValue('test-element', '--custom-property').value).to.equal('bar');
     expect(theme.getPropertyValue('test-element::part(label)', 'color').value).to.equal('rgb(0, 128, 0)');
     expect(theme.getPropertyValue('test-element input[slot="input"]', 'border-radius').value).to.equal('10px');
     expect(theme.getPropertyValue('test-element::part(helper-text)', 'color').value).to.equal('rgb(0, 0, 255)');

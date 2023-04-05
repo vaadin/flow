@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1659,46 +1660,62 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return references;
         }
 
-        // First check if project has a packaged themes and add a link if any
+        final String mainTheme = themeName.get();
+
+        // Collect parent themes in the JARs
         File frontendFolder = new File(config.getProjectFolder(),
                 FrontendUtils.FRONTEND);
         File jarResourcesFolder = FrontendUtils
                 .getJarResourcesFolder(frontendFolder);
         File packagedThemesFolder = new File(jarResourcesFolder,
                 Constants.APPLICATION_THEME_ROOT);
+        final Set<String> packagedThemes = new HashSet<>();
 
-        boolean projectCustomThemeAdded = false;
         if (packagedThemesFolder.exists()) {
             for (File themeFolder : Objects.requireNonNull(
                     packagedThemesFolder.listFiles(File::isDirectory),
                     "Expected at least one theme in the front-end generated themes folder")) {
-                String packagedThemeName = themeFolder.getName();
-                projectCustomThemeAdded = projectCustomThemeAdded
-                        || packagedThemeName.equals(themeName.get());
-                T reference = referenceProvider.apply(packagedThemeName,
-                        fileName);
-                references.add(reference);
+                packagedThemes.add(themeFolder.getName());
             }
         }
 
-        // Secondly, check if a parent theme is in the project's frontend/themes
-        // folder and add a link if any
-        Optional<String> parentThemeName = FrontendUtils
-                .getParentThemeNameInFrontend(frontendFolder, themeName.get());
-        if (parentThemeName.isPresent()) {
-            T reference = referenceProvider.apply(parentThemeName.get(),
-                    fileName);
-            references.add(reference);
-        }
+        // need ordered collection to ensure styles priority
+        final Set<String> activeThemes = new LinkedHashSet<>();
 
-        // Finally, add a link for the project's custom theme, if it exists
-        // and not yet added by the packaged themes loop
-        if (!projectCustomThemeAdded) {
-            T reference = referenceProvider.apply(themeName.get(), fileName);
+        collectActiveThemes(mainTheme, frontendFolder, packagedThemes,
+                activeThemes);
+
+        // Add link references for all the found themes
+        activeThemes.forEach(theme -> {
+            T reference = referenceProvider.apply(theme, fileName);
             references.add(reference);
-        }
+        });
 
         return references;
+    }
+
+    private static <T> void collectActiveThemes(String themeName,
+            File frontendFolder, Set<String> packagedThemes,
+            Set<String> activeThemes) throws IOException {
+        // Look for parent theme of themeName in {project}/frontend/themes/
+        Optional<String> parentThemeName = FrontendUtils
+                .getParentThemeName(frontendFolder, themeName);
+        if (parentThemeName.isPresent()) {
+            collectActiveThemes(parentThemeName.get(), frontendFolder,
+                    packagedThemes, activeThemes);
+        } else if (packagedThemes.contains(themeName)) {
+            // Look for parent theme of themeName in packaged themes
+            File jarResourcesFolder = FrontendUtils
+                    .getJarResourcesFolder(frontendFolder);
+            parentThemeName = FrontendUtils
+                    .getParentThemeName(jarResourcesFolder, themeName);
+            if (parentThemeName.isPresent()) {
+                collectActiveThemes(parentThemeName.get(), frontendFolder,
+                        packagedThemes, activeThemes);
+            }
+        }
+
+        activeThemes.add(themeName);
     }
 
     private static String getThemeFilePath(String themeName, String fileName) {
@@ -1724,7 +1741,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             String entryScript = entryScripts.getString(i);
             Element elm = new Element(SCRIPT_TAG);
             elm.attr("type", "module");
-            elm.attr("src", "VAADIN/dev-bundle/" + entryScript);
+            elm.attr("src", entryScript);
             targetDocument.head().appendChild(elm);
 
             if (entryScript.contains("indexhtml")) {
