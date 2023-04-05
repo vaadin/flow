@@ -13,6 +13,7 @@ import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.github.javaparser.utils.SourceRoot;
+import com.vaadin.base.devserver.AbstractDevServerRunner;
 import com.vaadin.base.devserver.editor.Editor;
 import com.vaadin.base.devserver.editor.Where;
 import com.vaadin.base.devserver.themeeditor.utils.LineNumberVisitor;
@@ -25,6 +26,8 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -224,7 +227,8 @@ public class JavaSourceModifier extends Editor {
                     CompilationUnit cu = getCompilationUnit(component);
                     findModificationWhere(cu, component);
                     holder.accessible = true;
-                } catch (ThemeEditorException | IllegalArgumentException ex) {
+                } catch (Exception ex) {
+                    getLogger().warn(ex.getMessage(), ex);
                     holder.accessible = false;
                 }
             }).get(5, TimeUnit.SECONDS);
@@ -365,6 +369,10 @@ public class JavaSourceModifier extends Editor {
             throw new ThemeEditorException("Cannot find component.");
         }
         return node;
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(JavaSourceModifier.class);
     }
 
 }
