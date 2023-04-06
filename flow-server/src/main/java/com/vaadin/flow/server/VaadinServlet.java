@@ -29,6 +29,8 @@ import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.LicenseChecker;
 
 /**
  * The main servlet, which handles all incoming requests to the application.
@@ -71,10 +73,10 @@ public class VaadinServlet extends HttpServlet {
              * main reason is: init method is public which means that everyone
              * may call this method at any time (including an app developer).
              * But it's not supposed to be called any times any time.
-             * 
+             *
              * This code protects weak API from being called several times so
              * that config is reset after the very first initialization.
-             * 
+             *
              * Normally "init" method is called only once by the servlet
              * container. But in a specific OSGi case {@code
              * ServletContextListener} may be called after the servlet
@@ -108,6 +110,7 @@ public class VaadinServlet extends HttpServlet {
 
             try {
                 servletService = createServletService();
+                validateLicense(servletService.getDeploymentConfiguration());
             } catch (ServiceException e) {
                 throw new ServletException("Could not initialize VaadinServlet",
                         e);
@@ -539,6 +542,15 @@ public class VaadinServlet extends HttpServlet {
             initializer.initialize(vaadinServletContext);
         }
         return vaadinServletContext;
+    }
+
+    private void validateLicense(
+            DeploymentConfiguration deploymentConfiguration) {
+        // Check the license at runtime if in development mode
+        if (!deploymentConfiguration.isProductionMode()) {
+            LicenseChecker.checkLicense("flow", Version.getFullVersion(),
+                    BuildType.DEVELOPMENT);
+        }
     }
 
 }

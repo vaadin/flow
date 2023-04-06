@@ -34,6 +34,11 @@
             <version>1.0.2</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>license-checker</artifactId>
+        </dependency>
+
         <!-- DefaultApplicationConfigurationFactory is declared as an OSGi
             service -->
 

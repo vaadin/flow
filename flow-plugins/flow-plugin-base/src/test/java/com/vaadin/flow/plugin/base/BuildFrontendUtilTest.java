@@ -16,15 +16,34 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import com.vaadin.flow.server.Version;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.LicenseChecker;
 
 public class BuildFrontendUtilTest {
+
+    private MockedStatic<LicenseChecker> licenseChecker;
+
+    @Before
+    public void setup() {
+        licenseChecker = Mockito.mockStatic(LicenseChecker.class);
+    }
+
+    @After
+    public void cleanup() {
+        licenseChecker.close();
+    }
 
     @Test
     public void testWebpackRequiredFlagsPassedToNodeEnvironment()
@@ -71,5 +90,9 @@ public class BuildFrontendUtilTest {
         BuildFrontendUtil.runWebpack(adapter, tools);
 
         // terminates successfully
+
+        // license check for prod build
+        licenseChecker.verify(() -> LicenseChecker.checkLicense("flow",
+                Version.getFullVersion(), BuildType.PRODUCTION));
     }
 }
