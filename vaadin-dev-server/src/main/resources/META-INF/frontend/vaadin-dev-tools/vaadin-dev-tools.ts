@@ -1,7 +1,7 @@
 import { css, html, LitElement, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { ComponentReference } from './component-util.js';
+import {ComponentReference, deepContains} from './component-util.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
@@ -1175,7 +1175,18 @@ export class VaadinDevTools extends LitElement {
     windowAny.Vaadin.devTools = Object.assign(this, windowAny.Vaadin.devTools);
 
     licenseInit();
+
+    // Prevent application overlays from closing when interacting with the dev tools
+    document.documentElement.addEventListener('vaadin-overlay-outside-click', (event: Event) => {
+      // Prevent closing the overlay if click is within the dev tools
+      const sourceEvent = (event as any).detail.sourceEvent;
+      const composedPath = sourceEvent.composedPath();
+      if (composedPath.includes(this)) {
+        event.preventDefault();
+      }
+    });
   }
+
   format(o: any): string {
     return o.toString();
   }
