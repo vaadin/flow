@@ -172,7 +172,7 @@ public class ThemeUtils {
      * @throws IllegalArgumentException
      *             if the theme folder was not found
      */
-    private static File getThemeFolder(File frontendFolder, String themeName)
+    public static File getThemeFolder(File frontendFolder, String themeName)
             throws IllegalArgumentException {
         File packagedThemesFolder = new File(
                 FrontendUtils.getJarResourcesFolder(frontendFolder),
