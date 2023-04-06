@@ -228,6 +228,8 @@ public class Editor {
                 return "Modification REMOVE position "
                         + referenceNode.getBegin().get() + "-"
                         + referenceNode.getEnd().get() + ": " + referenceNode;
+            } else if (type == Type.INSERT_AT_END_OF_BLOCK) {
+                return "Modification INSERT_AT_END_OF_BLOCK " + referenceNode;
             }
             return "Modification UNKNOWN TYPE";
         }

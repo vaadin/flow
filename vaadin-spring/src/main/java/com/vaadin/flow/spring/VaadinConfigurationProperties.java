@@ -81,9 +81,14 @@ public class VaadinConfigurationProperties {
     private boolean loadOnStartup = true;
 
     /**
-     * Whether pnpm support is enabled
+     * Pnpm configuration options.
      **/
     private Pnpm pnpm = new Pnpm();
+
+    /**
+     * Frontend configuration options.
+     **/
+    private Frontend frontend = new Frontend();
 
     /**
      * Custom package blacklist that should be skipped in scanning.
@@ -106,7 +111,34 @@ public class VaadinConfigurationProperties {
      */
     private List<String> excludeUrls;
 
+    public static class Frontend {
+        /**
+         * Whether a frontend development server (Vite) is used in development
+         * mode or not.
+         */
+        private boolean hotdeploy = false;
+
+        /*
+         * Checks if frontend hotdeploy is enabled.
+         *
+         * @return true if hotdeploy is enabled
+         */
+        public boolean isHotdeploy() {
+            return hotdeploy;
+        }
+
+        /*
+         * Enables/disables frontend hotdeploy mode.
+         *
+         * @param hotdeploy true to enable, false to disable
+         */
+        public void setHotdeploy(boolean hotdeploy) {
+            this.hotdeploy = hotdeploy;
+        }
+    }
+
     public static class Pnpm {
+
         private boolean enable;
 
         /**
@@ -225,27 +257,6 @@ public class VaadinConfigurationProperties {
     }
 
     /**
-     * Returns if pnpm support is enabled.
-     *
-     * @return if pnpm is enabled
-     */
-    public boolean isPnpmEnabled() {
-        return pnpm.isEnable();
-    }
-
-    /**
-     * Enables/disabled pnpm support.
-     *
-     * @param enabled
-     *            if {@code true} then pnpm support is enabled, otherwise it's
-     *            disabled
-     *
-     */
-    public void setPnpmEnabled(boolean enabled) {
-        pnpm.setEnable(enabled);
-    }
-
-    /**
      * Get a list of packages that are blacklisted for class scanning.
      *
      * @return package blacklist
@@ -303,5 +314,23 @@ public class VaadinConfigurationProperties {
      */
     public void setExcludeUrls(List<String> excludeUrls) {
         this.excludeUrls = excludeUrls;
+    }
+
+    /**
+     * Gets the pnpm specific configuration.
+     *
+     * @return the pnpm configuration
+     */
+    public Pnpm getPnpm() {
+        return pnpm;
+    }
+
+    /**
+     * Gets the frontend specific configuration.
+     *
+     * @return the frontend configuration
+     */
+    public Frontend getFrontend() {
+        return frontend;
     }
 }

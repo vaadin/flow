@@ -94,6 +94,7 @@ export class ColorPicker extends LitElement {
     // the overlay teleports itself to the document body
     this.overlay = document.createElement('vaadin-dev-tools-color-picker-overlay') as VaadinOverlay;
     this.overlay.renderer = this.renderOverlayContent.bind(this);
+    this.overlay.owner = this;
     this.overlay.positionTarget = this.toggle;
     this.overlay.noVerticalOverlap = true;
     this.overlay.addEventListener('vaadin-overlay-escape-press', this.handleOverlayEscape.bind(this));
@@ -249,6 +250,7 @@ export class ColorPickerOverlayContent extends LitElement {
 // Importing the interface is not possible as it breaks the Flow build
 interface VaadinOverlay extends HTMLElement {
   opened: boolean;
+  owner: HTMLElement;
   positionTarget: HTMLElement;
   noVerticalOverlap: boolean;
 
