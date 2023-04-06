@@ -16,11 +16,12 @@
 package com.vaadin.flow.server.frontend;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
+
+import jakarta.servlet.ServletContext;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,8 +40,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -48,26 +47,19 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.AbstractConfiguration;
-import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.ThemeDefinition;
 
-import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import jakarta.servlet.ServletContext;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -334,9 +326,6 @@ public class FrontendUtils {
 
     public static final String BRIGHT_BLUE = "\u001b[94m%s\u001b[0m";
 
-    private static final Pattern THEME_GENERATED_FILE_PATTERN = Pattern
-            .compile("theme-([\\s\\S]+?)\\.generated\\.js");
-
     /**
      * Only static stuff here.
      */
@@ -376,8 +365,7 @@ public class FrontendUtils {
                     .replaceAll("\\R", System.lineSeparator());
         } catch (IOException exception) {
             // ignore exception on close()
-            LoggerFactory.getLogger(FrontendUtils.class)
-                    .warn("Couldn't close template input stream", exception);
+            getLogger().warn("Couldn't close template input stream", exception);
         }
         return ret;
     }
@@ -647,7 +635,7 @@ public class FrontendUtils {
                 JAR_RESOURCES_FOLDER);
     }
 
-    private static File getFrontendGeneratedFolder(File frontendDirectory) {
+    public static File getFrontendGeneratedFolder(File frontendDirectory) {
         return new File(frontendDirectory, GENERATED);
     }
 
@@ -666,10 +654,15 @@ public class FrontendUtils {
      * @return {@link #DEFAULT_FRONTEND_DIR} or value of
      *         {@link #PARAM_FRONTEND_DIR} if it is set.
      */
-    public static String getProjectFrontendDir(
-            DeploymentConfiguration configuration) {
-        return configuration.getStringProperty(PARAM_FRONTEND_DIR,
-                DEFAULT_FRONTEND_DIR);
+    public static File getProjectFrontendDir(
+            AbstractConfiguration configuration) {
+        String propertyValue = configuration
+                .getStringProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
+        File f = new File(propertyValue);
+        if (f.isAbsolute()) {
+            return f;
+        }
+        return new File(configuration.getProjectFolder(), propertyValue);
     }
 
     /**
@@ -1179,165 +1172,6 @@ public class FrontendUtils {
         }
 
         return mapping;
-    }
-
-    /**
-     * Finds the given file inside the current development bundle.
-     * <p>
-     *
-     * @param projectDir
-     *            the project root folder
-     * @param filename
-     *            the file name inside the bundle
-     * @return a URL referring to the file inside the bundle or {@code null} if
-     *         the file was not found
-     */
-    public static URL findBundleFile(File projectDir, String filename)
-            throws IOException {
-        File devBundleFolder = getDevBundleFolder(projectDir);
-        if (devBundleFolder.exists()) {
-            // Has an application bundle
-            File bundleFile = new File(devBundleFolder, filename);
-            if (bundleFile.exists()) {
-                return bundleFile.toURI().toURL();
-            }
-        }
-        return TaskRunDevBundleBuild.class.getClassLoader()
-                .getResource(DEV_BUNDLE_JAR_PATH + filename);
-    }
-
-    /**
-     * Get the folder where an application specific bundle is stored.
-     *
-     * @param projectDir
-     *            the project base directory
-     * @return the bundle directory
-     */
-    public static File getDevBundleFolder(File projectDir) {
-        return new File(projectDir, Constants.DEV_BUNDLE_LOCATION);
-    }
-
-    /**
-     * Get the stats.json for the application specific development bundle.
-     *
-     * @param projectDir
-     *            the project base directory
-     * @return stats.json content or {@code null} if not found
-     * @throws IOException
-     *             if an I/O exception occurs.
-     */
-    public static String findBundleStatsJson(File projectDir)
-            throws IOException {
-        URL statsJson = findBundleFile(projectDir, "config/stats.json");
-        if (statsJson == null) {
-            getLogger().warn(
-                    "There is no dev-bundle in the project or on the classpath nor is there a default bundle included.");
-            return null;
-        }
-
-        return IOUtils.toString(statsJson, StandardCharsets.UTF_8);
-    }
-
-    /**
-     * Gets the custom theme name if the custom theme is used in the project.
-     * <p>
-     * Should be only used in the development mode.
-     *
-     * @param projectFolder
-     *            the project root folder
-     * @return custom theme name or empty optional if no theme is used
-     * @throws IOException
-     *             if I/O exceptions occur while trying to extract the theme
-     *             name.
-     */
-    public static Optional<String> getThemeName(File projectFolder)
-            throws IOException {
-        File themeJs = new File(projectFolder, FrontendUtils.FRONTEND
-                + FrontendUtils.GENERATED + FrontendUtils.THEME_IMPORTS_NAME);
-
-        if (!themeJs.exists()) {
-            return Optional.empty();
-        }
-
-        String themeJsContent = FileUtils.readFileToString(themeJs,
-                StandardCharsets.UTF_8);
-        Matcher matcher = THEME_GENERATED_FILE_PATTERN.matcher(themeJsContent);
-        if (matcher.find()) {
-            return Optional.of(matcher.group(1));
-        } else {
-            throw new IllegalStateException(
-                    "Couldn't extract theme name from theme imports file 'theme.js'");
-        }
-    }
-
-    /**
-     * Gets the theme annotation for the project.
-     *
-     * @param context
-     *            the Vaadin context
-     * @return the theme annotation or an empty optional
-     */
-    public static Optional<Theme> getThemeAnnotation(VaadinContext context) {
-        AppShellRegistry registry = AppShellRegistry.getInstance(context);
-        Class<? extends AppShellConfigurator> shell = registry.getShell();
-        if (shell == null) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(shell.getAnnotation(Theme.class));
-    }
-
-    public static Optional<JsonObject> getThemeJsonInFrontend(
-            File frontendFolder, String themeName) throws IOException {
-        File themeJsonFile = Path.of(frontendFolder.getAbsolutePath(),
-                Constants.APPLICATION_THEME_ROOT, themeName, "theme.json")
-                .toFile();
-        if (themeJsonFile.exists()) {
-            String content = FileUtils.readFileToString(themeJsonFile,
-                    StandardCharsets.UTF_8);
-            content = content.replaceAll("\\r\\n", "\n");
-            return Optional.of(Json.parse(content));
-        }
-        return Optional.empty();
-    }
-
-    public static Optional<JsonObject> getThemeJsonInFrontend(Options options,
-            ThemeDefinition themeDefinition) throws IOException {
-        if (themeDefinition != null) {
-            String themeName = themeDefinition.getName();
-            return getThemeJsonInFrontend(options.getFrontendDirectory(),
-                    themeName);
-        }
-        return Optional.empty();
-    }
-
-    public static Optional<String> getParentThemeNameInFrontend(
-            File frontendFolder, JsonObject themeJson) {
-        if (themeJson != null) {
-            if (themeJson.hasKey("parent")) {
-                String parentThemeName = themeJson.getString("parent");
-                File parentThemeFolder = Path
-                        .of(frontendFolder.getAbsolutePath(),
-                                Constants.APPLICATION_THEME_ROOT,
-                                parentThemeName)
-                        .toFile();
-                if (parentThemeFolder.exists()) {
-                    return Optional.of(parentThemeName);
-                }
-            }
-        }
-        return Optional.empty();
-    }
-
-    public static Optional<String> getParentThemeNameInFrontend(
-            File frontendFolder, String projectCustomThemeName)
-            throws IOException {
-        Optional<JsonObject> themeJson = getThemeJsonInFrontend(frontendFolder,
-                projectCustomThemeName);
-        if (themeJson.isPresent()) {
-            return getParentThemeNameInFrontend(frontendFolder,
-                    themeJson.get());
-        }
-        return Optional.empty();
     }
 
 }

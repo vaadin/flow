@@ -65,6 +65,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
         return Stream.concat(Stream.of(
                 "com\\.vaadin\\.flow\\.spring\\.ForwardingRequestWrapper",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties\\$Pnpm",
+                "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties\\$Frontend",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinScanPackagesRegistrar",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinScanPackagesRegistrar\\$VaadinScanPackages",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinServletContextInitializer",

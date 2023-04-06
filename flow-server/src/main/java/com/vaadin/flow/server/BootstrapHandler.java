@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -85,7 +86,9 @@ import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
+import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -1596,7 +1599,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     protected static void addJavaScriptEntryPoints(
             DeploymentConfiguration config, Document targetDocument)
             throws IOException {
-        URL statsJsonUrl = FrontendUtils
+        URL statsJsonUrl = DevBundleUtils
                 .findBundleFile(config.getProjectFolder(), "config/stats.json");
         Objects.requireNonNull(statsJsonUrl,
                 "Frontend development bundle is expected to be in the project"
@@ -1621,8 +1624,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      */
     protected static Collection<Element> getStylesheetTags(
             AbstractConfiguration config, String fileName) throws IOException {
-        return getStylesheetReferences(config, fileName,
-                BootstrapHandler::getLinkTagWithStyleRef);
+        return ThemeUtils.getActiveThemes(config).stream()
+                .map(theme -> getLinkTagWithStyleRef(theme, fileName)).toList();
     }
 
     /**
@@ -1640,65 +1643,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      */
     protected static Collection<String> getStylesheetLinks(
             AbstractConfiguration config, String fileName) throws IOException {
-        return getStylesheetReferences(config, fileName,
-                BootstrapHandler::getThemeFilePath);
-    }
-
-    private static <T> Collection<T> getStylesheetReferences(
-            AbstractConfiguration config, String fileName,
-            SerializableBiFunction<String, String, T> referenceProvider)
-            throws IOException {
-        List<T> references = new ArrayList<>();
-
-        Optional<String> themeName = FrontendUtils
-                .getThemeName(config.getProjectFolder());
-
-        if (themeName.isEmpty()) {
-            getLogger().debug("Found no custom theme in the project. "
-                    + "Skipping adding a link tag for custom theme stylesheets.");
-            return references;
-        }
-
-        // First check if project has a packaged themes and add a link if any
-        File frontendFolder = new File(config.getProjectFolder(),
-                FrontendUtils.FRONTEND);
-        File jarResourcesFolder = FrontendUtils
-                .getJarResourcesFolder(frontendFolder);
-        File packagedThemesFolder = new File(jarResourcesFolder,
-                Constants.APPLICATION_THEME_ROOT);
-
-        boolean projectCustomThemeAdded = false;
-        if (packagedThemesFolder.exists()) {
-            for (File themeFolder : Objects.requireNonNull(
-                    packagedThemesFolder.listFiles(File::isDirectory),
-                    "Expected at least one theme in the front-end generated themes folder")) {
-                String packagedThemeName = themeFolder.getName();
-                projectCustomThemeAdded = projectCustomThemeAdded
-                        || packagedThemeName.equals(themeName.get());
-                T reference = referenceProvider.apply(packagedThemeName,
-                        fileName);
-                references.add(reference);
-            }
-        }
-
-        // Secondly, check if a parent theme is in the project's frontend/themes
-        // folder and add a link if any
-        Optional<String> parentThemeName = FrontendUtils
-                .getParentThemeNameInFrontend(frontendFolder, themeName.get());
-        if (parentThemeName.isPresent()) {
-            T reference = referenceProvider.apply(parentThemeName.get(),
-                    fileName);
-            references.add(reference);
-        }
-
-        // Finally, add a link for the project's custom theme, if it exists
-        // and not yet added by the packaged themes loop
-        if (!projectCustomThemeAdded) {
-            T reference = referenceProvider.apply(themeName.get(), fileName);
-            references.add(reference);
-        }
-
-        return references;
+        return ThemeUtils.getActiveThemes(config).stream()
+                .map(theme -> getThemeFilePath(theme, fileName)).toList();
     }
 
     private static String getThemeFilePath(String themeName, String fileName) {

@@ -115,7 +115,7 @@ public class FrontendLiveReloadView extends AbstractLiveReloadView
     }
 
     private static File getFrontendFile(VaadinService vaadinService) {
-        final String projectFrontendDir = FrontendUtils.getProjectFrontendDir(
+        final File projectFrontendDir = FrontendUtils.getProjectFrontendDir(
                 vaadinService.getDeploymentConfiguration());
         return new File(projectFrontendDir, FRONTEND_FILE);
     }

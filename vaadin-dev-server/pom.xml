@@ -40,6 +40,17 @@
             <artifactId>javaparser-core</artifactId>
             <version>3.24.10</version>
         </dependency>
+        <dependency>
+            <groupId>io.methvin</groupId>
+            <artifactId>directory-watcher</artifactId>
+            <version>0.18.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.java.dev.jna</groupId>
+                    <artifactId>jna</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <!-- API dependencies -->
 
@@ -115,6 +126,19 @@
                             <arguments>
                                 <argument>run</argument>
                                 <argument>build</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>run-tests</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>test</argument>
                             </arguments>
                         </configuration>
                     </execution>

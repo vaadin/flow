@@ -14,7 +14,7 @@ export class ScopeChangeEvent extends CustomEvent<{ value: ThemeScope }> {
 injectGlobalCss(css`
   vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector'] {
     --lumo-primary-color-50pct: rgba(255, 255, 255, 0.5);
-    z-index: 100000;
+    z-index: 100000 !important;
   }
 
   vaadin-select-overlay[theme~='vaadin-dev-tools-theme-scope-selector']::part(overlay) {

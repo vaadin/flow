@@ -49,6 +49,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
@@ -99,9 +100,18 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (service.getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
             includeInitialUidl(initialJson, session, request, response);
-
+            UI ui = UI.getCurrent();
+            var flowContainerElement = new Element(
+                    ui.getInternals().getContainerTag());
+            flowContainerElement.attr("id", ui.getInternals().getAppId());
+            Elements outlet = indexDocument.body().select("#outlet");
+            if (!outlet.isEmpty()) {
+                outlet.first().appendChild(flowContainerElement);
+            } else {
+                indexDocument.body().appendChild(flowContainerElement);
+            }
             indexHtmlResponse = new IndexHtmlResponse(request, response,
-                    indexDocument, UI.getCurrent());
+                    indexDocument, ui);
         } else {
             indexHtmlResponse = new IndexHtmlResponse(request, response,
                     indexDocument);
@@ -186,9 +196,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private void applyThemeVariant(Document indexDocument,
             VaadinContext context) throws IOException {
-        FrontendUtils.getThemeAnnotation(context)
-                .ifPresent(theme -> indexDocument.head().parent().attr("theme",
-                        theme.variant()));
+        ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> indexDocument
+                .head().parent().attr("theme", theme.variant()));
     }
 
     private void addStyleTagReferences(Document indexDocument) {

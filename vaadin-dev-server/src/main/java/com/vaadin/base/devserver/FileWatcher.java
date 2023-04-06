@@ -16,22 +16,20 @@
 package com.vaadin.base.devserver;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Objects;
 
-import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
-import org.apache.commons.io.monitor.FileAlterationMonitor;
-import org.apache.commons.io.monitor.FileAlterationObserver;
-
 import com.vaadin.flow.function.SerializableConsumer;
+
+import io.methvin.watcher.DirectoryWatcher;
 
 /**
  * Watches for the file or sub-directory changes in the given directory.
  */
 public class FileWatcher implements Serializable {
-    private static final long DEFAULT_TIMEOUT = 1000;
-    private final FileAlterationMonitor monitor;
-    private long timeout = DEFAULT_TIMEOUT;
+
+    private DirectoryWatcher watcher;
 
     /**
      * Creates an instance of the file watcher for the given directory.
@@ -45,18 +43,18 @@ public class FileWatcher implements Serializable {
      *            to be called when any change detected
      * @param watchDirectory
      *            the directory to watch for changes, cannot be empty
+     * @throws IOException
      */
     public FileWatcher(SerializableConsumer<File> onChangeConsumer,
-            File watchDirectory) {
+            File watchDirectory) throws IOException {
         Objects.requireNonNull(watchDirectory,
                 "Watch directory cannot be null");
         Objects.requireNonNull(onChangeConsumer,
                 "Change listener cannot be null");
-        FileAlterationObserver observer = new FileAlterationObserver(
-                watchDirectory, file -> true);
-        observer.addListener(new DefaultFileListener(onChangeConsumer));
-        monitor = new FileAlterationMonitor(timeout);
-        monitor.addObserver(observer);
+        watcher = DirectoryWatcher.builder().path(watchDirectory.toPath())
+                .listener(e -> {
+                    onChangeConsumer.accept(e.path().toFile());
+                }).build();
     }
 
     /**
@@ -66,7 +64,7 @@ public class FileWatcher implements Serializable {
      *             if an error occurs during startup
      */
     public void start() throws Exception {
-        monitor.start();
+        watcher.watchAsync();
     }
 
     /**
@@ -76,41 +74,7 @@ public class FileWatcher implements Serializable {
      *             if an error occurs during stop
      */
     public void stop() throws Exception {
-        monitor.stop();
+        watcher.close();
     }
 
-    /**
-     * Default file change listener which triggers the callback only when file
-     * or directory is changed/deleted.
-     */
-    private static final class DefaultFileListener
-            extends FileAlterationListenerAdaptor implements Serializable {
-
-        private final SerializableConsumer<File> onChangeConsumer;
-
-        public DefaultFileListener(
-                SerializableConsumer<File> onChangeConsumer) {
-            this.onChangeConsumer = onChangeConsumer;
-        }
-
-        @Override
-        public void onDirectoryChange(File directory) {
-            onChangeConsumer.accept(directory);
-        }
-
-        @Override
-        public void onDirectoryDelete(File directory) {
-            onChangeConsumer.accept(directory);
-        }
-
-        @Override
-        public void onFileChange(File file) {
-            onChangeConsumer.accept(file);
-        }
-
-        @Override
-        public void onFileDelete(File file) {
-            onChangeConsumer.accept(file);
-        }
-    }
 }
