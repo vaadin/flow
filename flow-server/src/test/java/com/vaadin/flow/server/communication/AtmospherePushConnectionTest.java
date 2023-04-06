@@ -23,8 +23,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
@@ -103,11 +104,13 @@ public class AtmospherePushConnectionTest {
                     connection.push();
                     return null;
                 });
+                latch.countDown();
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
-            } finally {
-                latch.countDown();
             }
+        }).exceptionally(error -> {
+            error.printStackTrace();
+            return null;
         });
         connection.disconnect();
         Assert.assertTrue("AtmospherePushConnection not disconnected",
@@ -126,16 +129,22 @@ public class AtmospherePushConnectionTest {
                     CompletableFuture.runAsync(() -> {
                         connection.disconnect();
                         latch.countDown();
+                    }).exceptionally(error -> {
+                        error.printStackTrace();
+                        return null;
                     });
                     connection.push();
                     return null;
                 });
+                latch.countDown();
             } catch (Throwable ex) {
                 throw new RuntimeException(ex);
-            } finally {
-                latch.countDown();
             }
+        }).exceptionally(error -> {
+            error.printStackTrace();
+            return null;
         });
+
         Assert.assertTrue("Push not completed",
                 latch.await(3, TimeUnit.SECONDS));
         Mockito.verify(broadcaster).broadcast(ArgumentMatchers.any(),
