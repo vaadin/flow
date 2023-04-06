@@ -118,15 +118,6 @@ public class ThemeUtils {
         return Optional.empty();
     }
 
-    public static Optional<JsonObject> getThemeJson(Options options,
-            ThemeDefinition themeDefinition) throws IOException {
-        if (themeDefinition != null) {
-            String themeName = themeDefinition.getName();
-            return getThemeJson(options.getFrontendDirectory(), themeName);
-        }
-        return Optional.empty();
-    }
-
     public static Optional<String> getParentThemeName(JsonObject themeJson) {
         if (themeJson != null) {
             if (themeJson.hasKey("parent")) {
@@ -194,7 +185,7 @@ public class ThemeUtils {
         }
 
         throw new IllegalArgumentException("The theme folder for the '"
-                + themeName + "' was not found. It should be either in "
+                + themeName + "' theme was not found. It should be either in "
                 + themeInProject + " or in +" + themeFromJar);
     }
 

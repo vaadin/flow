@@ -280,8 +280,15 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         ThemeDefinition themeDefinition = frontendDependencies
                 .getThemeDefinition();
-        Optional<JsonObject> projectThemeJson = ThemeUtils.getThemeJson(options,
-                themeDefinition);
+        if (themeDefinition == null) {
+            return true; // No theme, so it has not changed..
+        }
+        String themeName = themeDefinition.getName();
+        if (themeName == null || themeName.isEmpty()) {
+            return true; // No theme, so it has not changed..
+        }
+        Optional<JsonObject> projectThemeJson = ThemeUtils
+                .getThemeJson(options.getFrontendDirectory(), themeName);
 
         JsonObject contentsInStats = statsJson.getObject("themeJsonContents");
         if (contentsInStats == null && (!themeJsonContents.isEmpty()
