@@ -71,44 +71,50 @@ public class JavaSourceModifier extends Editor {
         assert uiId != null && nodeId != null && className != null;
         VaadinSession session = getSession();
         getSession().access(() -> {
-            try {
-                Component component = getComponent(session, uiId, nodeId);
-                ComponentTracker.Location createLocation = getCreateLocation(
-                        component);
-                File sourceFile = getSourceFile(createLocation);
-                int sourceOffset = modifyClass(sourceFile, cu -> {
-                    SimpleName scope = findLocalVariableOrField(cu,
-                            createLocation.lineNumber());
-                    Node newNode = createAddClassNameStatement(className,
-                            scope);
-                    Modification mod;
-                    ExpressionStmt stmt = findLocalClassNameStmt(cu, component);
-                    if (stmt == null) {
-                        Node node = findNode(cu, component);
-                        Where where = findModificationWhere(cu, component);
-                        mod = switch (where) {
-                        case AFTER ->
-                            Modification.insertLineAfter(node, newNode);
-                        case INSIDE ->
-                            Modification.insertAtEndOfBlock(node, newNode);
-                        case BEFORE ->
-                            Modification.insertLineBefore(node, newNode);
-                        };
-                    } else {
-                        mod = Modification.replace(stmt, newNode);
-                    }
-                    return Collections.singletonList(mod);
-                });
-
-                if (sourceOffset != 0) {
-                    ComponentTracker.refreshLocation(createLocation,
-                            sourceOffset);
-                }
-
-            } catch (UnsupportedOperationException ex) {
-                throw new ThemeEditorException(ex);
+            Component component = getComponent(session, uiId, nodeId);
+            setLocalClassName(component, className, false);
+            if (hasOverlay(component)) {
+                setLocalClassName(component, className, true);
             }
         });
+    }
+
+    protected void setLocalClassName(Component component, String className,
+            boolean overlay) {
+        try {
+            ComponentTracker.Location createLocation = getCreateLocation(
+                    component);
+            File sourceFile = getSourceFile(createLocation);
+            int sourceOffset = modifyClass(sourceFile, cu -> {
+                SimpleName scope = findLocalVariableOrField(cu,
+                        createLocation.lineNumber());
+                Node newNode = createAddClassNameStatement(scope, className,
+                        overlay);
+                Modification mod;
+                ExpressionStmt stmt = findLocalClassNameStmt(cu, component,
+                        overlay);
+                if (stmt == null) {
+                    Node node = findNode(cu, component);
+                    Where where = findModificationWhere(cu, component);
+                    mod = switch (where) {
+                    case AFTER -> Modification.insertLineAfter(node, newNode);
+                    case INSIDE ->
+                        Modification.insertAtEndOfBlock(node, newNode);
+                    case BEFORE -> Modification.insertLineBefore(node, newNode);
+                    };
+                } else {
+                    mod = Modification.replace(stmt, newNode);
+                }
+                return Collections.singletonList(mod);
+            });
+
+            if (sourceOffset != 0) {
+                ComponentTracker.refreshLocation(createLocation, sourceOffset);
+            }
+
+        } catch (UnsupportedOperationException ex) {
+            throw new ThemeEditorException(ex);
+        }
     }
 
     /**
@@ -153,7 +159,7 @@ public class JavaSourceModifier extends Editor {
                 Component component = getComponent(session, uiId, nodeId);
                 CompilationUnit cu = getCompilationUnit(component);
                 ExpressionStmt localClassNameStmt = findLocalClassNameStmt(cu,
-                        component);
+                        component, false);
                 if (localClassNameStmt != null) {
                     holder.className = localClassNameStmt.getExpression()
                             .asMethodCallExpr().getArgument(0)
@@ -176,32 +182,35 @@ public class JavaSourceModifier extends Editor {
      */
     public void removeLocalClassName(Integer uiId, Integer nodeId) {
         assert uiId != null && nodeId != null;
+        VaadinSession session = getSession();
         try {
-            VaadinSession session = getSession();
             getSession().access(() -> {
                 Component component = getComponent(session, uiId, nodeId);
-                ComponentTracker.Location createLocation = getCreateLocation(
-                        component);
-                File sourceFile = getSourceFile(createLocation);
-                int sourceOffset = modifyClass(sourceFile, cu -> {
-                    ExpressionStmt localClassNameStmt = findLocalClassNameStmt(
-                            cu, component);
-                    if (localClassNameStmt != null) {
-                        return Collections.singletonList(
-                                Modification.remove(localClassNameStmt));
-                    }
-                    throw new ThemeEditorException(
-                            "Local classname not present.");
-                });
-
-                if (sourceOffset != 0) {
-                    ComponentTracker.refreshLocation(createLocation,
-                            sourceOffset);
+                removeLocalClassName(component, false);
+                if (hasOverlay(component)) {
+                    removeLocalClassName(component, true);
                 }
-
             }).get(5, TimeUnit.SECONDS);
         } catch (Exception e) {
             throw new ThemeEditorException("Cannot remove local classname.", e);
+        }
+    }
+
+    public void removeLocalClassName(Component component, boolean overlay) {
+        ComponentTracker.Location createLocation = getCreateLocation(component);
+        File sourceFile = getSourceFile(createLocation);
+        int sourceOffset = modifyClass(sourceFile, cu -> {
+            ExpressionStmt localClassNameStmt = findLocalClassNameStmt(cu,
+                    component, overlay);
+            if (localClassNameStmt != null) {
+                return Collections
+                        .singletonList(Modification.remove(localClassNameStmt));
+            }
+            throw new ThemeEditorException("Local classname not present.");
+        });
+
+        if (sourceOffset != 0) {
+            ComponentTracker.refreshLocation(createLocation, sourceOffset);
         }
     }
 
@@ -301,9 +310,10 @@ public class JavaSourceModifier extends Editor {
                 Arrays.copyOf(splitted, splitted.length - 1)).toFile();
     }
 
-    protected Statement createAddClassNameStatement(String className,
-            SimpleName scope) {
-        MethodCallExpr methodCallExpr = new MethodCallExpr("addClassName");
+    protected Statement createAddClassNameStatement(SimpleName scope,
+            String className, boolean overlay) {
+        MethodCallExpr methodCallExpr = new MethodCallExpr(
+                overlay ? "setOverlayClassName" : "addClassName");
         if (scope != null) {
             methodCallExpr.setScope(new NameExpr(scope));
         }
@@ -338,11 +348,11 @@ public class JavaSourceModifier extends Editor {
     }
 
     protected ExpressionStmt findLocalClassNameStmt(CompilationUnit cu,
-            Component component) {
+            Component component, boolean overlay) {
         ComponentTracker.Location createLocation = getCreateLocation(component);
         SimpleName scope = findLocalVariableOrField(cu,
                 createLocation.lineNumber());
-        return cu.accept(new LocalClassNameVisitor(),
+        return cu.accept(new LocalClassNameVisitor(overlay),
                 scope != null ? scope.getIdentifier() : null);
     }
 
@@ -368,6 +378,16 @@ public class JavaSourceModifier extends Editor {
             throw new ThemeEditorException("Cannot find component.");
         }
         return node;
+    }
+
+    protected boolean hasOverlay(Component component) {
+        try {
+            // HasOverlayClassName interface is not part of flow-server
+            component.getClass().getMethod("setOverlayClassName", String.class);
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
     }
 
     private static Logger getLogger() {

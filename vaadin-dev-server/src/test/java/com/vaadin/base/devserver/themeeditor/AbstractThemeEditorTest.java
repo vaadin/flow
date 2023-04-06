@@ -94,11 +94,25 @@ public abstract class AbstractThemeEditorTest {
 
     protected VaadinContext mockContext = new MockVaadinContext();
 
+    // mocking HasOverlayClassName from flow-compontents
+    protected static class SpanWithOverlay extends Span {
+        public SpanWithOverlay(String text) {
+            super(text);
+        }
+
+        public void setOverlayClassName(String overlayClassName) {
+            // NOP
+        }
+    }
+
     protected class MockVaadinSession extends VaadinSession {
 
         protected static Span pickedComponent = new Span("test");
 
         protected static Span pickedComponent2 = new Span("test");
+
+        protected static SpanWithOverlay pickedComponent3 = new SpanWithOverlay(
+                "test");
 
         public MockVaadinSession(VaadinService service) {
             super(service);
@@ -114,10 +128,11 @@ public abstract class AbstractThemeEditorTest {
         @Override
         public Element findElement(int uiId, int nodeId)
                 throws IllegalArgumentException {
-            if (nodeId == 1) {
-                return pickedComponent2.getElement();
-            }
-            return pickedComponent.getElement();
+            return switch (nodeId) {
+            case 2 -> pickedComponent3.getElement();
+            case 1 -> pickedComponent2.getElement();
+            default -> pickedComponent.getElement();
+            };
         }
     }
 
@@ -177,10 +192,11 @@ public abstract class AbstractThemeEditorTest {
                     "org.vaadin.example.TestView", "TestView.java", "TestView",
                     createLine);
 
-            createMap.put(
-                    nodeId == 1 ? MockVaadinSession.pickedComponent2
-                            : MockVaadinSession.pickedComponent,
-                    createLocation);
+            createMap.put(switch (nodeId) {
+            case 1 -> MockVaadinSession.pickedComponent2;
+            case 2 -> MockVaadinSession.pickedComponent3;
+            default -> MockVaadinSession.pickedComponent;
+            }, createLocation);
 
             Field attachLocationField = ComponentTracker.class
                     .getDeclaredField("attachLocation");
@@ -192,10 +208,11 @@ public abstract class AbstractThemeEditorTest {
                     "org.vaadin.example.TestView", "TestView.java", "TestView",
                     attachLine);
 
-            attachMap.put(
-                    nodeId == 1 ? MockVaadinSession.pickedComponent2
-                            : MockVaadinSession.pickedComponent,
-                    attachLocation);
+            attachMap.put(switch (nodeId) {
+            case 1 -> MockVaadinSession.pickedComponent2;
+            case 2 -> MockVaadinSession.pickedComponent3;
+            default -> MockVaadinSession.pickedComponent;
+            }, attachLocation);
         } catch (Exception ex) {
 
         }

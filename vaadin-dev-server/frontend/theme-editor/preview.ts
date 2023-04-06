@@ -20,10 +20,14 @@ class ThemePreview {
     const previousClassName = this._localClassNameMap.get(element);
     if (previousClassName) {
       element.classList.remove(previousClassName);
+      (element as any).overlayClass = null;
     }
     // Update class name
     if (className) {
       element.classList.add(className);
+      // Also set classname as overlay class in case the component has an
+      // overlay. Should not do any harm if the component doesn't have one.
+      (element as any).overlayClass = className;
       this._localClassNameMap.set(element, className);
     } else {
       this._localClassNameMap.delete(element);
