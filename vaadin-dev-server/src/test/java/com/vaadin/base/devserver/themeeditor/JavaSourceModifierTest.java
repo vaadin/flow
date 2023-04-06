@@ -121,30 +121,30 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
     @Test
     public void localClassName_set_get_remove_replace_suggest() {
         prepareComponentTracker(0, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
-        testLocalClassName(0);
+        testLocalClassName(0, null);
     }
 
     @Test
     public void localClassName_constructor_set_get_remove_replace_suggest() {
         prepareComponentTracker(0, TESTVIEW_CREATE_AND_ATTACH,
                 TESTVIEW_CREATE_AND_ATTACH);
-        testLocalClassName(0);
+        testLocalClassName(0, null);
     }
 
     @Test
     public void localClassName_overlay_set_get_remove_replace_suggest() {
         prepareComponentTracker(2, TEXTFIELD_CREATE, TEXTFIELD_ATTACH);
-        testLocalClassName(2);
+        testLocalClassName(2, "textField.");
     }
 
     @Test
     public void localClassName_overlay_constructor_set_get_remove_replace_suggest() {
         prepareComponentTracker(2, TESTVIEW_CREATE_AND_ATTACH,
                 TESTVIEW_CREATE_AND_ATTACH);
-        testLocalClassName(2);
+        testLocalClassName(2, "");
     }
 
-    private void testLocalClassName(int nodeId) {
+    private void testLocalClassName(int nodeId, String overlayScope) {
         JavaSourceModifier modifier = new TestJavaSourceModifier();
 
         // local classname does not exist
@@ -156,6 +156,12 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         localClassName = modifier.getLocalClassName(0, nodeId);
         Assert.assertNotNull(localClassName);
         Assert.assertEquals("test-name", localClassName);
+
+        // check overlay
+        if (overlayScope != null) {
+            assertContainsLine(
+                    overlayScope + "setOverlayClassName(\"test-name\");");
+        }
 
         // remove local classname
         modifier.removeLocalClassName(0, nodeId);
@@ -178,6 +184,12 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         Assert.assertNotNull(localClassName);
         Assert.assertEquals(suggestedClassName, localClassName);
 
+        // check overlay
+        if (overlayScope != null) {
+            assertContainsLine(overlayScope + "setOverlayClassName(\""
+                    + suggestedClassName + "\");");
+        }
+
         // suggest new classname
         suggestedClassName = modifier.getSuggestedClassName(0, nodeId);
         Assert.assertNotNull(suggestedClassName);
@@ -188,6 +200,12 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
         localClassName = modifier.getLocalClassName(0, nodeId);
         Assert.assertNotNull(localClassName);
         Assert.assertEquals(suggestedClassName, localClassName);
+
+        // check overlay
+        if (overlayScope != null) {
+            assertContainsLine(overlayScope + "setOverlayClassName(\""
+                    + suggestedClassName + "\");");
+        }
 
         // remove local classname
         modifier.removeLocalClassName(0, nodeId);
@@ -219,6 +237,17 @@ public class JavaSourceModifierTest extends AbstractThemeEditorTest {
             String expected = readFile(new File(javaFolder, expectedFile));
             String current = readFile(new File(javaFolder, "TestView.java"));
             Assert.assertEquals(expected, current);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void assertContainsLine(String line) {
+        File javaFolder = TestUtils.getTestFolder("java/org/vaadin/example");
+        File file = new File(javaFolder, "TestView.java");
+        try (Reader fileReader = new FileReader(file);
+                BufferedReader br = new BufferedReader(fileReader)) {
+            Assert.assertTrue(br.lines().anyMatch(l -> l.trim().equals(line)));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
