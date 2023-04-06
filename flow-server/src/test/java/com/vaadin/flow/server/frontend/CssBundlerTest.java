@@ -15,13 +15,11 @@ public class CssBundlerTest {
     private static final String TEST_CSS = "body {background: blue};";
     private File themesFolder;
     private File themeFolder;
-    private String themeName;
 
     @Before
     public void setup() throws IOException {
         themesFolder = Files.createTempDirectory("cssbundlertest").toFile();
-        themeName = "my-theme";
-        themeFolder = new File(themesFolder, themeName);
+        themeFolder = new File(themesFolder, "my-theme");
     }
 
     @Test
@@ -67,26 +65,48 @@ public class CssBundlerTest {
     }
 
     @Test
-    public void relativeImagesRewritten() throws IOException {
+    public void relativeUrlsRewritten() throws IOException {
         writeCss("background-image: url('foo/bar.png');", "styles.css");
         createThemeFile("foo/bar.png");
 
         Assert.assertEquals(
-                "background-image: url('VAADIN/themes/" + themeName
-                        + "/foo/bar.png');",
+                "background-image: url('VAADIN/themes/my-theme/foo/bar.png');",
                 CssBundler.inlineImports(themeFolder,
                         getThemeFile("styles.css")));
     }
 
     @Test
-    public void relativeImagesInSubFolderRewritten() throws IOException {
+    public void relativeUrlsWithExtraInfoRewritten() throws IOException {
+        writeCss(
+                """
+                        @font-face {
+                            font-family: "Ostrich";
+                            src: url("./fonts/ostrich-sans-regular.ttf") format("TrueType");
+                        }
+                        """,
+                "styles.css");
+        createThemeFile("fonts/ostrich-sans-regular.ttf");
+
+        Assert.assertEquals(
+                """
+                                                   @font-face {
+                            font-family: "Ostrich";
+                            src: url('VAADIN/themes/my-theme/fonts/ostrich-sans-regular.ttf') format("TrueType");
+                        }"""
+                        .trim(),
+                CssBundler
+                        .inlineImports(themeFolder, getThemeFile("styles.css"))
+                        .trim());
+    }
+
+    @Test
+    public void relativeUrlsInSubFolderRewritten() throws IOException {
         writeCss("@import url('sub/sub.css');", "styles.css");
         writeCss("background-image: url('./file.png');", "sub/sub.css");
         createThemeFile("sub/file.png");
 
         Assert.assertEquals(
-                "background-image: url('VAADIN/themes/" + themeName
-                        + "/sub/file.png');",
+                "background-image: url('VAADIN/themes/my-theme/sub/file.png');",
                 CssBundler.inlineImports(themeFolder,
                         getThemeFile("styles.css")));
     }

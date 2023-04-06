@@ -3,7 +3,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,7 +15,7 @@ public class CssBundler {
 
     private static final String WHITE_SPACE = "\\s*";
 
-    private static final String STRING = "(.*)";
+    private static final String STRING = "(.*?)";
 
     private static final String CSS_STRING = "('" + STRING + "'|\"" + STRING
             + "\"|" + STRING + ")";
@@ -50,7 +49,7 @@ public class CssBundler {
             .compile("@import" + WHITE_SPACE + URL_OR_STRING
                     + MAYBE_LAYER_OR_MEDIA_QUERY + WHITE_SPACE + ";");
 
-    private static Pattern urlPattern = Pattern.compile(URL + ";");
+    private static Pattern urlPattern = Pattern.compile(URL);
 
     public static String inlineImports(File themeFolder, File cssFile)
             throws IOException {
@@ -78,7 +77,7 @@ public class CssBundler {
                 // folder
                 String relativePath = themeFolder.getParentFile().toPath()
                         .relativize(potentialFile.toPath()).toString();
-                return "url('VAADIN/themes/" + relativePath + "');";
+                return "url('VAADIN/themes/" + relativePath + "')";
             }
 
             return urlMatcher.group();
