@@ -28,6 +28,7 @@ import { injectGlobalCss } from './styles';
 import { ComponentMetadata } from './metadata/model';
 import { ClassNameChangeEvent } from './components/class-name-editor';
 import { OpenCssEvent } from './components/property-list';
+import { ServerInfo } from '../vaadin-dev-tools';
 
 injectGlobalCss(css`
   .vaadin-theme-editor-highlight {
@@ -48,6 +49,8 @@ export class ThemeEditor extends LitElement {
   public connection!: Connection;
   private api!: ThemeEditorApi;
   private history!: ThemeEditorHistory;
+  @property({})
+  public serverInfo!: ServerInfo;
   @state()
   private historyActions?: ThemeEditorHistoryActions;
 
@@ -206,6 +209,11 @@ export class ThemeEditor extends LitElement {
         this.removeElementHighlight(this.context?.component.element);
       }
     }
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.pushStatistics();
   }
 
   disconnectedCallback() {
@@ -597,6 +605,16 @@ export class ThemeEditor extends LitElement {
   private removeElementHighlight(element?: HTMLElement) {
     if (element) {
       element.classList.remove('vaadin-theme-editor-highlight');
+    }
+  }
+
+  private pushStatistics() {
+    const registrations = window.Vaadin.registrations;
+    if (registrations !== undefined && this.serverInfo !== undefined) {
+      const registrationId = 'flow/ThemeEditor';
+      if (registrations.find((p) => p.is == registrationId) == undefined) {
+        registrations.push({ is: registrationId, version: this.serverInfo.flowVersion });
+      }
     }
   }
 }

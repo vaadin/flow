@@ -14,7 +14,7 @@ import { licenseCheckFailed, licenseInit, Product } from './License';
 import { Connection, ConnectionStatus } from './connection';
 import { popupStyles } from './styles';
 
-interface ServerInfo {
+export interface ServerInfo {
   vaadinVersion: string;
   flowVersion: string;
   javaVersion: string;
@@ -1532,6 +1532,7 @@ export class VaadinDevTools extends LitElement {
       .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
       .connection=${this.frontendConnection}
+      .serverInfo=${this.serverInfo}
       @before-save=${this.disableLiveReloadTemporarily}
     ></vaadin-dev-tools-theme-editor>`;
   }
