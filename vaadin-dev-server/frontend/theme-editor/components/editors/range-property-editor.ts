@@ -1,7 +1,7 @@
 import { css, html, PropertyValues, TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { icons } from '../../icons';
+//import { icons } from '../../icons';
 import { BasePropertyEditor, PropertyPresets, TextInputChangeEvent } from './base-property-editor';
 
 @customElement('vaadin-dev-tools-theme-range-property-editor')
@@ -131,13 +131,13 @@ export class RangePropertyEditor extends BasePropertyEditor {
       'slider-wrapper': true,
       'custom-value': this.selectedPresetIndex < 0
     };
-    const iconName = this.propertyMetadata.icon;
-    const icon = iconName ? (icons as any)[iconName] : null;
+    //const iconName = this.propertyMetadata.icon;
+    //const icon = iconName ? (icons as any)[iconName] : null;
     const presetCount = this.presets.values.length;
 
     return html`
       <div class=${classMap(sliderWrapperClasses)}>
-        ${icon ? html` <div class="icon prefix">${icon}</div>` : null}
+        ${null /*icon ? html` <div class="icon prefix">${icon}</div>` : null*/}
         <input
           type="range"
           class="slider"
@@ -149,7 +149,7 @@ export class RangePropertyEditor extends BasePropertyEditor {
           @input=${this.handleSliderInput}
           @change=${this.handleSliderChange}
         />
-        ${icon ? html` <div class="icon suffix">${icon}</div>` : null}
+        ${null /*icon ? html` <div class="icon suffix">${icon}</div>` : null*/}
       </div>
       <vaadin-dev-tools-theme-text-input
         class="input"
