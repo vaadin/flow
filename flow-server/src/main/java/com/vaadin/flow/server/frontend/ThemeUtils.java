@@ -192,7 +192,7 @@ public class ThemeUtils {
 
         throw new IllegalArgumentException("The theme folder for the '"
                 + themeName + "' theme was not found. It should be either in "
-                + themeInProject + " or in +" + themeFromJar);
+                + themeInProject + " or in " + themeFromJar);
     }
 
     private static void findActiveThemes(String themeName, List<String> themes,
