@@ -54,8 +54,8 @@ public class AtmospherePushConnection implements PushConnection {
     private transient AtmosphereResource resource;
     private transient FragmentedMessage incomingMessage;
     private transient Future<Object> outgoingMessage;
-
     private transient Object lock = new Object();
+    private volatile boolean disconnecting;
 
     /**
      * Represents a message that can arrive as multiple fragments.
@@ -311,8 +311,6 @@ public class AtmospherePushConnection implements PushConnection {
     protected AtmosphereResource getResource() {
         return resource;
     }
-
-    private volatile boolean disconnecting;
 
     @Override
     public void disconnect() {
