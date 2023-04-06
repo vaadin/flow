@@ -1,5 +1,6 @@
 import { ComponentMetadata, EditorType } from '../model';
 import { presets } from './presets';
+import { shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-avatar',
@@ -9,6 +10,9 @@ export default {
       selector: 'vaadin-avatar',
       displayName: 'Host',
       properties: [
+        shapeProperties.backgroundColor,
+        shapeProperties.borderColor,
+        shapeProperties.borderWidth,
         {
           propertyName: '--vaadin-avatar-size',
           displayName: 'Size',
@@ -17,6 +21,11 @@ export default {
           icon: 'square'
         }
       ]
+    },
+    {
+      selector: 'vaadin-avatar::part(abbr)',
+      displayName: 'Abbreviation',
+      properties: [textProperties.textColor, textProperties.fontWeight]
     }
   ]
 } as ComponentMetadata;
