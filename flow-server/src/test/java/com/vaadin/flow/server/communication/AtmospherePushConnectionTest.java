@@ -28,6 +28,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -41,6 +42,36 @@ import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
  * @since 1.0
  */
 public class AtmospherePushConnectionTest {
+
+    private MockVaadinSession vaadinSession;
+    private Broadcaster broadcaster;
+    private AtmosphereResource resource;
+    private AtmospherePushConnection connection;
+
+    @Before
+    public void setup() throws Exception {
+        UI ui = Mockito.spy(new UI());
+        vaadinSession = new MockVaadinSession();
+        Mockito.when(ui.getSession()).thenReturn(vaadinSession);
+        broadcaster = Mockito.mock(Broadcaster.class);
+        resource = Mockito.mock(AtmosphereResource.class);
+        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
+        Mockito.doAnswer(i -> {
+            // Introduce a small delay to hold the lock during disconnect
+            Thread.sleep(5);
+            return null;
+        }).when(resource).close();
+        Mockito.doAnswer(i -> {
+            // Introduce a small delay to hold the lock during message push
+            Thread.sleep(5);
+            return CompletableFuture.completedFuture(null);
+        }).when(broadcaster).broadcast(ArgumentMatchers.any(),
+                ArgumentMatchers.any(AtmosphereResource.class));
+
+        connection = new AtmospherePushConnection(ui);
+        connection.connect(resource);
+    }
+
     @Test
     public void testSerialization() throws Exception {
 
@@ -65,17 +96,6 @@ public class AtmospherePushConnectionTest {
     @Test
     public void pushWhileDisconnect_disconnectedWithoutSendingMessage()
             throws Exception {
-
-        UI ui = Mockito.spy(new UI());
-        MockVaadinSession vaadinSession = new MockVaadinSession();
-        Mockito.when(ui.getSession()).thenReturn(vaadinSession);
-        Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
-        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
-        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
-
-        AtmospherePushConnection connection = new AtmospherePushConnection(ui);
-        connection.connect(resource);
-
         CountDownLatch latch = new CountDownLatch(1);
         CompletableFuture.runAsync(() -> {
             try {
@@ -99,22 +119,14 @@ public class AtmospherePushConnectionTest {
     @Test
     public void disconnectWhilePush_messageSentAndThenDisconnected()
             throws Exception {
-
-        UI ui = Mockito.spy(new UI());
-        MockVaadinSession vaadinSession = new MockVaadinSession();
-        Mockito.when(ui.getSession()).thenReturn(vaadinSession);
-        Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
-        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
-        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
-
-        AtmospherePushConnection connection = new AtmospherePushConnection(ui);
-        connection.connect(resource);
-
-        CountDownLatch latch = new CountDownLatch(1);
+        CountDownLatch latch = new CountDownLatch(2);
         CompletableFuture.runAsync(() -> {
             try {
                 vaadinSession.runWithLock(() -> {
-                    CompletableFuture.runAsync(connection::disconnect);
+                    CompletableFuture.runAsync(() -> {
+                        connection.disconnect();
+                        latch.countDown();
+                    });
                     connection.push();
                     return null;
                 });
@@ -125,7 +137,7 @@ public class AtmospherePushConnectionTest {
             }
         });
         Assert.assertTrue("Push not completed",
-                latch.await(2, TimeUnit.SECONDS));
+                latch.await(3, TimeUnit.SECONDS));
         Mockito.verify(broadcaster).broadcast(ArgumentMatchers.any(),
                 ArgumentMatchers.eq(resource));
     }
@@ -133,16 +145,6 @@ public class AtmospherePushConnectionTest {
     @Test
     public void disconnect_concurrentRequests_preventDeadlocks()
             throws Exception {
-        UI ui = Mockito.spy(new UI());
-        MockVaadinSession vaadinSession = new MockVaadinSession();
-        Mockito.when(ui.getSession()).thenReturn(vaadinSession);
-        Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
-        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
-        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
-
-        AtmospherePushConnection connection = new AtmospherePushConnection(ui);
-        connection.connect(resource);
-
         // A deadlock may happen when an HTTP session is invalidated in a
         // thread, causing VaadinSession and UIs to be closed and push
         // connections to be disconnected, but a push disconnection is
@@ -171,12 +173,8 @@ public class AtmospherePushConnectionTest {
             // accesses session attributes
             // It does not wait indefinitely, but triggers an error if the lock
             // is held by the main thread
-            System.out.println("Atmosphere resource : locking session...");
             if (sessionLock.tryLock(2, TimeUnit.SECONDS)) {
-                System.out.println("Atmosphere resource : session locked");
                 sessionLock.unlock();
-                System.out
-                        .println("Atmosphere resource : session lock released");
             } else {
                 throw new AssertionError(
                         "Deadlock on AtmosphereResource.close");
