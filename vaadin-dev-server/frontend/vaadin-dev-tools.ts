@@ -883,7 +883,7 @@ export class VaadinDevTools extends LitElement {
       window.location.reload();
     };
     const onUpdate = (path: string, content: string) => {
-      let styleTag = document.head.querySelector(`style[data-dev-id='${path}']`);
+      let styleTag = document.head.querySelector(`style[data-file-path='${path}']`);
       if (styleTag) {
         this.log(MessageType.INFORMATION, 'Hot update of ' + path);
         styleTag.textContent = content;

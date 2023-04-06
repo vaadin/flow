@@ -1650,7 +1650,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static Element getDevModeStyleTag(String themeName,
             String fileName) {
         Element element = new Element("style");
-        element.attr("data-dev-id",
+        element.attr("data-file-path",
                 ThemeUtils.getThemeFilePath(themeName, fileName));
         File frontendDirectory = new File("frontend");
         File stylesCss = new File(
