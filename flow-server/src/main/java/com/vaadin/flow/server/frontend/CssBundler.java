@@ -35,6 +35,17 @@ public class CssBundler {
     private static final String MAYBE_LAYER_OR_MEDIA_QUERY = "(" + LAYER + "|"
             + MEDIA_QUERY + ")";
 
+    /**
+     * This regexp is based on
+     * https://developer.mozilla.org/en-US/docs/Web/CSS/@import#formal_syntax
+     * which states
+     *
+     * <pre>
+     * @import = @import [ &lt;url> | &lt;string> ] [ layer | layer( &lt;layer-name> ) ]?
+     *         &lt;import-conditions> ;
+     * </pre>
+     *
+     */
     private static Pattern urlMatcher = Pattern.compile("@import" + WHITE_SPACE
             + URL_OR_STRING + MAYBE_LAYER_OR_MEDIA_QUERY + WHITE_SPACE + ";");
 
