@@ -44,6 +44,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import jakarta.servlet.ServletContext;
@@ -260,7 +261,7 @@ public class StaticFileServer implements StaticFileHandler {
         URL resourceUrl = null;
         if (deploymentConfiguration.getMode() == Mode.DEVELOPMENT_BUNDLE) {
             if (!"/index.html".equals(filenameWithPath)) {
-                resourceUrl = FrontendUtils.findBundleFile(
+                resourceUrl = DevBundleUtils.findBundleFile(
                         deploymentConfiguration.getProjectFolder(),
                         "webapp" + filenameWithPath);
             }
@@ -364,7 +365,7 @@ public class StaticFileServer implements StaticFileHandler {
         // node_modules)
         if (assetInDevBundleUrl == null) {
             String assetInDevBundle = "/" + Constants.ASSETS + "/" + assetPath;
-            assetInDevBundleUrl = FrontendUtils.findBundleFile(projectFolder,
+            assetInDevBundleUrl = DevBundleUtils.findBundleFile(projectFolder,
                     assetInDevBundle);
         }
 

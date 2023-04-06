@@ -1,5 +1,6 @@
 import { ComponentMetadata, EditorType } from '../model';
 import { presets } from './presets';
+import { fieldProperties, shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-menu-bar',
@@ -9,30 +10,10 @@ export default {
       selector: 'vaadin-menu-bar vaadin-menu-bar-button',
       displayName: 'Buttons',
       properties: [
-        {
-          propertyName: 'background-color',
-          displayName: 'Background color',
-          editorType: EditorType.color
-        },
-        {
-          propertyName: 'border-color',
-          displayName: 'Border color',
-          editorType: EditorType.color
-        },
-        {
-          propertyName: 'border-width',
-          displayName: 'Border width',
-          editorType: EditorType.range,
-          presets: presets.basicBorderSize,
-          icon: 'square'
-        },
-        {
-          propertyName: 'border-radius',
-          displayName: 'Border radius',
-          editorType: EditorType.range,
-          presets: presets.lumoBorderRadius,
-          icon: 'square'
-        },
+        shapeProperties.backgroundColor,
+        shapeProperties.borderColor,
+        shapeProperties.borderWidth,
+        shapeProperties.borderRadius,
         {
           propertyName: '--lumo-button-size',
           displayName: 'Size',
@@ -40,101 +21,29 @@ export default {
           presets: presets.lumoSize,
           icon: 'square'
         },
-        {
-          propertyName: 'padding-inline',
-          displayName: 'Padding',
-          editorType: EditorType.range,
-          presets: presets.lumoSpace,
-          icon: 'square'
-        }
+        fieldProperties.paddingInline
       ]
     },
     {
       selector: 'vaadin-menu-bar vaadin-menu-bar-button vaadin-menu-bar-item',
       displayName: 'Button labels',
-      properties: [
-        {
-          propertyName: 'color',
-          displayName: 'Text color',
-          editorType: EditorType.color,
-          presets: presets.lumoTextColor
-        },
-        {
-          propertyName: 'font-size',
-          displayName: 'Font size',
-          editorType: EditorType.range,
-          presets: presets.lumoFontSize,
-          icon: 'font'
-        },
-        {
-          propertyName: 'font-weight',
-          displayName: 'Bold',
-          editorType: EditorType.checkbox,
-          checkedValue: 'bold'
-        }
-      ]
+      properties: [textProperties.textColor, textProperties.fontSize, textProperties.fontWeight]
     },
     {
       selector: 'vaadin-menu-bar-overlay::part(overlay)',
       displayName: 'Menus',
       properties: [
-        {
-          propertyName: 'background-color',
-          displayName: 'Background color',
-          editorType: EditorType.color
-        },
-        {
-          propertyName: 'border-color',
-          displayName: 'Border color',
-          editorType: EditorType.color
-        },
-        {
-          propertyName: 'border-width',
-          displayName: 'Border width',
-          editorType: EditorType.range,
-          presets: presets.basicBorderSize,
-          icon: 'square'
-        },
-        {
-          propertyName: 'border-radius',
-          displayName: 'Border radius',
-          editorType: EditorType.range,
-          presets: presets.lumoBorderRadius,
-          icon: 'square'
-        },
-        {
-          propertyName: 'padding',
-          displayName: 'Padding',
-          editorType: EditorType.range,
-          presets: presets.lumoSpace,
-          icon: 'square'
-        }
+        shapeProperties.backgroundColor,
+        shapeProperties.borderColor,
+        shapeProperties.borderWidth,
+        shapeProperties.borderRadius,
+        shapeProperties.padding
       ]
     },
     {
       selector: 'vaadin-menu-bar-overlay vaadin-menu-bar-item',
       displayName: 'Menu items',
-      properties: [
-        {
-          propertyName: 'color',
-          displayName: 'Text color',
-          editorType: EditorType.color,
-          presets: presets.lumoTextColor
-        },
-        {
-          propertyName: 'font-size',
-          displayName: 'Font size',
-          editorType: EditorType.range,
-          presets: presets.lumoFontSize,
-          icon: 'font'
-        },
-        {
-          propertyName: 'font-weight',
-          displayName: 'Bold',
-          editorType: EditorType.checkbox,
-          checkedValue: 'bold'
-        }
-      ]
+      properties: [textProperties.textColor, textProperties.fontSize, textProperties.fontWeight]
     }
   ],
   async setupElement(menuBar: any) {

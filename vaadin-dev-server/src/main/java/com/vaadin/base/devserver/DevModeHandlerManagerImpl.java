@@ -34,6 +34,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 
@@ -107,8 +108,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
         try {
             File projectFolder = config.getProjectFolder();
-            Optional<String> themeName = FrontendUtils
-                    .getThemeName(projectFolder);
+            Optional<String> themeName = ThemeUtils.getThemeName(projectFolder);
 
             if (themeName.isEmpty()) {
                 getLogger().debug("Found no custom theme in the project. "

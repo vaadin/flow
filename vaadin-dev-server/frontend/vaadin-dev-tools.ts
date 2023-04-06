@@ -2,8 +2,9 @@ import 'construct-style-sheets-polyfill';
 import { css, html, LitElement, nothing, TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { Overlay, OverlayOutsideClickEvent } from "@vaadin/overlay";
 import { ComponentPicker } from './component-picker';
-import { ComponentReference } from './component-util';
+import { ComponentReference, deepContains } from './component-util';
 import './theme-editor/editor';
 import { ThemeEditorState } from './theme-editor/model';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -1028,7 +1029,28 @@ export class VaadinDevTools extends LitElement {
     windowAny.Vaadin.devTools = Object.assign(this, windowAny.Vaadin.devTools);
 
     licenseInit();
+
+    // Prevent application overlays from closing when interacting with the dev tools
+    document.documentElement.addEventListener('vaadin-overlay-outside-click', (event: Event) => {
+      // We don't want to prevent closing the overlay if the overlay owner is
+      // part of the dev tools, for example when using the color picker of the
+      // theme editor
+      const outsideClickEvent = event as OverlayOutsideClickEvent;
+      const overlayOwner = (outsideClickEvent.target as Overlay).owner;
+      const containsOverlayOwner = overlayOwner ? deepContains(this, overlayOwner) : false;
+
+      if (containsOverlayOwner) {
+        return;
+      }
+      // Otherwise prevent closing the overlay if click is within the dev tools
+      const sourceEvent = outsideClickEvent.detail.sourceEvent;
+      const composedPath = sourceEvent.composedPath();
+      if (composedPath.includes(this)) {
+        event.preventDefault();
+      }
+    });
   }
+
   format(o: any): string {
     return o.toString();
   }
