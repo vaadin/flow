@@ -1,5 +1,5 @@
-import { ComponentMetadata, EditorType } from '../model';
-import { presets } from './presets';
+import { ComponentMetadata } from '../model';
+import { shapeProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-progress-bar',
@@ -8,25 +8,12 @@ export default {
     {
       selector: 'vaadin-progress-bar::part(bar)',
       displayName: 'Bar',
-      properties: [
-        {
-          propertyName: 'background-color',
-          displayName: 'Color',
-          editorType: EditorType.color
-        }
-      ]
+      properties: [shapeProperties.backgroundColor]
     },
     {
       selector: 'vaadin-progress-bar::part(value)',
       displayName: 'Value',
-      properties: [
-        {
-          propertyName: 'background-color',
-          displayName: 'Color',
-          editorType: EditorType.color,
-          presets: presets.lumoTextColor
-        }
-      ]
+      properties: [shapeProperties.backgroundColor]
     }
   ]
 } as ComponentMetadata;
