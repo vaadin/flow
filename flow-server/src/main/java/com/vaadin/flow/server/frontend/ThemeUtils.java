@@ -162,7 +162,21 @@ public class ThemeUtils {
         return themes;
     }
 
-    private static File getThemeFolder(File frontendFolder, String themeName) {
+    /**
+     * Finds the folder for the given theme.
+     * <p>
+     * Assumes the folder exists and throws an exception if it does not.
+     *
+     * @param frontendFolder
+     *            the project frontend folder
+     * @param themeName
+     *            the theme name
+     * @return the folder for the theme, containing styles.css
+     * @throws IllegalArgumentException
+     *             if the theme folder was not found
+     */
+    private static File getThemeFolder(File frontendFolder, String themeName)
+            throws IllegalArgumentException {
         File packagedThemesFolder = new File(
                 FrontendUtils.getJarResourcesFolder(frontendFolder),
                 Constants.APPLICATION_THEME_ROOT);
@@ -179,7 +193,9 @@ public class ThemeUtils {
             return themeFromJar;
         }
 
-        return null;
+        throw new IllegalArgumentException("The theme folder for the '"
+                + themeName + "' was not found. It should be either in "
+                + themeInProject + " or in +" + themeFromJar);
     }
 
     private static void findActiveThemes(String themeName, List<String> themes,
