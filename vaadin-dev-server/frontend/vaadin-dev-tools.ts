@@ -4,7 +4,7 @@ import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { Overlay, OverlayOutsideClickEvent } from "@vaadin/overlay";
 import { ComponentPicker } from './component-picker';
-import { ComponentReference } from './component-util';
+import { ComponentReference, deepContains } from './component-util';
 import './theme-editor/editor';
 import { ThemeEditorState } from './theme-editor/model';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -1037,7 +1037,7 @@ export class VaadinDevTools extends LitElement {
       // theme editor
       const outsideClickEvent = event as OverlayOutsideClickEvent;
       const overlayOwner = (outsideClickEvent.target as Overlay).owner;
-      const containsOverlayOwner = overlayOwner ? this.deepContains(overlayOwner) : false;
+      const containsOverlayOwner = overlayOwner ? deepContains(this, overlayOwner) : false;
 
       if (containsOverlayOwner) {
         return;
@@ -1049,19 +1049,6 @@ export class VaadinDevTools extends LitElement {
         event.preventDefault();
       }
     });
-  }
-
-  deepContains(node: Node) {
-    if (this.contains(node)) {
-      return true;
-    }
-    let currentNode: Node | null = node;
-    const doc = node.ownerDocument;
-    // Walk from node to `this` or `document`
-    while (currentNode && currentNode !== doc && currentNode !== this) {
-      currentNode = currentNode.parentNode || (currentNode instanceof ShadowRoot ? currentNode.host : null);
-    }
-    return currentNode === this;
   }
 
   format(o: any): string {
