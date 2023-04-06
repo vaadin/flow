@@ -129,10 +129,11 @@ public class AtmospherePushConnectionTest {
                     CompletableFuture.runAsync(() -> {
                         connection.disconnect();
                         latch.countDown();
-                    }).exceptionally(error -> {
-                        error.printStackTrace();
-                        return null;
-                    });
+                    }, CompletableFuture.delayedExecutor(1,
+                            TimeUnit.MILLISECONDS)).exceptionally(error -> {
+                                error.printStackTrace();
+                                return null;
+                            });
                     connection.push();
                     return null;
                 });
