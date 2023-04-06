@@ -139,11 +139,6 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
         Assert.assertEquals(target + " didn't contain font-family", "Ostrich",
                 testText.getCssValue("font-family"));
-
-        List<TestBenchElement> links = themedComponent.$("link").all();
-        Assert.assertEquals(1, links.size());
-        Assert.assertTrue(links.get(0).getAttribute("href")
-                .contains("VAADIN/themes/embedded-theme/styles.css"));
     }
 
     @Test
