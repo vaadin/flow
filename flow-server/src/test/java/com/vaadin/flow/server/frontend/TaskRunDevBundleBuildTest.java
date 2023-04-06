@@ -1167,6 +1167,8 @@ public class TaskRunDevBundleBuildTest {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectThemeJsonStub("{\"parent\": \"my-parent-theme\"}",
                 "my-theme");
+        new File(temporaryFolder.getRoot(), "frontend/themes/my-parent-theme")
+                .mkdirs();
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1201,6 +1203,8 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
+        new File(temporaryFolder.getRoot(), "frontend/themes/my-theme")
+                .mkdirs();
 
         JsonObject stats = getBasicStats();
         stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle",

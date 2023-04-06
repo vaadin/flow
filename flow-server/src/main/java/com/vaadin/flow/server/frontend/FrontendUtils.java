@@ -635,7 +635,7 @@ public class FrontendUtils {
                 JAR_RESOURCES_FOLDER);
     }
 
-    private static File getFrontendGeneratedFolder(File frontendDirectory) {
+    public static File getFrontendGeneratedFolder(File frontendDirectory) {
         return new File(frontendDirectory, GENERATED);
     }
 
@@ -654,10 +654,15 @@ public class FrontendUtils {
      * @return {@link #DEFAULT_FRONTEND_DIR} or value of
      *         {@link #PARAM_FRONTEND_DIR} if it is set.
      */
-    public static String getProjectFrontendDir(
-            DeploymentConfiguration configuration) {
-        return configuration.getStringProperty(PARAM_FRONTEND_DIR,
-                DEFAULT_FRONTEND_DIR);
+    public static File getProjectFrontendDir(
+            AbstractConfiguration configuration) {
+        String propertyValue = configuration
+                .getStringProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
+        File f = new File(propertyValue);
+        if (f.isAbsolute()) {
+            return f;
+        }
+        return new File(configuration.getProjectFolder(), propertyValue);
     }
 
     /**
