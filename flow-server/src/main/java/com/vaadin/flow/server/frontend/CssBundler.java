@@ -60,7 +60,7 @@ public class CssBundler {
         Matcher urlMatcher = urlPattern.matcher(content);
         content = urlMatcher.replaceAll(result -> {
             String url = getNonNullGroup(result, 2, 3);
-            if (url.endsWith(".css")) {
+            if (url == null || url.trim().endsWith(".css")) {
                 // These are handled below
                 return urlMatcher.group();
             }
@@ -78,7 +78,7 @@ public class CssBundler {
                 // folder
                 String relativePath = themeFolder.getParentFile().toPath()
                         .relativize(potentialFile.toPath()).toString();
-                return "url('VAADIN/themes/" + relativePath + "')";
+                return "url('VAADIN/themes/" + relativePath + "');";
             }
 
             return urlMatcher.group();
@@ -91,11 +91,11 @@ public class CssBundler {
             // Group 9 is layer info
             String layerOrMediaQueryInfo = result.group(9);
             if (layerOrMediaQueryInfo != null
-                    && !layerOrMediaQueryInfo.trim().isEmpty()) {
+                    && !layerOrMediaQueryInfo.isBlank()) {
                 return result.group();
             }
             String url = getNonNullGroup(result, 3, 4, 5, 7, 8);
-            if (url == null || !url.endsWith(".css")) {
+            if (url == null || !url.trim().endsWith(".css")) {
                 return result.group();
             }
 
