@@ -58,13 +58,14 @@ public class CssBundlerTest {
     private void assertImportWorks(String importCss) throws IOException {
         File f = writeFileWithImport(importCss, "foo.css");
         Assert.assertEquals(importCss, TEST_CSS.trim(),
-                CssBundler.inlineImports(f).trim());
+                CssBundler.inlineImports(f.getParentFile(), f).trim());
 
     }
 
     private void assertImportNotHandled(String importCss) throws IOException {
         File f = writeFileWithImport(importCss, "foo.css");
-        Assert.assertEquals(importCss, CssBundler.inlineImports(f));
+        Assert.assertEquals(importCss,
+                CssBundler.inlineImports(f.getParentFile(), f));
 
     }
 

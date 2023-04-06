@@ -128,10 +128,12 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
                     if (file.getName().endsWith(".css")) {
                         try {
                             // All changes are merged into one style block
-                            liveReload.get().update(
-                                    ThemeUtils.getThemeFilePath(themeName,
-                                            "styles.css"),
-                                    CssBundler.inlineImports(stylesCss));
+                            liveReload.get()
+                                    .update(ThemeUtils.getThemeFilePath(
+                                            themeName, "styles.css"),
+                                            CssBundler.inlineImports(
+                                                    stylesCss.getParentFile(),
+                                                    stylesCss));
                         } catch (IOException e) {
                             getLogger().error(
                                     "Unable to perform hot update of " + file,

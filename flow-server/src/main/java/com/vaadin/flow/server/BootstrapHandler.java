@@ -1658,7 +1658,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 ThemeUtils.getThemeFolder(frontendDirectory, themeName),
                 fileName);
         try {
-            element.text(CssBundler.inlineImports(stylesCss));
+            element.text(CssBundler.inlineImports(stylesCss.getParentFile(),
+                    stylesCss));
         } catch (IOException e) {
             throw new RuntimeException(
                     "Unable to read theme file from " + stylesCss, e);

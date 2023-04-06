@@ -46,14 +46,45 @@ public class CssBundler {
      * </pre>
      *
      */
-    private static Pattern urlMatcher = Pattern.compile("@import" + WHITE_SPACE
-            + URL_OR_STRING + MAYBE_LAYER_OR_MEDIA_QUERY + WHITE_SPACE + ";");
+    private static Pattern importPattern = Pattern
+            .compile("@import" + WHITE_SPACE + URL_OR_STRING
+                    + MAYBE_LAYER_OR_MEDIA_QUERY + WHITE_SPACE + ";");
 
-    public static String inlineImports(File cssFile) throws IOException {
+    private static Pattern urlPattern = Pattern.compile(URL + ";");
+
+    public static String inlineImports(File themeFolder, File cssFile)
+            throws IOException {
         String content = FileUtils.readFileToString(cssFile,
                 StandardCharsets.UTF_8);
-        Matcher matcher = urlMatcher.matcher(content);
-        return matcher.replaceAll(result -> {
+
+        Matcher urlMatcher = urlPattern.matcher(content);
+        content = urlMatcher.replaceAll(result -> {
+            String url = getNonNullGroup(result, 2, 3);
+            if (url.endsWith(".css")) {
+                // These are handled below
+                return urlMatcher.group();
+            }
+            File potentialFile = new File(cssFile.getParentFile(), url.trim());
+            if (potentialFile.exists()) {
+                // e.g. background-image: url("./foo/bar.png") should become
+                // url("VAADIN/themes/<theme-name>>/foo/bar.png IF the file is
+                // inside the theme folder
+                // Otherwise, "./foo/bar.png" can also refer to a file in
+                // src/main/resources/META-INF/resources/foo/bar.png and then we
+                // don't need a rewrite...
+
+                // Also the imports are relative to the folder containing the
+                // CSS file we are processing, not always relative to the theme
+                // folder
+                String relativePath = themeFolder.getParentFile().toPath()
+                        .relativize(potentialFile.toPath()).toString();
+                return "url('VAADIN/themes/" + relativePath + "')";
+            }
+
+            return urlMatcher.group();
+        });
+        Matcher importMatcher = importPattern.matcher(content);
+        content = importMatcher.replaceAll(result -> {
             // Oh the horror
             // Group 3,4,5 are url() urls with different quotes
             // Group 7,8 are strings with different quotes
@@ -64,14 +95,14 @@ public class CssBundler {
                 return result.group();
             }
             String url = getNonNullGroup(result, 3, 4, 5, 7, 8);
-            if (url == null) {
+            if (url == null || !url.endsWith(".css")) {
                 return result.group();
             }
 
             File potentialFile = new File(cssFile.getParentFile(), url.trim());
             if (potentialFile.exists()) {
                 try {
-                    return inlineImports(potentialFile);
+                    return inlineImports(themeFolder, potentialFile);
                 } catch (IOException e) {
                     getLogger()
                             .warn("Unable to inline import: " + result.group());
@@ -80,6 +111,7 @@ public class CssBundler {
             return result.group();
         });
 
+        return content;
     }
 
     private static String getNonNullGroup(MatchResult result, int... groupId) {
