@@ -1556,14 +1556,11 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "1.7.5");
 
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            setupFrontendUtilsMock(stats, utils);
+        setupFrontendUtilsMock(stats);
 
-            final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(options, depScanner, finder);
-            Assert.assertFalse("Rebuild should be skipped", needsBuild);
-        }
+        final boolean needsBuild = TaskRunDevBundleBuild
+                .needsBuildInternal(options, depScanner, finder);
+        Assert.assertFalse("Rebuild should be skipped", needsBuild);
     }
 
     private void createPackageJsonStub(String content) throws IOException {
