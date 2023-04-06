@@ -278,13 +278,16 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                             themeJsonContents));
         }
 
-        ThemeDefinition themeDefinition = frontendDependencies
-                .getThemeDefinition();
-        Optional<JsonObject> projectThemeJson = ThemeUtils
-                .getThemeJsonForTheme(options, themeDefinition);
+        Optional<String> maybeThemeName = Optional
+                .ofNullable(frontendDependencies.getThemeDefinition())
+                .map(def -> def.getName()).filter(name -> !name.isBlank());
+        Optional<JsonObject> projectThemeJson = maybeThemeName
+                .flatMap(themeName -> ThemeUtils.getThemeJson(
+                        options.getFrontendDirectory(), themeName));
+        String projectThemeName = maybeThemeName.orElse(null);
 
-        JsonObject contentsInStats = statsJson.getObject("themeJsonContents");
-        if (contentsInStats == null && (!themeJsonContents.isEmpty()
+        JsonObject statsThemeJson = statsJson.getObject("themeJsonContents");
+        if (statsThemeJson == null && (!themeJsonContents.isEmpty()
                 || projectThemeJson.isPresent())) {
             getLogger().info(
                     "Found newly added theme configurations in 'theme.json'.");
@@ -292,11 +295,10 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
 
         if (projectThemeJson.isPresent()) {
-            String projectThemeName = themeDefinition.getName();
             String key;
-            if (contentsInStats.hasKey(projectThemeName)) {
+            if (statsThemeJson.hasKey(projectThemeName)) {
                 key = projectThemeName;
-            } else if (contentsInStats.hasKey(Constants.DEV_BUNDLE_NAME)) {
+            } else if (statsThemeJson.hasKey(Constants.DEV_BUNDLE_NAME)) {
                 key = Constants.DEV_BUNDLE_NAME;
             } else {
                 getLogger().info(
@@ -311,15 +313,15 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         for (Map.Entry<String, JsonObject> themeContent : themeJsonContents
                 .entrySet()) {
-            if (hasNewAssetsOrImports(contentsInStats, themeContent)) {
+            if (hasNewAssetsOrImports(statsThemeJson, themeContent)) {
                 getLogger().info(
                         "Found new configuration for theme '{}' in 'theme.json'.",
                         themeContent.getKey());
                 return true;
-            } else if (contentsInStats.hasKey(themeContent.getKey())) {
+            } else if (statsThemeJson.hasKey(themeContent.getKey())) {
                 List<String> missedKeys = new ArrayList<>();
-                JsonObject content = Json.parse(
-                        contentsInStats.getString(themeContent.getKey()));
+                JsonObject content = Json
+                        .parse(statsThemeJson.getString(themeContent.getKey()));
                 if (!objectIncludesEntry(content, themeContent.getValue(),
                         missedKeys)) {
                     getLogger().info(
@@ -353,9 +355,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 .getParentThemeName(themeJson);
         if (parentThemeInFrontend.isPresent()) {
             String parentThemeName = parentThemeInFrontend.get();
-            Optional<JsonObject> parentThemeJson = ThemeUtils
-                    .getThemeJsonForTheme(options.getFrontendDirectory(),
-                            parentThemeName);
+            Optional<JsonObject> parentThemeJson = ThemeUtils.getThemeJson(
+                    options.getFrontendDirectory(), parentThemeName);
             if (parentThemeJson.isPresent()) {
                 collectThemeJsonContentsInFrontend(options, themeJsonContents,
                         parentThemeName, parentThemeJson.get());

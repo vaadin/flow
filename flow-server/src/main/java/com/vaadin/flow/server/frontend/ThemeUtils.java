@@ -18,7 +18,9 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
@@ -103,26 +106,20 @@ public class ThemeUtils {
         return Optional.ofNullable(shell.getAnnotation(Theme.class));
     }
 
-    public static Optional<JsonObject> getThemeJsonForTheme(
-            File themesParentFolder, String themeName) throws IOException {
-        File themeJsonFile = Path.of(themesParentFolder.getAbsolutePath(),
-                Constants.APPLICATION_THEME_ROOT, themeName, "theme.json")
-                .toFile();
+    public static Optional<JsonObject> getThemeJson(File frontendFolder,
+            String themeName) {
+        File themeFolder = getThemeFolder(frontendFolder, themeName);
+        File themeJsonFile = new File(themeFolder, "theme.json");
         if (themeJsonFile.exists()) {
-            String content = FileUtils.readFileToString(themeJsonFile,
-                    StandardCharsets.UTF_8);
-            content = content.replaceAll("\\r\\n", "\n");
-            return Optional.of(Json.parse(content));
-        }
-        return Optional.empty();
-    }
-
-    public static Optional<JsonObject> getThemeJsonForTheme(Options options,
-            ThemeDefinition themeDefinition) throws IOException {
-        if (themeDefinition != null) {
-            String themeName = themeDefinition.getName();
-            return getThemeJsonForTheme(options.getFrontendDirectory(),
-                    themeName);
+            String content;
+            try {
+                content = FileUtils.readFileToString(themeJsonFile,
+                        StandardCharsets.UTF_8);
+                return Optional.of(Json.parse(content));
+            } catch (IOException e) {
+                getLogger().error(
+                        "Unable to read theme json from " + themeJsonFile, e);
+            }
         }
         return Optional.empty();
     }
@@ -137,14 +134,77 @@ public class ThemeUtils {
         return Optional.empty();
     }
 
-    public static Optional<String> getParentThemeName(File themesParentFolder,
-            String themeName) throws IOException {
-        Optional<JsonObject> themeJson = getThemeJsonForTheme(
-                themesParentFolder, themeName);
-        if (themeJson.isPresent()) {
-            return getParentThemeName(themeJson.get());
+    /**
+     * Gets the active themes in parent to child order, starting from the
+     * application theme.
+     *
+     * @param config
+     *            the application configuration
+     * @return a list of active themes, in parent to child order
+     */
+    public static List<String> getActiveThemes(AbstractConfiguration config)
+            throws IOException {
+        File projectFolder = config.getProjectFolder();
+        Optional<String> applicationTheme = getThemeName(projectFolder);
+        if (!applicationTheme.isPresent()) {
+            return Collections.emptyList();
         }
-        return Optional.empty();
+
+        List<String> themes = new ArrayList<>();
+
+        findActiveThemes(applicationTheme.get(), themes,
+                FrontendUtils.getProjectFrontendDir(config));
+
+        Collections.reverse(themes);
+        return themes;
     }
 
+    /**
+     * Finds the folder for the given theme.
+     * <p>
+     * Assumes the folder exists and throws an exception if it does not.
+     *
+     * @param frontendFolder
+     *            the project frontend folder
+     * @param themeName
+     *            the theme name
+     * @return the folder for the theme, containing styles.css
+     * @throws IllegalArgumentException
+     *             if the theme folder was not found
+     */
+    private static File getThemeFolder(File frontendFolder, String themeName)
+            throws IllegalArgumentException {
+        File packagedThemesFolder = new File(
+                FrontendUtils.getJarResourcesFolder(frontendFolder),
+                Constants.APPLICATION_THEME_ROOT);
+        File projectThemesFolder = new File(frontendFolder,
+                Constants.APPLICATION_THEME_ROOT);
+
+        File themeInProject = new File(projectThemesFolder, themeName);
+        if (themeInProject.exists()) {
+            return themeInProject;
+        }
+
+        File themeFromJar = new File(packagedThemesFolder, themeName);
+        if (themeFromJar.exists()) {
+            return themeFromJar;
+        }
+
+        throw new IllegalArgumentException("The theme folder for the '"
+                + themeName + "' theme was not found. It should be either in "
+                + themeInProject + " or in +" + themeFromJar);
+    }
+
+    private static void findActiveThemes(String themeName, List<String> themes,
+            File frontendFolder) throws IOException {
+        themes.add(themeName);
+        Optional<JsonObject> themeJson = getThemeJson(frontendFolder,
+                themeName);
+        if (themeJson.isPresent()) {
+            Optional<String> parentTheme = getParentThemeName(themeJson.get());
+            if (parentTheme.isPresent()) {
+                findActiveThemes(parentTheme.get(), themes, frontendFolder);
+            }
+        }
+    }
 }
