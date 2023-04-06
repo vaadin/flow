@@ -280,7 +280,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         Optional<String> maybeThemeName = Optional
                 .ofNullable(frontendDependencies.getThemeDefinition())
-                .map(def -> def.getName());
+                .map(def -> def.getName()).filter(name -> !name.isBlank());
         Optional<JsonObject> projectThemeJson = maybeThemeName
                 .flatMap(themeName -> ThemeUtils.getThemeJson(
                         options.getFrontendDirectory(), themeName));
