@@ -107,13 +107,19 @@ public class ThemeUtils {
     }
 
     public static Optional<JsonObject> getThemeJson(File frontendFolder,
-            String themeName) throws IOException {
+            String themeName) {
         File themeFolder = getThemeFolder(frontendFolder, themeName);
         File themeJsonFile = new File(themeFolder, "theme.json");
         if (themeJsonFile.exists()) {
-            String content = FileUtils.readFileToString(themeJsonFile,
-                    StandardCharsets.UTF_8);
-            return Optional.of(Json.parse(content));
+            String content;
+            try {
+                content = FileUtils.readFileToString(themeJsonFile,
+                        StandardCharsets.UTF_8);
+                return Optional.of(Json.parse(content));
+            } catch (IOException e) {
+                getLogger().error(
+                        "Unable to read theme json from " + themeJsonFile, e);
+            }
         }
         return Optional.empty();
     }
