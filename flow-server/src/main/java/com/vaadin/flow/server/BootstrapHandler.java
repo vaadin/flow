@@ -1624,7 +1624,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     protected static Collection<Element> getStylesheetTags(
             AbstractConfiguration config, String fileName) throws IOException {
         return ThemeUtils.getActiveThemes(config).stream()
-                .map(theme -> getDevModeStyleTag(theme, fileName)).toList();
+                .map(theme -> getDevModeStyleTag(theme, fileName, config))
+                .toList();
     }
 
     /**
@@ -1647,12 +1648,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .toList();
     }
 
-    private static Element getDevModeStyleTag(String themeName,
-            String fileName) {
+    private static Element getDevModeStyleTag(String themeName, String fileName,
+            AbstractConfiguration config) {
         Element element = new Element("style");
         element.attr("data-file-path",
                 ThemeUtils.getThemeFilePath(themeName, fileName));
-        File frontendDirectory = new File("frontend");
+        File frontendDirectory = FrontendUtils.getProjectFrontendDir(config);
         File stylesCss = new File(
                 ThemeUtils.getThemeFolder(frontendDirectory, themeName),
                 fileName);
