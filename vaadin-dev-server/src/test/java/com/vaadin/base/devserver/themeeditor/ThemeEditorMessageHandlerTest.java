@@ -11,6 +11,7 @@ import com.vaadin.base.devserver.themeeditor.messages.LoadPreviewResponse;
 import com.vaadin.base.devserver.themeeditor.messages.LoadRulesResponse;
 import com.vaadin.base.devserver.themeeditor.utils.CssRule;
 import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.testutil.TestUtils;
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -21,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.MockitoSession;
 
 import java.io.File;
 import java.io.IOException;
@@ -272,6 +274,23 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
         Mockito.verify(javaSourceModifierMock, Mockito.times(1))
                 .removeLocalClassName(Mockito.same(0), Mockito.same(0));
 
+    }
+
+    @Test
+    public void testHandle_MarkAsUsed() {
+        ThemeEditorMessageHandler handler = new TestThemeEditorMessageHandler();
+        JsonObject data = Json.createObject();
+        data.put("requestId", "id1");
+        data.put("uiId", 0);
+
+        try (MockedStatic<UsageStatistics> usageStatistics = Mockito
+                .mockStatic(UsageStatistics.class)) {
+            MockedStatic.Verification verification = () -> UsageStatistics
+                    .markAsUsed(Mockito.eq("flow/ThemeEditor"), Mockito.any());
+            handler.handleDebugMessageData(ThemeEditorCommand.MARK_AS_USED,
+                    data);
+            usageStatistics.verify(verification);
+        }
     }
 
     @Test
