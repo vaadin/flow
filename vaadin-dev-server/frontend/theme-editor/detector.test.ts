@@ -52,7 +52,7 @@ describe('theme-detector', () => {
       <style>
         test-element {
           padding: 20px;
-          --custom-property: bar;
+          --custom-property:bar;
         }
 
         test-element::part(label) {
