@@ -1659,8 +1659,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         try {
             element.text(CssBundler.inlineImports(stylesCss));
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException(
+                    "Unable to read theme file from " + stylesCss, e);
         }
         return element;
     }
