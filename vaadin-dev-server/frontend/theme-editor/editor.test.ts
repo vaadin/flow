@@ -210,11 +210,8 @@ describe('theme-editor', () => {
   }
 
   before(async () => {
-    getMetadataStub = sinon.stub(metadataRegistry, 'getMetadata').returns(Promise.resolve(testElementMetadata));
-  });
-
-  after(() => {
-    getMetadataStub.restore();
+    mockTheme = new CSSStyleSheet();
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, mockTheme];
   });
 
   beforeEach(async () => {
