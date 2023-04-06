@@ -1,9 +1,10 @@
 {
   "scripts": {
     "build": "vite build",
-    "start": "web-dev-server --node-resolve",
-    "test": "web-test-runner --node-resolve --playwright",
-    "test-watch": "web-test-runner --node-resolve --playwright --watch",
+    "install-deps": "node node_modules/esbuild/install.js && playwright install",
+    "start": "npm run install-deps && web-dev-server --node-resolve",
+    "test": "npm run install-deps && web-test-runner --node-resolve --playwright",
+    "test-watch": "npm run install-deps && web-test-runner --node-resolve --playwright --watch",
     "patch-app": "node patch-application.js",
     "prettier": "prettier --write frontend"
   },
