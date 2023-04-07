@@ -8,13 +8,20 @@ import com.vaadin.base.devserver.themeeditor.JavaSourceModifier;
 
 /**
  * Implementation of {@link com.github.javaparser.ast.visitor.GenericVisitor}
- * that searches for local classname by comparing expression type, method call
- * scope and expression comment.
+ * that searches for local classname expression statement by comparing
+ * expression type, method call scope and expression comment.
  *
  * Scope may be null in case of own instance method calls.
  */
 public class LocalClassNameVisitor
         extends GenericVisitorAdapter<ExpressionStmt, String> {
+
+    private final SimpleName methodName;
+
+    public LocalClassNameVisitor(boolean overlay) {
+        methodName = overlay ? new SimpleName("setOverlayClassName")
+                : new SimpleName("addClassName");
+    }
 
     @Override
     public ExpressionStmt visit(ExpressionStmt n, String scope) {
@@ -30,9 +37,9 @@ public class LocalClassNameVisitor
             return super.visit(n, scope);
         }
 
-        // and not 'addClassName' method calls
+        // and not required method calls
         if (!n.getExpression().asMethodCallExpr().getName()
-                .equals(new SimpleName("addClassName"))) {
+                .equals(methodName)) {
             return super.visit(n, scope);
         }
 

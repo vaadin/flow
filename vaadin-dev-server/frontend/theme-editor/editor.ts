@@ -224,7 +224,7 @@ export class ThemeEditor extends LitElement {
         <div class="picker-row">
           ${this.renderPicker()}
           <div class="actions">
-            ${this.context
+            ${this.context?.metadata
               ? html` <vaadin-dev-tools-theme-scope-selector
                   .value=${this.context.scope}
                   .metadata=${this.context.metadata}
@@ -271,6 +271,14 @@ export class ThemeEditor extends LitElement {
   renderPropertyList() {
     if (!this.context) {
       return null;
+    }
+
+    // If there is no metadata, then we have a component that is not supported
+    if (!this.context.metadata) {
+      const tagName = this.context.component.element!.localName;
+      return html`
+        <div class="notice">Styling <code>&lt;${tagName}&gt;</code> components is not supported at the moment.</div>
+      `;
     }
 
     const inaccessible = this.context.scope === ThemeScope.local && !this.context.accessible;
@@ -328,7 +336,7 @@ export class ThemeEditor extends LitElement {
   renderPicker() {
     let label: TemplateResult;
 
-    if (this.context) {
+    if (this.context?.metadata) {
       const componentDisplayName =
         this.context.scope === ThemeScope.local
           ? this.context.metadata.displayName
@@ -411,7 +419,7 @@ export class ThemeEditor extends LitElement {
       pickCallback: async (component) => {
         const metadata = await metadataRegistry.getMetadata(component);
         if (!metadata) {
-          this.context = null;
+          this.context = { component, scope: this.context?.scope || ThemeScope.local };
           this.baseTheme = null;
           this.editedTheme = null;
           this.effectiveTheme = null;
@@ -524,7 +532,7 @@ export class ThemeEditor extends LitElement {
 
   private async refreshTheme(newContext?: ThemeContext) {
     const context = newContext || this.context;
-    if (!context) {
+    if (!context || !context.metadata) {
       return;
     }
 

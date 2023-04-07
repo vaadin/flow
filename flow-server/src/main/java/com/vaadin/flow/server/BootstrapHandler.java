@@ -86,7 +86,9 @@ import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
+import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -1597,7 +1599,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     protected static void addJavaScriptEntryPoints(
             DeploymentConfiguration config, Document targetDocument)
             throws IOException {
-        URL statsJsonUrl = FrontendUtils
+        URL statsJsonUrl = DevBundleUtils
                 .findBundleFile(config.getProjectFolder(), "config/stats.json");
         Objects.requireNonNull(statsJsonUrl,
                 "Frontend development bundle is expected to be in the project"
@@ -1622,8 +1624,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      */
     protected static Collection<Element> getStylesheetTags(
             AbstractConfiguration config, String fileName) throws IOException {
-        return getStylesheetReferences(config, fileName,
-                BootstrapHandler::getLinkTagWithStyleRef);
+        return ThemeUtils.getActiveThemes(config).stream()
+                .map(theme -> getLinkTagWithStyleRef(theme, fileName)).toList();
     }
 
     /**
@@ -1641,81 +1643,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      */
     protected static Collection<String> getStylesheetLinks(
             AbstractConfiguration config, String fileName) throws IOException {
-        return getStylesheetReferences(config, fileName,
-                BootstrapHandler::getThemeFilePath);
-    }
-
-    private static <T> Collection<T> getStylesheetReferences(
-            AbstractConfiguration config, String fileName,
-            SerializableBiFunction<String, String, T> referenceProvider)
-            throws IOException {
-        List<T> references = new ArrayList<>();
-
-        Optional<String> themeName = FrontendUtils
-                .getThemeName(config.getProjectFolder());
-
-        if (themeName.isEmpty()) {
-            getLogger().debug("Found no custom theme in the project. "
-                    + "Skipping adding a link tag for custom theme stylesheets.");
-            return references;
-        }
-
-        final String mainTheme = themeName.get();
-
-        // Collect parent themes in the JARs
-        File frontendFolder = new File(config.getProjectFolder(),
-                FrontendUtils.FRONTEND);
-        File jarResourcesFolder = FrontendUtils
-                .getJarResourcesFolder(frontendFolder);
-        File packagedThemesFolder = new File(jarResourcesFolder,
-                Constants.APPLICATION_THEME_ROOT);
-        final Set<String> packagedThemes = new HashSet<>();
-
-        if (packagedThemesFolder.exists()) {
-            for (File themeFolder : Objects.requireNonNull(
-                    packagedThemesFolder.listFiles(File::isDirectory),
-                    "Expected at least one theme in the front-end generated themes folder")) {
-                packagedThemes.add(themeFolder.getName());
-            }
-        }
-
-        // need ordered collection to ensure styles priority
-        final Set<String> activeThemes = new LinkedHashSet<>();
-
-        collectActiveThemes(mainTheme, frontendFolder, packagedThemes,
-                activeThemes);
-
-        // Add link references for all the found themes
-        activeThemes.forEach(theme -> {
-            T reference = referenceProvider.apply(theme, fileName);
-            references.add(reference);
-        });
-
-        return references;
-    }
-
-    private static <T> void collectActiveThemes(String themeName,
-            File frontendFolder, Set<String> packagedThemes,
-            Set<String> activeThemes) throws IOException {
-        // Look for parent theme of themeName in {project}/frontend/themes/
-        Optional<String> parentThemeName = FrontendUtils
-                .getParentThemeName(frontendFolder, themeName);
-        if (parentThemeName.isPresent()) {
-            collectActiveThemes(parentThemeName.get(), frontendFolder,
-                    packagedThemes, activeThemes);
-        } else if (packagedThemes.contains(themeName)) {
-            // Look for parent theme of themeName in packaged themes
-            File jarResourcesFolder = FrontendUtils
-                    .getJarResourcesFolder(frontendFolder);
-            parentThemeName = FrontendUtils
-                    .getParentThemeName(jarResourcesFolder, themeName);
-            if (parentThemeName.isPresent()) {
-                collectActiveThemes(parentThemeName.get(), frontendFolder,
-                        packagedThemes, activeThemes);
-            }
-        }
-
-        activeThemes.add(themeName);
+        return ThemeUtils.getActiveThemes(config).stream()
+                .map(theme -> getThemeFilePath(theme, fileName)).toList();
     }
 
     private static String getThemeFilePath(String themeName, String fileName) {

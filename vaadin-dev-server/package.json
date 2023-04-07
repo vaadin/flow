@@ -1,9 +1,10 @@
 {
   "scripts": {
     "build": "vite build",
-    "start": "web-dev-server --node-resolve",
-    "test": "web-test-runner --node-resolve",
-    "test-watch": "web-test-runner --node-resolve --watch",
+    "install-deps": "node node_modules/esbuild/install.js && playwright install",
+    "start": "npm run install-deps && web-dev-server --node-resolve",
+    "test": "npm run install-deps && web-test-runner --node-resolve --playwright",
+    "test-watch": "npm run install-deps && web-test-runner --node-resolve --playwright --watch",
     "patch-app": "node patch-application.js",
     "prettier": "prettier --write frontend"
   },
@@ -16,6 +17,7 @@
     "@web/dev-server": "^0.1.35",
     "@web/dev-server-esbuild": "^0.3.3",
     "@web/test-runner": "^0.15.0",
+    "@web/test-runner-playwright": "^0.9.0",
     "prettier": "^2.8.4",
     "sinon": "^15.0.1",
     "vite": "^4.1.4"

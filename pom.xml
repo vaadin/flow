@@ -235,7 +235,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.14.3</version>
+                <version>1.14.4</version>
             </dependency>
             <dependency>
                 <groupId>com.vaadin</groupId>
@@ -450,7 +450,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.2.1</version>
+                    <version>3.3.0</version>
                     <dependencies>
                         <dependency>
                             <groupId>de.skuzzle.enforcer</groupId>

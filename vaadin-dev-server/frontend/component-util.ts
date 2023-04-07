@@ -38,3 +38,16 @@ function getComponent(element: HTMLElement): ComponentReference {
   }
   return { nodeId: -1, uiId: -1, element: undefined };
 }
+
+export function deepContains(container: HTMLElement, node: Node) {
+  if (container.contains(node)) {
+    return true;
+  }
+  let currentNode: Node | null = node;
+  const doc = node.ownerDocument;
+  // Walk from node to `this` or `document`
+  while (currentNode && currentNode !== doc && currentNode !== container) {
+    currentNode = currentNode.parentNode || (currentNode instanceof ShadowRoot ? currentNode.host : null);
+  }
+  return currentNode === container;
+}

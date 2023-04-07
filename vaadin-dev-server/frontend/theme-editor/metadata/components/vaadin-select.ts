@@ -1,5 +1,6 @@
-import { ComponentMetadata, EditorType } from '../model';
-import { presets } from './presets';
+import { ComponentMetadata } from '../model';
+import { fieldProperties, iconProperties, shapeProperties, textProperties } from './defaults';
+import { errorMessageProperties, helperTextProperties, labelProperties } from './vaadin-text-field';
 
 export default {
   tagName: 'vaadin-select',
@@ -9,245 +10,59 @@ export default {
       selector: 'vaadin-select::part(input-field)',
       displayName: 'Field',
       properties: [
-        {
-          propertyName: 'background-color',
-          displayName: 'Background color',
-          editorType: EditorType.color
-        },
-        {
-          propertyName: 'border-color',
-          displayName: 'Border color',
-          editorType: EditorType.color
-        },
-        {
-          propertyName: 'border-width',
-          displayName: 'Border width',
-          editorType: EditorType.range,
-          presets: presets.basicBorderSize,
-          icon: 'square'
-        },
-        {
-          propertyName: 'border-radius',
-          displayName: 'Border radius',
-          editorType: EditorType.range,
-          presets: presets.lumoBorderRadius,
-          icon: 'square'
-        },
-        {
-          propertyName: 'height',
-          displayName: 'Size',
-          editorType: EditorType.range,
-          presets: presets.lumoSize,
-          icon: 'square'
-        },
-        {
-          propertyName: 'padding-inline',
-          displayName: 'Padding',
-          editorType: EditorType.range,
-          presets: presets.lumoSpace,
-          icon: 'square'
-        }
+        shapeProperties.backgroundColor,
+        shapeProperties.borderColor,
+        shapeProperties.borderWidth,
+        shapeProperties.borderRadius,
+        fieldProperties.height,
+        fieldProperties.paddingInline
       ]
     },
     {
       selector: 'vaadin-select vaadin-select-value-button>vaadin-select-item',
       displayName: 'Field text',
-      properties: [
-        {
-          propertyName: 'color',
-          displayName: 'Text color',
-          editorType: EditorType.color,
-          presets: presets.lumoTextColor
-        },
-        {
-          propertyName: 'font-size',
-          displayName: 'Font size',
-          editorType: EditorType.range,
-          presets: presets.lumoFontSize,
-          icon: 'font'
-        },
-        {
-          propertyName: 'font-weight',
-          displayName: 'Bold',
-          editorType: EditorType.checkbox,
-          checkedValue: 'bold'
-        }
-      ]
+      properties: [textProperties.textColor, textProperties.fontSize, textProperties.fontWeight]
     },
     {
       selector: 'vaadin-select::part(toggle-button)',
       displayName: 'Field toggle button',
-      properties: [
-        {
-          propertyName: 'color',
-          displayName: 'Color',
-          editorType: EditorType.color,
-          presets: presets.lumoTextColor
-        },
-        {
-          propertyName: 'font-size',
-          displayName: 'Size',
-          editorType: EditorType.range,
-          presets: presets.lumoFontSize,
-          icon: 'font'
-        }
-      ]
+      properties: [iconProperties.iconColor, iconProperties.iconSize]
     },
     {
       selector: 'vaadin-select::part(label)',
       displayName: 'Label',
-      properties: [
-        {
-          propertyName: 'color',
-          displayName: 'Text color',
-          editorType: EditorType.color,
-          presets: presets.lumoTextColor
-        },
-        {
-          propertyName: 'font-size',
-          displayName: 'Font size',
-          editorType: EditorType.range,
-          presets: presets.lumoFontSize,
-          icon: 'font'
-        },
-        {
-          propertyName: 'font-weight',
-          displayName: 'Bold',
-          editorType: EditorType.checkbox,
-          checkedValue: 'bold'
-        }
-      ]
+      properties: labelProperties
     },
     {
       selector: 'vaadin-select::part(helper-text)',
       displayName: 'Helper text',
-      properties: [
-        {
-          propertyName: 'color',
-          displayName: 'Text color',
-          editorType: EditorType.color,
-          presets: presets.lumoTextColor
-        },
-        {
-          propertyName: 'font-size',
-          displayName: 'Font size',
-          editorType: EditorType.range,
-          presets: presets.lumoFontSize,
-          icon: 'font'
-        },
-        {
-          propertyName: 'font-weight',
-          displayName: 'Bold',
-          editorType: EditorType.checkbox,
-          checkedValue: 'bold'
-        }
-      ]
+      properties: helperTextProperties
     },
     {
       selector: 'vaadin-select::part(error-message)',
       displayName: 'Error message',
-      properties: [
-        {
-          propertyName: 'color',
-          displayName: 'Text color',
-          editorType: EditorType.color,
-          presets: presets.lumoTextColor
-        },
-        {
-          propertyName: 'font-size',
-          displayName: 'Font size',
-          editorType: EditorType.range,
-          presets: presets.lumoFontSize,
-          icon: 'font'
-        },
-        {
-          propertyName: 'font-weight',
-          displayName: 'Bold',
-          editorType: EditorType.checkbox,
-          checkedValue: 'bold'
-        }
-      ]
+      properties: errorMessageProperties
     },
     {
       selector: 'vaadin-select-overlay::part(overlay)',
       displayName: 'Overlay',
       properties: [
-        {
-          propertyName: 'background-color',
-          displayName: 'Background color',
-          editorType: EditorType.color
-        },
-        {
-          propertyName: 'border-color',
-          displayName: 'Border color',
-          editorType: EditorType.color
-        },
-        {
-          propertyName: 'border-width',
-          displayName: 'Border width',
-          editorType: EditorType.range,
-          presets: presets.basicBorderSize,
-          icon: 'square'
-        },
-        {
-          propertyName: 'border-radius',
-          displayName: 'Border radius',
-          editorType: EditorType.range,
-          presets: presets.lumoBorderRadius,
-          icon: 'square'
-        },
-        {
-          propertyName: 'padding',
-          displayName: 'Padding',
-          editorType: EditorType.range,
-          presets: presets.lumoSpace,
-          icon: 'square'
-        }
+        shapeProperties.backgroundColor,
+        shapeProperties.borderColor,
+        shapeProperties.borderWidth,
+        shapeProperties.borderRadius,
+        shapeProperties.padding
       ]
     },
     {
       selector: 'vaadin-select-overlay vaadin-select-item',
       displayName: 'Overlay items',
-      properties: [
-        {
-          propertyName: 'color',
-          displayName: 'Text color',
-          editorType: EditorType.color,
-          presets: presets.lumoTextColor
-        },
-        {
-          propertyName: 'font-size',
-          displayName: 'Font size',
-          editorType: EditorType.range,
-          presets: presets.lumoFontSize,
-          icon: 'font'
-        },
-        {
-          propertyName: 'font-weight',
-          displayName: 'Bold',
-          editorType: EditorType.checkbox,
-          checkedValue: 'bold'
-        }
-      ]
+      properties: [textProperties.textColor, textProperties.fontSize, textProperties.fontWeight]
     },
     {
       selector: 'vaadin-select-overlay vaadin-select-item::part(checkmark)::before',
       displayName: 'Overlay item checkmark',
-      properties: [
-        {
-          propertyName: 'color',
-          displayName: 'Color',
-          editorType: EditorType.color,
-          presets: presets.lumoTextColor
-        },
-        {
-          propertyName: 'font-size',
-          displayName: 'Size',
-          editorType: EditorType.range,
-          presets: presets.lumoFontSize,
-          icon: 'font'
-        }
-      ]
+      properties: [iconProperties.iconColor, iconProperties.iconSize]
     }
   ],
   async setupElement(select: any) {

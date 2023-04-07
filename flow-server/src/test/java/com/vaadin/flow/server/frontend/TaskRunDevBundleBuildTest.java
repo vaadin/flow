@@ -65,7 +65,9 @@ public class TaskRunDevBundleBuildTest {
 
     private Map<String, String> jarResources = new HashMap<>();
 
-    private MockedStatic<FrontendUtils> utils;
+    private MockedStatic<FrontendUtils> frontendUtils;
+
+    private MockedStatic<DevBundleUtils> devBundleUtils;
 
     @Before
     public void init() {
@@ -73,13 +75,16 @@ public class TaskRunDevBundleBuildTest {
                 temporaryFolder.getRoot()).withBuildDirectory("target");
         options.copyResources(Collections.emptySet());
         finder = Mockito.mock(ClassFinder.class);
-        utils = Mockito.mockStatic(FrontendUtils.class,
+        frontendUtils = Mockito.mockStatic(FrontendUtils.class,
+                Mockito.CALLS_REAL_METHODS);
+        devBundleUtils = Mockito.mockStatic(DevBundleUtils.class,
                 Mockito.CALLS_REAL_METHODS);
     }
 
     @After
     public void teardown() {
-        utils.close();
+        frontendUtils.close();
+        devBundleUtils.close();
     }
 
     private JsonObject getBasicStats() {
@@ -126,10 +131,12 @@ public class TaskRunDevBundleBuildTest {
     @Test
     public void devBundleStatsJsonMissing_bundleCompilationRequires()
             throws IOException {
-        utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+        devBundleUtils
+                .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
-        utils.when(() -> FrontendUtils
-                .findBundleStatsJson(temporaryFolder.getRoot()))
+        devBundleUtils
+                .when(() -> DevBundleUtils
+                        .findBundleStatsJson(temporaryFolder.getRoot()))
                 .thenReturn(null);
 
         final boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(
@@ -775,7 +782,8 @@ public class TaskRunDevBundleBuildTest {
         jarResources.put("TodoTemplate.js", fileContent);
 
         setupFrontendUtilsMock(stats);
-        utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+        devBundleUtils
+                .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
 
         boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
@@ -808,12 +816,15 @@ public class TaskRunDevBundleBuildTest {
         stats.getArray(BUNDLE_IMPORTS).set(0,
                 "Frontend/generated/jar-resources/TodoTemplate.js");
 
-        utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+        devBundleUtils
+                .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
-        utils.when(() -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
+        frontendUtils.when(
+                () -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
                 .thenReturn(fileContent);
-        utils.when(() -> FrontendUtils
-                .findBundleStatsJson(temporaryFolder.getRoot()))
+        devBundleUtils
+                .when(() -> DevBundleUtils
+                        .findBundleStatsJson(temporaryFolder.getRoot()))
                 .thenReturn(stats.toJson());
 
         boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
@@ -848,12 +859,15 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(FRONTEND_HASHES).put("TodoTemplate.js",
                 "dea5180dd21d2f18d1472074cd5305f60b824e557dae480fb66cdf3ea73edc65");
 
-        utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+        devBundleUtils
+                .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
-        utils.when(() -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
+        frontendUtils.when(
+                () -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
                 .thenReturn(fileContent);
-        utils.when(() -> FrontendUtils
-                .findBundleStatsJson(temporaryFolder.getRoot()))
+        devBundleUtils
+                .when(() -> DevBundleUtils
+                        .findBundleStatsJson(temporaryFolder.getRoot()))
                 .thenReturn(stats.toJson());
 
         boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
@@ -1153,6 +1167,8 @@ public class TaskRunDevBundleBuildTest {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectThemeJsonStub("{\"parent\": \"my-parent-theme\"}",
                 "my-theme");
+        new File(temporaryFolder.getRoot(), "frontend/themes/my-parent-theme")
+                .mkdirs();
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1187,6 +1203,8 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
+        new File(temporaryFolder.getRoot(), "frontend/themes/my-theme")
+                .mkdirs();
 
         JsonObject stats = getBasicStats();
         stats.getObject(THEME_JSON_CONTENTS).put("vaadin-dev-bundle",
@@ -1544,12 +1562,14 @@ public class TaskRunDevBundleBuildTest {
     }
 
     private void setupFrontendUtilsMock(JsonObject stats) throws IOException {
-        utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+        devBundleUtils
+                .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
-        utils.when(() -> FrontendUtils
-                .findBundleStatsJson(temporaryFolder.getRoot()))
+        devBundleUtils
+                .when(() -> DevBundleUtils
+                        .findBundleStatsJson(temporaryFolder.getRoot()))
                 .thenAnswer(q -> stats.toJson());
-        utils.when(
+        frontendUtils.when(
                 () -> FrontendUtils.getJarResourceString(Mockito.anyString()))
                 .thenAnswer(q -> {
                     return jarResources.get(q.getArgument(0));
