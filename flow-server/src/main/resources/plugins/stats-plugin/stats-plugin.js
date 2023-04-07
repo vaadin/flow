@@ -51,7 +51,7 @@ class StatsPlugin {
       const npmModules = nodeModulesFolders
           .map((id) => id.replace(/.*node_modules./, ''))
           .map((id) => {
-            const parts = id.split('/');
+            const parts = id.split(path.sep);
             if (id.startsWith('@')) {
               return parts[0] + '/' + parts[1];
             } else {
