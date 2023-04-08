@@ -15,16 +15,7 @@
  */
 package com.vaadin.base.devserver.startup;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
+import jakarta.servlet.annotation.HandlesTypes;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,7 +46,6 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +76,15 @@ import com.vaadin.pro.licensechecker.LicenseChecker;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import jakarta.servlet.annotation.HandlesTypes;
+
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 
 /**
  * Initializer for starting node updaters as well as the dev mode server.
@@ -207,9 +205,6 @@ public class DevModeInitializer implements Serializable {
                     new StatisticsSender(storage));
         }
 
-        String generatedDir = System.getProperty(PARAM_GENERATED_DIR,
-                Paths.get(config.getBuildFolder(), DEFAULT_GENERATED_DIR)
-                        .toString());
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
 
@@ -218,26 +213,11 @@ public class DevModeInitializer implements Serializable {
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
         Options options = new Options(lookup, new File(baseDir))
-                .withGeneratedFolder(new File(generatedDir))
                 .withFrontendDirectory(new File(frontendFolder))
                 .withBuildDirectory(config.getBuildFolder());
 
         log().info("Starting dev-mode updaters in {} folder.",
                 options.getNpmFolder());
-
-        if (!options.getGeneratedFolder().exists()) {
-            try {
-                FileUtils.forceMkdir(options.getGeneratedFolder());
-            } catch (IOException e) {
-                throw new UncheckedIOException(
-                        String.format("Failed to create directory '%s'",
-                                options.getGeneratedFolder()),
-                        e);
-            }
-        }
-
-        File generatedPackages = new File(options.getGeneratedFolder(),
-                PACKAGE_JSON);
 
         // Regenerate Vite configuration, as it may be necessary to
         // update it
@@ -252,10 +232,8 @@ public class DevModeInitializer implements Serializable {
                         .toFile());
 
         // If we are missing either the base or generated package json
-        // files
-        // generate those
-        if (!new File(options.getNpmFolder(), PACKAGE_JSON).exists()
-                || !generatedPackages.exists()) {
+        // files generate those
+        if (!new File(options.getNpmFolder(), PACKAGE_JSON).exists()) {
             options.createMissingPackageJson(true);
         }
 

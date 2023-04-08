@@ -15,22 +15,12 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 
 import net.jcip.annotations.NotThreadSafe;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,6 +34,12 @@ import com.vaadin.flow.server.frontend.NodeTestComponents.FlagView;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 @NotThreadSafe
 public class ComponentFlagsTest extends NodeUpdateTestUtil {
 
@@ -54,7 +50,6 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
     private File propertiesDir;
 
     private File importsFile;
-    private File generatedPath;
     private File frontendDirectory;
     private File nodeModulesPath;
     private File tmpRoot;
@@ -71,9 +66,7 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
-        generatedPath = new File(tmpRoot,
-                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
-        importsFile = new File(generatedPath, IMPORTS_NAME);
+        importsFile = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
 
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
@@ -145,7 +138,6 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
         ClassFinder classFinder = getClassFinder(testClasses);
 
         Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
-                .withGeneratedFolder(generatedPath)
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true);
         return new TaskUpdateImports(classFinder,

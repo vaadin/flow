@@ -15,12 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
-import static java.lang.String.format;
-
 import jakarta.servlet.ServletContext;
 
 import java.io.File;
@@ -60,6 +54,12 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
+import static java.lang.String.format;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -150,15 +150,8 @@ public class FrontendUtils {
             .replace("Frontend/", "./");
 
     /**
-     * Default folder name for flow generated stuff relative to the
-     * {@link com.vaadin.flow.server.InitParameters#BUILD_FOLDER}.
-     */
-    public static final String DEFAULT_GENERATED_DIR = FRONTEND;
-
-    /**
      * Name of the file that contains application imports, javascript, theme and
-     * style annotations. It is always generated in the
-     * {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
+     * style annotations.
      */
     public static final String IMPORTS_NAME = "generated-flow-imports.js";
 
@@ -233,17 +226,9 @@ public class FrontendUtils {
      * Name of the file that contains all application imports, javascript, theme
      * and style annotations which are not discovered by the current scanning
      * strategy (but they are in the project classpath). This file is
-     * dynamically imported by the {@link FrontendUtils#IMPORTS_NAME} file. It
-     * is always generated in the {@link FrontendUtils#DEFAULT_GENERATED_DIR}
-     * folder.
+     * dynamically imported by the {@link FrontendUtils#IMPORTS_NAME} file.
      */
     public static final String FALLBACK_IMPORTS_NAME = "generated-flow-imports-fallback.js";
-
-    /**
-     * A parameter for overriding the
-     * {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
-     */
-    public static final String PARAM_GENERATED_DIR = "vaadin.frontend.generated.folder";
 
     /**
      * A parameter for overriding the {@link FrontendUtils#DEFAULT_FRONTEND_DIR}
@@ -1172,6 +1157,21 @@ public class FrontendUtils {
         }
 
         return mapping;
+    }
+
+    public static File getFlowGeneratedFolder(File frontendFolder) {
+        return new File(getFrontendGeneratedFolder(frontendFolder), "flow");
+
+    }
+
+    public static File getFlowGeneratedImports(File frontendFolder) {
+        return new File(getFlowGeneratedFolder(frontendFolder), IMPORTS_NAME);
+    }
+
+    public static File getFlowGeneratedWebComponentsFolder(
+            File frontendDirectory) {
+        return new File(getFlowGeneratedFolder(frontendDirectory),
+                "web-components");
     }
 
 }

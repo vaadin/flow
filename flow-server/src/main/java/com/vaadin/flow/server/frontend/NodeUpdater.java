@@ -15,12 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.PACKAGE_LOCK_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static elemental.json.impl.JsonUtil.stringify;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,6 +47,12 @@ import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.PACKAGE_LOCK_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static elemental.json.impl.JsonUtil.stringify;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Base abstract class for frontend updaters that needs to be run when in
  * dev-mode or from the flow maven plugin.
@@ -66,12 +66,6 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String VAADIN_FORM_PKG_LEGACY_VERSION = "flow-frontend/form";
 
     private static final String VAADIN_FORM_PKG = "@vaadin/form";
-
-    /**
-     * Relative paths of generated should be prefixed with this value, so they
-     * can be correctly separated from {projectDir}/frontend files.
-     */
-    public static final String GENERATED_PREFIX = "GENERATED/";
 
     // .vaadin/vaadin.json contains local installation data inside node_modules
     // This will help us know to execute even when another developer has pushed
@@ -210,7 +204,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                     return excludes.stream().noneMatch(
                             postfix -> path.endsWith(unixPath.apply(postfix)));
                 })
-                .map(file -> GENERATED_PREFIX + unixPath
+                .map(file -> unixPath
                         .apply(baseDir.relativize(file.toURI()).getPath()))
                 .collect(Collectors.toSet());
     }
@@ -535,7 +529,8 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     protected String generateVersionsJson(JsonObject packageJson)
             throws IOException {
-        File versions = new File(options.getGeneratedFolder(), "versions.json");
+        File versions = new File(FrontendUtils.getFlowGeneratedFolder(
+                options.getFrontendDirectory()), "versions.json");
 
         JsonObject versionsJson = getPlatformPinnedDependencies();
         JsonObject packageJsonVersions = generateVersionsFromPackageJson(

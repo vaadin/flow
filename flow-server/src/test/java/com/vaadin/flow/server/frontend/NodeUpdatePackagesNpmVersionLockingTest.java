@@ -17,13 +17,9 @@
 
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -44,6 +40,8 @@ import com.vaadin.flow.testutil.FrontendStubs;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.TARGET;
+
 @Category(SlowTests.class)
 public class NodeUpdatePackagesNpmVersionLockingTest
         extends NodeUpdateTestUtil {
@@ -58,16 +56,12 @@ public class NodeUpdatePackagesNpmVersionLockingTest
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File baseDir;
-    private File generatedDir;
 
     private ClassFinder classFinder;
 
     @Before
     public void setup() throws Exception {
         baseDir = temporaryFolder.getRoot();
-
-        generatedDir = new File(baseDir,
-                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
 
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
 
@@ -187,8 +181,8 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Options options = new Options(Mockito.mock(Lookup.class), baseDir)
-                .withGeneratedFolder(generatedDir).withEnablePnpm(enablePnpm)
-                .withBuildDirectory(TARGET).withProductionMode(true);
+                .withEnablePnpm(enablePnpm).withBuildDirectory(TARGET)
+                .withProductionMode(true);
 
         return new TaskUpdatePackages(classFinder, scanner, options);
     }

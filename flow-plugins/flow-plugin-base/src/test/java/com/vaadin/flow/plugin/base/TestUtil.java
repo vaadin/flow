@@ -45,8 +45,6 @@ public class TestUtil {
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
         Mockito.when(adapter.frontendDirectory()).thenReturn(
                 new File(baseDir, FrontendUtils.DEFAULT_FRONTEND_DIR));
-        Mockito.when(adapter.generatedFolder()).thenReturn(new File(baseDir,
-                FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR));
         Mockito.when(adapter.buildFolder()).thenReturn(Constants.TARGET);
         Mockito.when(adapter.javaSourceFolder())
                 .thenReturn(new File(baseDir, "src/main/java"));

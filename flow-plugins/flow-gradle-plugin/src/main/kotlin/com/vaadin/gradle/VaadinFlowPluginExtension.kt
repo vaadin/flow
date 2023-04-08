@@ -46,11 +46,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
      * dir.
      */
     public var npmFolder: File = project.projectDir
-    /**
-     * The folder where flow will put generated files that will be used by
-     * webpack.
-     */
-    public var generatedFolder: File = File(project.buildDir, "frontend")
+
     /**
      * A directory with project's frontend source files.
      */
@@ -305,7 +301,6 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "productionMode=$productionMode, " +
             "webpackOutputDirectory=$webpackOutputDirectory, " +
             "npmFolder=$npmFolder, " +
-            "generatedFolder=$generatedFolder, " +
             "frontendDirectory=$frontendDirectory, " +
             "generateBundle=$generateBundle, " +
             "runNpmInstall=$runNpmInstall, " +
