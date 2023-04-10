@@ -15,6 +15,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <server.log.location>${java.io.tmpdir}/${project.artifactId}.log</server.log.location>
+        <scala-java8-compat.version>1.0.0</scala-java8-compat.version>
     </properties>
 
     <dependencies>
@@ -56,6 +57,12 @@
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
             <version>5.1.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
@@ -70,6 +77,17 @@
                 <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang.modules</groupId>
+            <artifactId>scala-java8-compat_2.13</artifactId>
+            <version>${scala-java8-compat.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
