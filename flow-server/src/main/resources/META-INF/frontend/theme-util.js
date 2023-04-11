@@ -71,8 +71,7 @@ const addStyleTag = (cssText, referenceComment) => {
   document.head.insertBefore(styleTag, beforeThis);
   return () => {
     styleTag.remove();
-  }
-
+  };
 };
 
 // target: Document | ShadowRoot
@@ -89,9 +88,9 @@ export const injectGlobalCss = (css, referenceComment, target, first) => {
   // We avoid mixing style tags and adoptedStyleSheets to make override order clear
   if (target === document) {
     return addStyleTag(cssText, referenceComment);
-  } else {
-    return addAdoptedStyle(cssText, target, first);
   }
+
+  return addAdoptedStyle(cssText, target, first);
 };
 
 window.Vaadin = window.Vaadin || {};
