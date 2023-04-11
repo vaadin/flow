@@ -77,6 +77,8 @@ public class Options implements Serializable {
 
     private File generatedFolder;
 
+    private boolean skipDevBundle = false;
+
     /**
      * The node.js version to be used when node.js is installed automatically by
      * Vaadin, for example <code>"v16.0.0"</code>. Defaults to
@@ -808,4 +810,27 @@ public class Options implements Serializable {
         return postinstallPackages;
     }
 
+    /**
+     * Set to true to skip dev bundle build in case a dev bundle exists.
+     * <p>
+     * Dev bundle build will not be skipped in case no dev bundle is found.
+     *
+     * @param skip
+     *            {@code true} to skip rebuild of dev bundle
+     * @return this builder
+     */
+    public Options skipDevBundleBuild(boolean skip) {
+        skipDevBundle = skip;
+        return this;
+    }
+
+    /**
+     * Is dev bundle build skipped or not.
+     *
+     * @return {@code true} to skip dev bundle checks, {@code false} to run
+     *         normally. Default is {@code false}
+     */
+    public boolean isSkipDevBundle() {
+        return skipDevBundle;
+    }
 }
