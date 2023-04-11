@@ -882,6 +882,15 @@ export class VaadinDevTools extends LitElement {
       window.sessionStorage.setItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE, 'true');
       window.location.reload();
     };
+    const onUpdate = (path: string, content: string) => {
+      let styleTag = document.head.querySelector(`style[data-file-path='${path}']`);
+      if (styleTag) {
+        this.log(MessageType.INFORMATION, 'Hot update of ' + path);
+        styleTag.textContent = content;
+      } else {
+        onReload();
+      }
+    };
 
     const frontendConnection = new Connection(this.getDedicatedWebSocketUrl());
     frontendConnection.onHandshake = () => {
@@ -893,6 +902,7 @@ export class VaadinDevTools extends LitElement {
     };
     frontendConnection.onConnectionError = onConnectionError;
     frontendConnection.onReload = onReload;
+    frontendConnection.onUpdate = onUpdate;
     frontendConnection.onStatusChange = (status: ConnectionStatus) => {
       this.frontendStatus = status;
     };

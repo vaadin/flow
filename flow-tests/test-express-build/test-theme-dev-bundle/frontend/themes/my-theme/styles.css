@@ -10,3 +10,7 @@ body {
     background: rgba(255, 0, 0, 1);
     font-family: "Ostrich";
 }
+
+body {
+    --my-theme-marker: 1
+}

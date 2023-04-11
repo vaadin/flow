@@ -175,15 +175,30 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 .anyMatch(resourceRef -> resource.equals(resourceRef.get()));
     }
 
-    @Override
-    public void reload() {
+    private void send(JsonObject msg) {
         atmosphereResources.forEach(resourceRef -> {
             AtmosphereResource resource = resourceRef.get();
             if (resource != null) {
-                resource.getBroadcaster().broadcast("{\"command\": \"reload\"}",
-                        resource);
+                resource.getBroadcaster().broadcast(msg.toJson(), resource);
             }
         });
+
+    }
+
+    @Override
+    public void reload() {
+        JsonObject msg = Json.createObject();
+        msg.put("command", "reload");
+        send(msg);
+    }
+
+    @Override
+    public void update(String path, String content) {
+        JsonObject msg = Json.createObject();
+        msg.put("command", "update");
+        msg.put("path", path);
+        msg.put("content", content);
+        send(msg);
     }
 
     @SuppressWarnings("FutureReturnValueIgnored")
