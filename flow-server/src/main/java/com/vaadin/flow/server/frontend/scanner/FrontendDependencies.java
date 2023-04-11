@@ -29,10 +29,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import net.bytebuddy.jar.asm.ClassReader;
 import org.slf4j.Logger;
@@ -140,7 +138,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
     private void visitEntryPoints() throws IOException {
         for (Entry<String, EntryPointData> entry : entryPoints.entrySet()) {
-            visitClass(entry.getKey(), entry.getValue(), false);
+            visitClass(entry.getKey(), entry.getValue());
         }
     }
 
@@ -165,19 +163,13 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     /**
-     * Get all ES6 modules needed for run the application. Modules that are
-     * theme dependencies are guaranteed to precede other modules in the result.
+     * Get all JS modules needed for run the application.
      *
      * @return list of JS modules
      */
     @Override
     public List<String> getModules() {
-        // A module may appear in both data.getThemeModules and data.getModules,
-        // depending on how the classes were visited, hence the LinkedHashSet
         LinkedHashSet<String> all = new LinkedHashSet<>();
-        for (EntryPointData data : entryPoints.values()) {
-            all.addAll(data.getThemeModules());
-        }
         for (EntryPointData data : entryPoints.values()) {
             all.addAll(data.getModules());
         }
@@ -323,19 +315,6 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private void computeApplicationTheme() throws ClassNotFoundException,
             InstantiationException, IllegalAccessException, IOException {
 
-        // Re-visit theme related classes, because they might be skipped
-        // when they where already added to the visited list during other
-        // entry-point visits
-        for (EntryPointData entryPoint : entryPoints.values()) {
-            if (entryPoint.getLayout() != null) {
-                visitClass(entryPoint.getLayout(), entryPoint, false);
-            }
-            if (entryPoint.getTheme() != null) {
-                visitClass(entryPoint.getTheme().getThemeClass(), entryPoint,
-                        true);
-            }
-        }
-
         List<EntryPointData> entryPointsWithTheme = entryPoints.values()
                 .stream()
                 // consider only entry points with theme information
@@ -403,27 +382,14 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     /**
-     * Finds the default theme and attaches it to the given entry point as
-     * though the entry point had a {@code Theme} annotation.
+     * Finds the default theme.
      *
-     * @return Lumo or null
+     * @return Lumo
      */
     private Class<? extends AbstractTheme> getDefaultTheme()
             throws IOException {
         // No theme annotation found by the scanner
-        final Class<? extends AbstractTheme> defaultTheme = getLumoTheme();
-        // call visitClass on the default theme using the first available
-        // entry point. If no entry point is available, default theme won't be
-        // set.
-        if (defaultTheme != null) {
-            Optional<EntryPointData> entryPoint = entryPoints.values().stream()
-                    .findFirst();
-            if (entryPoint.isPresent()) {
-                visitClass(defaultTheme.getName(), entryPoint.get(), true);
-            }
-            return defaultTheme;
-        }
-        return null;
+        return getLumoTheme();
     }
 
     /**
@@ -576,14 +542,14 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * @return
      * @throws IOException
      */
-    private void visitClass(String className, EntryPointData entryPoint,
-            boolean themeScope) throws IOException {
+    private void visitClass(String className, EntryPointData entryPoint)
+            throws IOException {
 
         // In theme scope, we want to revisit already visited classes to have
         // theme modules collected separately (in turn required for module
         // sorting, #5729)
-        if (!shouldVisit(className) || (!themeScope
-                && entryPoint.getClasses().contains(className))) {
+        if (!shouldVisit(className)
+                || entryPoint.getClasses().contains(className)) {
             return;
         }
         entryPoint.getClasses().add(className);
@@ -594,7 +560,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         }
 
         FrontendClassVisitor visitor = new FrontendClassVisitor(className,
-                entryPoint, themeScope);
+                entryPoint);
         try (InputStream is = url.openStream()) {
             ClassReader cr = new ClassReader(is);
             cr.accept(visitor, ClassReader.EXPAND_FRAMES);
@@ -614,7 +580,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             // we output all dependencies at once. When we implement
             // chunks, this will need to be considered.
             if (!visited.contains(clazz)) {
-                visitClass(clazz, entryPoint, themeScope);
+                visitClass(clazz, entryPoint);
             }
         }
     }

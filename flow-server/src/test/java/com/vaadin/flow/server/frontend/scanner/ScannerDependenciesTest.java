@@ -59,8 +59,7 @@ public class ScannerDependenciesTest {
     @Test
     public void should_extractClassesFromSignatures() {
         Set<String> classes = new HashSet<>();
-        FrontendClassVisitor visitor = new FrontendClassVisitor(null, null,
-                false);
+        FrontendClassVisitor visitor = new FrontendClassVisitor(null, null);
 
         visitor.addSignatureToClasses(classes,
                 "(Lcom/vaadin/flow/component/tabs/Tabs;Ljava/lang/String;Ljava/lang/Character;CLjava/lang/Integer;ILjava/lang/Long;JLjava/lang/Double;DLjava/lang/Float;FLjava/lang/Byte;BLjava/lang/Boolean;Z)Lcom/vaadin/flow/component/button/Button;");

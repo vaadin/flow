@@ -138,11 +138,8 @@ final class FrontendClassVisitor extends ClassVisitor {
      *            the class to visit
      * @param entryPoint
      *            the entry point object that will be updated during the visit
-     * @param themeScope
-     *            whether we are visiting from Theme
      */
-    FrontendClassVisitor(String className, EntryPointData entryPoint,
-            boolean themeScope) { // NOSONAR
+    FrontendClassVisitor(String className, EntryPointData entryPoint) { // NOSONAR
         super(Opcodes.ASM9);
         this.className = className;
         this.entryPoint = entryPoint;
@@ -195,11 +192,7 @@ final class FrontendClassVisitor extends ClassVisitor {
         jsModuleVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                if (themeScope) {
-                    entryPoint.themeModules.add(value.toString());
-                } else {
-                    entryPoint.modules.add(value.toString());
-                }
+                entryPoint.modules.add(value.toString());
             }
         };
         // Visitor for @JavaScript annotations

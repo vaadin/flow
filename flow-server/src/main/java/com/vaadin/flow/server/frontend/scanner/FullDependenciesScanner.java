@@ -140,12 +140,10 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         packages = discoverPackages();
 
-        Map<String, Set<String>> themeModules = new HashMap<>();
         LinkedHashSet<String> regularModules = new LinkedHashSet<>();
 
         collectAnnotationValues(
-                (clazz, module) -> handleModule(clazz, module, regularModules,
-                        themeModules),
+                (clazz, module) -> handleModule(clazz, module, regularModules),
                 JsModule.class,
                 module -> getAnnotationValueAsString(module, VALUE));
 
@@ -158,7 +156,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         discoverTheme();
 
-        modules = calculateModules(regularModules, themeModules);
+        modules = calculateModules(regularModules);
 
         pwaConfiguration = discoverPwa();
 
@@ -414,35 +412,14 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private void handleModule(Class<?> clazz, String module,
-            Set<String> modules, Map<String, Set<String>> themeModules) {
+            Set<String> modules) {
 
-        if (abstractTheme.isAssignableFrom(clazz)) {
-            Set<String> themingModules = themeModules.computeIfAbsent(
-                    clazz.getName(), cl -> new LinkedHashSet<>());
-            themingModules.add(module);
-        } else {
-            classes.add(clazz.getName());
-            modules.add(module);
-        }
+        classes.add(clazz.getName());
+        modules.add(module);
     }
 
-    private List<String> calculateModules(Set<String> modules,
-            Map<String, Set<String>> themeModules) {
-        Set<String> themingModules = themeModules
-                .get(getThemeDefinition() == null ? null
-                        : getThemeDefinition().getTheme().getName());
-        if (themingModules == null) {
-            return new ArrayList<>(modules);
-        }
-        if (getThemeDefinition() != null) {
-            classes.add(getThemeDefinition().getTheme().getName());
-        }
-        // get rid of duplicate but preserve the order
-        List<String> result = new ArrayList<>(
-                themingModules.size() + modules.size());
-        result.addAll(themingModules);
-        result.addAll(modules);
-        return result;
+    private List<String> calculateModules(Set<String> modules) {
+        return new ArrayList<>(modules);
     }
 
     private String getAnnotationValueAsString(Annotation target,

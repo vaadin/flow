@@ -41,7 +41,6 @@ public final class EntryPointData implements Serializable {
     String layout;
     ThemeData theme = new ThemeData();
     final LinkedHashSet<String> modules = new LinkedHashSet<>();
-    final LinkedHashSet<String> themeModules = new LinkedHashSet<>();
     final LinkedHashSet<String> scripts = new LinkedHashSet<>();
     final transient List<CssData> css = new ArrayList<>();
 
@@ -62,10 +61,6 @@ public final class EntryPointData implements Serializable {
 
     LinkedHashSet<String> getModules() {
         return modules;
-    }
-
-    LinkedHashSet<String> getThemeModules() {
-        return themeModules;
     }
 
     LinkedHashSet<String> getScripts() {
