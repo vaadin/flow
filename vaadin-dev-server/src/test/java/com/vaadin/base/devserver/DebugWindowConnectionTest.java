@@ -29,6 +29,9 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 public class DebugWindowConnectionTest {
 
     private DebugWindowConnection reload = new DebugWindowConnection(
@@ -62,10 +65,11 @@ public class DebugWindowConnectionTest {
 
         reload.reload();
 
-        Mockito.verify(broadcaster).broadcast("{\"command\": \"reload\"}",
-                resource1);
-        Mockito.verify(broadcaster).broadcast("{\"command\": \"reload\"}",
-                resource2);
+        JsonObject reload = Json.createObject();
+        reload.put("command", "reload");
+        String reloadJson = reload.toJson();
+        Mockito.verify(broadcaster).broadcast(reloadJson, resource1);
+        Mockito.verify(broadcaster).broadcast(reloadJson, resource2);
     }
 
     @Test

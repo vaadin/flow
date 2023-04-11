@@ -50,6 +50,9 @@ const addAdoptedStyle = (cssText, target, first) => {
   } else {
     target.adoptedStyleSheets = [...target.adoptedStyleSheets, sheet];
   }
+  return () => {
+    target.adoptedStyleSheets = target.adoptedStyleSheets.filter(ss => ss !== sheet);
+  }
 };
 
 const addStyleTag = (cssText, referenceComment) => {
@@ -66,6 +69,9 @@ const addStyleTag = (cssText, referenceComment) => {
     }
   }
   document.head.insertBefore(styleTag, beforeThis);
+  return () => {
+    styleTag.remove();
+  };
 };
 
 // target: Document | ShadowRoot
@@ -81,10 +87,10 @@ export const injectGlobalCss = (css, referenceComment, target, first) => {
 
   // We avoid mixing style tags and adoptedStyleSheets to make override order clear
   if (target === document) {
-    addStyleTag(cssText, referenceComment);
-  } else {
-    addAdoptedStyle(cssText, target, first);
+    return addStyleTag(cssText, referenceComment);
   }
+
+  return addAdoptedStyle(cssText, target, first);
 };
 
 window.Vaadin = window.Vaadin || {};

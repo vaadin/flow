@@ -159,7 +159,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     "window.Vaadin = window.Vaadin || {}; window.Vaadin.developmentMode = true;");
         }
 
-        addLinkTagForTheme(indexDocument, context);
+        addDevBundleTheme(indexDocument, context);
         applyThemeVariant(indexDocument, context);
 
         if (config.isDevToolsEnabled()) {
@@ -179,7 +179,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return true;
     }
 
-    private static void addLinkTagForTheme(Document document,
+    private static void addDevBundleTheme(Document document,
             VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
         if (config.getMode() == Mode.DEVELOPMENT_BUNDLE) {
@@ -188,7 +188,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                         .forEach(link -> document.head().appendChild(link));
             } catch (IOException e) {
                 throw new UncheckedIOException(
-                        "Failed to add a link tag for 'styles.css' to the document",
+                        "Failed to create a tag for 'styles.css' in the document",
                         e);
             }
         }

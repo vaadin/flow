@@ -65,9 +65,7 @@ public class ThemeLiveReloadWithShadowRootIT extends AbstractLiveReloadIT {
         });
 
         // Ensure a page reload did not take place
-        // It currently does, this can be included once the page reload
-        // is fixed
-        // Assert.assertEquals(getInitialAttachId(), getAttachId());
+        Assert.assertEquals(getInitialAttachId(), getAttachId());
 
     }
 

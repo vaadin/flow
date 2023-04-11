@@ -172,7 +172,7 @@ public class ThemeUtils {
      * @throws IllegalArgumentException
      *             if the theme folder was not found
      */
-    private static File getThemeFolder(File frontendFolder, String themeName)
+    public static File getThemeFolder(File frontendFolder, String themeName)
             throws IllegalArgumentException {
         File packagedThemesFolder = new File(
                 FrontendUtils.getJarResourcesFolder(frontendFolder),
@@ -192,7 +192,7 @@ public class ThemeUtils {
 
         throw new IllegalArgumentException("The theme folder for the '"
                 + themeName + "' theme was not found. It should be either in "
-                + themeInProject + " or in +" + themeFromJar);
+                + themeInProject + " or in " + themeFromJar);
     }
 
     private static void findActiveThemes(String themeName, List<String> themes,
@@ -206,5 +206,10 @@ public class ThemeUtils {
                 findActiveThemes(parentTheme.get(), themes, frontendFolder);
             }
         }
+    }
+
+    public static String getThemeFilePath(String themeName, String fileName) {
+        return Constants.VAADIN_MAPPING + Constants.APPLICATION_THEME_ROOT + "/"
+                + themeName + "/" + fileName;
     }
 }

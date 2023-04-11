@@ -407,4 +407,10 @@ public class BuildDevBundleMojo extends AbstractMojo
     public boolean isFrontendHotdeploy() {
         return false;
     }
+
+    @Override
+    public boolean skipDevBundleBuild() {
+        // Explicitly building dev bundle so no skipping allowed here.
+        return false;
+    }
 }

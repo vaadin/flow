@@ -225,6 +225,13 @@ public open class VaadinFlowPluginExtension(project: Project) {
      */
     public var ciBuild: Boolean = false
 
+    /**
+     * Enable skip of dev bundle rebuild if a dev bundle exists.
+     *
+     * @return `true` to skip dev bundle rebuild
+     */
+    public var skipDevBundleBuild: Boolean = false
+
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>? = null): ClasspathFilter {
         if (block != null) {
             block.delegate = classpathFilter
