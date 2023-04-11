@@ -112,13 +112,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
     @Test
     public void generateImportsFile_fileContainsThemeLinesAndExpectedImportsAndCssImportLinesAndLogReports()
             throws Exception {
-        List<String> expectedLines = new ArrayList<>(Arrays.asList(
-                "export const addCssBlock = function(block, before = false) {",
-                " const tpl = document.createElement('template');",
-                " tpl.innerHTML = block;",
-                " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
-                "};",
-                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);"));
+        List<String> expectedLines = new ArrayList<>();
         expectedLines.addAll(getExpectedImports());
 
         // An import without `.js` extension

@@ -20,7 +20,6 @@ package com.vaadin.flow.server.frontend;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static org.junit.Assert.assertTrue;
@@ -65,7 +64,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     public ExpectedException exception = ExpectedException.none();
 
     private File importsFile;
-    private File importsDefinitionFile;
     private File fallBackImportsFile;
     private File generatedPath;
     private File frontendDirectory;
@@ -85,7 +83,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         generatedPath = new File(tmpRoot,
                 Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
         importsFile = new File(generatedPath, IMPORTS_NAME);
-        importsDefinitionFile = new File(generatedPath, IMPORTS_D_TS_NAME);
         fallBackImportsFile = new File(generatedPath,
                 FrontendUtils.FALLBACK_IMPORTS_NAME);
         File webpackDir = temporaryFolder.newFolder();
@@ -147,13 +144,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 Charset.defaultCharset());
 
         // ============== check main generated imports file ============
-        // Contains theme lines
-        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
-                "export const addCssBlock = function(block, before = false) {"));
-
-        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
-                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);"));
-
         // Contains CSS import lines
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css?inline';"));
@@ -211,10 +201,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 CoreMatchers.not(CoreMatchers.containsString(
                         "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css?inline';")));
 
-        // Contain lines to import exported modules from main file
-        MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "export const addCssBlock = function(block, before = false) {"));
-
         // Contains CSS import lines from CP not discovered by byte scanner
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
                 "import $cssFromFile_0 from 'Frontend/b-css.css?inline';"));
@@ -245,16 +231,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertTokenFileWithFallBack(object);
         assertTokenFileWithFallBack(fallBackData);
-
-        // ============== check definition file ============
-
-        assertTrue(importsDefinitionFile.exists());
-
-        String definitionContent = FileUtils.readFileToString(
-                importsDefinitionFile, Charset.defaultCharset());
-
-        MatcherAssert.assertThat(definitionContent, CoreMatchers.containsString(
-                "export declare const addCssBlock: (block: string, before?: boolean) => void;"));
     }
 
     @Test
@@ -289,13 +265,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 Charset.defaultCharset());
 
         // ============== check main generated imports file ============
-
-        // Contains theme lines
-        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
-                "export const addCssBlock = function(block, before = false) {"));
-
-        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
-                "addCssBlock('<custom-style>foo</custom-style>', true);"));
 
         // fallback chunk load function is generated
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
