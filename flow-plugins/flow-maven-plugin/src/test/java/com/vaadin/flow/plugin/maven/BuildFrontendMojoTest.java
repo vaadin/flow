@@ -346,14 +346,7 @@ public class BuildFrontendMojoTest {
     public void should_UpdateMainJsFile() throws Exception {
         Assert.assertFalse(importsFile.exists());
 
-        List<String> expectedLines = new ArrayList<>(Arrays.asList(
-                "export const addCssBlock = function(block, before = false) {",
-                " const tpl = document.createElement('template');",
-                " tpl.innerHTML = block;",
-                " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
-                "};",
-                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);"));
-
+        List<String> expectedLines = new ArrayList<>();
         expectedLines.addAll(getExpectedImports());
 
         mojo.execute();
