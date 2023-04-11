@@ -126,7 +126,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
 
     lumoImports.forEach((lumoImport) => {
       // Lumo is injected to the document by Lumo itself
-      shadowOnlyCss.push(`injectGlobalCss(${lumoImport}.cssText, '', target, true);\n`);
+      shadowOnlyCss.push(`removers.push(injectGlobalCss(${lumoImport}.cssText, '', target, true));\n`);
     });
   }
 
@@ -136,7 +136,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     globalFileContent.push(`import 'themes/${themeName}/${filename}';\n`);
 
     imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
-    shadowOnlyCss.push(`injectGlobalCss(${variable}.toString(), '', target);\n    `);
+    shadowOnlyCss.push(`removers.push(injectGlobalCss(${variable}.toString(), '', target));\n    `);
   }
   if (existsSync(documentCssFile)) {
     filename = basename(documentCssFile);
@@ -146,7 +146,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
       globalFileContent.push(`import 'themes/${themeName}/${filename}';\n`);
 
       imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
-      shadowOnlyCss.push(`injectGlobalCss(${variable}.toString(),'', document);\n    `);
+      shadowOnlyCss.push(`removers.push(injectGlobalCss(${variable}.toString(),'', document));\n    `);
     }
   }
 
@@ -167,9 +167,11 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
       // Due to chrome bug https://bugs.chromium.org/p/chromium/issues/detail?id=336876 font-face will not work
       // inside shadowRoot so we need to inject it there also.
       globalCssCode.push(`if(target !== document) {
-      injectGlobalCss(${variable}.toString(), '', target);
+        removers.push(injectGlobalCss(${variable}.toString(), '', target));
     }\n    `);
-      globalCssCode.push(`injectGlobalCss(${variable}.toString(), '${CSSIMPORT_COMMENT}', document);\n    `);
+      globalCssCode.push(
+        `removers.push(injectGlobalCss(${variable}.toString(), '${CSSIMPORT_COMMENT}', document));\n    `
+      );
     });
   }
   if (themeProperties.importCss) {
@@ -186,7 +188,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
       const variable = 'module' + i++;
       globalFileContent.push(`import '${cssPath}';\n`);
       imports.push(`import ${variable} from '${cssPath}?inline';\n`);
-      shadowOnlyCss.push(`injectGlobalCss(${variable}.toString(), '${CSSIMPORT_COMMENT}', target);\n`);
+      shadowOnlyCss.push(`removers.push(injectGlobalCss(${variable}.toString(), '${CSSIMPORT_COMMENT}', target));\n`);
     });
   }
 
@@ -212,13 +214,23 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
 
   // Don't format as the generated file formatting will get wonky!
   // If targets check that we only register the style parts once, checks exist for global css and component css
-  const themeFileApply = `export const applyTheme = (target) => {
+  const themeFileApply = `
+  let themeRemovers = new WeakMap();
+  let targets = [];
+
+  export const applyTheme = (target) => {
+    const removers = [];
     if (target !== document) {
-      needsReloadOnChanges = true;
       ${shadowOnlyCss.join('')}
     }
     ${parentTheme}
     ${globalCssCode.join('')}
+
+    if (import.meta.hot) {
+      targets.push(new WeakRef(target));
+      themeRemovers.set(target, removers);
+    }
+
   }
   
 `;
@@ -242,8 +254,17 @@ if (import.meta.hot) {
   themeFileContent += `
 if (import.meta.hot) {
   import.meta.hot.accept((module) => {
+
     if (needsReloadOnChanges) {
       window.location.reload();
+    } else {
+      targets.forEach(targetRef => {
+        const target = targetRef.deref();
+        if (target) {
+          themeRemovers.get(target).forEach(remover => remover())
+          module.applyTheme(target);
+        }
+      })
     }
   });
 }
