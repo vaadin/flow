@@ -171,6 +171,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         if (options.isSkipDevBundle()) {
             // if skip dev bundle defined and we have a dev bundle,
             // cancel all checks and trust existing bundle
+            getLogger()
+                    .info("Skip dev bundle requested. Using existing bundle.");
             return false;
         }
 
