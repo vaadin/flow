@@ -457,6 +457,21 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     protected void waitForFont(String fontSizeAndName) {
         waitUntil(d -> (boolean) executeScript(
                 "return document.fonts.check(arguments[0])", fontSizeAndName));
+    }
+
+    protected void assertRuleOnce(String style) {
+
+        List<String> adoptedStyleSheetsWithString = (List<String>) executeScript(
+                "return document.adoptedStyleSheets.map(sheet => sheet.cssRules).flatMap(rules => Array.from(rules).map(rule => rule.cssText)).filter(rule => rule.includes(arguments[0]))",
+                style);
+        List<String> styleAndLinkTagsWithString = (List<String>) executeScript(
+                "return Array.from(document.styleSheets).map(style => {try { return style.cssRules; } catch (e) {}}).filter(f => f).flatMap(rules => Array.from(rules).map(rule => rule.cssText)).filter(text => text.includes(arguments[0]))",
+                style);
+
+        Assert.assertEquals("Theme rule should have been added once", 1,
+                adoptedStyleSheetsWithString.size()
+                        + styleAndLinkTagsWithString.size());
 
     }
+
 }

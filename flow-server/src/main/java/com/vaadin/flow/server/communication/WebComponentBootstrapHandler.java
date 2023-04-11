@@ -50,6 +50,7 @@ import com.vaadin.flow.server.BootstrapException;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -387,7 +388,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
         DeploymentConfiguration config = response.getService()
                 .getDeploymentConfiguration();
-        if (!config.isProductionMode() && !config.frontendHotdeploy()) {
+        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE) {
             // Add styles.css link to the web component shadow DOM
             BootstrapHandler.getStylesheetTags(config, "styles.css")
                     .forEach(element -> ElementUtil.fromJsoup(element)

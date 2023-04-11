@@ -108,18 +108,14 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void stylesCssLinkAddedToHead() {
+    public void themeAndParentThemeLoaded() {
         open();
 
-        final WebElement documentHead = getDriver()
-                .findElement(By.xpath("/html/head"));
-        final List<WebElement> links = documentHead
-                .findElements(By.tagName("link"));
-        Assert.assertEquals(2, links.size());
-        Assert.assertTrue(links.get(0).getAttribute("href")
-                .contains("VAADIN/themes/parent-theme/styles.css"));
-        Assert.assertTrue(links.get(1).getAttribute("href")
-                .contains("VAADIN/themes/my-theme/styles.css"));
+        String appThemeRule = "--my-theme-marker: 1";
+        String parentThemeRule = "--parent-theme-marker: 1";
+
+        assertRuleOnce(appThemeRule);
+        assertRuleOnce(parentThemeRule);
     }
 
     @Test

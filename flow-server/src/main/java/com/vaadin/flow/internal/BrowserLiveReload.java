@@ -83,6 +83,16 @@ public interface BrowserLiveReload {
     void reload();
 
     /**
+     * Request an update of the resource with the given path.
+     *
+     * @param path
+     *            the path of the file to update, relative to the servlet path
+     * @param content
+     *            the new content of the file
+     */
+    void update(String path, String content);
+
+    /**
      * Called when any message is received through the connection.
      *
      * @param resource
