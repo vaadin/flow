@@ -31,6 +31,12 @@
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-test-spring-common</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents.client5</groupId>
+                    <artifactId>httpclient5</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
