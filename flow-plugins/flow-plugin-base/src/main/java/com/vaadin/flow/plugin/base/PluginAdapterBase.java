@@ -282,4 +282,11 @@ public interface PluginAdapterBase {
     List<String> postinstallPackages();
 
     boolean isFrontendHotdeploy();
+
+    /**
+     * Enable skip of dev bundle rebuild if a dev bundle exists.
+     *
+     * @return {@code true} to skip dev bundle rebuild
+     */
+    boolean skipDevBundleBuild();
 }
