@@ -97,8 +97,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         Assert.assertNull(packageJson.getObject(OVERRIDES));
 
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson,
-                packageUpdater.versionsJson);
+        packageUpdater.lockVersionForNpm(packageJson);
 
         Assert.assertEquals("$" + TEST_DEPENDENCY,
                 packageJson.getObject(OVERRIDES).getString(TEST_DEPENDENCY));
@@ -115,8 +114,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 packageJson.getObject(DEPENDENCIES).get(TEST_DEPENDENCY));
 
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson,
-                packageUpdater.versionsJson);
+        packageUpdater.lockVersionForNpm(packageJson);
 
         Assert.assertNull(
                 packageJson.getObject(OVERRIDES).get(TEST_DEPENDENCY));
@@ -135,8 +133,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         overridesSection.put(TEST_DEPENDENCY, USER_PINNED_DEPENDENCY_VERSION);
 
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson,
-                packageUpdater.versionsJson);
+        packageUpdater.lockVersionForNpm(packageJson);
 
         Assert.assertEquals(USER_PINNED_DEPENDENCY_VERSION,
                 packageJson.getObject(OVERRIDES).getString(TEST_DEPENDENCY));
@@ -152,8 +149,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         Assert.assertNull(packageJson.getObject(OVERRIDES));
 
         packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson,
-                packageUpdater.versionsJson);
+        packageUpdater.lockVersionForNpm(packageJson);
 
         Assert.assertNull(packageJson.getObject(OVERRIDES));
     }

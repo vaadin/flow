@@ -85,8 +85,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             modified = updatePackageJsonDependencies(packageJson,
                     scannedApplicationDependencies);
             generateVersionsJson(packageJson);
-            boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson,
-                    versionsJson);
+            boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson);
 
             if (modified || npmVersionLockingUpdated) {
                 writePackageFile(packageJson);
@@ -109,8 +108,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
     }
 
-    boolean lockVersionForNpm(JsonObject packageJson, JsonObject versionsJson)
-            throws IOException {
+    boolean lockVersionForNpm(JsonObject packageJson) throws IOException {
         if (enablePnpm) {
             return false;
         }
