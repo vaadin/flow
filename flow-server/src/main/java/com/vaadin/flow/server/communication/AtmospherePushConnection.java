@@ -46,8 +46,8 @@ public class AtmospherePushConnection implements PushConnection {
     private transient AtmosphereResource resource;
     private transient FragmentedMessage incomingMessage;
     private transient Future<Object> outgoingMessage;
-
     private transient Object lock = new Object();
+    private volatile boolean disconnecting;
 
     /**
      * Represents a message that can arrive as multiple fragments.
@@ -306,10 +306,22 @@ public class AtmospherePushConnection implements PushConnection {
 
     @Override
     public void disconnect() {
+        // If a disconnection is already happening on another thread it is safe
+        // to skip the operation. This also prevents potential deadlocks if the
+        // container acquires locks during operations on HTTP session, as
+        // closing the AtmosphereResource may cause HTTP session access
+        if (disconnecting) {
+            getLogger().debug(
+                    "Disconnection already in progress, ignoring request");
+            return;
+        }
+
         synchronized (lock) {
+            disconnecting = true;
             assert isConnected();
             if (resource == null) {
-                // Already disconnected. Should not happen but if it does, we
+                // Already disconnected. Should not happen but if it does,
+                // we
                 // don't
                 // want to cause NPEs
                 getLogger().debug(
@@ -345,6 +357,7 @@ public class AtmospherePushConnection implements PushConnection {
                 getLogger().info("Error when closing push connection", e);
             }
             connectionLost();
+            disconnecting = false;
         }
     }
 
@@ -388,6 +401,7 @@ public class AtmospherePushConnection implements PushConnection {
             throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         state = State.DISCONNECTED;
+        disconnecting = false;
         lock = new Object();
     }
 
