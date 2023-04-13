@@ -750,7 +750,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
             @Override
             Logger log() {
-                return LoggerFactory.getLogger(NodeUpdater.class);
+                return logger;
             }
         };
     }
