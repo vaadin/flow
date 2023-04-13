@@ -67,7 +67,7 @@ import net.bytebuddy.jar.asm.ClassReader;
  */
 public class FrontendDependencies extends AbstractDependenciesScanner {
 
-    private final HashMap<String, EndPointData> endPoints = new HashMap<>();
+    private final HashMap<String, EntryPointData> entryPoints = new HashMap<>();
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
@@ -123,10 +123,10 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 "Scanning classes to find frontend configurations and dependencies...");
         long start = System.nanoTime();
         try {
-            computeEndpoints();
+            computeEntrypoints();
             if (generateEmbeddableWebComponents) {
-                computeExporterEndpoints(WebComponentExporter.class);
-                computeExporterEndpoints(WebComponentExporterFactory.class);
+                computeExporterEntrypoints(WebComponentExporter.class);
+                computeExporterEntrypoints(WebComponentExporterFactory.class);
             }
             computeApplicationTheme();
             computePackages();
@@ -171,10 +171,10 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // A module may appear in both data.getThemeModules and data.getModules,
         // depending on how the classes were visited, hence the LinkedHashSet
         LinkedHashSet<String> all = new LinkedHashSet<>();
-        for (EndPointData data : endPoints.values()) {
+        for (EntryPointData data : entryPoints.values()) {
             all.addAll(data.getThemeModules());
         }
-        for (EndPointData data : endPoints.values()) {
+        for (EntryPointData data : entryPoints.values()) {
             all.addAll(data.getModules());
         }
         return new ArrayList<>(all);
@@ -188,7 +188,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     @Override
     public Set<String> getScripts() {
         Set<String> all = new LinkedHashSet<>();
-        for (EndPointData data : endPoints.values()) {
+        for (EntryPointData data : entryPoints.values()) {
             all.addAll(data.getScripts());
         }
         return all;
@@ -202,7 +202,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     @Override
     public Set<CssData> getCss() {
         Set<CssData> all = new LinkedHashSet<>();
-        for (EndPointData data : endPoints.values()) {
+        for (EntryPointData data : entryPoints.values()) {
             all.addAll(data.getCss());
         }
         return all;
@@ -223,8 +223,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *
      * @return the set of JS files
      */
-    public Collection<EndPointData> getEndPoints() {
-        return endPoints.values();
+    public Collection<EntryPointData> getEntryPoints() {
+        return entryPoints.values();
     }
 
     /**
@@ -250,7 +250,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     /**
      * Visit all application entry points classes (e.g. annotated with
      * {@link Route}, {@link UIInitListener} instances, etc.) and update an
-     * {@link EndPointData} object with the info found.
+     * {@link EntryPointData} object with the info found.
      * <p>
      * At the same time when the root level view is visited, compute the theme
      * to use and create its instance.
@@ -258,45 +258,46 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * @throws ClassNotFoundException
      * @throws IOException
      */
-    private void computeEndpoints() throws ClassNotFoundException, IOException {
+    private void computeEntrypoints()
+            throws ClassNotFoundException, IOException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
         Class<? extends Annotation> routeClass = getFinder()
                 .loadClass(Route.class.getName());
         for (Class<?> route : getFinder().getAnnotatedClasses(routeClass)) {
-            collectEndpoints(route);
+            collectEntrypoints(route);
         }
 
         for (Class<?> initListener : getFinder().getSubTypesOf(
                 getFinder().loadClass(UIInitListener.class.getName()))) {
-            collectEndpoints(initListener);
+            collectEntrypoints(initListener);
         }
 
         for (Class<?> initListener : getFinder().getSubTypesOf(getFinder()
                 .loadClass(VaadinServiceInitListener.class.getName()))) {
-            collectEndpoints(initListener);
+            collectEntrypoints(initListener);
         }
 
         for (Class<?> appShell : getFinder().getSubTypesOf(
                 getFinder().loadClass(AppShellConfigurator.class.getName()))) {
-            collectEndpoints(appShell);
+            collectEntrypoints(appShell);
         }
 
         for (Class<?> errorParameters : getFinder().getSubTypesOf(
                 getFinder().loadClass(HasErrorParameter.class.getName()))) {
-            collectEndpoints(errorParameters);
+            collectEntrypoints(errorParameters);
         }
 
         // UI should always be collected as it contains 'ConnectionIndicator.js'
         // which else goes into fallback making it always load.
-        collectEndpoints(UI.class);
+        collectEntrypoints(UI.class);
     }
 
-    private void collectEndpoints(Class<?> entry) throws IOException {
+    private void collectEntrypoints(Class<?> entry) throws IOException {
         String className = entry.getName();
-        if (!endPoints.containsKey(className)) {
-            EndPointData data = new EndPointData(entry);
-            endPoints.put(className, visitClass(className, data, false));
+        if (!entryPoints.containsKey(className)) {
+            EntryPointData data = new EntryPointData(entry);
+            entryPoints.put(className, visitClass(className, data, false));
         } else {
             LoggerFactory.getLogger(FrontendDependencies.class).trace(
                     "Entry for class {} has already been visited.", className);
@@ -308,8 +309,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * in the case that there are multiple themes for the application or in the
      * case of Theme and NoTheme found in the application.
      *
-     * If no theme is found and the application has endpoints, it uses lumo if
-     * found in the class-path
+     * If no theme is found and the application has entry points, it uses lumo
+     * if found in the class-path
      */
     private void computeApplicationTheme() throws ClassNotFoundException,
             InstantiationException, IllegalAccessException, IOException {
@@ -317,28 +318,29 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // Re-visit theme related classes, because they might be skipped
         // when they where already added to the visited list during other
         // entry-point visits
-        for (EndPointData endPoint : endPoints.values()) {
-            if (endPoint.getLayout() != null) {
-                visitClass(endPoint.getLayout(), endPoint, false);
+        for (EntryPointData entryPoint : entryPoints.values()) {
+            if (entryPoint.getLayout() != null) {
+                visitClass(entryPoint.getLayout(), entryPoint, false);
             }
-            if (endPoint.getTheme() != null) {
-                visitClass(endPoint.getTheme().getThemeClass(), endPoint, true);
+            if (entryPoint.getTheme() != null) {
+                visitClass(entryPoint.getTheme().getThemeClass(), entryPoint,
+                        true);
             }
         }
 
-        Set<ThemeData> themes = endPoints.values().stream()
-                // consider only endPoints with theme information
+        Set<ThemeData> themes = entryPoints.values().stream()
+                // consider only entry points with theme information
                 .filter(data -> data.getTheme().getThemeClass() != null
                         || (data.getTheme().getThemeName() != null
                                 && !data.getTheme().getThemeName().isEmpty())
                         || !data.getTheme().getVariant().isEmpty()
                         || data.getTheme().isNotheme())
-                .map(EndPointData::getTheme)
+                .map(EntryPointData::getTheme)
                 // Remove duplicates by returning a set
                 .collect(Collectors.toSet());
 
         if (themes.size() > 1) {
-            String names = endPoints.values().stream()
+            String names = entryPoints.values().stream()
                     .filter(data -> data.getTheme().getThemeClass() != null
                             || data.getTheme().getThemeName() != null
                             || data.getTheme().isNotheme())
@@ -390,8 +392,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     /**
-     * Finds the default theme and attaches it to the given endpoint as though
-     * the endpoint had a {@code Theme} annotation.
+     * Finds the default theme and attaches it to the given entry point as
+     * though the entry point had a {@code Theme} annotation.
      *
      * @return Lumo or null
      */
@@ -400,13 +402,13 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // No theme annotation found by the scanner
         final Class<? extends AbstractTheme> defaultTheme = getLumoTheme();
         // call visitClass on the default theme using the first available
-        // endpoint. If not endpoint is available, default theme won't be
+        // entry point. If no entry point is available, default theme won't be
         // set.
         if (defaultTheme != null) {
-            Optional<EndPointData> endPointData = endPoints.values().stream()
+            Optional<EntryPointData> entryPoint = entryPoints.values().stream()
                     .findFirst();
-            if (endPointData.isPresent()) {
-                visitClass(defaultTheme.getName(), endPointData.get(), true);
+            if (entryPoint.isPresent()) {
+                visitClass(defaultTheme.getName(), entryPoint.get(), true);
             }
             return defaultTheme;
         }
@@ -500,7 +502,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     /**
      * Visits all classes extending
      * {@link com.vaadin.flow.component.WebComponentExporter} or
-     * {@link WebComponentExporterFactory} and update an {@link EndPointData}
+     * {@link WebComponentExporterFactory} and update an {@link EntryPointData}
      * object with the info found.
      *
      * <p>
@@ -512,14 +514,14 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * available.
      *
      * @param clazz
-     *            the exporter endpoint class
+     *            the exporter entry point class
      * @throws ClassNotFoundException
      *             if unable to load a class by class name
      * @throws IOException
      *             if unable to scan the class byte code
      */
     @SuppressWarnings("unchecked")
-    private void computeExporterEndpoints(Class<?> clazz)
+    private void computeExporterEntrypoints(Class<?> clazz)
             throws ClassNotFoundException, IOException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
@@ -534,12 +536,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             return;
         }
 
-        HashMap<String, EndPointData> exportedPoints = new HashMap<>();
+        HashMap<String, EntryPointData> exportedPoints = new HashMap<>();
 
         for (Class<?> exporter : exporterClasses) {
             String exporterClassName = exporter.getName();
-            if (!endPoints.containsKey(exporterClassName)) {
-                EndPointData exporterData = new EndPointData(exporter);
+            if (!entryPoints.containsKey(exporterClassName)) {
+                EntryPointData exporterData = new EntryPointData(exporter);
                 exportedPoints.put(exporterClassName,
                         visitClass(exporterClassName, exporterData, false));
             }
@@ -550,22 +552,23 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
         }
 
-        endPoints.putAll(exportedPoints);
+        entryPoints.putAll(exportedPoints);
     }
 
     private void visitComponenClass(Class<? extends Annotation> routeClass,
             Class<?> exporterClass,
-            HashMap<String, EndPointData> exportedPoints, Class<?> exporter)
+            HashMap<String, EntryPointData> exportedPoints, Class<?> exporter)
             throws IOException {
         Class<? extends Component> componentClass = (Class<? extends Component>) ReflectTools
                 .getGenericInterfaceType(exporter, exporterClass);
         if (componentClass != null
                 && !componentClass.isAnnotationPresent(routeClass)) {
             String componentClassName = componentClass.getName();
-            if (endPoints.containsKey(componentClassName)) {
+            if (entryPoints.containsKey(componentClassName)) {
                 return;
             }
-            EndPointData configurationData = new EndPointData(componentClass);
+            EntryPointData configurationData = new EntryPointData(
+                    componentClass);
             exportedPoints.put(componentClassName,
                     visitClass(componentClassName, configurationData, false));
         }
@@ -575,29 +578,29 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Recursive method for visiting class names using bytecode inspection.
      *
      * @param className
-     * @param endPoint
+     * @param entryPoint
      * @return
      * @throws IOException
      */
-    private EndPointData visitClass(String className, EndPointData endPoint,
-            boolean themeScope) throws IOException {
+    private EntryPointData visitClass(String className,
+            EntryPointData entryPoint, boolean themeScope) throws IOException {
 
         // In theme scope, we want to revisit already visited classes to have
         // theme modules collected separately (in turn required for module
         // sorting, #5729)
-        if (!isVisitable(className)
-                || (!themeScope && endPoint.getClasses().contains(className))) {
-            return endPoint;
+        if (!isVisitable(className) || (!themeScope
+                && entryPoint.getClasses().contains(className))) {
+            return entryPoint;
         }
-        endPoint.getClasses().add(className);
+        entryPoint.getClasses().add(className);
 
         URL url = getUrl(className);
         if (url == null) {
-            return endPoint;
+            return entryPoint;
         }
 
         FrontendClassVisitor visitor = new FrontendClassVisitor(className,
-                endPoint, themeScope);
+                entryPoint, themeScope);
         try (InputStream is = url.openStream()) {
             ClassReader cr = new ClassReader(is);
             cr.accept(visitor, ClassReader.EXPAND_FRAMES);
@@ -617,11 +620,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             // we output all dependencies at once. When we implement
             // chunks, this will need to be considered.
             if (!visited.contains(clazz)) {
-                visitClass(clazz, endPoint, themeScope);
+                visitClass(clazz, entryPoint, themeScope);
             }
         }
 
-        return endPoint;
+        return entryPoint;
     }
 
     private boolean isVisitable(String className) {
@@ -648,6 +651,6 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
     @Override
     public String toString() {
-        return endPoints.toString();
+        return entryPoints.toString();
     }
 }

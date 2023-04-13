@@ -23,17 +23,19 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.router.Route;
 
 /**
- * A simple container with the information related to an application end-point,
- * i.e. those classes annotated with the {@link Route} annotation.
+ * A simple container with the information related to an application entry
+ * point, i.e. those classes annotated with the {@link Route} annotation,
+ * extending {@link WebComponentExporter} and a bunch of more internal classes.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
-public final class EndPointData implements Serializable {
+public final class EntryPointData implements Serializable {
     final String name;
     String route = "";
     String layout;
@@ -45,7 +47,7 @@ public final class EndPointData implements Serializable {
 
     private final HashSet<String> classes = new HashSet<>();
 
-    EndPointData(Class<?> clazz) {
+    EntryPointData(Class<?> clazz) {
         this.name = clazz.getName();
     }
 
