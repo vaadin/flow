@@ -52,7 +52,7 @@ describe('theme-detector', () => {
       <style>
         test-element {
           padding: 20px;
-          --custom-property:bar;
+          --custom-property: bar;
         }
 
         test-element::part(label) {
@@ -88,5 +88,5 @@ describe('theme-detector', () => {
 
     expect(setupElementStub.calledOnce).to.be.true;
     expect(cleanupElementStub.calledOnce).to.be.true;
-  })
+  });
 });
