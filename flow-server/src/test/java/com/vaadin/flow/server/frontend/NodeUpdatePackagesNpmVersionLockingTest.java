@@ -88,7 +88,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
     }
 
     @Test
-    public void shoudlLockPinnedVersion_whenExistsInDependencies()
+    public void shouldLockPinnedVersion_whenExistsInDependencies()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         JsonObject packageJson = packageUpdater.getPackageJson();
@@ -96,15 +96,16 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
         Assert.assertNull(packageJson.getObject(OVERRIDES));
 
-        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson, versionsPath);
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson,
+                packageUpdater.versionsJson);
 
         Assert.assertEquals("$" + TEST_DEPENDENCY,
                 packageJson.getObject(OVERRIDES).getString(TEST_DEPENDENCY));
     }
 
     @Test
-    public void shoudlNotLockPinnedVersion_whenNotExistsInDependencies()
+    public void shouldNotLockPinnedVersion_whenNotExistsInDependencies()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         JsonObject packageJson = packageUpdater.getPackageJson();
@@ -113,8 +114,9 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         Assert.assertNull(
                 packageJson.getObject(DEPENDENCIES).get(TEST_DEPENDENCY));
 
-        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson, versionsPath);
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson,
+                packageUpdater.versionsJson);
 
         Assert.assertNull(
                 packageJson.getObject(OVERRIDES).get(TEST_DEPENDENCY));
@@ -132,8 +134,9 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 USER_PINNED_DEPENDENCY_VERSION);
         overridesSection.put(TEST_DEPENDENCY, USER_PINNED_DEPENDENCY_VERSION);
 
-        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson, versionsPath);
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson,
+                packageUpdater.versionsJson);
 
         Assert.assertEquals(USER_PINNED_DEPENDENCY_VERSION,
                 packageJson.getObject(OVERRIDES).getString(TEST_DEPENDENCY));
@@ -148,8 +151,9 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
         Assert.assertNull(packageJson.getObject(OVERRIDES));
 
-        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson, versionsPath);
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson,
+                packageUpdater.versionsJson);
 
         Assert.assertNull(packageJson.getObject(OVERRIDES));
     }
@@ -167,19 +171,16 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
         Assert.assertNull(packageJson.getObject(OVERRIDES));
 
-        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
-        File output = new File(packageUpdater.options.getNpmFolder(),
-                versionsPath);
+        packageUpdater.generateVersionsJson(packageJson);
         Assert.assertTrue(
-                FileUtils.readFileToString(output, StandardCharsets.UTF_8)
-                        .contains(TEST_DEPENDENCY));
+                packageUpdater.versionsJson.toJson().contains(TEST_DEPENDENCY));
 
         packageJson.getObject(DEPENDENCIES).remove(TEST_DEPENDENCY);
 
+        packageUpdater.versionsJson = null;
         packageUpdater.generateVersionsJson(packageJson);
         Assert.assertFalse(
-                FileUtils.readFileToString(output, StandardCharsets.UTF_8)
-                        .contains(TEST_DEPENDENCY));
+                packageUpdater.versionsJson.toJson().contains(TEST_DEPENDENCY));
 
     }
 

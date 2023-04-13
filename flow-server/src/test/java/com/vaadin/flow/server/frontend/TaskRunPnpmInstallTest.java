@@ -173,7 +173,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
-        getNodeUpdater().versionsPath = "./versions.json";
         task.execute();
 
         File file = new File(npmFolder, "pnpmfile.js");
@@ -195,7 +194,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
-        getNodeUpdater().versionsPath = "./versions.json";
         task.execute();
 
         File file = new File(npmFolder, "pnpmfile.js");
@@ -706,12 +704,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         JsonObject packageJson = Json.parse(FileUtils
                 .readFileToString(packageJsonFile, StandardCharsets.UTF_8));
-        String path = getNodeUpdater().generateVersionsJson(packageJson);
-
-        File generatedVersionsFile = new File(npmFolder, path);
-        return Json.parse(FileUtils.readFileToString(generatedVersionsFile,
-                StandardCharsets.UTF_8));
-
+        getNodeUpdater().generateVersionsJson(packageJson);
+        return getNodeUpdater().versionsJson;
     }
 
     private NodeUpdater createAndRunNodeUpdater(String versionsContent) {
@@ -736,24 +730,16 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             @Override
             public void execute() {
                 try {
-                    versionsPath = generateVersionsJson(Json.createObject());
+                    generateVersionsJson(Json.createObject());
                 } catch (Exception e) {
-                    versionsPath = null;
+                    versionsJson = null;
                 }
             }
 
             @Override
-            protected String generateVersionsJson(JsonObject packageJson)
+            protected void generateVersionsJson(JsonObject packageJson)
                     throws IOException {
-                try {
-                    if (versionsContent != null) {
-                        FileUtils.write(new File(npmFolder, "versions.json"),
-                                versionsContent, StandardCharsets.UTF_8);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                return "./versions.json";
+                versionsJson = Json.parse(versionsContent);
             }
         };
     }
