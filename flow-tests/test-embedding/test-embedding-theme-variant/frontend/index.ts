@@ -1,2 +1,2 @@
-import '../target/frontend/generated-flow-imports';
+import 'Frontend/generated/flow/generated-flow-imports.js';
 

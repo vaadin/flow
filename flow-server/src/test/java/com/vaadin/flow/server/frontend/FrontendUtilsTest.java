@@ -16,7 +16,6 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -26,7 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Rule;
@@ -37,27 +35,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -272,9 +259,6 @@ public class FrontendUtilsTest {
             throws IOException, ExecutionFailedException {
         File npmFolder = tmpDir.newFolder();
 
-        File generatedPath = new File(npmFolder, "generated");
-        generatedPath.mkdir();
-
         File symbolic = new File(npmFolder, "symbolic");
         symbolic.mkdir();
         File symbolicPackageJson = new File(symbolic, "package.json");
@@ -296,7 +280,7 @@ public class FrontendUtilsTest {
 
         Logger logger = Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withGeneratedFolder(generatedPath).withBuildDirectory(TARGET);
+                .withBuildDirectory(TARGET);
         NodeUpdater nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), options) {
             @Override
@@ -318,76 +302,6 @@ public class FrontendUtilsTest {
 
         Assert.assertTrue("Linked folder contents should not be removed.",
                 linkFolderFile.exists());
-    }
-
-    private ResourceProvider mockResourceProvider(VaadinService service) {
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
-
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
-
-        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(provider);
-
-        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
-        Mockito.when(service.getContext()).thenReturn(context);
-
-        Mockito.when(config.isProductionMode()).thenReturn(true);
-
-        Mockito.when(config.getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                .thenReturn("foo");
-        return provider;
-    }
-
-    private VaadinService setupStatsAssetMocks(String statsFile)
-            throws IOException, ServiceException {
-        String stats = IOUtils.toString(FrontendUtilsTest.class.getClassLoader()
-                .getResourceAsStream(statsFile), StandardCharsets.UTF_8);
-
-        return getServiceWithResource(stats);
-    }
-
-    private VaadinService getServiceWithResource(String content)
-            throws ServiceException, IOException {
-        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
-        configuration.setProductionMode(true);
-        MockVaadinServletService service = new MockVaadinServletService(
-                configuration);
-
-        VaadinContext context = service.getContext();
-
-        Lookup lookup = Mockito.mock(Lookup.class);
-        context.setAttribute(Lookup.class, lookup);
-
-        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
-
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(provider);
-
-        if (content != null) {
-            File tmpFile = tmpDir.newFile();
-            try (FileOutputStream outputStream = new FileOutputStream(
-                    tmpFile)) {
-                IOUtils.write(content, outputStream, StandardCharsets.UTF_8);
-            }
-            Mockito.when(provider.getApplicationResource(
-                    VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                    .thenReturn(tmpFile.toURI().toURL());
-        }
-
-        return service;
-    }
-
-    private VaadinServletService mockServletService() {
-        VaadinServletService service = Mockito.mock(VaadinServletService.class);
-
-        VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
-        Mockito.when(service.getServlet()).thenReturn(servlet);
-        return service;
     }
 
 }

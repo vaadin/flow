@@ -39,8 +39,6 @@ The following actions are performed when creating a package:
 ### General configuration options
 * **npmFolder** `File` - The folder where `package.json` file is located. Default is project root dir.
  Default value is: ${project.basedir}
-* **generatedFolder** `File` - The folder where flow will put generated files that will be used by webpack.
- Default value is: "${project.build.directory}/" + FRONTEND
 * **frontendDirectory** `File` - A directory with project's frontend source files.
  Default value is: "${project.basedir}/" + FRONTEND
 * **productionMode** `boolean` - Whether or not we are running in productionMode.

@@ -15,11 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TSX;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +26,11 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Version;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TSX;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Generate <code>index.ts</code> if it is missing in frontend folder.
  * <p>
@@ -40,9 +40,7 @@ import com.vaadin.flow.server.Version;
  */
 public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
 
-    private final Options options;
     private final File frontendDirectory;
-    private final File generatedImports;
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
@@ -51,9 +49,6 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
      *            the task options
      */
     TaskGenerateIndexTs(Options options) {
-        this.options = options;
-        this.generatedImports = new File(options.getGeneratedFolder(),
-                FrontendUtils.IMPORTS_NAME);
         this.frontendDirectory = options.getFrontendDirectory();
     }
 
@@ -79,21 +74,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
                 .getResourceAsStream(INDEX_TS)) {
             indexTemplate = IOUtils.toString(indexTsStream, UTF_8);
         }
-        String relativizedImport = ensureValidRelativePath(FrontendUtils
-                .getUnixRelativePath(options.getBuildDirectory().toPath(),
-                        generatedImports.toPath()));
-
-        String generatedDirRelativePathToBuildDir = FrontendUtils
-                .getUnixRelativePath(
-                        getGeneratedFile().getParentFile().toPath(),
-                        options.getBuildDirectory().toPath());
-
-        relativizedImport = relativizedImport
-                // replace `./` with `../../target/` to make it work
-                .replaceFirst("^./", generatedDirRelativePathToBuildDir + "/");
-
-        return indexTemplate.replace("[to-be-generated-by-flow]",
-                relativizedImport);
+        return indexTemplate;
     }
 
     /**

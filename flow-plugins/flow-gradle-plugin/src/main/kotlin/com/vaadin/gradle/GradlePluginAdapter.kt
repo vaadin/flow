@@ -40,8 +40,6 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
 
     override fun frontendDirectory(): File = extension.frontendDirectory
 
-    override fun generatedFolder(): File = extension.generatedFolder
-
     override fun generatedTsFolder(): File = extension.generatedTsFolder
 
     override fun getClassFinder(): ClassFinder {
