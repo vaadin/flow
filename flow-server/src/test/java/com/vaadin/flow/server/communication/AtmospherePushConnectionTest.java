@@ -16,9 +16,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
+
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
@@ -120,13 +119,14 @@ public class AtmospherePushConnectionTest {
             try {
                 vaadinSession.runWithLock(() -> {
                     CompletableFuture.runAsync(() -> {
+                        try {
+                            Thread.sleep(1);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                         connection.disconnect();
                         latch.countDown();
-                    }, CompletableFuture.delayedExecutor(1,
-                            TimeUnit.MILLISECONDS)).exceptionally(error -> {
-                                error.printStackTrace();
-                                return null;
-                            });
+                    });
                     connection.push();
                     return null;
                 });
