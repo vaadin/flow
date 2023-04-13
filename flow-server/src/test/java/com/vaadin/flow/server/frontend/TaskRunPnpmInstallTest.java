@@ -171,7 +171,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        TaskRunNpmInstall task = createTask();
+        String versionsJson = "{\"foo\":\"bar\"}";
+        TaskRunNpmInstall task = createTask(versionsJson);
         getNodeUpdater().modified = true;
         task.execute();
 
@@ -186,7 +187,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                     StandardCharsets.UTF_8);
         }
         MatcherAssert.assertThat(content,
-                CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
+                CoreMatchers.containsString("versions = " + versionsJson));
     }
 
     @Test
@@ -207,7 +208,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                     StandardCharsets.UTF_8);
         }
         MatcherAssert.assertThat(content,
-                CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
+                CoreMatchers.containsString("versions = {}"));
     }
 
     @Test
@@ -675,7 +676,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     @Override
     protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
-        NodeUpdater updater = getNodeUpdater();
+        NodeUpdater updater = createAndRunNodeUpdater(null);
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder);
         options.withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
@@ -732,14 +733,17 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 try {
                     generateVersionsJson(Json.createObject());
                 } catch (Exception e) {
-                    versionsJson = null;
+                    throw new RuntimeException(e);
                 }
             }
 
             @Override
-            protected void generateVersionsJson(JsonObject packageJson)
-                    throws IOException {
-                versionsJson = Json.parse(versionsContent);
+            JsonObject getPlatformPinnedDependencies() throws IOException {
+                if (versionsContent != null) {
+                    return Json.parse(versionsContent);
+                } else {
+                    return Json.createObject();
+                }
             }
         };
     }
