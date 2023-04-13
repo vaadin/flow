@@ -223,10 +223,8 @@ public class TaskUpdateImports extends NodeUpdater {
         UpdateFallBackImportsFile(ClassFinder classFinder, Options options) {
             super(options);
             generatedFallBack = new File(
-                    FrontendUtils
-                            .getFlowGeneratedImports(
-                                    options.getFrontendDirectory())
-                            .getParentFile(),
+                    FrontendUtils.getFlowGeneratedFolder(
+                            options.getFrontendDirectory()),
                     FrontendUtils.FALLBACK_IMPORTS_NAME);
             finder = classFinder;
         }

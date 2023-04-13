@@ -207,7 +207,7 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     String resolveGeneretedModule(String module) {
-        return "Frontend/generated/flow/" + module;
+        return FrontendUtils.FRONTEND_GENERATED_FLOW_IMPORT_PATH + module;
     }
 
     protected Collection<String> getCssLines() {
@@ -315,7 +315,8 @@ abstract class AbstractUpdateImports implements Runnable {
 
         for (String module : getModuleLines(modules)) {
             if (FRONTEND_IMPORT_LINE.matcher(module).matches()
-                    && !module.contains("Frontend/generated/flow/")) {
+                    && !module.contains(
+                            FrontendUtils.FRONTEND_GENERATED_FLOW_IMPORT_PATH)) {
                 internals.add(module);
             } else {
                 externals.add(module);
@@ -415,7 +416,8 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     private boolean isGeneratedFlowFile(String localModulePath) {
-        return localModulePath.startsWith("Frontend/generated/flow/");
+        return localModulePath
+                .startsWith(FrontendUtils.FRONTEND_GENERATED_FLOW_IMPORT_PATH);
     }
 
     /**
