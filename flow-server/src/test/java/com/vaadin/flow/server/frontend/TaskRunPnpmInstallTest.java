@@ -37,6 +37,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
@@ -744,6 +746,11 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 } else {
                     return Json.createObject();
                 }
+            }
+
+            @Override
+            Logger log() {
+                return LoggerFactory.getLogger(NodeUpdater.class);
             }
         };
     }
