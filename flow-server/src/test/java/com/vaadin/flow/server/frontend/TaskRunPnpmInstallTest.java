@@ -725,7 +725,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     private NodeUpdater createNodeUpdater(String versionsContent) {
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withGeneratedFolder(generatedPath).withBuildDirectory(TARGET);
+                .withBuildDirectory(TARGET);
 
         return new NodeUpdater(finder, Mockito.mock(FrontendDependencies.class),
                 options) {

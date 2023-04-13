@@ -47,6 +47,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -62,19 +63,15 @@ public class NodeUpdaterTest {
 
     private File npmFolder;
 
-    private File generatedPath;
-
     private ClassFinder finder;
 
     @Before
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
-        generatedPath = temporaryFolder.newFolder();
         FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
         finder = Mockito.mock(ClassFinder.class);
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withGeneratedFolder(generatedPath).withBuildDirectory(TARGET)
-                .withFeatureFlags(featureFlags);
+                .withBuildDirectory(TARGET).withFeatureFlags(featureFlags);
 
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), options) {
@@ -102,12 +99,12 @@ public class NodeUpdaterTest {
 
         Assert.assertEquals(1, modules.size());
         // GENERATED/ is an added prefix for files from this method
-        Assert.assertTrue(modules.contains("GENERATED/c.js"));
+        Assert.assertTrue(modules.contains("c.js"));
     }
 
     @Test
     public void getDefaultDependencies_includesAllDependencies() {
-        Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
+        Map<String, String> defaultDeps = NodeUpdater.getDefaultDependencies();
         Set<String> expectedDependencies = new HashSet<>();
         expectedDependencies.add("@polymer/polymer");
         expectedDependencies.add("@vaadin/common-frontend");

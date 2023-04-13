@@ -40,8 +40,6 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
  * found in the classpath. It also visits classes annotated with
@@ -426,12 +424,6 @@ public class TaskUpdatePackages extends NodeUpdater {
             for (File file : jarResourcesFolder.listFiles()) {
                 file.delete();
             }
-        }
-
-        File generatedNodeModules = new File(options.getGeneratedFolder(),
-                NODE_MODULES);
-        if (generatedNodeModules.exists()) {
-            FrontendUtils.deleteNodeModules(generatedNodeModules);
         }
     }
 

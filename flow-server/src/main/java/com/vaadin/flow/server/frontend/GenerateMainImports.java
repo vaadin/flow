@@ -36,6 +36,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
@@ -103,18 +104,13 @@ public class GenerateMainImports extends AbstractUpdateImports {
 
     @Override
     protected Collection<String> getGeneratedModules() {
-        if (options.getGeneratedFolder() == null) {
-            return Collections.emptySet();
-        }
         // Exclude generated-flow-imports.js and
         // generated-flow-imports-fallback.js
         // as they are not generated modules, but import files.
-        return NodeUpdater
-                .getGeneratedModules(options.getGeneratedFolder(), Stream
-                        .of(new File(options.getGeneratedFolder(), IMPORTS_NAME)
-                                .getName(),
-                                new File(options.getGeneratedFolder(),
-                                        FALLBACK_IMPORTS_NAME).getName())
+        File flowGeneratedFolder = FrontendUtils
+                .getFlowGeneratedFolder(options.getFrontendDirectory());
+        return NodeUpdater.getGeneratedModules(flowGeneratedFolder,
+                Stream.of(IMPORTS_NAME, FALLBACK_IMPORTS_NAME)
                         .collect(Collectors.toSet()));
     }
 
