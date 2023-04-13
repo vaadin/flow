@@ -637,7 +637,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     "(^$|"
                     + ".*(slf4j).*|"
                     // #5803
-                    + "^(java|sun|elemental|javax|org.(apache|atmosphere|jsoup|jboss|w3c|spring|joda|hibernate|glassfish|hsqldb)|com.(helger|spring|gwt|lowagie|fasterxml)|net.(sf|bytebuddy)).*|"
+                    + "^(java|sun|elemental|javax|jakarta|oshi|org.(apache|atmosphere|jsoup|jboss|w3c|spring|joda|hibernate|glassfish|hsqldb)|com.(helger|spring|gwt|lowagie|fasterxml|sun|nimbusds)|net.(sf|bytebuddy)).*|"
                     + ".*(Exception)$"
                     + ")"); // @formatter:on
     }
