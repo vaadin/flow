@@ -71,7 +71,7 @@ describe('theme-detector', () => {
     const theme = await detectTheme(testElementMetadata);
 
     expect(theme.getPropertyValue('test-element', 'padding').value).to.equal('20px');
-    expect(theme.getPropertyValue('test-element', '--custom-property').value).to.equal('bar');
+    expect(theme.getPropertyValue('test-element', '--custom-property').value.trim()).to.equal('bar');
     expect(theme.getPropertyValue('test-element::part(label)', 'color').value).to.equal('rgb(0, 128, 0)');
     expect(theme.getPropertyValue('test-element input[slot="input"]', 'border-radius').value).to.equal('10px');
     expect(theme.getPropertyValue('test-element::part(helper-text)', 'color').value).to.equal('rgb(0, 0, 255)');
