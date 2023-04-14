@@ -126,7 +126,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             visitEntryPoints();
             computeApplicationTheme();
             if (themeDefinition != null && themeDefinition.getTheme() != null) {
-                collectEntrypoints(themeDefinition.getTheme());
+                Class<? extends AbstractTheme> themeClass = themeDefinition
+                        .getTheme();
+                if (!visited.contains(themeClass.getName())) {
+                    addEntryPoint(themeClass);
+                    visitEntryPoint(entryPoints.get(themeClass.getName()));
+                }
             }
             computePackages();
             computePwaConfiguration();
@@ -141,8 +146,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
     private void visitEntryPoints() throws IOException {
         for (Entry<String, EntryPointData> entry : entryPoints.entrySet()) {
-            visitClass(entry.getKey(), entry.getValue());
+            visitEntryPoint(entry.getValue());
         }
+    }
+
+    private void visitEntryPoint(EntryPointData entryPoint) throws IOException {
+        visitClass(entryPoint.getName(), entryPoint);
     }
 
     /**
