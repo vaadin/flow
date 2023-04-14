@@ -37,6 +37,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
@@ -171,9 +173,9 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        TaskRunNpmInstall task = createTask();
+        String versionsJson = "{\"foo\":\"bar\"}";
+        TaskRunNpmInstall task = createTask(versionsJson);
         getNodeUpdater().modified = true;
-        getNodeUpdater().versionsPath = "./versions.json";
         task.execute();
 
         File file = new File(npmFolder, "pnpmfile.js");
@@ -187,7 +189,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                     StandardCharsets.UTF_8);
         }
         MatcherAssert.assertThat(content,
-                CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
+                CoreMatchers.containsString("versions = " + versionsJson));
     }
 
     @Test
@@ -195,7 +197,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
-        getNodeUpdater().versionsPath = "./versions.json";
         task.execute();
 
         File file = new File(npmFolder, "pnpmfile.js");
@@ -209,7 +210,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                     StandardCharsets.UTF_8);
         }
         MatcherAssert.assertThat(content,
-                CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
+                CoreMatchers.containsString("versions = {}"));
     }
 
     @Test
@@ -677,7 +678,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     @Override
     protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
-        NodeUpdater updater = getNodeUpdater();
+        NodeUpdater updater = createAndRunNodeUpdater(null);
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder);
         options.withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
@@ -706,12 +707,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         JsonObject packageJson = Json.parse(FileUtils
                 .readFileToString(packageJsonFile, StandardCharsets.UTF_8));
-        String path = getNodeUpdater().generateVersionsJson(packageJson);
-
-        File generatedVersionsFile = new File(npmFolder, path);
-        return Json.parse(FileUtils.readFileToString(generatedVersionsFile,
-                StandardCharsets.UTF_8));
-
+        getNodeUpdater().generateVersionsJson(packageJson);
+        return getNodeUpdater().versionsJson;
     }
 
     private NodeUpdater createAndRunNodeUpdater(String versionsContent) {
@@ -736,24 +733,24 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             @Override
             public void execute() {
                 try {
-                    versionsPath = generateVersionsJson(Json.createObject());
+                    generateVersionsJson(Json.createObject());
                 } catch (Exception e) {
-                    versionsPath = null;
+                    throw new RuntimeException(e);
                 }
             }
 
             @Override
-            protected String generateVersionsJson(JsonObject packageJson)
-                    throws IOException {
-                try {
-                    if (versionsContent != null) {
-                        FileUtils.write(new File(npmFolder, "versions.json"),
-                                versionsContent, StandardCharsets.UTF_8);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+            JsonObject getPlatformPinnedDependencies() throws IOException {
+                if (versionsContent != null) {
+                    return Json.parse(versionsContent);
+                } else {
+                    return Json.createObject();
                 }
-                return "./versions.json";
+            }
+
+            @Override
+            Logger log() {
+                return logger;
             }
         };
     }

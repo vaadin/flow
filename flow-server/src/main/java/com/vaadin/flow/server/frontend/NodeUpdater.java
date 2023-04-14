@@ -100,10 +100,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     boolean modified;
 
-    /**
-     * path to the versions.json file
-     */
-    String versionsPath;
+    JsonObject versionsJson;
 
     protected Options options;
 
@@ -523,16 +520,14 @@ public abstract class NodeUpdater implements FallibleCommand {
     /**
      * Generate versions json file for version locking.
      *
-     * @return generated versions json file path
+     * @param packageJson
+     *            the package json content
      * @throws IOException
      *             when file IO fails
      */
-    protected String generateVersionsJson(JsonObject packageJson)
+    protected void generateVersionsJson(JsonObject packageJson)
             throws IOException {
-        File versions = new File(FrontendUtils.getFlowGeneratedFolder(
-                options.getFrontendDirectory()), "versions.json");
-
-        JsonObject versionsJson = getPlatformPinnedDependencies();
+        versionsJson = getPlatformPinnedDependencies();
         JsonObject packageJsonVersions = generateVersionsFromPackageJson(
                 packageJson);
         if (versionsJson.keys().length == 0) {
@@ -543,15 +538,6 @@ public abstract class NodeUpdater implements FallibleCommand {
                     versionsJson.put(key, packageJsonVersions.getString(key));
                 }
             }
-        }
-        FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
-                StandardCharsets.UTF_8);
-        Path versionsPath = versions.toPath();
-        if (versions.isAbsolute()) {
-            return FrontendUtils.getUnixRelativePath(
-                    options.getNpmFolder().toPath(), versionsPath);
-        } else {
-            return FrontendUtils.getUnixPath(versionsPath);
         }
     }
 

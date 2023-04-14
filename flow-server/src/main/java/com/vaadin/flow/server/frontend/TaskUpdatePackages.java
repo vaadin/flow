@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -83,9 +82,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             JsonObject packageJson = getPackageJson();
             modified = updatePackageJsonDependencies(packageJson,
                     scannedApplicationDependencies);
-            versionsPath = generateVersionsJson(packageJson);
-            boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson,
-                    versionsPath);
+            generateVersionsJson(packageJson);
+            boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson);
 
             if (modified || npmVersionLockingUpdated) {
                 writePackageFile(packageJson);
@@ -108,17 +106,11 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
     }
 
-    boolean lockVersionForNpm(JsonObject packageJson, String versionsPath)
-            throws IOException {
+    boolean lockVersionForNpm(JsonObject packageJson) throws IOException {
         if (enablePnpm) {
             return false;
         }
         boolean versionLockingUpdated = false;
-
-        File generatedVersionsFile = new File(options.getNpmFolder(),
-                versionsPath);
-        final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
-                generatedVersionsFile, StandardCharsets.UTF_8));
 
         JsonObject overridesSection = getOverridesSection(packageJson);
         final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
