@@ -346,8 +346,7 @@ public class BuildFrontendMojoTest {
     public void should_UpdateMainJsFile() throws Exception {
         Assert.assertFalse(importsFile.exists());
 
-        List<String> expectedLines = new ArrayList<>();
-        expectedLines.addAll(getExpectedImports());
+        List<String> expectedLines = getExpectedImports();
 
         mojo.execute();
 

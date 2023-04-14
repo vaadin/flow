@@ -131,8 +131,7 @@ public class TaskUpdateImports extends NodeUpdater {
 
         @Override
         protected Collection<String> getThemeLines() {
-            Collection<String> lines = new ArrayList<>();
-            return lines;
+            return Collections.emptyList();
         }
 
         @Override
@@ -185,9 +184,7 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         protected List<String> getDefinitionLines() {
-            List<String> lines = new ArrayList<>();
-            addLines(lines, "export { }");
-            return lines;
+            return Collections.singletonList("export {}");
         }
     }
 
