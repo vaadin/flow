@@ -193,6 +193,7 @@ export class ThemeEditor extends LitElement {
     this.api = new ThemeEditorApi(this.connection);
     this.history = new ThemeEditorHistory(this.api);
     this.historyActions = this.history.allowedActions;
+    this.api.markAsUsed();
   }
 
   protected update(changedProperties: PropertyValues) {

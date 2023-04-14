@@ -50,11 +50,7 @@ export default {
     {
       selector: 'vaadin-radio-group vaadin-radio-button::part(radio)',
       displayName: 'Radio part',
-      properties: [
-        shapeProperties.backgroundColor,
-        shapeProperties.borderColor,
-        shapeProperties.borderWidth,
-      ]
+      properties: [shapeProperties.backgroundColor, shapeProperties.borderColor, shapeProperties.borderWidth]
     },
     {
       selector: 'vaadin-radio-group vaadin-radio-button[checked]::part(radio)',
@@ -62,20 +58,18 @@ export default {
       // Checked state attribute needs to be applied on radio button rather than group
       stateElementSelector: `vaadin-radio-group vaadin-radio-button`,
       displayName: 'Radio part (when checked)',
-      properties: [
-        shapeProperties.backgroundColor,
-        shapeProperties.borderColor,
-        shapeProperties.borderWidth,
-      ]
+      properties: [shapeProperties.backgroundColor, shapeProperties.borderColor, shapeProperties.borderWidth]
     },
     {
       selector: 'vaadin-radio-group vaadin-radio-button::part(radio)::after',
       displayName: 'Selection indicator',
-      properties: [{
-        ...iconProperties.iconColor,
-        // Radio button dot uses border-color instead of background-color
-        propertyName: 'border-color'
-      }]
+      properties: [
+        {
+          ...iconProperties.iconColor,
+          // Radio button dot uses border-color instead of background-color
+          propertyName: 'border-color'
+        }
+      ]
     },
     {
       selector: 'vaadin-radio-group vaadin-radio-button label',

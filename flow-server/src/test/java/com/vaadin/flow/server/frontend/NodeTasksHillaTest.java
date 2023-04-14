@@ -45,7 +45,6 @@ public class NodeTasksHillaTest {
 
     private static String globalUserDirValue;
     private static String globalFrontendDirValue;
-    private static String globalGeneratedDirValue;
 
     private String userDir;
 
@@ -65,7 +64,6 @@ public class NodeTasksHillaTest {
         userDir = temporaryFolder.getRoot().getAbsolutePath();
         System.setProperty(USER_DIR, userDir);
         System.clearProperty(PARAM_FRONTEND_DIR);
-        System.clearProperty(PARAM_GENERATED_DIR);
 
         propertiesDir = temporaryFolder.newFolder();
     }
@@ -74,14 +72,12 @@ public class NodeTasksHillaTest {
     public static void setupBeforeClass() {
         globalUserDirValue = System.getProperty(USER_DIR);
         globalFrontendDirValue = System.getProperty(PARAM_FRONTEND_DIR);
-        globalGeneratedDirValue = System.getProperty(PARAM_GENERATED_DIR);
     }
 
     @AfterClass
     public static void tearDownAfterClass() {
         setPropertyIfPresent(USER_DIR, globalUserDirValue);
         setPropertyIfPresent(PARAM_FRONTEND_DIR, globalFrontendDirValue);
-        setPropertyIfPresent(PARAM_GENERATED_DIR, globalGeneratedDirValue);
     }
 
     private Options createOptions() {

@@ -84,6 +84,10 @@ public final class WebComponentModulesWriter implements Serializable {
         Objects.requireNonNull(outputDirectory,
                 "Parameter 'outputDirectory' must not be null");
 
+        if (!outputDirectory.exists()) {
+            outputDirectory.mkdirs();
+        }
+
         if (!outputDirectory.isDirectory()) {
             throw new IllegalArgumentException(String.format("Path provided "
                     + "by parameter 'outputDirectory' (%s) is not a directory",

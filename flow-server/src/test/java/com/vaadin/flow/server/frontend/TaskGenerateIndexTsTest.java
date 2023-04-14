@@ -137,22 +137,6 @@ public class TaskGenerateIndexTsTest {
     }
 
     @Test
-    public void replacedImport_should_beRelativeTo_targetAndFrontend()
-            throws Exception {
-        String content = taskGenerateIndexTs.getFileContent();
-        Assert.assertTrue(content.contains(
-                "import('../../target/frontend/generated-flow-imports.js'"));
-
-        // custom frontend folder
-        options.withFrontendDirectory(
-                temporaryFolder.newFolder("src", "main", FRONTEND));
-        taskGenerateIndexTs = new TaskGenerateIndexTs(options);
-        content = taskGenerateIndexTs.getFileContent();
-        Assert.assertTrue(content.contains(
-                "import('../../../../target/frontend/generated-flow-imports.js'"));
-    }
-
-    @Test
     public void should_ensureValidRelativePath_whenItHasNoRelativePrefix() {
         String customPath = TaskGenerateIndexTs.ensureValidRelativePath(
                 "../custom-frontend/generated-flow-imports.js");

@@ -15,12 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.PACKAGE_LOCK_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static elemental.json.impl.JsonUtil.stringify;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,6 +47,12 @@ import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.PACKAGE_LOCK_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static elemental.json.impl.JsonUtil.stringify;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Base abstract class for frontend updaters that needs to be run when in
  * dev-mode or from the flow maven plugin.
@@ -66,12 +66,6 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String VAADIN_FORM_PKG_LEGACY_VERSION = "flow-frontend/form";
 
     private static final String VAADIN_FORM_PKG = "@vaadin/form";
-
-    /**
-     * Relative paths of generated should be prefixed with this value, so they
-     * can be correctly separated from {projectDir}/frontend files.
-     */
-    public static final String GENERATED_PREFIX = "GENERATED/";
 
     // .vaadin/vaadin.json contains local installation data inside node_modules
     // This will help us know to execute even when another developer has pushed
@@ -106,10 +100,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     boolean modified;
 
-    /**
-     * path to the versions.json file
-     */
-    String versionsPath;
+    JsonObject versionsJson;
 
     protected Options options;
 
@@ -210,7 +201,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                     return excludes.stream().noneMatch(
                             postfix -> path.endsWith(unixPath.apply(postfix)));
                 })
-                .map(file -> GENERATED_PREFIX + unixPath
+                .map(file -> unixPath
                         .apply(baseDir.relativize(file.toURI()).getPath()))
                 .collect(Collectors.toSet());
     }
@@ -529,15 +520,14 @@ public abstract class NodeUpdater implements FallibleCommand {
     /**
      * Generate versions json file for version locking.
      *
-     * @return generated versions json file path
+     * @param packageJson
+     *            the package json content
      * @throws IOException
      *             when file IO fails
      */
-    protected String generateVersionsJson(JsonObject packageJson)
+    protected void generateVersionsJson(JsonObject packageJson)
             throws IOException {
-        File versions = new File(options.getGeneratedFolder(), "versions.json");
-
-        JsonObject versionsJson = getPlatformPinnedDependencies();
+        versionsJson = getPlatformPinnedDependencies();
         JsonObject packageJsonVersions = generateVersionsFromPackageJson(
                 packageJson);
         if (versionsJson.keys().length == 0) {
@@ -548,15 +538,6 @@ public abstract class NodeUpdater implements FallibleCommand {
                     versionsJson.put(key, packageJsonVersions.getString(key));
                 }
             }
-        }
-        FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
-                StandardCharsets.UTF_8);
-        Path versionsPath = versions.toPath();
-        if (versions.isAbsolute()) {
-            return FrontendUtils.getUnixRelativePath(
-                    options.getNpmFolder().toPath(), versionsPath);
-        } else {
-            return FrontendUtils.getUnixPath(versionsPath);
         }
     }
 

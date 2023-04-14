@@ -36,6 +36,21 @@ import elemental.json.JsonObject;
 
 public class VersionsJsonFilterTest {
 
+    private static final JsonObject TEST_VERSION_JSON;
+
+    static {
+        TEST_VERSION_JSON = Json.parse("""
+                {
+                    "@vaadin/vaadin-progress-bar": "1.1.2",
+                    "@vaadin/vaadin-upload":  "4.2.2",
+                    "@polymer/iron-list":  "2.0.19",
+                    "enforced": "1.5.0",
+                    "platform": "foo"
+                  }
+
+                """);
+    }
+
     @Test
     public void filterPlatformVersions_dependencies() throws IOException {
         assertFilterPlatformVersions(NodeUpdater.DEPENDENCIES);
@@ -124,10 +139,6 @@ public class VersionsJsonFilterTest {
 
     private void assertMissingVaadinDependencies_allDependenciesSholdBeUserHandled(
             String depKey) throws IOException {
-        String versions = IOUtils.toString(
-                Objects.requireNonNull(getClass().getClassLoader()
-                        .getResourceAsStream("versions/versions.json")),
-                StandardCharsets.UTF_8);
         String pkgJson = IOUtils.toString(
                 Objects.requireNonNull(
                         getClass().getClassLoader().getResourceAsStream(
@@ -136,8 +147,8 @@ public class VersionsJsonFilterTest {
 
         VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson),
                 depKey);
-        JsonObject filteredJson = filter.getFilteredVersions(
-                Json.parse(versions), "versions/versions.json");
+        JsonObject filteredJson = filter.getFilteredVersions(TEST_VERSION_JSON,
+                "versions/versions.json");
         Assert.assertTrue(filteredJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(filteredJson.hasKey("@vaadin/vaadin-upload"));
         Assert.assertTrue(filteredJson.hasKey("@polymer/iron-list"));
@@ -194,10 +205,6 @@ public class VersionsJsonFilterTest {
 
     private void assertFilterPlatformVersions(String depKey)
             throws IOException {
-        String versions = IOUtils.toString(
-                Objects.requireNonNull(getClass().getClassLoader()
-                        .getResourceAsStream("versions/versions.json")),
-                StandardCharsets.UTF_8);
         String pkgJson = IOUtils.toString(
                 Objects.requireNonNull(getClass().getClassLoader()
                         .getResourceAsStream("versions/package.json")),
@@ -205,8 +212,8 @@ public class VersionsJsonFilterTest {
 
         VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson),
                 depKey);
-        JsonObject filteredJson = filter.getFilteredVersions(
-                Json.parse(versions), "versions/versions.json");
+        JsonObject filteredJson = filter.getFilteredVersions(TEST_VERSION_JSON,
+                "versions/versions.json");
         Assert.assertTrue(filteredJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(filteredJson.hasKey("@vaadin/vaadin-upload"));
         Assert.assertTrue(filteredJson.hasKey("@polymer/iron-list"));

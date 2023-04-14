@@ -3,7 +3,7 @@ import {Router} from '@vaadin/router';
 import {connectionIndicator} from '@vaadin/common-frontend';
 
 const {serverSideRoutes} = new Flow({
-    imports: () => import('../target/frontend/generated-flow-imports'),
+    imports: () => import('Frontend/generated/flow/generated-flow-imports.js'),
 });
 
 const routes = [
