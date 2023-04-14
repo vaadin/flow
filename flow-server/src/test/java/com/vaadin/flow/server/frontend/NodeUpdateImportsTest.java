@@ -236,8 +236,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         String definitionContent = FileUtils.readFileToString(
                 importsDefinitionFile, Charset.defaultCharset());
 
-        MatcherAssert.assertThat(definitionContent, CoreMatchers.containsString(
-                "export {}"));
+        MatcherAssert.assertThat(definitionContent,
+                CoreMatchers.containsString("export {}"));
     }
 
     @Test
