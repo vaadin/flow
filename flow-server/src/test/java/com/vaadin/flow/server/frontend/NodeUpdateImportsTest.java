@@ -141,13 +141,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 Charset.defaultCharset());
 
         // ============== check main generated imports file ============
-        // Contains theme lines
-        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
-                "export const addCssBlock = function(block, before = false) {"));
-
-        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
-                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);"));
-
         // Contains CSS import lines
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css?inline';"));
@@ -205,10 +198,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 CoreMatchers.not(CoreMatchers.containsString(
                         "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css?inline';")));
 
-        // Contain lines to import exported modules from main file
-        MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "export const addCssBlock = function(block, before = false) {"));
-
         // Contains CSS import lines from CP not discovered by byte scanner
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
                 "import $cssFromFile_0 from 'Frontend/b-css.css?inline';"));
@@ -247,8 +236,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         String definitionContent = FileUtils.readFileToString(
                 importsDefinitionFile, Charset.defaultCharset());
 
-        MatcherAssert.assertThat(definitionContent, CoreMatchers.containsString(
-                "export declare const addCssBlock: (block: string, before?: boolean) => void;"));
+        MatcherAssert.assertThat(definitionContent,
+                CoreMatchers.containsString("export {}"));
     }
 
     @Test
@@ -282,13 +271,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 Charset.defaultCharset());
 
         // ============== check main generated imports file ============
-
-        // Contains theme lines
-        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
-                "export const addCssBlock = function(block, before = false) {"));
-
-        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
-                "addCssBlock('<custom-style>foo</custom-style>', true);"));
 
         // fallback chunk load function is generated
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(

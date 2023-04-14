@@ -64,15 +64,12 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
  */
 public class TaskUpdateImports extends NodeUpdater {
 
-    private static final String THEME_LINE_TPL = "%saddCssBlock('%s', true);";
     // Trim and remove new lines.
     private static final Pattern NEW_LINE_TRIM = Pattern
             .compile("(?m)(^\\s+|\\s?\n)");
     private final FrontendDependenciesScanner fallbackScanner;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
-        private static final String EXPORT_MODULES_DEF = "export declare const addCssBlock: (block: string, before?: boolean) => void;";
-
         private final File generatedFlowImports;
         private final File generatedFlowDefinitions;
         private final File fallBackImports;
@@ -133,30 +130,7 @@ public class TaskUpdateImports extends NodeUpdater {
 
         @Override
         protected Collection<String> getThemeLines() {
-            Collection<String> lines = new ArrayList<>();
-            AbstractTheme theme = getTheme();
-            ThemeDefinition themeDef = getThemeDefinition();
-
-            if (theme != null) {
-                boolean hasApplicationTheme = themeDef != null
-                        && !"".equals(themeDef.getName());
-                // There is no application theme in use, write theme includes
-                // here. Otherwise they are written by the theme
-                if (!theme.getHeaderInlineContents().isEmpty()) {
-                    lines.add("");
-                    if (hasApplicationTheme) {
-                        lines.add("// Handled in the application theme");
-                    }
-                    theme.getHeaderInlineContents()
-                            .forEach(html -> addLines(lines,
-                                    String.format(THEME_LINE_TPL,
-                                            hasApplicationTheme ? "// " : "",
-                                            NEW_LINE_TRIM.matcher(html)
-                                                    .replaceAll(""))));
-                }
-                lines.add("");
-            }
-            return lines;
+            return Collections.emptyList();
         }
 
         @Override
@@ -210,9 +184,7 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         protected List<String> getDefinitionLines() {
-            List<String> lines = new ArrayList<>();
-            addLines(lines, EXPORT_MODULES_DEF);
-            return lines;
+            return Collections.singletonList("export {}");
         }
     }
 
