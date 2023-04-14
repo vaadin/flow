@@ -320,14 +320,8 @@ public class NodeUpdaterTest {
     @Test
     public void generateVersionsJson_noVersions_noDevDeps_versionsGeneratedFromPackageJson()
             throws IOException {
-        final String versions = nodeUpdater
-                .generateVersionsJson(Json.createObject());
-        Assert.assertNotNull(versions);
-
-        File generatedVersionsFile = new File(npmFolder, versions);
-        final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
-                generatedVersionsFile, StandardCharsets.UTF_8));
-        Assert.assertEquals("{}", versionsJson.toJson());
+        nodeUpdater.generateVersionsJson(Json.createObject());
+        Assert.assertEquals("{}", nodeUpdater.versionsJson.toJson());
     }
 
     @Test
@@ -364,20 +358,14 @@ public class NodeUpdaterTest {
             + "}", StandardCharsets.UTF_8);
         // @formatter:on
 
-        final String versions = nodeUpdater.generateVersionsJson(
-                Json.parse(FileUtils.readFileToString(packageJson,
-                        StandardCharsets.UTF_8)));
-        Assert.assertNotNull(versions);
-
-        File generatedVersionsFile = new File(npmFolder, versions);
-        final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
-                generatedVersionsFile, StandardCharsets.UTF_8));
+        nodeUpdater.generateVersionsJson(Json.parse(FileUtils
+                .readFileToString(packageJson, StandardCharsets.UTF_8)));
         Assert.assertEquals(
                 "{" + "\"lit\":\"2.0.0\"," + "\"@vaadin/router\":\"1.7.5\","
                         + "\"@polymer/polymer\":\"3.4.1\","
                         + "\"css-loader\":\"4.2.1\","
                         + "\"file-loader\":\"6.1.0\"" + "}",
-                versionsJson.toJson());
+                nodeUpdater.versionsJson.toJson());
     }
 
     @Test
