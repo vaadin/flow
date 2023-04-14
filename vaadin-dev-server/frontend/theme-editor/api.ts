@@ -9,7 +9,8 @@ export enum Commands {
   loadPreview = 'themeEditorLoadPreview',
   loadRules = 'themeEditorLoadRules',
   history = 'themeEditorHistory',
-  openCss = 'themeEditorOpenCss'
+  openCss = 'themeEditorOpenCss',
+  markAsUsed = 'themeEditorMarkAsUsed'
 }
 
 export enum ResponseCode {
@@ -115,6 +116,10 @@ export class ThemeEditorApi {
 
   public loadRules(selectors: string[]): Promise<LoadRulesResponse> {
     return this.sendRequest(Commands.loadRules, { selectors });
+  }
+
+  public markAsUsed(): Promise<BaseResponse> {
+    return this.sendRequest(Commands.markAsUsed, {});
   }
 
   public undo(requestId: string): Promise<BaseResponse> {

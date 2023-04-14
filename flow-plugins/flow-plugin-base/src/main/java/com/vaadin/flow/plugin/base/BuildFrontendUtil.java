@@ -19,7 +19,6 @@ import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TO
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
-import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.JAVA_RESOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -141,19 +140,10 @@ public class BuildFrontendUtil {
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
 
-        try {
-            FileUtils.forceMkdir(adapter.generatedFolder());
-        } catch (IOException e) {
-            throw new IOException(
-                    "Failed to create folder '" + adapter.generatedFolder()
-                            + "'. Verify that you may write to path.",
-                    e);
-        }
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
 
         Options options = new Options(lookup, adapter.npmFolder())
-                .withGeneratedFolder(adapter.generatedFolder())
                 .withFrontendDirectory(adapter.frontendDirectory())
                 .withBuildDirectory(adapter.buildFolder())
                 .withJarFrontendResourcesFolder(
@@ -238,8 +228,6 @@ public class BuildFrontendUtil {
                     "Configuration 'nodeDownloadRoot'  (property 'node.download.root') is defined incorrectly",
                     e);
         }
-        buildInfo.put(GENERATED_TOKEN,
-                adapter.generatedFolder().getAbsolutePath());
         buildInfo.put(FRONTEND_TOKEN,
                 adapter.frontendDirectory().getAbsolutePath());
         buildInfo.put(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
@@ -307,7 +295,6 @@ public class BuildFrontendUtil {
         try {
             Options options = new com.vaadin.flow.server.frontend.Options(
                     lookup, adapter.npmFolder())
-                    .withGeneratedFolder(adapter.generatedFolder())
                     .withFrontendDirectory(adapter.frontendDirectory())
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
@@ -368,18 +355,8 @@ public class BuildFrontendUtil {
         Lookup lookup = adapter.createLookup(classFinder);
 
         try {
-            FileUtils.forceMkdir(adapter.generatedFolder());
-        } catch (IOException e) {
-            throw new IOException(
-                    "Failed to create folder '" + adapter.generatedFolder()
-                            + "'. Verify that you may write to path.",
-                    e);
-        }
-
-        try {
             Options options = new com.vaadin.flow.server.frontend.Options(
                     lookup, adapter.npmFolder()).withProductionMode(false)
-                    .withGeneratedFolder(adapter.generatedFolder())
                     .withFrontendDirectory(adapter.frontendDirectory())
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
@@ -641,7 +618,6 @@ public class BuildFrontendUtil {
             buildInfo.remove(NPM_TOKEN);
             buildInfo.remove(NODE_VERSION);
             buildInfo.remove(NODE_DOWNLOAD_ROOT);
-            buildInfo.remove(GENERATED_TOKEN);
             buildInfo.remove(FRONTEND_TOKEN);
             buildInfo.remove(FRONTEND_HOTDEPLOY);
             buildInfo.remove(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM);

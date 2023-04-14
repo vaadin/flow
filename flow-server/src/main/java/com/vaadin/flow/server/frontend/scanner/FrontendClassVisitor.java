@@ -55,7 +55,7 @@ final class FrontendClassVisitor extends ClassVisitor {
     static final String THEME_FOR = "themeFor";
 
     private final String className;
-    private final EndPointData endPoint;
+    private final EntryPointData entryPoint;
     private final MethodVisitor methodVisitor;
     private final AnnotationVisitor annotationVisitor;
     private final AnnotationVisitor routeVisitor;
@@ -136,16 +136,16 @@ final class FrontendClassVisitor extends ClassVisitor {
      *
      * @param className
      *            the class to visit
-     * @param endPoint
-     *            the end-point object that will be updated during the visit
+     * @param entryPoint
+     *            the entry point object that will be updated during the visit
      * @param themeScope
      *            whether we are visiting from Theme
      */
-    FrontendClassVisitor(String className, EndPointData endPoint,
+    FrontendClassVisitor(String className, EntryPointData entryPoint,
             boolean themeScope) { // NOSONAR
         super(Opcodes.ASM9);
         this.className = className;
-        this.endPoint = endPoint;
+        this.entryPoint = entryPoint;
 
         // Visitor for each method in the class.
         methodVisitor = new FrontendMethodVisitor();
@@ -154,11 +154,11 @@ final class FrontendClassVisitor extends ClassVisitor {
             @Override
             public void visit(String name, Object value) {
                 if (LAYOUT.equals(name)) {
-                    endPoint.layout = ((Type) value).getClassName();
-                    children.add(endPoint.layout);
+                    entryPoint.layout = ((Type) value).getClassName();
+                    children.add(entryPoint.layout);
                 }
                 if (VALUE.equals(name)) {
-                    endPoint.route = value.toString();
+                    entryPoint.route = value.toString();
                 }
             }
         };
@@ -167,12 +167,12 @@ final class FrontendClassVisitor extends ClassVisitor {
             @Override
             public void visit(String name, Object value) {
                 if (VALUE.equals(name)) {
-                    endPoint.theme.themeName = (String) value;
+                    entryPoint.theme.themeName = (String) value;
                 } else if (THEME_CLASS.equals(name)) {
-                    endPoint.theme.themeClass = ((Type) value).getClassName();
-                    children.add(endPoint.theme.themeClass);
+                    entryPoint.theme.themeClass = ((Type) value).getClassName();
+                    children.add(entryPoint.theme.themeClass);
                 } else if (VARIANT.equals(name)) {
-                    endPoint.theme.variant = value.toString();
+                    entryPoint.theme.variant = value.toString();
                 }
             }
         };
@@ -183,10 +183,10 @@ final class FrontendClassVisitor extends ClassVisitor {
                 if (VALUE.equals(name)) {
                     themeRouteVisitor.visit(name, value);
                 } else if (THEME_CLASS.equals(name)
-                        && endPoint.theme.themeClass == null) {
+                        && entryPoint.theme.themeClass == null) {
                     themeRouteVisitor.visit(name, value);
                 } else if (VARIANT.equals(name)
-                        && endPoint.theme.variant.isEmpty()) {
+                        && entryPoint.theme.variant.isEmpty()) {
                     themeRouteVisitor.visit(name, value);
                 }
             }
@@ -196,9 +196,9 @@ final class FrontendClassVisitor extends ClassVisitor {
             @Override
             public void visit(String name, Object value) {
                 if (themeScope) {
-                    endPoint.themeModules.add(value.toString());
+                    entryPoint.themeModules.add(value.toString());
                 } else {
-                    endPoint.modules.add(value.toString());
+                    entryPoint.modules.add(value.toString());
                 }
             }
         };
@@ -206,7 +206,7 @@ final class FrontendClassVisitor extends ClassVisitor {
         jScriptVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                endPoint.scripts.add(value.toString());
+                entryPoint.scripts.add(value.toString());
             }
         };
         // Visitor all other annotations
@@ -249,7 +249,7 @@ final class FrontendClassVisitor extends ClassVisitor {
         // We return different visitor implementations depending on the
         // annotation
         String cname = descriptor.replace("/", ".");
-        if (className.equals(endPoint.name)
+        if (className.equals(entryPoint.name)
                 && cname.contains(Route.class.getName())) {
             return routeVisitor;
         }
@@ -260,21 +260,21 @@ final class FrontendClassVisitor extends ClassVisitor {
             return jScriptVisitor;
         }
         if (cname.contains(NoTheme.class.getName())) {
-            if (className.equals(endPoint.name)) {
-                endPoint.theme.notheme = true;
+            if (className.equals(entryPoint.name)) {
+                entryPoint.theme.notheme = true;
             }
             return null;
         }
         if (cname.contains(Theme.class.getName())) {
-            if (className.equals(endPoint.name)) {
+            if (className.equals(entryPoint.name)) {
                 return themeRouteVisitor;
             }
-            if (className.equals(endPoint.layout)) {
+            if (className.equals(entryPoint.layout)) {
                 return themeLayoutVisitor;
             }
         }
         if (cname.contains(CssImport.class.getName())) {
-            return new CssAnnotationVisitor(endPoint.css);
+            return new CssAnnotationVisitor(entryPoint.css);
         }
         // default visitor
         return annotationVisitor;

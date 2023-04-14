@@ -17,7 +17,7 @@ import { Router } from '@vaadin/router';
 import { Flow } from 'Frontend/generated/jar-resources/Flow.js';
 
 const { serverSideRoutes } = new Flow({
-  imports: () => import('[to-be-generated-by-flow]')
+  imports: () => import('Frontend/generated/flow/generated-flow-imports.js')
 });
 
 const routes = [

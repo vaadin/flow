@@ -108,8 +108,6 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         settings.put("devBundleStatsOutput", devBundleStatsFolderString);
         settings.put("jarResourcesFolder",
                 FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
-        settings.put("generatedFlowImportsFolder",
-                buildDirectory + "/frontend");
 
         settings.put("themeName", themeName);
 

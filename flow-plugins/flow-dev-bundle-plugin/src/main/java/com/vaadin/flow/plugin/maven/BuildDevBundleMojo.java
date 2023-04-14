@@ -251,11 +251,6 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
-    public File generatedFolder() {
-        return new File(projectBuildDir, FRONTEND);
-    }
-
-    @Override
     public File generatedTsFolder() {
         return new File(projectBasedir, FRONTEND + "/generated");
     }

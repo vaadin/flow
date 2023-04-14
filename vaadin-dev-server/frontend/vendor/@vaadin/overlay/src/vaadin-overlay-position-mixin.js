@@ -45,12 +45,12 @@ export function getAncestorRootNodes(node) {
 
 const PROP_NAMES_VERTICAL = {
   start: 'top',
-  end: 'bottom',
+  end: 'bottom'
 };
 
 const PROP_NAMES_HORIZONTAL = {
   start: 'left',
-  end: 'right',
+  end: 'right'
 };
 
 const targetResizeObserver = new ResizeObserver((entries) => {
@@ -78,7 +78,7 @@ export const PositionMixin = (superClass) =>
          */
         positionTarget: {
           type: Object,
-          value: null,
+          value: null
         },
 
         /**
@@ -93,7 +93,7 @@ export const PositionMixin = (superClass) =>
          */
         horizontalAlign: {
           type: String,
-          value: 'start',
+          value: 'start'
         },
 
         /**
@@ -107,7 +107,7 @@ export const PositionMixin = (superClass) =>
          */
         verticalAlign: {
           type: String,
-          value: 'top',
+          value: 'top'
         },
 
         /**
@@ -118,7 +118,7 @@ export const PositionMixin = (superClass) =>
          */
         noHorizontalOverlap: {
           type: Boolean,
-          value: false,
+          value: false
         },
 
         /**
@@ -129,7 +129,7 @@ export const PositionMixin = (superClass) =>
          */
         noVerticalOverlap: {
           type: Boolean,
-          value: false,
+          value: false
         },
 
         /**
@@ -142,15 +142,15 @@ export const PositionMixin = (superClass) =>
          */
         requiredVerticalSpace: {
           type: Number,
-          value: 0,
-        },
+          value: 0
+        }
       };
     }
 
     static get observers() {
       return [
         '__positionSettingsChanged(horizontalAlign, verticalAlign, noHorizontalOverlap, noVerticalOverlap, requiredVerticalSpace)',
-        '__overlayOpenedChanged(opened, positionTarget)',
+        '__overlayOpenedChanged(opened, positionTarget)'
       ];
     }
 
@@ -267,7 +267,7 @@ export const PositionMixin = (superClass) =>
         this.noVerticalOverlap,
         PROP_NAMES_VERTICAL,
         this,
-        shouldAlignStartVertically,
+        shouldAlignStartVertically
       );
 
       // Obtain horizontal positioning properties
@@ -277,7 +277,7 @@ export const PositionMixin = (superClass) =>
         this.noHorizontalOverlap,
         PROP_NAMES_HORIZONTAL,
         this,
-        shouldAlignStartHorizontally,
+        shouldAlignStartHorizontally
       );
 
       // Apply the positioning properties to the overlay
@@ -306,7 +306,7 @@ export const PositionMixin = (superClass) =>
         this.__margins,
         defaultAlignLeft,
         this.noHorizontalOverlap,
-        PROP_NAMES_HORIZONTAL,
+        PROP_NAMES_HORIZONTAL
       );
     }
 
@@ -327,7 +327,7 @@ export const PositionMixin = (superClass) =>
         this.__margins,
         defaultAlignTop,
         this.noVerticalOverlap,
-        PROP_NAMES_VERTICAL,
+        PROP_NAMES_VERTICAL
       );
     }
 
@@ -406,7 +406,7 @@ export const PositionMixin = (superClass) =>
 
       return {
         [cssPropNameToSet]: valueToSet,
-        [cssPropNameToClear]: '',
+        [cssPropNameToClear]: ''
       };
     }
   };

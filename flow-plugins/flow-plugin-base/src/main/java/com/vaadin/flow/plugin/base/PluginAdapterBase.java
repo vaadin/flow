@@ -72,14 +72,6 @@ public interface PluginAdapterBase {
     File frontendDirectory();
 
     /**
-     * The folder where flow will put generated files that will be used by
-     * webpack.
-     *
-     * @return {@link File}
-     */
-    File generatedFolder();
-
-    /**
      * The folder where flow will put TS API files for client projects.
      *
      * @return {@link File}

@@ -42,10 +42,8 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -60,7 +58,6 @@ public class NodeTasksViteTest {
 
     private static String globalUserDirValue;
     private static String globalFrontendDirValue;
-    private static String globalGeneratedDirValue;
 
     private String userDir;
 
@@ -69,21 +66,18 @@ public class NodeTasksViteTest {
         userDir = temporaryFolder.getRoot().getAbsolutePath();
         System.setProperty(USER_DIR, userDir);
         System.clearProperty(PARAM_FRONTEND_DIR);
-        System.clearProperty(PARAM_GENERATED_DIR);
     }
 
     @BeforeClass
     public static void setupBeforeClass() {
         globalUserDirValue = System.getProperty(USER_DIR);
         globalFrontendDirValue = System.getProperty(PARAM_FRONTEND_DIR);
-        globalGeneratedDirValue = System.getProperty(PARAM_GENERATED_DIR);
     }
 
     @AfterClass
     public static void tearDownAfterClass() {
         setPropertyIfPresent(USER_DIR, globalUserDirValue);
         setPropertyIfPresent(PARAM_FRONTEND_DIR, globalFrontendDirValue);
-        setPropertyIfPresent(PARAM_GENERATED_DIR, globalGeneratedDirValue);
     }
 
     @Test
@@ -107,9 +101,8 @@ public class NodeTasksViteTest {
         assertEquals(1, finder.getAnnotatedClasses(JavaScript.class).size());
 
         new NodeTasks(options).execute();
-        File importsFile = Paths
-                .get(userDir, TARGET, DEFAULT_GENERATED_DIR, IMPORTS_NAME)
-                .toFile();
+        File importsFile = FrontendUtils
+                .getFlowGeneratedImports(getFrontendFolder());
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
 
@@ -145,9 +138,8 @@ public class NodeTasksViteTest {
                         getJarFrontendResourcesFolder());
 
         new NodeTasks(options).execute();
-        File importsFile = Paths
-                .get(userDir, TARGET, DEFAULT_GENERATED_DIR, IMPORTS_NAME)
-                .toFile();
+        File importsFile = FrontendUtils
+                .getFlowGeneratedImports(getFrontendFolder());
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
 
@@ -174,15 +166,11 @@ public class NodeTasksViteTest {
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
                 options.getFrontendDirectory().getAbsolutePath());
-        Assert.assertEquals(
-                Paths.get(userDir, TARGET, DEFAULT_GENERATED_DIR).toFile()
-                        .getAbsolutePath(),
-                options.getGeneratedFolder().getAbsolutePath());
 
         new NodeTasks(options).execute();
-        Assert.assertTrue(
-                Paths.get(userDir, TARGET, DEFAULT_GENERATED_DIR, IMPORTS_NAME)
-                        .toFile().exists());
+        Assert.assertTrue(Paths.get(userDir, DEFAULT_FRONTEND_DIR,
+                FrontendUtils.GENERATED, "flow", IMPORTS_NAME).toFile()
+                .exists());
     }
 
     @Test
@@ -201,21 +189,15 @@ public class NodeTasksViteTest {
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
                 options.getFrontendDirectory().getAbsolutePath());
-        Assert.assertEquals(
-                new File(new File(userDir, TARGET), DEFAULT_GENERATED_DIR)
-                        .getAbsolutePath(),
-                options.getGeneratedFolder().getAbsolutePath());
 
         new NodeTasks(options).execute();
-        Assert.assertTrue(new File(userDir, Paths
-                .get(TARGET, DEFAULT_GENERATED_DIR, IMPORTS_NAME).toString())
-                .exists());
+        Assert.assertTrue(FrontendUtils
+                .getFlowGeneratedImports(getFrontendFolder()).exists());
     }
 
     @Test
     public void should_BeAbleToCustomizeFolders() throws Exception {
         System.setProperty(PARAM_FRONTEND_DIR, "my_custom_sources_folder");
-        System.setProperty(PARAM_GENERATED_DIR, "my/custom/generated/folder");
 
         Lookup mockedLookup = mock(Lookup.class);
         Mockito.doReturn(
@@ -232,20 +214,18 @@ public class NodeTasksViteTest {
                 new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
                 options.getFrontendDirectory().getAbsolutePath());
 
-        Assert.assertEquals(
-                new File(userDir, "my/custom/generated/folder")
-                        .getAbsolutePath(),
-                options.getGeneratedFolder().getAbsolutePath());
-
         new NodeTasks(options).execute();
-        Assert.assertTrue(
-                new File(userDir, "my/custom/generated/folder/" + IMPORTS_NAME)
-                        .exists());
+        Assert.assertTrue(new File(userDir,
+                "my_custom_sources_folder/generated/flow/" + IMPORTS_NAME)
+                .exists());
+    }
+
+    private File getFrontendFolder() {
+        return new File(userDir, "frontend");
     }
 
     private File getJarFrontendResourcesFolder() {
-        return new File(userDir, "frontend/" + FrontendUtils.GENERATED
-                + FrontendUtils.JAR_RESOURCES_FOLDER);
+        return FrontendUtils.getJarResourcesFolder(getFrontendFolder());
     }
 
     @Test

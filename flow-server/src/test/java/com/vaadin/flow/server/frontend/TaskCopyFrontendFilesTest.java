@@ -83,7 +83,6 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     @Test
     public void should_createPackageJson() throws IOException {
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withGeneratedFolder(generatedFolder)
                 .withBuildDirectory(TARGET);
 
         TaskGeneratePackageJson task = new TaskGeneratePackageJson(options);
