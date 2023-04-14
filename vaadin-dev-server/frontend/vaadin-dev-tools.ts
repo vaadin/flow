@@ -14,7 +14,7 @@ import { licenseCheckFailed, licenseInit, Product } from './License';
 import { Connection, ConnectionStatus } from './connection';
 import { popupStyles } from './styles';
 
-export interface ServerInfo {
+interface ServerInfo {
   vaadinVersion: string;
   flowVersion: string;
   javaVersion: string;
