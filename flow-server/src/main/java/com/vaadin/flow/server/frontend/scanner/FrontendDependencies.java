@@ -327,6 +327,15 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private void computeApplicationTheme() throws ClassNotFoundException,
             InstantiationException, IllegalAccessException, IOException {
 
+        // Re-visit theme related classes, because they might be skipped
+        // when they where already added to the visited list during other
+        // entry-point visits
+        for (EntryPointData entryPoint : entryPoints.values()) {
+            if (entryPoint.getLayout() != null) {
+                visitClass(entryPoint.getLayout(), entryPoint);
+            }
+        }
+
         List<EntryPointData> entryPointsWithTheme = entryPoints.values()
                 .stream()
                 // consider only entry points with theme information
