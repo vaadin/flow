@@ -125,6 +125,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             collectEntryPoints(generateEmbeddableWebComponents);
             visitEntryPoints();
             computeApplicationTheme();
+            if (themeDefinition != null && themeDefinition.getTheme() != null) {
+                collectEntrypoints(themeDefinition.getTheme());
+            }
             computePackages();
             computePwaConfiguration();
             long ms = (System.nanoTime() - start) / 1000000;
@@ -386,8 +389,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *
      * @return Lumo
      */
-    private Class<? extends AbstractTheme> getDefaultTheme()
-            throws IOException {
+    Class<? extends AbstractTheme> getDefaultTheme() throws IOException {
         // No theme annotation found by the scanner
         return getLumoTheme();
     }
@@ -494,10 +496,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *            the exporter entry point class
      * @throws ClassNotFoundException
      *             if unable to load a class by class name
-     * @throws IOException
-     *             if unable to scan the class byte code
      */
-    @SuppressWarnings("unchecked")
     private void collectExporterEntrypoints(Class<?> clazz)
             throws ClassNotFoundException {
         // Because of different classLoaders we need compare against class
@@ -545,9 +544,6 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private void visitClass(String className, EntryPointData entryPoint)
             throws IOException {
 
-        // In theme scope, we want to revisit already visited classes to have
-        // theme modules collected separately (in turn required for module
-        // sorting, #5729)
         if (!shouldVisit(className)
                 || entryPoint.getClasses().contains(className)) {
             return;

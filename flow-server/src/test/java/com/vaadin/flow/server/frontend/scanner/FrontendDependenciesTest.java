@@ -251,19 +251,6 @@ public class FrontendDependenciesTest {
                 Arrays.asList("a.js", "b.js", "c.js"));
     }
 
-    // flow #6408
-    @Test
-    public void annotationsInRouterLayoutWontBeFlaggedAsBelongingToTheme() {
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
-                Collections.singleton(RouteComponentWithLayout.class));
-        FrontendDependencies dependencies = new FrontendDependencies(
-                classFinder, false);
-
-        List<String> modules = dependencies.getModules();
-        Assert.assertEquals("Theme's annotations should come first",
-                "theme-foo.js", modules.get(0));
-    }
-
     // flow #6524
     @Test
     public void extractsAndScansClassesFromMethodReferences() {
