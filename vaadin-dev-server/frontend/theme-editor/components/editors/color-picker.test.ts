@@ -40,7 +40,9 @@ describe('color-picker', () => {
   }
 
   function getInternalPicker() {
-    return getOverlayContent().shadowRoot!.querySelector('vaadin-dev-tools-rgba-string-color-picker') as RgbaStringColorPicker;
+    return getOverlayContent().shadowRoot!.querySelector(
+      'vaadin-dev-tools-rgba-string-color-picker'
+    ) as RgbaStringColorPicker;
   }
 
   function changeInternalPickerColor(color: string) {

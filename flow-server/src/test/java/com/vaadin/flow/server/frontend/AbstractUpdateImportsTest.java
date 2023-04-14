@@ -17,15 +17,6 @@
 
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -72,6 +63,13 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Rule
@@ -87,7 +85,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     private File tmpRoot;
-    private File generatedPath;
     private File frontendDirectory;
     private File nodeModulesPath;
     private UpdateImports updater;
@@ -178,8 +175,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
-        generatedPath = new File(tmpRoot,
-                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
         File tokenFile = new File(tmpRoot, TOKEN_FILE);
 
         ClassFinder classFinder = getClassFinder();
@@ -358,8 +353,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add(
                 "registerStyles('foo-bar', $css_6, {include: 'bar', moduleId: 'flow_css_mod_6'});");
 
-        expectedLines.add("import 'generated-modules-foo';");
-        expectedLines.add("import 'generated-modules-bar';");
+        expectedLines
+                .add("import 'Frontend/generated/flow/generated-modules-foo';");
+        expectedLines
+                .add("import 'Frontend/generated/flow/generated-modules-bar';");
 
         updater.run();
 
@@ -500,7 +497,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                         .contains(FrontendUtils.FRONTEND_FOLDER_ALIAS))
                 .filter(importValue -> !importValue.contains("theme-util.js"))
                 .sorted().collect(Collectors.toList());
-        updater.getGeneratedModules().stream().map(this::updateToImport)
+        updater.getGeneratedModules().stream()
+                .map(updater::resolveGeneretedModule).map(this::updateToImport)
                 .forEach(expectedImports::add);
         // Remove internals from the full list
         expectedImports.removeAll(internals);

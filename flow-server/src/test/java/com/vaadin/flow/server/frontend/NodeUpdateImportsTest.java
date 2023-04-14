@@ -17,19 +17,11 @@
 
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -55,6 +47,12 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static org.junit.Assert.assertTrue;
+
 public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Rule
@@ -64,8 +62,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     public ExpectedException exception = ExpectedException.none();
 
     private File importsFile;
+    private File importsDefinitionFile;
     private File fallBackImportsFile;
-    private File generatedPath;
     private File frontendDirectory;
     private File nodeModulesPath;
     private TaskUpdateImports updater;
@@ -80,10 +78,10 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
-        generatedPath = new File(tmpRoot,
-                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
-        importsFile = new File(generatedPath, IMPORTS_NAME);
-        fallBackImportsFile = new File(generatedPath,
+        importsFile = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
+        importsDefinitionFile = new File(importsFile.getParentFile(),
+                IMPORTS_D_TS_NAME);
+        fallBackImportsFile = new File(importsFile.getParentFile(),
                 FrontendUtils.FALLBACK_IMPORTS_NAME);
         File webpackDir = temporaryFolder.newFolder();
         tokenFile = new File(webpackDir, "config/flow-build-info.json");
@@ -119,7 +117,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         JsonObject fallBackData = Json.createObject();
 
         Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
-                .withGeneratedFolder(generatedPath)
                 .withFrontendDirectory(frontendDirectory)
                 .withTokenFile(tokenFile).populateTokenFileData(fallBackData)
                 .withBuildDirectory(TARGET).withProductionMode(true);
@@ -231,6 +228,16 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertTokenFileWithFallBack(object);
         assertTokenFileWithFallBack(fallBackData);
+
+        // ============== check definition file ============
+
+        assertTrue(importsDefinitionFile.exists());
+
+        String definitionContent = FileUtils.readFileToString(
+                importsDefinitionFile, Charset.defaultCharset());
+
+        MatcherAssert.assertThat(definitionContent, CoreMatchers.containsString(
+                "export { }"));
     }
 
     @Test
@@ -241,7 +248,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 EmptyByteScannerDataTestComponents.class.getDeclaredClasses());
 
         Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
-                .withGeneratedFolder(generatedPath)
                 .withFrontendDirectory(frontendDirectory)
                 .withTokenFile(tokenFile).withBuildDirectory(TARGET)
                 .withProductionMode(true);
@@ -310,7 +316,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 classes.toArray(Class<?>[]::new));
 
         Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
-                .withGeneratedFolder(generatedPath)
                 .withFrontendDirectory(frontendDirectory)
                 .withTokenFile(tokenFile).withBuildDirectory(TARGET)
                 .withProductionMode(true);
@@ -360,7 +365,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         Assert.assertTrue(fallBackImportsFile.exists());
 
         Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
-                .withGeneratedFolder(generatedPath)
                 .withFrontendDirectory(frontendDirectory)
                 .withTokenFile(tokenFile).withBuildDirectory(TARGET)
                 .withProductionMode(true);
@@ -397,7 +401,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         JsonObject fallBackData = Json.createObject();
         Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
-                .withGeneratedFolder(generatedPath)
                 .withFrontendDirectory(frontendDirectory)
                 .withTokenFile(tokenFile).populateTokenFileData(fallBackData)
                 .withBuildDirectory(TARGET).withProductionMode(true);

@@ -2,7 +2,7 @@ import 'construct-style-sheets-polyfill';
 import { css, html, LitElement, nothing, TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { Overlay, OverlayOutsideClickEvent } from "@vaadin/overlay";
+import { Overlay, OverlayOutsideClickEvent } from '@vaadin/overlay';
 import { ComponentPicker } from './component-picker';
 import { ComponentReference, deepContains } from './component-util';
 import './theme-editor/editor';
@@ -961,7 +961,11 @@ export class VaadinDevTools extends LitElement {
       const isFlowApp = !!(window as any).Vaadin.Flow;
       this.themeEditorState = message.data;
       if (isFlowApp && this.themeEditorState !== ThemeEditorState.disabled) {
-        this.tabs.push({ id: 'theme-editor', title: 'Theme Editor (Free Preview)', render: () => this.renderThemeEditor() });
+        this.tabs.push({
+          id: 'theme-editor',
+          title: 'Theme Editor (Free Preview)',
+          render: () => this.renderThemeEditor()
+        });
         this.requestUpdate();
       }
     } else {
@@ -1524,7 +1528,7 @@ export class VaadinDevTools extends LitElement {
 
   renderThemeEditor() {
     return html` <vaadin-dev-tools-theme-editor
-      .expanded=${this.expanded}  
+      .expanded=${this.expanded}
       .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
       .connection=${this.frontendConnection}

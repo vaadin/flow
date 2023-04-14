@@ -15,15 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
-import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;
-import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -35,6 +26,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -60,7 +52,15 @@ import com.vaadin.flow.testcategory.SlowTests;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import net.jcip.annotations.NotThreadSafe;
+
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
+import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;
+import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @NotThreadSafe
 @Category(SlowTests.class)
@@ -79,7 +79,6 @@ public class TaskRunNpmInstallTest {
 
     protected Logger logger = Mockito
             .spy(LoggerFactory.getLogger(NodeUpdater.class));
-    protected File generatedPath;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -89,11 +88,9 @@ public class TaskRunNpmInstallTest {
     @Before
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
-        generatedPath = new File(npmFolder, "generated");
-        generatedPath.mkdir();
         finder = Mockito.mock(ClassFinder.class);
         options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withGeneratedFolder(generatedPath).withBuildDirectory(TARGET);
+                .withBuildDirectory(TARGET);
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), options) {
 

@@ -3,7 +3,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -75,8 +74,6 @@ public class Options implements Serializable {
 
     private File npmFolder;
 
-    private File generatedFolder;
-
     private boolean skipDevBundle = false;
 
     /**
@@ -128,18 +125,6 @@ public class Options implements Serializable {
         this.lookup = lookup;
         this.classFinder = lookup.lookup(ClassFinder.class);
         this.npmFolder = npmFolder;
-    }
-
-    /**
-     * Sets the irectory where generated files are written.
-     *
-     * @param generatedFolder
-     *            folder where flow generated files will be placed
-     * @return this
-     */
-    public Options withGeneratedFolder(File generatedFolder) {
-        this.generatedFolder = generatedFolder;
-        return this;
     }
 
     /**
@@ -582,33 +567,6 @@ public class Options implements Serializable {
      */
     public File getNpmFolder() {
         return npmFolder;
-    }
-
-    /**
-     * Get the generated folder for this build, always an absolute path.
-     *
-     * @return the generated folder
-     */
-    public File getGeneratedFolder() {
-        if (generatedFolder != null) {
-            if (generatedFolder.isAbsolute()) {
-                return generatedFolder;
-            } else {
-                return new File(npmFolder, generatedFolder.getPath());
-            }
-        }
-
-        if (buildDirectoryName != null && npmFolder != null) {
-            // Use default if not specified
-            String generatedDir = System
-                    .getProperty(FrontendUtils.PARAM_GENERATED_DIR,
-                            Paths.get(buildDirectoryName,
-                                    FrontendUtils.DEFAULT_GENERATED_DIR)
-                                    .toString());
-            return new File(npmFolder, generatedDir);
-
-        }
-        return generatedFolder;
     }
 
     /**

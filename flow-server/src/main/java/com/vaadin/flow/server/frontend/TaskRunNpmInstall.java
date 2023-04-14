@@ -273,7 +273,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         if (options.isEnablePnpm()) {
             try {
-                createPnpmFile(packageUpdater.versionsPath, tools);
+                createPnpmFile(packageUpdater.versionsJson, tools);
             } catch (IOException exception) {
                 throw new ExecutionFailedException(
                         "Failed to read frontend version data from vaadin-core "
@@ -501,12 +501,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * not supposed that it can be modified by the user. This is done in the
      * same way as for webpack.generated.js.
      */
-    private void createPnpmFile(String versionsPath, FrontendTools tools)
+    private void createPnpmFile(JsonObject versionsJson, FrontendTools tools)
             throws IOException {
-        if (versionsPath == null) {
+        if (versionsJson == null) {
             return;
         }
-
         String pnpmFileName = ".pnpmfile.cjs";
         final List<String> pnpmExecutable = tools.getSuitablePnpm();
         pnpmExecutable.add("--version");
@@ -532,8 +531,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
             packageUpdater.log().debug("Generated pnpmfile hook file: '{}'",
                     pnpmFile);
 
-            FileUtils.writeLines(pnpmFile,
-                    modifyPnpmFile(pnpmFile, versionsPath));
+            FileUtils.writeStringToFile(pnpmFile,
+                    modifyPnpmFile(pnpmFile, versionsJson),
+                    StandardCharsets.UTF_8);
         }
     }
 
@@ -578,20 +578,12 @@ public class TaskRunNpmInstall implements FallibleCommand {
         }
     }
 
-    private List<String> modifyPnpmFile(File generatedFile, String versionsPath)
+    private String modifyPnpmFile(File generatedFile, JsonObject versionsJson)
             throws IOException {
-        List<String> lines = FileUtils.readLines(generatedFile,
+        String content = FileUtils.readFileToString(generatedFile,
                 StandardCharsets.UTF_8);
-        int i = 0;
-        for (String line : lines) {
-            if (line.startsWith("const versionsFile")) {
-                lines.set(i,
-                        "const versionsFile = require('path').resolve(__dirname, '"
-                                + versionsPath + "');");
-            }
-            i++;
-        }
-        return lines;
+        content = content.replace("versionsinfojson", versionsJson.toJson());
+        return content;
     }
 
     private void cleanUp() throws ExecutionFailedException {

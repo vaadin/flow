@@ -30,6 +30,7 @@ describe('theme-editor', () => {
     undo: sinon.SinonStub;
     redo: sinon.SinonStub;
     openCss: sinon.SinonStub;
+    markAsUsed: sinon.SinonStub;
   };
   let historySpy: {
     push: sinon.SinonSpy;
@@ -63,7 +64,8 @@ describe('theme-editor', () => {
       loadRules: sinon.stub((editor as any).api as ThemeEditorApi, 'loadRules'),
       undo: sinon.stub((editor as any).api as ThemeEditorApi, 'undo'),
       redo: sinon.stub((editor as any).api as ThemeEditorApi, 'redo'),
-      openCss: sinon.stub((editor as any).api as ThemeEditorApi, 'openCss')
+      openCss: sinon.stub((editor as any).api as ThemeEditorApi, 'openCss'),
+      markAsUsed: sinon.stub((editor as any).api as ThemeEditorApi, 'markAsUsed')
     };
     apiMock.loadComponentMetadata.returns(Promise.resolve({ accessible: true, className: 'test-class' }));
     apiMock.setLocalClassName.returns(Promise.resolve({}));
@@ -73,6 +75,7 @@ describe('theme-editor', () => {
     apiMock.undo.returns(Promise.resolve({}));
     apiMock.redo.returns(Promise.resolve({}));
     apiMock.openCss.returns(Promise.resolve({}));
+    apiMock.markAsUsed.returns(Promise.resolve({}));
 
     historySpy = {
       push: sinon.spy((editor as any).history as ThemeEditorHistory, 'push')
