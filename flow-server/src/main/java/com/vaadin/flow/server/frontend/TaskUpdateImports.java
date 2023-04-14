@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -134,7 +135,7 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         @Override
-        protected List<String> getModules() {
+        protected Map<String, List<String>> getModules() {
             return frontDeps.getModules();
         }
 
@@ -218,11 +219,17 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         @Override
-        protected List<String> getModules() {
-            LinkedHashSet<String> set = new LinkedHashSet<>(
-                    fallbackScanner.getModules());
-            set.removeAll(frontDeps.getModules());
-            return filter(set.stream()).collect(Collectors.toList());
+        protected Map<String, List<String>> getModules() {
+            LinkedHashSet<String> fallbackModules = new LinkedHashSet<>();
+            for (List<String> list : fallbackScanner.getModules().values()) {
+                fallbackModules.addAll(list);
+            }
+            for (List<String> list : frontDeps.getModules().values()) {
+                fallbackModules.removeAll(list);
+            }
+            return Collections.singletonMap("All",
+                    filter(fallbackModules.stream())
+                            .collect(Collectors.toList()));
         }
 
         @Override
@@ -400,7 +407,7 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private JsonArray makeFallbackModules(AbstractUpdateImports updater) {
         JsonArray array = Json.createArray();
-        List<String> modules = updater.getModules();
+        Map<String, List<String>> modules = updater.getModules();
         Set<String> scripts = updater.getScripts();
 
         Iterator<String> modulesIterator = modules.iterator();

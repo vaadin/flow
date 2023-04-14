@@ -140,7 +140,7 @@ public interface FrontendDependenciesScanner extends Serializable {
      *
      * @return list of JS modules
      */
-    List<String> getModules();
+    Map<String, List<String>> getModules();
 
     /**
      * Get all the JS files used by the application.

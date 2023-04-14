@@ -170,8 +170,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     @Override
-    public List<String> getModules() {
-        return Collections.unmodifiableList(modules);
+    public Map<String, List<String>> getModules() {
+        return Collections.singletonMap("All",
+                Collections.unmodifiableList(modules));
     }
 
     @Override

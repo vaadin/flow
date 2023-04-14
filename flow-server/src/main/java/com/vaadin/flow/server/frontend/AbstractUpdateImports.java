@@ -112,7 +112,7 @@ abstract class AbstractUpdateImports implements Runnable {
      *
      * @return list of JS modules
      */
-    protected abstract List<String> getModules();
+    protected abstract Map<String, List<String>> getModules();
 
     /**
      * Get all the JS files used by the application.
