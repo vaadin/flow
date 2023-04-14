@@ -299,26 +299,10 @@ abstract class AbstractUpdateImports implements Runnable {
         Set<String> modules = new LinkedHashSet<>();
         modules.addAll(resolveModules(getModules()));
         modules.addAll(resolveModules(getScripts()));
-
         modules.addAll(resolveGeneretedModules(getGeneratedModules()));
-
         modules.removeIf(UrlUtil::isExternal);
 
-        ArrayList<String> externals = new ArrayList<>();
-        ArrayList<String> internals = new ArrayList<>();
-
-        for (String module : getModuleLines(modules)) {
-            if (FRONTEND_IMPORT_LINE.matcher(module).matches()
-                    && !module.contains(
-                            FrontendUtils.FRONTEND_GENERATED_FLOW_IMPORT_PATH)) {
-                internals.add(module);
-            } else {
-                externals.add(module);
-            }
-        }
-
-        lines.addAll(externals);
-        lines.addAll(internals);
+        lines.addAll(getModuleLines(modules));
     }
 
     private Set<String> getUniqueEs6ImportPaths(Collection<String> modules) {
