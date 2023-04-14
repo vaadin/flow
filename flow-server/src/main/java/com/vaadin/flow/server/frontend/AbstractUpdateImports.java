@@ -34,7 +34,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -80,11 +79,6 @@ abstract class AbstractUpdateImports implements Runnable {
             + "%n" + "registerStyles('%s', $css_%1$d%s);";
 
     private static final String IMPORT_TEMPLATE = "import '%s';";
-
-    // Used to recognize and sort FRONTEND/ imports in the final
-    // generated-flow-imports.js
-    private static final Pattern FRONTEND_IMPORT_LINE = Pattern.compile(
-            String.format(IMPORT_TEMPLATE, FRONTEND_FOLDER_ALIAS + "\\S*"));
 
     final Options options;
 
@@ -299,26 +293,10 @@ abstract class AbstractUpdateImports implements Runnable {
         Set<String> modules = new LinkedHashSet<>();
         modules.addAll(resolveModules(getModules()));
         modules.addAll(resolveModules(getScripts()));
-
         modules.addAll(resolveGeneretedModules(getGeneratedModules()));
-
         modules.removeIf(UrlUtil::isExternal);
 
-        ArrayList<String> externals = new ArrayList<>();
-        ArrayList<String> internals = new ArrayList<>();
-
-        for (String module : getModuleLines(modules)) {
-            if (FRONTEND_IMPORT_LINE.matcher(module).matches()
-                    && !module.contains(
-                            FrontendUtils.FRONTEND_GENERATED_FLOW_IMPORT_PATH)) {
-                internals.add(module);
-            } else {
-                externals.add(module);
-            }
-        }
-
-        lines.addAll(externals);
-        lines.addAll(internals);
+        lines.addAll(getModuleLines(modules));
     }
 
     private Set<String> getUniqueEs6ImportPaths(Collection<String> modules) {
