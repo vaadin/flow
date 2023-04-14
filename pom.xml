@@ -105,7 +105,7 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.2.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>9.0.2</testbench.version>
+        <testbench.version>9.0.3</testbench.version>
         <jetty.version>11.0.14</jetty.version>
         <properties-maven-plugin.version>1.1.0</properties-maven-plugin.version>
 
@@ -257,7 +257,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>5.2.0</version>
+                <version>5.3.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>

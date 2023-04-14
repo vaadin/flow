@@ -17,14 +17,6 @@
 
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -53,6 +45,12 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Rule
@@ -62,7 +60,6 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
     public ExpectedException exception = ExpectedException.none();
 
     private File importsFile;
-    private File generatedPath;
     private File frontendDirectory;
     private File nodeModulesPath;
     private TaskUpdateImports updater;
@@ -77,13 +74,10 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
-        generatedPath = new File(tmpRoot,
-                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
-        importsFile = new File(generatedPath, IMPORTS_NAME);
+        importsFile = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
 
         ClassFinder classFinder = getClassFinder();
         Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
-                .withGeneratedFolder(generatedPath)
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true);
         updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
@@ -112,13 +106,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
     @Test
     public void generateImportsFile_fileContainsThemeLinesAndExpectedImportsAndCssImportLinesAndLogReports()
             throws Exception {
-        List<String> expectedLines = new ArrayList<>(Arrays.asList(
-                "export const addCssBlock = function(block, before = false) {",
-                " const tpl = document.createElement('template');",
-                " tpl.innerHTML = block;",
-                " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
-                "};",
-                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);"));
+        List<String> expectedLines = new ArrayList<>();
         expectedLines.addAll(getExpectedImports());
 
         // An import without `.js` extension

@@ -17,9 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ExecutionFailedException;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,8 +24,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.ExecutionFailedException;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 
 public class TaskGenerateWebComponentBootstrapTest {
@@ -42,12 +40,11 @@ public class TaskGenerateWebComponentBootstrapTest {
     @Before
     public void setup() throws Exception {
         frontendDirectory = temporaryFolder.newFolder(DEFAULT_FRONTEND_DIR);
-        File generatedFolder = temporaryFolder.newFolder(TARGET, FRONTEND);
-        generatedImports = new File(generatedFolder,
-                FrontendUtils.IMPORTS_NAME);
+        generatedImports = FrontendUtils
+                .getFlowGeneratedImports(frontendDirectory);
+        generatedImports.getParentFile().mkdirs();
         generatedImports.createNewFile();
         Options options = new Options(Mockito.mock(Lookup.class), null)
-                .withGeneratedFolder(generatedFolder)
                 .withFrontendDirectory(frontendDirectory);
 
         taskGenerateWebComponentBootstrap = new TaskGenerateWebComponentBootstrap(
@@ -59,7 +56,7 @@ public class TaskGenerateWebComponentBootstrapTest {
             throws ExecutionFailedException {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import '../../target/frontend/"
+        Assert.assertTrue(content.contains("import 'Frontend/generated/flow/"
                 + FrontendUtils.IMPORTS_NAME + "'"));
     }
 

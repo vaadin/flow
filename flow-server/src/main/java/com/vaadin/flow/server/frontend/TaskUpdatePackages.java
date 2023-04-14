@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,8 +39,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
@@ -85,9 +82,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             JsonObject packageJson = getPackageJson();
             modified = updatePackageJsonDependencies(packageJson,
                     scannedApplicationDependencies);
-            versionsPath = generateVersionsJson(packageJson);
-            boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson,
-                    versionsPath);
+            generateVersionsJson(packageJson);
+            boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson);
 
             if (modified || npmVersionLockingUpdated) {
                 writePackageFile(packageJson);
@@ -110,17 +106,11 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
     }
 
-    boolean lockVersionForNpm(JsonObject packageJson, String versionsPath)
-            throws IOException {
+    boolean lockVersionForNpm(JsonObject packageJson) throws IOException {
         if (enablePnpm) {
             return false;
         }
         boolean versionLockingUpdated = false;
-
-        File generatedVersionsFile = new File(options.getNpmFolder(),
-                versionsPath);
-        final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
-                generatedVersionsFile, StandardCharsets.UTF_8));
 
         JsonObject overridesSection = getOverridesSection(packageJson);
         final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
@@ -434,12 +424,6 @@ public class TaskUpdatePackages extends NodeUpdater {
             for (File file : jarResourcesFolder.listFiles()) {
                 file.delete();
             }
-        }
-
-        File generatedNodeModules = new File(options.getGeneratedFolder(),
-                NODE_MODULES);
-        if (generatedNodeModules.exists()) {
-            FrontendUtils.deleteNodeModules(generatedNodeModules);
         }
     }
 

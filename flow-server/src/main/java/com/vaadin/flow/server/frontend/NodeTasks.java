@@ -53,6 +53,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGeneratePackageJson.class,
             TaskGenerateIndexHtml.class,
             TaskGenerateIndexTs.class,
+            TaskUpdateOldIndexTs.class,
             TaskGenerateViteDevMode.class,
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
@@ -132,7 +133,8 @@ public class NodeTasks implements FallibleCommand {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
                         classFinder);
                 Set<File> webComponents = generator.generateWebComponents(
-                        options.getGeneratedFolder(),
+                        FrontendUtils.getFlowGeneratedWebComponentsFolder(
+                                options.getFrontendDirectory()),
                         frontendDependencies.getThemeDefinition());
 
                 if (webComponents.size() > 0) {
@@ -243,6 +245,7 @@ public class NodeTasks implements FallibleCommand {
                 commands.add(new TaskGenerateViteDevMode(options));
             }
         }
+        commands.add(new TaskUpdateOldIndexTs(options));
     }
 
     private void addGenerateTsConfigTask(Options options) {

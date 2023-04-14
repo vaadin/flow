@@ -54,7 +54,6 @@ const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutp
 const devBundleFolder = path.resolve(__dirname, settings.devBundleOutput);
 const devBundle = !!process.env.devBundle;
 const jarResourcesFolder = path.resolve(__dirname, settings.jarResourcesFolder);
-const generatedFlowImportsFolder = path.resolve(__dirname, settings.generatedFlowImportsFolder);
 const themeResourceFolder = path.resolve(__dirname, settings.themeResourceFolder);
 const projectPackageJsonFile = path.resolve(__dirname, 'package.json');
 
@@ -247,7 +246,7 @@ function statsExtracterPlugin(): PluginOption {
 
       const entryScripts = Object.values(bundle).filter(bundle => bundle.isEntry).map(bundle => bundle.fileName);
       //After dev-bundle build add used Flow frontend imports JsModule/JavaScript/CssImport
-      const generatedImports = readFileSync(path.resolve(generatedFlowImportsFolder, "generated-flow-imports.js"), {encoding: 'utf-8'})
+      const generatedImports = readFileSync(path.resolve(themeOptions.frontendGeneratedFolder, "flow", "generated-flow-imports.js"), {encoding: 'utf-8'})
           .split("\n")
           .filter((line: string) => line.startsWith("import"))
           .map((line: string) => line.substring(line.indexOf("'") + 1, line.lastIndexOf("'")))
@@ -559,7 +558,6 @@ let spaMiddlewareForceRemoved = false;
 
 const allowedFrontendFolders = [
   frontendFolder,
-  path.resolve(generatedFlowImportsFolder), // Contains only generated-flow-imports
   nodeModulesFolder
 ];
 

@@ -210,4 +210,9 @@ public class InitParameters implements Serializable {
      * Configuration name for enabling ci build for npm/pnpm.
      */
     public static final String CI_BUILD = "ci.build";
+
+    /**
+     * Configuration name for disabling dev bundle rebuild.
+     */
+    public static final String SKIP_DEV_BUNDLE_REBUILD = "skip.dev.bundle";
 }

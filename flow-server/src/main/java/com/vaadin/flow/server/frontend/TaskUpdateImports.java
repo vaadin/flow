@@ -32,6 +32,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.Constants;
@@ -42,16 +45,12 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
@@ -65,15 +64,12 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
  */
 public class TaskUpdateImports extends NodeUpdater {
 
-    private static final String THEME_LINE_TPL = "%saddCssBlock('%s', true);";
     // Trim and remove new lines.
     private static final Pattern NEW_LINE_TRIM = Pattern
             .compile("(?m)(^\\s+|\\s?\n)");
     private final FrontendDependenciesScanner fallbackScanner;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
-        private static final String EXPORT_MODULES_DEF = "export declare const addCssBlock: (block: string, before?: boolean) => void;";
-
         private final File generatedFlowImports;
         private final File generatedFlowDefinitions;
         private final File fallBackImports;
@@ -82,10 +78,10 @@ public class TaskUpdateImports extends NodeUpdater {
         UpdateMainImportsFile(ClassFinder classFinder, File fallBackImports,
                 Options options) {
             super(options);
-            generatedFlowImports = new File(options.getGeneratedFolder(),
-                    IMPORTS_NAME);
-            generatedFlowDefinitions = new File(options.getGeneratedFolder(),
-                    IMPORTS_D_TS_NAME);
+            generatedFlowImports = FrontendUtils
+                    .getFlowGeneratedImports(options.getFrontendDirectory());
+            generatedFlowDefinitions = new File(
+                    generatedFlowImports.getParentFile(), IMPORTS_D_TS_NAME);
             finder = classFinder;
             this.fallBackImports = fallBackImports;
 
@@ -134,30 +130,7 @@ public class TaskUpdateImports extends NodeUpdater {
 
         @Override
         protected Collection<String> getThemeLines() {
-            Collection<String> lines = new ArrayList<>();
-            AbstractTheme theme = getTheme();
-            ThemeDefinition themeDef = getThemeDefinition();
-
-            if (theme != null) {
-                boolean hasApplicationTheme = themeDef != null
-                        && !"".equals(themeDef.getName());
-                // There is no application theme in use, write theme includes
-                // here. Otherwise they are written by the theme
-                if (!theme.getHeaderInlineContents().isEmpty()) {
-                    lines.add("");
-                    if (hasApplicationTheme) {
-                        lines.add("// Handled in the application theme");
-                    }
-                    theme.getHeaderInlineContents()
-                            .forEach(html -> addLines(lines,
-                                    String.format(THEME_LINE_TPL,
-                                            hasApplicationTheme ? "// " : "",
-                                            NEW_LINE_TRIM.matcher(html)
-                                                    .replaceAll(""))));
-                }
-                lines.add("");
-            }
-            return lines;
+            return Collections.emptyList();
         }
 
         @Override
@@ -180,7 +153,8 @@ public class TaskUpdateImports extends NodeUpdater {
             final Set<String> exclude = new HashSet<>(
                     Arrays.asList(generatedFlowImports.getName(),
                             FrontendUtils.FALLBACK_IMPORTS_NAME));
-            return NodeUpdater.getGeneratedModules(options.getGeneratedFolder(),
+            return NodeUpdater.getGeneratedModules(FrontendUtils
+                    .getFlowGeneratedFolder(options.getFrontendDirectory()),
                     exclude);
         }
 
@@ -210,9 +184,7 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         protected List<String> getDefinitionLines() {
-            List<String> lines = new ArrayList<>();
-            addLines(lines, EXPORT_MODULES_DEF);
-            return lines;
+            return Collections.singletonList("export {}");
         }
     }
 
@@ -222,7 +194,9 @@ public class TaskUpdateImports extends NodeUpdater {
 
         UpdateFallBackImportsFile(ClassFinder classFinder, Options options) {
             super(options);
-            generatedFallBack = new File(options.getGeneratedFolder(),
+            generatedFallBack = new File(
+                    FrontendUtils.getFlowGeneratedFolder(
+                            options.getFrontendDirectory()),
                     FrontendUtils.FALLBACK_IMPORTS_NAME);
             finder = classFinder;
         }

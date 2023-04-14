@@ -164,14 +164,15 @@ public class ScannerDependenciesTest {
     public void should_notVisitNonAnnotatredClasses() {
         FrontendDependencies deps = getFrontendDependencies(
                 UnAnnotatedClass.class);
-        assertEquals("Only UI should be found", 1, deps.getEndPoints().size());
+        assertEquals("Only UI should be found", 1,
+                deps.getEntryPoints().size());
     }
 
     @Test
     public void should_cacheVisitedClasses() {
         FrontendDependencies deps = getFrontendDependencies(
                 RoutedClassWithoutAnnotations.class);
-        assertEquals(2, deps.getEndPoints().size());
+        assertEquals(2, deps.getEntryPoints().size());
         assertTrue("Should cache visited classes",
                 deps.getClasses().size() > 2);
         assertTrue(deps.getClasses().contains(Route.class.getName()));
@@ -189,7 +190,7 @@ public class ScannerDependenciesTest {
         // Visit a route that extends an extra routed class
         FrontendDependencies deps = getFrontendDependencies(RoutedClass.class);
         assertEquals("Should find RoutedClass and UI", 2,
-                deps.getEndPoints().size());
+                deps.getEntryPoints().size());
         int visitedClassesAmount = deps.getClasses().size();
         for (Class<?> clz : visited) {
             assertTrue("should cache " + clz.getName(),
@@ -202,7 +203,7 @@ public class ScannerDependenciesTest {
         deps = getFrontendDependencies(RoutedClassWithoutAnnotations.class,
                 RoutedClass.class);
         assertEquals("Should contain UI, RoutedClass and its parent", 3,
-                deps.getEndPoints().size());
+                deps.getEntryPoints().size());
         assertEquals(visitedClassesAmount, deps.getClasses().size());
         for (Class<?> clz : visited) {
             assertTrue("should cache " + clz.getName(),

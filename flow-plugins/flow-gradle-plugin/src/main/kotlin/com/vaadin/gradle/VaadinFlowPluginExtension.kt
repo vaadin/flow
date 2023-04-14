@@ -46,11 +46,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
      * dir.
      */
     public var npmFolder: File = project.projectDir
-    /**
-     * The folder where flow will put generated files that will be used by
-     * webpack.
-     */
-    public var generatedFolder: File = File(project.buildDir, "frontend")
+
     /**
      * A directory with project's frontend source files.
      */
@@ -225,6 +221,13 @@ public open class VaadinFlowPluginExtension(project: Project) {
      */
     public var ciBuild: Boolean = false
 
+    /**
+     * Enable skip of dev bundle rebuild if a dev bundle exists.
+     *
+     * @return `true` to skip dev bundle rebuild
+     */
+    public var skipDevBundleBuild: Boolean = false
+
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>? = null): ClasspathFilter {
         if (block != null) {
             block.delegate = classpathFilter
@@ -298,7 +301,6 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "productionMode=$productionMode, " +
             "webpackOutputDirectory=$webpackOutputDirectory, " +
             "npmFolder=$npmFolder, " +
-            "generatedFolder=$generatedFolder, " +
             "frontendDirectory=$frontendDirectory, " +
             "generateBundle=$generateBundle, " +
             "runNpmInstall=$runNpmInstall, " +

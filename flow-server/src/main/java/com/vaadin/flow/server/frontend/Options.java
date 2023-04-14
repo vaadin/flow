@@ -3,7 +3,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -75,7 +74,7 @@ public class Options implements Serializable {
 
     private File npmFolder;
 
-    private File generatedFolder;
+    private boolean skipDevBundle = false;
 
     /**
      * The node.js version to be used when node.js is installed automatically by
@@ -126,18 +125,6 @@ public class Options implements Serializable {
         this.lookup = lookup;
         this.classFinder = lookup.lookup(ClassFinder.class);
         this.npmFolder = npmFolder;
-    }
-
-    /**
-     * Sets the irectory where generated files are written.
-     *
-     * @param generatedFolder
-     *            folder where flow generated files will be placed
-     * @return this
-     */
-    public Options withGeneratedFolder(File generatedFolder) {
-        this.generatedFolder = generatedFolder;
-        return this;
     }
 
     /**
@@ -583,33 +570,6 @@ public class Options implements Serializable {
     }
 
     /**
-     * Get the generated folder for this build, always an absolute path.
-     *
-     * @return the generated folder
-     */
-    public File getGeneratedFolder() {
-        if (generatedFolder != null) {
-            if (generatedFolder.isAbsolute()) {
-                return generatedFolder;
-            } else {
-                return new File(npmFolder, generatedFolder.getPath());
-            }
-        }
-
-        if (buildDirectoryName != null && npmFolder != null) {
-            // Use default if not specified
-            String generatedDir = System
-                    .getProperty(FrontendUtils.PARAM_GENERATED_DIR,
-                            Paths.get(buildDirectoryName,
-                                    FrontendUtils.DEFAULT_GENERATED_DIR)
-                                    .toString());
-            return new File(npmFolder, generatedDir);
-
-        }
-        return generatedFolder;
-    }
-
-    /**
      * Get the output directory for webpack output.
      *
      * @return webpackOutputDirectory
@@ -808,4 +768,27 @@ public class Options implements Serializable {
         return postinstallPackages;
     }
 
+    /**
+     * Set to true to skip dev bundle build in case a dev bundle exists.
+     * <p>
+     * Dev bundle build will not be skipped in case no dev bundle is found.
+     *
+     * @param skip
+     *            {@code true} to skip rebuild of dev bundle
+     * @return this builder
+     */
+    public Options skipDevBundleBuild(boolean skip) {
+        skipDevBundle = skip;
+        return this;
+    }
+
+    /**
+     * Is dev bundle build skipped or not.
+     *
+     * @return {@code true} to skip dev bundle checks, {@code false} to run
+     *         normally. Default is {@code false}
+     */
+    public boolean isSkipDevBundle() {
+        return skipDevBundle;
+    }
 }

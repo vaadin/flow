@@ -24,4 +24,6 @@ public interface ThemeEditorCommand {
 
     String OPEN_CSS = "themeEditorOpenCss";
 
+    String MARK_AS_USED = "themeEditorMarkAsUsed";
+
 }

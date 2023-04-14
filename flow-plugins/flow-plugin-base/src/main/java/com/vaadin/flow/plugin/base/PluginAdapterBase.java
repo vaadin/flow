@@ -72,14 +72,6 @@ public interface PluginAdapterBase {
     File frontendDirectory();
 
     /**
-     * The folder where flow will put generated files that will be used by
-     * webpack.
-     *
-     * @return {@link File}
-     */
-    File generatedFolder();
-
-    /**
      * The folder where flow will put TS API files for client projects.
      *
      * @return {@link File}
@@ -282,4 +274,11 @@ public interface PluginAdapterBase {
     List<String> postinstallPackages();
 
     boolean isFrontendHotdeploy();
+
+    /**
+     * Enable skip of dev bundle rebuild if a dev bundle exists.
+     *
+     * @return {@code true} to skip dev bundle rebuild
+     */
+    boolean skipDevBundleBuild();
 }

@@ -77,13 +77,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private File frontendDirectory;
 
     /**
-     * The folder where flow will put generated files that will be used by the
-     * frontend build tool.
-     */
-    @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
-    private File generatedFolder;
-
-    /**
      * The folder where flow will put TS API files for client projects.
      */
     @Parameter(defaultValue = "${project.basedir}/" + FRONTEND + "/generated")
@@ -223,6 +216,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.FRONTEND_HOTDEPLOY, defaultValue = "false")
     private boolean frontendHotdeploy;
 
+    @Parameter(property = InitParameters.SKIP_DEV_BUNDLE_REBUILD, defaultValue = "false")
+    private boolean skipDevBundleRebuild;
+
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
      * MavenProject.
@@ -262,12 +258,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     public File frontendDirectory() {
 
         return frontendDirectory;
-    }
-
-    @Override
-    public File generatedFolder() {
-
-        return generatedFolder;
     }
 
     @Override
@@ -441,5 +431,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public boolean isFrontendHotdeploy() {
         return frontendHotdeploy;
+    }
+
+    @Override
+    public boolean skipDevBundleBuild() {
+        return skipDevBundleRebuild;
     }
 }

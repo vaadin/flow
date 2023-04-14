@@ -18,7 +18,7 @@
   "devDependencies": {
     "async": "3.2.2",
     "glob": "7.2.3",
-    "typescript": "5.0.3",
+    "typescript": "5.0.4",
     "workbox-core": "6.5.4",
     "workbox-precaching": "6.5.4",
     "strip-css-comments": "5.0.0"

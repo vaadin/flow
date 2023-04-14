@@ -19,8 +19,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_BOOTSTRAP_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_BOOTSTRAP_FILE_NAME;
 
 /**
  * A task for generating the bootstrap file for exported web components
@@ -47,18 +47,16 @@ public class TaskGenerateWebComponentBootstrap
     TaskGenerateWebComponentBootstrap(Options options) {
         this.frontendGeneratedDirectory = new File(
                 options.getFrontendDirectory(), GENERATED);
-        this.generatedImports = new File(options.getGeneratedFolder(),
-                FrontendUtils.IMPORTS_NAME);
+        this.generatedImports = FrontendUtils
+                .getFlowGeneratedImports(options.getFrontendDirectory());
     }
 
     @Override
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
 
-        String generatedImportsRelativePath = FrontendUtils.getUnixRelativePath(
-                frontendGeneratedDirectory.toPath(), generatedImports.toPath());
-
-        lines.add(String.format("import '%s';", generatedImportsRelativePath));
+        lines.add(
+                "import 'Frontend/generated/flow/generated-flow-imports.js';");
         lines.add("import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
                 + "FlowClient.js';");
         lines.add("init();");
