@@ -351,7 +351,6 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         }
 
         // UI should always be collected as it contains 'ConnectionIndicator.js'
-        // which else goes into fallback making it always load.
         addEntryPoint(UI.class);
 
         if (generateEmbeddableWebComponents) {

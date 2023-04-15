@@ -10,7 +10,7 @@ document.getElementById("button1").addEventListener('click', async e => {
 });
 
 const flow = new Flow({
-    imports: () => import('../target/frontend/generated-flow-imports')
+    imports: () => import('Frontend/generated/flow/generated-flow-imports.js')
 });
 
 document.getElementById("button2").addEventListener('click', async e => {

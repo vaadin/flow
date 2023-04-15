@@ -73,8 +73,7 @@ public class SpringApplicationConfigurationFactoryTest {
                 .forEach(name -> Mockito.when(env.getProperty("vaadin." + name))
                         .thenReturn(prefix + name));
         Map<String, String> props = new HashMap<>();
-        ApplicationConfiguration config = factory.doCreate(context, null,
-                props);
+        ApplicationConfiguration config = factory.doCreate(context, props);
 
         for (String prop : SpringServlet.PROPERTY_NAMES) {
             Assert.assertEquals(
