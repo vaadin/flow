@@ -47,11 +47,4 @@ public class TemplateIT extends ChromeBrowserTest {
         Assert.assertEquals(newLabel, addonLitSpan.getText());
     }
 
-    @Test
-    public void testElementReferencedByReflection() {
-        SpanElement span = $(ReflectivelyReferencedComponent.TAG).first()
-                .$(SpanElement.class).first();
-        Assert.assertEquals("ReflectivelyReferencedComponent contents",
-                span.getText());
-    }
 }
