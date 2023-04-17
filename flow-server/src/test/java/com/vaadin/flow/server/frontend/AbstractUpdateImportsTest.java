@@ -417,11 +417,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertContainsImports(true, "Frontend/common-js-file.js");
 
-        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
-                "Frontend/common-js-file.js");
-        assertImportOrder(
-                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
-                "Frontend/common-js-file.js");
+        assertImportOrder("Frontend/common-js-file.js",
+                "@vaadin/vaadin-lumo-styles/color.js");
+        assertImportOrder("Frontend/common-js-file.js",
+                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js");
     }
 
     @Test
@@ -471,32 +470,21 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Imports are collected as
         // - theme and css
-        // - JsModules (external e.g. in node_modules/)
+        // - JsModules
         // - JavaScript
         // - Generated webcompoents
-        // - JsModules (internal e.g. in frontend/)
         List<String> expectedImports = new ArrayList<>();
         expectedImports.addAll(updater.getExportLines());
 
         getAnntotationsAsStream(JsModule.class, testClasses)
-                .map(JsModule::value).map(this::updateToImport).sorted()
+                .map(JsModule::value).sorted().map(this::updateToImport)
                 .forEach(expectedImports::add);
         getAnntotationsAsStream(JavaScript.class, testClasses)
                 .map(JavaScript::value).map(this::updateToImport).sorted()
                 .forEach(expectedImports::add);
-
-        List<String> internals = expectedImports.stream()
-                .filter(importValue -> importValue
-                        .contains(FrontendUtils.FRONTEND_FOLDER_ALIAS))
-                .filter(importValue -> !importValue.contains("theme-util.js"))
-                .sorted().collect(Collectors.toList());
         updater.getGeneratedModules().stream()
                 .map(updater::resolveGeneretedModule).map(this::updateToImport)
                 .forEach(expectedImports::add);
-        // Remove internals from the full list
-        expectedImports.removeAll(internals);
-        // Add internals to end of list
-        expectedImports.addAll(internals);
 
         Assert.assertEquals(expectedImports, updater.resultingLines);
     }
