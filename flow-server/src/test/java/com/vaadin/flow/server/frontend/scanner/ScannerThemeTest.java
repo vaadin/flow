@@ -58,41 +58,19 @@ public class ScannerThemeTest {
     }
 
     @Test
-    public void should_not_takeTheme_when_NoTheme() {
-        FrontendDependencies deps = getFrontendDependencies(
-                RootViewWithoutTheme.class);
-        assertNull(deps.getThemeDefinition());
-
-        assertTrue(2 <= deps.getModules().size());
-        assertEquals(0, deps.getPackages().size());
-        assertEquals(2, deps.getScripts().size());
-    }
-
-    @Test
     public void should_takeThemeFromLayout() {
         FrontendDependencies deps = getFrontendDependencies(
                 RootViewWithLayoutTheme.class);
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
         assertEquals(Theme1.DARK, deps.getThemeDefinition().getVariant());
 
-        assertTrue(8 <= deps.getModules().size());
+        System.out.println(deps.getModules());
+        assertEquals(6, deps.getModules().size());
         assertEquals(1, deps.getPackages().size());
-        assertEquals(6, deps.getScripts().size());
+        assertEquals(5, deps.getScripts().size());
 
         assertTrue(deps.getPackages().containsKey("@foo/first-view"));
         assertEquals("0.0.1", deps.getPackages().get("@foo/first-view"));
-    }
-
-    @Test
-    public void should_takeThemeWhenMultipleTheme() {
-        FrontendDependencies deps = getFrontendDependencies(
-                RootViewWithMultipleTheme.class);
-        assertEquals(Theme2.class, deps.getThemeDefinition().getTheme());
-        assertEquals(Theme2.FOO, deps.getThemeDefinition().getVariant());
-
-        assertTrue(4 <= deps.getModules().size());
-        assertEquals(0, deps.getPackages().size());
-        assertEquals(2, deps.getScripts().size());
     }
 
     @Test

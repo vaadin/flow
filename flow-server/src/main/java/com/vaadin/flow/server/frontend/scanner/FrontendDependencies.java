@@ -70,7 +70,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
-    private final Set<String> visited = new HashSet<>();
+    private final Map<String, ClassInfo> visitedClasses = new HashMap<>();
+
     private PwaConfiguration pwaConfiguration;
 
     /**
@@ -128,15 +129,17 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             if (themeDefinition != null && themeDefinition.getTheme() != null) {
                 Class<? extends AbstractTheme> themeClass = themeDefinition
                         .getTheme();
-                if (!visited.contains(themeClass.getName())) {
+                if (!visitedClasses.containsKey(themeClass.getName())) {
                     addEntryPoint(themeClass);
                     visitEntryPoint(entryPoints.get(themeClass.getName()));
                 }
             }
             computePackages();
             computePwaConfiguration();
+            aggregateEntryPointInformation();
             long ms = (System.nanoTime() - start) / 1000000;
-            log().info("Visited {} classes. Took {} ms.", visited.size(), ms);
+            log().info("Visited {} classes. Took {} ms.", visitedClasses.size(),
+                    ms);
         } catch (ClassNotFoundException | InstantiationException
                 | IllegalAccessException | IOException e) {
             throw new IllegalStateException(
@@ -144,14 +147,66 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         }
     }
 
+    private void aggregateEntryPointInformation() {
+        for (Entry<String, EntryPointData> entry : entryPoints.entrySet()) {
+            EntryPointData entryPoint = entry.getValue();
+            for (String className : entryPoint.reachableClasses) {
+                ClassInfo classInfo = visitedClasses.get(className);
+                entryPoint.getModules().addAll(classInfo.modules);
+                entryPoint.getCss().addAll(classInfo.css);
+                entryPoint.getScripts().addAll(classInfo.scripts);
+            }
+        }
+
+    }
+
+    Set<String> collectReachableClasses(EntryPointData entryPointData) {
+        Set<String> classes = new HashSet<>();
+        collectReachableClasses(entryPointData.name, classes);
+
+        return classes;
+    }
+
+    private void collectReachableClasses(String name, Set<String> classes) {
+        if (classes.contains(name)) {
+            return;
+        }
+
+        ClassInfo visitedClass = visitedClasses.get(name);
+        if (visitedClass == null) {
+            if (!shouldVisit(name)) {
+                return;
+            }
+
+            throw new IllegalStateException("The class " + name
+                    + " is reachable but its info was not collected");
+        }
+
+        classes.add(name);
+        for (String className : visitedClass.children) {
+            if (!entryPoints.containsKey(className)) {
+                collectReachableClasses(className, classes);
+            }
+        }
+
+    }
+
     private void visitEntryPoints() throws IOException {
         for (Entry<String, EntryPointData> entry : entryPoints.entrySet()) {
             visitEntryPoint(entry.getValue());
         }
+
     }
 
     private void visitEntryPoint(EntryPointData entryPoint) throws IOException {
         visitClass(entryPoint.getName(), entryPoint);
+
+        entryPoint.reachableClasses = collectReachableClasses(entryPoint);
+        if (log().isDebugEnabled()) {
+            log().debug("Classes reachable from " + entryPoint.getName() + ": "
+                    + entryPoint.reachableClasses);
+        }
+
     }
 
     /**
@@ -223,7 +278,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      */
     @Override
     public Set<String> getClasses() {
-        return visited;
+        return visitedClasses.keySet();
     }
 
     /**
@@ -327,29 +382,22 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private void computeApplicationTheme() throws ClassNotFoundException,
             InstantiationException, IllegalAccessException, IOException {
 
-        // Re-visit theme related classes, because they might be skipped
-        // when they where already added to the visited list during other
-        // entry-point visits
-        for (EntryPointData entryPoint : entryPoints.values()) {
-            if (entryPoint.getLayout() != null) {
-                visitClass(entryPoint.getLayout(), entryPoint);
-            }
-        }
-
-        List<EntryPointData> entryPointsWithTheme = entryPoints.values()
-                .stream()
+        // This really should check entry points and not all classes, but the
+        // old behavior is retained.. for now..
+        List<ClassInfo> classesWithTheme = entryPoints.values().stream()
+                .flatMap(entryPoint -> entryPoint.reachableClasses.stream())
+                .map(className -> visitedClasses.get(className))
                 // consider only entry points with theme information
                 .filter(this::hasThemeInfo).toList();
-        Set<ThemeData> themes = entryPointsWithTheme.stream()
-                .map(EntryPointData::getTheme)
+        Set<ThemeData> themes = classesWithTheme.stream()
+                .map(classInfo -> classInfo.theme)
                 // Remove duplicates by returning a set
                 .collect(Collectors.toSet());
 
         if (themes.size() > 1) {
-            String names = entryPointsWithTheme.stream()
-                    .map(data -> "found '"
-                            + getThemeDescription(data.getTheme()) + "' in '"
-                            + data.getName() + "'")
+            String names = classesWithTheme.stream()
+                    .map(data -> "found '" + getThemeDescription(data.theme)
+                            + "' in '" + data.className + "'")
                     .collect(Collectors.joining("\n      "));
             throw new IllegalStateException(
                     "\n Multiple Theme configuration is not supported:\n      "
@@ -559,22 +607,21 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * @return
      * @throws IOException
      */
-    private void visitClass(String className, EntryPointData entryPoint)
+    void visitClass(String className, EntryPointData entryPoint)
             throws IOException {
 
-        if (!shouldVisit(className)
-                || entryPoint.getClasses().contains(className)) {
+        if (visitedClasses.containsKey(className) || !shouldVisit(className)) {
             return;
         }
-        entryPoint.getClasses().add(className);
+        ClassInfo info = new ClassInfo(className);
+        visitedClasses.put(className, info);
 
         URL url = getUrl(className);
         if (url == null) {
             return;
         }
 
-        FrontendClassVisitor visitor = new FrontendClassVisitor(className,
-                entryPoint);
+        FrontendClassVisitor visitor = new FrontendClassVisitor(info);
         try (InputStream is = url.openStream()) {
             ClassReader cr = new ClassReader(is);
             cr.accept(visitor, ClassReader.EXPAND_FRAMES);
@@ -585,17 +632,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             throw e;
         }
 
-        // all classes visited by the scanner, used for performance (#5933)
-        visited.add(className);
-
-        for (String clazz : visitor.getChildren()) {
-            // Since we only have an entry point for the app, it is all right to
-            // skip the visit to the the same class in other end-points, because
-            // we output all dependencies at once. When we implement
-            // chunks, this will need to be considered.
-            if (!visited.contains(clazz)) {
-                visitClass(clazz, entryPoint);
-            }
+        for (String clazz : info.children) {
+            visitClass(clazz, entryPoint);
         }
     }
 
@@ -626,21 +664,20 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         return entryPoints.toString();
     }
 
-    private boolean hasThemeInfo(EntryPointData data) {
-        ThemeData theme = data.getTheme();
+    private boolean hasThemeInfo(ClassInfo classInfo) {
+        ThemeData theme = classInfo.theme;
         if (theme.getThemeClass() != null) {
             return true;
         }
 
-        if (data.getTheme().getThemeName() != null
-                && !data.getTheme().getThemeName().isBlank()) {
+        if (theme.getThemeName() != null && !theme.getThemeName().isBlank()) {
             return true;
         }
 
-        if (!data.getTheme().getVariant().isEmpty()) {
+        if (!theme.getVariant().isEmpty()) {
             return true;
         }
-        if (data.getTheme().isNotheme()) {
+        if (theme.isNotheme()) {
             return true;
         }
 

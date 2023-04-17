@@ -170,7 +170,6 @@ public class ScannerTestComponents {
     @NpmPackage(value = "@foo/first-view", version = "0.0.1")
     public static class FirstView extends View0 {
         Component1 component1;
-        RootViewWithMultipleTheme second;
 
         public FirstView() {
             createView();
@@ -240,15 +239,15 @@ public class ScannerTestComponents {
 
     @Theme(themeClass = Theme2.class)
     public static class ThemeExporter
-            extends WebComponentExporter<RootViewWithTheme> {
+            extends WebComponentExporter<RootViewWithoutThemeAnnotation> {
         public ThemeExporter() {
             super("root-view");
         }
 
         @Override
         public void configureInstance(
-                WebComponent<RootViewWithTheme> webComponent,
-                RootViewWithTheme component) {
+                WebComponent<RootViewWithoutThemeAnnotation> webComponent,
+                RootViewWithoutThemeAnnotation component) {
 
         }
     }
