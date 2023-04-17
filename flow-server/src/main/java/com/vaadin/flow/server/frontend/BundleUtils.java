@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2023 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.io.IOException;
@@ -15,7 +30,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
-public class BundleUtils {
+public final class BundleUtils {
 
     private BundleUtils() {
         // Util methods only
@@ -38,12 +53,12 @@ public class BundleUtils {
         for (int i = 0; i < bundleImports.length(); i++) {
             String jsImport = bundleImports.getString(i);
             bundledImports.add(jsImport);
-            bundledImports.add(jsImport.replace("theme/lumo/", "src/"));
-            bundledImports.add(jsImport.replace("theme/material/", "src/"));
+            bundledImports.add(jsImport.replace("/theme/lumo/", "/src/"));
+            bundledImports.add(jsImport.replace("/theme/material/", "/src/"));
             bundledImports.add(jsImport
-                    .replace("Frontend/generated/jar-resources/", "./"));
-            bundledImports.add(jsImport.replace("Frontend/", "./"));
-            bundledImports.add(jsImport.replace("Frontend/", ""));
+                    .replaceFirst("^Frontend/generated/jar-resources/", "./"));
+            bundledImports.add(jsImport.replaceFirst("^Frontend/", "./"));
+            bundledImports.add(jsImport.replaceFirst("^Frontend/", ""));
         }
         return Collections.unmodifiableSet(bundledImports);
     }
