@@ -36,13 +36,9 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.VaadinConfig;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfig;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
@@ -80,48 +76,6 @@ public class ServletDeployer implements ServletContextListener {
     }
 
     private String servletCreationMessage;
-
-    /**
-     * An implementation of {@link VaadinConfig} which provides a
-     * {@link VaadinContext} but no config parameter.
-     */
-    private static class VaadinServletContextConfig implements VaadinConfig {
-        private transient ServletContext servletContext;
-
-        private VaadinServletContextConfig(ServletContext servletContext) {
-            this.servletContext = servletContext;
-        }
-
-        /**
-         * Ensures there is a valid instance of {@link ServletContext}.
-         */
-        private void ensureServletContext() {
-            if (servletContext == null && VaadinService
-                    .getCurrent() instanceof VaadinServletService) {
-                servletContext = ((VaadinServletService) VaadinService
-                        .getCurrent()).getServlet().getServletContext();
-            } else if (servletContext == null) {
-                throw new IllegalStateException(
-                        "The underlying ServletContext of VaadinServletContext is null and there is no VaadinServletService to obtain it from.");
-            }
-        }
-
-        @Override
-        public VaadinContext getVaadinContext() {
-            ensureServletContext();
-            return new VaadinServletContext(servletContext);
-        }
-
-        @Override
-        public Enumeration<String> getConfigParameterNames() {
-            return Collections.emptyEnumeration();
-        }
-
-        @Override
-        public String getConfigParameter(String name) {
-            return null;
-        }
-    }
 
     /**
      * Default ServletConfig implementation.

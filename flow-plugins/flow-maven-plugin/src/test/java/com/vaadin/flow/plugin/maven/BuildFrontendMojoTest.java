@@ -68,7 +68,6 @@ import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -324,8 +323,6 @@ public class BuildFrontendMojoTest {
                 generatedFiles.contains(IMPORTS_NAME));
         Assert.assertTrue(String.format(generated, IMPORTS_D_TS_NAME),
                 generatedFiles.contains(IMPORTS_D_TS_NAME));
-        Assert.assertTrue(String.format(generated, FALLBACK_IMPORTS_NAME),
-                generatedFiles.contains(FALLBACK_IMPORTS_NAME));
 
         Assert.assertFalse("No 'target' directory should exist after build.",
                 target.exists());
@@ -335,15 +332,7 @@ public class BuildFrontendMojoTest {
     public void should_UpdateMainJsFile() throws Exception {
         Assert.assertFalse(importsFile.exists());
 
-        List<String> expectedLines = new ArrayList<>(Arrays.asList(
-                "export const addCssBlock = function(block, before = false) {",
-                " const tpl = document.createElement('template');",
-                " tpl.innerHTML = block;",
-                " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
-                "};",
-                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);"));
-
-        expectedLines.addAll(getExpectedImports());
+        List<String> expectedLines = getExpectedImports();
 
         mojo.execute();
 

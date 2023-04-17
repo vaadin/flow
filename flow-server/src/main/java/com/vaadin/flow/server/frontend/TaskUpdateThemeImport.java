@@ -86,12 +86,12 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         }
 
         try {
-            AbstractTaskClientGenerator.writeIfChanged(themeImportFile, String
-                    .format("import {applyTheme as _applyTheme} from './theme-%s.generated.js';%n"
+            FileIOUtils.writeIfChanged(themeImportFile, String.format(
+                    "import {applyTheme as _applyTheme} from './theme-%s.generated.js';%n"
                             + "export const applyTheme = _applyTheme;%n",
-                            theme.getName()));
-            AbstractTaskClientGenerator.writeIfChanged(
-                    themeImportFileDefinition, EXPORT_MODULES_DEF);
+                    theme.getName()));
+            FileIOUtils.writeIfChanged(themeImportFileDefinition,
+                    EXPORT_MODULES_DEF);
         } catch (IOException e) {
             throw new ExecutionFailedException(
                     "Unable to write theme import file", e);

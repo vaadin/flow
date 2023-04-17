@@ -81,7 +81,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true);
         updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
-                finder -> null, options) {
+                options) {
             @Override
             Logger log() {
                 return logger;
@@ -106,13 +106,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
     @Test
     public void generateImportsFile_fileContainsThemeLinesAndExpectedImportsAndCssImportLinesAndLogReports()
             throws Exception {
-        List<String> expectedLines = new ArrayList<>(Arrays.asList(
-                "export const addCssBlock = function(block, before = false) {",
-                " const tpl = document.createElement('template');",
-                " tpl.innerHTML = block;",
-                " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
-                "};",
-                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);"));
+        List<String> expectedLines = new ArrayList<>();
         expectedLines.addAll(getExpectedImports());
 
         // An import without `.js` extension
@@ -224,18 +218,6 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         updater.execute();
 
         assertContainsImports(false, "./added-import.js");
-    }
-
-    @Test
-    public void addJsModules_themeModulesAreOnTop() throws Exception {
-        updater.execute();
-
-        addImports("styles/styles.js");
-
-        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
-                "Frontend/foo.js");
-        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
-                "styles/styles.js");
     }
 
     private void assertContainsImports(boolean contains, String... imports)

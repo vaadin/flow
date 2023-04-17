@@ -21,7 +21,6 @@ import org.osgi.service.component.annotations.Component;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
 
@@ -32,9 +31,9 @@ public class ItApplicationConfigurationFactory
 
     @Override
     protected ApplicationConfigurationImpl doCreate(VaadinContext context,
-            FallbackChunk chunk, Map<String, String> properties) {
+            Map<String, String> properties) {
         properties.put(Constants.ALLOW_APPSHELL_ANNOTATIONS,
                 Boolean.TRUE.toString());
-        return super.doCreate(context, chunk, properties);
+        return super.doCreate(context, properties);
     }
 }

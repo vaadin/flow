@@ -64,7 +64,6 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
@@ -350,12 +349,6 @@ public class DevModeInitializer implements Serializable {
             JsonObject tokenFileData, NodeTasks tasks) {
         try {
             tasks.execute();
-
-            FallbackChunk chunk = FrontendUtils
-                    .readFallbackChunk(tokenFileData);
-            if (chunk != null) {
-                vaadinContext.setAttribute(chunk);
-            }
         } catch (ExecutionFailedException exception) {
             log().debug(
                     "Could not initialize dev mode handler. One of the node tasks failed",

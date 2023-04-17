@@ -23,8 +23,6 @@ import java.util.Properties;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.frontend.FallbackChunk;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.AbstractConfigurationFactory;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -39,9 +37,6 @@ import elemental.json.impl.JsonUtil;
  */
 public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
         implements Serializable {
-
-    public static final Object FALLBACK_CHUNK = new Serializable() {
-    };
 
     /**
      * Creates a {@link DeploymentConfiguration} instance that is filled with
@@ -111,8 +106,6 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
             VaadinContext context) {
         String json = getTokenFileContent(initParameters::getProperty);
 
-        FallbackChunk fallbackChunk = null;
-
         // Read the json and set the appropriate system properties if not
         // already set.
         if (json != null) {
@@ -125,14 +118,6 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
                     initParameters.put(entry.getKey(), entry.getValue());
                 }
             }
-            fallbackChunk = FrontendUtils.readFallbackChunk(buildInfo);
-        }
-        if (fallbackChunk == null) {
-            fallbackChunk = ApplicationConfiguration.get(context)
-                    .getFallbackChunk();
-        }
-        if (fallbackChunk != null) {
-            initParameters.put(FALLBACK_CHUNK, fallbackChunk);
         }
     }
 
