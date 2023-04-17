@@ -68,8 +68,8 @@ public class TaskUpdateImports extends NodeUpdater {
         @Override
         protected void writeImportLines(List<String> lines) {
             try {
-                updateImportsFile(generatedFlowImports, lines);
-                updateImportsFile(generatedFlowDefinitions,
+                FileIOUtils.writeIfChanged(generatedFlowImports, lines);
+                FileIOUtils.writeIfChanged(generatedFlowDefinitions,
                         getDefinitionLines());
             } catch (IOException e) {
                 throw new IllegalStateException(String.format(

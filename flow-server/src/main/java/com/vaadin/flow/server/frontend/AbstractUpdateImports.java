@@ -230,27 +230,6 @@ abstract class AbstractUpdateImports implements Runnable {
         return lines;
     }
 
-    protected void updateImportsFile(File importsFile, List<String> newContent)
-            throws IOException {
-        List<String> oldContent = importsFile.exists()
-                ? FileUtils.readLines(importsFile, StandardCharsets.UTF_8)
-                : null;
-
-        if (newContent.equals(oldContent)) {
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("No js modules to update '{}' file",
-                        importsFile);
-            }
-        } else {
-            FileUtils.forceMkdir(importsFile.getParentFile());
-            FileUtils.writeStringToFile(importsFile,
-                    String.join("\n", newContent), StandardCharsets.UTF_8);
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("Updated {}", importsFile);
-            }
-        }
-    }
-
     protected String resolveResource(String importPath) {
         String resolved = importPath;
         if (!importPath.startsWith("@")) {
