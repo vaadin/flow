@@ -406,8 +406,6 @@ public class BuildFrontendUtil {
      */
     public static void runFrontendBuild(PluginAdapterBase adapter)
             throws TimeoutException, URISyntaxException {
-        FeatureFlags featureFlags = getFeatureFlags(adapter);
-
         LicenseChecker.setStrictOffline(true);
 
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
