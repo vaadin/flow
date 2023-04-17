@@ -173,3 +173,11 @@ export function generateThemeRule(
     properties
   };
 }
+
+export function generateThemeRuleCss(rule: ServerCssRule) {
+  const propertyCss = Object.entries(rule.properties)
+    .map(([name, value]) => `${name}: ${value};`)
+    .join(' ');
+
+  return `${rule.selector} { ${propertyCss} }`;
+}

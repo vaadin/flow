@@ -887,6 +887,7 @@ export class VaadinDevTools extends LitElement {
       if (styleTag) {
         this.log(MessageType.INFORMATION, 'Hot update of ' + path);
         styleTag.textContent = content;
+        document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
       } else {
         onReload();
       }
@@ -1248,17 +1249,6 @@ export class VaadinDevTools extends LitElement {
     window.sessionStorage.setItem(VaadinDevTools.ACTIVE_KEY_IN_SESSION_STORAGE, yes ? 'true' : 'false');
   }
 
-  disableLiveReloadTemporarily() {
-    if (VaadinDevTools.isActive || this.disableLiveReloadTimeout != null) {
-      this.setActive(false);
-      clearTimeout(this.disableLiveReloadTimeout!);
-      this.disableLiveReloadTimeout = window.setTimeout(() => {
-        this.setActive(true);
-        this.disableLiveReloadTimeout = null;
-      }, 2500);
-    }
-  }
-
   getStatusColor(status: ConnectionStatus | undefined) {
     if (status === ConnectionStatus.ACTIVE) {
       return 'var(--dev-tools-green-color)';
@@ -1532,7 +1522,6 @@ export class VaadinDevTools extends LitElement {
       .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
       .connection=${this.frontendConnection}
-      @before-save=${this.disableLiveReloadTemporarily}
     ></vaadin-dev-tools-theme-editor>`;
   }
 
