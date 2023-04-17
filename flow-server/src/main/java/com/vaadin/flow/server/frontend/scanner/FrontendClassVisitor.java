@@ -15,17 +15,15 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
-import net.bytebuddy.jar.asm.AnnotationVisitor;
-import net.bytebuddy.jar.asm.ClassVisitor;
-import net.bytebuddy.jar.asm.FieldVisitor;
-import net.bytebuddy.jar.asm.Handle;
-import net.bytebuddy.jar.asm.MethodVisitor;
-import net.bytebuddy.jar.asm.Opcodes;
-import net.bytebuddy.jar.asm.Type;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.Handle;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -54,16 +52,13 @@ final class FrontendClassVisitor extends ClassVisitor {
     static final String INCLUDE = "include";
     static final String THEME_FOR = "themeFor";
 
-    private final String className;
-    private final EntryPointData entryPoint;
     private final MethodVisitor methodVisitor;
     private final AnnotationVisitor annotationVisitor;
     private final AnnotationVisitor routeVisitor;
-    private final AnnotationVisitor themeRouteVisitor;
-    private final AnnotationVisitor themeLayoutVisitor;
+    private final AnnotationVisitor themeVisitor;
     private final AnnotationVisitor jsModuleVisitor;
     private final AnnotationVisitor jScriptVisitor;
-    private final Set<String> children = new HashSet<>();
+    private ClassInfo classInfo;
 
     private final class FrontendMethodVisitor extends MethodVisitor {
         public FrontendMethodVisitor() {
@@ -73,7 +68,7 @@ final class FrontendClassVisitor extends ClassVisitor {
         // We are interested in the new instances created inside the method
         @Override
         public void visitTypeInsn(int opcode, String type) {
-            addSignatureToClasses(children, type);
+            addSignatureToClasses(classInfo.children, type);
         }
 
         // We are interested in method instructions like
@@ -81,8 +76,8 @@ final class FrontendClassVisitor extends ClassVisitor {
         @Override
         public void visitMethodInsn(int opcode, String owner, String name,
                 String descriptor, boolean isInterface) {
-            addSignatureToClasses(children, owner);
-            addSignatureToClasses(children, descriptor);
+            addSignatureToClasses(classInfo.children, owner);
+            addSignatureToClasses(classInfo.children, descriptor);
         }
 
         // Visit instructions that stores something in a field inside the
@@ -90,8 +85,8 @@ final class FrontendClassVisitor extends ClassVisitor {
         @Override
         public void visitFieldInsn(int opcode, String owner, String name,
                 String descriptor) {
-            addSignatureToClasses(children, owner);
-            addSignatureToClasses(children, descriptor);
+            addSignatureToClasses(classInfo.children, owner);
+            addSignatureToClasses(classInfo.children, descriptor);
         }
 
         // Visit arguments, we only care those arguments that are Types,
@@ -99,7 +94,7 @@ final class FrontendClassVisitor extends ClassVisitor {
         @Override
         public void visitLdcInsn(Object value) {
             if (value instanceof Type) {
-                addSignatureToClasses(children, value.toString());
+                addSignatureToClasses(classInfo.children, value.toString());
             }
         }
 
@@ -110,15 +105,18 @@ final class FrontendClassVisitor extends ClassVisitor {
         public void visitInvokeDynamicInsn(String name, String descriptor,
                 Handle bootstrapMethodHandle,
                 Object... bootstrapMethodArguments) {
-            addSignatureToClasses(children, descriptor);
-            addSignatureToClasses(children, bootstrapMethodHandle.getOwner());
-            addSignatureToClasses(children, bootstrapMethodHandle.getDesc());
+            addSignatureToClasses(classInfo.children, descriptor);
+            addSignatureToClasses(classInfo.children,
+                    bootstrapMethodHandle.getOwner());
+            addSignatureToClasses(classInfo.children,
+                    bootstrapMethodHandle.getDesc());
             for (Object obj : bootstrapMethodArguments) {
                 if (obj instanceof Type) {
-                    addSignatureToClasses(children, obj.toString());
+                    addSignatureToClasses(classInfo.children, obj.toString());
                 } else if (obj instanceof Handle) {
                     // The owner of the Handle is the reference information
-                    addSignatureToClasses(children, ((Handle) obj).getOwner());
+                    addSignatureToClasses(classInfo.children,
+                            ((Handle) obj).getOwner());
                     // the descriptor for the Handle won't be scanned, as it
                     // adds from +10% to 40% to the execution time and does not
                     // affect the fix in itself
@@ -136,17 +134,12 @@ final class FrontendClassVisitor extends ClassVisitor {
      *
      * @param className
      *            the class to visit
-     * @param entryPoint
-     *            the entry point object that will be updated during the visit
-     * @param themeScope
-     *            whether we are visiting from Theme
+     * @param classInfo
+     *            data object where discovered information is stored
      */
-    FrontendClassVisitor(String className, EntryPointData entryPoint,
-            boolean themeScope) { // NOSONAR
+    FrontendClassVisitor(ClassInfo classInfo) {
         super(Opcodes.ASM9);
-        this.className = className;
-        this.entryPoint = entryPoint;
-
+        this.classInfo = classInfo;
         // Visitor for each method in the class.
         methodVisitor = new FrontendMethodVisitor();
         // Visitor for each annotation in the class.
@@ -154,40 +147,25 @@ final class FrontendClassVisitor extends ClassVisitor {
             @Override
             public void visit(String name, Object value) {
                 if (LAYOUT.equals(name)) {
-                    entryPoint.layout = ((Type) value).getClassName();
-                    children.add(entryPoint.layout);
+                    classInfo.layout = ((Type) value).getClassName();
+                    classInfo.children.add(classInfo.layout);
                 }
                 if (VALUE.equals(name)) {
-                    entryPoint.route = value.toString();
+                    classInfo.route = value.toString();
                 }
             }
         };
         // Visitor for @Theme annotations in classes annotated with @Route
-        themeRouteVisitor = new RepeatedAnnotationVisitor() {
+        themeVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 if (VALUE.equals(name)) {
-                    entryPoint.theme.themeName = (String) value;
+                    classInfo.theme.themeName = (String) value;
                 } else if (THEME_CLASS.equals(name)) {
-                    entryPoint.theme.themeClass = ((Type) value).getClassName();
-                    children.add(entryPoint.theme.themeClass);
+                    classInfo.theme.themeClass = ((Type) value).getClassName();
+                    classInfo.children.add(classInfo.theme.themeClass);
                 } else if (VARIANT.equals(name)) {
-                    entryPoint.theme.variant = value.toString();
-                }
-            }
-        };
-        // Visitor for @Theme annotations in classes extending RouterLayout
-        themeLayoutVisitor = new RepeatedAnnotationVisitor() {
-            @Override
-            public void visit(String name, Object value) {
-                if (VALUE.equals(name)) {
-                    themeRouteVisitor.visit(name, value);
-                } else if (THEME_CLASS.equals(name)
-                        && entryPoint.theme.themeClass == null) {
-                    themeRouteVisitor.visit(name, value);
-                } else if (VARIANT.equals(name)
-                        && entryPoint.theme.variant.isEmpty()) {
-                    themeRouteVisitor.visit(name, value);
+                    classInfo.theme.variant = value.toString();
                 }
             }
         };
@@ -195,18 +173,14 @@ final class FrontendClassVisitor extends ClassVisitor {
         jsModuleVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                if (themeScope) {
-                    entryPoint.themeModules.add(value.toString());
-                } else {
-                    entryPoint.modules.add(value.toString());
-                }
+                classInfo.modules.add(value.toString());
             }
         };
         // Visitor for @JavaScript annotations
         jScriptVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                entryPoint.scripts.add(value.toString());
+                classInfo.scripts.add(value.toString());
             }
         };
         // Visitor all other annotations
@@ -215,7 +189,7 @@ final class FrontendClassVisitor extends ClassVisitor {
             public void visit(String name, Object value) {
                 if (value != null && !value.getClass().isPrimitive()
                         && !value.getClass().equals(String.class)) {
-                    addSignatureToClasses(children, value.toString());
+                    addSignatureToClasses(classInfo.children, value.toString());
                 }
             }
         };
@@ -225,10 +199,10 @@ final class FrontendClassVisitor extends ClassVisitor {
     @Override
     public void visit(int version, int access, String name, String signature,
             String superName, String[] interfaces) {
-        addSignatureToClasses(children, superName);
+        addSignatureToClasses(classInfo.children, superName);
 
         for (String implementedInterface : interfaces) {
-            addSignatureToClasses(children, implementedInterface);
+            addSignatureToClasses(classInfo.children, implementedInterface);
         }
     }
 
@@ -236,7 +210,7 @@ final class FrontendClassVisitor extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String descriptor,
             String signature, String[] exceptions) {
-        addSignatureToClasses(children, descriptor);
+        addSignatureToClasses(classInfo.children, descriptor);
         return methodVisitor;
     }
 
@@ -244,37 +218,29 @@ final class FrontendClassVisitor extends ClassVisitor {
     @Override
     public AnnotationVisitor visitAnnotation(String descriptor,
             boolean visible) {
-        addSignatureToClasses(children, descriptor);
+        addSignatureToClasses(classInfo.children, descriptor);
 
         // We return different visitor implementations depending on the
         // annotation
-        String cname = descriptor.replace("/", ".");
-        if (className.equals(entryPoint.name)
-                && cname.contains(Route.class.getName())) {
+        String annotationClassName = descriptor.replace("/", ".");
+        if (annotationClassName.contains(Route.class.getName())) {
             return routeVisitor;
         }
-        if (cname.contains(JsModule.class.getName())) {
+        if (annotationClassName.contains(JsModule.class.getName())) {
             return jsModuleVisitor;
         }
-        if (cname.contains(JavaScript.class.getName())) {
+        if (annotationClassName.contains(JavaScript.class.getName())) {
             return jScriptVisitor;
         }
-        if (cname.contains(NoTheme.class.getName())) {
-            if (className.equals(entryPoint.name)) {
-                entryPoint.theme.notheme = true;
-            }
+        if (annotationClassName.contains(NoTheme.class.getName())) {
+            classInfo.theme.notheme = true;
             return null;
         }
-        if (cname.contains(Theme.class.getName())) {
-            if (className.equals(entryPoint.name)) {
-                return themeRouteVisitor;
-            }
-            if (className.equals(entryPoint.layout)) {
-                return themeLayoutVisitor;
-            }
+        if (annotationClassName.contains(Theme.class.getName())) {
+            return themeVisitor;
         }
-        if (cname.contains(CssImport.class.getName())) {
-            return new CssAnnotationVisitor(entryPoint.css);
+        if (annotationClassName.contains(CssImport.class.getName())) {
+            return new CssAnnotationVisitor(classInfo.css);
         }
         // default visitor
         return annotationVisitor;
@@ -284,17 +250,8 @@ final class FrontendClassVisitor extends ClassVisitor {
     @Override
     public FieldVisitor visitField(int access, String name, String descriptor,
             String signature, Object value) {
-        addSignatureToClasses(children, descriptor);
+        addSignatureToClasses(classInfo.children, descriptor);
         return null;
-    }
-
-    /**
-     * Return all discovered classes in the visit.
-     *
-     * @return used classes
-     */
-    public Set<String> getChildren() {
-        return children;
     }
 
     /**
@@ -320,6 +277,10 @@ final class FrontendClassVisitor extends ClassVisitor {
         // primitive and other mark symbols, see test for more info.
         String[] tmp = signature.replace("/", ".").split(
                 "(^\\([\\[ZBFDJICL]*|^[\\[ZBFDJICL]+|;?\\)[\\[ZBFDJICLV]*|;[\\[ZBFDJICL]*)");
-        classes.addAll(Arrays.asList(tmp));
+        for (String cls : tmp) {
+            if (!cls.isBlank()) {
+                classes.add(cls);
+            }
+        }
     }
 }

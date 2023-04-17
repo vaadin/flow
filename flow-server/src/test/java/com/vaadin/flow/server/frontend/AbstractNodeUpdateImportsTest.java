@@ -81,7 +81,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true);
         updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
-                finder -> null, options) {
+                options) {
             @Override
             Logger log() {
                 return logger;
@@ -218,18 +218,6 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         updater.execute();
 
         assertContainsImports(false, "./added-import.js");
-    }
-
-    @Test
-    public void addJsModules_themeModulesAreOnTop() throws Exception {
-        updater.execute();
-
-        addImports("styles/styles.js");
-
-        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
-                "Frontend/foo.js");
-        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
-                "styles/styles.js");
     }
 
     private void assertContainsImports(boolean contains, String... imports)

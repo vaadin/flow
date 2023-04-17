@@ -37,8 +37,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.frontend.FallbackChunk;
-import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -60,8 +58,6 @@ public class DeploymentConfigurationFactoryTest {
     private ServletContext contextMock;
 
     private ApplicationConfiguration appConfiguration;
-
-    private FallbackChunk fallbackChunk;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -523,79 +519,6 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void createInitParameters_fallbackChunkIsCreatedViaAppConfig_fallbackChunkObjectIsInInitParams()
-            throws IOException {
-        ServletContext context = Mockito.mock(ServletContext.class);
-        ServletConfig config = Mockito.mock(ServletConfig.class);
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(config.getServletContext()).thenReturn(context);
-
-        Mockito.when(config.getInitParameterNames())
-                .thenReturn(Collections.emptyEnumeration());
-
-        Mockito.when(
-                context.getAttribute(ApplicationConfiguration.class.getName()))
-                .thenReturn(appConfig);
-
-        Mockito.when(appConfig.getFallbackChunk()).thenReturn(fallbackChunk);
-
-        Properties properties = new DeploymentConfigurationFactory()
-                .createInitParameters(Object.class,
-                        new VaadinServletConfig(config));
-        Object object = properties
-                .get(DeploymentConfigurationFactory.FALLBACK_CHUNK);
-
-        Assert.assertSame(fallbackChunk, object);
-    }
-
-    @Test
-    public void createInitParameters_servletConfigDefinesTokenFile_fallbackChunkObjectIsInInitParams()
-            throws IOException {
-        ServletContext context = Mockito.mock(ServletContext.class);
-        ServletConfig config = Mockito.mock(ServletConfig.class);
-        Mockito.when(config.getServletContext()).thenReturn(context);
-        Mockito.when(config.getInitParameterNames())
-                .thenReturn(Collections.enumeration(
-                        Collections.singleton(FrontendUtils.PARAM_TOKEN_FILE)));
-
-        File tokenFile = temporaryFolder.newFile();
-
-        Mockito.when(config.getInitParameter(FrontendUtils.PARAM_TOKEN_FILE))
-                .thenReturn(tokenFile.getPath());
-
-        Files.write(tokenFile.toPath(),
-                Collections.singletonList("{ 'chunks': { " + "'fallback': {"
-                        + "            'jsModules': ['foo', 'bar'],"
-                        + "           'cssImports': [ { 'value' :'foo-value' , 'id': 'bar-id'}]"
-                        + "}}" + "}"));
-
-        Mockito.when(context.getInitParameter(FrontendUtils.PARAM_TOKEN_FILE))
-                .thenReturn(tokenFile.getPath());
-
-        Properties properties = new DeploymentConfigurationFactory()
-                .createInitParameters(Object.class,
-                        new VaadinServletConfig(config));
-
-        Object object = properties
-                .get(DeploymentConfigurationFactory.FALLBACK_CHUNK);
-
-        Assert.assertTrue(object instanceof FallbackChunk);
-
-        FallbackChunk chunk = (FallbackChunk) object;
-        Set<String> modules = chunk.getModules();
-        Assert.assertEquals(2, modules.size());
-        Assert.assertTrue(modules.contains("foo"));
-        Assert.assertTrue(modules.contains("bar"));
-
-        Set<CssImportData> cssImports = chunk.getCssImports();
-        Assert.assertEquals(1, cssImports.size());
-        CssImportData data = cssImports.iterator().next();
-        Assert.assertEquals("foo-value", data.getValue());
-        Assert.assertEquals("bar-id", data.getId());
-    }
-
-    @Test
     public void createInitParameters_readDevModeProperties() throws Exception {
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
                 "\"pnpm.enable\": true,", "\"require.home.node\": true,", "}"));
@@ -665,10 +588,6 @@ public class DeploymentConfigurationFactoryTest {
         Mockito.when(configuration.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
 
-        fallbackChunk = Mockito.mock(FallbackChunk.class);
-
-        Mockito.when(configuration.getFallbackChunk())
-                .thenReturn(fallbackChunk);
         return configuration;
 
     }

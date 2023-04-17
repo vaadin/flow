@@ -2,8 +2,10 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.UUID;
 
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedSession;
@@ -39,7 +41,9 @@ public class SessionValueView extends Div {
         add(div);
 
         div = new Div();
-        div.setText("The view id is: " + viewId.toString());
+        Span span = new Span(viewId.toString());
+        span.setId("viewId");
+        div.add(new Text("The view id is: "), span);
         add(div);
 
     }

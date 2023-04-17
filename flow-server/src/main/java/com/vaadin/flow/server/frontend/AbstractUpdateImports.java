@@ -34,7 +34,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -81,11 +80,6 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private static final String IMPORT_TEMPLATE = "import '%s';";
 
-    // Used to recognize and sort FRONTEND/ imports in the final
-    // generated-flow-imports.js
-    private static final Pattern FRONTEND_IMPORT_LINE = Pattern.compile(
-            String.format(IMPORT_TEMPLATE, FRONTEND_FOLDER_ALIAS + "\\S*"));
-
     final Options options;
 
     AbstractUpdateImports(Options options) {
@@ -97,7 +91,6 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> lines = new ArrayList<>();
 
         lines.addAll(getExportLines());
-        lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
         collectModules(lines);
 
@@ -161,13 +154,6 @@ abstract class AbstractUpdateImports implements Runnable {
         addLines(lines, IMPORT_INJECT);
         return lines;
     }
-
-    /**
-     * Get theme lines for the generated imports file content.
-     *
-     * @return theme related generated JS lines
-     */
-    protected abstract Collection<String> getThemeLines();
 
     /**
      * Get generated modules to import.
@@ -244,27 +230,6 @@ abstract class AbstractUpdateImports implements Runnable {
         return lines;
     }
 
-    protected void updateImportsFile(File importsFile, List<String> newContent)
-            throws IOException {
-        List<String> oldContent = importsFile.exists()
-                ? FileUtils.readLines(importsFile, StandardCharsets.UTF_8)
-                : null;
-
-        if (newContent.equals(oldContent)) {
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("No js modules to update '{}' file",
-                        importsFile);
-            }
-        } else {
-            FileUtils.forceMkdir(importsFile.getParentFile());
-            FileUtils.writeStringToFile(importsFile,
-                    String.join("\n", newContent), StandardCharsets.UTF_8);
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("Updated {}", importsFile);
-            }
-        }
-    }
-
     protected String resolveResource(String importPath) {
         String resolved = importPath;
         if (!importPath.startsWith("@")) {
@@ -299,26 +264,10 @@ abstract class AbstractUpdateImports implements Runnable {
         Set<String> modules = new LinkedHashSet<>();
         modules.addAll(resolveModules(getModules()));
         modules.addAll(resolveModules(getScripts()));
-
         modules.addAll(resolveGeneretedModules(getGeneratedModules()));
-
         modules.removeIf(UrlUtil::isExternal);
 
-        ArrayList<String> externals = new ArrayList<>();
-        ArrayList<String> internals = new ArrayList<>();
-
-        for (String module : getModuleLines(modules)) {
-            if (FRONTEND_IMPORT_LINE.matcher(module).matches()
-                    && !module.contains(
-                            FrontendUtils.FRONTEND_GENERATED_FLOW_IMPORT_PATH)) {
-                internals.add(module);
-            } else {
-                externals.add(module);
-            }
-        }
-
-        lines.addAll(externals);
-        lines.addAll(internals);
+        lines.addAll(getModuleLines(modules));
     }
 
     private Set<String> getUniqueEs6ImportPaths(Collection<String> modules) {

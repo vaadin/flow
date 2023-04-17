@@ -37,7 +37,10 @@
             <groupId>com.vaadin</groupId>
             <artifactId>license-checker</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+        </dependency>
 
         <!-- TESTING DEPENDENCIES -->
 
@@ -48,7 +51,7 @@
             <scope>test</scope>
         </dependency>
 
-       <dependency>
+        <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-web-api</artifactId>
             <scope>test</scope>
