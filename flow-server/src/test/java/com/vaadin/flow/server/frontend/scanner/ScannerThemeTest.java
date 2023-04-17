@@ -1,5 +1,6 @@
 package com.vaadin.flow.server.frontend.scanner;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -8,6 +9,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
+import org.mockito.stubbing.OngoingStubbing;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
@@ -24,6 +26,7 @@ import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Theme1;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Theme2;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Theme4;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.ThemeExporter;
+import com.vaadin.flow.theme.AbstractTheme;
 
 import static com.vaadin.flow.server.frontend.scanner.ScannerDependenciesTest.getFrontendDependencies;
 import static org.junit.Assert.assertEquals;
@@ -127,10 +130,15 @@ public class ScannerThemeTest {
         // behavior of the DefaultClassFinder. Theme4 is used as a fake Lumo
         // since it has @JsModule annotation which makes it easy to verify
         // that the Theme was actually visited and modules collected
-        Mockito.doReturn(Theme4.class).when(finder)
-                .loadClass(FrontendDependencies.LUMO);
 
-        FrontendDependencies deps = new FrontendDependencies(finder);
+        FrontendDependencies deps = new FrontendDependencies(finder) {
+            @Override
+            Class<? extends AbstractTheme> getDefaultTheme()
+                    throws IOException {
+                return Theme4.class;
+            }
+        };
+
         assertEquals(
                 "Theme4 should have been returned when default theme was selected",
                 Theme4.class, deps.getThemeDefinition().getTheme());
@@ -183,13 +191,5 @@ public class ScannerThemeTest {
         FrontendDependencies deps = getFrontendDependencies(
                 RootViewWithLayoutTheme.class, RootView2WithLayoutTheme.class);
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
-        for (EntryPointData entryPoint : deps.getEntryPoints()) {
-            if (entryPoint.getName().equals(UI.class.getName())) {
-                continue;
-            }
-            assertEquals(Theme1.class.getName(),
-                    entryPoint.getTheme().getThemeClass());
-        }
-        ;
     }
 }

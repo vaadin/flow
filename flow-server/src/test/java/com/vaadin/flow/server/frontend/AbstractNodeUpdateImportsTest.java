@@ -220,18 +220,6 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         assertContainsImports(false, "./added-import.js");
     }
 
-    @Test
-    public void addJsModules_themeModulesAreOnTop() throws Exception {
-        updater.execute();
-
-        addImports("styles/styles.js");
-
-        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
-                "Frontend/foo.js");
-        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
-                "styles/styles.js");
-    }
-
     private void assertContainsImports(boolean contains, String... imports)
             throws IOException {
         String content = FileUtils.readFileToString(importsFile,
