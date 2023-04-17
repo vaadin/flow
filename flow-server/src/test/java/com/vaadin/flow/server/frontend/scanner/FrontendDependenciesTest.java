@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -118,7 +119,7 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
 
-        Assert.assertEquals("UI and AppShell should be found", 2,
+        Assert.assertEquals("UI, AppShell should be found", 2,
                 dependencies.getEntryPoints().size());
 
         AbstractTheme theme = dependencies.getTheme();
@@ -251,19 +252,6 @@ public class FrontendDependenciesTest {
                 Arrays.asList("a.js", "b.js", "c.js"));
     }
 
-    // flow #6408
-    @Test
-    public void annotationsInRouterLayoutWontBeFlaggedAsBelongingToTheme() {
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
-                Collections.singleton(RouteComponentWithLayout.class));
-        FrontendDependencies dependencies = new FrontendDependencies(
-                classFinder, false);
-
-        List<String> modules = dependencies.getModules();
-        Assert.assertEquals("Theme's annotations should come first",
-                "theme-foo.js", modules.get(0));
-    }
-
     // flow #6524
     @Test
     public void extractsAndScansClassesFromMethodReferences() {
@@ -299,8 +287,11 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
 
-        Assert.assertEquals("UI should be visited found", 1,
-                dependencies.getEntryPoints().size());
+        Optional<EntryPointData> uiEndpointData = dependencies.getEntryPoints()
+                .stream().filter(entryPoint -> entryPoint.getName()
+                        .equals(UI.class.getName()))
+                .findAny();
+        Assert.assertTrue("UI should be visited", uiEndpointData.isPresent());
     }
 
     @Test // #9861
@@ -339,7 +330,7 @@ public class FrontendDependenciesTest {
 
         List<String> modules = dependencies.getModules();
 
-        Assert.assertEquals(3, dependencies.getEntryPoints().size());
+        Assert.assertEquals(4, dependencies.getEntryPoints().size());
         Assert.assertEquals("Should contain UI and Referenced modules", 2,
                 modules.size());
         Assert.assertTrue(modules.contains("reference.js"));

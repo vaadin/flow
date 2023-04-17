@@ -111,10 +111,10 @@
             <version>7.0.0</version>
         </dependency>
 
-        <!-- Byte code generation -->
+        <!-- Byte code analysis -->
         <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
         </dependency>
 
         <!-- Small reflection library -->
