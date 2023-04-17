@@ -189,7 +189,7 @@ public interface PluginAdapterBase {
      * Vaadin, for example `"v12.18.3"`. Defaults to null which uses the
      * Vaadin-default node version - see {@link FrontendTools} for details.
      *
-     * @return node Version as String
+     * @return node version as a string
      */
     String nodeVersion();
 
