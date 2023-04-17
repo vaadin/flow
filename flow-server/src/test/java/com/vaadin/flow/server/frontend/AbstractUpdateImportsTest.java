@@ -116,11 +116,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         }
 
         @Override
-        protected Collection<String> getThemeLines() {
-            return Arrays.asList("theme-line-foo", "theme-line-bar");
-        }
-
-        @Override
         protected List<String> getModules() {
             return scanner.getModules();
         }
@@ -313,8 +308,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     @Test
     public void generateLines_resultingLinesContainsThemeLinesAndExpectedImportsAndCssLinesAndGeneratedImportsAndLoggerReports()
             throws Exception {
-        List<String> expectedLines = new ArrayList<>(
-                Arrays.asList("theme-line-foo", "theme-line-bar"));
+        List<String> expectedLines = new ArrayList<>();
         getExpectedImports().stream().filter(imp -> imp.equals("/foo.css"))
                 .forEach(imp -> expectedLines
                         .add("import '" + addWebpackPrefix(imp) + "';"));
@@ -483,7 +477,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         // - JsModules (internal e.g. in frontend/)
         List<String> expectedImports = new ArrayList<>();
         expectedImports.addAll(updater.getExportLines());
-        expectedImports.addAll(updater.getThemeLines());
 
         getAnntotationsAsStream(JsModule.class, testClasses)
                 .map(JsModule::value).map(this::updateToImport).sorted()
