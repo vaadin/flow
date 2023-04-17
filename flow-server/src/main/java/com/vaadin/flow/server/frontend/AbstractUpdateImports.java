@@ -97,7 +97,6 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> lines = new ArrayList<>();
 
         lines.addAll(getExportLines());
-        lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
         collectModules(lines);
 
@@ -161,13 +160,6 @@ abstract class AbstractUpdateImports implements Runnable {
         addLines(lines, IMPORT_INJECT);
         return lines;
     }
-
-    /**
-     * Get theme lines for the generated imports file content.
-     *
-     * @return theme related generated JS lines
-     */
-    protected abstract Collection<String> getThemeLines();
 
     /**
      * Get generated modules to import.

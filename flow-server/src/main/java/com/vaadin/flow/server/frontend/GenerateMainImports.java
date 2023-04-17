@@ -130,11 +130,6 @@ public class GenerateMainImports extends AbstractUpdateImports {
     }
 
     @Override
-    protected Collection<String> getThemeLines() {
-        return Collections.emptyList();
-    }
-
-    @Override
     protected Logger getLogger() {
         // Do not log file not found etc. for the generator.
         return NOPLogger.NOP_LOGGER;
