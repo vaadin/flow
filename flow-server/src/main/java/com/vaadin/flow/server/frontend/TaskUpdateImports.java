@@ -64,9 +64,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
  */
 public class TaskUpdateImports extends NodeUpdater {
 
-    // Trim and remove new lines.
-    private static final Pattern NEW_LINE_TRIM = Pattern
-            .compile("(?m)(^\\s+|\\s?\n)");
     private final FrontendDependenciesScanner fallbackScanner;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
@@ -126,11 +123,6 @@ public class TaskUpdateImports extends NodeUpdater {
                         "Failed to update the Flow imports file '%s'",
                         generatedFlowImports), e);
             }
-        }
-
-        @Override
-        protected Collection<String> getThemeLines() {
-            return Collections.emptyList();
         }
 
         @Override
@@ -210,11 +202,6 @@ public class TaskUpdateImports extends NodeUpdater {
                         "Failed to update the Flow fallback imports file '%s'",
                         getGeneratedFallbackFile()), e);
             }
-        }
-
-        @Override
-        protected Collection<String> getThemeLines() {
-            return Collections.emptyList();
         }
 
         @Override
