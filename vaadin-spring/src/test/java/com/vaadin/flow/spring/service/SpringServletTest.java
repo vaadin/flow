@@ -17,7 +17,6 @@ package com.vaadin.flow.spring.service;
 
 import jakarta.servlet.ServletException;
 
-import java.util.Collections;
 import java.util.Properties;
 
 import org.junit.Assert;
@@ -29,9 +28,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 
@@ -52,19 +49,4 @@ public class SpringServletTest {
         Assert.assertEquals(PushMode.MANUAL, pushMode);
     }
 
-    // #662
-    @Test
-    public void fallbackChunk_givenInInitParameter_passedOnToDeploymentConfiguration()
-            throws ServletException {
-        FallbackChunk fallbackChunk = new FallbackChunk(Collections.emptyList(),
-                Collections.emptyList());
-        final Properties properties = new Properties();
-        properties.put(DeploymentConfigurationFactory.FALLBACK_CHUNK,
-                fallbackChunk);
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                properties, true);
-        Assert.assertSame(fallbackChunk,
-                service.getDeploymentConfiguration().getInitParameters()
-                        .get(DeploymentConfigurationFactory.FALLBACK_CHUNK));
-    }
 }

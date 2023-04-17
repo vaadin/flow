@@ -141,6 +141,6 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true);
         return new TaskUpdateImports(classFinder,
-                getScanner(classFinder, featureFlags), finder -> null, options);
+                getScanner(classFinder, featureFlags), options);
     }
 }

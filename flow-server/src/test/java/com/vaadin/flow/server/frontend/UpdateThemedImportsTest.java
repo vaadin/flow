@@ -144,7 +144,7 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
         Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true);
-        updater = new TaskUpdateImports(finder, deps, cf -> null, options);
+        updater = new TaskUpdateImports(finder, deps, options);
     }
 
     @Test

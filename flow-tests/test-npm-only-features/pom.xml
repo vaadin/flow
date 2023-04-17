@@ -34,7 +34,6 @@
         <module>test-npm-custom-frontend-directory</module>
         <module>test-npm-bytecode-scanning/pom-devmode.xml</module>
         <module>test-npm-bytecode-scanning/pom-production.xml</module>
-        <module>test-npm-bytecode-scanning/pom-prod-fallback.xml</module>
         <module>test-npm-performance-regression</module>
     </modules>
 

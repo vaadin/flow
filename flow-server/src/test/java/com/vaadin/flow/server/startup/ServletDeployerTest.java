@@ -31,7 +31,6 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import org.apache.commons.io.FileUtils;
@@ -202,11 +201,6 @@ public class ServletDeployerTest {
                 (Integer) 1, servletLoadOnStartup.get(0));
     }
 
-    private void assertLoadOnStartupNotSet() {
-        assertTrue("Servlet loadOnStartup should not have been invoked ",
-                servletLoadOnStartup.isEmpty());
-    }
-
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private ServletContextEvent getContextEvent(
             ServletRegistration... servletRegistrations) throws Exception {
@@ -243,8 +237,6 @@ public class ServletDeployerTest {
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         Mockito.when(appConfig.isProductionMode()).thenReturn(false);
-        FallbackChunk chunk = Mockito.mock(FallbackChunk.class);
-        Mockito.when(appConfig.getFallbackChunk()).thenReturn(chunk);
 
         Mockito.when(appConfig.disableAutomaticServletRegistration())
                 .thenReturn(disableAutomaticServletRegistration);
@@ -267,7 +259,6 @@ public class ServletDeployerTest {
         // seems to be a compiler bug, since fails to compile with the
         // actual
         // types specified (or being inlined) but works with raw type
-        @SuppressWarnings({ "rawtypes", "serial" })
         Map hack = Stream.of(servletRegistrations).collect(
                 Collectors.toMap(Registration::getName, Function.identity()));
         Mockito.when(contextMock.getServletRegistrations()).thenReturn(hack);
