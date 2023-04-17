@@ -151,11 +151,10 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         for (Entry<String, EntryPointData> entry : entryPoints.entrySet()) {
             EntryPointData entryPoint = entry.getValue();
             for (String className : entryPoint.reachableClasses) {
-                entryPoint.getModules()
-                        .addAll(visitedClasses.get(className).modules);
-                entryPoint.getCss().addAll(visitedClasses.get(className).css);
-                entryPoint.getScripts()
-                        .addAll(visitedClasses.get(className).scripts);
+                ClassInfo classInfo = visitedClasses.get(className);
+                entryPoint.getModules().addAll(classInfo.modules);
+                entryPoint.getCss().addAll(classInfo.css);
+                entryPoint.getScripts().addAll(classInfo.scripts);
             }
         }
 
