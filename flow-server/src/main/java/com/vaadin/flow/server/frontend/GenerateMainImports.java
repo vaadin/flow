@@ -49,17 +49,13 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
  * For internal use only. May be renamed or removed in a future release.
  */
 public class GenerateMainImports extends AbstractUpdateImports {
-    private final ClassFinder finder;
     private List<String> lines;
-    private FrontendDependenciesScanner frontendDepScanner;
     private JsonObject statsJson;
 
     public GenerateMainImports(ClassFinder classFinder,
             FrontendDependenciesScanner frontendDepScanner, Options options,
             JsonObject statsJson) {
-        super(options);
-        finder = classFinder;
-        this.frontendDepScanner = frontendDepScanner;
+        super(options, frontendDepScanner, classFinder);
         this.statsJson = statsJson;
     }
 
@@ -84,45 +80,6 @@ public class GenerateMainImports extends AbstractUpdateImports {
     protected void writeImportLines(List<String> lines) {
         // NO-OP. Only store the lines to write
         this.lines = lines;
-    }
-
-    @Override
-    protected List<String> getModules() {
-        return frontendDepScanner.getModules();
-    }
-
-    @Override
-    protected Set<String> getScripts() {
-        return frontendDepScanner.getScripts();
-    }
-
-    @Override
-    protected URL getResource(String name) {
-        return finder.getResource(name);
-    }
-
-    @Override
-    protected Collection<String> getGeneratedModules() {
-        // Exclude generated-flow-imports.js as it is not a generated module.
-        File flowGeneratedFolder = FrontendUtils
-                .getFlowGeneratedFolder(options.getFrontendDirectory());
-        return NodeUpdater.getGeneratedModules(flowGeneratedFolder,
-                Stream.of(IMPORTS_NAME).collect(Collectors.toSet()));
-    }
-
-    @Override
-    protected ThemeDefinition getThemeDefinition() {
-        return frontendDepScanner.getThemeDefinition();
-    }
-
-    @Override
-    protected AbstractTheme getTheme() {
-        return frontendDepScanner.getTheme();
-    }
-
-    @Override
-    protected Set<CssData> getCss() {
-        return frontendDepScanner.getCss();
     }
 
     @Override
