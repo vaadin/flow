@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,9 +42,7 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HeartbeatEvent;
 import com.vaadin.flow.component.HeartbeatListener;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
@@ -71,10 +69,10 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
+import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -92,6 +90,11 @@ public class UIInternals implements Serializable {
 
     private static final Pattern APP_ID_REPLACE_PATTERN = Pattern
             .compile("-\\d+$");
+
+    private static final Set<Class<? extends Component>> warnedAboutDeps = ConcurrentHashMap
+            .newKeySet();
+
+    private static Set<String> bundledImports = BundleUtils.loadBundleImports();
 
     /**
      * A {@link Page#executeJs(String, Serializable...)} invocation that has not
@@ -839,6 +842,48 @@ public class UIInternals implements Serializable {
 
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
+
+        warnForUnavailableBundledDependencies(componentClass, dependencies);
+    }
+
+    private void warnForUnavailableBundledDependencies(
+            Class<? extends Component> componentClass,
+            DependencyInfo dependencies) {
+        if (ui.getSession() == null
+                || !ui.getSession().getConfiguration().isProductionMode()) {
+            return;
+        }
+
+        List<String> jsDeps = new ArrayList<>();
+        jsDeps.addAll(dependencies.getJavaScripts().stream()
+                .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
+                .collect(Collectors.toList()));
+        jsDeps.addAll(dependencies.getJsModules().stream()
+                .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
+                .collect(Collectors.toList()));
+
+        if (!jsDeps.isEmpty()) {
+            maybeWarnAboutDependencies(componentClass, jsDeps);
+        }
+    }
+
+    private void maybeWarnAboutDependencies(
+            Class<? extends Component> componentClass, List<String> jsDeps) {
+        if (warnedAboutDeps.add(componentClass)) {
+            for (String jsDep : jsDeps) {
+                if (bundledImports != null && !bundledImports.contains(jsDep)) {
+                    getLogger().error("The component class "
+                            + componentClass.getName() + " includes '" + jsDep
+                            + "' but this file was not included when creating the production bundle. The component will not work properly. Check that you have a reference to the component and that you are not using it only through reflection. If needed add a @Uses("
+                            + componentClass.getSimpleName()
+                            + ".class) where it is used.");
+                    // Only warn for one file
+                    return;
+                }
+            }
+
+        }
+
     }
 
     private void addExternalDependencies(DependencyInfo dependency) {
