@@ -211,11 +211,14 @@ public class DevModeInitializer implements Serializable {
 
         featureFlags.setPropertiesLocation(config.getJavaResourceFolder());
 
-        String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
-                null);
+        String baseDirString = config
+                .getStringProperty(FrontendUtils.PROJECT_BASEDIR, null);
 
-        if (baseDir == null) {
-            baseDir = getBaseDirectoryFallback().getAbsolutePath();
+        File baseDir;
+        if (baseDirString != null) {
+            baseDir = new File(baseDirString);
+        } else {
+            baseDir = getBaseDirectoryFallback();
         }
 
         // Initialize the usage statistics if enabled
@@ -235,9 +238,8 @@ public class DevModeInitializer implements Serializable {
         Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
-        Options options = new Options(lookup, new File(baseDir),
-                new File(generatedDir), new File(frontendFolder),
-                config.getBuildFolder());
+        Options options = new Options(lookup, baseDir, new File(generatedDir),
+                new File(frontendFolder), config.getBuildFolder());
 
         log().info("Starting dev-mode updaters in {} folder.",
                 options.getNpmFolder());
@@ -271,19 +273,21 @@ public class DevModeInitializer implements Serializable {
         options.useV14Bootstrap(config.useV14Bootstrap());
 
         if (!config.useV14Bootstrap() && isEndpointServiceAvailable(lookup)) {
-            String connectJavaSourceFolder = config.getStringProperty(
-                    CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
-                    Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER)
-                            .toString());
-            String connectApplicationProperties = config.getStringProperty(
-                    CONNECT_APPLICATION_PROPERTIES_TOKEN,
-                    Paths.get(baseDir, DEFAULT_CONNECT_APPLICATION_PROPERTIES)
-                            .toString());
-            String connectOpenApiJsonFile = config
-                    .getStringProperty(CONNECT_OPEN_API_FILE_TOKEN,
-                            Paths.get(baseDir, config.getBuildFolder(),
-                                    DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+            String connectJavaSourceFolder = config
+                    .getStringProperty(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                            Paths.get(baseDir.getAbsolutePath(),
+                                    DEFAULT_CONNECT_JAVA_SOURCE_FOLDER)
                                     .toString());
+            String connectApplicationProperties = config
+                    .getStringProperty(CONNECT_APPLICATION_PROPERTIES_TOKEN,
+                            Paths.get(baseDir.getAbsolutePath(),
+                                    DEFAULT_CONNECT_APPLICATION_PROPERTIES)
+                                    .toString());
+            String connectOpenApiJsonFile = config.getStringProperty(
+                    CONNECT_OPEN_API_FILE_TOKEN,
+                    Paths.get(baseDir.getAbsolutePath(),
+                            config.getBuildFolder(),
+                            DEFAULT_CONNECT_OPENAPI_JSON_FILE).toString());
 
             options.withEndpointSourceFolder(new File(connectJavaSourceFolder))
                     .withApplicationProperties(
@@ -321,10 +325,11 @@ public class DevModeInitializer implements Serializable {
                         InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, "")
                 .split(",");
 
-        String frontendGeneratedFolderName = config.getStringProperty(
-                PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
-                Paths.get(baseDir, DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
-                        .toString());
+        String frontendGeneratedFolderName = config
+                .getStringProperty(PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
+                        Paths.get(baseDir.getAbsolutePath(),
+                                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
+                                .toString());
         File frontendGeneratedFolder = new File(frontendGeneratedFolderName);
         File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
                 FrontendUtils.JAR_RESOURCES_FOLDER);

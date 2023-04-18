@@ -65,9 +65,8 @@ class ProjectHelpers {
      *         <code>DEFAULT_PROJECT_ID</code> if no valid project was found in
      *         the folder.
      */
-    static String generateProjectId(String projectFolder) {
-        Path projectPath = Paths.get(projectFolder);
-        File pomFile = projectPath.resolve("pom.xml").toFile();
+    static String generateProjectId(File projectFolder) {
+        File pomFile = new File(projectFolder, "pom.xml");
 
         // Maven project
         if (pomFile.exists()) {
@@ -95,9 +94,9 @@ class ProjectHelpers {
         }
 
         // Gradle project
-        Path gradleFile = projectPath.resolve("settings.gradle");
-        if (gradleFile.toFile().exists()) {
-            try (Stream<String> stream = Files.lines(gradleFile)) {
+        File gradleFile = new File(projectFolder, "settings.gradle");
+        if (gradleFile.exists()) {
+            try (Stream<String> stream = Files.lines(gradleFile.toPath())) {
                 String projectName = stream
                         .filter(line -> line.contains("rootProject.name"))
                         .findFirst()
@@ -110,7 +109,7 @@ class ProjectHelpers {
                 return "gradle" + createHash(projectName);
             } catch (IOException e) {
                 getLogger().debug("Failed to parse gradle project id from "
-                        + gradleFile.toFile().getPath(), e);
+                        + gradleFile.getPath(), e);
             }
         }
         return createHash(StatisticsConstants.DEFAULT_PROJECT_ID);
@@ -169,28 +168,26 @@ class ProjectHelpers {
      * @return URL of the project source or <code>MISSING_DATA</code>, if no
      *         valid URL was found.
      */
-    static String getProjectSource(String projectFolder) {
-        Path projectPath = Paths.get(projectFolder);
-
+    static String getProjectSource(File projectFolder) {
         try {
-            String projectSource = getMavenProjectSource(projectPath);
+            String projectSource = getMavenProjectSource(projectFolder);
             if (projectSource != null) {
                 return projectSource;
             }
-            projectSource = getGradleProjectSource(projectPath);
+            projectSource = getGradleProjectSource(projectFolder);
             if (projectSource != null) {
                 return projectSource;
             }
         } catch (Exception e) {
             getLogger().debug("Failed to parse project id from "
-                    + projectPath.toAbsolutePath(), e);
+                    + projectFolder.toPath().toAbsolutePath(), e);
         }
         return StatisticsConstants.MISSING_DATA;
     }
 
-    private static String getMavenProjectSource(Path projectPath)
+    private static String getMavenProjectSource(File projectFolder)
             throws ParserConfigurationException, SAXException, IOException {
-        File pomFile = projectPath.resolve("pom.xml").toFile();
+        File pomFile = new File(projectFolder, "pom.xml");
 
         if (!pomFile.exists()) {
             return null;
@@ -238,11 +235,11 @@ class ProjectHelpers {
         return null;
     }
 
-    private static String getGradleProjectSource(Path projectPath)
+    private static String getGradleProjectSource(File projectFolder)
             throws IOException {
-        Path gradleFile = projectPath.resolve("settings.gradle");
-        if (gradleFile.toFile().exists()) {
-            try (Stream<String> stream = Files.lines(gradleFile)) {
+        File gradleFile = new File(projectFolder, "settings.gradle");
+        if (gradleFile.exists()) {
+            try (Stream<String> stream = Files.lines(gradleFile.toPath())) {
                 String comment = stream.filter(line -> line.contains(
                         StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
                         || line.contains(
