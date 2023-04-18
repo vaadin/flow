@@ -30,7 +30,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
-
 /**
  * Collect generated-flow-imports content for project to use to determine if
  * dev-bundle contains all required imports.

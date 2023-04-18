@@ -33,7 +33,6 @@ import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateTree;
 
-
 /**
  * A registry implementation used by {@link ApplicationConnection}.
  *

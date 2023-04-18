@@ -63,7 +63,6 @@ import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinSession;
 
-
 /**
  * Base class for navigation handlers that target a navigation state.
  * <p>
