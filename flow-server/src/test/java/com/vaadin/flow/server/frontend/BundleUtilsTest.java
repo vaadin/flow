@@ -7,7 +7,6 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -17,8 +16,6 @@ import elemental.json.JsonObject;
 
 public class BundleUtilsTest {
 
-    @Mock
-    ClassLoader classLoader;
     private List<AutoCloseable> closeOnTearDown = new ArrayList<>();
 
     @After
