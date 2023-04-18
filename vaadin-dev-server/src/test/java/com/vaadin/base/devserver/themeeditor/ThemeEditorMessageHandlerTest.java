@@ -22,7 +22,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.MockitoSession;
 
 import java.io.File;
 import java.io.IOException;

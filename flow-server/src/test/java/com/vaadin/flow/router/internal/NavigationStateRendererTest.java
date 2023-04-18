@@ -72,7 +72,6 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
 import elemental.json.Json;
-import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 @NotThreadSafe

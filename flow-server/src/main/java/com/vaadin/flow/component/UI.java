@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;

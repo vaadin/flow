@@ -26,7 +26,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
