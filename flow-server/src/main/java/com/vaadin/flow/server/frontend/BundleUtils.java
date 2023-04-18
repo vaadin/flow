@@ -57,6 +57,8 @@ public final class BundleUtils {
             bundledImports.add(jsImport.replace("/theme/material/", "/src/"));
             bundledImports.add(jsImport
                     .replaceFirst("^Frontend/generated/jar-resources/", "./"));
+            bundledImports.add(jsImport
+                    .replaceFirst("^Frontend/generated/jar-resources/", ""));
             bundledImports.add(jsImport.replaceFirst("^Frontend/", "./"));
             bundledImports.add(jsImport.replaceFirst("^Frontend/", ""));
         }
@@ -68,7 +70,7 @@ public final class BundleUtils {
      *
      * @return the stats json as a json object
      */
-    private static JsonObject loadStatsJson() {
+    static JsonObject loadStatsJson() {
         URL statsUrl = BundleUtils.class.getClassLoader()
                 .getResource("META-INF/VAADIN/config/stats.json");
         if (statsUrl == null) {
