@@ -1,20 +1,20 @@
 package com.vaadin.base.devserver.stats;
 
+import java.io.File;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpServer;
-
-import com.vaadin.flow.testutil.TestUtils;
-import com.vaadin.flow.testutil.net.PortProber;
-
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import com.vaadin.flow.testutil.TestUtils;
+import com.vaadin.flow.testutil.net.PortProber;
 
 public class StatisticsSenderTest extends AbstractStatisticsTest {
 
@@ -29,9 +29,8 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
         super.setup();
 
         // Init using test project
-        String mavenProjectFolder = TestUtils
-                .getTestFolder("stats-data/maven-project-folder1").toPath()
-                .toString();
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1");
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
     }
 

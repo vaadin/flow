@@ -16,6 +16,7 @@
 
 package com.vaadin.base.devserver.stats;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -35,9 +36,8 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
     @Test
     public void clientData() throws Exception {
         // Init using test project
-        String mavenProjectFolder = TestUtils
-                .getTestFolder("stats-data/maven-project-folder1").toPath()
-                .toString();
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1");
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
 
         String data = IOUtils.toString(
@@ -48,9 +48,8 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
     @Test
     public void projectId() throws Exception {
-        String mavenProjectFolder = TestUtils
-                .getTestFolder("stats-data/maven-project-folder1").toPath()
-                .toString();
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1");
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
 
         Assert.assertEquals(
@@ -60,9 +59,8 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
     @Test
     public void sourceIdMaven1() throws Exception {
-        String mavenProjectFolder = TestUtils
-                .getTestFolder("stats-data/maven-project-folder1").toPath()
-                .toString();
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1");
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
 
         ObjectNode json = storage.readProject();
@@ -72,9 +70,8 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
     @Test
     public void sourceIdMaven2() throws Exception {
-        String mavenProjectFolder = TestUtils
-                .getTestFolder("stats-data/maven-project-folder2").toPath()
-                .toString();
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder2");
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
 
         ObjectNode json = storage.readProject();
@@ -84,9 +81,8 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
     @Test
     public void sourceIdGradle1() throws Exception {
-        String mavenProjectFolder = TestUtils
-                .getTestFolder("stats-data/gradle-project-folder1").toPath()
-                .toString();
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/gradle-project-folder1");
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
 
         ObjectNode json = storage.readProject();
@@ -96,9 +92,8 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
     @Test
     public void sourceIdGradle2() throws Exception {
-        String mavenProjectFolder = TestUtils
-                .getTestFolder("stats-data/gradle-project-folder2").toPath()
-                .toString();
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/gradle-project-folder2");
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
 
         ObjectNode json = storage.readProject();
@@ -109,9 +104,8 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
     @Test
     public void aggregates() throws Exception {
         // Init using test project
-        String mavenProjectFolder = TestUtils
-                .getTestFolder("stats-data/maven-project-folder1").toPath()
-                .toString();
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1");
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
 
         // Averate events
@@ -172,9 +166,8 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
     @Test
     public void multipleProjects() throws Exception {
         // Init using test project
-        String mavenProjectFolder = TestUtils
-                .getTestFolder("stats-data/maven-project-folder1").toPath()
-                .toString();
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1");
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
         StatisticsContainer projectData = new StatisticsContainer(
                 storage.readProject());
@@ -183,27 +176,24 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
                 projectData.getValueAsInt("devModeStarts"));
 
         // Switch project to track
-        String mavenProjectFolder2 = TestUtils
-                .getTestFolder("stats-data/maven-project-folder2").toPath()
-                .toString();
+        File mavenProjectFolder2 = TestUtils
+                .getTestFolder("stats-data/maven-project-folder2");
         DevModeUsageStatistics.init(mavenProjectFolder2, storage, sender);
         projectData = new StatisticsContainer(storage.readProject());
         Assert.assertEquals("Expected to have one restarts", 1,
                 projectData.getValueAsInt("devModeStarts"));
 
         // Switch project to track
-        String gradleProjectFolder1 = TestUtils
-                .getTestFolder("stats-data/gradle-project-folder1").toPath()
-                .toString();
+        File gradleProjectFolder1 = TestUtils
+                .getTestFolder("stats-data/gradle-project-folder1");
         DevModeUsageStatistics.init(gradleProjectFolder1, storage, sender);
         projectData = new StatisticsContainer(storage.readProject());
         Assert.assertEquals("Expected to have one restarts", 1,
                 projectData.getValueAsInt("devModeStarts"));
 
         // Switch project to track
-        String gradleProjectFolder2 = TestUtils
-                .getTestFolder("stats-data/gradle-project-folder2").toPath()
-                .toString();
+        File gradleProjectFolder2 = TestUtils
+                .getTestFolder("stats-data/gradle-project-folder2");
 
         // Double init to check restart count
         DevModeUsageStatistics.init(gradleProjectFolder2, storage, sender);
@@ -221,12 +211,10 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
     @Test
     public void mavenProjectProjectId() {
-        String mavenProjectFolder1 = TestUtils
-                .getTestFolder("stats-data/maven-project-folder1").toPath()
-                .toString();
-        String mavenProjectFolder2 = TestUtils
-                .getTestFolder("stats-data/maven-project-folder2").toPath()
-                .toString();
+        File mavenProjectFolder1 = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1");
+        File mavenProjectFolder2 = TestUtils
+                .getTestFolder("stats-data/maven-project-folder2");
         String id1 = ProjectHelpers.generateProjectId(mavenProjectFolder1);
         String id2 = ProjectHelpers.generateProjectId(mavenProjectFolder2);
         Assert.assertNotNull(id1);
@@ -236,12 +224,10 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
     @Test
     public void mavenProjectSource() {
-        String mavenProjectFolder1 = TestUtils
-                .getTestFolder("stats-data/maven-project-folder1").toPath()
-                .toString();
-        String mavenProjectFolder2 = TestUtils
-                .getTestFolder("stats-data/maven-project-folder2").toPath()
-                .toString();
+        File mavenProjectFolder1 = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1");
+        File mavenProjectFolder2 = TestUtils
+                .getTestFolder("stats-data/maven-project-folder2");
         String source1 = ProjectHelpers.getProjectSource(mavenProjectFolder1);
         String source2 = ProjectHelpers.getProjectSource(mavenProjectFolder2);
         Assert.assertEquals("https://start.vaadin.com/test/1", source1);
@@ -250,12 +236,10 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
     @Test
     public void gradleProjectProjectId() {
-        String gradleProjectFolder1 = TestUtils
-                .getTestFolder("stats-data/gradle-project-folder1").toPath()
-                .toString();
-        String gradleProjectFolder2 = TestUtils
-                .getTestFolder("stats-data/gradle-project-folder2").toPath()
-                .toString();
+        File gradleProjectFolder1 = TestUtils
+                .getTestFolder("stats-data/gradle-project-folder1");
+        File gradleProjectFolder2 = TestUtils
+                .getTestFolder("stats-data/gradle-project-folder2");
         String id1 = ProjectHelpers.generateProjectId(gradleProjectFolder1);
         String id2 = ProjectHelpers.generateProjectId(gradleProjectFolder2);
         Assert.assertNotNull(id1);
@@ -265,12 +249,10 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
     @Test
     public void gradleProjectSource() {
-        String gradleProjectFolder1 = TestUtils
-                .getTestFolder("stats-data/gradle-project-folder1").toPath()
-                .toString();
-        String gradleProjectFolder2 = TestUtils
-                .getTestFolder("stats-data/gradle-project-folder2").toPath()
-                .toString();
+        File gradleProjectFolder1 = TestUtils
+                .getTestFolder("stats-data/gradle-project-folder1");
+        File gradleProjectFolder2 = TestUtils
+                .getTestFolder("stats-data/gradle-project-folder2");
         String source1 = ProjectHelpers.getProjectSource(gradleProjectFolder1);
         String source2 = ProjectHelpers.getProjectSource(gradleProjectFolder2);
         Assert.assertEquals("https://start.vaadin.com/test/3", source1);
@@ -279,10 +261,8 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
     @Test
     public void missingProject() {
-        String mavenProjectFolder1 = TestUtils.getTestFolder("java").toPath()
-                .toString();
-        String mavenProjectFolder2 = TestUtils.getTestFolder("stats-data/empty")
-                .toPath().toString();
+        File mavenProjectFolder1 = TestUtils.getTestFolder("java");
+        File mavenProjectFolder2 = TestUtils.getTestFolder("stats-data/empty");
         String id1 = ProjectHelpers.generateProjectId(mavenProjectFolder1);
         String id2 = ProjectHelpers.generateProjectId(mavenProjectFolder2);
         Assert.assertEquals(DEFAULT_PROJECT_ID, id1);
