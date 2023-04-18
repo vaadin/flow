@@ -78,6 +78,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
+import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
@@ -212,8 +213,9 @@ public class DevModeInitializer implements Serializable {
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null);
+
         if (baseDir == null) {
-            baseDir = getBaseDirectoryFallback();
+            baseDir = getBaseDirectoryFallback().getAbsolutePath();
         }
 
         // Initialize the usage statistics if enabled
@@ -393,21 +395,10 @@ public class DevModeInitializer implements Serializable {
      * Maven or Gradle project. Check to avoid cluttering server directories
      * (see tickets #8249, #8403).
      */
-    private static String getBaseDirectoryFallback() {
-        /* Try determining the project folder from the classpath. */
-        try {
-            URL url = DevModeInitializer.class.getClassLoader()
-                    .getResource(".");
-            if (url != null && url.getProtocol().equals("file")) {
-                // URI decodes the path so that e.g. " " works correctly
-                String path = url.toURI().getPath();
-                if (path.endsWith("/target/classes/")) {
-                    return path.replaceFirst("/target/classes/$", "");
-                }
-            }
-        } catch (Exception e) {
-            LoggerFactory.getLogger(DevModeInitializer.class).warn(
-                    "Unable to determine project folder using classpath", e);
+    private static File getBaseDirectoryFallback() {
+        File projectFolder = FileIOUtils.getProjectFolderFromClasspath();
+        if (projectFolder != null) {
+            return projectFolder;
         }
 
         String baseDirCandidate = System.getProperty("user.dir", ".");
@@ -415,7 +406,7 @@ public class DevModeInitializer implements Serializable {
         if (path.toFile().isDirectory()
                 && (path.resolve("pom.xml").toFile().exists()
                         || path.resolve("build.gradle").toFile().exists())) {
-            return path.toString();
+            return path.toFile();
         } else {
             throw new IllegalStateException(String.format(
                     "Failed to determine project directory for dev mode. "
