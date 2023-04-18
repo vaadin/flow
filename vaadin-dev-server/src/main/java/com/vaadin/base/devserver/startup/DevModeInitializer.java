@@ -212,8 +212,9 @@ public class DevModeInitializer implements Serializable {
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null);
+
         if (baseDir == null) {
-            baseDir = getBaseDirectoryFallback();
+            baseDir = getBaseDirectoryFallback().getAbsolutePath();
         }
 
         // Initialize the usage statistics if enabled
@@ -393,21 +394,10 @@ public class DevModeInitializer implements Serializable {
      * Maven or Gradle project. Check to avoid cluttering server directories
      * (see tickets #8249, #8403).
      */
-    private static String getBaseDirectoryFallback() {
-        /* Try determining the project folder from the classpath. */
-        try {
-            URL url = DevModeInitializer.class.getClassLoader()
-                    .getResource(".");
-            if (url != null && url.getProtocol().equals("file")) {
-                // URI decodes the path so that e.g. " " works correctly
-                String path = url.toURI().getPath();
-                if (path.endsWith("/target/classes/")) {
-                    return path.replaceFirst("/target/classes/$", "");
-                }
-            }
-        } catch (Exception e) {
-            LoggerFactory.getLogger(DevModeInitializer.class).warn(
-                    "Unable to determine project folder using classpath", e);
+    private static File getBaseDirectoryFallback() {
+        File projectFolder = FileIOUtils.getProjectFolderFromClasspath();
+        if (projectFolder != null) {
+            return projectFolder;
         }
 
         String baseDirCandidate = System.getProperty("user.dir", ".");
