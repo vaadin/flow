@@ -198,7 +198,7 @@ public class DevModeInitializer implements Serializable {
 
         featureFlags.setPropertiesLocation(config.getJavaResourceFolder());
 
-        String baseDir = config.getProjectFolder().getAbsolutePath();
+        File baseDir = config.getProjectFolder();
 
         // Initialize the usage statistics if enabled
         if (config.isUsageStatisticsEnabled()) {
@@ -217,7 +217,7 @@ public class DevModeInitializer implements Serializable {
         Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
-        Options options = new Options(lookup, new File(baseDir))
+        Options options = new Options(lookup, baseDir)
                 .withGeneratedFolder(new File(generatedDir))
                 .withFrontendDirectory(new File(frontendFolder))
                 .withBuildDirectory(config.getBuildFolder());
@@ -280,10 +280,11 @@ public class DevModeInitializer implements Serializable {
                         InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, "")
                 .split(",");
 
-        String frontendGeneratedFolderName = config.getStringProperty(
-                PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
-                Paths.get(baseDir, DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
-                        .toString());
+        String frontendGeneratedFolderName = config
+                .getStringProperty(PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
+                        Paths.get(baseDir.getAbsolutePath(),
+                                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
+                                .toString());
         File frontendGeneratedFolder = new File(frontendGeneratedFolderName);
         File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
                 FrontendUtils.JAR_RESOURCES_FOLDER);
