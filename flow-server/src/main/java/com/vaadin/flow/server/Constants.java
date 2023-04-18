@@ -278,6 +278,11 @@ public final class Constants implements Serializable {
      */
     public static final String ASSETS = "assets";
 
+    /**
+     * The name of the default production bundle.
+     */
+    public static final String PROD_BUNDLE_NAME = "vaadin-prod-bundle";
+
     private Constants() {
         // prevent instantiation constants class only
     }

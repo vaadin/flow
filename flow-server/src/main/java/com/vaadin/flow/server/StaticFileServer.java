@@ -253,8 +253,7 @@ public class StaticFileServer implements StaticFileHandler {
                 && devModeHandler.serveDevModeRequest(request, response)) {
             // We don't know what the dev server can serve, but if it served
             // something we are happy. There is always an index.html in the dev
-            // server but
-            // we never want to serve that one directly.
+            // server, but we never want to serve that one directly.
             return true;
         }
 
@@ -289,6 +288,13 @@ public class StaticFileServer implements StaticFileHandler {
 
         if (resourceUrl == null) {
             resourceUrl = getStaticResource(filenameWithPath);
+        }
+        // Try fetching file from the production bundle.
+        if (resourceUrl == null && Mode.PRODUCTION.equals(
+                deploymentConfiguration.getMode())) {
+            resourceUrl = getStaticResource(
+                    VAADIN_WEBAPP_RESOURCES + "VAADIN/static/production/"
+                            + filenameWithPath.replaceFirst("^/", ""));
         }
         if (resourceUrl == null && shouldFixIncorrectWebjarPaths()
                 && isIncorrectWebjarPath(filenameWithPath)) {

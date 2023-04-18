@@ -77,6 +77,7 @@ import com.vaadin.tests.util.TestUtil;
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 
 @NotThreadSafe
@@ -837,6 +838,43 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(servletService.getStaticResource("/some/file.js"))
                 .thenReturn(createFileURLWithDataAndLength("/some/file.js",
                         fileData));
+
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertEquals(fileData, out.getOutputString());
+    }
+
+    @Test
+    public void serveStaticResourceDefaultProductionBundle() throws IOException {
+        setupRequestURI("", "/some", "/file.js");
+        String fileData = "function() {eval('foo');};";
+        String bundleData = "function() {eval('bundle');};";
+
+        Mockito.when(servletService.getStaticResource("/some/files.js"))
+                .thenReturn(createFileURLWithDataAndLength("/some/files.js",
+                        fileData));
+
+        Mockito.when(servletService.getStaticResource(VAADIN_WEBAPP_RESOURCES
+                + "VAADIN/static/production/some/file.js")).thenReturn(
+                createFileURLWithDataAndLength("/some/file.js", bundleData));
+
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertEquals(bundleData, out.getOutputString());
+    }
+
+
+    @Test
+    public void serveStaticResourceDefaultUsedBeforeProductionBundle() throws IOException {
+        setupRequestURI("", "/some", "/file.js");
+        String fileData = "function() {eval('foo');};";
+        String bundleData = "function() {eval('bundle');};";
+
+        Mockito.when(servletService.getStaticResource("/some/file.js"))
+                .thenReturn(createFileURLWithDataAndLength("/some/file.js",
+                        fileData));
+
+        Mockito.when(servletService.getStaticResource(VAADIN_WEBAPP_RESOURCES
+                + "VAADIN/static/production/some/file.js")).thenReturn(
+                createFileURLWithDataAndLength("/some/file.js", bundleData));
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(fileData, out.getOutputString());
