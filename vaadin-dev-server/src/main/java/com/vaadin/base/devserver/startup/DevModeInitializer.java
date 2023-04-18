@@ -406,7 +406,7 @@ public class DevModeInitializer implements Serializable {
         if (path.toFile().isDirectory()
                 && (path.resolve("pom.xml").toFile().exists()
                         || path.resolve("build.gradle").toFile().exists())) {
-            return path.toString();
+            return path.toFile();
         } else {
             throw new IllegalStateException(String.format(
                     "Failed to determine project directory for dev mode. "
