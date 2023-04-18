@@ -6,7 +6,7 @@
     src: url("./fonts/ostrich-sans-regular.ttf") format("TrueType");
 }
 
-body {
+html > body {
     background: rgba(255, 0, 0, 1);
     font-family: "Ostrich";
 }
