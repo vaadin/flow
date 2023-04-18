@@ -17,10 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,7 +25,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,20 +182,6 @@ public class FrontendToolsLocator implements Serializable {
 
         return Optional.of(new CommandResult(commandString, process.exitValue(),
                 stdout, stderr));
-    }
-
-    private List<String> collectOutput(InputStream inputStream) {
-        List<String> out = new ArrayList<>();
-        try {
-            String stream = IOUtils.toString(inputStream,
-                    StandardCharsets.UTF_8);
-            if (!stream.isEmpty()) {
-                out.addAll(Arrays.asList(stream.split("\\R")));
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        return out;
     }
 
     private CommandResult omitErrorResult(CommandResult commandResult) {
