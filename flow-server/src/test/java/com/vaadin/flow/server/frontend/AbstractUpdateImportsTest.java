@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -58,10 +57,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -99,15 +95,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     private class UpdateImports extends AbstractUpdateImports {
 
-        private final ClassFinder finder;
-        private final FrontendDependenciesScanner scanner;
         private List<String> resultingLines;
 
         UpdateImports(ClassFinder classFinder,
                 FrontendDependenciesScanner scanner, Options options) {
-            super(options);
-            this.scanner = scanner;
-            finder = classFinder;
+            super(options, scanner, classFinder);
         }
 
         @Override
@@ -116,39 +108,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         }
 
         @Override
-        protected List<String> getModules() {
-            return scanner.getModules();
-        }
-
-        @Override
-        protected Set<String> getScripts() {
-            return scanner.getScripts();
-        }
-
-        @Override
-        protected URL getResource(String name) {
-            return finder.getResource(name);
-        }
-
-        @Override
         protected Collection<String> getGeneratedModules() {
             return Arrays.asList("generated-modules-foo",
                     "generated-modules-bar");
-        }
-
-        @Override
-        protected ThemeDefinition getThemeDefinition() {
-            return scanner.getThemeDefinition();
-        }
-
-        @Override
-        protected AbstractTheme getTheme() {
-            return scanner.getTheme();
-        }
-
-        @Override
-        protected Set<CssData> getCss() {
-            return scanner.getCss();
         }
 
         @Override
