@@ -53,16 +53,14 @@ public class TaskUpdateImports extends NodeUpdater {
     private class UpdateMainImportsFile extends AbstractUpdateImports {
         private final File generatedFlowImports;
         private final File generatedFlowDefinitions;
-        private final ClassFinder finder;
 
-        UpdateMainImportsFile(ClassFinder classFinder, Options options) {
-            super(options);
+        UpdateMainImportsFile(ClassFinder classFinder, Options options,
+                FrontendDependenciesScanner scanner) {
+            super(options, scanner, classFinder);
             generatedFlowImports = FrontendUtils
                     .getFlowGeneratedImports(options.getFrontendDirectory());
             generatedFlowDefinitions = new File(
                     generatedFlowImports.getParentFile(), IMPORTS_D_TS_NAME);
-            finder = classFinder;
-
         }
 
         @Override
@@ -76,45 +74,6 @@ public class TaskUpdateImports extends NodeUpdater {
                         "Failed to update the Flow imports file '%s'",
                         generatedFlowImports), e);
             }
-        }
-
-        @Override
-        protected List<String> getModules() {
-            return frontDeps.getModules();
-        }
-
-        @Override
-        protected Set<String> getScripts() {
-            return frontDeps.getScripts();
-        }
-
-        @Override
-        protected URL getResource(String name) {
-            return finder.getResource(name);
-        }
-
-        @Override
-        protected Collection<String> getGeneratedModules() {
-            final Set<String> exclude = new HashSet<>(
-                    Arrays.asList(generatedFlowImports.getName()));
-            return NodeUpdater.getGeneratedModules(FrontendUtils
-                    .getFlowGeneratedFolder(options.getFrontendDirectory()),
-                    exclude);
-        }
-
-        @Override
-        protected ThemeDefinition getThemeDefinition() {
-            return TaskUpdateImports.this.getThemeDefinition();
-        }
-
-        @Override
-        protected AbstractTheme getTheme() {
-            return TaskUpdateImports.this.getTheme();
-        }
-
-        @Override
-        protected Set<CssData> getCss() {
-            return frontDeps.getCss();
         }
 
         @Override
@@ -163,16 +122,8 @@ public class TaskUpdateImports extends NodeUpdater {
     @Override
     public void execute() {
         UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(finder,
-                options);
+                options, frontDeps);
         mainUpdate.run();
-    }
-
-    private ThemeDefinition getThemeDefinition() {
-        return frontDeps.getThemeDefinition();
-    }
-
-    private AbstractTheme getTheme() {
-        return frontDeps.getTheme();
     }
 
     private String getAbsentPackagesMessage() {
