@@ -17,7 +17,7 @@ package com.vaadin.flow.server.frontend.scanner;
 
 import java.util.List;
 
-import net.bytebuddy.jar.asm.AnnotationVisitor;
+import org.objectweb.asm.AnnotationVisitor;
 
 import com.vaadin.flow.component.dependency.CssImport;
 

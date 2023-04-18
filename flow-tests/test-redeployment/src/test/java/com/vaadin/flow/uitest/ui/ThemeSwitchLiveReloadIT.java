@@ -47,6 +47,11 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     private static final String APP_THEME = "app-theme";
     private static final String OTHER_THEME = "other-theme";
 
+    @Override
+    protected String getTestPath() {
+        return super.getTestPath().replace("/view", "");
+    }
+
     @After
     public void cleanUp() {
         switchThemeName(OTHER_THEME, APP_THEME);

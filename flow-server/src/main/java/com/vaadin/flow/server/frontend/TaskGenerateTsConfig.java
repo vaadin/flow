@@ -113,7 +113,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             String currentEsVersion = getEsTargetVersion(current);
             if (isOlder(currentEsVersion, esVersion)) {
                 current = current.replace(currentEsVersion, esVersion);
-                writeIfChanged(projectTsconfig, current);
+                FileIOUtils.writeIfChanged(projectTsconfig, current);
             }
         } catch (Exception e) {
             // This could be a malformed tsconfig, leave it alone
@@ -204,14 +204,16 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
                         projectTsConfigContent)) {
                     // Found exact match with the one of templates -
                     // just rewrite silently
-                    writeIfChanged(projectTsConfigFile, latestTsConfigTemplate);
+                    FileIOUtils.writeIfChanged(projectTsConfigFile,
+                            latestTsConfigTemplate);
                     return;
                 }
             }
 
             // Project's TS config has a custom content -
             // rewrite and throw an exception with explanations
-            writeIfChanged(projectTsConfigFile, latestTsConfigTemplate);
+            FileIOUtils.writeIfChanged(projectTsConfigFile,
+                    latestTsConfigTemplate);
             throw new ExecutionFailedException(String.format(ERROR_MESSAGE));
         } catch (IOException e) {
             throw new UncheckedIOException(e);

@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,11 +38,11 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -284,6 +285,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Mockito.when(appConfig.getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                 false)).thenReturn(true);
+
         devModeStartupListener = new DevModeStartupListener();
         final Set<Class<?>> classes = new HashSet<>();
         classes.add(NotVisitedWithDeps.class);
@@ -292,14 +294,19 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         devModeStartupListener.onStartup(classes, servletContext);
         handler = getDevModeHandler();
         waitForDevServer();
-        ArgumentCaptor<? extends FallbackChunk> arg = ArgumentCaptor
-                .forClass(FallbackChunk.class);
-        Mockito.verify(servletContext, Mockito.atLeastOnce()).setAttribute(
-                Mockito.eq(FallbackChunk.class.getName()), arg.capture());
-        FallbackChunk fallbackChunk = arg.getValue();
-        Assert.assertFalse(fallbackChunk.getModules().contains("foo"));
 
-        Assert.assertTrue(fallbackChunk.getModules().contains("bar"));
+        String content = getFlowGeneratedImports();
+        // Referenced by the route
+        Assert.assertTrue(content.contains("import 'foo';"));
+        // Not referenced by the route
+        Assert.assertFalse(content.contains("import 'bar';"));
+    }
+
+    private String getFlowGeneratedImports() throws IOException {
+        return FileUtils.readFileToString(
+                FrontendUtils.getFlowGeneratedImports(
+                        new File(npmFolder, "frontend")),
+                StandardCharsets.UTF_8);
     }
 
     @Test
@@ -311,9 +318,11 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         devModeStartupListener.onStartup(classes, servletContext);
         handler = getDevModeHandler();
         waitForDevServer();
-        Mockito.verify(servletContext, Mockito.times(0)).setAttribute(
-                Mockito.eq(FallbackChunk.class.getName()),
-                Mockito.any(FallbackChunk.class));
+        String content = getFlowGeneratedImports();
+        // Referenced by the route
+        Assert.assertTrue(content.contains("import 'foo';"));
+        // Not referenced by the route
+        Assert.assertTrue(content.contains("import 'bar';"));
     }
 
     @Test

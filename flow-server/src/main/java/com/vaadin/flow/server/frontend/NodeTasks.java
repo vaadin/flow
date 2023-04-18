@@ -222,9 +222,7 @@ public class NodeTasks implements FallibleCommand {
 
         if (options.isEnableImportsUpdate()) {
             commands.add(new TaskUpdateImports(classFinder,
-                    frontendDependencies,
-                    finder -> getFallbackScanner(options, finder, featureFlags),
-                    options));
+                    frontendDependencies, options));
 
             commands.add(new TaskUpdateThemeImport(
                     frontendDependencies.getThemeDefinition(), options));
@@ -281,18 +279,6 @@ public class NodeTasks implements FallibleCommand {
                         .createTaskGenerateEndpoint(options);
                 commands.add(taskGenerateEndpoint);
             }
-        }
-    }
-
-    private FrontendDependenciesScanner getFallbackScanner(Options options,
-            ClassFinder finder, FeatureFlags featureFlags) {
-        if (options.isUseByteCodeScanner()) {
-            return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                    .createScanner(true, finder,
-                            options.isGenerateEmbeddableWebComponents(),
-                            featureFlags, true);
-        } else {
-            return null;
         }
     }
 

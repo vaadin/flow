@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -58,10 +57,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -99,15 +95,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     private class UpdateImports extends AbstractUpdateImports {
 
-        private final ClassFinder finder;
-        private final FrontendDependenciesScanner scanner;
         private List<String> resultingLines;
 
         UpdateImports(ClassFinder classFinder,
                 FrontendDependenciesScanner scanner, Options options) {
-            super(options);
-            this.scanner = scanner;
-            finder = classFinder;
+            super(options, scanner, classFinder);
         }
 
         @Override
@@ -116,44 +108,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         }
 
         @Override
-        protected Collection<String> getThemeLines() {
-            return Arrays.asList("theme-line-foo", "theme-line-bar");
-        }
-
-        @Override
-        protected List<String> getModules() {
-            return scanner.getModules();
-        }
-
-        @Override
-        protected Set<String> getScripts() {
-            return scanner.getScripts();
-        }
-
-        @Override
-        protected URL getResource(String name) {
-            return finder.getResource(name);
-        }
-
-        @Override
         protected Collection<String> getGeneratedModules() {
             return Arrays.asList("generated-modules-foo",
                     "generated-modules-bar");
-        }
-
-        @Override
-        protected ThemeDefinition getThemeDefinition() {
-            return scanner.getThemeDefinition();
-        }
-
-        @Override
-        protected AbstractTheme getTheme() {
-            return scanner.getTheme();
-        }
-
-        @Override
-        protected Set<CssData> getCss() {
-            return scanner.getCss();
         }
 
         @Override
@@ -313,8 +270,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     @Test
     public void generateLines_resultingLinesContainsThemeLinesAndExpectedImportsAndCssLinesAndGeneratedImportsAndLoggerReports()
             throws Exception {
-        List<String> expectedLines = new ArrayList<>(
-                Arrays.asList("theme-line-foo", "theme-line-bar"));
+        List<String> expectedLines = new ArrayList<>();
         getExpectedImports().stream().filter(imp -> imp.equals("/foo.css"))
                 .forEach(imp -> expectedLines
                         .add("import '" + addWebpackPrefix(imp) + "';"));
@@ -423,11 +379,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertContainsImports(true, "Frontend/common-js-file.js");
 
-        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
-                "Frontend/common-js-file.js");
-        assertImportOrder(
-                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
-                "Frontend/common-js-file.js");
+        assertImportOrder("Frontend/common-js-file.js",
+                "@vaadin/vaadin-lumo-styles/color.js");
+        assertImportOrder("Frontend/common-js-file.js",
+                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js");
     }
 
     @Test
@@ -477,33 +432,21 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Imports are collected as
         // - theme and css
-        // - JsModules (external e.g. in node_modules/)
+        // - JsModules
         // - JavaScript
         // - Generated webcompoents
-        // - JsModules (internal e.g. in frontend/)
         List<String> expectedImports = new ArrayList<>();
         expectedImports.addAll(updater.getExportLines());
-        expectedImports.addAll(updater.getThemeLines());
 
         getAnntotationsAsStream(JsModule.class, testClasses)
-                .map(JsModule::value).map(this::updateToImport).sorted()
+                .map(JsModule::value).sorted().map(this::updateToImport)
                 .forEach(expectedImports::add);
         getAnntotationsAsStream(JavaScript.class, testClasses)
                 .map(JavaScript::value).map(this::updateToImport).sorted()
                 .forEach(expectedImports::add);
-
-        List<String> internals = expectedImports.stream()
-                .filter(importValue -> importValue
-                        .contains(FrontendUtils.FRONTEND_FOLDER_ALIAS))
-                .filter(importValue -> !importValue.contains("theme-util.js"))
-                .sorted().collect(Collectors.toList());
         updater.getGeneratedModules().stream()
                 .map(updater::resolveGeneretedModule).map(this::updateToImport)
                 .forEach(expectedImports::add);
-        // Remove internals from the full list
-        expectedImports.removeAll(internals);
-        // Add internals to end of list
-        expectedImports.addAll(internals);
 
         Assert.assertEquals(expectedImports, updater.resultingLines);
     }

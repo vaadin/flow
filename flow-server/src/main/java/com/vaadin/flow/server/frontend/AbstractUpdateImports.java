@@ -34,7 +34,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,10 +42,11 @@ import org.slf4j.Logger;
 
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -81,15 +81,17 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private static final String IMPORT_TEMPLATE = "import '%s';";
 
-    // Used to recognize and sort FRONTEND/ imports in the final
-    // generated-flow-imports.js
-    private static final Pattern FRONTEND_IMPORT_LINE = Pattern.compile(
-            String.format(IMPORT_TEMPLATE, FRONTEND_FOLDER_ALIAS + "\\S*"));
-
     final Options options;
 
-    AbstractUpdateImports(Options options) {
+    private FrontendDependenciesScanner scanner;
+
+    private ClassFinder classFinder;
+
+    AbstractUpdateImports(Options options, FrontendDependenciesScanner scanner,
+            ClassFinder classFinder) {
         this.options = options;
+        this.scanner = scanner;
+        this.classFinder = classFinder;
     }
 
     @Override
@@ -97,7 +99,6 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> lines = new ArrayList<>();
 
         lines.addAll(getExportLines());
-        lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
         collectModules(lines);
 
@@ -107,49 +108,15 @@ abstract class AbstractUpdateImports implements Runnable {
     protected abstract void writeImportLines(List<String> lines);
 
     /**
-     * Get all ES6 modules needed for run the application. Modules that are
-     * theme dependencies are guaranteed to precede other modules in the result.
-     *
-     * @return list of JS modules
-     */
-    protected abstract List<String> getModules();
-
-    /**
-     * Get all the JS files used by the application.
-     *
-     * @return the set of JS files
-     */
-    protected abstract Set<String> getScripts();
-
-    /**
      * Get a resource from the classpath.
      *
      * @param name
      *            class literal
      * @return the resource
      */
-    protected abstract URL getResource(String name);
-
-    /**
-     * Get the {@link ThemeDefinition} of the application.
-     *
-     * @return the theme definition
-     */
-    protected abstract ThemeDefinition getThemeDefinition();
-
-    /**
-     * Get the {@link AbstractTheme} instance used in the application.
-     *
-     * @return the theme instance
-     */
-    protected abstract AbstractTheme getTheme();
-
-    /**
-     * Get all the CSS files used by the application.
-     *
-     * @return the set of CSS files
-     */
-    protected abstract Set<CssData> getCss();
+    private URL getResource(String name) {
+        return classFinder.getResource(name);
+    }
 
     /**
      * Get exported modules.
@@ -163,18 +130,16 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     /**
-     * Get theme lines for the generated imports file content.
-     *
-     * @return theme related generated JS lines
-     */
-    protected abstract Collection<String> getThemeLines();
-
-    /**
      * Get generated modules to import.
      *
      * @return generated modules
      */
-    protected abstract Collection<String> getGeneratedModules();
+    Collection<String> getGeneratedModules() {
+        File flowGeneratedFolder = FrontendUtils
+                .getFlowGeneratedFolder(options.getFrontendDirectory());
+        return NodeUpdater.getGeneratedModules(flowGeneratedFolder,
+                Set.of(FrontendUtils.IMPORTS_NAME));
+    }
 
     /**
      * Get logger for this instance.
@@ -205,7 +170,7 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     protected Collection<String> getCssLines() {
-        Set<CssData> css = getCss();
+        Set<CssData> css = scanner.getCss();
         if (css.isEmpty()) {
             return Collections.emptyList();
         }
@@ -244,27 +209,6 @@ abstract class AbstractUpdateImports implements Runnable {
         return lines;
     }
 
-    protected void updateImportsFile(File importsFile, List<String> newContent)
-            throws IOException {
-        List<String> oldContent = importsFile.exists()
-                ? FileUtils.readLines(importsFile, StandardCharsets.UTF_8)
-                : null;
-
-        if (newContent.equals(oldContent)) {
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("No js modules to update '{}' file",
-                        importsFile);
-            }
-        } else {
-            FileUtils.forceMkdir(importsFile.getParentFile());
-            FileUtils.writeStringToFile(importsFile,
-                    String.join("\n", newContent), StandardCharsets.UTF_8);
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("Updated {}", importsFile);
-            }
-        }
-    }
-
     protected String resolveResource(String importPath) {
         String resolved = importPath;
         if (!importPath.startsWith("@")) {
@@ -297,35 +241,19 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private void collectModules(List<String> lines) {
         Set<String> modules = new LinkedHashSet<>();
-        modules.addAll(resolveModules(getModules()));
-        modules.addAll(resolveModules(getScripts()));
-
+        modules.addAll(resolveModules(scanner.getModules()));
+        modules.addAll(resolveModules(scanner.getScripts()));
         modules.addAll(resolveGeneretedModules(getGeneratedModules()));
-
         modules.removeIf(UrlUtil::isExternal);
 
-        ArrayList<String> externals = new ArrayList<>();
-        ArrayList<String> internals = new ArrayList<>();
-
-        for (String module : getModuleLines(modules)) {
-            if (FRONTEND_IMPORT_LINE.matcher(module).matches()
-                    && !module.contains(
-                            FrontendUtils.FRONTEND_GENERATED_FLOW_IMPORT_PATH)) {
-                internals.add(module);
-            } else {
-                externals.add(module);
-            }
-        }
-
-        lines.addAll(externals);
-        lines.addAll(internals);
+        lines.addAll(getModuleLines(modules));
     }
 
     private Set<String> getUniqueEs6ImportPaths(Collection<String> modules) {
         Set<String> npmNotFound = new HashSet<>();
         Set<String> resourceNotFound = new HashSet<>();
         Set<String> es6ImportPaths = new LinkedHashSet<>();
-        AbstractTheme theme = getTheme();
+        AbstractTheme theme = scanner.getTheme();
         Set<String> visited = new HashSet<>();
 
         for (String originalModulePath : modules) {

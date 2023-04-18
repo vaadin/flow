@@ -253,21 +253,20 @@ public class FullDependenciesScannerTest {
     }
 
     @Test
-    public void getModules_noTheme_returnAllNoThemeModules_orderPerClassIsPreserved_getClassesReturnAllModuleAnnotatedComponents()
+    public void getModules_noTheme_returnAllModules_orderPerClassIsPreserved_getClassesReturnAllModuleAnnotatedComponents()
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 JsModule.class);
         List<String> modules = scanner.getModules();
 
-        Assert.assertEquals(19, modules.size());
+        Assert.assertEquals(25, modules.size());
 
         assertJsModules(modules);
 
         Set<String> classes = scanner.getClasses();
-        Assert.assertEquals(13, classes.size());
+        Assert.assertEquals(14, classes.size());
 
         assertJsModulesClasses(classes);
-        Assert.assertFalse(classes.contains(LumoTest.class.getName()));
     }
 
     @Test
@@ -309,7 +308,7 @@ public class FullDependenciesScannerTest {
                     }
                     Assert.fail();
                     return null;
-                }, null, false);
+                }, null);
 
         List<String> modules = scanner.getModules();
         Assert.assertEquals(25, modules.size());
@@ -378,7 +377,7 @@ public class FullDependenciesScannerTest {
 
         return new FullDependenciesScanner(finder,
                 (type, annotation) -> findAnnotations(type, annotationType),
-                null, false);
+                null);
     }
 
     private FullDependenciesScanner setUpThemeScanner(
@@ -398,8 +397,7 @@ public class FullDependenciesScannerTest {
         Mockito.when(finder.getAnnotatedClasses(fakeNoThemeClass))
                 .thenReturn(noThemeClasses);
 
-        return new FullDependenciesScanner(finder, annotationFinder, null,
-                false) {
+        return new FullDependenciesScanner(finder, annotationFinder, null) {
             @Override
             protected Class<? extends AbstractTheme> getLumoTheme() {
                 return FakeLumoTheme.class;

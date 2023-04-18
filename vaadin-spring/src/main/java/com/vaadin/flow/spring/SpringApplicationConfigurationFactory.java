@@ -21,7 +21,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
 
 /**
@@ -36,7 +35,7 @@ public class SpringApplicationConfigurationFactory
 
     @Override
     protected ApplicationConfigurationImpl doCreate(VaadinContext context,
-            FallbackChunk chunk, Map<String, String> properties) {
+            Map<String, String> properties) {
         ApplicationContext appContext = SpringLookupInitializer
                 .getApplicationContext(context);
         Environment env = appContext.getBean(Environment.class);
@@ -45,6 +44,6 @@ public class SpringApplicationConfigurationFactory
                 .filter(name -> env.getProperty("vaadin." + name) != null)
                 .forEach(name -> properties.put(name,
                         env.getProperty("vaadin." + name)));
-        return super.doCreate(context, chunk, properties);
+        return super.doCreate(context, properties);
     }
 }
