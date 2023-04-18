@@ -16,6 +16,7 @@
         <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
         <sonar.skip>true</sonar.skip>
         <selenium.version>4.8.3</selenium.version>
+        <guava.version>31.1-jre</guava.version>
     </properties>
     <dependencies>
         <dependency>
@@ -63,6 +64,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>        
 
         <!-- override scope for junit -->
         <dependency>
