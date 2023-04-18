@@ -173,7 +173,7 @@ public class FrontendToolsLocator implements Serializable {
             stdout = new ArrayList<>(
                     List.of(outputs.getFirst().split(System.lineSeparator())));
             stderr = new ArrayList<>(
-                    List.of(outputs.getFirst().split(System.lineSeparator())));
+                    List.of(outputs.getSecond().split(System.lineSeparator())));
         } catch (ExecutionException | InterruptedException e) {
             Throwable cause = e;
             if (e instanceof ExecutionException) {
