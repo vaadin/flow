@@ -175,13 +175,21 @@
 
     <dependencyManagement>
         <dependencies>
-	        <dependency>
-	            <groupId>org.springframework.boot</groupId>
-	            <artifactId>spring-boot-dependencies</artifactId>
-	            <version>${spring.boot.version}</version>
-	            <type>pom</type>
-	            <scope>import</scope>
-	        </dependency>
+            <!-- CVE-2023-20863 Detail: Remove until spring-boot 3.0.6 got released with updated spring-webmvc 6.0.8 -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-framework-bom</artifactId>
+                <version>6.0.8</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
