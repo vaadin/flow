@@ -9,9 +9,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
-import org.mockito.stubbing.OngoingStubbing;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.FirstView;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.NoThemeExporter;
@@ -30,7 +28,6 @@ import com.vaadin.flow.theme.AbstractTheme;
 
 import static com.vaadin.flow.server.frontend.scanner.ScannerDependenciesTest.getFrontendDependencies;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
