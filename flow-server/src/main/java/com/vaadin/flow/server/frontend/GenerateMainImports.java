@@ -15,14 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.File;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.helpers.NOPLogger;
@@ -30,14 +25,11 @@ import org.slf4j.helpers.NOPLogger;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
 /**
  * Collect generated-flow-imports content for project to use to determine if

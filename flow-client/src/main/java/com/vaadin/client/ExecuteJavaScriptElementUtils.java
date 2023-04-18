@@ -28,7 +28,6 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
-import elemental.json.JsonObject;
 
 /**
  * Utility class which handles javascript execution context (see
