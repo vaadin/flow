@@ -65,7 +65,7 @@ public class ScannerThemeTest {
         assertEquals(Theme1.DARK, deps.getThemeDefinition().getVariant());
 
         System.out.println(deps.getModules());
-        assertEquals(6 ,deps.getModules().size());
+        assertEquals(6, deps.getModules().size());
         assertEquals(1, deps.getPackages().size());
         assertEquals(5, deps.getScripts().size());
 
