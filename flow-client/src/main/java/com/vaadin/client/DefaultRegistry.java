@@ -33,9 +33,6 @@ import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateTree;
 
-import elemental.events.PopStateEvent;
-import elemental.json.JsonObject;
-
 /**
  * A registry implementation used by {@link ApplicationConnection}.
  *

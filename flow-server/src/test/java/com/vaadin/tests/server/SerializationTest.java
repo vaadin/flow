@@ -11,7 +11,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.MockSettings;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;

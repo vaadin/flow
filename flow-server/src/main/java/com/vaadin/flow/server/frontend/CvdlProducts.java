@@ -19,15 +19,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.pro.licensechecker.BuildType;
-import com.vaadin.pro.licensechecker.LicenseChecker;
-import com.vaadin.pro.licensechecker.LocalOfflineKey;
-import com.vaadin.pro.licensechecker.LocalProKey;
 import com.vaadin.pro.licensechecker.Product;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

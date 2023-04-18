@@ -49,7 +49,6 @@ import com.vaadin.flow.server.frontend.scanner.samples.JsOrderComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.MyServiceListener;
 import com.vaadin.flow.server.frontend.scanner.samples.MyUIInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponent;
-import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithLayout;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithMethodReference;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
