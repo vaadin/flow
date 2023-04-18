@@ -45,13 +45,11 @@ public class ScannerThemeTest {
 
         assertEquals(Theme4.class, deps.getThemeDefinition().getTheme());
 
-        assertTrue(1 <= deps.getModules().size());
-        assertTrue(deps.getModules().contains("./theme-4.js"));
+        DepsTests.assertImports(deps.getModules(), "./theme-4.js");
 
         assertEquals(0, deps.getPackages().size());
 
-        assertEquals(1, deps.getScripts().size());
-        assertTrue(deps.getScripts().contains("frontend://theme-0.js"));
+        DepsTests.assertImports(deps.getScripts(), "frontend://theme-0.js");
     }
 
     @Test
@@ -61,10 +59,9 @@ public class ScannerThemeTest {
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
         assertEquals(Theme1.DARK, deps.getThemeDefinition().getVariant());
 
-        System.out.println(deps.getModules());
-        assertEquals(6, deps.getModules().size());
+        DepsTests.assertImportCount(6, deps.getModules());
         assertEquals(1, deps.getPackages().size());
-        assertEquals(5, deps.getScripts().size());
+        DepsTests.assertImportCount(5, deps.getScripts());
 
         assertTrue(deps.getPackages().containsKey("@foo/first-view"));
         assertEquals("0.0.1", deps.getPackages().get("@foo/first-view"));
@@ -76,9 +73,9 @@ public class ScannerThemeTest {
 
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
 
-        assertTrue(4 <= deps.getModules().size());
+        DepsTests.assertImportCount(5, deps.getModules());
         assertEquals(0, deps.getPackages().size());
-        assertEquals(2, deps.getScripts().size());
+        DepsTests.assertImportCount(2, deps.getScripts());
     }
 
     @Test
@@ -117,8 +114,7 @@ public class ScannerThemeTest {
         assertEquals(
                 "Theme4 should have been returned when default theme was selected",
                 Theme4.class, deps.getThemeDefinition().getTheme());
-        assertTrue("Theme4 should have been visited and JsModule collected",
-                deps.getModules().contains("./theme-4.js"));
+        DepsTests.assertImports(deps.getModules(), "./theme-4.js");
     }
 
     @Test
@@ -145,8 +141,7 @@ public class ScannerThemeTest {
         assertEquals(
                 "Theme4 should have been returned when default theme was selected",
                 Theme4.class, deps.getThemeDefinition().getTheme());
-        assertTrue("Theme4 should have been visited and JsModule collected",
-                deps.getModules().contains("./theme-4.js"));
+        DepsTests.assertImports(deps.getModules(), "./theme-4.js");
     }
 
     @Test // flow#5715

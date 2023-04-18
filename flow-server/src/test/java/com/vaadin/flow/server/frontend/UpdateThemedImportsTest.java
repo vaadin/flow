@@ -23,6 +23,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -121,14 +122,14 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
         FrontendDependencies deps = new FrontendDependencies(finder) {
 
             @Override
-            public List<String> getModules() {
-                return Stream.of("./src/main-template.js")
-                        .collect(Collectors.toList());
+            public Map<String, List<String>> getModules() {
+                return Collections.singletonMap("All",
+                        List.of("./src/main-template.js"));
             }
 
             @Override
-            public Set<String> getScripts() {
-                return Collections.emptySet();
+            public Map<String, List<String>> getScripts() {
+                return Collections.emptyMap();
             }
 
             @Override

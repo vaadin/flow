@@ -15,13 +15,11 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -98,13 +96,9 @@ public class FrontendDependenciesTest {
                 .thenReturn(Collections.singleton(RouteComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
-        List<String> modules = dependencies.getModules();
-        Assert.assertTrue(1 <= modules.size());
-        Assert.assertTrue(modules.contains("foo.js"));
 
-        Set<String> scripts = dependencies.getScripts();
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("bar.js", scripts.iterator().next());
+        DepsTests.assertImports(dependencies.getModules(), "foo.js");
+        DepsTests.assertImports(dependencies.getScripts(), "bar.js");
     }
 
     @Test
@@ -198,13 +192,11 @@ public class FrontendDependenciesTest {
                 .thenReturn(Collections.singleton(ErrorComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
-        List<String> modules = dependencies.getModules();
-        Assert.assertTrue(1 <= modules.size());
-        Assert.assertTrue(modules.contains("./src/bar.js"));
+        Map<String, List<String>> modules = dependencies.getModules();
+        DepsTests.assertImports(modules, "./src/bar.js");
 
-        Set<String> scripts = dependencies.getScripts();
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("./src/baz.js", scripts.iterator().next());
+        Map<String, List<String>> scripts = dependencies.getScripts();
+        DepsTests.assertImports(scripts, "./src/baz.js");
     }
 
     @Test
@@ -213,13 +205,14 @@ public class FrontendDependenciesTest {
                 .thenReturn(Collections.singleton(MyUIInitListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
-        List<String> modules = dependencies.getModules();
-        Assert.assertTrue(1 <= modules.size());
-        Assert.assertTrue(modules.contains("baz.js"));
 
-        Set<String> scripts = dependencies.getScripts();
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("foobar.js", scripts.iterator().next());
+        DepsTests.assertImports(dependencies.getModules(), "baz.js");
+        DepsTests.assertImports(dependencies.getScripts(), "foobar.js");
+
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Paths.get("\\c:\\foo\\bar"));
     }
 
     @Test
@@ -228,13 +221,8 @@ public class FrontendDependenciesTest {
                 .thenReturn(Collections.singleton(MyServiceListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
-        List<String> modules = dependencies.getModules();
-        Assert.assertTrue(1 <= modules.size());
-        Assert.assertTrue(modules.contains("baz.js"));
-
-        Set<String> scripts = dependencies.getScripts();
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("foobar.js", scripts.iterator().next());
+        DepsTests.assertImports(dependencies.getModules(), "baz.js");
+        DepsTests.assertImports(dependencies.getScripts(), "foobar.js");
     }
 
     @Test
@@ -244,11 +232,8 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
 
-        Set<String> scripts = dependencies.getScripts();
-        Assert.assertEquals(LinkedHashSet.class, scripts.getClass());
-
-        Assert.assertEquals(new ArrayList<>(dependencies.getScripts()),
-                Arrays.asList("a.js", "b.js", "c.js"));
+        DepsTests.assertImports(dependencies.getScripts(), "a.js", "b.js",
+                "c.js");
     }
 
     // flow #6524
@@ -260,11 +245,8 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
 
-        List<String> modules = dependencies.getModules();
-        Assert.assertTrue(3 <= modules.size());
-        Assert.assertTrue(modules.contains("foo.js"));
-        Assert.assertTrue(modules.contains("bar.js"));
-        Assert.assertTrue(modules.contains("baz.js"));
+        DepsTests.assertImports(dependencies.getModules(), "foo.js", "baz.js",
+                "bar.js");
     }
 
     @Test
@@ -304,11 +286,8 @@ public class FrontendDependenciesTest {
 
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
-        List<String> modules = dependencies.getModules();
-
-        Assert.assertEquals("Should contain UI and Referenced modules", 2,
-                modules.size());
-        Assert.assertTrue(modules.contains("reference.js"));
+        DepsTests.assertImports(dependencies.getModules(), "reference.js",
+                "@vaadin/common-frontend/ConnectionIndicator.js");
     }
 
     @Test // #9861
@@ -327,12 +306,8 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, true);
 
-        List<String> modules = dependencies.getModules();
-
-        Assert.assertEquals(4, dependencies.getEntryPoints().size());
-        Assert.assertEquals("Should contain UI and Referenced modules", 2,
-                modules.size());
-        Assert.assertTrue(modules.contains("reference.js"));
+        DepsTests.assertImports(dependencies.getModules(), "reference.js",
+                "@vaadin/common-frontend/ConnectionIndicator.js");
     }
 
     public static class MyComponent extends Component {

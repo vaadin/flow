@@ -69,11 +69,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private PwaConfiguration pwaConfiguration;
     private Set<String> classes = new HashSet<>();
     private Map<String, String> packages;
-    private Set<String> scripts = new LinkedHashSet<>();
-    private Set<CssData> cssData;
+    private List<String> scripts = new ArrayList<>();
+    private List<CssData> cssData;
     private List<String> modules;
-
-    private final Class<?> abstractTheme;
 
     private final SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder;
 
@@ -108,12 +106,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         long start = System.currentTimeMillis();
         this.annotationFinder = annotationFinder;
-        try {
-            abstractTheme = finder.loadClass(AbstractTheme.class.getName());
-        } catch (ClassNotFoundException exception) {
-            throw new IllegalStateException("Could not load "
-                    + AbstractTheme.class.getName() + " class", exception);
-        }
 
         packages = discoverPackages();
 
@@ -129,7 +121,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             scripts.add(script);
         }, JavaScript.class,
                 module -> getAnnotationValueAsString(module, VALUE));
-        cssData = discoverCss();
+        cssData = new ArrayList<>(discoverCss());
 
         discoverTheme();
 
@@ -147,18 +139,21 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     @Override
-    public List<String> getModules() {
-        return Collections.unmodifiableList(modules);
+    public Map<String, List<String>> getModules() {
+        return Collections.singletonMap("All",
+                Collections.unmodifiableList(modules));
     }
 
     @Override
-    public Set<String> getScripts() {
-        return Collections.unmodifiableSet(scripts);
+    public Map<String, List<String>> getScripts() {
+        return Collections.singletonMap("All",
+                Collections.unmodifiableList(scripts));
     }
 
     @Override
-    public Set<CssData> getCss() {
-        return Collections.unmodifiableSet(cssData);
+    public Map<String, List<CssData>> getCss() {
+        return Collections.singletonMap("All",
+                Collections.unmodifiableList(cssData));
     }
 
     @Override

@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -130,7 +129,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 Class<? extends AbstractTheme> themeClass = themeDefinition
                         .getTheme();
                 if (!visitedClasses.containsKey(themeClass.getName())) {
-                    addEntryPoint(themeClass);
+                    addEntryPoint(themeClass, EntryPointType.INTERNAL);
                     visitEntryPoint(entryPoints.get(themeClass.getName()));
                 }
             }
@@ -235,12 +234,21 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * @return list of JS modules
      */
     @Override
-    public List<String> getModules() {
-        LinkedHashSet<String> all = new LinkedHashSet<>();
+    public Map<String, List<String>> getModules() {
+        Map<String, List<String>> all = new HashMap<>();
         for (EntryPointData data : entryPoints.values()) {
-            all.addAll(data.getModules());
+            all.computeIfAbsent(getKey(data), k -> new ArrayList<>())
+                    .addAll(data.getModules());
         }
-        return new ArrayList<>(all);
+        return all;
+    }
+
+    private String getKey(EntryPointData data) {
+        if (data.type == EntryPointType.INTERNAL) {
+            return "Internal";
+        }
+
+        return data.name;
     }
 
     /**
@@ -249,10 +257,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * @return the set of JS files
      */
     @Override
-    public Set<String> getScripts() {
-        Set<String> all = new LinkedHashSet<>();
+    public Map<String, List<String>> getScripts() {
+        Map<String, List<String>> all = new HashMap<>();
         for (EntryPointData data : entryPoints.values()) {
-            all.addAll(data.getScripts());
+            all.computeIfAbsent(getKey(data), k -> new ArrayList<>())
+                    .addAll(data.getScripts());
         }
         return all;
     }
@@ -263,10 +272,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * @return the set of CSS files
      */
     @Override
-    public Set<CssData> getCss() {
-        Set<CssData> all = new LinkedHashSet<>();
+    public Map<String, List<CssData>> getCss() {
+        Map<String, List<CssData>> all = new HashMap<>();
         for (EntryPointData data : entryPoints.values()) {
-            all.addAll(data.getCss());
+            all.computeIfAbsent(getKey(data), k -> new ArrayList<>())
+                    .addAll(data.getCss());
         }
         return all;
     }
@@ -327,31 +337,31 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         Class<? extends Annotation> routeClass = getFinder()
                 .loadClass(Route.class.getName());
         for (Class<?> route : getFinder().getAnnotatedClasses(routeClass)) {
-            addEntryPoint(route);
+            addEntryPoint(route, EntryPointType.ROUTE);
         }
 
         for (Class<?> initListener : getFinder().getSubTypesOf(
                 getFinder().loadClass(UIInitListener.class.getName()))) {
-            addEntryPoint(initListener);
+            addEntryPoint(initListener, EntryPointType.INTERNAL);
         }
 
         for (Class<?> initListener : getFinder().getSubTypesOf(getFinder()
                 .loadClass(VaadinServiceInitListener.class.getName()))) {
-            addEntryPoint(initListener);
+            addEntryPoint(initListener, EntryPointType.INTERNAL);
         }
 
         for (Class<?> appShell : getFinder().getSubTypesOf(
                 getFinder().loadClass(AppShellConfigurator.class.getName()))) {
-            addEntryPoint(appShell);
+            addEntryPoint(appShell, EntryPointType.INTERNAL);
         }
 
         for (Class<?> errorParameters : getFinder().getSubTypesOf(
                 getFinder().loadClass(HasErrorParameter.class.getName()))) {
-            addEntryPoint(errorParameters);
+            addEntryPoint(errorParameters, EntryPointType.INTERNAL);
         }
 
         // UI should always be collected as it contains 'ConnectionIndicator.js'
-        addEntryPoint(UI.class);
+        addEntryPoint(UI.class, EntryPointType.INTERNAL);
 
         if (generateEmbeddableWebComponents) {
             collectExporterEntrypoints(WebComponentExporter.class);
@@ -360,13 +370,13 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
     }
 
-    private void addEntryPoint(Class<?> entryPointClass) {
+    private void addEntryPoint(Class<?> entryPointClass, EntryPointType type) {
         String className = entryPointClass.getName();
         if (entryPoints.containsKey(className)) {
             return;
         }
 
-        EntryPointData data = new EntryPointData(entryPointClass);
+        EntryPointData data = new EntryPointData(entryPointClass, type);
         entryPoints.put(className, data);
     }
 
@@ -582,7 +592,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         for (Class<?> exporter : exporterClasses) {
             String exporterClassName = exporter.getName();
             if (!entryPoints.containsKey(exporterClassName)) {
-                addEntryPoint(exporter);
+                addEntryPoint(exporter, EntryPointType.WEB_COMPONENT);
             }
 
             if (!Modifier.isAbstract(exporter.getModifiers())) {
@@ -590,7 +600,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                         .getGenericInterfaceType(exporter, exporterClass);
                 if (componentClass != null
                         && !componentClass.isAnnotationPresent(routeClass)) {
-                    addEntryPoint(componentClass);
+                    addEntryPoint(componentClass, EntryPointType.WEB_COMPONENT);
                 }
             }
         }

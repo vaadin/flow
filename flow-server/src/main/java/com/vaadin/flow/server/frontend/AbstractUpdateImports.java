@@ -28,11 +28,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -86,25 +88,118 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private ClassFinder classFinder;
 
+    private final File generatedFlowImports;
+    private final File generatedFlowDefinitions;
+    private File chunkFolder;
+
     AbstractUpdateImports(Options options, FrontendDependenciesScanner scanner,
             ClassFinder classFinder) {
         this.options = options;
         this.scanner = scanner;
         this.classFinder = classFinder;
+
+        generatedFlowImports = FrontendUtils
+                .getFlowGeneratedImports(options.getFrontendDirectory());
+        generatedFlowDefinitions = new File(
+                generatedFlowImports.getParentFile(),
+                FrontendUtils.IMPORTS_D_TS_NAME);
+        this.chunkFolder = new File(generatedFlowImports.getParentFile(),
+                "chunks");
+
     }
 
     @Override
     public void run() {
-        List<String> lines = new ArrayList<>();
-
-        lines.addAll(getExportLines());
-        lines.addAll(getCssLines());
-        collectModules(lines);
-
-        writeImportLines(lines);
+        Map<File, List<String>> output = process(scanner.getCss(),
+                collectJavascript());
+        writeOutput(output);
     }
 
-    protected abstract void writeImportLines(List<String> lines);
+    protected void writeOutput(Map<File, List<String>> outputFiles) {
+        try {
+            for (Entry<File, List<String>> output : outputFiles.entrySet()) {
+                FileIOUtils.writeIfChanged(output.getKey(), output.getValue());
+            }
+            if (chunkFolder.exists() && chunkFolder.isDirectory()) {
+                for (File existingChunk : chunkFolder.listFiles()) {
+                    if (!outputFiles.containsKey(existingChunk)) {
+                        existingChunk.delete();
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Failed to update the generated Flow imports", e);
+        }
+    }
+
+    /**
+     * Processes what the scanner found and produces a set of files to write to
+     * the generated folder.
+     * 
+     * @param css
+     *            the css data found by the scanner
+     * @param javascript
+     *            the javascript imports found by the scanner
+     * @return a map from file nane to the lines for that file
+     */
+    private Map<File, List<String>> process(Map<String, List<CssData>> map,
+            Map<String, List<String>> javascript) {
+        Map<File, List<String>> files = new HashMap<>();
+
+        Map<String, List<String>> lazyImports = new LinkedHashMap<>();
+        List<String> eagerImports = new ArrayList<>();
+        int chunkId = 0;
+
+        for (Entry<String, List<String>> entry : javascript.entrySet()) {
+            if (isEager(entry.getKey())) {
+                eagerImports.addAll(entry.getValue());
+            } else {
+                lazyImports.put("chunk" + chunkId++, entry.getValue());
+            }
+        }
+
+        List<String> chunkLoader = new ArrayList<>();
+        if (!lazyImports.isEmpty()) {
+            chunkLoader.add("export const loadOnDemand = (key) => {");
+            for (Entry<String, List<String>> entry : lazyImports.entrySet()) {
+                String chunkFilename = entry.getKey() + ".js";
+                chunkLoader.add("if (key === '" + entry.getKey() + "') {");
+                chunkLoader.add("import('./chunks/" + chunkFilename + "');");
+                chunkLoader.add("}");
+
+                List<String> chunkLines = new ArrayList<>();
+                for (String module : entry.getValue()) {
+                    chunkLines.add("import '" + module + "';");
+                }
+                File chunkFile = new File(chunkFolder, chunkFilename);
+                files.put(chunkFile, chunkLines);
+            }
+
+            chunkLoader.add("}");
+            chunkLoader.add("window.loadOnDemand = loadOnDemand;");
+        }
+
+        List<String> mainLines = new ArrayList<>();
+        mainLines.add(IMPORT_INJECT);
+
+        mainLines.addAll(eagerImports.stream()
+                .map(filename -> "import '" + filename + "';")
+                .collect(Collectors.toList()));
+        mainLines.addAll(chunkLoader);
+
+        files.put(generatedFlowImports, mainLines);
+
+        files.put(generatedFlowDefinitions,
+                Collections.singletonList("export {}"));
+
+        return files;
+    }
+
+    private boolean isEager(String key) {
+        // return true;
+        return key.equals("All");
+    }
 
     /**
      * Get a resource from the classpath.
@@ -115,17 +210,6 @@ abstract class AbstractUpdateImports implements Runnable {
      */
     private URL getResource(String name) {
         return classFinder.getResource(name);
-    }
-
-    /**
-     * Get exported modules.
-     *
-     * @return exported lines.
-     */
-    protected Collection<String> getExportLines() {
-        Collection<String> lines = new ArrayList<>();
-        addLines(lines, IMPORT_INJECT);
-        return lines;
     }
 
     /**
@@ -153,37 +237,38 @@ abstract class AbstractUpdateImports implements Runnable {
                         ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
                         && !module.startsWith(
                                 ApplicationConstants.BASE_PROTOCOL_PREFIX))
+                .filter(module -> !UrlUtil.isExternal(module))
                 .map(module -> resolveResource(module)).sorted()
                 .collect(Collectors.toList());
     }
 
-    private Collection<? extends String> resolveGeneretedModules(
+    private List<? extends String> resolveGeneratedModules(
             Collection<String> generatedModules) {
         return generatedModules.stream()
-                .map(module -> resolveGeneretedModule(module))
+                .map(module -> FrontendUtils.FRONTEND_GENERATED_FLOW_IMPORT_PATH
+                        + module)
                 .collect(Collectors.toList());
     }
 
-    String resolveGeneretedModule(String module) {
-        return FrontendUtils.FRONTEND_GENERATED_FLOW_IMPORT_PATH + module;
-    }
-
-    protected Collection<String> getCssLines() {
-        Set<CssData> css = scanner.getCss();
-        if (css.isEmpty()) {
-            return Collections.emptyList();
-        }
-        Collection<String> lines = new ArrayList<>();
+    protected Map<String, List<String>> getCssLines(
+            Map<String, List<CssData>> css) {
+        Map<String, List<String>> result = new HashMap<>();
 
         Set<String> cssNotFound = new HashSet<>();
-        int i = 0;
 
-        for (CssData cssData : css) {
-            if (!addCssLines(lines, cssData, i)) {
-                cssNotFound.add(cssData.getValue());
+        for (String key : css.keySet()) {
+            List<String> lines = new ArrayList<>();
+
+            int i = 0;
+            for (CssData cssData : css.get(key)) {
+                if (!addCssLines(lines, cssData, i)) {
+                    cssNotFound.add(cssData.getValue());
+                }
+                i++;
             }
-            i++;
+            result.put(key, lines);
         }
+
         if (!cssNotFound.isEmpty()) {
             String prefix = String.format(
                     "Failed to find the following css files in the `node_modules` or `%s` directory tree:",
@@ -204,8 +289,7 @@ abstract class AbstractUpdateImports implements Runnable {
             throw new IllegalStateException(
                     notFoundMessage(cssNotFound, prefix, suffix));
         }
-        lines.add("");
-        return lines;
+        return result;
     }
 
     protected String resolveResource(String importPath) {
@@ -238,17 +322,38 @@ abstract class AbstractUpdateImports implements Runnable {
 
     protected abstract String getImportsNotFoundMessage();
 
-    private void collectModules(List<String> lines) {
-        Set<String> modules = new LinkedHashSet<>();
-        modules.addAll(resolveModules(scanner.getModules()));
-        modules.addAll(resolveModules(scanner.getScripts()));
-        modules.addAll(resolveGeneretedModules(getGeneratedModules()));
-        modules.removeIf(UrlUtil::isExternal);
+    private Map<String, List<String>> collectJavascript() {
+        Map<String, List<String>> result = new HashMap<>();
+        Map<String, List<String>> modulesPerEntry = scanner.getModules();
+        Map<String, List<String>> scriptsPerEntry = scanner.getScripts();
+        Collection<? extends String> generated = resolveGeneratedModules(
+                getGeneratedModules());
 
-        lines.addAll(getModuleLines(modules));
+        for (String key : keys(modulesPerEntry, scriptsPerEntry)) {
+            List<String> modules = modulesPerEntry.get(key);
+            List<String> scripts = scriptsPerEntry.get(key);
+            if (modules != null) {
+                result.computeIfAbsent(key, e -> new ArrayList<>())
+                        .addAll(resolveModules(modules));
+            }
+            if (scripts != null) {
+                result.computeIfAbsent(key, e -> new ArrayList<>())
+                        .addAll(getModuleLines(resolveModules(scripts)));
+            }
+        }
+        result.computeIfAbsent("All", e -> new ArrayList<>()).addAll(generated);
+        return result;
     }
 
-    private Set<String> getUniqueEs6ImportPaths(Collection<String> modules) {
+    private Set<String> keys(Map<String, List<String>> modules,
+            Map<String, List<String>> scripts) {
+        Set<String> keys = new HashSet<>();
+        keys.addAll(modules.keySet());
+        keys.addAll(scripts.keySet());
+        return keys;
+    }
+
+    protected Set<String> getUniqueEs6ImportPaths(Collection<String> modules) {
         Set<String> npmNotFound = new HashSet<>();
         Set<String> resourceNotFound = new HashSet<>();
         Set<String> es6ImportPaths = new LinkedHashSet<>();
@@ -350,7 +455,7 @@ abstract class AbstractUpdateImports implements Runnable {
         return false;
     }
 
-    private Collection<String> getModuleLines(Set<String> modules) {
+    private Collection<String> getModuleLines(Collection<String> modules) {
         return getUniqueEs6ImportPaths(modules).stream()
                 .map(path -> String.format(IMPORT_TEMPLATE, path))
                 .collect(Collectors.toList());
@@ -442,6 +547,21 @@ abstract class AbstractUpdateImports implements Runnable {
     private boolean isFileOrDirectory(File base, String... path) {
         File file = getFile(base, path);
         return file.isFile() || file.isDirectory();
+    }
+
+    @SafeVarargs
+    protected final List<String> join(Collection<String>... collections) {
+        List<String> result = new ArrayList<>();
+        for (Collection<String> c : collections) {
+            result.addAll(c);
+        }
+        return result;
+    }
+
+    protected <T> List<String> merge(Map<T, List<String>> css) {
+        List<String> result = new ArrayList<>();
+        css.forEach((key, value) -> result.addAll(value));
+        return result;
     }
 
     /**

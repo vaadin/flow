@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -155,13 +156,13 @@ public class TaskGenerateBootstrapTest {
         return new FrontendDependencies(finder) {
 
             @Override
-            public List<String> getModules() {
-                return Collections.emptyList();
+            public Map<String, List<String>> getModules() {
+                return Collections.emptyMap();
             }
 
             @Override
-            public Set<String> getScripts() {
-                return Collections.emptySet();
+            public Map<String, List<String>> getScripts() {
+                return Collections.emptyMap();
             }
 
             @Override
