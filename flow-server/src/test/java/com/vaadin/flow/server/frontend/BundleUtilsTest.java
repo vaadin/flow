@@ -38,12 +38,14 @@ public class BundleUtilsTest {
         Assert.assertTrue(bundleImports.contains("foo.js"));
         Assert.assertTrue(bundleImports.contains("./foo.js"));
     }
+
     @Test
     public void jarImportVariantsIncluded() {
         mockStatsJson("Frontend/generated/jar-resources/my/addon.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
-        Assert.assertTrue(bundleImports.contains("Frontend/generated/jar-resources/my/addon.js"));
+        Assert.assertTrue(bundleImports
+                .contains("Frontend/generated/jar-resources/my/addon.js"));
         Assert.assertTrue(bundleImports.contains("./my/addon.js"));
         Assert.assertTrue(bundleImports.contains("my/addon.js"));
     }
@@ -61,7 +63,8 @@ public class BundleUtilsTest {
         mockStatsJson("@foo/bar/theme/lumo/file.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
-        Assert.assertTrue(bundleImports.contains("@foo/bar/theme/lumo/file.js"));
+        Assert.assertTrue(
+                bundleImports.contains("@foo/bar/theme/lumo/file.js"));
         Assert.assertTrue(bundleImports.contains("@foo/bar/src/file.js"));
     }
 
