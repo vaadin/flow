@@ -25,7 +25,6 @@ describe('theme-editor', () => {
     loadComponentMetadata: sinon.SinonStub;
     setLocalClassName: sinon.SinonStub;
     setCssRules: sinon.SinonStub;
-    loadPreview: sinon.SinonStub;
     loadRules: sinon.SinonStub;
     undo: sinon.SinonStub;
     redo: sinon.SinonStub;
@@ -36,7 +35,7 @@ describe('theme-editor', () => {
     push: sinon.SinonSpy;
   };
   let getMetadataStub: sinon.SinonStub;
-  let beforeSaveSpy: sinon.SinonSpy;
+  let mockTheme: CSSStyleSheet;
 
   async function editorFixture() {
     connectionMock = {
@@ -60,7 +59,6 @@ describe('theme-editor', () => {
       loadComponentMetadata: sinon.stub((editor as any).api as ThemeEditorApi, 'loadComponentMetadata'),
       setLocalClassName: sinon.stub((editor as any).api as ThemeEditorApi, 'setLocalClassName'),
       setCssRules: sinon.stub((editor as any).api as ThemeEditorApi, 'setCssRules'),
-      loadPreview: sinon.stub((editor as any).api as ThemeEditorApi, 'loadPreview'),
       loadRules: sinon.stub((editor as any).api as ThemeEditorApi, 'loadRules'),
       undo: sinon.stub((editor as any).api as ThemeEditorApi, 'undo'),
       redo: sinon.stub((editor as any).api as ThemeEditorApi, 'redo'),
@@ -70,7 +68,6 @@ describe('theme-editor', () => {
     apiMock.loadComponentMetadata.returns(Promise.resolve({ accessible: true, className: 'test-class' }));
     apiMock.setLocalClassName.returns(Promise.resolve({}));
     apiMock.setCssRules.returns(Promise.resolve({}));
-    apiMock.loadPreview.returns(Promise.resolve({ css: '' }));
     apiMock.loadRules.returns(Promise.resolve({ rules: [], accessible: true }));
     apiMock.undo.returns(Promise.resolve({}));
     apiMock.redo.returns(Promise.resolve({}));
@@ -80,9 +77,6 @@ describe('theme-editor', () => {
     historySpy = {
       push: sinon.spy((editor as any).history as ThemeEditorHistory, 'push')
     };
-
-    beforeSaveSpy = sinon.spy();
-    editor.addEventListener('before-save', beforeSaveSpy);
 
     return {
       editor,
@@ -205,17 +199,28 @@ describe('theme-editor', () => {
     });
   }
 
-  function mockPreviewResponse(css: string) {
-    return Promise.resolve({
-      css
-    });
+  function mockThemeStyles(css: string) {
+    mockTheme.replaceSync(css);
   }
+
+  async function mockHmrUpdate() {
+    document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
+    // Wait for async state updates to resolve
+    await aTimeout(0);
+  }
+
+  before(async () => {
+    mockTheme = new CSSStyleSheet();
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, mockTheme];
+  });
 
   beforeEach(async () => {
     // Reset history
     ThemeEditorHistory.clear();
+    // Reset mock theme styles
+    mockTheme.replaceSync('');
     // Reset theme preview
-    themePreview.update('');
+    themePreview.clear();
     // Mock metadata
     getMetadataStub = sinon.stub(metadataRegistry, 'getMetadata').returns(Promise.resolve(testElementMetadata));
     // Render editable test element
@@ -245,18 +250,10 @@ describe('theme-editor', () => {
   });
 
   describe('editing', () => {
-    it('should update theme preview after changing a property', async () => {
-      apiMock.loadPreview.returns(
-        Promise.resolve({
-          css: 'test-element::part(label) { color: red }'
-        })
-      );
+    it('should optimistically update theme preview after changing a property', async () => {
       await pickComponent();
-      apiMock.loadPreview.resetHistory();
-
       await editProperty('Label', 'color', 'red');
 
-      expect(apiMock.loadPreview.calledOnce).to.be.true;
       expect(getTestElementStyles().label.color).to.equal('rgb(255, 0, 0)');
     });
 
@@ -331,13 +328,6 @@ describe('theme-editor', () => {
           properties: { color: 'green' }
         }
       ]);
-    });
-
-    it('should dispatch event before saving changes', async () => {
-      await pickComponent();
-      await editProperty('Label', 'color', 'red');
-
-      expect(beforeSaveSpy.calledOnce).to.be.true;
     });
   });
 
@@ -547,26 +537,11 @@ describe('theme-editor', () => {
       // mock theme responses
       const rulesResponse = mockRulesResponse('test-element.test-class::part(label)', 'color', 'green');
       apiMock.loadRules.returns(rulesResponse);
-      const previewResponse = mockPreviewResponse('test-element::part(label) { color: green }');
-      apiMock.loadPreview.returns(previewResponse);
 
       // undo
       await undo();
 
       expect(getPropertyValue('Label', 'color')).to.equal('green');
-      expect(getTestElementStyles().label.color).to.equal('rgb(0, 128, 0)');
-    });
-
-    it('should prevent live reload on undo', async () => {
-      // edit something
-      await pickComponent();
-      await editProperty('Label', 'color', 'red');
-
-      // undo
-      beforeSaveSpy.resetHistory();
-      await undo();
-
-      expect(beforeSaveSpy.calledOnce).to.be.true;
     });
 
     it('should call redo when clicking redo button', async () => {
@@ -597,29 +572,11 @@ describe('theme-editor', () => {
       // mock theme responses
       const rulesResponse = mockRulesResponse('test-element.test-class::part(label)', 'color', 'green');
       apiMock.loadRules.returns(rulesResponse);
-      const previewResponse = mockPreviewResponse('test-element::part(label) { color: green }');
-      apiMock.loadPreview.returns(previewResponse);
 
       // redo
       await redo();
 
       expect(getPropertyValue('Label', 'color')).to.equal('green');
-      expect(getTestElementStyles().label.color).to.equal('rgb(0, 128, 0)');
-    });
-
-    it('should prevent live reload on redo', async () => {
-      // edit something
-      await pickComponent();
-      await editProperty('Label', 'color', 'red');
-
-      // undo
-      await undo();
-
-      // redo
-      beforeSaveSpy.resetHistory();
-      await redo();
-
-      expect(beforeSaveSpy.calledOnce).to.be.true;
     });
   });
 
@@ -628,67 +585,8 @@ describe('theme-editor', () => {
       await pickComponent();
       await changeThemeScope(ThemeScope.global);
       await editProperty('Label', 'color', 'red');
-      apiMock.loadPreview.returns(
-        Promise.resolve({
-          css: 'test-element::part(label) { color: red }'
-        })
-      );
+      mockThemeStyles('test-element::part(label) { color: red }');
       await changeThemeScope(ThemeScope.local);
-
-      expect(getPropertyValue('Label', 'color')).to.equal('rgb(255, 0, 0)');
-    });
-
-    it('should detect base theme on undo', async () => {
-      await pickComponent();
-      await changeThemeScope(ThemeScope.global);
-      await editProperty('Label', 'color', 'red');
-      apiMock.loadPreview.returns(
-        Promise.resolve({
-          css: 'test-element::part(label) { color: red }'
-        })
-      );
-      await changeThemeScope(ThemeScope.local);
-
-      expect(getPropertyValue('Label', 'color')).to.equal('rgb(255, 0, 0)');
-
-      apiMock.loadPreview.returns(
-        Promise.resolve({
-          css: ''
-        })
-      );
-      await undo();
-
-      expect(getPropertyValue('Label', 'color')).to.equal('rgb(0, 0, 0)');
-    });
-
-    it('should detect base theme on redo', async () => {
-      await pickComponent();
-      await changeThemeScope(ThemeScope.global);
-      await editProperty('Label', 'color', 'red');
-      apiMock.loadPreview.returns(
-        Promise.resolve({
-          css: 'test-element::part(label) { color: red }'
-        })
-      );
-      await changeThemeScope(ThemeScope.local);
-
-      expect(getPropertyValue('Label', 'color')).to.equal('rgb(255, 0, 0)');
-
-      apiMock.loadPreview.returns(
-        Promise.resolve({
-          css: ''
-        })
-      );
-      await undo();
-
-      expect(getPropertyValue('Label', 'color')).to.equal('rgb(0, 0, 0)');
-
-      apiMock.loadPreview.returns(
-        Promise.resolve({
-          css: 'test-element::part(label) { color: red }'
-        })
-      );
-      await redo();
 
       expect(getPropertyValue('Label', 'color')).to.equal('rgb(255, 0, 0)');
     });
@@ -869,22 +767,6 @@ describe('theme-editor', () => {
 
       expect(apiMock.setLocalClassName.called).to.be.false;
     });
-
-    it('should update theme preview', async () => {
-      await pickComponent();
-      expect(testElement.classList.contains('test-class')).to.be.true;
-
-      apiMock.loadPreview.resetHistory();
-      await editLocalClassName('custom-class');
-      expect(apiMock.loadPreview.calledOnce).to.be.true;
-    });
-
-    it('should prevent live reload', async () => {
-      await pickComponent();
-      await editLocalClassName('custom-class');
-
-      expect(beforeSaveSpy.calledOnce).to.be.true;
-    });
   });
 
   describe('open CSS', () => {
@@ -967,6 +849,25 @@ describe('theme-editor', () => {
 
       const propertyList = editor.shadowRoot!.querySelector('.property-list');
       expect(propertyList).to.not.exist;
+    });
+  });
+
+  describe('HMR updates', () => {
+    it('should refresh base theme when HMR update is received', async () => {
+      await pickComponent();
+      expect(getPropertyValue('Label', 'color')).to.equal('rgb(0, 0, 0)');
+
+      mockThemeStyles('test-element::part(label) { color: red }');
+      await mockHmrUpdate();
+      expect(getPropertyValue('Label', 'color')).to.equal('rgb(255, 0, 0)');
+    });
+
+    it('should clear theme preview when HMR update is received', async () => {
+      themePreview.add('test-element::part(label) { color: red }');
+      expect(getTestElementStyles().label.color).to.equal('rgb(255, 0, 0)');
+
+      await mockHmrUpdate();
+      expect(getTestElementStyles().label.color).to.equal('rgb(0, 0, 0)');
     });
   });
 });

@@ -6,7 +6,6 @@ export enum Commands {
   loadComponentMetadata = 'themeEditorComponentMetadata',
   setLocalClassName = 'themeEditorLocalClassName',
   setCssRules = 'themeEditorRules',
-  loadPreview = 'themeEditorLoadPreview',
   loadRules = 'themeEditorLoadRules',
   history = 'themeEditorHistory',
   openCss = 'themeEditorOpenCss',
@@ -108,10 +107,6 @@ export class ThemeEditorApi {
 
   public setCssRules(rules: ServerCssRule[]): Promise<BaseResponse> {
     return this.sendRequest(Commands.setCssRules, { rules });
-  }
-
-  public loadPreview(): Promise<LoadPreviewResponse> {
-    return this.sendRequest(Commands.loadPreview, {});
   }
 
   public loadRules(selectors: string[]): Promise<LoadRulesResponse> {

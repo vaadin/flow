@@ -17,7 +17,7 @@ describe('theme-preview', () => {
     element = await fixture(html` <test-element></test-element>`);
   });
 
-  it('should apply theme preview', () => {
+  it('should add CSS to preview stylesheet', () => {
     const css = `
       test-element {
         padding: 20px;
@@ -27,24 +27,11 @@ describe('theme-preview', () => {
         color: red;
       }
     `;
-    themePreview.update(css);
+    themePreview.add(css);
 
-    const elementStyles = getElementStyles();
+    let elementStyles = getElementStyles();
     expect(elementStyles.host.padding).to.equal('20px');
     expect(elementStyles.label.color).to.equal('rgb(255, 0, 0)');
-  });
-
-  it('should update theme preview', () => {
-    const css = `
-      test-element {
-        padding: 20px;
-      }
-      
-      test-element::part(label) {
-        color: red;
-      }
-    `;
-    themePreview.update(css);
 
     const updatedCss = `
       test-element {
@@ -55,14 +42,14 @@ describe('theme-preview', () => {
         color: green;
       }
     `;
-    themePreview.update(updatedCss);
+    themePreview.add(updatedCss);
 
-    const elementStyles = getElementStyles();
+    elementStyles = getElementStyles();
     expect(elementStyles.host.padding).to.equal('30px');
     expect(elementStyles.label.color).to.equal('rgb(0, 128, 0)');
   });
 
-  it('should reset theme preview', () => {
+  it('should clear preview stylesheet', () => {
     const css = `
       test-element {
         padding: 20px;
@@ -72,10 +59,13 @@ describe('theme-preview', () => {
         color: red;
       }
     `;
-    themePreview.update(css);
-    themePreview.update('');
+    themePreview.add(css);
+    let elementStyles = getElementStyles();
+    expect(elementStyles.host.padding).to.equal('20px');
+    expect(elementStyles.label.color).to.equal('rgb(255, 0, 0)');
 
-    const elementStyles = getElementStyles();
+    themePreview.clear();
+    elementStyles = getElementStyles();
     expect(elementStyles.host.padding).to.equal('10px');
     expect(elementStyles.label.color).to.equal('rgb(0, 0, 0)');
   });

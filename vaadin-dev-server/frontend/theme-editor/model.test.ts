@@ -1,5 +1,12 @@
 import { expect } from '@open-wc/testing';
-import { ComponentTheme, generateThemeRule, SelectorScope, ThemePropertyValue, ThemeScope } from './model';
+import {
+  ComponentTheme,
+  generateThemeRule,
+  generateThemeRuleCss,
+  SelectorScope,
+  ThemePropertyValue,
+  ThemeScope
+} from './model';
 import buttonMetadata from './metadata/components/vaadin-button';
 import { ComponentMetadata } from './metadata/model';
 import { ServerCssRule } from './api';
@@ -351,7 +358,7 @@ describe('model', () => {
     });
   });
 
-  describe('generateRule', () => {
+  describe('generateThemeRule', () => {
     const globalScope: SelectorScope = {
       themeScope: ThemeScope.global
     };
@@ -427,6 +434,29 @@ describe('model', () => {
 
         expect(rules).to.deep.equal(expectedRules);
       });
+    });
+  });
+
+  describe('generateThemeRuleCss', () => {
+    it('should generate CSS for theme rules', () => {
+      const rules: ServerCssRule[] = [
+        { selector: 'test-element.foo', properties: { background: 'cornflowerblue' } },
+        { selector: 'test-element.foo::part(label)', properties: { color: 'white' } },
+        {
+          selector: 'test-element.foo input[slot="input"]',
+          properties: { 'border-radius': '10px', 'border-style': 'solid' }
+        }
+      ];
+
+      const expectedCss = [
+        'test-element.foo { background: cornflowerblue; }',
+        'test-element.foo::part(label) { color: white; }',
+        'test-element.foo input[slot="input"] { border-radius: 10px; border-style: solid; }'
+      ];
+
+      const css = rules.map(generateThemeRuleCss);
+
+      expect(css).to.deep.equal(expectedCss);
     });
   });
 });
