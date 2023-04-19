@@ -451,6 +451,11 @@ public class FrontendUtils {
             if (config.isProductionMode()) {
                 // In production mode, this is on the class path
                 content = getFileFromClassPath(service, path);
+                if (content == null) {
+                    content = FrontendUtils.class.getClassLoader()
+                            .getResourceAsStream(Constants.PROD_BUNDLE_NAME
+                                    + "/webapp/" + path);
+                }
             } else if (devModeHandler.isPresent()) {
                 content = getFileFromDevModeHandler(devModeHandler.get(), path);
             } else {

@@ -290,10 +290,10 @@ public class StaticFileServer implements StaticFileHandler {
             resourceUrl = getStaticResource(filenameWithPath);
         }
         // Try fetching file from the production bundle.
-        if (resourceUrl == null && Mode.PRODUCTION.equals(
-                deploymentConfiguration.getMode())) {
-            resourceUrl = getStaticResource(
-                    VAADIN_WEBAPP_RESOURCES + "VAADIN/static/production/"
+        if (resourceUrl == null
+                && Mode.PRODUCTION.equals(deploymentConfiguration.getMode())) {
+            resourceUrl = vaadinService.getClassLoader()
+                    .getResource(Constants.PROD_BUNDLE_PATH
                             + filenameWithPath.replaceFirst("^/", ""));
         }
         if (resourceUrl == null && shouldFixIncorrectWebjarPaths()

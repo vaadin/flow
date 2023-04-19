@@ -844,7 +844,8 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void serveStaticResourceDefaultProductionBundle() throws IOException {
+    public void serveStaticResourceDefaultProductionBundle()
+            throws IOException {
         setupRequestURI("", "/some", "/file.js");
         String fileData = "function() {eval('foo');};";
         String bundleData = "function() {eval('bundle');};";
@@ -854,16 +855,17 @@ public class StaticFileServerTest implements Serializable {
                         fileData));
 
         Mockito.when(servletService.getStaticResource(VAADIN_WEBAPP_RESOURCES
-                + "VAADIN/static/production/some/file.js")).thenReturn(
-                createFileURLWithDataAndLength("/some/file.js", bundleData));
+                + "VAADIN/static/production/some/file.js"))
+                .thenReturn(createFileURLWithDataAndLength("/some/file.js",
+                        bundleData));
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(bundleData, out.getOutputString());
     }
 
-
     @Test
-    public void serveStaticResourceDefaultUsedBeforeProductionBundle() throws IOException {
+    public void serveStaticResourceDefaultUsedBeforeProductionBundle()
+            throws IOException {
         setupRequestURI("", "/some", "/file.js");
         String fileData = "function() {eval('foo');};";
         String bundleData = "function() {eval('bundle');};";
@@ -873,8 +875,9 @@ public class StaticFileServerTest implements Serializable {
                         fileData));
 
         Mockito.when(servletService.getStaticResource(VAADIN_WEBAPP_RESOURCES
-                + "VAADIN/static/production/some/file.js")).thenReturn(
-                createFileURLWithDataAndLength("/some/file.js", bundleData));
+                + "VAADIN/static/production/some/file.js"))
+                .thenReturn(createFileURLWithDataAndLength("/some/file.js",
+                        bundleData));
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(fileData, out.getOutputString());
