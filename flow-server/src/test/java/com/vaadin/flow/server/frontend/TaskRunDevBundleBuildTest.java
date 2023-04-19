@@ -114,7 +114,7 @@ public class TaskRunDevBundleBuildTest {
         bundleImports.set(bundleImports.length(),
                 "./generated/jar-resources/theme-util.js");
         frontendHashes.put("theme-util.js",
-                TaskRunDevBundleBuild.calculateHash(THEME_UTIL_JS));
+                BundleValidationUtil.calculateHash(THEME_UTIL_JS));
         jarResources.put("theme-util.js", THEME_UTIL_JS);
         return stats;
     }
@@ -562,7 +562,7 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
-        String defaultHash = TaskRunDevBundleBuild
+        String defaultHash = BundleValidationUtil
                 .getDefaultPackageJson(options, depScanner, finder, null)
                 .getObject(NodeUpdater.VAADIN_DEP_KEY)
                 .getString(NodeUpdater.HASH_KEY);
@@ -589,7 +589,7 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
-        String defaultHash = TaskRunDevBundleBuild
+        String defaultHash = BundleValidationUtil
                 .getDefaultPackageJson(options, depScanner, finder, null)
                 .getObject(NodeUpdater.VAADIN_DEP_KEY)
                 .getString(NodeUpdater.HASH_KEY);
@@ -616,7 +616,7 @@ public class TaskRunDevBundleBuildTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
 
-        String defaultHash = TaskRunDevBundleBuild
+        String defaultHash = BundleValidationUtil
                 .getDefaultPackageJson(options, depScanner, finder, null)
                 .getObject(NodeUpdater.VAADIN_DEP_KEY)
                 .getString(NodeUpdater.HASH_KEY);
@@ -778,7 +778,7 @@ public class TaskRunDevBundleBuildTest {
         bundleImports.set(bundleImports.length(),
                 "./generated/jar-resources/TodoTemplate.js");
         stats.getObject(FRONTEND_HASHES).put("TodoTemplate.js",
-                TaskRunDevBundleBuild.calculateHash(fileContent));
+                BundleValidationUtil.calculateHash(fileContent));
         jarResources.put("TodoTemplate.js", fileContent);
 
         setupFrontendUtilsMock(stats);
