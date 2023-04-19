@@ -149,10 +149,6 @@ abstract class AbstractUpdateImports implements Runnable {
 
     List<String> resolveModules(Collection<String> modules) {
         return modules.stream()
-                .filter(module -> !module.startsWith(
-                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
-                        && !module.startsWith(
-                                ApplicationConstants.BASE_PROTOCOL_PREFIX))
                 .map(module -> resolveResource(module)).sorted()
                 .collect(Collectors.toList());
     }
