@@ -670,7 +670,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       devMode && vaadinBundlesPlugin(),
       devMode && showRecompileReason(),
       settings.offlineEnabled && buildSWPlugin({ devMode }),
-      !devMode && statsExtracterPlugin(),
+      statsExtracterPlugin(),
       devBundle && preserveUsageStats(),
       themePlugin({devMode}),
       postcssLit({
