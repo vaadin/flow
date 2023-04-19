@@ -48,8 +48,8 @@ public class BundleValidationUtil {
      *            JAR path where bunlde to check is located
      * @return {@code true} if bundle stats.json is found
      */
-    static boolean hasJarBundle(String jarPath) {
-        final URL resource = TaskRunDevBundleBuild.class.getClassLoader()
+    public static boolean hasJarBundle(String jarPath) {
+        final URL resource = BundleValidationUtil.class.getClassLoader()
                 .getResource(jarPath + "config/stats.json");
         return resource != null;
     }
@@ -68,7 +68,7 @@ public class BundleValidationUtil {
      *            classfinder
      * @return package.json content as JsonObject
      */
-    static JsonObject getPackageJson(Options options,
+    public static JsonObject getPackageJson(Options options,
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder) {
         File packageJsonFile = new File(options.getNpmFolder(), "package.json");
@@ -91,7 +91,7 @@ public class BundleValidationUtil {
         return null;
     }
 
-    static JsonObject getDefaultPackageJson(Options options,
+    public static JsonObject getDefaultPackageJson(Options options,
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder, JsonObject packageJson) {
         NodeUpdater nodeUpdater = new NodeUpdater(finder, frontendDependencies,
@@ -192,7 +192,7 @@ public class BundleValidationUtil {
      *            npm packages map
      * @return {@code true} if up to date
      */
-    static boolean hashAndBundleModulesEqual(JsonObject statsJson,
+    public static boolean hashAndBundleModulesEqual(JsonObject statsJson,
             JsonObject packageJson, Map<String, String> npmPackages) {
 
         String packageJsonHash = BundleValidationUtil
@@ -309,7 +309,7 @@ public class BundleValidationUtil {
         return true;
     }
 
-    static boolean exportedWebComponents(JsonObject statsJson,
+    public static boolean exportedWebComponents(JsonObject statsJson,
             ClassFinder finder) {
         try {
             Set<Class<?>> exporterRelatedClasses = new HashSet<>();
@@ -367,8 +367,8 @@ public class BundleValidationUtil {
         return exporterTagExtractor.apply(factory);
     }
 
-    static boolean frontendImportsFound(JsonObject statsJson, Options options,
-            ClassFinder finder,
+    public static boolean frontendImportsFound(JsonObject statsJson,
+            Options options, ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies)
             throws IOException {
 
@@ -553,7 +553,7 @@ public class BundleValidationUtil {
         }
     }
 
-    static String calculateHash(String fileContent) {
+    public static String calculateHash(String fileContent) {
         String content = fileContent.replaceAll("\\r\\n", "\n");
         return StringUtil.getHash(content, StandardCharsets.UTF_8);
     }
@@ -568,7 +568,7 @@ public class BundleValidationUtil {
         return false;
     }
 
-    static String getStatsHash(JsonObject statsJson) {
+    public static String getStatsHash(JsonObject statsJson) {
         if (statsJson.hasKey("packageJsonHash")) {
             return statsJson.getString("packageJsonHash");
         }
@@ -576,7 +576,7 @@ public class BundleValidationUtil {
         return null;
     }
 
-    static String getPackageJsonHash(JsonObject packageJson) {
+    public static String getPackageJsonHash(JsonObject packageJson) {
         if (packageJson != null && packageJson.hasKey("vaadin")
                 && packageJson.getObject("vaadin").hasKey("hash")) {
             return packageJson.getObject("vaadin").getString("hash");
@@ -593,7 +593,8 @@ public class BundleValidationUtil {
                 && packageJson.hasKey(NodeUpdater.DEPENDENCIES);
     }
 
-    static void logChangedFiles(List<String> frontendFiles, String message) {
+    public static void logChangedFiles(List<String> frontendFiles,
+            String message) {
         if (message == null || message.isEmpty()) {
             throw new IllegalArgumentException(
                     "Changed files message cannot be empty");
