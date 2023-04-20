@@ -15,7 +15,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <server.log.location>${java.io.tmpdir}/${project.artifactId}.log</server.log.location>
-        <scala-java8-compat.version>1.0.0</scala-java8-compat.version>
+        <scala-java8-compat.version>1.0.2</scala-java8-compat.version>
     </properties>
 
     <dependencies>
@@ -77,6 +77,10 @@
                 <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.scala-lang.modules</groupId>
+                    <artifactId>scala-java8-compat_2.13</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
