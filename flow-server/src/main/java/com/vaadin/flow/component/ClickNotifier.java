@@ -84,20 +84,10 @@ public interface ClickNotifier<T extends Component> extends Serializable {
     default Registration addSingleClickListener(
             ComponentEventListener<SingleClickEvent<T>> listener) {
         if (this instanceof Component) {
-            Registration internalEventReg = this.addClickListener(event -> {
-                if (event.getClickCount() <= 1) {
-                    ((Component) this)
-                            .fireEvent(new SingleClickEvent<T>((Component) this,
-                                    event.isFromClient(), event.getScreenX(),
-                                    event.getScreenY(), event.getClientX(),
-                                    event.getClientY(), event.getButton(),
-                                    event.isCtrlKey(), event.isShiftKey(),
-                                    event.isAltKey(), event.isMetaKey()));
-                }
-            });
-            Registration reg = ComponentUtil.addListener((Component) this,
-                    SingleClickEvent.class, (ComponentEventListener) listener);
-            return Registration.combine(internalEventReg, reg);
+            // If JavaScript click() function was used detail is < 1
+            return ComponentUtil.addListener((Component) this,
+                    SingleClickEvent.class, (ComponentEventListener) listener,
+                    d -> d.setFilter("event.detail <= 1"));
         } else {
             throw new IllegalStateException(String.format(
                     "The class '%s' doesn't extend '%s'. "
