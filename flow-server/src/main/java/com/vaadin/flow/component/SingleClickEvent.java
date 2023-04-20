@@ -64,10 +64,10 @@ public class SingleClickEvent<C extends Component>
      *            fired, <code>false</code> otherwise
      *
      */
-    public SingleClickEvent(Component source, boolean isFromClient, int screenX,
+    public SingleClickEvent(Component source, boolean fromClient, int screenX,
             int screenY, int clientX, int clientY, int button, boolean ctrlKey,
             boolean shiftKey, boolean altKey, boolean metaKey) {
-        super(source, isFromClient, screenX, screenY, clientX, clientY, button,
+        super(source, fomClient, screenX, screenY, clientX, clientY, button,
                 ctrlKey, shiftKey, altKey, metaKey);
     }
 
