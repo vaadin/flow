@@ -75,10 +75,9 @@ public abstract class AbstractClickEvent<C extends Component>
      *            fired, <code>false</code> otherwise
      *
      */
-    public AbstractClickEvent(Component source, boolean fromClient,
-            int screenX, int screenY, int clientX, int clientY, int button,
-            boolean ctrlKey, boolean shiftKey, boolean altKey,
-            boolean metaKey) {
+    public AbstractClickEvent(Component source, boolean fromClient, int screenX,
+            int screenY, int clientX, int clientY, int button, boolean ctrlKey,
+            boolean shiftKey, boolean altKey, boolean metaKey) {
         super((C) source, fromClient);
         this.screenX = screenX;
         this.screenY = screenY;
