@@ -32,6 +32,7 @@ public class ImageClickIT extends ChromeBrowserTest {
 
         WebElement message = findElement(By.id("message"));
         WebElement message2 = findElement(By.id("message2"));
+        WebElement message3 = findElement(By.id("message3"));
         WebElement image = findElement(By.id("image"));
 
         Assert.assertEquals("Before click", message.getText());
@@ -39,7 +40,8 @@ public class ImageClickIT extends ChromeBrowserTest {
         act.doubleClick(image).perform();
 
         Assert.assertEquals("After click", message.getText());
-        Assert.assertEquals("Double click", message2.getText());
+        Assert.assertEquals("", message2.getText());
+        Assert.assertEquals("Double click", message3.getText());
 
     }
 
