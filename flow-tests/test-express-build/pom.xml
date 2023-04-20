@@ -35,6 +35,7 @@
             </activation>
             <modules>
                 <module>test-dev-bundle-no-plugin</module>
+                <module>test-dev-bundle-no-plugin/pom-prod.xml</module>
                 <module>test-theme-dev-bundle</module>
                 <module>test-dev-bundle-frontend-add-on</module>
                 <module>test-dev-bundle-java-add-on</module>
