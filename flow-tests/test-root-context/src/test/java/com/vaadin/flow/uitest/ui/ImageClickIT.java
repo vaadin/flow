@@ -22,6 +22,7 @@ public class ImageClickIT extends ChromeBrowserTest {
 
         Assert.assertEquals("After click", message.getText());
         Assert.assertEquals("Single click", message2.getText());
+        Assert.assertEquals("", message3.getText());
     }
 
     @Test
@@ -40,9 +41,7 @@ public class ImageClickIT extends ChromeBrowserTest {
         act.doubleClick(image).perform();
 
         Assert.assertEquals("After click", message.getText());
-        Assert.assertEquals("", message2.getText());
         Assert.assertEquals("Double click", message3.getText());
-
     }
 
 }
