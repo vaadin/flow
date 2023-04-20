@@ -16,7 +16,7 @@
 package com.vaadin.flow.component;
 
 /**
- * Event fired when a component is single clicked.
+ * Event fired when a component is double clicked.
  *
  * @author Vaadin Ltd
  * @since 24.1
@@ -24,6 +24,7 @@ package com.vaadin.flow.component;
  * @param <C>
  *            The source component type
  */
+@DomEvent("dblclick")
 public class DoubleClickEvent<C extends Component>
         extends AbstractClickEvent<C> {
 
@@ -64,9 +65,16 @@ public class DoubleClickEvent<C extends Component>
      *            fired, <code>false</code> otherwise
      *
      */
-    public DoubleClickEvent(Component source, boolean fromClient, int screenX,
-            int screenY, int clientX, int clientY, int button, boolean ctrlKey,
-            boolean shiftKey, boolean altKey, boolean metaKey) {
+    public DoubleClickEvent(Component source, boolean fromClient,
+            @EventData("event.screenX") int screenX,
+            @EventData("event.screenY") int screenY,
+            @EventData("event.clientX") int clientX,
+            @EventData("event.clientY") int clientY,
+            @EventData("event.button") int button,
+            @EventData("event.ctrlKey") boolean ctrlKey,
+            @EventData("event.shiftKey") boolean shiftKey,
+            @EventData("event.altKey") boolean altKey,
+            @EventData("event.metaKey") boolean metaKey) {
         super(source, fromClient, screenX, screenY, clientX, clientY, button,
                 ctrlKey, shiftKey, altKey, metaKey);
     }
@@ -78,7 +86,7 @@ public class DoubleClickEvent<C extends Component>
      *            the component that fired the event
      */
     public DoubleClickEvent(Component source) {
-        // source, notClient, 4 coordinates, clickCount, button, 4 modifier
+        // source, notClient, 4 coordinates, button, 4 modifier
         // keys
         this(source, false, -1, -1, -1, -1, 1, false, false, false, false);
     }
