@@ -53,6 +53,72 @@ public interface ClickNotifier<T extends Component> extends Serializable {
     }
 
     /**
+     * Adds a double click listener to this component.
+     *
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
+    default Registration addDoubleClickListener(
+            ComponentEventListener<DoubleClickEvent<T>> listener) {
+        if (this instanceof Component) {
+            Registration internalEventReg = this.addClickListener(event -> {
+                if (event.getClickCount() == 2) {
+                    ((Component) this)
+                            .fireEvent(new DoubleClickEvent<T>((Component) this,
+                                    event.isFromClient(), event.getScreenX(),
+                                    event.getScreenY(), event.getClientX(),
+                                    event.getClientY(), event.getButton(),
+                                    event.isCtrlKey(), event.isShiftKey(),
+                                    event.isAltKey(), event.isMetaKey()));
+                }
+            });
+            Registration reg = ComponentUtil.addListener((Component) this,
+                    DoubleClickEvent.class, (ComponentEventListener) listener);
+            return Registration.combine(internalEventReg, reg);
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addClickListener"));
+        }
+    }
+
+    /**
+     * Adds a single click listener to this component.
+     *
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
+    default Registration addSingleClickListener(
+            ComponentEventListener<SingleClickEvent<T>> listener) {
+        if (this instanceof Component) {
+            Registration internalEventReg = this.addClickListener(event -> {
+                if (event.getClickCount() == 1) {
+                    ((Component) this)
+                            .fireEvent(new SingleClickEvent<T>((Component) this,
+                                    event.isFromClient(), event.getScreenX(),
+                                    event.getScreenY(), event.getClientX(),
+                                    event.getClientY(), event.getButton(),
+                                    event.isCtrlKey(), event.isShiftKey(),
+                                    event.isAltKey(), event.isMetaKey()));
+                }
+            });
+            Registration reg = ComponentUtil.addListener((Component) this,
+                    SingleClickEvent.class, (ComponentEventListener) listener);
+            return Registration.combine(internalEventReg, reg);
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addClickListener"));
+        }
+    }
+
+    /**
      * Adds a shortcut which 'clicks' the {@link Component} which implements
      * {@link ClickNotifier} interface. The shortcut's event listener is in
      * global scope and the shortcut's lifecycle is tied to {@code this}
