@@ -189,6 +189,10 @@ public class ServerRpcHandler implements Serializable {
             return json;
         }
 
+        private boolean isUnloadBeaconRequest() {
+            return json.hasKey(ApplicationConstants.UNLOAD_BEACON);
+        }
+
     }
 
     private static final int MAX_BUFFER_SIZE = 64 * 1024;
@@ -340,6 +344,10 @@ public class ServerRpcHandler implements Serializable {
             // signature for source and binary compatibility
             throw new ResynchronizationRequiredException();
         }
+        if (rpcRequest.isUnloadBeaconRequest()) {
+            ui.close();
+        }
+
     }
 
     private String getMessageDetails(RpcRequest rpcRequest) {

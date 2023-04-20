@@ -29,6 +29,7 @@ import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.util.NativeFunction;
 
 import elemental.client.Browser;
+import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.dom.Node;
 
@@ -131,6 +132,21 @@ public class ApplicationConnection {
             registry.getRequestResponseTracker().startRequest();
             registry.getMessageHandler().handleMessage(initialUidl);
         }
+
+        Browser.getWindow().addEventListener("pagehide", e -> {
+            registry.getMessageSender().sendUnloadBeacon();
+        });
+
+        Browser.getWindow().addEventListener("pageshow", e -> {
+            // Currently only Safari gets here, sometimes when going back/foward
+            // with browser buttons
+            // Chrome discards our state as beforeunload is used
+            // As state is most likely cleared on the server already (especially
+            // now with beacon API request, it is probably
+            // better resyncronize the state (would happen on first server
+            // visit)
+            Browser.getWindow().getLocation().reload();
+        });
     }
 
     /**
