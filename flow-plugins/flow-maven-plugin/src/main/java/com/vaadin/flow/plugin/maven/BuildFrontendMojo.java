@@ -117,7 +117,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                     "Could not execute build-frontend goal", exception);
         }
 
-        if (generateBundle()) {
+        if (generateBundle() && !BuildFrontendUtil.bundleExists(this)) {
             try {
                 BuildFrontendUtil.runFrontendBuild(this);
             } catch (URISyntaxException | TimeoutException exception) {

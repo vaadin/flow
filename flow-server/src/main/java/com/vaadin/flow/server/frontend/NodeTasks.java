@@ -74,7 +74,8 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdateImports.class,
             TaskUpdateThemeImport.class,
             TaskCopyTemplateFiles.class,
-            TaskRunDevBundleBuild.class
+            TaskRunDevBundleBuild.class,
+            TaskCopyBundleFiles.class
         ));
     // @formatter:on
 
@@ -106,6 +107,15 @@ public class NodeTasks implements FallibleCommand {
                     .createScanner(!options.isUseByteCodeScanner(), classFinder,
                             options.isGenerateEmbeddableWebComponents(),
                             featureFlags);
+
+            if (options.isProductionMode()) {
+                boolean needBuild = BundleValidationUtil.needsBuildProdBundle(
+                        options, frontendDependencies, classFinder);
+                options.withRunNpmInstall(needBuild);
+                if (!needBuild) {
+                    commands.add(new TaskCopyBundleFiles(options));
+                }
+            }
 
             // The dev bundle check needs the frontendDependencies to be able to
             // determine if we need a rebuild as the check happens immediately

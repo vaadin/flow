@@ -121,9 +121,8 @@ public class TaskRunDevBundleBuildTest {
 
     @Test
     public void noDevBundle_bundleCompilationRequires() throws IOException {
-        final boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(
-                options, Mockito.mock(FrontendDependenciesScanner.class),
-                finder);
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
+                Mockito.mock(FrontendDependenciesScanner.class), finder);
         Assert.assertTrue("Bundle should require creation if not available",
                 needsBuild);
     }
@@ -139,9 +138,8 @@ public class TaskRunDevBundleBuildTest {
                         .findBundleStatsJson(temporaryFolder.getRoot()))
                 .thenReturn(null);
 
-        final boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(
-                options, Mockito.mock(FrontendDependenciesScanner.class),
-                finder);
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
+                Mockito.mock(FrontendDependenciesScanner.class), finder);
         Assert.assertTrue("Missing stats.json should require bundling",
                 needsBuild);
     }
@@ -169,8 +167,8 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        final boolean needsBuild = TaskRunDevBundleBuild
-                .needsBuildInternal(options, depScanner, finder);
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
+                depScanner, finder);
         Assert.assertFalse("Missing stats.json should require bundling",
                 needsBuild);
     }
@@ -200,8 +198,8 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        final boolean needsBuild = TaskRunDevBundleBuild
-                .needsBuildInternal(options, depScanner, finder);
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
+                depScanner, finder);
         Assert.assertTrue("Missing npmPackage should require bundling",
                 needsBuild);
     }
@@ -229,8 +227,8 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        final boolean needsBuild = TaskRunDevBundleBuild
-                .needsBuildInternal(options, depScanner, finder);
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
+                depScanner, finder);
         Assert.assertTrue("Bundle missing module dependency should rebuild",
                 needsBuild);
     }
@@ -259,8 +257,8 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        final boolean needsBuild = TaskRunDevBundleBuild
-                .needsBuildInternal(options, depScanner, finder);
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
+                depScanner, finder);
         Assert.assertFalse(
                 "Not missing npmPackage in stats.json should not require compilation",
                 needsBuild);
@@ -306,8 +304,8 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        final boolean needsBuild = TaskRunDevBundleBuild
-                .needsBuildInternal(options, depScanner, finder);
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
+                depScanner, finder);
         Assert.assertFalse(
                 "vaadin-core-versions.json should have updated version to expected.",
                 needsBuild);
@@ -340,8 +338,8 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        final boolean needsBuild = TaskRunDevBundleBuild
-                .needsBuildInternal(options, depScanner, finder);
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
+                depScanner, finder);
         Assert.assertFalse(
                 "Not missing npmPackage in stats.json should not require compilation",
                 needsBuild);
@@ -376,8 +374,8 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        final boolean needsBuild = TaskRunDevBundleBuild
-                .needsBuildInternal(options, depScanner, finder);
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
+                depScanner, finder);
         Assert.assertFalse(
                 "Not missing npmPackage in stats.json should not require compilation",
                 needsBuild);
@@ -407,8 +405,8 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        final boolean needsBuild = TaskRunDevBundleBuild
-                .needsBuildInternal(options, depScanner, finder);
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
+                depScanner, finder);
         Assert.assertTrue(
                 "Missing npmPackage in stats.json should require compilation",
                 needsBuild);
@@ -437,8 +435,8 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        final boolean needsBuild = TaskRunDevBundleBuild
-                .needsBuildInternal(options, depScanner, finder);
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
+                depScanner, finder);
         Assert.assertFalse(
                 "Not missing npmPackage in stats.json should not require compilation",
                 needsBuild);
@@ -467,15 +465,15 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse("No compilation if tilde range only patch update",
                 needsBuild);
 
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "1.8.1");
-        needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
-                depScanner, finder);
+        needsBuild = TaskRunDevBundleBuild.needsBuild(options, depScanner,
+                finder);
         Assert.assertTrue(
                 "Compilation required if minor version change for tilde range",
                 needsBuild);
@@ -504,7 +502,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse(
                 "No compilation if caret range only minor version update",
@@ -513,8 +511,8 @@ public class TaskRunDevBundleBuildTest {
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "2.0.0");
 
-        needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
-                depScanner, finder);
+        needsBuild = TaskRunDevBundleBuild.needsBuild(options, depScanner,
+                finder);
         Assert.assertTrue(
                 "Compilation required if major version change for caret range",
                 needsBuild);
@@ -547,7 +545,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse("No compilation expected if package.json has "
                 + "only dependencies from older Vaadin version not "
@@ -575,8 +573,8 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        final boolean needsBuild = TaskRunDevBundleBuild
-                .needsBuildInternal(options, depScanner, finder);
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
+                depScanner, finder);
         Assert.assertFalse("Default package.json should be built and validated",
                 needsBuild);
     }
@@ -601,8 +599,8 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        final boolean needsBuild = TaskRunDevBundleBuild
-                .needsBuildInternal(options, depScanner, finder);
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
+                depScanner, finder);
         Assert.assertTrue(
                 "Missing NpmPackage with default bundle should require rebuild",
                 needsBuild);
@@ -628,8 +626,8 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        final boolean needsBuild = TaskRunDevBundleBuild
-                .needsBuildInternal(options, depScanner, finder);
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
+                depScanner, finder);
         Assert.assertFalse("Default package.json should be built and validated",
                 needsBuild);
     }
@@ -664,7 +662,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertTrue("Compilation required as stats.json missing import",
                 needsBuild);
@@ -704,7 +702,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse("All imports in stats, no compilation required",
                 needsBuild);
@@ -746,7 +744,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse(
                 "All themed imports in stats, no compilation required",
@@ -786,7 +784,7 @@ public class TaskRunDevBundleBuildTest {
                 .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse("Jar fronted file content hash should match.",
                 needsBuild);
@@ -827,7 +825,7 @@ public class TaskRunDevBundleBuildTest {
                         .findBundleStatsJson(temporaryFolder.getRoot()))
                 .thenReturn(stats.toJson());
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertTrue("Content should not have been validated.",
                 needsBuild);
@@ -870,7 +868,7 @@ public class TaskRunDevBundleBuildTest {
                         .findBundleStatsJson(temporaryFolder.getRoot()))
                 .thenReturn(stats.toJson());
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertTrue(
                 "Jar fronted file content hash should not be a match.",
@@ -904,7 +902,7 @@ public class TaskRunDevBundleBuildTest {
         setupFrontendUtilsMock(stats);
         jarResources.put("my-styles.css", "body{color:yellow}");
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse(
                 "CSS 'inline' suffix should be ignored for imports checking",
@@ -927,7 +925,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertTrue("Project frontend file change should trigger rebuild",
                 needsBuild);
@@ -952,7 +950,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse(
                 "No bundle rebuild expected when no changes in frontend file",
@@ -975,7 +973,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertTrue("Project frontend file delete should trigger rebuild",
                 needsBuild);
@@ -994,7 +992,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse("Shouldn't rebuild the bundle if no reused themes",
                 needsBuild);
@@ -1018,7 +1016,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(getBasicStats());
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse(
                 "Should not trigger a bundle rebuild when the new theme has no theme.json",
@@ -1039,7 +1037,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(getBasicStats());
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertTrue(
                 "Should trigger a bundle rebuild when a new reusable theme is added",
@@ -1063,7 +1061,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertTrue(
                 "Should trigger a bundle rebuild when a new reusable theme is added",
@@ -1094,7 +1092,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertTrue(
                 "Should trigger a bundle rebuild when the assets updated",
@@ -1127,7 +1125,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse(
                 "Should not trigger a bundle rebuild when the themes not changed",
@@ -1154,7 +1152,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertTrue(
                 "Should trigger a bundle rebuild when no themeJsonContents, but project has theme.json",
@@ -1184,7 +1182,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse(
                 "Should not trigger a bundle rebuild when parent theme is used",
@@ -1212,7 +1210,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse(
                 "Should not trigger a bundle rebuild when project has no theme.json",
@@ -1250,7 +1248,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse(
                 "Should not trigger a bundle rebuild when project theme.json has the same content as in the bundle",
@@ -1285,7 +1283,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertTrue(
                 "Should rebuild when project theme.json adds extra entries",
@@ -1318,7 +1316,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse(
                 "Shouldn't re-bundle when the dev bundle already have all"
@@ -1345,7 +1343,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertTrue(
                 "Should trigger a bundle rebuild when project has theme"
@@ -1375,7 +1373,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertTrue(
                 "Should rebuild when 'theme.json' from parent theme in "
@@ -1401,7 +1399,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertTrue("Adding 'index.ts' should require bundling",
                 needsBuild);
@@ -1427,7 +1425,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse(
                 "'index.ts' equal content should not require bundling",
@@ -1436,8 +1434,8 @@ public class TaskRunDevBundleBuildTest {
         FileUtils.write(indexTs, "window.alert('hello');",
                 StandardCharsets.UTF_8);
 
-        needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
-                depScanner, finder);
+        needsBuild = TaskRunDevBundleBuild.needsBuild(options, depScanner,
+                finder);
         Assert.assertTrue(
                 "changed content for 'index.ts' should require bundling",
                 needsBuild);
@@ -1456,7 +1454,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertTrue("'index.ts' delete should require re-bundling",
                 needsBuild);
@@ -1480,7 +1478,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse(
                 "Should not require bundling if component JS is missing in jar-resources",
@@ -1507,7 +1505,7 @@ public class TaskRunDevBundleBuildTest {
 
         // Should not throw an IllegalStateException:
         // "Failed to find the following css files in the...."
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertTrue(
                 "Should re-bundle if CSS is imported from META-INF/resources",
@@ -1527,7 +1525,7 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+        boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
                 depScanner, finder);
         Assert.assertFalse(
                 "Shouldn't re-bundle when old @vaadin/flow-frontend package is in package.json",
@@ -1558,8 +1556,8 @@ public class TaskRunDevBundleBuildTest {
 
         setupFrontendUtilsMock(stats);
 
-        final boolean needsBuild = TaskRunDevBundleBuild
-                .needsBuildInternal(options, depScanner, finder);
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(options,
+                depScanner, finder);
         Assert.assertFalse("Rebuild should be skipped", needsBuild);
     }
 

@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.server.webcomponent.WebComponentExporterTagExtractor;
@@ -31,6 +34,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentExporterUtils;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
 /**
  * Bundle handling methods.
@@ -40,6 +44,99 @@ import elemental.json.JsonObject;
  * @since 24.1
  */
 public class BundleValidationUtil {
+
+    public static boolean needsBuildProdBundle(Options options,
+            FrontendDependenciesScanner frontendDependencies,
+            ClassFinder finder) {
+        getLogger()
+                .info("Checking if a production mode bundle build is needed");
+
+        try {
+            boolean needsBuild = needsBundleBuild(options, frontendDependencies,
+                    finder);
+            if (needsBuild) {
+                getLogger().info("A production mode bundle build is needed");
+            } else {
+                getLogger()
+                        .info("A production mode bundle build is not needed");
+            }
+            return needsBuild;
+        } catch (Exception e) {
+            getLogger().error(
+                    "Error when checking if a production bundle build is needed",
+                    e);
+            return true;
+        }
+    }
+
+    public static boolean needsBundleBuild(Options options,
+            FrontendDependenciesScanner frontendDependencies,
+            ClassFinder finder) throws IOException {
+        File npmFolder = options.getNpmFolder();
+
+        if (!options.isProductionMode()
+                && !DevBundleUtils.getDevBundleFolder(npmFolder).exists()
+                && !BundleValidationUtil.hasJarBundle(DEV_BUNDLE_JAR_PATH)) {
+            getLogger().info("No dev-bundle found.");
+            return true;
+        }
+
+        if (options.isSkipDevBundle()) {
+            // if skip dev bundle defined and we have a dev bundle,
+            // cancel all checks and trust existing bundle
+            getLogger()
+                    .info("Skip dev bundle requested. Using existing bundle.");
+            return false;
+        }
+
+        String statsJsonContent = options.isProductionMode()
+                ? BundleValidationUtil.findProdBundleStatsJson()
+                : DevBundleUtils.findBundleStatsJson(npmFolder);
+
+        if (statsJsonContent == null) {
+            // without stats.json in bundle we can not say if it is up-to-date
+            getLogger().info("No bundle's stats.json found for validation.");
+            return true;
+        }
+
+        JsonObject packageJson = getPackageJson(options, frontendDependencies,
+                finder);
+        JsonObject statsJson = Json.parse(statsJsonContent);
+
+        // Get scanned @NpmPackage annotations
+        final Map<String, String> npmPackages = frontendDependencies
+                .getPackages();
+
+        if (!BundleValidationUtil.hashAndBundleModulesEqual(statsJson,
+                packageJson, npmPackages)) {
+            UsageStatistics.markAsUsed("flow/rebundle-reason-missing-package",
+                    null);
+            // Hash in the project doesn't match the bundle hash or NpmPackages
+            // are found missing in bundle.
+            return true;
+        }
+        if (!BundleValidationUtil.frontendImportsFound(statsJson, options,
+                finder, frontendDependencies)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-missing-frontend-import", null);
+            return true;
+        }
+
+        if (ThemeValidationUtil.themeConfigurationChanged(options, statsJson,
+                frontendDependencies)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-changed-theme-config", null);
+            return true;
+        }
+
+        if (BundleValidationUtil.exportedWebComponents(statsJson, finder)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-added-exported-component", null);
+            return true;
+        }
+
+        return false;
+    }
 
     /**
      * Check if jar bundle exists on given path.
@@ -609,6 +706,20 @@ public class BundleValidationUtil {
             handledFiles.append(" - ").append(file).append("\n");
         }
         getLogger().info(message, handledFiles);
+    }
+
+    public static String findProdBundleStatsJson() throws IOException {
+        URL statsJson = getProdBundleResource("config/stats.json");
+        if (statsJson == null) {
+            getLogger().warn("There is no production bundle in the classpath.");
+            return null;
+        }
+        return IOUtils.toString(statsJson, StandardCharsets.UTF_8);
+    }
+
+    public static URL getProdBundleResource(String filename) {
+        return BundleValidationUtil.class.getClassLoader()
+                .getResource(Constants.PROD_BUNDLE_JAR_PATH + filename);
     }
 
     private static Logger getLogger() {
