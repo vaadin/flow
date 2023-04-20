@@ -65,7 +65,7 @@ public class SingleClickEvent<C extends Component>
      *            fired, <code>false</code> otherwise
      *
      */
-    public SingleClickEvent(Component source, boolean isFromClient,
+    public SingleClickEvent(Component source, boolean fromClient,
             @EventData("event.screenX") int screenX,
             @EventData("event.screenY") int screenY,
             @EventData("event.clientX") int clientX,
@@ -75,7 +75,7 @@ public class SingleClickEvent<C extends Component>
             @EventData("event.shiftKey") boolean shiftKey,
             @EventData("event.altKey") boolean altKey,
             @EventData("event.metaKey") boolean metaKey) {
-        super(source, isFromClient, screenX, screenY, clientX, clientY, button,
+        super(source, fromClient, screenX, screenY, clientX, clientY, button,
                 ctrlKey, shiftKey, altKey, metaKey);
     }
 
