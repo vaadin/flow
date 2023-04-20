@@ -33,6 +33,7 @@ import com.vaadin.flow.server.Command;
  */
 public class DataChangeEvent<T> extends EventObject {
 
+    private final boolean clearSelection;
     private Command unregisterListenerCommand = null;
 
     /**
@@ -109,12 +110,38 @@ public class DataChangeEvent<T> extends EventObject {
      *            the data provider, not null
      */
     public DataChangeEvent(DataProvider<T, ?> source) {
+        this(source, true);
+    }
+
+    /**
+     * Creates a new {@code DataChangeEvent} event originating from the given
+     * data provider.
+     *
+     * @param source
+     *            the data provider, not null
+     * @param clearSelection
+     *            <code>true</code> is a signal to clear selection and
+     *            <code>false</code> is to keep it
+     */
+    public DataChangeEvent(DataProvider<T, ?> source, boolean clearSelection) {
         super(source);
+        this.clearSelection = clearSelection;
     }
 
     @Override
     public DataProvider<T, ?> getSource() {
         return (DataProvider<T, ?>) super.getSource();
+    }
+
+    /**
+     * Gets the boolean to signal if this event was initiated to clear selection
+     * or keep it.
+     * 
+     * @return <code>true</code> is a signal to clear selection and
+     *         <code>false</code> is to keep it
+     */
+    public boolean isClearSelection() {
+        return this.clearSelection;
     }
 
     /**

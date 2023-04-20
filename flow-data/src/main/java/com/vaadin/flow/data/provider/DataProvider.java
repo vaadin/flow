@@ -129,8 +129,31 @@ public interface DataProvider<T, F> extends Serializable {
     /**
      * Refreshes all data based on currently available data in the underlying
      * provider.
+     * 
+     * @deprecated Use {@link #refreshItems(boolean)} with argument
+     *             <code>true</code> instead
      */
     void refreshAll();
+
+    /**
+     * Refreshes all items based on currently available data in the underlying
+     * provider by firing {@link DataChangeEvent} with
+     * <code>clearSelection</code> boolean parameter to signal listeners to
+     * either clear selection or keep it.
+     * 
+     * @param clearSelection
+     *            <code>true</code> is a signal to clear selection and
+     *            <code>false</code> is to keep it
+     */
+    void refreshItems(boolean clearSelection);
+
+    /**
+     * Shortcut to {@link #refreshItems(boolean)} with argument
+     * <code>false</code> to refresh items and keep selection.
+     */
+    default void refreshItems() {
+        refreshItems(false);
+    }
 
     /**
      * Gets an identifier for the given item. This identifier is used by the
@@ -156,7 +179,8 @@ public interface DataProvider<T, F> extends Serializable {
      * Adds a data provider listener. The listener is called when some piece of
      * data is updated.
      * <p>
-     * The {@link #refreshAll()} method fires {@link DataChangeEvent} each time
+     * The {@link #refreshAll()}, {@link #refreshItems(boolean)} and
+     * {@link #refreshItems()} methods fires {@link DataChangeEvent} each time
      * when it's called. It allows to update UI components when user changes
      * something in the underlying data.
      *
