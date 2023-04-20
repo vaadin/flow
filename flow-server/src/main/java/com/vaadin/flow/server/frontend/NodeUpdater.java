@@ -360,7 +360,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
 
         if (added > 0) {
-            log().info("Added {} default dependencies to main package.json",
+            log().debug("Added {} default dependencies to main package.json",
                     added);
         }
         return added > 0;
