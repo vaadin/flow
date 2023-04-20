@@ -24,6 +24,7 @@ package com.vaadin.flow.component;
  * @param <C>
  *            The source component type
  */
+@DomEvent("click")
 public class SingleClickEvent<C extends Component>
         extends AbstractClickEvent<C> {
 
@@ -64,10 +65,17 @@ public class SingleClickEvent<C extends Component>
      *            fired, <code>false</code> otherwise
      *
      */
-    public SingleClickEvent(Component source, boolean fromClient, int screenX,
-            int screenY, int clientX, int clientY, int button, boolean ctrlKey,
-            boolean shiftKey, boolean altKey, boolean metaKey) {
-        super(source, fromClient, screenX, screenY, clientX, clientY, button,
+    public SingleClickEvent(Component source, boolean isFromClient,
+            @EventData("event.screenX") int screenX,
+            @EventData("event.screenY") int screenY,
+            @EventData("event.clientX") int clientX,
+            @EventData("event.clientY") int clientY,
+            @EventData("event.button") int button,
+            @EventData("event.ctrlKey") boolean ctrlKey,
+            @EventData("event.shiftKey") boolean shiftKey,
+            @EventData("event.altKey") boolean altKey,
+            @EventData("event.metaKey") boolean metaKey) {
+        super(source, isFromClient, screenX, screenY, clientX, clientY, button,
                 ctrlKey, shiftKey, altKey, metaKey);
     }
 
