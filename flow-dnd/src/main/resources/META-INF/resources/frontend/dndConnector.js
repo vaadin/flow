@@ -1,4 +1,4 @@
-import './dnd-polyfill-loader.js'
+import './dnd-polyfill-loader.js';
 
 window.Vaadin = window.Vaadin || {};
 window.Vaadin.Flow = window.Vaadin.Flow || {};
