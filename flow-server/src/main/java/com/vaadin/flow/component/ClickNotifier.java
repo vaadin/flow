@@ -96,7 +96,8 @@ public interface ClickNotifier<T extends Component> extends Serializable {
             ComponentEventListener<SingleClickEvent<T>> listener) {
         if (this instanceof Component) {
             Registration internalEventReg = this.addClickListener(event -> {
-                if (event.getClickCount() == 1) {
+                // If JavaScript click call triggered click, clickCount is -1
+                if (event.getClickCount() <= 1) {
                     ((Component) this)
                             .fireEvent(new SingleClickEvent<T>((Component) this,
                                     event.isFromClient(), event.getScreenX(),
