@@ -12,6 +12,7 @@ public class ImageClickView extends AbstractDivView {
         Div message = new Div();
         message.setText("Before click");
         message.setId("message");
+        Div message2 = new Div();
         message2.setId("message2");
 
         Image image = new Image("", "IMAGE");
