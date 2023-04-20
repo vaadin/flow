@@ -64,10 +64,10 @@ public class DoubleClickEvent<C extends Component>
      *            fired, <code>false</code> otherwise
      *
      */
-    public DoubleClickEvent(Component source, boolean isFromClient, int screenX,
+    public DoubleClickEvent(Component source, boolean fromClient, int screenX,
             int screenY, int clientX, int clientY, int button, boolean ctrlKey,
             boolean shiftKey, boolean altKey, boolean metaKey) {
-        super(source, isFromClient, screenX, screenY, clientX, clientY, button,
+        super(source, fromClient, screenX, screenY, clientX, clientY, button,
                 ctrlKey, shiftKey, altKey, metaKey);
     }
 
