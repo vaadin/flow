@@ -78,7 +78,7 @@ public class SingleClickEvent<C extends Component>
      *            the component that fired the event
      */
     public SingleClickEvent(Component source) {
-        // source, notClient, 4 coordinates, clickCount, button, 4 modifier
+        // source, notClient, 4 coordinates, button, 4 modifier
         // keys
         this(source, false, -1, -1, -1, -1, 1, false, false, false, false);
     }
