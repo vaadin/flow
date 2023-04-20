@@ -67,7 +67,7 @@ public class SingleClickEvent<C extends Component>
     public SingleClickEvent(Component source, boolean fromClient, int screenX,
             int screenY, int clientX, int clientY, int button, boolean ctrlKey,
             boolean shiftKey, boolean altKey, boolean metaKey) {
-        super(source, fomClient, screenX, screenY, clientX, clientY, button,
+        super(source, fromClient, screenX, screenY, clientX, clientY, button,
                 ctrlKey, shiftKey, altKey, metaKey);
     }
 
