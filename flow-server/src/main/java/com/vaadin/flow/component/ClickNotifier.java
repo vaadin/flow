@@ -31,6 +31,7 @@ import com.vaadin.flow.shared.Registration;
  * @since 1.0
  */
 public interface ClickNotifier<T extends Component> extends Serializable {
+
     /**
      * Adds a click listener to this component.
      *
@@ -53,7 +54,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
     }
 
     /**
-     * Adds a double click listener to this component.
+     * Adds a single click listener to this component.
      *
      * @param listener
      *            the listener to add, not <code>null</code>
@@ -62,20 +63,8 @@ public interface ClickNotifier<T extends Component> extends Serializable {
     default Registration addDoubleClickListener(
             ComponentEventListener<DoubleClickEvent<T>> listener) {
         if (this instanceof Component) {
-            Registration internalEventReg = this.addClickListener(event -> {
-                if (event.getClickCount() == 2) {
-                    ((Component) this)
-                            .fireEvent(new DoubleClickEvent<T>((Component) this,
-                                    event.isFromClient(), event.getScreenX(),
-                                    event.getScreenY(), event.getClientX(),
-                                    event.getClientY(), event.getButton(),
-                                    event.isCtrlKey(), event.isShiftKey(),
-                                    event.isAltKey(), event.isMetaKey()));
-                }
-            });
-            Registration reg = ComponentUtil.addListener((Component) this,
+            return ComponentUtil.addListener((Component) this,
                     DoubleClickEvent.class, (ComponentEventListener) listener);
-            return Registration.combine(internalEventReg, reg);
         } else {
             throw new IllegalStateException(String.format(
                     "The class '%s' doesn't extend '%s'. "
@@ -96,7 +85,6 @@ public interface ClickNotifier<T extends Component> extends Serializable {
             ComponentEventListener<SingleClickEvent<T>> listener) {
         if (this instanceof Component) {
             Registration internalEventReg = this.addClickListener(event -> {
-                // If JavaScript click call triggered click, clickCount is -1
                 if (event.getClickCount() <= 1) {
                     ((Component) this)
                             .fireEvent(new SingleClickEvent<T>((Component) this,
