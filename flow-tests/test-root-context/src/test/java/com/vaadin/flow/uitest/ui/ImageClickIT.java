@@ -4,6 +4,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.WebElement;
 
 public class ImageClickIT extends ChromeBrowserTest {
