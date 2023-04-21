@@ -129,8 +129,9 @@ public class ThemeValidationUtil {
             String parentThemeName = parentThemeInFrontend.get();
             Optional<JsonObject> parentThemeJson = ThemeUtils.getThemeJson(
                     options.getFrontendDirectory(), parentThemeName);
-            parentThemeJson.ifPresent(jsonObject -> collectThemeJsonContentsInFrontend(options, themeJsonContents,
-                    parentThemeName, jsonObject));
+            parentThemeJson.ifPresent(
+                    jsonObject -> collectThemeJsonContentsInFrontend(options,
+                            themeJsonContents, parentThemeName, jsonObject));
         }
 
         themeJsonContents.put(themeName, themeJson);
@@ -232,22 +233,26 @@ public class ThemeValidationUtil {
     private static boolean compareArrays(Collection<String> missedKeys,
             JsonArray jsonArrayFromBundle, JsonArray jsonArrayFromProject) {
 
-        boolean allEntriesFound = checkMissedKeys(missedKeys, jsonArrayFromBundle, jsonArrayFromProject);
+        boolean allEntriesFound = checkMissedKeys(missedKeys,
+                jsonArrayFromBundle, jsonArrayFromProject);
 
-        // making sure that backward is good as well so the jsonArrays should be containing the same entries
+        // making sure that backward is good as well so the jsonArrays should be
+        // containing the same entries
         // without this it could happen that:
         // jsonArrayFromBundle = [1,2,3]
         // jsonArrayFromProject = [1,2]
         // and the check would pass
-        if(jsonArrayFromBundle.length() == 0 && jsonArrayFromProject.length() == 0) {
-            allEntriesFound = allEntriesFound && checkMissedKeys(missedKeys, jsonArrayFromProject, jsonArrayFromBundle);
+        if (jsonArrayFromBundle.length() == 0
+                && jsonArrayFromProject.length() == 0) {
+            allEntriesFound = allEntriesFound && checkMissedKeys(missedKeys,
+                    jsonArrayFromProject, jsonArrayFromBundle);
         }
 
         return allEntriesFound;
     }
 
     private static boolean checkMissedKeys(Collection<String> missedKeys,
-                                            JsonArray arrayIterating, JsonArray arrayComparing) {
+            JsonArray arrayIterating, JsonArray arrayComparing) {
         boolean allEntriesFound = true;
 
         for (int arrayComparingIndex = 0; arrayComparingIndex < arrayComparing
@@ -259,9 +264,10 @@ public class ThemeValidationUtil {
                     .length(); arrayIteratingIndex++) {
                 JsonValue arrayIteratingEntry = arrayIterating
                         .get(arrayIteratingIndex);
-                if (arrayIteratingEntry.getType() == arrayComparingEntry.getType()
+                if (arrayIteratingEntry.getType() == arrayComparingEntry
+                        .getType()
                         && objectIncludesEntry(arrayIteratingEntry,
-                        arrayComparingEntry, missedKeys)) {
+                                arrayComparingEntry, missedKeys)) {
                     entryFound = true;
                     break;
                 }
