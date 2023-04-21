@@ -12,7 +12,7 @@
     <packaging>war</packaging>
     <properties>
         <jetty.skip>true</jetty.skip>
-        <tomcat.version>9.0.73</tomcat.version>
+        <tomcat.version>9.0.74</tomcat.version>
         <server.name>tomcat9</server.name>
     </properties>
 
