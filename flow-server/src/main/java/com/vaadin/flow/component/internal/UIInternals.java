@@ -320,10 +320,11 @@ public class UIInternals implements Serializable {
     public void incrementServerId() {
         serverSyncId++;
         if (getLogger().isTraceEnabled()) {
-            getLogger().trace("Increment syncId:\n{}", Arrays
-                    .stream(Thread.currentThread().getStackTrace()).skip(1)
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(System.lineSeparator())));
+            getLogger().trace("Increment syncId {} -> {}:\n{}",
+                    (serverSyncId - 1), serverSyncId,
+                    Arrays.stream(Thread.currentThread().getStackTrace())
+                            .skip(1).map(String::valueOf).collect(Collectors
+                                    .joining(System.lineSeparator())));
         }
     }
 
