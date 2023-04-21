@@ -129,7 +129,7 @@ public interface DataProvider<T, F> extends Serializable {
     /**
      * Refreshes all data based on currently available data in the underlying
      * provider.
-     * 
+     *
      * @deprecated Use {@link #refreshItems(boolean)} with argument
      *             <code>true</code> instead
      */
@@ -140,7 +140,7 @@ public interface DataProvider<T, F> extends Serializable {
      * provider by firing {@link DataChangeEvent} with
      * <code>clearSelection</code> boolean parameter to signal listeners to
      * either clear selection or keep it.
-     * 
+     *
      * @param clearSelection
      *            <code>true</code> is a signal to clear selection and
      *            <code>false</code> is to keep it

@@ -136,7 +136,7 @@ public class DataChangeEvent<T> extends EventObject {
     /**
      * Gets the boolean to signal if this event was initiated to clear selection
      * or keep it.
-     * 
+     *
      * @return <code>true</code> is a signal to clear selection and
      *         <code>false</code> is to keep it
      */
