@@ -225,7 +225,7 @@ public class PrepareFrontendMojoTest {
         final File oldFile = new File(flowFolder, "old.js");
         if (!oldFile.createNewFile()) {
             Assert.fail(
-                    "Failed to generate old file to Frontend/generated/flow");
+                    "Failed to generate old.js in Frontend/generated/flow");
         }
         ;
 
