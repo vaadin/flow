@@ -445,23 +445,6 @@ public class VaadinServletContextInitializer
                 return;
             }
 
-            if (config.getProjectFolder() != null) {
-                final String frontendFolder = config.getStringProperty(
-                        PARAM_FRONTEND_DIR, System.getProperty(
-                                PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
-                final File flowGeneratedFolder = FrontendUtils
-                        .getFrontendGeneratedFolder(new File(
-                                config.getProjectFolder(), frontendFolder));
-                if (flowGeneratedFolder.exists()) {
-                    try {
-                        FileUtils.deleteDirectory(flowGeneratedFolder);
-                    } catch (IOException e) {
-                        getLogger().error("Failed to clean generated folder "
-                                + flowGeneratedFolder.getPath(), e);
-                    }
-                }
-            }
-
             Set<String> basePackages;
             if (isScanOnlySet()) {
                 basePackages = new HashSet<>(getScanOnlyPackages());

@@ -46,6 +46,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -288,6 +289,15 @@ public class DevModeInitializer implements Serializable {
                 .withDevBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE);
         ;
         NodeTasks tasks = new NodeTasks(options);
+
+        if (options.getFrontendGeneratedFolder().exists()) {
+            try {
+                FileUtils.deleteDirectory(options.getFrontendGeneratedFolder());
+            } catch (IOException e) {
+                log().error("Failed to clean generated folder "
+                        + options.getFrontendGeneratedFolder().getPath(), e);
+            }
+        }
 
         Runnable runnable = () -> {
             runNodeTasks(context, tokenFileData, tasks);
