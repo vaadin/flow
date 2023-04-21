@@ -133,6 +133,7 @@ public interface DataProvider<T, F> extends Serializable {
      * @deprecated Use {@link #refreshItems(boolean)} with argument
      *             <code>true</code> instead
      */
+    @Deprecated
     void refreshAll();
 
     /**
@@ -181,7 +182,7 @@ public interface DataProvider<T, F> extends Serializable {
      * <p>
      * The {@link #refreshAll()}, {@link #refreshItems(boolean)} and
      * {@link #refreshItems()} methods fires {@link DataChangeEvent} each time
-     * when it's called. It allows to update UI components when user changes
+     * when they are called. It allows to update UI components when user changes
      * something in the underlying data.
      *
      * @see #refreshAll()
