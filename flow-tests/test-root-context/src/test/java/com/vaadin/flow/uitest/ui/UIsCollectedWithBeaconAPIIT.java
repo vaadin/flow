@@ -16,33 +16,32 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.parallel.BrowserUtil;
 
-public class CountUIsIT extends ChromeBrowserTest {
+public class UIsCollectedWithBeaconAPIIT extends ChromeBrowserTest {
 
     @Test
-    @Ignore("Ignored because the test is flaky: https://github.com/vaadin/flow/issues/10493")
-    public void countUisNumer_onlyOneUIShouldBeInitiialized() {
-        if (!BrowserUtil.isChrome(getDesiredCapabilities())) {
-            // limit this test for being executed in one browser only
-            return;
-        }
+    public void firstRun() {
+        open_ui_and_expect_1();
+        goToGoogle();
+        // If previous UI is not properly detached, following will fail
+        open_ui_and_expect_1();
+    }
+
+    protected void open_ui_and_expect_1() throws NumberFormatException {
         open();
-
-        $(NativeButtonElement.class).first().click();
-
         WebElement uisCount = findElement(By.id("uis"));
         int count = Integer.parseInt(uisCount.getText());
-
-        // there should not be any UI instance which is created but never has
-        // been navigated (no any enter event into a navigation target)
-        Assert.assertEquals(0, count);
+        Assert.assertEquals(1, count);
     }
+
+    private void goToGoogle() {
+        getDriver().get("https://google.com/");
+        Assert.assertTrue(getDriver().getPageSource().contains("Google"));
+    }
+
 }
