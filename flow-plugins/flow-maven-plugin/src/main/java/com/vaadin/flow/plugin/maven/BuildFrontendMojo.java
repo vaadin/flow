@@ -109,7 +109,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
-
+        addProjectClasspathToClassLoader();
         try {
             BuildFrontendUtil.runNodeUpdater(this);
         } catch (ExecutionFailedException | URISyntaxException exception) {

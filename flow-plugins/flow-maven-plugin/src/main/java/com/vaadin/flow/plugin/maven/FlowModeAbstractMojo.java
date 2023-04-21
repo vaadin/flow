@@ -15,11 +15,8 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
-
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -34,6 +31,7 @@ import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
 
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
@@ -43,6 +41,10 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
@@ -240,6 +242,21 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                     "Failed to retrieve runtime classpath elements from project '%s'",
                     project), e);
         }
+    }
+
+    void addProjectClasspathToClassLoader() {
+        final ClassRealm classRealm = project.getClassRealm();
+        for (String url : getClasspathElements(project)) {
+            try {
+                classRealm.addURL(new File(url).toURI().toURL());
+            } catch (MalformedURLException e) {
+                getLog().warn(
+                        "Unable to add project classpath element to class loader: "
+                                + url,
+                        e);
+            }
+        }
+
     }
 
     @Override
