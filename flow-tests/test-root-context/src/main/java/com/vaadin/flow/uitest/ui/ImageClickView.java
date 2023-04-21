@@ -8,6 +8,10 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.ImageClickView", layout = ViewTestLayout.class)
 public class ImageClickView extends AbstractDivView {
 
+    int count1 = 0;
+    int count2 = 0;
+    int count3 = 0;
+
     public ImageClickView() {
         Div message = new Div();
         message.setText("Before click");
@@ -19,9 +23,18 @@ public class ImageClickView extends AbstractDivView {
 
         Image image = new Image("", "IMAGE");
         image.setId("image");
-        image.addClickListener(event -> message.setText("After click"));
-        image.addSingleClickListener(event -> message2.setText("Single click"));
-        image.addDoubleClickListener(event -> message3.setText("Double click"));
+        image.addClickListener(event -> {
+            count1++;
+            message.setText("After click " + count1);
+        });
+        image.addSingleClickListener(event -> {
+            count2++;
+            message2.setText("Single click " + count2);
+        });
+        image.addDoubleClickListener(event -> {
+            count3++;
+            message3.setText("Double click " + count3);
+        });
         add(image, message, message2, message3);
     }
 }
