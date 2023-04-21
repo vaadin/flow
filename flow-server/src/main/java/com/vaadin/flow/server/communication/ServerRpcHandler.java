@@ -346,6 +346,7 @@ public class ServerRpcHandler implements Serializable {
         }
         if (rpcRequest.isUnloadBeaconRequest()) {
             ui.close();
+            getLogger().debug("UI closed with a beacon request");
         }
 
     }
