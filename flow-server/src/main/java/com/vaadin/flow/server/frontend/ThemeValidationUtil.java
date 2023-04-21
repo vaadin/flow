@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.theme.ThemeDefinition;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,7 @@ public class ThemeValidationUtil {
 
         Optional<String> maybeThemeName = Optional
                 .ofNullable(frontendDependencies.getThemeDefinition())
-                .map(def -> def.getName()).filter(name -> !name.isBlank());
+                .map(ThemeDefinition::getName).filter(name -> !name.isBlank());
         Optional<JsonObject> projectThemeJson = maybeThemeName
                 .flatMap(themeName -> ThemeUtils.getThemeJson(
                         options.getFrontendDirectory(), themeName));
@@ -128,10 +129,8 @@ public class ThemeValidationUtil {
             String parentThemeName = parentThemeInFrontend.get();
             Optional<JsonObject> parentThemeJson = ThemeUtils.getThemeJson(
                     options.getFrontendDirectory(), parentThemeName);
-            if (parentThemeJson.isPresent()) {
-                collectThemeJsonContentsInFrontend(options, themeJsonContents,
-                        parentThemeName, parentThemeJson.get());
-            }
+            parentThemeJson.ifPresent(jsonObject -> collectThemeJsonContentsInFrontend(options, themeJsonContents,
+                    parentThemeName, jsonObject));
         }
 
         themeJsonContents.put(themeName, themeJson);
@@ -153,9 +152,9 @@ public class ThemeValidationUtil {
             return JsonUtils.stringEqual(jsonFromBundle, projectJson);
         } else if (bundleJsonType == JsonType.ARRAY) {
             JsonArray jsonArrayFromBundle = (JsonArray) jsonFromBundle;
-            JsonArray projectJsonArray = (JsonArray) projectJson;
+            JsonArray jsonArrayFromProject = (JsonArray) projectJson;
             return compareArrays(missedKeys, jsonArrayFromBundle,
-                    projectJsonArray);
+                    jsonArrayFromProject);
         } else if (bundleJsonType == JsonType.OBJECT) {
             JsonObject jsonObjectFromBundle = (JsonObject) jsonFromBundle;
             JsonObject projectJsonObject = (JsonObject) projectJson;
@@ -231,27 +230,44 @@ public class ThemeValidationUtil {
     }
 
     private static boolean compareArrays(Collection<String> missedKeys,
-            JsonArray jsonArrayFromBundle, JsonArray projectJsonArray) {
+            JsonArray jsonArrayFromBundle, JsonArray jsonArrayFromProject) {
+
+        boolean allEntriesFound = checkMissedKeys(missedKeys, jsonArrayFromBundle, jsonArrayFromProject);
+
+        // making sure that backward is good as well so the jsonArrays should be containing the same entries
+        // without this it could happen that:
+        // jsonArrayFromBundle = [1,2,3]
+        // jsonArrayFromProject = [1,2]
+        // and the check would pass
+        if(jsonArrayFromBundle.length() == 0 && jsonArrayFromProject.length() == 0) {
+            allEntriesFound = allEntriesFound && checkMissedKeys(missedKeys, jsonArrayFromProject, jsonArrayFromBundle);
+        }
+
+        return allEntriesFound;
+    }
+
+    private static boolean checkMissedKeys(Collection<String> missedKeys,
+                                            JsonArray arrayIterating, JsonArray arrayComparing) {
         boolean allEntriesFound = true;
 
-        for (int projectArrayIndex = 0; projectArrayIndex < projectJsonArray
-                .length(); projectArrayIndex++) {
-            JsonValue projectArrayEntry = projectJsonArray
-                    .get(projectArrayIndex);
+        for (int arrayComparingIndex = 0; arrayComparingIndex < arrayComparing
+                .length(); arrayComparingIndex++) {
+            JsonValue arrayComparingEntry = arrayComparing
+                    .get(arrayComparingIndex);
             boolean entryFound = false;
-            for (int bundleArrayIndex = 0; bundleArrayIndex < jsonArrayFromBundle
-                    .length(); bundleArrayIndex++) {
-                JsonValue bundleArrayEntry = jsonArrayFromBundle
-                        .get(bundleArrayIndex);
-                if (bundleArrayEntry.getType() == projectArrayEntry.getType()
-                        && objectIncludesEntry(bundleArrayEntry,
-                                projectArrayEntry, missedKeys)) {
+            for (int arrayIteratingIndex = 0; arrayIteratingIndex < arrayIterating
+                    .length(); arrayIteratingIndex++) {
+                JsonValue arrayIteratingEntry = arrayIterating
+                        .get(arrayIteratingIndex);
+                if (arrayIteratingEntry.getType() == arrayComparingEntry.getType()
+                        && objectIncludesEntry(arrayIteratingEntry,
+                        arrayComparingEntry, missedKeys)) {
                     entryFound = true;
                     break;
                 }
             }
             if (!entryFound) {
-                missedKeys.add(projectArrayEntry.toJson());
+                missedKeys.add(arrayComparingEntry.toJson());
             }
             allEntriesFound = allEntriesFound && entryFound;
         }
