@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.testutil;
 
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -31,15 +30,11 @@ import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.mobile.NetworkConnection;
-import org.openqa.selenium.remote.Command;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.remote.Response;
 
 import com.vaadin.flow.testcategory.ChromeTests;
 import com.vaadin.testbench.TestBench;
-import com.vaadin.testbench.TestBenchDriverProxy;
 import com.vaadin.testbench.parallel.Browser;
 
 /**
