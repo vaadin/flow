@@ -8,12 +8,7 @@
 
 const fs = require('fs');
 
-const versionsFile = '[to-be-generated-by-flow]';
-
-if (!fs.existsSync(versionsFile)) {
-  return;
-}
-const versions = JSON.parse(fs.readFileSync(versionsFile, 'utf-8'));
+const versions = versionsinfojson;
 
 module.exports = {
   hooks: {

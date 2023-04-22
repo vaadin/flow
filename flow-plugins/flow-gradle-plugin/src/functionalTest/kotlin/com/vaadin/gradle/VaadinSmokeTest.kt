@@ -84,17 +84,6 @@ class VaadinSmokeTest : AbstractGradleTest() {
 
     @Test
     fun testBuildFrontendInProductionMode() {
-        checkBuildFrontendInProductionMode();
-    }
-
-
-    @Ignore("Webpack uses gzip compression")
-    @Test
-    fun testBuildFrontendInProductionModeWithWebpack() {
-        checkBuildFrontendInProductionMode("*.gz");
-    }
-
-    private fun checkBuildFrontendInProductionMode(compressedExtension: String = "*.br") {
         val result: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend")
         // vaadinBuildFrontend depends on vaadinPrepareFrontend
         // let's explicitly check that vaadinPrepareFrontend has been run
@@ -103,8 +92,8 @@ class VaadinSmokeTest : AbstractGradleTest() {
         val build = File(testProject.dir, "build/resources/main/META-INF/VAADIN/webapp/VAADIN/build")
         expect(true, build.toString()) { build.isDirectory }
         expect(true) { build.listFiles()!!.isNotEmpty() }
-        build.find(compressedExtension, 5..10)
-        build.find("*.js", 5..10)
+        build.find("*.br", 4..10)
+        build.find("*.js", 4..10)
         val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
         val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
         expect(true, buildInfo.toJson()) { buildInfo.getBoolean(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE) }
@@ -295,7 +284,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
 
             @Route("")
             @CssImport("./mystyle.css")
-            @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "24.0.0-alpha13")
+            @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "24.0.0")
             public class MainView extends Div {
 
                 public MainView() {

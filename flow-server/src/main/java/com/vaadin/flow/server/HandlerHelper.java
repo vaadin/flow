@@ -85,7 +85,12 @@ public class HandlerHelper implements Serializable {
         /**
          * Push requests (any transport).
          */
-        PUSH(ApplicationConstants.REQUEST_TYPE_PUSH);
+        PUSH(ApplicationConstants.REQUEST_TYPE_PUSH),
+
+        /**
+         * Page showing that the browser is unsupported.
+         */
+        BROWSER_TOO_OLD("oldbrowser");
 
         private final String identifier;
 
@@ -103,10 +108,10 @@ public class HandlerHelper implements Serializable {
         }
     }
 
+    private static final String[] publicResourcesRoot;
     private static final String[] publicResources;
     static {
         List<String> resources = new ArrayList<>();
-        resources.add("/favicon.ico");
         resources.add("/" + PwaConfiguration.DEFAULT_PATH);
         resources.add("/" + FrontendUtils.SERVICE_WORKER_SRC_JS);
         resources.add(PwaHandler.SW_RUNTIME_PRECACHE_PATH);
@@ -117,6 +122,11 @@ public class HandlerHelper implements Serializable {
         resources.addAll(getIconVariants(PwaConfiguration.DEFAULT_ICON));
         publicResources = resources.toArray(new String[resources.size()]);
 
+        // These are always in the root of the app, not inside any url mapping
+        List<String> rootResources = new ArrayList<>();
+        rootResources.add("/favicon.ico");
+        publicResourcesRoot = rootResources
+                .toArray(new String[rootResources.size()]);
     }
 
     private HandlerHelper() {
@@ -446,9 +456,23 @@ public class HandlerHelper implements Serializable {
      * URLs matching these patterns should be publicly available for
      * applications to work. Can be used for defining a bypass for rules in e.g.
      * Spring Security.
+     * <p>
+     * These paths are relative to a potential Vaadin mapping
      */
     public static String[] getPublicResources() {
         return publicResources;
+    }
+
+    /**
+     * URLs matching these patterns should be publicly available for
+     * applications to work. Can be used for defining a bypass for rules in e.g.
+     * Spring Security.
+     * <p>
+     * These URLs are always relative to the root path and independent of any
+     * Vaadin mapping
+     */
+    public static String[] getPublicResourcesRoot() {
+        return publicResourcesRoot;
     }
 
     private static List<String> getIconVariants(String iconPath) {

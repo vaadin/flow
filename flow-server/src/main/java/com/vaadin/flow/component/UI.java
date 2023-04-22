@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -116,9 +115,6 @@ public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
     private static final String NULL_LISTENER = "Listener can not be 'null'";
-
-    private static final Pattern APP_ID_REPLACE_PATTERN = Pattern
-            .compile("-\\d+$");
 
     /**
      * The id of this UI, used to find the server side instance of the UI form
@@ -262,8 +258,15 @@ public class UI extends Component
         }
         this.uiId = uiId;
 
-        appId = APP_ID_REPLACE_PATTERN.matcher(appId).replaceAll("");
-        getInternals().setAppId(appId);
+        getInternals().setFullAppId(appId);
+
+        // Create flow reference for the client outlet element
+        wrapperElement = new Element(getInternals().getContainerTag());
+
+        // Connect server with client
+        getElement().getStateProvider().appendVirtualChild(
+                getElement().getNode(), wrapperElement,
+                NodeProperties.INJECT_BY_ID, appId);
 
         // Add any dependencies from the UI class
         getInternals().addComponentDependencies(getClass());
@@ -1064,6 +1067,52 @@ public class UI extends Component
 
     /**
      * Updates this UI to show the view corresponding to the given navigation
+     * target with the specified parameters. The route parameters needs to
+     * comply with the ones defined in one of the
+     * {@link com.vaadin.flow.router.Route} or
+     * {@link com.vaadin.flow.router.RouteAlias} annotating the navigationTarget
+     * and with any {@link com.vaadin.flow.router.RoutePrefix} annotating the
+     * parent layouts of the navigationTarget.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
+     * <p>
+     * If the view change actually happens (e.g. the view itself doesn't cancel
+     * the navigation), all navigation listeners are notified and a reference of
+     * the new view is returned for additional configuration.
+     *
+     * @param navigationTarget
+     *            navigation target to navigate to
+     * @param routeParameter
+     *            route parameters to pass to view
+     * @param queryParameters
+     *            additional query parameters to pass to view
+     * @param <C>
+     *            navigation target type
+     * @return the view instance, if navigation actually happened
+     * @throws IllegalArgumentException
+     *             if a {@code null} parameter is given while navigationTarget's
+     *             parameter is not annotated with @OptionalParameter
+     *             or @WildcardParameter.
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
+     */
+    @SuppressWarnings("unchecked")
+    public <C extends Component> Optional<C> navigate(
+            Class<? extends C> navigationTarget, RouteParameters routeParameter,
+            QueryParameters queryParameters) {
+        RouteConfiguration configuration = RouteConfiguration
+                .forRegistry(getInternals().getRouter().getRegistry());
+        String url = configuration.getUrl(navigationTarget, routeParameter);
+        getInternals().getRouter().navigate(this,
+                new Location(url, queryParameters),
+                NavigationTrigger.UI_NAVIGATE);
+        return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
+    }
+
+    /**
+     * Updates this UI to show the view corresponding to the given navigation
      * target and query parameters.
      * <p>
      * Besides the navigation to the {@code location} this method also updates
@@ -1143,13 +1192,6 @@ public class UI extends Component
         Objects.requireNonNull(queryParameters,
                 "Query parameters must not be null");
         Location location = new Location(locationString, queryParameters);
-        if (Boolean.TRUE.equals(getSession().getAttribute(SERVER_ROUTING))) {
-            // server-side routing
-            renderViewForRoute(location, NavigationTrigger.UI_NAVIGATE);
-            return;
-        }
-
-        // client-side routing
 
         // There is an in-progress navigation or there are no changes,
         // prevent looping
@@ -1589,8 +1631,6 @@ public class UI extends Component
         return childComponents.build();
     }
 
-    public static final String SERVER_ROUTING = "clientRoutingMode";
-
     static final String SERVER_CONNECTED = "this.serverConnected($0)";
     public static final String CLIENT_NAVIGATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
 
@@ -1599,6 +1639,8 @@ public class UI extends Component
     private boolean navigationInProgress = false;
 
     private String forwardToClientUrl = null;
+
+    private boolean firstNavigation = true;
 
     /**
      * Gets the new forward url.
@@ -1613,10 +1655,6 @@ public class UI extends Component
      * Connect a client with the server side UI. This method is invoked each
      * time client router navigates to a server route.
      *
-     * @param clientElementTag
-     *            client side element tag
-     * @param clientElementId
-     *            client side element id
      * @param flowRoutePath
      *            flow route path that should be attached to the client element
      * @param flowRouteQuery
@@ -1625,12 +1663,13 @@ public class UI extends Component
      *            client side title of the application shell
      * @param historyState
      *            client side history state value
+     * @param trigger
+     *            navigation trigger
      */
     @ClientCallable
     @AllowInert
-    public void connectClient(String clientElementTag, String clientElementId,
-            String flowRoutePath, String flowRouteQuery, String appShellTitle,
-            JsonValue historyState) {
+    public void connectClient(String flowRoutePath, String flowRouteQuery,
+            String appShellTitle, JsonValue historyState, String trigger) {
 
         if (appShellTitle != null && !appShellTitle.isEmpty()) {
             getInternals().setAppShellTitle(appShellTitle);
@@ -1643,28 +1682,32 @@ public class UI extends Component
         }
         final Location location = new Location(trimmedRoute,
                 QueryParameters.fromString(flowRouteQuery));
-
-        if (wrapperElement == null) {
-            // Create flow reference for the client outlet element
-            wrapperElement = new Element(clientElementTag);
-
-            // Connect server with client
-            getElement().getStateProvider().appendVirtualChild(
-                    getElement().getNode(), wrapperElement,
-                    NodeProperties.INJECT_BY_ID, clientElementId);
-
+        NavigationTrigger navigationTrigger;
+        if (trigger.isEmpty()) {
+            navigationTrigger = NavigationTrigger.PAGE_LOAD;
+        } else if (trigger.equalsIgnoreCase("link")) {
+            navigationTrigger = NavigationTrigger.ROUTER_LINK;
+        } else if (trigger.equalsIgnoreCase("client")) {
+            navigationTrigger = NavigationTrigger.CLIENT_SIDE;
+        } else {
+            navigationTrigger = NavigationTrigger.HISTORY;
+        }
+        if (firstNavigation) {
+            firstNavigation = false;
             getPage().getHistory().setHistoryStateChangeHandler(
                     event -> renderViewForRoute(event.getLocation(),
-                            NavigationTrigger.CLIENT_SIDE));
+                            event.getTrigger()));
 
-            // Render the flow view that the user wants to navigate to.
-            renderViewForRoute(location, NavigationTrigger.CLIENT_SIDE);
+            if (getInternals().getActiveRouterTargetsChain().isEmpty()) {
+                // Render the route unless it was rendered eagerly
+                renderViewForRoute(location, navigationTrigger);
+            }
         } else {
             History.HistoryStateChangeHandler handler = getPage().getHistory()
                     .getHistoryStateChangeHandler();
-            handler.onHistoryStateChange(new History.HistoryStateChangeEvent(
-                    getPage().getHistory(), historyState, location,
-                    NavigationTrigger.CLIENT_SIDE));
+            handler.onHistoryStateChange(
+                    new History.HistoryStateChangeEvent(getPage().getHistory(),
+                            historyState, location, navigationTrigger));
         }
 
         // true if the target is client-view and the push mode is disable
@@ -1676,11 +1719,6 @@ public class UI extends Component
         } else {
             acknowledgeClient();
         }
-
-        // If this call happens, there is a client-side routing, thus
-        // it's needed to remove the flag that might be set in
-        // IndexHtmlRequestHandler
-        getSession().setAttribute(SERVER_ROUTING, Boolean.FALSE);
     }
 
     /**

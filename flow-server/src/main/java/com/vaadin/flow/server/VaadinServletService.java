@@ -26,7 +26,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +36,6 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
-import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -85,7 +83,8 @@ public class VaadinServletService extends VaadinService {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
 
-        if (getDeploymentConfiguration().frontendHotdeploy()) {
+        if (getDeploymentConfiguration()
+                .getMode() == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
             Optional<DevModeHandler> handlerManager = DevModeHandlerManager
                     .getDevModeHandler(this);
             if (handlerManager.isPresent()) {
@@ -150,19 +149,6 @@ public class VaadinServletService extends VaadinService {
         }
 
         return false;
-    }
-
-    @Override
-    public void init() throws ServiceException {
-        DeploymentConfiguration deploymentConfiguration = getDeploymentConfiguration();
-        Properties initParameters = deploymentConfiguration.getInitParameters();
-        Object object = initParameters
-                .get(DeploymentConfigurationFactory.FALLBACK_CHUNK);
-        if (object instanceof FallbackChunk) {
-            VaadinContext context = getContext();
-            context.setAttribute(object);
-        }
-        super.init();
     }
 
     private boolean isOtherRequest(VaadinRequest request) {

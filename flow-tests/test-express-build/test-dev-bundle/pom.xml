@@ -48,7 +48,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.0</version>
+            <version>${slf4j.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -78,7 +78,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <id>copy-dev-bundle-to-target</id>
@@ -104,6 +104,7 @@
                     <filesets>
                         <fileset>
                             <directory>${project.basedir}/src/main/dev-bundle</directory>
+                            <directory>${project.basedir}/frontend/generated</directory>
                         </fileset>
                     </filesets>
                 </configuration>
@@ -119,7 +120,7 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <delete>
                                     <!-- Delete FakeAppConf from target/classes to
                                     avoid conflicts between default dev
@@ -128,7 +129,7 @@
                                     test-express-build with maven -->
                                     <fileset file="${project.build.directory}/classes/com/vaadin/devbundle/FakeAppConf.class"/>
                                 </delete>
-                            </tasks>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>

@@ -17,11 +17,11 @@ import { Router } from '@vaadin/router';
 import { Flow } from 'Frontend/generated/jar-resources/Flow.js';
 
 const { serverSideRoutes } = new Flow({
-  imports: () => import('[to-be-generated-by-flow]')
+  imports: () => import('Frontend/generated/flow/generated-flow-imports.js')
 });
 
 const routes = [
-  // for client-side, place routes below (more info https://vaadin.com/docs/v15/flow/typescript/creating-routes.html)
+  // for client-side, place routes below (more info https://hilla.dev/docs/lit/guides/routing#initializing-the-router)
 
   // for server-side, the next magic line sends all unmatched routes:
   ...serverSideRoutes // IMPORTANT: this must be the last entry in the array

@@ -2,14 +2,18 @@
 
 <head>
   <script type="module"
-          src="web-component/exported-component-one.js"></script>
+          src="web-component/themed-component.js"></script>
   <script type="module"
-          src="web-component/exported-component-two.js"></script>
+          src="web-component/exported-component-other.js"></script>
 </head>
 
 <body>
 
-  <exported-component-one></exported-component-one>
-  <exported-component-two></exported-component-two>
+  <span class="internal global" id="overflow">Internal should not apply</span>
+
+  <themed-component id="first"></themed-component>
+  <themed-component id="second"></themed-component>
+
+  <exported-component-other></exported-component-other>
 
 </body>

@@ -24,33 +24,31 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HeartbeatEvent;
 import com.vaadin.flow.component.HeartbeatListener;
-import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateTree;
@@ -71,17 +69,12 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
-import com.vaadin.flow.server.frontend.FallbackChunk;
-import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
+import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -94,6 +87,14 @@ import org.slf4j.LoggerFactory;
  * @since 1.0
  */
 public class UIInternals implements Serializable {
+
+    private static final Pattern APP_ID_REPLACE_PATTERN = Pattern
+            .compile("-\\d+$");
+
+    private static final Set<Class<? extends Component>> warnedAboutDeps = ConcurrentHashMap
+            .newKeySet();
+
+    private static Set<String> bundledImports = BundleUtils.loadBundleImports();
 
     /**
      * A {@link Page#executeJs(String, Serializable...)} invocation that has not
@@ -205,11 +206,11 @@ public class UIInternals implements Serializable {
 
     private String appId;
 
+    private String fullAppId;
+
     private Component activeDragSourceComponent;
 
     private ExtendedClientDetails extendedClientDetails = null;
-
-    private boolean isFallbackChunkLoaded;
 
     private ArrayDeque<Component> modalComponentStack;
 
@@ -838,73 +839,51 @@ public class UIInternals implements Serializable {
                 .getDependencies(session.getService(), componentClass);
         // In npm mode, add external JavaScripts directly to the page.
         addExternalDependencies(dependencies);
-        addFallbackDependencies(dependencies);
 
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
+
+        warnForUnavailableBundledDependencies(componentClass, dependencies);
     }
 
-    private void addFallbackDependencies(DependencyInfo dependency) {
-        if (isFallbackChunkLoaded) {
+    private void warnForUnavailableBundledDependencies(
+            Class<? extends Component> componentClass,
+            DependencyInfo dependencies) {
+        if (ui.getSession() == null
+                || !ui.getSession().getConfiguration().isProductionMode()) {
             return;
         }
-        VaadinContext context = ui.getSession().getService().getContext();
-        FallbackChunk chunk = context.getAttribute(FallbackChunk.class);
-        if (chunk == null) {
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug(
-                        "Fallback chunk is not available, skipping fallback dependencies load");
+
+        List<String> jsDeps = new ArrayList<>();
+        jsDeps.addAll(dependencies.getJavaScripts().stream()
+                .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
+                .collect(Collectors.toList()));
+        jsDeps.addAll(dependencies.getJsModules().stream()
+                .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
+                .collect(Collectors.toList()));
+
+        if (!jsDeps.isEmpty()) {
+            maybeWarnAboutDependencies(componentClass, jsDeps);
+        }
+    }
+
+    private void maybeWarnAboutDependencies(
+            Class<? extends Component> componentClass, List<String> jsDeps) {
+        if (warnedAboutDeps.add(componentClass)) {
+            for (String jsDep : jsDeps) {
+                if (bundledImports != null && !bundledImports.contains(jsDep)) {
+                    getLogger().error("The component class "
+                            + componentClass.getName() + " includes '" + jsDep
+                            + "' but this file was not included when creating the production bundle. The component will not work properly. Check that you have a reference to the component and that you are not using it only through reflection. If needed add a @Uses("
+                            + componentClass.getSimpleName()
+                            + ".class) where it is used.");
+                    // Only warn for one file
+                    return;
+                }
             }
-            return;
+
         }
 
-        Set<String> modules = chunk.getModules();
-        Set<CssImportData> cssImportsData = chunk.getCssImports();
-        if (modules.isEmpty() && cssImportsData.isEmpty()) {
-            getLogger().debug(
-                    "Fallback chunk is empty, skipping fallback dependencies load");
-            return;
-        }
-
-        List<CssImport> cssImports = dependency.getCssImports();
-        List<JavaScript> javaScripts = dependency.getJavaScripts();
-        List<JsModule> jsModules = dependency.getJsModules();
-
-        if (jsModules.stream().map(JsModule::value)
-                .anyMatch(modules::contains)) {
-            loadFallbackChunk();
-            return;
-        }
-
-        if (javaScripts.stream().map(JavaScript::value)
-                .anyMatch(modules::contains)) {
-            loadFallbackChunk();
-            return;
-        }
-
-        if (cssImports.stream().map(this::buildData)
-                .anyMatch(cssImportsData::contains)) {
-            loadFallbackChunk();
-            return;
-        }
-    }
-
-    private CssImportData buildData(CssImport imprt) {
-        Function<String, String> converter = str -> str.isEmpty() ? null : str;
-        return new CssImportData(converter.apply(imprt.value()),
-                converter.apply(imprt.id()), converter.apply(imprt.include()),
-                converter.apply(imprt.themeFor()));
-    }
-
-    private void loadFallbackChunk() {
-        if (isFallbackChunkLoaded) {
-            return;
-        }
-        ui.getPage().addDynamicImport(
-                "var fallback = window.Vaadin.Flow.fallbacks['" + getAppId()
-                        + "']; if (fallback.loadFallback) { return fallback.loadFallback(); } "
-                        + "else { return Promise.resolve(0); }");
-        isFallbackChunkLoaded = true;
     }
 
     private void addExternalDependencies(DependencyInfo dependency) {
@@ -988,11 +967,13 @@ public class UIInternals implements Serializable {
      * Sets the application id tied with this UI. Different applications in the
      * same page have different unique ids.
      *
-     * @param appId
-     *            the id of the application tied with this UI
+     * @param fullAppId
+     *            the (full, not stripped) id of the application tied with this
+     *            UI
      */
-    public void setAppId(String appId) {
-        this.appId = appId;
+    public void setFullAppId(String fullAppId) {
+        this.fullAppId = fullAppId;
+        this.appId = APP_ID_REPLACE_PATTERN.matcher(fullAppId).replaceAll("");
     }
 
     /**
@@ -1003,6 +984,17 @@ public class UIInternals implements Serializable {
      */
     public String getAppId() {
         return appId;
+    }
+
+    /**
+     * Gets the full app id, which funnily enough is not the same as appId. This
+     * really should be removed but not right now. Don't use this method, it
+     * will be gone.
+     *
+     * @return the full app id
+     */
+    public String getFullAppId() {
+        return fullAppId;
     }
 
     /**
@@ -1219,5 +1211,10 @@ public class UIInternals implements Serializable {
             }
             oldContent = oldChildren.get(oldContent);
         }
+    }
+
+    public String getContainerTag() {
+        return "flow-container-" + getFullAppId().toLowerCase(Locale.ENGLISH);
+
     }
 }

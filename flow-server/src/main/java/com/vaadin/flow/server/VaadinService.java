@@ -779,8 +779,8 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Releases the lock for the given session for this service instance.
-     * Typically you want to call {@link VaadinSession#unlock()} instead of this
-     * method.
+     * Typically, you want to call {@link VaadinSession#unlock()} instead of
+     * this method.
      * <p>
      * Note: The method and its signature has been changed to get lock instance
      * as parameter in Vaadin X.X.0. If you have overriden this method, you need
@@ -926,6 +926,7 @@ public abstract class VaadinService implements Serializable {
     private void setLocale(VaadinRequest request, VaadinSession session) {
         I18NProvider provider = getInstantiator().getI18NProvider();
         List<Locale> providedLocales = provider.getProvidedLocales();
+
         if (providedLocales.size() == 1) {
             session.setLocale(providedLocales.get(0));
         } else {
@@ -992,13 +993,7 @@ public abstract class VaadinService implements Serializable {
         final WrappedSession session = getWrappedSession(request,
                 allowSessionCreation);
 
-        VaadinSession vaadinSession = loadSession(session);
-
-        if (vaadinSession == null) {
-            return null;
-        }
-
-        return vaadinSession;
+        return loadSession(session);
     }
 
     /**
@@ -1269,7 +1264,8 @@ public abstract class VaadinService implements Serializable {
             if (session.getState() == VaadinSessionState.OPEN) {
                 closeSession(session);
                 if (session.getSession() != null) {
-                    getLogger().debug("Closing inactive session {}",
+                    getLogger().debug(
+                            "Closing inactive Vaadin session bound to HTTP session {}",
                             session.getSession().getId());
                 }
             }

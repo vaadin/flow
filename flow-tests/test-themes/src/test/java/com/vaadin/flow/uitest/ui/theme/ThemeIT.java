@@ -15,14 +15,19 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.BUTTERFLY_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.CSS_SNOWFLAKE;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.DICE_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.FONTAWESOME_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_COMPONENT_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.OCTOPUSS_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
+
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Base64;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,15 +40,6 @@ import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.BUTTERFLY_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.CSS_SNOWFLAKE;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.DICE_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.FONTAWESOME_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_COMPONENT_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.OCTOPUSS_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
-
 public class ThemeIT extends ChromeBrowserTest {
 
     @Test
@@ -52,10 +48,11 @@ public class ThemeIT extends ChromeBrowserTest {
 
         checkLogsForErrors();
 
-        final TestBenchElement helloWorld = $(TestBenchElement.class).first()
-                .findElement(By.tagName("hello-world-view"));
-
-        Assert.assertEquals("hello-world-view", helloWorld.getTagName());
+        // This is a TypeScript view and as TestBench cannot wait for
+        // the Vaadin router to complete the routing operation (the view
+        // is imported dynamically) we need "waitForFirst" here
+        final TestBenchElement helloWorld = $("hello-world-view")
+                .waitForFirst();
 
         Assert.assertEquals(
                 "CSS was not applied as background color was not as expected.",
@@ -80,17 +77,13 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void nodeAssetInCss_pathIsSetCorrectly() {
+    public void nodeAssetInCss_pathIsSetCorrectly() throws IOException {
         open();
-        final String resourceUrl = getRootURL()
-                + "/path/themes/app-theme/fortawesome/icons/snowflake.svg";
         WebElement cssNodeSnowflake = findElement(By.id(CSS_SNOWFLAKE));
-        final String expectedImgUrl = "url(\"" + resourceUrl + "\")";
-        Assert.assertEquals(
-                "Background image has been referenced in styles.css and "
-                        + "expected to be applied",
-                expectedImgUrl,
-                cssNodeSnowflake.getCssValue("background-image"));
+        String imageUrl = cssNodeSnowflake.getCssValue("background-image");
+        assertImageEquals(Paths.get("target", "classes", "META-INF", "VAADIN",
+                "webapp", "VAADIN", "static", "themes", "app-theme",
+                "fortawesome", "icons", "snowflake.svg"), imageUrl);
     }
 
     @Test
@@ -108,7 +101,7 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void applicationTheme_onlyStylesCssIsApplied() {
+    public void applicationTheme_onlyStylesCssIsApplied() throws IOException {
         open();
         // No exception for bg-image should exist
         checkLogsForErrors();
@@ -117,9 +110,9 @@ public class ThemeIT extends ChromeBrowserTest {
         // Note themes/app-theme resources are served from VAADIN/build in
         // production mode
         String imageUrl = body.getCssValue("background-image");
-        Assert.assertTrue("body background-image should come from styles.css",
-                imageUrl.matches("url\\(\"" + getRootURL()
-                        + "/path/VAADIN/build/bg.+\\.jpg\"\\)"));
+        assertImageEquals(
+                Paths.get("frontend", "themes", "app-theme", "img", "bg.jpg"),
+                imageUrl);
 
         Assert.assertEquals("body font-family should come from styles.css",
                 "Ostrich", body.getCssValue("font-family"));
@@ -156,36 +149,6 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void parentTheme_isApplied() {
-        open();
-        checkLogsForErrors();
-
-        Assert.assertEquals("Color from parent theme should be applied.",
-                "rgba(0, 255, 255, 1)",
-                $(SpanElement.class).id(FONTAWESOME_ID).getCssValue("color"));
-
-        Assert.assertEquals("Child theme should override parent theme values",
-                "5px",
-                $(SpanElement.class).id(FONTAWESOME_ID).getCssValue("margin"));
-
-        Assert.assertEquals("Child theme values should be applied", "5px",
-                $(SpanElement.class).id(FONTAWESOME_ID).getCssValue("padding"));
-
-        TestBenchElement myField = $(TestBenchElement.class)
-                .id(MY_COMPONENT_ID);
-
-        TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
-        Assert.assertEquals(
-                "Polymer text field should get parent border radius", "0px",
-                input.getCssValue("border-radius"));
-
-        Assert.assertEquals("Polymer text field should use green as color",
-                "rgba(0, 128, 0, 1)", input.getCssValue("color"));
-
-    }
-
-    @Test
     public void componentThemeIsApplied() {
         open();
         TestBenchElement myField = $(TestBenchElement.class)
@@ -197,22 +160,16 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void subCssWithRelativePath_urlPathIsNotRelative()
+    public void subCssWithRelativePath_imageIsLoadedProperly()
             throws IOException {
         open();
         checkLogsForErrors();
 
-        // Vite ignores servlet path and assumes servlet with custom mapping
-        // also covers /VAADIN/*
-        // In production mode the image is inlined
-        String expectedUrl = "url(\"data:image/png;base64,"
-                + Base64.getEncoder()
-                        .encodeToString(Files.readAllBytes(Paths.get(
-                                "frontend/themes/app-theme/icons/archive.png")))
-                + "\")";
-        Assert.assertEquals("Imported css file URLs should have been handled.",
-                expectedUrl, $(SpanElement.class).id(SUB_COMPONENT_ID)
-                        .getCssValue("background-image"));
+        String backgroundUrl = $(SpanElement.class).id(SUB_COMPONENT_ID)
+                .getCssValue("background-image");
+        assertImageEquals(
+                Paths.get("frontend/themes/app-theme/icons/archive.png"),
+                backgroundUrl);
     }
 
     @Test
@@ -258,34 +215,29 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void themeRulesOverrideLumo() {
+    public void documentCssImport_externalUrlLoaded() {
         open();
         checkLogsForErrors();
-        Assert.assertEquals(
-                "Background should be blue, as overridden in the theme",
-                "rgba(0, 0, 255, 1)",
-                $("html").first().getCssValue("background-color"));
-
+        waitForFont("10px Itim");
     }
 
     @Test
-    public void documentCssImport_onlyExternalAddedToHeadAsLink() {
+    public void documentCssImport_subImportApplied() {
         open();
         checkLogsForErrors();
 
-        final WebElement documentHead = getDriver()
-                .findElement(By.xpath("/html/head"));
-        final List<WebElement> links = documentHead
-                .findElements(By.tagName("link"));
+        TestBenchElement subComponent = $("*").id("sub-component");
+        Assert.assertEquals("Width for sub.css should have been applied",
+                "10px",
+                (String) executeScript(
+                        "return getComputedStyle(arguments[0]).width",
+                        subComponent));
+    }
 
-        List<String> linkUrls = links.stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
-
-        Assert.assertTrue("Missing link for external url", linkUrls
-                .contains("https://fonts.googleapis.com/css?family=Itim"));
-        Assert.assertFalse("Found import that webpack should have resolved",
-                linkUrls.contains("sub-css/sub.css"));
+    @Test
+    public void importCssAddedOnce() {
+        open();
+        assertRuleOnce(".fa-smile-beam:"); // importCss rule
     }
 
     @Override

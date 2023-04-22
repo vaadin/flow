@@ -32,10 +32,12 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @PWA(name = "Live Reload View", shortName = "live-reload-view")
 @Route(value = "com.vaadin.flow.uitest.ui.FrontendLiveReloadView", layout = ViewTestLayout.class)
+@Theme("mytheme")
 public class FrontendLiveReloadView extends AbstractLiveReloadView
         implements AppShellConfigurator {
     public static final String FRONTEND_CODE_TEXT = "frontend-code-text";
@@ -113,7 +115,7 @@ public class FrontendLiveReloadView extends AbstractLiveReloadView
     }
 
     private static File getFrontendFile(VaadinService vaadinService) {
-        final String projectFrontendDir = FrontendUtils.getProjectFrontendDir(
+        final File projectFrontendDir = FrontendUtils.getProjectFrontendDir(
                 vaadinService.getDeploymentConfiguration());
         return new File(projectFrontendDir, FRONTEND_FILE);
     }

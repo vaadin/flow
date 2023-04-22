@@ -17,21 +17,11 @@
 
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -67,10 +57,14 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.ThemeDefinition;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
@@ -87,7 +81,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     private File tmpRoot;
-    private File generatedPath;
     private File frontendDirectory;
     private File nodeModulesPath;
     private UpdateImports updater;
@@ -102,15 +95,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     private class UpdateImports extends AbstractUpdateImports {
 
-        private final ClassFinder finder;
-        private final FrontendDependenciesScanner scanner;
         private List<String> resultingLines;
 
         UpdateImports(ClassFinder classFinder,
                 FrontendDependenciesScanner scanner, Options options) {
-            super(options);
-            this.scanner = scanner;
-            finder = classFinder;
+            super(options, scanner, classFinder);
         }
 
         @Override
@@ -119,44 +108,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         }
 
         @Override
-        protected Collection<String> getThemeLines() {
-            return Arrays.asList("theme-line-foo", "theme-line-bar");
-        }
-
-        @Override
-        protected List<String> getModules() {
-            return scanner.getModules();
-        }
-
-        @Override
-        protected Set<String> getScripts() {
-            return scanner.getScripts();
-        }
-
-        @Override
-        protected URL getResource(String name) {
-            return finder.getResource(name);
-        }
-
-        @Override
         protected Collection<String> getGeneratedModules() {
             return Arrays.asList("generated-modules-foo",
                     "generated-modules-bar");
-        }
-
-        @Override
-        protected ThemeDefinition getThemeDefinition() {
-            return scanner.getThemeDefinition();
-        }
-
-        @Override
-        protected AbstractTheme getTheme() {
-            return scanner.getTheme();
-        }
-
-        @Override
-        protected Set<CssData> getCss() {
-            return scanner.getCss();
         }
 
         @Override
@@ -178,8 +132,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
-        generatedPath = new File(tmpRoot,
-                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
         File tokenFile = new File(tmpRoot, TOKEN_FILE);
 
         ClassFinder classFinder = getClassFinder();
@@ -318,8 +270,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     @Test
     public void generateLines_resultingLinesContainsThemeLinesAndExpectedImportsAndCssLinesAndGeneratedImportsAndLoggerReports()
             throws Exception {
-        List<String> expectedLines = new ArrayList<>(
-                Arrays.asList("theme-line-foo", "theme-line-bar"));
+        List<String> expectedLines = new ArrayList<>();
         getExpectedImports().stream().filter(imp -> imp.equals("/foo.css"))
                 .forEach(imp -> expectedLines
                         .add("import '" + addWebpackPrefix(imp) + "';"));
@@ -344,8 +295,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .add("import $cssFromFile_5 from 'Frontend/foo.css?inline';");
         expectedLines
                 .add("import $cssFromFile_6 from 'Frontend/foo.css?inline';");
-        expectedLines.add("addCssBlock(`<style>${$css_0}</style>`);");
-        expectedLines.add("addCssBlock(`<style>${$css_1}</style>`);");
+        expectedLines.add(
+                "injectGlobalCss($cssFromFile_0.toString(), 'CSSImport end', document);");
+        expectedLines.add(
+                "injectGlobalCss($cssFromFile_1.toString(), 'CSSImport end', document);");
         expectedLines.add(
                 "addCssBlock(`<style include=\"bar\">${$css_2}</style>`);");
         expectedLines.add("registerStyles('', $css_3, {moduleId: 'baz'});");
@@ -356,8 +309,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add(
                 "registerStyles('foo-bar', $css_6, {include: 'bar', moduleId: 'flow_css_mod_6'});");
 
-        expectedLines.add("import 'generated-modules-foo';");
-        expectedLines.add("import 'generated-modules-bar';");
+        expectedLines
+                .add("import 'Frontend/generated/flow/generated-modules-foo';");
+        expectedLines
+                .add("import 'Frontend/generated/flow/generated-modules-bar';");
 
         updater.run();
 
@@ -424,11 +379,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertContainsImports(true, "Frontend/common-js-file.js");
 
-        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
-                "Frontend/common-js-file.js");
-        assertImportOrder(
-                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
-                "Frontend/common-js-file.js");
+        assertImportOrder("Frontend/common-js-file.js",
+                "@vaadin/vaadin-lumo-styles/color.js");
+        assertImportOrder("Frontend/common-js-file.js",
+                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js");
     }
 
     @Test
@@ -464,24 +418,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void plainCssImportWorks() throws MalformedURLException {
-        Class<?>[] testClasses = { SimpleCssImport.class };
-        ClassFinder classFinder = getClassFinder(testClasses);
-
-        options.withTokenFile(new File(tmpRoot, TOKEN_FILE));
-        updater = new UpdateImports(classFinder, getScanner(classFinder),
-                options);
-        updater.run();
-
-        Assert.assertTrue("Should import unsafeCSS",
-                updater.getCssLines().stream()
-                        .anyMatch(line -> line.matches("import.*unsafeCSS.*")));
-        Assert.assertTrue("Should use unsafeCSS",
-                updater.getCssLines().stream().anyMatch(line -> line
-                        .matches(".*unsafeCSS\\(\\$cssFromFile_.*")));
-    }
-
-    @Test
     public void assertFullSortOrder() throws MalformedURLException {
         Class[] testClasses = { MainView.class,
                 NodeTestComponents.TranslatedImports.class,
@@ -496,31 +432,21 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Imports are collected as
         // - theme and css
-        // - JsModules (external e.g. in node_modules/)
+        // - JsModules
         // - JavaScript
         // - Generated webcompoents
-        // - JsModules (internal e.g. in frontend/)
         List<String> expectedImports = new ArrayList<>();
         expectedImports.addAll(updater.getExportLines());
-        expectedImports.addAll(updater.getThemeLines());
 
         getAnntotationsAsStream(JsModule.class, testClasses)
-                .map(JsModule::value).map(this::updateToImport).sorted()
+                .map(JsModule::value).sorted().map(this::updateToImport)
                 .forEach(expectedImports::add);
         getAnntotationsAsStream(JavaScript.class, testClasses)
                 .map(JavaScript::value).map(this::updateToImport).sorted()
                 .forEach(expectedImports::add);
-
-        List<String> internals = expectedImports.stream()
-                .filter(importValue -> importValue
-                        .contains(FrontendUtils.FRONTEND_FOLDER_ALIAS))
-                .sorted().collect(Collectors.toList());
-        updater.getGeneratedModules().stream().map(this::updateToImport)
+        updater.getGeneratedModules().stream()
+                .map(updater::resolveGeneretedModule).map(this::updateToImport)
                 .forEach(expectedImports::add);
-        // Remove internals from the full list
-        expectedImports.removeAll(internals);
-        // Add internals to end of list
-        expectedImports.addAll(internals);
 
         Assert.assertEquals(expectedImports, updater.resultingLines);
     }

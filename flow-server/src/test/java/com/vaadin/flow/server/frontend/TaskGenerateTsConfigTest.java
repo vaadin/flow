@@ -22,6 +22,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 
 import org.apache.commons.io.FileUtils;
@@ -38,7 +39,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 
 public class TaskGenerateTsConfigTest {
-    static private String LATEST_VERSION = "23.3.4";
+    static private String LATEST_VERSION = "9";
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -112,8 +113,36 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
+    public void viteShouldNotDowngradeFromEs2021() throws Exception {
+        // Write a file with es2021
+        taskGenerateTsConfig.execute();
+        String content = IOUtils.toString(
+                taskGenerateTsConfig.getGeneratedFile().toURI(),
+                StandardCharsets.UTF_8);
+        content = content.replace("es2020", "es2021");
+        try (FileWriter fw = new FileWriter(
+                taskGenerateTsConfig.getGeneratedFile(),
+                StandardCharsets.UTF_8)) {
+            fw.write(content);
+        }
+        Assert.assertTrue("The config file should use es2021", IOUtils
+                .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8)
+                .contains("\"target\": \"es2021\""));
+        taskGenerateTsConfig.execute();
+        Assert.assertTrue("Vite should not have changed the config file",
+                IOUtils.toString(
+                        taskGenerateTsConfig.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8)
+                        .contains("\"target\": \"es2021\""));
+
+    }
+
+    @Test
     public void should_notGenerateTsConfig_TsConfigExist() throws Exception {
-        Files.createFile(new File(npmFolder, "tsconfig.json").toPath());
+        Path tsconfig = Files
+                .createFile(new File(npmFolder, "tsconfig.json").toPath());
+        Files.writeString(tsconfig, "text", UTF_8);
         taskGenerateTsConfig.execute();
         Assert.assertFalse(
                 "Should not generate tsconfig.json when tsconfig.json exists",
@@ -143,7 +172,7 @@ public class TaskGenerateTsConfigTest {
                 StandardCharsets.UTF_8);
 
         Assert.assertEquals("tsconfig.json content has been updated. "
-                + "Please also: 1. Increment version in tsconfig.json (\"flow_version\" property) "
+                + "Please also: 1. Increment version in tsconfig.json (\"_version\" property) "
                 + "2. create a new tsconfig-vX.Y.json template in flow-server resources and put the old content there "
                 + "3. update vaadinVersion array in TaskGenerateTsConfig with X.Y "
                 + "4. put a new content in tsconfig-reference.json in tests "
@@ -220,5 +249,16 @@ public class TaskGenerateTsConfigTest {
                 StandardCharsets.UTF_8);
         FileUtils.writeStringToFile(tsconfig, content, UTF_8);
         return tsconfig;
+    }
+
+    @Test
+    public void testIsOlder() {
+        Assert.assertTrue(TaskGenerateTsConfig.isOlder("es2019", "es2020"));
+        Assert.assertTrue(TaskGenerateTsConfig.isOlder("es2020", "es2021"));
+        Assert.assertFalse(TaskGenerateTsConfig.isOlder("es2020", "es2020"));
+        Assert.assertFalse(TaskGenerateTsConfig.isOlder("es2020", "es2019"));
+        Assert.assertFalse(TaskGenerateTsConfig.isOlder("es2021", "es2019"));
+
+        Assert.assertTrue(TaskGenerateTsConfig.isOlder("2019", "2021"));
     }
 }

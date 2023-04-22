@@ -2,11 +2,11 @@ import {Flow} from 'Frontend/generated/jar-resources/Flow';
 import {Router} from '@vaadin/router';
 
 const {serverSideRoutes} = new Flow({
-    imports: () => import('../target/frontend/generated-flow-imports'),
+    imports: () => import('Frontend/generated/flow/generated-flow-imports.js'),
 });
 
 const routes = [
-    // for client-side, place routes below (more info https://vaadin.com/docs/v15/flow/typescript/creating-routes.html)
+    // for client-side, place routes below (more info https://hilla.dev/docs/lit/guides/routing#initializing-the-router)
     {
         path: 'hello',
         component: 'hello-world-view',

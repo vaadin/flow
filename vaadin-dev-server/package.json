@@ -1,0 +1,33 @@
+{
+  "scripts": {
+    "build": "vite build",
+    "install-deps": "node node_modules/esbuild/install.js && playwright install",
+    "start": "npm run install-deps && web-dev-server --node-resolve",
+    "test": "npm run install-deps && web-test-runner --node-resolve --playwright",
+    "test-watch": "npm run install-deps && web-test-runner --node-resolve --playwright --watch",
+    "patch-app": "node patch-application.js",
+    "prettier": "prettier --write frontend"
+  },
+  "devDependencies": {
+    "@koa/cors": "^4.0.0",
+    "@open-wc/dev-server-hmr": "^0.1.2-next.0",
+    "@open-wc/testing": "^3.1.7",
+    "@types/chai": "^4.3.4",
+    "@types/sinon": "^10.0.13",
+    "@web/dev-server": "^0.1.35",
+    "@web/dev-server-esbuild": "^0.3.3",
+    "@web/test-runner": "^0.15.0",
+    "@web/test-runner-playwright": "^0.9.0",
+    "prettier": "^2.8.4",
+    "sinon": "^15.0.1",
+    "vite": "^4.1.4"
+  },
+  "dependencies": {
+    "@vaadin/button": "24.0.0",
+    "@vaadin/overlay": "24.0.0",
+    "@vaadin/select": "24.0.0",
+    "construct-style-sheets-polyfill": "^3.1.0",
+    "lit": "^2.6.1",
+    "vanilla-colorful": "^0.7.2"
+  }
+}

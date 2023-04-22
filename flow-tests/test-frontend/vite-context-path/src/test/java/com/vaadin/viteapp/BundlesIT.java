@@ -1,19 +1,12 @@
 package com.vaadin.viteapp;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class BundlesIT extends ChromeBrowserTest {
-
-    @BeforeClass
-    public static void driver() {
-        WebDriverManager.chromedriver().setup();
-    }
 
     @Before
     public void openView() {

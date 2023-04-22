@@ -12,6 +12,7 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <surefire.reportNameSuffix>production</surefire.reportNameSuffix>
     </properties>
 
     <dependencies>
@@ -19,6 +20,12 @@
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-resources</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.brotli</groupId>
+            <artifactId>dec</artifactId>
+            <version>0.1.2</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

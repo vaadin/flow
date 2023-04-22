@@ -18,8 +18,7 @@ package com.vaadin.flow.plugin.base;
 import java.io.File;
 
 /**
- * Gives access to access to plugin-spectific implementations and
- * configurations.
+ * Gives access to plugin-specific implementations and configurations.
  *
  */
 public interface PluginAdapterBuild extends PluginAdapterBase {
@@ -65,4 +64,16 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
      */
     boolean runNpmInstall();
 
+    /**
+     * Setting this to true will run {@code npm ci} instead of
+     * {@code npm install} when using npm.
+     *
+     * If using pnpm, the installation will be run with
+     * {@code --frozen-lockfile} parameter.
+     *
+     * This makes sure that the package lock file will not be overwritten.
+     *
+     * @return true if ci build should be enabled
+     */
+    boolean ciBuild();
 }

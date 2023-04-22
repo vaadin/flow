@@ -40,8 +40,6 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
 
     override fun frontendDirectory(): File = extension.frontendDirectory
 
-    override fun generatedFolder(): File = extension.generatedFolder
-
     override fun generatedTsFolder(): File = extension.generatedTsFolder
 
     override fun getClassFinder(): ClassFinder {
@@ -183,4 +181,8 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
     override fun postinstallPackages(): List<String> = extension.postinstallPackages
 
     override fun isFrontendHotdeploy(): Boolean = extension.frontendHotdeploy
+
+    override fun ciBuild(): Boolean = extension.ciBuild
+
+    override fun skipDevBundleBuild(): Boolean = extension.skipDevBundleBuild
 }

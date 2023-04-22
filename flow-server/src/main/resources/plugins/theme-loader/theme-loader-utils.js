@@ -1,6 +1,9 @@
 import { existsSync, readFileSync } from 'fs';
 import { resolve, basename } from 'path';
-import { sync } from 'glob';
+import glob from 'glob';
+
+// Desctructure sync from glob separately for ES module compatibility
+const { sync } = glob;
 
 // Collect groups [url(] ['|"]optional './|../', file part and end of url
 const urlMatcher = /(url\(\s*)(\'|\")?(\.\/|\.\.\/)(\S*)(\2\s*\))/g;
@@ -57,7 +60,10 @@ function rewriteCssUrls(source, handledResourceFolder, themeFolder, logger, opti
       existingThemeResource || assetsContains(fileUrl, themeFolder, logger)
     ) {
       // Adding ./ will skip css-loader, which should be done for asset files
-      const skipLoader = existingThemeResource ? '' : './';
+      // In a production build, the css file is in VAADIN/build and static files are in VAADIN/static, so ../static needs to be added
+      const replacement = options.devMode ? './' : '../static/';
+
+      const skipLoader = existingThemeResource ? '' : replacement;
       const frontendThemeFolder = skipLoader + 'themes/' + basename(themeFolder);
       logger.debug(
         'Updating url for file',
@@ -71,6 +77,9 @@ function rewriteCssUrls(source, handledResourceFolder, themeFolder, logger, opti
       return url + (quoteMark??'') + frontendThemeFolder + pathResolved + endString;
     } else if (options.devMode) {
       logger.log("No rewrite for '", match, "' as the file was not found.");
+    } else {
+      // In production, the css is in VAADIN/build but the theme files are in .
+      return url + (quoteMark ?? '') + '../../' + fileUrl + endString;
     }
     return match;
   });

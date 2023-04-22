@@ -60,9 +60,8 @@ import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinSession;
-
-import elemental.json.JsonValue;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -258,18 +257,6 @@ public abstract class AbstractNavigationStateRenderer
                         "this.scrollPositionHandlerAfterServerNavigation($0);",
                         s));
             }
-        } else if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
-            /*
-             * When the event trigger is a RouterLink, pushing history state
-             * should be done in client-side. See
-             * ScrollPositionHandler#afterNavigation(JsonObject).
-             */
-            JsonValue state = event.getState()
-                    .orElseThrow(() -> new IllegalStateException(
-                            "When the navigation trigger is ROUTER_LINK, event state should not be null."));
-            ui.getPage().executeJs(
-                    "this.scrollPositionHandlerAfterServerNavigation($0);",
-                    state);
         } else if (!event.isForwardTo()
                 && (!ui.getInternals().hasLastHandledLocation()
                         || !event.getLocation().getPathWithQueryParameters()
@@ -982,7 +969,7 @@ public abstract class AbstractNavigationStateRenderer
         // Show a warning that live-reload may work counter-intuitively
         DeploymentConfiguration configuration = ui.getSession()
                 .getConfiguration();
-        if (!configuration.isProductionMode()
+        if (configuration.getMode() == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
                 && configuration.isDevModeLiveReloadEnabled()) {
             ui.getPage().executeJs(
                     "Vaadin.devTools.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");

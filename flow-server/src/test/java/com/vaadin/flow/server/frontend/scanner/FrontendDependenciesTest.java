@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -48,7 +49,6 @@ import com.vaadin.flow.server.frontend.scanner.samples.JsOrderComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.MyServiceListener;
 import com.vaadin.flow.server.frontend.scanner.samples.MyUIInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponent;
-import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithLayout;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithMethodReference;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
@@ -93,7 +93,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void routedComponent_endpointsAreCollected() {
+    public void routedComponent_entryPointsAreCollected() {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(RouteComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -108,7 +108,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void appShellConfigurator_collectedAsEndpoint()
+    public void appShellConfigurator_collectedAsEntryPoint()
             throws ClassNotFoundException {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(MyAppShell.class));
@@ -118,11 +118,11 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
 
-        Assert.assertEquals("UI and AppShell should be found", 2,
-                dependencies.getEndPoints().size());
+        Assert.assertEquals("UI, AppShell should be found", 2,
+                dependencies.getEntryPoints().size());
 
         AbstractTheme theme = dependencies.getTheme();
-        Assert.assertNotNull("Theme not found in endpoint", theme);
+        Assert.assertNotNull("Theme not found in entry point", theme);
 
         ThemeDefinition themeDefinition = dependencies.getThemeDefinition();
         Assert.assertNotNull("ThemeDefinition is not filled", themeDefinition);
@@ -193,7 +193,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void hasErrorParameterComponent_endpointIsCollected() {
+    public void hasErrorParameterComponent_entryPointIsCollected() {
         Mockito.when(classFinder.getSubTypesOf(HasErrorParameter.class))
                 .thenReturn(Collections.singleton(ErrorComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -208,7 +208,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void componentInsideUiInitListener_endpointsAreCollected() {
+    public void componentInsideUiInitListener_entryPointsAreCollected() {
         Mockito.when(classFinder.getSubTypesOf(UIInitListener.class))
                 .thenReturn(Collections.singleton(MyUIInitListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -223,7 +223,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void componentInsideUiInitListenerInsideServiceInitListener_endpointsAreCollected() {
+    public void componentInsideUiInitListenerInsideServiceInitListener_entryPointsAreCollected() {
         Mockito.when(classFinder.getSubTypesOf(VaadinServiceInitListener.class))
                 .thenReturn(Collections.singleton(MyServiceListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -249,19 +249,6 @@ public class FrontendDependenciesTest {
 
         Assert.assertEquals(new ArrayList<>(dependencies.getScripts()),
                 Arrays.asList("a.js", "b.js", "c.js"));
-    }
-
-    // flow #6408
-    @Test
-    public void annotationsInRouterLayoutWontBeFlaggedAsBelongingToTheme() {
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
-                Collections.singleton(RouteComponentWithLayout.class));
-        FrontendDependencies dependencies = new FrontendDependencies(
-                classFinder, false);
-
-        List<String> modules = dependencies.getModules();
-        Assert.assertEquals("Theme's annotations should come first",
-                "theme-foo.js", modules.get(0));
     }
 
     // flow #6524
@@ -295,20 +282,23 @@ public class FrontendDependenciesTest {
     }
 
     @Test // #9861
-    public void collectEndpoints_uiIsAlwaysCollected() {
+    public void collectEntryPoints_uiIsAlwaysCollected() {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
 
-        Assert.assertEquals("UI should be visited found", 1,
-                dependencies.getEndPoints().size());
+        Optional<EntryPointData> uiEndpointData = dependencies.getEntryPoints()
+                .stream().filter(entryPoint -> entryPoint.getName()
+                        .equals(UI.class.getName()))
+                .findAny();
+        Assert.assertTrue("UI should be visited", uiEndpointData.isPresent());
     }
 
     @Test // #9861
-    public void classInMultipleEndpoints_collectEndpointsNotOverrideInitial() {
-        // Reference found through first endpoint
+    public void classInMultipleEntryPoints_collectEntryPointsNotOverrideInitial() {
+        // Reference found through first entry point
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(TestRoute.class));
-        // Reference found through second endpoint, should not clear
+        // Reference found through second entry point, should not clear
         Mockito.when(classFinder.getSubTypesOf(HasErrorParameter.class))
                 .thenReturn(Collections.singleton(TestRoute.class));
 
@@ -322,11 +312,11 @@ public class FrontendDependenciesTest {
     }
 
     @Test // #9861
-    public void visitedExporter_previousEndpointsNotOverridden()
+    public void visitedExporter_previousEntryPointsNotOverridden()
             throws InstantiationException, IllegalAccessException {
 
         FakeLumo.class.newInstance();
-        // Reference found through first endpoint
+        // Reference found through first entry point
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(ReferenceExporter.class));
         // Re-visit through exporter.
@@ -339,7 +329,7 @@ public class FrontendDependenciesTest {
 
         List<String> modules = dependencies.getModules();
 
-        Assert.assertEquals(3, dependencies.getEndPoints().size());
+        Assert.assertEquals(4, dependencies.getEntryPoints().size());
         Assert.assertEquals("Should contain UI and Referenced modules", 2,
                 modules.size());
         Assert.assertTrue(modules.contains("reference.js"));

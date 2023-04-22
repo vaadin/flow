@@ -17,11 +17,9 @@ package com.vaadin.flow.uitest.ui.theme;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.component.html.testbench.ParagraphElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 /**
  * Test CSS loading order from different sources.
@@ -31,41 +29,40 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  */
 public class CssLoadingIT extends ChromeBrowserTest {
 
-    private static final String BLUE_RGBA = "rgba(0, 0, 255, 1)";
-    private static final String GREEN_RGBA = "rgba(0, 255, 0, 1)";
-    private static final String YELLOW_RGBA = "rgba(255, 255, 0, 1)";
-    private static final String STYLESHEET_LUMO_FONT_SIZE_M = " 1.1rem";
-
     @Test
-    public void CssImport_overrides_Lumo() {
+    public void overridesCorrect() {
         open();
-        WebElement htmlElement = findElement(By.tagName("html"));
-
-        Assert.assertEquals("CssImport styles should override Lumo styles.",
-                STYLESHEET_LUMO_FONT_SIZE_M,
-                executeScript(
-                        "return getComputedStyle(arguments[0]).getPropertyValue('--lumo-font-size-m')",
-                        htmlElement));
+        for (String id : CssLoadingView.idToExpectedColor.keySet()) {
+            if (id.equals("laterAddStylesheetVsCssImport")) {
+                continue;
+            }
+            assertColor(id);
+        }
+        $("*").id("load").click();
+        for (String id : CssLoadingView.idToExpectedColor.keySet()) {
+            // Loading the stylesheet should not affect other styles but make
+            // the "laterAddStylesheetVsCssImport" one correct also
+            assertColor(id);
+        }
     }
 
-    @Test
-    public void multipleDefinitions_correctOverrides() {
-        open();
-        assertStylesOverride("p1", GREEN_RGBA, "16px", "1px");
+    private void assertColor(String id) {
+        TestBenchElement element = $("*").id(id);
+        String elementBackground = (String) executeScript(
+                "return getComputedStyle(arguments[0]).backgroundColor",
+                element);
+        String expected = CssLoadingView.idToExpectedColor.get(id);
+        String expectedBrowserColorName = getBrowserColorName(expected);
+        if (!expectedBrowserColorName.equals(elementBackground)) {
+            Assert.fail(element.getText() + ". Was " + elementBackground);
+        }
 
-        // @Stylesheet should override color and font-size but not margin
-        assertStylesOverride("p2", BLUE_RGBA, "18px", "1px");
-
-        assertStylesOverride("p3", YELLOW_RGBA, "20px", "2px");
     }
 
-    private void assertStylesOverride(String elementId, String expectedColor,
-            String expectedFontSize, String expectedMargin) {
-        Assert.assertEquals(expectedColor,
-                $(ParagraphElement.class).id(elementId).getCssValue("color"));
-        Assert.assertEquals(expectedFontSize, $(ParagraphElement.class)
-                .id(elementId).getCssValue("font-size"));
-        Assert.assertEquals(expectedMargin,
-                $(ParagraphElement.class).id(elementId).getCssValue("margin"));
+    private String getBrowserColorName(String color) {
+        return (String) executeScript(
+                "e = document.createElement('div'); e.style.backgroundColor=arguments[0];document.body.append(e);ret = getComputedStyle(e).backgroundColor;e.remove(); return ret",
+                color);
     }
+
 }

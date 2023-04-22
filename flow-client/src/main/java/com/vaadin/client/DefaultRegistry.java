@@ -33,9 +33,6 @@ import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateTree;
 
-import elemental.events.PopStateEvent;
-import elemental.json.JsonObject;
-
 /**
  * A registry implementation used by {@link ApplicationConnection}.
  *
@@ -43,35 +40,6 @@ import elemental.json.JsonObject;
  * @since 1.0
  */
 public class DefaultRegistry extends Registry {
-
-    private static class WebComponentScrollHandler
-            extends ScrollPositionHandler {
-
-        private WebComponentScrollHandler() {
-        }
-
-        @Override
-        public void onPopStateEvent(PopStateEvent event,
-                boolean triggersServerSideRoundtrip) {
-            // don't do anything
-        }
-
-        @Override
-        public void setIgnoreScrollRestorationOnNextPopStateEvent(
-                boolean ignoreScrollRestorationOnNextPopStateEvent) {
-            // don't do anything
-        }
-
-        @Override
-        public void beforeClientNavigation(String newHref) {
-            // don't do anything
-        }
-
-        @Override
-        public void afterServerNavigation(JsonObject state) {
-            // don't do anything
-        }
-    }
 
     /**
      * Constructs a registry based on the given application connection and
@@ -117,15 +85,6 @@ public class DefaultRegistry extends Registry {
         set(XhrConnection.class, new XhrConnection(this));
         set(PushConfiguration.class, new PushConfiguration(this));
         set(ReconnectConfiguration.class, new ReconnectConfiguration(this));
-        if (!applicationConfiguration.isClientRouting()) {
-            if (applicationConfiguration.isWebComponentMode()) {
-                set(ScrollPositionHandler.class,
-                        new WebComponentScrollHandler());
-            } else {
-                set(ScrollPositionHandler.class,
-                        new ScrollPositionHandler(this));
-            }
-        }
         set(Poller.class, new Poller(this));
     }
 

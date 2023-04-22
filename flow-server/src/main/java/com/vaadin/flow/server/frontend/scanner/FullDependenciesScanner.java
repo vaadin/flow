@@ -77,8 +77,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     private final SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder;
 
-    private final boolean fallback;
-
     /**
      * Creates a new scanner instance which discovers all dependencies in the
      * classpath.
@@ -89,24 +87,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            available feature flags and their status
      */
     FullDependenciesScanner(ClassFinder finder, FeatureFlags featureFlags) {
-        this(finder, AnnotationReader::getAnnotationsFor, featureFlags, false);
-    }
-
-    /**
-     * Creates a new scanner instance which discovers all dependencies in the
-     * classpath.
-     *
-     * @param finder
-     *            a class finder
-     * @param featureFlags
-     *            available feature flags and their status
-     * @param fallback
-     *            whether dependency scanner is used as fallback
-     */
-    FullDependenciesScanner(ClassFinder finder, FeatureFlags featureFlags,
-            boolean fallback) {
-        this(finder, AnnotationReader::getAnnotationsFor, featureFlags,
-                fallback);
+        this(finder, AnnotationReader::getAnnotationsFor, featureFlags);
     }
 
     /**
@@ -119,15 +100,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            a strategy to discover class annotations
      * @param featureFlags
      *            available feature flags and their status
-     * @param fallback
-     *            whether dependency scanner is used as fallback
      */
     FullDependenciesScanner(ClassFinder finder,
             SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder,
-            FeatureFlags featureFlags, boolean fallback) {
+            FeatureFlags featureFlags) {
         super(finder, featureFlags);
-
-        this.fallback = fallback;
 
         long start = System.currentTimeMillis();
         this.annotationFinder = annotationFinder;
@@ -207,12 +184,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private CssData createCssData(Annotation cssImport) {
-        CssData data = new CssData();
-        data.id = adaptCssValue(cssImport, "id");
-        data.include = adaptCssValue(cssImport, "include");
-        data.themefor = adaptCssValue(cssImport, "themeFor");
-        data.value = adaptCssValue(cssImport, VALUE);
-        return data;
+        String id = adaptCssValue(cssImport, "id");
+        String include = adaptCssValue(cssImport, "include");
+        String themeFor = adaptCssValue(cssImport, "themeFor");
+        String value = adaptCssValue(cssImport, VALUE);
+        return new CssData(value, id, include, themeFor);
     }
 
     private String adaptCssValue(Annotation cssImport, String method) {
@@ -243,17 +219,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     logs.add(value + " " + version + " " + clazz.getName());
                     if (result.containsKey(value)
                             && !result.get(value).equals(version)) {
-                        if (!fallback) {
-                            // Only log warning if full scanner is not used as
-                            // fallback scanner. For fallback the bytecode
-                            // scanner will have informed about multiple
-                            // versions
-                            String foundVersions = "[" + result.get(value)
-                                    + ", " + version + "]";
-                            getLogger().warn(
-                                    "Multiple npm versions for {} found:  {}. First version found '{}' will be considered.",
-                                    value, foundVersions, result.get(value));
-                        }
+                        String foundVersions = "[" + result.get(value) + ", "
+                                + version + "]";
+                        getLogger().warn(
+                                "Multiple npm versions for {} found:  {}. First version found '{}' will be considered.",
+                                value, foundVersions, result.get(value));
                     } else {
                         result.put(value, version);
                     }

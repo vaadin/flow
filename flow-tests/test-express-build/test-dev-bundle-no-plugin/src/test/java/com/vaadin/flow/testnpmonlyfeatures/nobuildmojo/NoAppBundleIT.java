@@ -16,11 +16,6 @@ public class NoAppBundleIT extends ChromeBrowserTest {
         open();
     }
 
-    @Override
-    protected String getTestPath() {
-        return "/run/com.vaadin.flow.testnpmonlyfeatures.nobuildmojo.MultipleNpmPackageAnnotationsView";
-    }
-
     @Test
     public void noFrontendFilesCreated() {
         File baseDir = new File(System.getProperty("user.dir", "."));
@@ -42,5 +37,14 @@ public class NoAppBundleIT extends ChromeBrowserTest {
                 new File(baseDir, "types.d.ts").exists());
         Assert.assertFalse("No tsconfig should be created",
                 new File(baseDir, "tsconfig.json").exists());
+    }
+
+    @Test
+    public void serviceWorkerIsIncludedAndServed() {
+        getDriver().get(getRootURL() + "/view/sw.js");
+        String pageSource = driver.getPageSource();
+        Assert.assertFalse("Service Worker is not served properly",
+                pageSource.contains("Error 404 Not Found")
+                        || pageSource.contains("Could not navigate to"));
     }
 }

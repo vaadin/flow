@@ -12,7 +12,7 @@
     <name>Flow Maven plugin</name>
 
     <properties>
-        <maven.version>3.9.0</maven.version>
+        <maven.version>3.9.1</maven.version>
     </properties>
 
     <dependencies>
@@ -43,32 +43,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>com.github.eirslett</groupId>
-            <artifactId>frontend-plugin-core</artifactId>
-            <version>1.12.1</version>
-        </dependency>
 
-        <!-- Non-vulnerable overrides for frontend-plugin-core dependencies -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.databind.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-compress</artifactId>
-            <version>1.22</version>
-        </dependency>
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
-            <version>3.7.1</version>
+            <version>3.8.1</version>
             <scope>provided</scope>
         </dependency>
 
@@ -78,9 +57,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.sonatype.plexus</groupId>
+            <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-build-api</artifactId>
-            <version>0.0.7</version>
+            <version>1.0.0</version>
         </dependency>
 
         <dependency>
@@ -97,7 +76,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.7.1</version>
+                    <version>3.8.1</version>
                     <configuration>
                         <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
                     </configuration>

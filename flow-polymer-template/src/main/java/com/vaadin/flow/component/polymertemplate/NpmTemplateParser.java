@@ -11,20 +11,16 @@ package com.vaadin.flow.component.polymertemplate;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,7 +194,7 @@ public class NpmTemplateParser implements TemplateParser {
             content = getResourceStream(service, resourceUrl);
         }
         if (content == null) {
-            // In express mode, template sources are stored in
+            // In dev bundle mode, template sources are stored in
             // src/main/dev-bundle/config/templates
             String pathWithoutPrefix = url.replaceFirst("^\\./", "");
             Path subFolder = Path.of(Constants.DEV_BUNDLE_LOCATION, "config",

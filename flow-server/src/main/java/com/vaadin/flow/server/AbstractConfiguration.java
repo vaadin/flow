@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
@@ -42,17 +43,35 @@ public interface AbstractConfiguration extends Serializable {
     boolean isProductionMode();
 
     /**
-     * Get if the dev server should be enabled. false by default as express mode
-     * should be used.
+     * Get if the dev server should be enabled. false by default as a
+     * development bundle is used.
      *
      * @return true if dev server should be used
+     * @deprecated Use {@link #getMode()} instead
      */
+    @Deprecated
     default boolean frontendHotdeploy() {
         if (isProductionMode()) {
             return false;
         }
         return getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY,
                 EndpointRequestUtil.isHillaAvailable());
+    }
+
+    /**
+     * Gets the mode the application is running in.
+     *
+     * @return production, development using livereload or development using
+     *         bundle
+     **/
+    default Mode getMode() {
+        if (isProductionMode()) {
+            return Mode.PRODUCTION;
+        } else if (frontendHotdeploy()) {
+            return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD;
+        } else {
+            return Mode.DEVELOPMENT_BUNDLE;
+        }
     }
 
     /**
@@ -169,30 +188,36 @@ public interface AbstractConfiguration extends Serializable {
         }
 
         String folder = getStringProperty(FrontendUtils.PROJECT_BASEDIR, null);
-        if (folder == null) {
-            /*
-             * Accept user.dir or cwd as a fallback only if the directory seems
-             * to be a Maven or Gradle project. Check to avoid cluttering server
-             * directories (see tickets #8249, #8403).
-             */
-            String baseDirCandidate = System.getProperty("user.dir", ".");
-            Path path = Paths.get(baseDirCandidate);
-            if (path.toFile().isDirectory()
-                    && (path.resolve("pom.xml").toFile().exists() || path
-                            .resolve("build.gradle").toFile().exists())) {
-                return path.toAbsolutePath().toFile();
-            } else {
-                throw new IllegalStateException(String.format(
-                        "Failed to determine project directory for dev mode. "
-                                + "Directory '%s' does not look like a Maven or "
-                                + "Gradle project. Ensure that you have run the "
-                                + "prepare-frontend Maven goal, which generates "
-                                + "'flow-build-info.json', prior to deploying your "
-                                + "application",
-                        path.toString()));
-            }
+        if (folder != null) {
+            return new File(folder);
         }
-        return new File(folder);
+
+        File projectFolder = FileIOUtils.getProjectFolderFromClasspath();
+        if (projectFolder != null) {
+            return projectFolder;
+        }
+
+        /*
+         * Accept user.dir or cwd as a fallback only if the directory seems to
+         * be a Maven or Gradle project. Check to avoid cluttering server
+         * directories (see tickets #8249, #8403).
+         */
+        String baseDirCandidate = System.getProperty("user.dir", ".");
+        Path path = Paths.get(baseDirCandidate);
+        if (path.toFile().isDirectory()
+                && (path.resolve("pom.xml").toFile().exists()
+                        || path.resolve("build.gradle").toFile().exists())) {
+            return path.toAbsolutePath().toFile();
+        } else {
+            throw new IllegalStateException(String.format(
+                    "Failed to determine project directory for dev mode. "
+                            + "Directory '%s' does not look like a Maven or "
+                            + "Gradle project. Ensure that you have run the "
+                            + "prepare-frontend Maven goal, which generates "
+                            + "'flow-build-info.json', prior to deploying your "
+                            + "application",
+                    path.toString()));
+        }
     }
 
     /**

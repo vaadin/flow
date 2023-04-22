@@ -27,7 +27,7 @@ public class ByteCodeScanningIT extends ChromeBrowserTest {
     public void buttonIsNotInitializedInProductionMode() {
         // in case of this URL parameter presence the Fallback chunk data will
         // be removed and the chunk won't be loaded
-        open("drop-fallback");
+        open();
 
         TestBenchElement component = $(TestBenchElement.class)
                 .id(ByteCodeScanningView.COMPONENT_ID);

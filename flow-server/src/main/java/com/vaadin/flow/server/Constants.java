@@ -28,7 +28,7 @@ import java.io.Serializable;
 public final class Constants implements Serializable {
 
     // Keep the version number in sync with flow-push/pom.xml
-    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "3.0.0.slf4jvaadin2";
+    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "3.0.3.slf4jvaadin1";
 
     /**
      * The prefix used for System property parameters.
@@ -38,7 +38,6 @@ public final class Constants implements Serializable {
     // Token file keys used for defining folder paths for dev server
     public static final String NPM_TOKEN = "npmFolder";
     public static final String FRONTEND_TOKEN = "frontendFolder";
-    public static final String GENERATED_TOKEN = "generatedFolder";
     public static final String CONNECT_JAVA_SOURCE_FOLDER_TOKEN = "connect.javaSourceFolder";
     public static final String JAVA_RESOURCE_FOLDER_TOKEN = "javaResourceFolder";
     public static final String CONNECT_APPLICATION_PROPERTIES_TOKEN = "connect.applicationProperties";

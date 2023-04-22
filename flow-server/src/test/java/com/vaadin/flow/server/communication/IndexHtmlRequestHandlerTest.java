@@ -15,15 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.jsoup.Jsoup;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
@@ -51,31 +43,41 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.AppShellWithPWA;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
+import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpServletRequest;
+
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class IndexHtmlRequestHandlerTest {
     private static final String SPRING_CSRF_ATTRIBUTE_IN_SESSION = "org.springframework.security.web.csrf.CsrfToken";
     private static final String SPRING_CSRF_ATTRIBUTE = "_csrf";
+    private static final String INITIAL_UIDL_SEARCH_STRING = "window.Vaadin.TypeScript= ";
     private MockServletServiceSessionSetup mocks;
     private MockServletServiceSessionSetup.TestVaadinServletService service;
     private VaadinSession session;
@@ -83,13 +85,11 @@ public class IndexHtmlRequestHandlerTest {
     private VaadinResponse response;
     private ByteArrayOutputStream responseOutput;
     private MockDeploymentConfiguration deploymentConfiguration;
-    private VaadinServletContext context;
+    private VaadinContext context;
 
     private String springTokenString;
     private String springTokenHeaderName = "x-CSRF-TOKEN";
     private String springTokenParamName = SPRING_CSRF_ATTRIBUTE_IN_SESSION;
-
-    private int expectedScriptsTagsOnBootstrapPage = 4;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -107,12 +107,13 @@ public class IndexHtmlRequestHandlerTest {
         deploymentConfiguration.setFrontendHotdeploy(false);
         deploymentConfiguration.setProductionMode(true);
         indexHtmlRequestHandler = new IndexHtmlRequestHandler();
-        context = Mockito.mock(VaadinServletContext.class);
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(context.getContext()).thenReturn(servletContext);
-        Mockito.when(context.getAttribute(Mockito.any(), Mockito.any()))
-                .thenCallRealMethod();
+        context = service.getContext();
         springTokenString = UUID.randomUUID().toString();
+
+        ApplicationConfiguration applicationConfiguration = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(context.getAttribute(ApplicationConfiguration.class))
+                .thenReturn(applicationConfiguration);
     }
 
     @Test
@@ -163,6 +164,17 @@ public class IndexHtmlRequestHandlerTest {
                 () -> indexHtmlRequestHandler.synchronizedHandleRequest(session,
                         vaadinRequest, response));
         Assert.assertEquals(expectedError, expectedException.getMessage());
+    }
+
+    @Test
+    public void serveIndexHtml_language_attribute_is_present()
+            throws IOException {
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Assert.assertTrue("Response should have a language attribute",
+                indexHtml.contains("<html lang"));
     }
 
     @Test
@@ -326,15 +338,18 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
-        Element initialUidlScript = scripts
-                .get(expectedScriptsTagsOnBootstrapPage - 2);
+        Element initialUidlScript = findScript(scripts,
+                INITIAL_UIDL_SEARCH_STRING);
         Assert.assertEquals("", initialUidlScript.attr("initial"));
-        Assert.assertTrue(
-                initialUidlScript.toString().contains("Could not navigate"));
+    }
 
-        Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
-                Boolean.TRUE);
+    private static Element findScript(Elements scripts, String needle) {
+        for (Element script : scripts) {
+            if (script.toString().contains(needle)) {
+                return script;
+            }
+        }
+        return null;
     }
 
     @Test
@@ -347,17 +362,13 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
-        Element initialUidlScript = scripts
-                .get(expectedScriptsTagsOnBootstrapPage - 2);
+        Element initialUidlScript = findScript(scripts,
+                INITIAL_UIDL_SEARCH_STRING);
 
         Assert.assertEquals(
                 "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
                 initialUidlScript.childNode(0).toString());
         Assert.assertEquals("", initialUidlScript.attr("initial"));
-
-        Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
-                Boolean.TRUE);
     }
 
     @Test
@@ -376,9 +387,9 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
-        Element initialUidlScript = scripts
-                .get(expectedScriptsTagsOnBootstrapPage - 2);
+        Element initialUidlScript = findScript(scripts,
+                INITIAL_UIDL_SEARCH_STRING);
+
         Assert.assertEquals("", initialUidlScript.attr("initial"));
         String scriptContent = initialUidlScript.toString();
         Assert.assertTrue(scriptContent.contains("Could not navigate"));
@@ -404,9 +415,8 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
-        Element initialUidlScript = scripts
-                .get(expectedScriptsTagsOnBootstrapPage - 2);
+        Element initialUidlScript = findScript(scripts,
+                INITIAL_UIDL_SEARCH_STRING);
         Assert.assertEquals(
                 "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
                 initialUidlScript.childNode(0).toString());
@@ -469,9 +479,8 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
-        Element initialUidlScript = scripts
-                .get(expectedScriptsTagsOnBootstrapPage - 2);
+        Element initialUidlScript = findScript(scripts,
+                INITIAL_UIDL_SEARCH_STRING);
         Assert.assertFalse(initialUidlScript.childNode(0).toString()
                 .contains("window.Vaadin = {Flow: {\"csrfToken\":"));
         Assert.assertEquals("", initialUidlScript.attr("initial"));
@@ -503,26 +512,6 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
                 response);
         assertSpringCsrfTokenIsAvailableAsMetaTagsInDom();
-    }
-
-    @Test
-    public void should_use_client_routing_when_there_is_a_router_call()
-            throws IOException {
-
-        deploymentConfiguration.setEagerServerLoad(true);
-
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                createVaadinRequest("/"), response);
-
-        Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
-                Boolean.TRUE);
-        Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
-                Boolean.FALSE);
-
-        UI.getCurrent().connectClient("foo", "bar", "/foo", "", "", null);
-
-        Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
-                Boolean.FALSE);
     }
 
     @Test
@@ -738,6 +727,27 @@ public class IndexHtmlRequestHandlerTest {
         assertEquals(1, bodyInlineElements.size());
     }
 
+    @Theme(value = "mytheme", variant = "dark")
+    public static class ClassWithDarkLumo implements AppShellConfigurator {
+
+    }
+
+    @Test
+    public void should_apply_theme_variant() throws IOException {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(ClassWithDarkLumo.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        assertEquals("dark", document.head().parent().attr("theme"));
+    }
+
     @Test
     public void should_store_IndexHtmltitleToUI_When_LoadingServerEagerly()
             throws IOException {
@@ -840,24 +850,20 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void servingStylesCss_expressBuildMode_addsLinkTagWithStylesCssUrl()
+    public void servingStylesCss_productionMode_noLinkTagAdded()
             throws IOException {
         File projectRootFolder = temporaryFolder.newFolder();
-        TestUtil.createThemeJs(projectRootFolder);
+        deploymentConfiguration.setProductionMode(true);
         deploymentConfiguration.setProjectFolder(projectRootFolder);
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
 
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
         Elements linkElements = document.head().getElementsByTag("link");
-        assertEquals(1, linkElements.size());
-        assertEquals("stylesheet", linkElements.get(0).attr("rel"));
-        assertEquals("themes/my-theme/styles.css",
-                linkElements.get(0).attr("href"));
+        assertEquals(0, linkElements.size());
     }
 
     private VaadinRequest createVaadinRequestWithSpringCsrfToken() {

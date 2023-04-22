@@ -1,25 +1,19 @@
 package com.vaadin.viteapp;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.vaadin.example.addon.AddonLitComponent;
+
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.viteapp.views.template.LitComponent;
 import com.vaadin.viteapp.views.template.PolymerComponent;
-import com.vaadin.viteapp.views.template.ReflectivelyReferencedComponent;
 import com.vaadin.viteapp.views.template.TemplateView;
 
 public class TemplateIT extends ChromeBrowserTest {
-    @BeforeClass
-    public static void driver() {
-        WebDriverManager.chromedriver().setup();
-    }
 
     @Before
     public void openView() {
@@ -53,11 +47,4 @@ public class TemplateIT extends ChromeBrowserTest {
         Assert.assertEquals(newLabel, addonLitSpan.getText());
     }
 
-    @Test
-    public void testElementReferencedByReflection() {
-        SpanElement span = $(ReflectivelyReferencedComponent.TAG).first()
-                .$(SpanElement.class).first();
-        Assert.assertEquals("ReflectivelyReferencedComponent contents",
-                span.getText());
-    }
 }

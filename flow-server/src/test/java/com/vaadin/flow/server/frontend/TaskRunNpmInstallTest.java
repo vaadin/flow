@@ -15,26 +15,22 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
-import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;
-import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,7 +52,15 @@ import com.vaadin.flow.testcategory.SlowTests;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import net.jcip.annotations.NotThreadSafe;
+
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
+import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;
+import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @NotThreadSafe
 @Category(SlowTests.class)
@@ -73,9 +77,8 @@ public class TaskRunNpmInstallTest {
 
     protected ClassFinder finder;
 
-    private Logger logger = Mockito
+    protected Logger logger = Mockito
             .spy(LoggerFactory.getLogger(NodeUpdater.class));
-    protected File generatedPath;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -85,11 +88,9 @@ public class TaskRunNpmInstallTest {
     @Before
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
-        generatedPath = new File(npmFolder, "generated");
-        generatedPath.mkdir();
         finder = Mockito.mock(ClassFinder.class);
         options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withGeneratedFolder(generatedPath).withBuildDirectory(TARGET);
+                .withBuildDirectory(TARGET);
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), options) {
 
@@ -126,6 +127,42 @@ public class TaskRunNpmInstallTest {
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    @Test
+    public void runNpmInstallAndCi_emptyDir_npmInstallAndCiIsExecuted()
+            throws ExecutionFailedException, IOException {
+        Assume.assumeTrue(getClass().equals(TaskRunNpmInstallTest.class));
+
+        File nodeModules = options.getNodeModulesFolder();
+        nodeModules.mkdir();
+        getNodeUpdater().modified = false;
+
+        ensurePackageJson();
+
+        task.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+
+        deleteDirectory(nodeModules);
+
+        options.withCiBuild(true);
+        task.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    @Test
+    public void runNpmCi_emptyDir_npmCiFails() throws IOException {
+        Assume.assumeTrue(getClass().equals(TaskRunNpmInstallTest.class));
+
+        File nodeModules = options.getNodeModulesFolder();
+        nodeModules.mkdir();
+        getNodeUpdater().modified = false;
+
+        ensurePackageJson();
+
+        options.withCiBuild(true);
+
+        Assert.assertThrows(ExecutionFailedException.class, task::execute);
     }
 
     @Test
@@ -215,12 +252,12 @@ public class TaskRunNpmInstallTest {
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         Mockito.verify(logger).info(captor.capture(),
-                Mockito.matches(getToolName()),
+                Mockito.matches(getToolName()), Mockito.matches(getCommand()),
                 Mockito.matches(nodeModules.getAbsolutePath().replaceAll("\\\\",
                         "\\\\\\\\")),
                 Mockito.any(), Mockito.matches(Constants.PACKAGE_JSON));
         Assert.assertEquals(
-                "Skipping `{} install` because the frontend packages are already installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
+                "Skipping `{} {}` because the frontend packages are already installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
                 captor.getValue());
     }
 
@@ -478,10 +515,23 @@ public class TaskRunNpmInstallTest {
         }
     }
 
-    private String getRunningMsg() {
-        return "Running `" + getToolName() + " install` to "
+    protected String getRunningMsg() {
+
+        return "Running `" + getToolName() + " " + getCommand() + "` to "
                 + "resolve and optionally download frontend dependencies. "
                 + "This may take a moment, please stand by...";
+    }
+
+    private String getCommand() {
+        String command = "install";
+        if (options.isCiBuild()) {
+            if ("pnpm".equals(getToolName())) {
+                command += " --frozen-lockfile";
+            } else {
+                command = "ci";
+            }
+        }
+        return command;
     }
 
     protected NodeUpdater getNodeUpdater() {
@@ -503,6 +553,11 @@ public class TaskRunNpmInstallTest {
             getNodeUpdater().writePackageFile(packageJson);
         }
         return file;
+    }
+
+    void deleteDirectory(File dir) throws IOException {
+        Files.walk(dir.toPath()).sorted(Comparator.reverseOrder())
+                .map(Path::toFile).forEach(File::delete);
     }
 
 }

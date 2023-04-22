@@ -82,6 +82,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.base\\.devserver\\.DevServerWatchDog\\$WatchDogServer",
                 "com\\.vaadin\\.base\\.devserver\\.IdeIntegration",
                 "com\\.vaadin\\.base\\.devserver\\.OpenInCurrentIde",
+                "com\\.vaadin\\.base\\.devserver\\.editor..*",
+                "com\\.vaadin\\.base\\.devserver\\.themeeditor..*",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.BrowserLauncher",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.PortProber",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.FixedIANAPortRange",
@@ -201,6 +203,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 // Frontend tasks classes which are not stored anywhere but used
                 // only once
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.scanner\\..*",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.CssBundler",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.FrontendTools",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonConverter",

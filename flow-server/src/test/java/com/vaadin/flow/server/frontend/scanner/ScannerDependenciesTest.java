@@ -53,33 +53,32 @@ public class ScannerDependenciesTest {
         assertEquals("There should be 1 css import", 1, deps.getCss().size());
 
         assertEquals("Invalid css import", "frontend://styles/interface.css",
-                deps.getCss().iterator().next().value);
+                deps.getCss().iterator().next().getValue());
     }
 
     @Test
     public void should_extractClassesFromSignatures() {
         Set<String> classes = new HashSet<>();
-        FrontendClassVisitor visitor = new FrontendClassVisitor(null, null,
-                false);
+        FrontendClassVisitor visitor = new FrontendClassVisitor(null);
 
         visitor.addSignatureToClasses(classes,
                 "(Lcom/vaadin/flow/component/tabs/Tabs;Ljava/lang/String;Ljava/lang/Character;CLjava/lang/Integer;ILjava/lang/Long;JLjava/lang/Double;DLjava/lang/Float;FLjava/lang/Byte;BLjava/lang/Boolean;Z)Lcom/vaadin/flow/component/button/Button;");
-        assertEquals(11, classes.size());
-        assertArrayEquals(new String[] { "", "java.lang.Float",
+        assertArrayEquals(new String[] { "java.lang.Float",
                 "com.vaadin.flow.component.button.Button",
                 "java.lang.Character", "java.lang.Long", "java.lang.Double",
                 "java.lang.Boolean", "com.vaadin.flow.component.tabs.Tabs",
                 "java.lang.String", "java.lang.Byte", "java.lang.Integer" },
                 classes.toArray());
+        int count = classes.size();
 
         visitor.addSignatureToClasses(classes,
                 "([Lcom/vaadin/flow/component/Component;)V");
-        assertEquals(12, classes.size());
+        assertEquals(count + 1, classes.size());
         assertTrue(classes.contains("com.vaadin.flow.component.Component"));
 
         visitor.addSignatureToClasses(classes,
                 "(Lcom/vaadin/flow/component/orderedlayout/FlexComponent$Alignment;[Lcom/vaadin/flow/component/Component;)");
-        assertEquals(13, classes.size());
+        assertEquals(count + 2, classes.size());
         assertTrue(classes.contains(
                 "com.vaadin.flow.component.orderedlayout.FlexComponent$Alignment"));
 
@@ -164,14 +163,15 @@ public class ScannerDependenciesTest {
     public void should_notVisitNonAnnotatredClasses() {
         FrontendDependencies deps = getFrontendDependencies(
                 UnAnnotatedClass.class);
-        assertEquals("Only UI should be found", 1, deps.getEndPoints().size());
+        assertEquals("Only UI should be found", 1,
+                deps.getEntryPoints().size());
     }
 
     @Test
     public void should_cacheVisitedClasses() {
         FrontendDependencies deps = getFrontendDependencies(
                 RoutedClassWithoutAnnotations.class);
-        assertEquals(2, deps.getEndPoints().size());
+        assertEquals(2, deps.getEntryPoints().size());
         assertTrue("Should cache visited classes",
                 deps.getClasses().size() > 2);
         assertTrue(deps.getClasses().contains(Route.class.getName()));
@@ -189,7 +189,7 @@ public class ScannerDependenciesTest {
         // Visit a route that extends an extra routed class
         FrontendDependencies deps = getFrontendDependencies(RoutedClass.class);
         assertEquals("Should find RoutedClass and UI", 2,
-                deps.getEndPoints().size());
+                deps.getEntryPoints().size());
         int visitedClassesAmount = deps.getClasses().size();
         for (Class<?> clz : visited) {
             assertTrue("should cache " + clz.getName(),
@@ -202,7 +202,7 @@ public class ScannerDependenciesTest {
         deps = getFrontendDependencies(RoutedClassWithoutAnnotations.class,
                 RoutedClass.class);
         assertEquals("Should contain UI, RoutedClass and its parent", 3,
-                deps.getEndPoints().size());
+                deps.getEntryPoints().size());
         assertEquals(visitedClassesAmount, deps.getClasses().size());
         for (Class<?> clz : visited) {
             assertTrue("should cache " + clz.getName(),

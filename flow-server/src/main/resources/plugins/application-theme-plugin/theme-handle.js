@@ -18,9 +18,9 @@
  * This file contains functions for look up and handle the theme resources
  * for application theme plugin.
  */
-import { existsSync, writeFileSync, readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
-import { generateThemeFile } from './theme-generator.js';
+import { writeThemeFiles } from './theme-generator.js';
 import { copyStaticAssets, copyThemeResources } from './theme-copy.js';
 
 // matches theme name in './theme-my-theme.generated.js'
@@ -167,9 +167,8 @@ function handleThemes(themeName, themesFolder, options, logger) {
     }
     copyStaticAssets(themeName, themeProperties, options.projectStaticAssetsOutputFolder, logger);
     copyThemeResources(themeFolder, options.projectStaticAssetsOutputFolder, logger);
-    const themeFile = generateThemeFile(themeFolder, themeName, themeProperties, options);
 
-    writeFileSync(resolve(options.frontendGeneratedFolder, 'theme-' + themeName + '.generated.js'), themeFile);
+    writeThemeFiles(themeFolder, themeName, themeProperties, options);
     return true;
   }
   return false;

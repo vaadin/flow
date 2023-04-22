@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
-import net.bytebuddy.jar.asm.AnnotationVisitor;
-import net.bytebuddy.jar.asm.Opcodes;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Opcodes;
 
 /**
  * An annotation visitor implementation that enables repeated annotations.

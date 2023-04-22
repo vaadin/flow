@@ -17,7 +17,7 @@ package com.vaadin.flow.server.frontend.scanner;
 
 import java.util.List;
 
-import net.bytebuddy.jar.asm.AnnotationVisitor;
+import org.objectweb.asm.AnnotationVisitor;
 
 import com.vaadin.flow.component.dependency.CssImport;
 
@@ -57,13 +57,13 @@ final class CssAnnotationVisitor extends RepeatedAnnotationVisitor {
             newData();
         }
         if (FrontendClassVisitor.VALUE.equals(name)) {
-            cssData.value = value;
+            cssData.setValue(value);
         } else if (FrontendClassVisitor.ID.equals(name)) {
-            cssData.id = value;
+            cssData.setId(value);
         } else if (FrontendClassVisitor.INCLUDE.equals(name)) {
-            cssData.include = value;
+            cssData.setInclude(value);
         } else if (FrontendClassVisitor.THEME_FOR.equals(name)) {
-            cssData.themefor = value;
+            cssData.setThemefor(value);
         }
     }
 

@@ -1,8 +1,6 @@
 package com.vaadin.viteapp.views.empty;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.HtmlComponent;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
@@ -21,6 +19,7 @@ import com.vaadin.flow.uitest.ui.dependencies.ThemableTextField;
 @JsModule("./testscopemaploader.js")
 @JsModule("./importdir.js")
 @JsModule("./bad.ts")
+@JsModule("./testfile.css.js")
 @CssImport(value = "./cssimport-textfield.css", themeFor = "vaadin-text-field")
 @CssImport(value = "./cssimport.css")
 public class MainView extends Div {

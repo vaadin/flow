@@ -16,17 +16,18 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Rule;
@@ -37,31 +38,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class FrontendUtilsTest {
@@ -274,9 +263,6 @@ public class FrontendUtilsTest {
             throws IOException, ExecutionFailedException {
         File npmFolder = tmpDir.newFolder();
 
-        File generatedPath = new File(npmFolder, "generated");
-        generatedPath.mkdir();
-
         File symbolic = new File(npmFolder, "symbolic");
         symbolic.mkdir();
         File symbolicPackageJson = new File(symbolic, "package.json");
@@ -298,7 +284,7 @@ public class FrontendUtilsTest {
 
         Logger logger = Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withGeneratedFolder(generatedPath).withBuildDirectory(TARGET);
+                .withBuildDirectory(TARGET);
         NodeUpdater nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), options) {
             @Override
@@ -322,74 +308,69 @@ public class FrontendUtilsTest {
                 linkFolderFile.exists());
     }
 
-    private ResourceProvider mockResourceProvider(VaadinService service) {
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
+    @Test
+    public void consumeProcessStreams_streamsConsumed() throws Exception {
 
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        Pair<String, String> streams = executeExternalProcess("STDOUT", "Test",
+                "text");
+        String stdOut = streams.getFirst();
+        String stdErr = streams.getSecond();
+        Assert.assertTrue("Unexpected STDOUT contents: " + stdOut,
+                stdOut.contains("STDOUT, Test, text"));
+        Assert.assertTrue("Expected STDERR to be empty, but was " + stdErr,
+                stdErr.isBlank());
 
-        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(provider);
+        streams = executeExternalProcess("STDERR", "Test", "text");
+        stdOut = streams.getFirst();
+        stdErr = streams.getSecond();
+        Assert.assertTrue("Expected STDOUT to be empty, but was " + stdOut,
+                stdOut.isBlank());
+        Assert.assertTrue("Unexpected STDERR contents: " + stdErr,
+                stdErr.contains("STDERR, Test, text"));
 
-        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
-        Mockito.when(service.getContext()).thenReturn(context);
+        streams = executeExternalProcess("BOTH", "Test", "text");
+        stdOut = streams.getFirst();
+        stdErr = streams.getSecond();
+        Assert.assertTrue("Unexpected STDERR contents: " + stdOut,
+                stdOut.contains("STDOUT: BOTH, Test, text"));
+        Assert.assertTrue("Unexpected STDERR contents: " + stdErr,
+                stdErr.contains("STDERR: BOTH, Test, text"));
 
-        Mockito.when(config.isProductionMode()).thenReturn(true);
-
-        Mockito.when(config.getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                .thenReturn("foo");
-        return provider;
+        streams = executeExternalProcess("THROW EXCEPTION");
+        stdOut = streams.getFirst();
+        stdErr = streams.getSecond();
+        Assert.assertTrue("Expected STDOUT to be empty, but was " + stdOut,
+                stdOut.isBlank());
+        Assert.assertTrue("Unexpected STDERR contents: " + stdErr,
+                stdErr.contains("RuntimeException")
+                        && stdErr.contains("Invalid stream THROW EXCEPTION"));
     }
 
-    private VaadinService setupStatsAssetMocks(String statsFile)
-            throws IOException, ServiceException {
-        String stats = IOUtils.toString(FrontendUtilsTest.class.getClassLoader()
-                .getResourceAsStream(statsFile), StandardCharsets.UTF_8);
-
-        return getServiceWithResource(stats);
+    private Pair<String, String> executeExternalProcess(String... args)
+            throws Exception {
+        List<String> cmd = new ArrayList<>(List.of(
+                Paths.get(System.getProperty("java.home"), "bin", "java")
+                        .toFile().getAbsolutePath(),
+                "-cp", System.getProperty("java.class.path"),
+                TestExecutable.class.getName()));
+        cmd.addAll(List.of(args));
+        Process process = new ProcessBuilder(cmd).start();
+        process.waitFor(1, TimeUnit.SECONDS);
+        return FrontendUtils.consumeProcessStreams(process).get(100,
+                TimeUnit.MILLISECONDS);
     }
 
-    private VaadinService getServiceWithResource(String content)
-            throws ServiceException, IOException {
-        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
-        configuration.setProductionMode(true);
-        MockVaadinServletService service = new MockVaadinServletService(
-                configuration);
-
-        VaadinContext context = service.getContext();
-
-        Lookup lookup = Mockito.mock(Lookup.class);
-        context.setAttribute(Lookup.class, lookup);
-
-        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
-
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(provider);
-
-        if (content != null) {
-            File tmpFile = tmpDir.newFile();
-            try (FileOutputStream outputStream = new FileOutputStream(
-                    tmpFile)) {
-                IOUtils.write(content, outputStream, StandardCharsets.UTF_8);
+    public static class TestExecutable {
+        public static void main(String... args) {
+            switch (args[0]) {
+            case "STDOUT" -> System.out.println(String.join(", ", args));
+            case "STDERR" -> System.err.println(String.join(", ", args));
+            case "BOTH" -> {
+                System.out.println("STDOUT: " + String.join(", ", args));
+                System.err.println("STDERR: " + String.join(", ", args));
             }
-            Mockito.when(provider.getApplicationResource(
-                    VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                    .thenReturn(tmpFile.toURI().toURL());
+            default -> throw new RuntimeException("Invalid stream " + args[0]);
+            }
         }
-
-        return service;
     }
-
-    private VaadinServletService mockServletService() {
-        VaadinServletService service = Mockito.mock(VaadinServletService.class);
-
-        VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
-        Mockito.when(service.getServlet()).thenReturn(servlet);
-        return service;
-    }
-
 }

@@ -15,20 +15,14 @@
  */
 package com.vaadin.flow.server.communication;
 
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
-import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Objects;
+import java.util.Locale;
 import java.util.Optional;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -41,11 +35,13 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -53,11 +49,15 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.ThemeUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
-import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * This class is responsible for serving the <code>index.html</code> according
@@ -89,18 +89,29 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         prependBaseHref(request, indexDocument);
 
+        Element htmlElement = indexDocument.getElementsByTag("html").get(0);
+        if (!htmlElement.hasAttr("lang")) {
+            Locale locale = LocaleUtil.getLocale(LocaleUtil::getI18NProvider);
+            htmlElement.attr("lang", locale.getLanguage());
+        }
+
         JsonObject initialJson = Json.createObject();
 
         if (service.getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
             includeInitialUidl(initialJson, session, request, response);
-
+            UI ui = UI.getCurrent();
+            var flowContainerElement = new Element(
+                    ui.getInternals().getContainerTag());
+            flowContainerElement.attr("id", ui.getInternals().getAppId());
+            Elements outlet = indexDocument.body().select("#outlet");
+            if (!outlet.isEmpty()) {
+                outlet.first().appendChild(flowContainerElement);
+            } else {
+                indexDocument.body().appendChild(flowContainerElement);
+            }
             indexHtmlResponse = new IndexHtmlResponse(request, response,
-                    indexDocument, UI.getCurrent());
-
-            // App might be using classic server-routing, which is true
-            // unless we detect a call to JavaScriptBootstrapUI.connectClient
-            session.setAttribute(SERVER_ROUTING, Boolean.TRUE);
+                    indexDocument, ui);
         } else {
             indexHtmlResponse = new IndexHtmlResponse(request, response,
                     indexDocument);
@@ -112,9 +123,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureHiddenElementStyles(indexDocument);
 
-        if (!config.frontendHotdeploy()) {
-            addStylesCssLink(config, indexDocument);
-        }
+        addStyleTagReferences(indexDocument);
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
@@ -138,8 +147,20 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // a server-side route that doesn't have a title
         storeAppShellTitleToUI(indexDocument);
 
-        // modify the page based on registered IndexHtmlRequestListener:s
+        redirectToOldBrowserPageWhenNeeded(indexDocument);
+
+        // modify the page based on registered IndexHtmlRequestListener:
         service.modifyIndexHtmlResponse(indexHtmlResponse);
+
+        if (!config.isProductionMode()) {
+            // Ensure no older tools incorrectly detect a bundle as production
+            // mode
+            addScript(indexDocument,
+                    "window.Vaadin = window.Vaadin || {}; window.Vaadin.developmentMode = true;");
+        }
+
+        addDevBundleTheme(indexDocument, context);
+        applyThemeVariant(indexDocument, context);
 
         if (config.isDevToolsEnabled()) {
             addDevTools(indexDocument, config, session, request);
@@ -158,62 +179,41 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return true;
     }
 
-    /**
-     * Adds a link tag to the page head for the themes/my-theme/styles.css,
-     * which is served in express build mode by static file server directly from
-     * frontend/themes folder.
-     * </p>
-     * Example: <link rel="stylesheet" href="themes/my-theme/styles.css">
-     *
-     * @param config
-     *            deployment configuration
-     * @param indexDocument
-     *            the page document to add the tag to
-     * @throws IOException
-     *             if theme name cannot be extracted from file
-     */
-    private void addStylesCssLink(DeploymentConfiguration config,
-            Document indexDocument) throws IOException {
-        Optional<String> themeName = FrontendUtils
-                .getThemeName(config.getProjectFolder());
-
-        if (themeName.isEmpty()) {
-            getLogger().debug("Found no custom theme in the project. "
-                    + "Skipping adding a link tag for styles.css");
-            return;
-        }
-
-        // First check if project has a packaged themes and add a link if any
-        File frontendFolder = new File(config.getProjectFolder(),
-                FrontendUtils.FRONTEND);
-        File jarResourcesFolder = FrontendUtils
-                .getJarResourcesFolder(frontendFolder);
-        File packagedThemesFolder = new File(jarResourcesFolder,
-                Constants.APPLICATION_THEME_ROOT);
-
-        Collection<String> packagedThemeNames = new ArrayList<>();
-        if (packagedThemesFolder.exists()) {
-            for (File themeFolder : Objects.requireNonNull(
-                    packagedThemesFolder.listFiles(File::isDirectory),
-                    "Expected at least one theme in the front-end generated themes folder")) {
-                String packagedThemeName = themeFolder.getName();
-                packagedThemeNames.add(packagedThemeName);
-                createStylesCssLink(indexDocument, packagedThemeName);
+    private static void addDevBundleTheme(Document document,
+            VaadinContext context) {
+        ApplicationConfiguration config = ApplicationConfiguration.get(context);
+        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE) {
+            try {
+                BootstrapHandler.getStylesheetTags(config, "styles.css")
+                        .forEach(link -> document.head().appendChild(link));
+            } catch (IOException e) {
+                throw new UncheckedIOException(
+                        "Failed to create a tag for 'styles.css' in the document",
+                        e);
             }
-        }
-
-        // Secondly, add a link for the project's custom theme, if it exists
-        if (!packagedThemeNames.contains(themeName.get())) {
-            createStylesCssLink(indexDocument, themeName.get());
         }
     }
 
-    private static void createStylesCssLink(Document indexDocument,
-            String themeName) {
-        Element element = new Element("link");
-        element.attr("rel", "stylesheet");
-        element.attr("href", "themes/" + themeName + "/styles.css");
-        indexDocument.head().appendChild(element);
+    private void applyThemeVariant(Document indexDocument,
+            VaadinContext context) throws IOException {
+        ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> indexDocument
+                .head().parent().attr("theme", theme.variant()));
+    }
+
+    private void addStyleTagReferences(Document indexDocument) {
+        Comment cssImportComment = new Comment("CSSImport end");
+        indexDocument.head().appendChild(cssImportComment);
+
+        Comment stylesheetComment = new Comment("Stylesheet end");
+        indexDocument.head().appendChild(stylesheetComment);
+    }
+
+    private void redirectToOldBrowserPageWhenNeeded(Document indexDocument) {
+        addScript(indexDocument, """
+                if (!('CSSLayerBlockRule' in window)) {
+                    window.location.search='v-r=oldbrowser';
+                }
+                """);
     }
 
     private void catchErrorsInDevMode(Document indexDocument) {
@@ -407,10 +407,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
 
         Document indexHtmlDocument = Jsoup.parse(index);
-        if (config.isProductionMode()) {
+        Mode mode = config.getMode();
+        if (mode == Mode.PRODUCTION) {
             // The index.html is fetched from the bundle so it includes the
             // entry point javascripts
-        } else if (!service.getDeploymentConfiguration().frontendHotdeploy()) {
+        } else if (mode == Mode.DEVELOPMENT_BUNDLE) {
             // When running without a frontend server, the index.html comes
             // directly from the frontend folder and the JS entrypoint(s) need
             // to be added

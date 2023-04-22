@@ -23,7 +23,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.user.client.Timer;
-
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
@@ -604,7 +603,7 @@ public class ResourceLoader {
                 }
             }
 
-            getHead().appendChild(linkElement);
+            addInHeadBeforeComment(linkElement, "Stylesheet end");
         }
     }
 
@@ -639,8 +638,31 @@ public class ResourceLoader {
 
             addCssLoadHandler(styleSheetContents, event, styleSheetElement);
 
-            getHead().appendChild(styleSheetElement);
+            addInHeadBeforeComment(styleSheetElement, "Stylesheet end");
         }
+    }
+
+    private void addInHeadBeforeComment(Element element, String comment) {
+        elemental.dom.Node commentNode = findCommentInHead(comment);
+        if (commentNode == null) {
+            Console.error("Expected to find a '" + comment
+                    + "' comment inside <head> but none was found. Appending instead.");
+        }
+        getHead().insertBefore(element, commentNode);
+    }
+
+    private elemental.dom.Node findCommentInHead(String comment) {
+        NodeList childNodes = getHead().getChildNodes();
+        int count = childNodes.getLength();
+        for (int i = 0; i < count; i++) {
+            elemental.dom.Node childNode = childNodes.item(i);
+            if (childNode.getNodeType() == elemental.dom.Node.COMMENT_NODE
+                    && comment.equals(childNode.getNodeValue())) {
+                return childNode;
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -205,6 +205,11 @@ public class BuildDevBundleMojo extends AbstractMojo
         return true;
     }
 
+    @Override
+    public boolean ciBuild() {
+        return false; // ci build not applicable for dev mode
+    }
+
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
      * MavenProject.
@@ -243,11 +248,6 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public File frontendDirectory() {
         return new File(projectBasedir, FRONTEND);
-    }
-
-    @Override
-    public File generatedFolder() {
-        return new File(projectBuildDir, FRONTEND);
     }
 
     @Override
@@ -400,6 +400,12 @@ public class BuildDevBundleMojo extends AbstractMojo
 
     @Override
     public boolean isFrontendHotdeploy() {
+        return false;
+    }
+
+    @Override
+    public boolean skipDevBundleBuild() {
+        // Explicitly building dev bundle so no skipping allowed here.
         return false;
     }
 }

@@ -16,15 +16,13 @@ public class AbstractTaskClientGeneratorTest {
         File f = File.createTempFile("writeIfChanged", "aaa");
         FileUtils.write(f, TEST_STRING, StandardCharsets.UTF_8);
 
-        Assert.assertTrue(AbstractTaskClientGenerator.writeIfChanged(f,
-                TEST_STRING + "2"));
+        Assert.assertTrue(FileIOUtils.writeIfChanged(f, TEST_STRING + "2"));
     }
 
     @Test
     public void writeIfChanged_doesNotWriteWithoutChanges() throws Exception {
         File f = File.createTempFile("writeIfChanged", "aaa");
         FileUtils.write(f, TEST_STRING, StandardCharsets.UTF_8);
-        Assert.assertFalse(
-                AbstractTaskClientGenerator.writeIfChanged(f, TEST_STRING));
+        Assert.assertFalse(FileIOUtils.writeIfChanged(f, TEST_STRING));
     }
 }

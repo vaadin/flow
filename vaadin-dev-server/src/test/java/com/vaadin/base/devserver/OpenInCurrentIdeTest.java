@@ -528,16 +528,68 @@ public class OpenInCurrentIdeTest {
 
     }
 
+    @Test
+    public void runFromCommandLineWorks() {
+        String cmd1 = "/opt/homebrew/Cellar/openjdk/19.0.2/libexec/openjdk.jdk/Contents/Home/bin/java";
+        String[] args1 = new String[] { "-XX:TieredStopAtLevel=1", "-Xdebug",
+                "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5731",
+                "-cp", "lotsofjars.jar",
+                "com.example.application.Application", };
+
+        String cmd2 = "/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home/bin/java";
+        String[] args2 = new String[] { "-classpath",
+                "/opt/homebrew/Cellar/maven/3.9.0/libexec/boot/plexus-classworlds-2.6.0.jar",
+                "-Dclassworlds.conf=/opt/homebrew/Cellar/maven/3.9.0/libexec/bin/m2.conf",
+                "-Dmaven.home=/opt/homebrew/Cellar/maven/3.9.0/libexec",
+                "-Dlibrary.jansi.path=/opt/homebrew/Cellar/maven/3.9.0/libexec/lib/jansi-native",
+                "-Dmaven.multiModuleProjectDirectory=/home/foo/test/openide",
+                "org.codehaus.plexus.classworlds.launcher.Launcher",
+                "spring-boot:run", };
+
+        String cmd3 = "/bin/zsh";
+        String[] args3 = new String[] {};
+
+        String cmd4 = null;
+        String[] args4 = null;
+
+        String cmd5 = "/System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal";
+        String[] args5 = new String[] {};
+
+        String cmd6 = null;
+        String[] args6 = null;
+
+        Info info1 = mock(cmd1, args1);
+        Info info2 = mock(cmd2, args2);
+        Info info3 = mock(cmd3, args3);
+        Info info4 = mock(cmd4, args4);
+        Info info5 = mock(cmd5, args5);
+        Info info6 = mock(cmd6, args6);
+
+        List<Info> processes = new ArrayList<>();
+        processes.add(info1);
+        processes.add(info2);
+        processes.add(info3);
+        processes.add(info4);
+        processes.add(info5);
+        processes.add(info6);
+
+        Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
+        Assert.assertTrue(ideCommand.isEmpty());
+    }
+
     private Info mock(String cmd) {
         return mock(cmd, cmd);
     }
 
     private Info mock(String cmd, String[] arguments) {
         Info info = Mockito.mock(Info.class);
-        Mockito.when(info.command()).thenReturn(Optional.of(cmd));
-        Mockito.when(info.arguments()).thenReturn(Optional.of(arguments));
-        Mockito.when(info.commandLine()).thenReturn(
-                Optional.of(cmd + " " + String.join(" ", arguments)));
+        Mockito.when(info.command()).thenReturn(Optional.ofNullable(cmd));
+        Mockito.when(info.arguments())
+                .thenReturn(Optional.ofNullable(arguments));
+        if (cmd != null && arguments != null) {
+            Mockito.when(info.commandLine()).thenReturn(
+                    Optional.of(cmd + " " + String.join(" ", arguments)));
+        }
 
         return info;
     }

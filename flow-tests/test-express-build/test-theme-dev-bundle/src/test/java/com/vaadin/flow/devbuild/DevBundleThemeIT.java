@@ -33,6 +33,9 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 @NotThreadSafe
 public class DevBundleThemeIT extends ChromeBrowserTest {
 
@@ -46,9 +49,13 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
     private File stylesCss;
     private File themeAssetsInBundle;
 
+    private File statsJson;
+
     @Before
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
+        File bundle = new File(baseDir, Constants.DEV_BUNDLE_LOCATION);
+        statsJson = new File(bundle, "config/stats.json");
         themeAssetsInBundle = new File(baseDir,
                 Constants.DEV_BUNDLE_LOCATION + "/assets/themes/my-theme");
         final File themeFolder = new File(baseDir, THEME_FOLDER);
@@ -58,8 +65,9 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
 
     @After
     public void cleanUp() {
-        doActionAndWaitUntilLiveReloadComplete(
-                () -> changeBackgroundColor(GREEN_COLOR, RED_COLOR));
+        if (isCustomBackGroundColor()) {
+            changeBackgroundColor(GREEN_COLOR, RED_COLOR);
+        }
     }
 
     @Test
@@ -70,8 +78,7 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         // Live reload upon styles.css change
-        doActionAndWaitUntilLiveReloadComplete(
-                () -> changeBackgroundColor(RED_COLOR, GREEN_COLOR));
+        changeBackgroundColor(RED_COLOR, GREEN_COLOR);
         waitUntilCustomBackgroundColor();
         checkLogsForErrors();
     }
@@ -88,6 +95,48 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
         waitUntilImportedFrontendStyles();
 
         checkLogsForErrors();
+    }
+
+    @Test
+    public void noVaadinSegmentInTheURL_notFound() {
+        getDriver().get(getRootURL() + "/themes/my-theme/styles.css");
+        Assert.assertTrue("Theme requests without /VAADIN should not be served",
+                driver.getPageSource().contains("Error 404 Not Found"));
+    }
+
+    @Test
+    public void themeAndParentThemeLoaded() {
+        open();
+
+        String appThemeRule = "--my-theme-marker: 1";
+        String parentThemeRule = "--parent-theme-marker: 1";
+
+        assertRuleOnce(appThemeRule);
+        assertRuleOnce(parentThemeRule);
+    }
+
+    @Test
+    public void themeJsonContentAddedToStats() {
+        // check that the bundle has entries in stats.json for custom and
+        // parent theme
+        try {
+            String themeJsonContent = FileUtils.readFileToString(statsJson,
+                    StandardCharsets.UTF_8);
+            JsonObject json = Json.parse(themeJsonContent);
+            Assert.assertTrue(json.hasKey("themeJsonContents"));
+            JsonObject themeJsonContents = json.getObject("themeJsonContents");
+
+            Assert.assertTrue(themeJsonContents.hasKey("my-theme"));
+            Assert.assertFalse(
+                    themeJsonContents.getString("my-theme").isBlank());
+
+            Assert.assertTrue(themeJsonContents.hasKey("parent-theme"));
+            Assert.assertFalse(
+                    themeJsonContents.getString("parent-theme").isBlank());
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "Failed to verify theme.json content in stats.json", e);
+        }
     }
 
     private void waitUntilImportedFrontendStyles() {
@@ -151,8 +200,8 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
 
     private boolean isCustomFont() {
         try {
-            final WebElement p = findElement(By.tagName("p"));
-            return "Ostrich".equals(p.getCssValue("font-family"));
+            final WebElement body = findElement(By.tagName("body"));
+            return "Ostrich".equals(body.getCssValue("font-family"));
         } catch (StaleElementReferenceException e) {
             return false;
         }
@@ -168,16 +217,6 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
             throw new RuntimeException("Failed to apply new background styles",
                     e);
         }
-    }
-
-    private void doActionAndWaitUntilLiveReloadComplete(Runnable action) {
-        // Add a new active client with 'blocker' key and let the
-        // waitForVaadin() to block until new page/document will be loaded as a
-        // result of live reload.
-        executeScript(
-                "window.Vaadin.Flow.clients[\"blocker\"] = {isActive: () => true};");
-        action.run();
-        getCommandExecutor().waitForVaadin();
     }
 
 }

@@ -46,11 +46,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
      * dir.
      */
     public var npmFolder: File = project.projectDir
-    /**
-     * The folder where flow will put generated files that will be used by
-     * webpack.
-     */
-    public var generatedFolder: File = File(project.buildDir, "frontend")
+
     /**
      * A directory with project's frontend source files.
      */
@@ -216,6 +212,22 @@ public open class VaadinFlowPluginExtension(project: Project) {
      */
     public var frontendHotdeploy: Boolean = false
 
+    /**
+     * Setting this to true will run {@code npm ci} instead of {@code npm install} when using npm.
+     *
+     * If using pnpm, the install will be run with {@code --frozen-lockfile} parameter.
+     *
+     * This makes sure that the versions in package lock file will not be overwritten and production builds are reproducible.
+     */
+    public var ciBuild: Boolean = false
+
+    /**
+     * Enable skip of dev bundle rebuild if a dev bundle exists.
+     *
+     * @return `true` to skip dev bundle rebuild
+     */
+    public var skipDevBundleBuild: Boolean = false
+
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>? = null): ClasspathFilter {
         if (block != null) {
             block.delegate = classpathFilter
@@ -256,6 +268,11 @@ public open class VaadinFlowPluginExtension(project: Project) {
             pnpmEnable = pnpmEnableProperty
         }
 
+        val ciBuildProperty: Boolean? = project.getBooleanProperty(InitParameters.CI_BUILD)
+        if (ciBuildProperty != null) {
+            ciBuild = ciBuildProperty
+        }
+
         val useGlobalPnpmProperty: Boolean? = project.getBooleanProperty(InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM)
         if (useGlobalPnpmProperty != null) {
             useGlobalPnpm = useGlobalPnpmProperty
@@ -284,7 +301,6 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "productionMode=$productionMode, " +
             "webpackOutputDirectory=$webpackOutputDirectory, " +
             "npmFolder=$npmFolder, " +
-            "generatedFolder=$generatedFolder, " +
             "frontendDirectory=$frontendDirectory, " +
             "generateBundle=$generateBundle, " +
             "runNpmInstall=$runNpmInstall, " +
@@ -292,6 +308,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "frontendResourcesDirectory=$frontendResourcesDirectory, " +
             "optimizeBundle=$optimizeBundle, " +
             "pnpmEnable=$pnpmEnable, " +
+            "ciBuild=$ciBuild, " +
             "useGlobalPnpm=$useGlobalPnpm, " +
             "requireHomeNodeExec=$requireHomeNodeExec, " +
             "eagerServerLoad=$eagerServerLoad, " +

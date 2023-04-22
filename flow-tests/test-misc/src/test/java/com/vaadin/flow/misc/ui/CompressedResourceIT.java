@@ -7,18 +7,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.vaadin.flow.testutil.AbstractParallelTestBenchTest;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class CompressedResourceIT extends AbstractParallelTestBenchTest {
-
-    @BeforeClass
-    public static void setChromeDriverPath() {
-        ChromeBrowserTest.setChromeDriverPath();
-    }
 
     @Test
     public void compressedResourcesAreServedCompressed() throws IOException {

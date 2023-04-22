@@ -15,13 +15,14 @@
  */
 package com.vaadin.base.devserver;
 
+import jakarta.servlet.annotation.HandlesTypes;
+
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
 
-import jakarta.servlet.annotation.HandlesTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,9 +32,11 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
-import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.frontend.CssBundler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 
@@ -98,34 +101,49 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     private void startWatchingThemeFolder(VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
 
-        if (config.isProductionMode() || config.frontendHotdeploy()) {
+        if (config.getMode() != Mode.DEVELOPMENT_BUNDLE) {
             // Theme files are watched by Vite or app runs in prod mode
             return;
         }
 
         try {
             File projectFolder = config.getProjectFolder();
-            Optional<String> themeName = FrontendUtils
+            Optional<String> maybeThemeName = ThemeUtils
                     .getThemeName(projectFolder);
 
-            if (themeName.isEmpty()) {
+            if (maybeThemeName.isEmpty()) {
                 getLogger().debug("Found no custom theme in the project. "
                         + "Skipping watching the theme files");
                 return;
             }
-
-            // TODO: frontend folder to be taken from config
-            // see https://github.com/vaadin/flow/pull/15552
-            File watchDirectory = new File(projectFolder,
-                    Path.of(FrontendUtils.FRONTEND,
-                            Constants.APPLICATION_THEME_ROOT, themeName.get())
-                            .toString());
+            String themeName = maybeThemeName.get();
+            File themeFolder = ThemeUtils.getThemeFolder(
+                    FrontendUtils.getProjectFrontendDir(config), themeName);
+            File stylesCss = new File(themeFolder, "styles.css");
 
             Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                     .getLiveReloadFromContext(context);
             if (liveReload.isPresent()) {
-                themeFilesWatcher = new FileWatcher(
-                        file -> liveReload.get().reload(), watchDirectory);
+                themeFilesWatcher = new FileWatcher(file -> {
+                    if (file.getName().endsWith(".css")) {
+                        try {
+                            // All changes are merged into one style block
+                            liveReload.get()
+                                    .update(ThemeUtils.getThemeFilePath(
+                                            themeName, "styles.css"),
+                                            CssBundler.inlineImports(
+                                                    stylesCss.getParentFile(),
+                                                    stylesCss));
+                        } catch (IOException e) {
+                            getLogger().error(
+                                    "Unable to perform hot update of " + file,
+                                    e);
+                            liveReload.get().reload();
+                        }
+                    } else {
+                        liveReload.get().reload();
+                    }
+                }, themeFolder);
                 themeFilesWatcher.start();
             } else {
                 getLogger().error(

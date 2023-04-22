@@ -16,13 +16,11 @@
 package com.vaadin.flow.uitest.ui;
 
 import java.io.IOException;
-import java.util.List;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.flow.testutil.DevToolsElement;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;

@@ -72,7 +72,6 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
 import elemental.json.Json;
-import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 @NotThreadSafe
@@ -569,80 +568,6 @@ public class NavigationStateRendererTest {
     private NavigationState navigationStateFromTarget(
             Class<? extends Component> target) {
         return new NavigationStateBuilder(router).withTarget(target).build();
-    }
-
-    @Test
-    public void handle_RouterLinkTrigger_scrollPositionHandlerAfterServerNavigationIsInvoked() {
-        // given a service with instantiator
-        MockVaadinServletService service = createMockServiceWithInstantiator();
-
-        // given a locked session
-        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
-
-        // given a NavigationStateRenderer mapping to RegularView
-        new NavigationStateBuilder(router).withTarget(RegularView.class)
-                .build();
-        NavigationStateRenderer renderer = new NavigationStateRenderer(
-                navigationStateFromTarget(RegularView.class));
-
-        // given a UI with an instrumented Page that records JS invocations
-        AtomicBoolean jsInvoked = new AtomicBoolean(false);
-        List<String> jsExpressions = new ArrayList<>();
-        MockUI ui = new MockUI(session) {
-            final Page page = new Page(this) {
-                @Override
-                public PendingJavaScriptResult executeJs(String expression,
-                        Serializable... params) {
-                    jsInvoked.set(true);
-                    jsExpressions.add(expression);
-                    return super.executeJs(expression, params);
-                }
-            };
-
-            @Override
-            public Page getPage() {
-                return page;
-            }
-        };
-
-        JsonObject state = Json.createObject();
-        state.put("href", "view/regular");
-        state.put("scrollPositionX", 0.0);
-        state.put("scrollPositionY", 0.0);
-
-        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
-                new Location("preserved"), ui, NavigationTrigger.ROUTER_LINK,
-                state, false));
-
-        // then client-side JS was invoked
-        Assert.assertTrue("Expected JS invocation", jsInvoked.get());
-        Assert.assertTrue(jsExpressions.stream()
-                .anyMatch(expression -> expression.contains(
-                        "scrollPositionHandlerAfterServerNavigation")));
-    }
-
-    @Test
-    public void handle_RouterLinkTriggerNullState_IllegalStateException() {
-        // given a service with instantiator
-        MockVaadinServletService service = createMockServiceWithInstantiator();
-        service.setRouter(router);
-
-        // given a locked session
-        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
-
-        // given a NavigationStateRenderer mapping to RegularView
-        new NavigationStateBuilder(router).withTarget(RegularView.class)
-                .build();
-        NavigationStateRenderer renderer = new NavigationStateRenderer(
-                navigationStateFromTarget(RegularView.class));
-
-        MockUI ui = new MockUI(session);
-
-        expectedException.expect(IllegalStateException.class);
-        renderer.handle(new NavigationEvent(router, new Location("regular"), ui,
-                NavigationTrigger.ROUTER_LINK, null, false));
     }
 
     @Test

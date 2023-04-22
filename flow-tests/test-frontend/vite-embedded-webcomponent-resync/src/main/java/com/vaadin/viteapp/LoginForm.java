@@ -9,7 +9,6 @@ import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.function.SerializableRunnable;
-import com.vaadin.flow.server.VaadinRequest;
 
 public class LoginForm extends Div {
     private Input userName = new Input();

@@ -45,8 +45,6 @@ public class TestUtil {
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
         Mockito.when(adapter.frontendDirectory()).thenReturn(
                 new File(baseDir, FrontendUtils.DEFAULT_FRONTEND_DIR));
-        Mockito.when(adapter.generatedFolder()).thenReturn(new File(baseDir,
-                FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR));
         Mockito.when(adapter.buildFolder()).thenReturn(Constants.TARGET);
         Mockito.when(adapter.javaSourceFolder())
                 .thenReturn(new File(baseDir, "src/main/java"));
@@ -54,7 +52,7 @@ public class TestUtil {
                 .thenReturn(new File(baseDir, "src/main/resources"));
         Mockito.when(adapter.openApiJsonFile())
                 .thenReturn(new File(new File(baseDir, Constants.TARGET),
-                        FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE));
+                        "classes/dev/hilla/openapi.json"));
         Mockito.when(adapter.getClassFinder())
                 .thenReturn(new ClassFinder.DefaultClassFinder(
                         TestUtil.class.getClassLoader()));

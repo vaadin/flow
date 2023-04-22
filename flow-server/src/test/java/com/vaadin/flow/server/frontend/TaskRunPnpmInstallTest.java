@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -36,6 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
@@ -49,6 +51,7 @@ import com.vaadin.flow.testutil.FrontendStubs;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+@NotThreadSafe
 @Category(SlowTests.class)
 public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
@@ -149,7 +152,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
-        options.withHomeNodeExecRequired(true).enablePnpm(true)
+        options.withHomeNodeExecRequired(true).withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
@@ -169,9 +172,9 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        TaskRunNpmInstall task = createTask();
+        String versionsJson = "{\"foo\":\"bar\"}";
+        TaskRunNpmInstall task = createTask(versionsJson);
         getNodeUpdater().modified = true;
-        getNodeUpdater().versionsPath = "./versions.json";
         task.execute();
 
         File file = new File(npmFolder, "pnpmfile.js");
@@ -185,7 +188,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                     StandardCharsets.UTF_8);
         }
         MatcherAssert.assertThat(content,
-                CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
+                CoreMatchers.containsString("versions = " + versionsJson));
     }
 
     @Test
@@ -193,7 +196,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
-        getNodeUpdater().versionsPath = "./versions.json";
         task.execute();
 
         File file = new File(npmFolder, "pnpmfile.js");
@@ -207,7 +209,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                     StandardCharsets.UTF_8);
         }
         MatcherAssert.assertThat(content,
-                CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
+                CoreMatchers.containsString("versions = {}"));
     }
 
     @Test
@@ -634,6 +636,25 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                         "postinstall-file.txt").exists());
     }
 
+    @Test
+    public void runPnpmInstallAndCi_emptyDir_pnpmInstallAndCiIsExecuted()
+            throws ExecutionFailedException, IOException {
+        TaskRunNpmInstall task = createTask();
+
+        File nodeModules = options.getNodeModulesFolder();
+        nodeModules.mkdir();
+        getNodeUpdater().modified = false;
+
+        task.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+
+        deleteDirectory(nodeModules);
+
+        TaskRunNpmInstall ciTask = createCiTask();
+        ciTask.execute();
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
     @Override
     protected String getToolName() {
         return "pnpm";
@@ -643,11 +664,22 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         return createTask(new ArrayList<>());
     }
 
-    @Override
-    protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
+    private TaskRunNpmInstall createCiTask() {
         NodeUpdater updater = getNodeUpdater();
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder);
-        options.enablePnpm(true)
+        options.withEnablePnpm(true)
+                .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                .withNodeDownloadRoot(
+                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT))
+                .withCiBuild(true);
+        return new TaskRunNpmInstall(updater, options);
+    }
+
+    @Override
+    protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
+        NodeUpdater updater = createAndRunNodeUpdater(null);
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder);
+        options.withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT))
@@ -658,7 +690,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     protected TaskRunNpmInstall createTask(String versionsContent) {
         NodeUpdater updater = createAndRunNodeUpdater(versionsContent);
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder);
-        options.enablePnpm(true)
+        options.withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
@@ -674,12 +706,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         JsonObject packageJson = Json.parse(FileUtils
                 .readFileToString(packageJsonFile, StandardCharsets.UTF_8));
-        String path = getNodeUpdater().generateVersionsJson(packageJson);
-
-        File generatedVersionsFile = new File(npmFolder, path);
-        return Json.parse(FileUtils.readFileToString(generatedVersionsFile,
-                StandardCharsets.UTF_8));
-
+        getNodeUpdater().generateVersionsJson(packageJson);
+        return getNodeUpdater().versionsJson;
     }
 
     private NodeUpdater createAndRunNodeUpdater(String versionsContent) {
@@ -696,7 +724,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     private NodeUpdater createNodeUpdater(String versionsContent) {
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withGeneratedFolder(generatedPath).withBuildDirectory(TARGET);
+                .withBuildDirectory(TARGET);
 
         return new NodeUpdater(finder, Mockito.mock(FrontendDependencies.class),
                 options) {
@@ -704,24 +732,24 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             @Override
             public void execute() {
                 try {
-                    versionsPath = generateVersionsJson(Json.createObject());
+                    generateVersionsJson(Json.createObject());
                 } catch (Exception e) {
-                    versionsPath = null;
+                    throw new RuntimeException(e);
                 }
             }
 
             @Override
-            protected String generateVersionsJson(JsonObject packageJson)
-                    throws IOException {
-                try {
-                    if (versionsContent != null) {
-                        FileUtils.write(new File(npmFolder, "versions.json"),
-                                versionsContent, StandardCharsets.UTF_8);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+            JsonObject getPlatformPinnedDependencies() throws IOException {
+                if (versionsContent != null) {
+                    return Json.parse(versionsContent);
+                } else {
+                    return Json.createObject();
                 }
-                return "./versions.json";
+            }
+
+            @Override
+            Logger log() {
+                return logger;
             }
         };
     }

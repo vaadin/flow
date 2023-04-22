@@ -17,21 +17,10 @@
 
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_DEPS;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_JARS;
-import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
-import static com.vaadin.flow.server.frontend.TaskUpdatePackages.VAADIN_APP_PACKAGE_HASH;
-import static elemental.json.impl.JsonUtil.stringify;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -59,6 +48,15 @@ import com.vaadin.flow.testutil.FrontendStubs;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_DEPS;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_JARS;
+import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
+import static com.vaadin.flow.server.frontend.TaskUpdatePackages.VAADIN_APP_PACKAGE_HASH;
+import static elemental.json.impl.JsonUtil.stringify;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public abstract class AbstractNodeUpdatePackagesTest
         extends NodeUpdateTestUtil {
 
@@ -72,7 +70,6 @@ public abstract class AbstractNodeUpdatePackagesTest
     private TaskUpdatePackages packageUpdater;
     private TaskGeneratePackageJson packageCreator;
     private File baseDir;
-    private File generatedDir;
 
     private File packageJson;
 
@@ -80,19 +77,15 @@ public abstract class AbstractNodeUpdatePackagesTest
 
     private File mainNodeModules;
     private File packageLock;
-    private File appNodeModules;
     private Options options;
 
     @Before
     public void setup() throws Exception {
         baseDir = temporaryFolder.getRoot();
 
-        generatedDir = new File(baseDir,
-                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
-
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
         options = new Options(Mockito.mock(Lookup.class), baseDir)
-                .withGeneratedFolder(generatedDir).withBuildDirectory(TARGET);
+                .withBuildDirectory(TARGET);
         // .withJarFrontendResourcesFolder(jarResourceFolder);
         packageCreator = new TaskGeneratePackageJson(options);
 
@@ -108,7 +101,6 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageJson = new File(baseDir, PACKAGE_JSON);
 
         mainNodeModules = new File(baseDir, FrontendUtils.NODE_MODULES);
-        appNodeModules = new File(generatedDir, FrontendUtils.NODE_MODULES);
         packageLock = new File(baseDir, "package-lock.json");
 
     }
@@ -159,7 +151,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Files.write(packageJson.toPath(),
                 Collections.singletonList(json.toJson()));
 
-        options.enablePnpm(true);
+        options.withEnablePnpm(true);
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), options);
         packageUpdater.execute();
@@ -185,7 +177,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Files.write(packageJson.toPath(),
                 Collections.singletonList(json.toJson()));
 
-        options.enablePnpm(true);
+        options.withEnablePnpm(true);
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), options);
         packageUpdater.execute();
@@ -205,7 +197,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Files.write(packageLock.toPath(), Collections.singletonList("{}"));
 
-        options.enablePnpm(true);
+        options.withEnablePnpm(true);
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), options);
@@ -217,7 +209,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     @Test
     public void pnpmIsInUse_packageJsonModified_removePnpmLock()
             throws IOException {
-        options.enablePnpm(true);
+        options.withEnablePnpm(true);
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), options);
@@ -363,7 +355,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     @Test
     public void versionsDoNotMatch_inVaadinJson_cleanUpPnpm()
             throws IOException {
-        options.enablePnpm(true);
+        options.withEnablePnpm(true);
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 Mockito.mock(FrontendDependencies.class), options);
@@ -383,7 +375,6 @@ public abstract class AbstractNodeUpdatePackagesTest
             packageUpdater.execute();
             // nothing is removed except package-lock
             Assert.assertTrue(mainNodeModules.exists());
-            Assert.assertTrue(appNodeModules.exists());
             // package-lock is removed
             Assert.assertFalse(packageLock.exists());
         }
@@ -420,7 +411,6 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         // nothing is removed
         Assert.assertTrue(mainNodeModules.exists());
-        Assert.assertTrue(appNodeModules.exists());
         Assert.assertTrue(packageLock.exists());
     }
 
@@ -664,7 +654,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Files.write(packageJson.toPath(),
                 Collections.singletonList(legacyPackageContent));
-        options.enablePnpm(true);
+        options.withEnablePnpm(true);
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), options);
@@ -812,18 +802,15 @@ public abstract class AbstractNodeUpdatePackagesTest
     private void makeNodeModulesAndPackageLock() throws IOException {
         // Make two node_modules folders and package lock
         mainNodeModules.mkdirs();
-        appNodeModules.mkdirs();
         Files.write(packageLock.toPath(), Collections.singletonList("{}"));
 
         // self control
         Assert.assertTrue(mainNodeModules.exists());
-        Assert.assertTrue(appNodeModules.exists());
         Assert.assertTrue(packageLock.exists());
     }
 
     private void assertCleanUp() {
         Assert.assertFalse(mainNodeModules.exists());
-        Assert.assertFalse(appNodeModules.exists());
         Assert.assertTrue("package-lock should not be removed",
                 packageLock.exists());
     }

@@ -61,6 +61,7 @@
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
             <version>${jakarta.annotation.api.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Library dependencies -->
@@ -103,14 +104,6 @@
             <version>${jsoup.version}</version>
         </dependency>
 
-        <!-- Jsoup depends on JSR305 and this dependency should be added into generated Karaf Feature -->
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>3.0.2</version>
-            <optional>true</optional>
-        </dependency>
-
         <!-- ph-css for parsing style attribute in Element API -->
         <dependency>
             <groupId>com.helger</groupId>
@@ -118,10 +111,10 @@
             <version>7.0.0</version>
         </dependency>
 
-        <!-- Byte code generation -->
+        <!-- Byte code analysis -->
         <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
         </dependency>
 
         <!-- Small reflection library -->
@@ -135,7 +128,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.22</version>
+            <version>1.23.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -186,13 +179,6 @@
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>${hibernate.validator.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>annotations</artifactId>
-            <version>3.0.1</version>
             <scope>test</scope>
         </dependency>
 

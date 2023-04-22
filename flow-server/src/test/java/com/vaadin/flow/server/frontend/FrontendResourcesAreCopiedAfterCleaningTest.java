@@ -94,7 +94,7 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
 
         new NodeTasks(options.withEmbeddableWebComponents(false)
                 .enableImportsUpdate(false).createMissingPackageJson(true)
-                .enableImportsUpdate(true).runNpmInstall(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false)
                 .enablePackagesUpdate(true)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .copyResources(Collections.singleton(testJar))).execute();
@@ -110,7 +110,7 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         Options options = new Options(mockLookup, npmFolder)
                 .withBuildDirectory(TARGET).withEmbeddableWebComponents(false)
                 .enableImportsUpdate(false).createMissingPackageJson(true)
-                .enableImportsUpdate(true).runNpmInstall(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false)
                 .enableNpmFileCleaning(true)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .copyResources(Collections.emptySet())

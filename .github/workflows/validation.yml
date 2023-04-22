@@ -1,27 +1,31 @@
 name: Flow Validation
 on:
   push:
-    branches: [master, '23.3', '23.2',  '23.1', '9.0']
+    branches: [main, '24.0', '23.3', '23.2',  '23.1', '9.0']
   workflow_dispatch:
   pull_request_target:
     types: [opened, synchronize, reopened, edited]
 permissions:
   contents: read
+concurrency:
+  group: ${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 jobs:
   build:
-    timeout-minutes: 20
+    timeout-minutes: 30
     runs-on: ubuntu-22.04
     outputs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
+      - run: echo "Concurrency Group = ${{ github.head_ref || github.ref_name }}"
       - uses: actions-cool/check-user-permission@main
         id: checkUser
         with:
           username: ${{github.triggering_actor}}
           require: 'write'
       - name: Fail on external workflow triggering
-        if: ${{ steps.checkUser.outputs.require-result != 'true' }}
+        if: ${{ steps.checkUser.outputs.require-result != 'true' && github.actor != 'dependabot[bot]' }}
         run: |
           echo "🚫 **${{ github.actor }}** is an external contributor, a **${{ github.repository }}** team member has to review this changes and re-run this build" \
             | tee -a $GITHUB_STEP_SUMMARY && exit 1
@@ -41,6 +45,10 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -68,7 +76,7 @@ jobs:
           path: workspace.tar
   unit-tests:
     needs: build
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
@@ -82,6 +90,10 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -130,7 +142,7 @@ jobs:
           path: tests-report-*.tgz
   it-tests:
     needs: build
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
@@ -150,6 +162,10 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -161,7 +177,6 @@ jobs:
       - uses: browser-actions/setup-chrome@latest
         with:
           chrome-version: stable
-      - uses: nanasess/setup-chromedriver@master
       - uses: actions/download-artifact@v3
         if: ${{ github.run_attempt == 1 }}
         with:
@@ -230,7 +245,6 @@ jobs:
         with:
           junit_files: "**/target/*-reports/TEST*.xml"
           check_run_annotations: all tests, skipped tests
-          check_run_annotations_branch: master, 9.0
       - uses: geekyeggo/delete-artifact@v2
         with:
           name: |
@@ -239,7 +253,7 @@ jobs:
         run: |
           ./scripts/computeMatrix.js test-results >> $GITHUB_STEP_SUMMARY
       - name: Set Failure Status
-        if: ${{ needs.unit-tests.result != 'success' || needs.it-tests.result != 'success' }}
+        if: ${{ always() && (needs.unit-tests.result != 'success' || needs.it-tests.result != 'success') }}
         run: |
-            echo "🚫 THERE ARE TEST MODULES WITH FAILURES" | tee -a $GITHUB_STEP_SUMMARY
+            echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
             exit 1

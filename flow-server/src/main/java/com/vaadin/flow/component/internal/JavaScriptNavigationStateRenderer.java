@@ -101,7 +101,8 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
 
     @Override
     protected boolean shouldPushHistoryState(NavigationEvent event) {
-        if (NavigationTrigger.CLIENT_SIDE.equals(event.getTrigger())) {
+        if (NavigationTrigger.CLIENT_SIDE.equals(event.getTrigger())
+                || NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
             return true;
         } else {
             return super.shouldPushHistoryState(event);

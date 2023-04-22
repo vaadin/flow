@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css?family=Itim');
 @import 'sub-css/sub.css';
+@import 'theme.css';
 
 @font-face {
     font-family: "Ostrich";
@@ -14,26 +15,17 @@
 
 }
 
-html, :host {
-    --lumo-primary-text-color: #008000;
-    color: rgba(0, 0, 0, 1); /* black */
+.margin {
+    margin: 20px;
 }
 
-
-
-/* Lumo has
-html {
-    background-color: var(--lumo-base-color);
-}
-This extact same rule with a different value should override that
-*/
-html {
-    background-color: blue;
-}
-
-body {
+body.bg {
+    color: rgba(0, 0, 0, 1);
     background-image: url("./img/bg.jpg");
     font-family: "Ostrich";
+}
+#test-text {
+    font-family: "Itim";
 }
 
 #butterfly {
@@ -66,10 +58,4 @@ body {
     background-image: url('./fortawesome/icons/snowflake.svg');
     height: 1em;
     width: 1em;
-}
-
-p.global {
-    color: rgba(255, 255, 0, 1); /* yellow */
-    font-size: 20px;
-    margin: 2px;
 }

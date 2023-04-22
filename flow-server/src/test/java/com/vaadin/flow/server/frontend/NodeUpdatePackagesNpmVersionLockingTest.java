@@ -17,13 +17,9 @@
 
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -44,6 +40,8 @@ import com.vaadin.flow.testutil.FrontendStubs;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.TARGET;
+
 @Category(SlowTests.class)
 public class NodeUpdatePackagesNpmVersionLockingTest
         extends NodeUpdateTestUtil {
@@ -58,16 +56,12 @@ public class NodeUpdatePackagesNpmVersionLockingTest
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File baseDir;
-    private File generatedDir;
 
     private ClassFinder classFinder;
 
     @Before
     public void setup() throws Exception {
         baseDir = temporaryFolder.getRoot();
-
-        generatedDir = new File(baseDir,
-                Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
 
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
 
@@ -88,7 +82,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
     }
 
     @Test
-    public void shoudlLockPinnedVersion_whenExistsInDependencies()
+    public void shouldLockPinnedVersion_whenExistsInDependencies()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         JsonObject packageJson = packageUpdater.getPackageJson();
@@ -96,15 +90,15 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
         Assert.assertNull(packageJson.getObject(OVERRIDES));
 
-        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson, versionsPath);
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
 
         Assert.assertEquals("$" + TEST_DEPENDENCY,
                 packageJson.getObject(OVERRIDES).getString(TEST_DEPENDENCY));
     }
 
     @Test
-    public void shoudlNotLockPinnedVersion_whenNotExistsInDependencies()
+    public void shouldNotLockPinnedVersion_whenNotExistsInDependencies()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         JsonObject packageJson = packageUpdater.getPackageJson();
@@ -113,8 +107,8 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         Assert.assertNull(
                 packageJson.getObject(DEPENDENCIES).get(TEST_DEPENDENCY));
 
-        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson, versionsPath);
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
 
         Assert.assertNull(
                 packageJson.getObject(OVERRIDES).get(TEST_DEPENDENCY));
@@ -132,8 +126,8 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 USER_PINNED_DEPENDENCY_VERSION);
         overridesSection.put(TEST_DEPENDENCY, USER_PINNED_DEPENDENCY_VERSION);
 
-        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson, versionsPath);
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
 
         Assert.assertEquals(USER_PINNED_DEPENDENCY_VERSION,
                 packageJson.getObject(OVERRIDES).getString(TEST_DEPENDENCY));
@@ -148,8 +142,8 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
         Assert.assertNull(packageJson.getObject(OVERRIDES));
 
-        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
-        packageUpdater.lockVersionForNpm(packageJson, versionsPath);
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
 
         Assert.assertNull(packageJson.getObject(OVERRIDES));
     }
@@ -167,19 +161,16 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
         Assert.assertNull(packageJson.getObject(OVERRIDES));
 
-        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
-        File output = new File(packageUpdater.options.getNpmFolder(),
-                versionsPath);
+        packageUpdater.generateVersionsJson(packageJson);
         Assert.assertTrue(
-                FileUtils.readFileToString(output, StandardCharsets.UTF_8)
-                        .contains(TEST_DEPENDENCY));
+                packageUpdater.versionsJson.toJson().contains(TEST_DEPENDENCY));
 
         packageJson.getObject(DEPENDENCIES).remove(TEST_DEPENDENCY);
 
+        packageUpdater.versionsJson = null;
         packageUpdater.generateVersionsJson(packageJson);
         Assert.assertFalse(
-                FileUtils.readFileToString(output, StandardCharsets.UTF_8)
-                        .contains(TEST_DEPENDENCY));
+                packageUpdater.versionsJson.toJson().contains(TEST_DEPENDENCY));
 
     }
 
@@ -187,8 +178,8 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Options options = new Options(Mockito.mock(Lookup.class), baseDir)
-                .withGeneratedFolder(generatedDir).enablePnpm(enablePnpm)
-                .withBuildDirectory(TARGET).withProductionMode(true);
+                .withEnablePnpm(enablePnpm).withBuildDirectory(TARGET)
+                .withProductionMode(true);
 
         return new TaskUpdatePackages(classFinder, scanner, options);
     }

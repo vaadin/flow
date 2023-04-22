@@ -4,17 +4,10 @@ import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.ParagraphElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.viteapp.views.empty.MainView;
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class ExternalPackageIT extends ChromeBrowserTest {
-
-    @BeforeClass
-    public static void driver() {
-        WebDriverManager.chromedriver().setup();
-    }
 
     @Test
     public void packageOutsideNpmWorks() {

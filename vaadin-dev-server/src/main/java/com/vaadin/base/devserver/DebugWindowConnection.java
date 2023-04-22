@@ -25,12 +25,15 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
+import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
+import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
+import com.vaadin.base.devserver.themeeditor.ThemeEditorMessageHandler;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
@@ -40,7 +43,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
-import com.vaadin.pro.licensechecker.LocalProKey;
 import com.vaadin.pro.licensechecker.Product;
 
 import elemental.json.Json;
@@ -70,6 +72,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private IdeIntegration ideIntegration;
 
+    private ThemeEditorMessageHandler themeEditorMessageHandler;
+
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
                 "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener"));
@@ -89,6 +93,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         this.context = context;
         this.ideIntegration = new IdeIntegration(
                 ApplicationConfiguration.get(context));
+        this.themeEditorMessageHandler = new ThemeEditorMessageHandler(context);
     }
 
     @Override
@@ -137,8 +142,9 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 .filter(feature -> !feature.equals(FeatureFlags.EXAMPLE))
                 .collect(Collectors.toList())));
 
-        if (LocalProKey.get() != null) {
-            send(resource, "vaadin-dev-tools-code-ok", null);
+        if (themeEditorMessageHandler.isEnabled()) {
+            send(resource, ThemeEditorCommand.STATE,
+                    themeEditorMessageHandler.getState());
         }
     }
 
@@ -169,15 +175,30 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 .anyMatch(resourceRef -> resource.equals(resourceRef.get()));
     }
 
-    @Override
-    public void reload() {
+    private void send(JsonObject msg) {
         atmosphereResources.forEach(resourceRef -> {
             AtmosphereResource resource = resourceRef.get();
             if (resource != null) {
-                resource.getBroadcaster().broadcast("{\"command\": \"reload\"}",
-                        resource);
+                resource.getBroadcaster().broadcast(msg.toJson(), resource);
             }
         });
+
+    }
+
+    @Override
+    public void reload() {
+        JsonObject msg = Json.createObject();
+        msg.put("command", "reload");
+        send(msg);
+    }
+
+    @Override
+    public void update(String path, String content) {
+        JsonObject msg = Json.createObject();
+        msg.put("command", "update");
+        msg.put("path", path);
+        msg.put("content", content);
+        send(msg);
     }
 
     @SuppressWarnings("FutureReturnValueIgnored")
@@ -239,6 +260,10 @@ public class DebugWindowConnection implements BrowserLiveReload {
                             "Only component locations are tracked. The given node id refers to an element and not a component");
                 }
             });
+        } else if (themeEditorMessageHandler.canHandle(command, data)) {
+            BaseResponse resultData = themeEditorMessageHandler
+                    .handleDebugMessageData(command, data);
+            send(resource, ThemeEditorCommand.RESPONSE, resultData);
         } else {
             getLogger().info("Unknown command from the browser: " + command);
         }

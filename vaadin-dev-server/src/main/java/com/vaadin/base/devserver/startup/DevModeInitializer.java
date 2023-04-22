@@ -15,22 +15,7 @@
  */
 package com.vaadin.base.devserver.startup;
 
-import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_APPLICATION_PROPERTIES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
+import jakarta.servlet.annotation.HandlesTypes;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,7 +46,6 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,10 +61,9 @@ import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
@@ -92,7 +75,15 @@ import com.vaadin.pro.licensechecker.LicenseChecker;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import jakarta.servlet.annotation.HandlesTypes;
+
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 
 /**
  * Initializer for starting node updaters as well as the dev mode server.
@@ -204,7 +195,7 @@ public class DevModeInitializer implements Serializable {
 
         featureFlags.setPropertiesLocation(config.getJavaResourceFolder());
 
-        String baseDir = config.getProjectFolder().getAbsolutePath();
+        File baseDir = config.getProjectFolder();
 
         // Initialize the usage statistics if enabled
         if (config.isUsageStatisticsEnabled()) {
@@ -213,9 +204,6 @@ public class DevModeInitializer implements Serializable {
                     new StatisticsSender(storage));
         }
 
-        String generatedDir = System.getProperty(PARAM_GENERATED_DIR,
-                Paths.get(config.getBuildFolder(), DEFAULT_GENERATED_DIR)
-                        .toString());
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
 
@@ -223,27 +211,12 @@ public class DevModeInitializer implements Serializable {
         Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
-        Options options = new Options(lookup, new File(baseDir))
-                .withGeneratedFolder(new File(generatedDir))
+        Options options = new Options(lookup, baseDir)
                 .withFrontendDirectory(new File(frontendFolder))
                 .withBuildDirectory(config.getBuildFolder());
 
         log().info("Starting dev-mode updaters in {} folder.",
                 options.getNpmFolder());
-
-        if (!options.getGeneratedFolder().exists()) {
-            try {
-                FileUtils.forceMkdir(options.getGeneratedFolder());
-            } catch (IOException e) {
-                throw new UncheckedIOException(
-                        String.format("Failed to create directory '%s'",
-                                options.getGeneratedFolder()),
-                        e);
-            }
-        }
-
-        File generatedPackages = new File(options.getGeneratedFolder(),
-                PACKAGE_JSON);
 
         // Regenerate Vite configuration, as it may be necessary to
         // update it
@@ -257,33 +230,9 @@ public class DevModeInitializer implements Serializable {
                 Paths.get(target.getPath(), "classes", VAADIN_SERVLET_RESOURCES)
                         .toFile());
 
-        if (isEndpointServiceAvailable(lookup)) {
-            String connectJavaSourceFolder = config.getStringProperty(
-                    CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
-                    Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER)
-                            .toString());
-            String connectApplicationProperties = config.getStringProperty(
-                    CONNECT_APPLICATION_PROPERTIES_TOKEN,
-                    Paths.get(baseDir, DEFAULT_CONNECT_APPLICATION_PROPERTIES)
-                            .toString());
-            String connectOpenApiJsonFile = config
-                    .getStringProperty(CONNECT_OPEN_API_FILE_TOKEN,
-                            Paths.get(baseDir, config.getBuildFolder(),
-                                    DEFAULT_CONNECT_OPENAPI_JSON_FILE)
-                                    .toString());
-
-            options.withEndpointSourceFolder(new File(connectJavaSourceFolder))
-                    .withApplicationProperties(
-                            new File(connectApplicationProperties))
-                    .withEndpointGeneratedOpenAPIFile(
-                            new File(connectOpenApiJsonFile));
-        }
-
         // If we are missing either the base or generated package json
-        // files
-        // generate those
-        if (!new File(options.getNpmFolder(), PACKAGE_JSON).exists()
-                || !generatedPackages.exists()) {
+        // files generate those
+        if (!new File(options.getNpmFolder(), PACKAGE_JSON).exists()) {
             options.createMissingPackageJson(true);
         }
 
@@ -308,14 +257,16 @@ public class DevModeInitializer implements Serializable {
                         InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, "")
                 .split(",");
 
-        String frontendGeneratedFolderName = config.getStringProperty(
-                PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
-                Paths.get(baseDir, DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
-                        .toString());
+        String frontendGeneratedFolderName = config
+                .getStringProperty(PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
+                        Paths.get(baseDir.getAbsolutePath(),
+                                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
+                                .toString());
         File frontendGeneratedFolder = new File(frontendGeneratedFolderName);
         File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
                 FrontendUtils.JAR_RESOURCES_FOLDER);
         JsonObject tokenFileData = Json.createObject();
+        Mode mode = config.getMode();
         options.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder)
@@ -324,23 +275,23 @@ public class DevModeInitializer implements Serializable {
                 .copyLocalResources(new File(baseDir,
                         Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                 .enableImportsUpdate(true)
-                .runNpmInstall(config.frontendHotdeploy())
+                .withRunNpmInstall(mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
                 .populateTokenFileData(tokenFileData)
-                .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
+                .withEmbeddableWebComponents(true).withEnablePnpm(enablePnpm)
                 .useGlobalPnpm(useGlobalPnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
                 .withProductionMode(config.isProductionMode())
                 .withPostinstallPackages(
                         Arrays.asList(additionalPostinstallPackages))
-                .withFrontendHotdeploy(config.frontendHotdeploy())
-                .withDevBundleBuild(!config.isProductionMode()
-                        && !config.frontendHotdeploy());
+                .withFrontendHotdeploy(
+                        mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
+                .withDevBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE);
         ;
         NodeTasks tasks = new NodeTasks(options);
 
         Runnable runnable = () -> {
             runNodeTasks(context, tokenFileData, tasks);
-            if (config.frontendHotdeploy()) {
+            if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
                 // For Vite, wait until a VaadinServlet is deployed so we know
                 // which frontend servlet path to use
                 if (VaadinServlet.getFrontendMapping() == null) {
@@ -362,7 +313,7 @@ public class DevModeInitializer implements Serializable {
                 Lookup.of(config, ApplicationConfiguration.class));
         int port = Integer
                 .parseInt(config.getStringProperty("devServerPort", "0"));
-        if (!config.frontendHotdeploy()) {
+        if (mode == Mode.DEVELOPMENT_BUNDLE) {
             nodeTasksFuture.join();
             return null;
         } else {
@@ -372,13 +323,6 @@ public class DevModeInitializer implements Serializable {
                     () -> ViteWebsocketEndpoint.init(context, handler));
             return handler;
         }
-    }
-
-    private static boolean isEndpointServiceAvailable(Lookup lookup) {
-        if (lookup == null) {
-            return false;
-        }
-        return lookup.lookup(EndpointGeneratorTaskFactory.class) != null;
     }
 
     private static Logger log() {
@@ -406,12 +350,6 @@ public class DevModeInitializer implements Serializable {
             JsonObject tokenFileData, NodeTasks tasks) {
         try {
             tasks.execute();
-
-            FallbackChunk chunk = FrontendUtils
-                    .readFallbackChunk(tokenFileData);
-            if (chunk != null) {
-                vaadinContext.setAttribute(chunk);
-            }
         } catch (ExecutionFailedException exception) {
             log().debug(
                     "Could not initialize dev mode handler. One of the node tasks failed",

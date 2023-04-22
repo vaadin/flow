@@ -29,8 +29,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.utils.LookupImpl;
 
 /**
- * Gives access to access to plugin-spectific implementations and
- * configurations.
+ * Gives access to plugin-specific implementations and configurations.
  *
  */
 public interface PluginAdapterBase {
@@ -57,8 +56,7 @@ public interface PluginAdapterBase {
     }
 
     /**
-     * Whether or not insert the initial Uidl object in the bootstrap
-     * index.html.
+     * Whether to insert the initial Uidl object in the bootstrap index.html.
      *
      * @return {@link boolean}
      */
@@ -70,14 +68,6 @@ public interface PluginAdapterBase {
      * @return {@link File}
      */
     File frontendDirectory();
-
-    /**
-     * The folder where flow will put generated files that will be used by
-     * webpack.
-     *
-     * @return {@link File}
-     */
-    File generatedFolder();
 
     /**
      * The folder where flow will put TS API files for client projects.
@@ -183,12 +173,12 @@ public interface PluginAdapterBase {
      *
      * @return nodeDownloadRoot
      * @throws URISyntaxException
-     *             - Could not build an URI from nodeDownloadRoot().
+     *             - Could not build a URI from nodeDownloadRoot().
      */
     URI nodeDownloadRoot() throws URISyntaxException;
 
     /**
-     * Whether the alternative node may be autoupdated or not.
+     * Whether the alternative node may be auto-updated or not.
      *
      * @return {@code true} to update node if older than default
      */
@@ -199,7 +189,7 @@ public interface PluginAdapterBase {
      * Vaadin, for example `"v12.18.3"`. Defaults to null which uses the
      * Vaadin-default node version - see {@link FrontendTools} for details.
      *
-     * @return node Verrsion as String
+     * @return node version as a string
      */
     String nodeVersion();
 
@@ -245,7 +235,7 @@ public interface PluginAdapterBase {
      * Whether vaadin home node executable usage is forced. If it's set to
      * {@code true} then vaadin home 'node' is checked and installed if it's
      * absent. Then it will be used instead of globally 'node' or locally
-     * installed installed 'node'.
+     * installed 'node'.
      *
      * @return boolean
      */
@@ -282,4 +272,11 @@ public interface PluginAdapterBase {
     List<String> postinstallPackages();
 
     boolean isFrontendHotdeploy();
+
+    /**
+     * Enable skip of dev bundle rebuild if a dev bundle exists.
+     *
+     * @return {@code true} to skip dev bundle rebuild
+     */
+    boolean skipDevBundleBuild();
 }

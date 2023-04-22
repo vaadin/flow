@@ -16,7 +16,6 @@ public class FileAccessIT extends ViteDevModeIT {
          * This just tests a few sample folders to see that there is not a
          * fundamental problem
          */
-        assertAllowed("target/frontend/generated-flow-imports.js");
         assertAllowed("frontend/jsonloader.js");
     }
 
@@ -37,14 +36,16 @@ public class FileAccessIT extends ViteDevModeIT {
         assertDenied("../pom.xml");
     }
 
-    private void assertDenied(String fileInProject) {
+    private void assertDenied(String fileInProject) throws IOException {
+        URL url = getFsUrl(fileInProject);
         try {
-            URL url = getFsUrl(fileInProject);
             IOUtils.toString(url, StandardCharsets.UTF_8);
             Assert.fail("Request for " + url + " should not succeed");
         } catch (IOException e) {
             Assert.assertTrue(
-                    "Request for " + fileInProject + " should have failed",
+                    "Request for " + fileInProject + " using URL " + url
+                            + " should have failed but returned '"
+                            + e.getMessage() + "'",
                     e.getMessage().contains(
                             "Server returned HTTP response code: 403"));
         }

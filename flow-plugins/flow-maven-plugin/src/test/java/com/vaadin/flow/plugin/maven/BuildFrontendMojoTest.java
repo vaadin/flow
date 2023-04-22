@@ -66,11 +66,8 @@ import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -88,7 +85,6 @@ public class BuildFrontendMojoTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File importsFile;
-    private File generatedFolder;
     private File nodeModulesPath;
     private File jarResourcesFolder;
     private File projectBase;
@@ -106,6 +102,7 @@ public class BuildFrontendMojoTest {
 
     private final BuildFrontendMojo mojo = Mockito.spy(new BuildFrontendMojo());
     private Lookup lookup;
+    private File frontendDirectory;
 
     @Before
     public void setup() throws Exception {
@@ -128,11 +125,9 @@ public class BuildFrontendMojoTest {
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
         File npmFolder = projectBase;
-        generatedFolder = new File(npmFolder,
-                "target/" + DEFAULT_GENERATED_DIR);
-        importsFile = new File(generatedFolder, IMPORTS_NAME);
         nodeModulesPath = new File(npmFolder, NODE_MODULES);
-        File frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
+        frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
+        importsFile = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
         jarResourcesFolder = new File(
                 new File(frontendDirectory, FrontendUtils.GENERATED),
                 FrontendUtils.JAR_RESOURCES_FOLDER);
@@ -152,7 +147,7 @@ public class BuildFrontendMojoTest {
 
         defaultJavaSource = new File(".", "src/test/java");
         openApiJsonFile = new File(npmFolder,
-                "target/generated-resources/openapi.json");
+                "target/classes/dev/hilla/openapi.json");
         generatedTsFolder = new File(npmFolder, "frontend/generated");
 
         Assert.assertTrue("Failed to create a test project resources",
@@ -170,8 +165,6 @@ public class BuildFrontendMojoTest {
                 webpackOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo,
                 "resourceOutputDirectory", resourceOutputDirectory);
-        ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder",
-                generatedFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
                 frontendDirectory);
         ReflectionUtils.setVariableValueInObject(mojo,
@@ -200,8 +193,6 @@ public class BuildFrontendMojoTest {
                 Paths.get(projectBase.toString(), "target").toString());
         Mockito.when(mojo.getJarFiles()).thenReturn(
                 Set.of(jarResourcesSource.getParentFile().getParentFile()));
-
-        generatedFolder.mkdirs();
 
         setProject(mojo, npmFolder);
 
@@ -295,14 +286,9 @@ public class BuildFrontendMojoTest {
         }
         openApiJsonFile = new File(projectBase,
                 "build/generated-resources/openapi.json");
-        generatedFolder = new File(projectBase,
-                "build/" + DEFAULT_GENERATED_DIR);
-        importsFile = new File(generatedFolder, IMPORTS_NAME);
 
         ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
                 openApiJsonFile);
-        ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder",
-                generatedFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
                 "build");
 
@@ -327,8 +313,9 @@ public class BuildFrontendMojoTest {
         });
 
         final Set<String> generatedFiles = Stream
-                .of(generatedFolder.listFiles()).map(File::getName)
-                .collect(Collectors.toSet());
+                .of(FrontendUtils.getFlowGeneratedFolder(frontendDirectory)
+                        .listFiles())
+                .map(File::getName).collect(Collectors.toSet());
 
         String generated = "'%s' should have been generated into 'build/frontend'";
 
@@ -336,8 +323,6 @@ public class BuildFrontendMojoTest {
                 generatedFiles.contains(IMPORTS_NAME));
         Assert.assertTrue(String.format(generated, IMPORTS_D_TS_NAME),
                 generatedFiles.contains(IMPORTS_D_TS_NAME));
-        Assert.assertTrue(String.format(generated, FALLBACK_IMPORTS_NAME),
-                generatedFiles.contains(FALLBACK_IMPORTS_NAME));
 
         Assert.assertFalse("No 'target' directory should exist after build.",
                 target.exists());
@@ -347,16 +332,7 @@ public class BuildFrontendMojoTest {
     public void should_UpdateMainJsFile() throws Exception {
         Assert.assertFalse(importsFile.exists());
 
-        List<String> expectedLines = new ArrayList<>(Arrays.asList(
-                "export const addCssBlock = function(block, before = false) {",
-                " const tpl = document.createElement('template');",
-                " tpl.innerHTML = block;",
-                " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
-                "};",
-                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);",
-                "document.documentElement.setAttribute('theme', 'dark');"));
-
-        expectedLines.addAll(getExpectedImports());
+        List<String> expectedLines = getExpectedImports();
 
         mojo.execute();
 
@@ -478,8 +454,6 @@ public class BuildFrontendMojoTest {
         File resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
 
-        ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder",
-                projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
                 webpackOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo,
@@ -488,7 +462,6 @@ public class BuildFrontendMojoTest {
         JsonObject initialBuildInfo = Json.createObject();
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
         initialBuildInfo.put(Constants.NPM_TOKEN, "npm");
-        initialBuildInfo.put(Constants.GENERATED_TOKEN, "generated");
         initialBuildInfo.put(Constants.FRONTEND_TOKEN, "frontend");
 
         initialBuildInfo.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
@@ -496,6 +469,7 @@ public class BuildFrontendMojoTest {
         initialBuildInfo.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, true);
         initialBuildInfo.put(
                 InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, true);
+        initialBuildInfo.put(InitParameters.CI_BUILD, true);
 
         org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
         org.apache.commons.io.FileUtils.write(tokenFile,
@@ -513,8 +487,6 @@ public class BuildFrontendMojoTest {
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
         Assert.assertNull("npmFolder should have been removed",
                 buildInfo.get(Constants.NPM_TOKEN));
-        Assert.assertNull("generatedFolder should have been removed",
-                buildInfo.get(Constants.GENERATED_TOKEN));
         Assert.assertNull("frontendFolder should have been removed",
                 buildInfo.get(Constants.FRONTEND_TOKEN));
 
@@ -522,6 +494,8 @@ public class BuildFrontendMojoTest {
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been removed",
                 buildInfo.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
+        Assert.assertNull(InitParameters.CI_BUILD + "should have been removed",
+                buildInfo.get(InitParameters.CI_BUILD));
         Assert.assertNull(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE
                         + "should have been removed",

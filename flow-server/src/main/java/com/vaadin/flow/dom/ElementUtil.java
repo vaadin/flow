@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
@@ -254,6 +255,9 @@ public class ElementUtil {
         Element ret;
         if (node instanceof TextNode) {
             return Optional.of(Element.createText(((TextNode) node).text()));
+        } else if (node instanceof DataNode) {
+            return Optional
+                    .of(Element.createText(((DataNode) node).getWholeData()));
         } else if (node instanceof org.jsoup.nodes.Element) {
             ret = new Element(((org.jsoup.nodes.Element) node).tagName());
         } else {

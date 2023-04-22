@@ -15,9 +15,8 @@
  */
 package com.vaadin.flow.server;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,12 +44,12 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Handles sending of resources from the WAR root (web content) or
@@ -66,7 +65,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRON
  * @since 1.0
  */
 public class StaticFileServer implements StaticFileHandler {
-    private static final String EXPRESS_MODE_BUNDLE_PATH_PREFIX = "/VAADIN/dev-bundle/";
     static final String PROPERTY_FIX_INCORRECT_WEBJAR_PATHS = Constants.VAADIN_PREFIX
             + "fixIncorrectWebjarPaths";
     private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern
@@ -77,8 +75,14 @@ public class StaticFileServer implements StaticFileHandler {
     private DeploymentConfiguration deploymentConfiguration;
     private DevModeHandler devModeHandler;
 
-    // Matcher to match string starting with '/themes/[theme-name]/'
-    public static final Pattern APP_THEME_PATTERN = Pattern
+    // Matches paths to theme files referenced from link tags (e.g. styles
+    // .css or document.css)
+    private static final Pattern APP_THEME_PATTERN = Pattern
+            .compile("^\\/VAADIN\\/themes\\/([\\s\\S]+?)\\/");
+
+    // Matches paths to theme asset files referenced from CSS as an url() or
+    // from Java (e.g. new Image("themes/my-theme/...")
+    public static final Pattern APP_THEME_ASSETS_PATTERN = Pattern
             .compile("^\\/themes\\/([\\s\\S]+?)\\/");
 
     // Mapped uri is for the jar file
@@ -255,25 +259,27 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         URL resourceUrl = null;
-        if (!deploymentConfiguration.isProductionMode() && filenameWithPath
-                .startsWith(EXPRESS_MODE_BUNDLE_PATH_PREFIX)) {
-            // Express mode bundle file
-            String filenameInsideBundle = filenameWithPath
-                    .substring(EXPRESS_MODE_BUNDLE_PATH_PREFIX.length());
-            resourceUrl = FrontendUtils.findBundleFile(
-                    deploymentConfiguration.getProjectFolder(),
-                    "webapp/" + filenameInsideBundle);
-        } else if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
-            if (!deploymentConfiguration.frontendHotdeploy()) {
+        if (deploymentConfiguration.getMode() == Mode.DEVELOPMENT_BUNDLE) {
+            if (!"/index.html".equals(filenameWithPath)) {
+                resourceUrl = DevBundleUtils.findBundleFile(
+                        deploymentConfiguration.getProjectFolder(),
+                        "webapp" + filenameWithPath);
+            }
+
+            if (resourceUrl == null
+                    && (APP_THEME_PATTERN.matcher(filenameWithPath).find()
+                            || APP_THEME_ASSETS_PATTERN
+                                    .matcher(filenameWithPath).find())) {
+                // Express mode theme file request
                 resourceUrl = findAssetInFrontendThemesOrDevBundle(
                         vaadinService,
                         deploymentConfiguration.getProjectFolder(),
-                        filenameWithPath);
-            } else {
-                resourceUrl = vaadinService.getClassLoader()
-                        .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
-                                + filenameWithPath.replaceFirst("^/", ""));
+                        filenameWithPath.replace(VAADIN_MAPPING, ""));
             }
+        } else if (APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath).find()) {
+            resourceUrl = vaadinService.getClassLoader()
+                    .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
+                            + filenameWithPath.replaceFirst("^/", ""));
         } else if (!"/index.html".equals(filenameWithPath)) {
             // index.html needs to be handled by IndexHtmlRequestHandler
             resourceUrl = vaadinService.getClassLoader()
@@ -342,7 +348,7 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         // Second, look into default dev bundle
-        Matcher matcher = APP_THEME_PATTERN.matcher(assetPath);
+        Matcher matcher = APP_THEME_ASSETS_PATTERN.matcher(assetPath);
         if (!matcher.find()) {
             throw new IllegalStateException(
                     "Asset path should match the theme pattern");
@@ -359,7 +365,7 @@ public class StaticFileServer implements StaticFileHandler {
         // node_modules)
         if (assetInDevBundleUrl == null) {
             String assetInDevBundle = "/" + Constants.ASSETS + "/" + assetPath;
-            assetInDevBundleUrl = FrontendUtils.findBundleFile(projectFolder,
+            assetInDevBundleUrl = DevBundleUtils.findBundleFile(projectFolder,
                     assetInDevBundle);
         }
 
@@ -372,9 +378,7 @@ public class StaticFileServer implements StaticFileHandler {
                             + "bundle '%2$s/assets/'. \n"
                             + "Verify that the asset is available in "
                             + "'frontend/themes/%3$s/' directory and is added into the "
-                            + "'assets' block of the 'theme.json' file. \n"
-                            + "Else verify that the dependency 'com.vaadin:vaadin-dev-bundle' "
-                            + "is added to your project.",
+                            + "'assets' block of the 'theme.json' file.",
                     assetName, Constants.DEV_BUNDLE_LOCATION, themeName));
         }
         return assetInDevBundleUrl;
@@ -529,7 +533,8 @@ public class StaticFileServer implements StaticFileHandler {
         if (request.getPathInfo() == null) {
             return request.getServletPath();
         } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)
-                || APP_THEME_PATTERN.matcher(request.getPathInfo()).find()
+                || APP_THEME_ASSETS_PATTERN.matcher(request.getPathInfo())
+                        .find()
                 || request.getPathInfo().startsWith("/sw.js")) {
             return request.getPathInfo();
         }

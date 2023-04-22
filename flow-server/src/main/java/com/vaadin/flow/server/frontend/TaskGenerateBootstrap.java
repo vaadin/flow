@@ -57,7 +57,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         List<String> lines = new ArrayList<>();
         lines.add(String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
         lines.add(String.format("import '%s';%n", getIndexTsEntryPath()));
-        if (!options.productionMode) {
+        if (!options.isProductionMode()) {
             lines.add(DEV_TOOLS_IMPORT);
         }
         lines.addAll(getThemeLines());
@@ -91,7 +91,10 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
 
     private Collection<String> getThemeLines() {
         Collection<String> lines = new ArrayList<>();
-        if (shouldApplyAppTheme()) {
+        ThemeDefinition themeDef = frontDeps.getThemeDefinition();
+        if (themeDef != null && !"".equals(themeDef.getName())) {
+            lines.add("import './theme-" + themeDef.getName()
+                    + ".global.generated.js';");
             lines.add("import { applyTheme } from './theme.js';");
             lines.add("applyTheme(document);");
             lines.add("");
@@ -99,8 +102,4 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         return lines;
     }
 
-    private boolean shouldApplyAppTheme() {
-        ThemeDefinition themeDef = frontDeps.getThemeDefinition();
-        return themeDef != null && !"".equals(themeDef.getName());
-    }
 }

@@ -25,11 +25,13 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.FrontendVersion;
 
@@ -55,6 +57,8 @@ public class NodeInstaller {
     private static final String NODE_DEFAULT = INSTALL_PATH + "/node";
 
     public static final String PROVIDED_VERSION = "provided";
+
+    private static final int MAX_DOWNLOAD_ATTEMPS = 3;
 
     private final Object lock = new Object();
 
@@ -250,12 +254,10 @@ public class NodeInstaller {
 
             extractFile(data.getArchive(), data.getTmpDirectory());
         } catch (DownloadException e) {
-            getLogger().error(
+            throw new InstallationException(
                     "Node.js download failed. This may be due to loss of internet connection.\n"
                             + "If you are behind a proxy server you should configure your proxy settings.\n"
-                            + "Verify connection and proxy settings or follow the https://nodejs.org/en/download/ guide to install Node.js globally.");
-            throw new InstallationException(
-                    "Could not download Node.js. Check your connection and proxy settings.",
+                            + "Verify connection and proxy settings or follow the https://nodejs.org/en/download/ guide to install Node.js globally.",
                     e);
         } catch (ArchiveExtractionException e) {
             throw new InstallationException(
@@ -465,8 +467,15 @@ public class NodeInstaller {
 
     private void extractFile(File archive, File destinationDirectory)
             throws ArchiveExtractionException {
+        long size;
         try {
-            getLogger().info("Unpacking {} into {}", archive,
+            size = Files.size(archive.toPath());
+        } catch (IOException e) {
+            throw new ArchiveExtractionException(
+                    "Error determining archive size", e);
+        }
+        try {
+            getLogger().info("Unpacking {} ({} bytes) into {}", archive, size,
                     destinationDirectory);
             archiveExtractor.extract(archive, destinationDirectory);
         } catch (ArchiveExtractionException e) {
@@ -501,8 +510,22 @@ public class NodeInstaller {
             String userName, String password) throws DownloadException {
         if (!destination.exists()) {
             getLogger().info("Downloading {} to {}", downloadUrl, destination);
-            fileDownloader.download(downloadUrl, destination, userName,
-                    password);
+            for (int i = 0; i < MAX_DOWNLOAD_ATTEMPS; i++) {
+                try {
+                    fileDownloader.download(downloadUrl, destination, userName,
+                            password);
+                    return;
+                } catch (DownloadException e) {
+                    if (i == MAX_DOWNLOAD_ATTEMPS - 1) {
+                        throw e;
+                    }
+
+                    getLogger().debug("Error during downloading " + downloadUrl,
+                            e);
+                    getLogger().warn("Download failed, retrying...");
+                }
+
+            }
         }
     }
 
@@ -522,13 +545,15 @@ public class NodeInstaller {
         try {
             Process process = FrontendUtils.createProcessBuilder(versionCommand)
                     .start();
+            CompletableFuture<Pair<String, String>> streamConsumer = FrontendUtils
+                    .consumeProcessStreams(process);
             int exitCode = process.waitFor();
             if (exitCode != 0) {
                 throw new IOException("Process exited with non 0 exit code. ("
                         + exitCode + ")");
             }
             return FrontendUtils.parseFrontendVersion(
-                    FrontendUtils.streamToString(process.getInputStream()));
+                    streamConsumer.getNow(new Pair<>("", "")).getFirst());
         } catch (InterruptedException | IOException e) {
             throw new InstallationException(String.format(
                     "Unable to detect version of %s. %s", tool,

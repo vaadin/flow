@@ -22,6 +22,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,6 +33,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -51,8 +53,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.servlet.ServletRegistration;
-import org.atmosphere.cpr.ApplicationConfig;
 import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -84,7 +84,10 @@ import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
+import com.vaadin.flow.server.frontend.CssBundler;
+import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -115,6 +118,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             + "window.__gwtStatsEvent = function(event) {"
             + "window.Vaadin.Flow.gwtStatsEvents.push(event); "
             + "return true;};};";
+
+    //@formatter:off
+    protected static final String SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG =
+            "const link = document.createElement('link');"
+            + "link.rel = 'stylesheet';"
+            + "link.type = 'text/css';"
+            + "link.href = $0;"
+            + "document.head.appendChild(link);";
+    //@formatter:on
+
     static final String CONTENT_ATTRIBUTE = "content";
     private static final String DEFER_ATTRIBUTE = "defer";
     static final String VIEWPORT = "viewport";
@@ -1585,7 +1598,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     protected static void addJavaScriptEntryPoints(
             DeploymentConfiguration config, Document targetDocument)
             throws IOException {
-        URL statsJsonUrl = FrontendUtils
+        URL statsJsonUrl = DevBundleUtils
                 .findBundleFile(config.getProjectFolder(), "config/stats.json");
         Objects.requireNonNull(statsJsonUrl,
                 "Frontend development bundle is expected to be in the project"
@@ -1593,6 +1606,65 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         String statsJson = IOUtils.toString(statsJsonUrl,
                 StandardCharsets.UTF_8);
         addEntryScripts(targetDocument, Json.parse(statsJson));
+    }
+
+    /**
+     * Gives link tags for referencing the custom theme stylesheet files
+     * (typically styles.css or document.css), which are served in express build
+     * mode by static file server directly from frontend/themes folder.
+     *
+     * @param config
+     *            deployment configuration
+     * @param fileName
+     *            the stylesheet file name to add a reference to
+     * @return the collection of link tags to be added to the page
+     * @throws IOException
+     *             if theme name cannot be extracted from file
+     */
+    protected static Collection<Element> getStylesheetTags(
+            AbstractConfiguration config, String fileName) throws IOException {
+        return ThemeUtils.getActiveThemes(config).stream()
+                .map(theme -> getDevModeStyleTag(theme, fileName, config))
+                .toList();
+    }
+
+    /**
+     * Gives a links for referencing the custom theme stylesheet files
+     * (typically styles.css or document.css), which are served in express build
+     * mode by static file server directly from frontend/themes folder.
+     *
+     * @param config
+     *            deployment configuration
+     * @param fileName
+     *            the stylesheet file name to add a reference to
+     * @return the collection of links to be added to the page
+     * @throws IOException
+     *             if theme name cannot be extracted from file
+     */
+    protected static Collection<String> getStylesheetLinks(
+            AbstractConfiguration config, String fileName) throws IOException {
+        return ThemeUtils.getActiveThemes(config).stream()
+                .map(theme -> ThemeUtils.getThemeFilePath(theme, fileName))
+                .toList();
+    }
+
+    private static Element getDevModeStyleTag(String themeName, String fileName,
+            AbstractConfiguration config) {
+        Element element = new Element("style");
+        element.attr("data-file-path",
+                ThemeUtils.getThemeFilePath(themeName, fileName));
+        File frontendDirectory = FrontendUtils.getProjectFrontendDir(config);
+        File stylesCss = new File(
+                ThemeUtils.getThemeFolder(frontendDirectory, themeName),
+                fileName);
+        try {
+            element.appendChild(new DataNode(CssBundler
+                    .inlineImports(stylesCss.getParentFile(), stylesCss)));
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "Unable to read theme file from " + stylesCss, e);
+        }
+        return element;
     }
 
     private static void addEntryScripts(Document targetDocument,
@@ -1604,7 +1676,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             String entryScript = entryScripts.getString(i);
             Element elm = new Element(SCRIPT_TAG);
             elm.attr("type", "module");
-            elm.attr("src", "VAADIN/dev-bundle/" + entryScript);
+            elm.attr("src", entryScript);
             targetDocument.head().appendChild(elm);
 
             if (entryScript.contains("indexhtml")) {
