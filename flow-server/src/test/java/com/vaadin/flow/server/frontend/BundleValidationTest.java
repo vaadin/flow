@@ -82,6 +82,8 @@ public class BundleValidationTest {
 
     private MockedStatic<DevBundleUtils> devBundleUtils;
 
+    private MockedStatic<BundleValidationUtil> bundleUtils;
+
     @Before
     public void init() {
         options = new Options(Mockito.mock(Lookup.class),
@@ -93,12 +95,15 @@ public class BundleValidationTest {
                 Mockito.CALLS_REAL_METHODS);
         devBundleUtils = Mockito.mockStatic(DevBundleUtils.class,
                 Mockito.CALLS_REAL_METHODS);
+        bundleUtils = Mockito.mockStatic(BundleValidationUtil.class,
+                Mockito.CALLS_REAL_METHODS);
     }
 
     @After
     public void teardown() {
         frontendUtils.close();
         devBundleUtils.close();
+        bundleUtils.close();
     }
 
     private JsonObject getBasicStats() {
@@ -488,6 +493,8 @@ public class BundleValidationTest {
 
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "1.8.1");
+        setupFrontendUtilsMock(stats);
+
         needsBuild = BundleValidationUtil.needsBundleBuild(options, depScanner,
                 finder);
         Assert.assertTrue(
@@ -526,6 +533,7 @@ public class BundleValidationTest {
 
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
                 "2.0.0");
+        setupFrontendUtilsMock(stats);
 
         needsBuild = BundleValidationUtil.needsBundleBuild(options, depScanner,
                 finder);
@@ -1615,5 +1623,7 @@ public class BundleValidationTest {
         frontendUtils.when(
                 () -> FrontendUtils.getJarResourceString(Mockito.anyString()))
                 .thenAnswer(q -> jarResources.get(q.getArgument(0)));
+        bundleUtils.when(
+                BundleValidationUtil::findProdBundleStatsJson).thenReturn(stats.toJson());
     }
 }
