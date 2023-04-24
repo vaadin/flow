@@ -1623,7 +1623,7 @@ public class BundleValidationTest {
         frontendUtils.when(
                 () -> FrontendUtils.getJarResourceString(Mockito.anyString()))
                 .thenAnswer(q -> jarResources.get(q.getArgument(0)));
-        bundleUtils.when(
-                BundleValidationUtil::findProdBundleStatsJson).thenReturn(stats.toJson());
+        bundleUtils.when(BundleValidationUtil::findProdBundleStatsJson)
+                .thenReturn(stats.toJson());
     }
 }
