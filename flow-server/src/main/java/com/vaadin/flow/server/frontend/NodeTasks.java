@@ -226,7 +226,8 @@ public class NodeTasks implements FallibleCommand {
             pwa = new PwaConfiguration();
         }
         commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
-        if (options.isFrontendHotdeploy() || options.isBundleBuild()) {
+        if (options.isProductionMode() || options.isFrontendHotdeploy()
+                || options.isBundleBuild()) {
             commands.add(new TaskUpdateVite(options, webComponentTags));
         }
 
@@ -246,7 +247,8 @@ public class NodeTasks implements FallibleCommand {
 
     private void addBootstrapTasks(Options options) {
         commands.add(new TaskGenerateIndexHtml(options));
-        if (options.isFrontendHotdeploy() || options.isBundleBuild()) {
+        if (options.isProductionMode() || options.isFrontendHotdeploy()
+                || options.isBundleBuild()) {
             commands.add(new TaskGenerateIndexTs(options));
             if (!options.isProductionMode()) {
                 commands.add(new TaskGenerateViteDevMode(options));
