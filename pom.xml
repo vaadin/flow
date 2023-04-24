@@ -140,6 +140,9 @@
         <!-- Skip these categories in validation, use -Pslow-tests to run them
             and override slow-tests profile to add more categories -->
         <excludedGroups>com.vaadin.flow.testcategory.SlowTests</excludedGroups>
+        <failsafe.parallel>all</failsafe.parallel>
+        <failsafe.threadCount>2</failsafe.threadCount>
+        <failsafe.perCoreThreadCount>true</failsafe.perCoreThreadCount>
     </properties>
 
     <repositories>
@@ -557,8 +560,9 @@
                         <argLine>${failsafe.argLine}</argLine>
                         <trimStackTrace>false</trimStackTrace>
                         <enableAssertions>true</enableAssertions>
-                        <parallel>all</parallel>
-                        <threadCount>2</threadCount>
+                        <parallel>${failsafe.parallel}</parallel>
+                        <threadCount>${failsafe.threadCount}</threadCount>
+                        <perCoreThreadCount>${failsafe.perCoreThreadCount}</perCoreThreadCount>
                         <!-- export test server port to integration tests -->
                         <systemPropertyVariables>
                             <serverPort>${server.port}</serverPort>
