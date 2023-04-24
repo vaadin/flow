@@ -20,6 +20,7 @@
     <modules>
         <module>test-dev-bundle</module>
         <module>test-prod-bundle</module>
+        <module>test-flow-maven-plugin</module>
         <module>frontend-add-on</module>
         <module>java-add-on</module>
         <module>test-reusable-theme-express-build</module>
