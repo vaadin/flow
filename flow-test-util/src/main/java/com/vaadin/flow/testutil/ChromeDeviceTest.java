@@ -101,6 +101,7 @@ public class ChromeDeviceTest extends ViewOrUITest {
 
         chromeOptions.setExperimentalOption("mobileEmulation",
                 mobileEmulationParams);
+        chromeOptions.setCapability("networkConnectionEnabled", true);
 
         if (getDeploymentHostname().equals("localhost")) {
             // Use headless Chrome for running locally
