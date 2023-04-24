@@ -479,6 +479,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     public void quitDriver() {
         if (driver != null) {
             driver.close();
+            driver.quit();
         }
     }
 }
