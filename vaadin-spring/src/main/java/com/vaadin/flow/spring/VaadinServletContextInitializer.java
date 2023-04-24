@@ -22,7 +22,6 @@ import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.HandlesTypes;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -42,7 +41,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
@@ -73,7 +71,6 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -88,9 +85,6 @@ import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.spring.VaadinScanPackagesRegistrar.VaadinScanPackages;
 import com.vaadin.flow.theme.Theme;
-
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 
 /**
  * Servlet context initializer for Spring Boot Application.
