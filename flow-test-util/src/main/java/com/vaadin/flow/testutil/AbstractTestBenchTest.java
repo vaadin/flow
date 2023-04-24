@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -474,4 +475,10 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
     }
 
+    @After
+    public void quitDriver() {
+        if (driver != null) {
+            driver.close();
+        }
+    }
 }
