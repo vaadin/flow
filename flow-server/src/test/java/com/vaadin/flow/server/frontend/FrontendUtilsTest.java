@@ -21,11 +21,8 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -38,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -308,69 +304,4 @@ public class FrontendUtilsTest {
                 linkFolderFile.exists());
     }
 
-    @Test
-    public void consumeProcessStreams_streamsConsumed() throws Exception {
-
-        Pair<String, String> streams = executeExternalProcess("STDOUT", "Test",
-                "text");
-        String stdOut = streams.getFirst();
-        String stdErr = streams.getSecond();
-        Assert.assertTrue("Unexpected STDOUT contents: " + stdOut,
-                stdOut.contains("STDOUT, Test, text"));
-        Assert.assertTrue("Expected STDERR to be empty, but was " + stdErr,
-                stdErr.isBlank());
-
-        streams = executeExternalProcess("STDERR", "Test", "text");
-        stdOut = streams.getFirst();
-        stdErr = streams.getSecond();
-        Assert.assertTrue("Expected STDOUT to be empty, but was " + stdOut,
-                stdOut.isBlank());
-        Assert.assertTrue("Unexpected STDERR contents: " + stdErr,
-                stdErr.contains("STDERR, Test, text"));
-
-        streams = executeExternalProcess("BOTH", "Test", "text");
-        stdOut = streams.getFirst();
-        stdErr = streams.getSecond();
-        Assert.assertTrue("Unexpected STDERR contents: " + stdOut,
-                stdOut.contains("STDOUT: BOTH, Test, text"));
-        Assert.assertTrue("Unexpected STDERR contents: " + stdErr,
-                stdErr.contains("STDERR: BOTH, Test, text"));
-
-        streams = executeExternalProcess("THROW EXCEPTION");
-        stdOut = streams.getFirst();
-        stdErr = streams.getSecond();
-        Assert.assertTrue("Expected STDOUT to be empty, but was " + stdOut,
-                stdOut.isBlank());
-        Assert.assertTrue("Unexpected STDERR contents: " + stdErr,
-                stdErr.contains("RuntimeException")
-                        && stdErr.contains("Invalid stream THROW EXCEPTION"));
-    }
-
-    private Pair<String, String> executeExternalProcess(String... args)
-            throws Exception {
-        List<String> cmd = new ArrayList<>(List.of(
-                Paths.get(System.getProperty("java.home"), "bin", "java")
-                        .toFile().getAbsolutePath(),
-                "-cp", System.getProperty("java.class.path"),
-                TestExecutable.class.getName()));
-        cmd.addAll(List.of(args));
-        Process process = new ProcessBuilder(cmd).start();
-        process.waitFor(1, TimeUnit.SECONDS);
-        return FrontendUtils.consumeProcessStreams(process).get(100,
-                TimeUnit.MILLISECONDS);
-    }
-
-    public static class TestExecutable {
-        public static void main(String... args) {
-            switch (args[0]) {
-            case "STDOUT" -> System.out.println(String.join(", ", args));
-            case "STDERR" -> System.err.println(String.join(", ", args));
-            case "BOTH" -> {
-                System.out.println("STDOUT: " + String.join(", ", args));
-                System.err.println("STDERR: " + String.join(", ", args));
-            }
-            default -> throw new RuntimeException("Invalid stream " + args[0]);
-            }
-        }
-    }
 }

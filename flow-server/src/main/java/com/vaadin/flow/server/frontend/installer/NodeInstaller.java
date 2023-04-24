@@ -25,13 +25,11 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.FrontendVersion;
 
@@ -545,15 +543,13 @@ public class NodeInstaller {
         try {
             Process process = FrontendUtils.createProcessBuilder(versionCommand)
                     .start();
-            CompletableFuture<Pair<String, String>> streamConsumer = FrontendUtils
-                    .consumeProcessStreams(process);
             int exitCode = process.waitFor();
             if (exitCode != 0) {
                 throw new IOException("Process exited with non 0 exit code. ("
                         + exitCode + ")");
             }
             return FrontendUtils.parseFrontendVersion(
-                    streamConsumer.getNow(new Pair<>("", "")).getFirst());
+                    FrontendUtils.streamToString(process.getInputStream()));
         } catch (InterruptedException | IOException e) {
             throw new InstallationException(String.format(
                     "Unable to detect version of %s. %s", tool,

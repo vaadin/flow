@@ -18,17 +18,16 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.internal.Pair;
 
 /**
  * Helps to locate the tools in the system by their names.
@@ -132,8 +131,6 @@ public class FrontendToolsLocator implements Serializable {
 
         int exitCode = -1;
         long timeStamp = System.currentTimeMillis();
-        CompletableFuture<Pair<String, String>> streamConsumer = FrontendUtils
-                .consumeProcessStreams(process);
         try {
             exitCode = process.waitFor();
         } catch (InterruptedException e) {
@@ -161,22 +158,29 @@ public class FrontendToolsLocator implements Serializable {
             }
             return Optional.empty();
         }
-
-        List<String> stdout;
-        List<String> stderr;
+        List<String> stdout = new ArrayList<>();
         try {
-            Pair<String, String> outputs = streamConsumer.get();
-            stdout = new ArrayList<>(
-                    List.of(outputs.getFirst().split(System.lineSeparator())));
-            stderr = new ArrayList<>(
-                    List.of(outputs.getSecond().split(System.lineSeparator())));
-        } catch (ExecutionException | InterruptedException e) {
-            Throwable cause = e;
-            if (e instanceof ExecutionException) {
-                cause = e.getCause();
+            String stream = IOUtils.toString(process.getInputStream(),
+                    StandardCharsets.UTF_8);
+            if (!stream.isEmpty()) {
+                Stream.of(stream.split("\\R")).forEach(stdout::add);
             }
-            log().error("Failed to read the command '{}' stdout/stderr",
-                    commandString, cause);
+        } catch (IOException e) {
+            log().error("Failed to read the command '{}' stdout", commandString,
+                    e);
+            return Optional.empty();
+        }
+
+        List<String> stderr = new ArrayList<>();
+        try {
+            String stream = IOUtils.toString(process.getErrorStream(),
+                    StandardCharsets.UTF_8);
+            if (!stream.isEmpty()) {
+                Stream.of(stream.split("\\R")).forEach(stderr::add);
+            }
+        } catch (IOException e) {
+            log().error("Failed to read the command '{}' stderr", commandString,
+                    e);
             return Optional.empty();
         }
 
