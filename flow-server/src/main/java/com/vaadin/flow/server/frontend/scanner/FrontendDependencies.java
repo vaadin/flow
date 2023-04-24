@@ -249,12 +249,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * @return the set of JS files
      */
     @Override
-    public Set<String> getScripts() {
-        Set<String> all = new LinkedHashSet<>();
+    public List<String> getScripts() {
+        LinkedHashSet<String> all = new LinkedHashSet<>();
         for (EntryPointData data : entryPoints.values()) {
             all.addAll(data.getScripts());
         }
-        return all;
+        return new ArrayList<>(all);
     }
 
     /**
@@ -263,12 +263,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * @return the set of CSS files
      */
     @Override
-    public Set<CssData> getCss() {
+    public List<CssData> getCss() {
         Set<CssData> all = new LinkedHashSet<>();
         for (EntryPointData data : entryPoints.values()) {
             all.addAll(data.getCss());
         }
-        return all;
+        return new ArrayList<>(all);
     }
 
     /**

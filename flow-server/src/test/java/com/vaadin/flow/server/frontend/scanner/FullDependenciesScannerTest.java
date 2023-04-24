@@ -197,7 +197,7 @@ public class FullDependenciesScannerTest {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 JavaScript.class);
 
-        Set<String> scripts = scanner.getScripts();
+        List<String> scripts = scanner.getScripts();
         Assert.assertTrue(scripts.contains("javascript/a.js"));
         Assert.assertTrue(scripts.contains("javascript/b.js"));
         Assert.assertTrue(scripts.contains("javascript/c.js"));

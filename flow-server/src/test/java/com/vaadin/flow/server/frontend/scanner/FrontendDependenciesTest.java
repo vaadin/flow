@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -102,7 +101,7 @@ public class FrontendDependenciesTest {
         Assert.assertTrue(1 <= modules.size());
         Assert.assertTrue(modules.contains("foo.js"));
 
-        Set<String> scripts = dependencies.getScripts();
+        List<String> scripts = dependencies.getScripts();
         Assert.assertEquals(1, scripts.size());
         Assert.assertEquals("bar.js", scripts.iterator().next());
     }
@@ -202,7 +201,7 @@ public class FrontendDependenciesTest {
         Assert.assertTrue(1 <= modules.size());
         Assert.assertTrue(modules.contains("./src/bar.js"));
 
-        Set<String> scripts = dependencies.getScripts();
+        List<String> scripts = dependencies.getScripts();
         Assert.assertEquals(1, scripts.size());
         Assert.assertEquals("./src/baz.js", scripts.iterator().next());
     }
@@ -217,7 +216,7 @@ public class FrontendDependenciesTest {
         Assert.assertTrue(1 <= modules.size());
         Assert.assertTrue(modules.contains("baz.js"));
 
-        Set<String> scripts = dependencies.getScripts();
+        List<String> scripts = dependencies.getScripts();
         Assert.assertEquals(1, scripts.size());
         Assert.assertEquals("foobar.js", scripts.iterator().next());
     }
@@ -232,7 +231,7 @@ public class FrontendDependenciesTest {
         Assert.assertTrue(1 <= modules.size());
         Assert.assertTrue(modules.contains("baz.js"));
 
-        Set<String> scripts = dependencies.getScripts();
+        List<String> scripts = dependencies.getScripts();
         Assert.assertEquals(1, scripts.size());
         Assert.assertEquals("foobar.js", scripts.iterator().next());
     }
@@ -244,11 +243,8 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
 
-        Set<String> scripts = dependencies.getScripts();
-        Assert.assertEquals(LinkedHashSet.class, scripts.getClass());
-
-        Assert.assertEquals(new ArrayList<>(dependencies.getScripts()),
-                Arrays.asList("a.js", "b.js", "c.js"));
+        List<String> scripts = dependencies.getScripts();
+        Assert.assertEquals(scripts, Arrays.asList("a.js", "b.js", "c.js"));
     }
 
     // flow #6524
