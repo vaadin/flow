@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
@@ -91,6 +92,7 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private final File generatedFlowImports;
     private final File generatedFlowDefinitions;
+    private File chunkFolder;
 
     AbstractUpdateImports(Options options, FrontendDependenciesScanner scanner,
             ClassFinder classFinder) {
@@ -103,6 +105,9 @@ abstract class AbstractUpdateImports implements Runnable {
         generatedFlowDefinitions = new File(
                 generatedFlowImports.getParentFile(),
                 FrontendUtils.IMPORTS_D_TS_NAME);
+        this.chunkFolder = new File(generatedFlowImports.getParentFile(),
+                "chunks");
+
     }
 
     @Override
@@ -118,6 +123,13 @@ abstract class AbstractUpdateImports implements Runnable {
         try {
             for (Entry<File, List<String>> output : outputFiles.entrySet()) {
                 FileIOUtils.writeIfChanged(output.getKey(), output.getValue());
+            }
+            if (chunkFolder.exists() && chunkFolder.isDirectory()) {
+                for (File existingChunk : chunkFolder.listFiles()) {
+                    if (!outputFiles.containsKey(existingChunk)) {
+                        existingChunk.delete();
+                    }
+                }
             }
         } catch (IOException e) {
             throw new IllegalStateException(
@@ -139,10 +151,43 @@ abstract class AbstractUpdateImports implements Runnable {
             Map<ChunkInfo, List<String>> javascript) {
         Map<File, List<String>> files = new HashMap<>();
 
+        Map<ChunkInfo, List<String>> lazyImports = new LinkedHashMap<>();
         List<String> eagerImports = new ArrayList<>();
 
         for (Entry<ChunkInfo, List<String>> entry : javascript.entrySet()) {
-            eagerImports.addAll(entry.getValue());
+            if (entry.getKey().isEager()) {
+                eagerImports.addAll(entry.getValue());
+            } else {
+                lazyImports.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        List<String> chunkLoader = new ArrayList<>();
+        if (!lazyImports.isEmpty()) {
+            chunkLoader.add("");
+            chunkLoader.add("const loadOnDemand = (key) => {");
+            for (Entry<ChunkInfo, List<String>> entry : lazyImports
+                    .entrySet()) {
+                String hash = StringUtil.getHash(entry.getKey().getName(),
+                        StandardCharsets.UTF_8);
+                String chunkFilename = "chunk-" + hash + ".js";
+                chunkLoader.add("  if (key === '" + hash + "') {");
+                chunkLoader.add(
+                        "    return import('./chunks/" + chunkFilename + "');");
+                chunkLoader.add("  }");
+
+                List<String> chunkLines = getModuleLines(entry.getValue());
+
+                File chunkFile = new File(chunkFolder, chunkFilename);
+                files.put(chunkFile, chunkLines);
+            }
+
+            chunkLoader.add("  return Promise.resolve(0);");
+            chunkLoader.add("}");
+            chunkLoader.add("");
+        } else {
+            chunkLoader.add(
+                    "const loadOnDemand = (key) => { return Promise.resolve(0); }");
         }
 
         List<String> mainLines = new ArrayList<>();
@@ -150,6 +195,10 @@ abstract class AbstractUpdateImports implements Runnable {
 
         mainLines.addAll(getCssLines(css));
         mainLines.addAll(getModuleLines(eagerImports));
+        mainLines.addAll(chunkLoader);
+        mainLines.add("window.Vaadin = window.Vaadin || {};");
+        mainLines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
+        mainLines.add("window.Vaadin.Flow.loadOnDemand = loadOnDemand;");
 
         files.put(generatedFlowImports, mainLines);
         files.put(generatedFlowDefinitions,
@@ -280,7 +329,7 @@ abstract class AbstractUpdateImports implements Runnable {
     private Map<ChunkInfo, List<String>> mergeJavascript(
             Map<ChunkInfo, List<String>> modules,
             Map<ChunkInfo, List<String>> scripts) {
-        Map<ChunkInfo, List<String>> result = new HashMap<>();
+        Map<ChunkInfo, List<String>> result = new LinkedHashMap<>();
         Collection<? extends String> generated = resolveGeneratedModules(
                 getGeneratedModules());
         for (Entry<ChunkInfo, List<String>> entry : modules.entrySet()) {

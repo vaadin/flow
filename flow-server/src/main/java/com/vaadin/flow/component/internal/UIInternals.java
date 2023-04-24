@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +53,7 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
@@ -839,11 +841,22 @@ public class UIInternals implements Serializable {
                 .getDependencies(session.getService(), componentClass);
         // In npm mode, add external JavaScripts directly to the page.
         addExternalDependencies(dependencies);
+        lazyLoadIfNeeded(componentClass);
 
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
 
         warnForUnavailableBundledDependencies(componentClass, dependencies);
+    }
+
+    private void lazyLoadIfNeeded(Class<? extends Component> componentClass) {
+        ui.getPage().addDynamicImport("return window.Vaadin.Flow.loadOnDemand('"
+                + getChunkForClass(componentClass) + "');");
+    }
+
+    private String getChunkForClass(Class<? extends Component> componentClass) {
+        return StringUtil.getHash(componentClass.getName(),
+                StandardCharsets.UTF_8);
     }
 
     private void warnForUnavailableBundledDependencies(

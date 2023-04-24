@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * Defines the route template suffix for components that function as navigation
@@ -114,4 +115,13 @@ public @interface Route {
      */
     boolean registerAtStartup() default true;
 
+    /**
+     * Defines if the route dependencies should be eagerly (on app startup) or
+     * lazily (when accessing the route) loaded.
+     * <p>
+     * The default is to load eagerly
+     *
+     * @return the load mode to use,
+     */
+    LoadMode loadMode() default LoadMode.EAGER;
 }

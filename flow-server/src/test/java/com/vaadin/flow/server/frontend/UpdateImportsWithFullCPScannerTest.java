@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.net.MalformedURLException;
+
+import org.junit.Test;
+
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -25,5 +29,10 @@ public class UpdateImportsWithFullCPScannerTest
     protected FrontendDependenciesScanner getScanner(ClassFinder finder) {
         return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                 .createScanner(true, finder, true);
+    }
+
+    @Test
+    public void assertFullSortOrder() throws MalformedURLException {
+        super.assertFullSortOrder(false);
     }
 }

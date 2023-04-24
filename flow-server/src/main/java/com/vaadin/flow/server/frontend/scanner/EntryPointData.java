@@ -39,10 +39,12 @@ public final class EntryPointData implements Serializable {
     private LinkedHashSet<String> modules = new LinkedHashSet<>();
     private LinkedHashSet<String> scripts = new LinkedHashSet<>();
     private LinkedHashSet<CssData> css = new LinkedHashSet<>();
+    private boolean eager = true;
 
-    EntryPointData(Class<?> clazz, EntryPointType type) {
+    EntryPointData(Class<?> clazz, EntryPointType type, boolean eager) {
         this.name = clazz.getName();
         this.type = type;
+        this.eager = eager;
     }
 
     String getName() {
@@ -63,6 +65,10 @@ public final class EntryPointData implements Serializable {
 
     public Collection<CssData> getCss() {
         return css;
+    }
+
+    public boolean isEager() {
+        return eager;
     }
 
 }

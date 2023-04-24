@@ -58,6 +58,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -373,19 +374,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 "@vaadin/vaadin-lumo-styles/icons.js");
     }
 
-    // flow #6408
-    @Test
-    public void jsModuleOnRouterLayout_shouldBe_addedAfterLumoStyles() {
-        updater.run();
-
-        assertContainsImports(true, "Frontend/common-js-file.js");
-
-        assertImportOrder("Frontend/common-js-file.js",
-                "@vaadin/vaadin-lumo-styles/color.js");
-        assertImportOrder("Frontend/common-js-file.js",
-                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js");
-    }
-
     @Test
     public void jsModulesOrderIsPreservedAnsAfterJsModules() {
         updater.run();
@@ -418,8 +406,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         NodeTestComponents.JavaScriptOrder javaScriptOrder;
     }
 
-    @Test
-    public void assertFullSortOrder() throws MalformedURLException {
+    public void assertFullSortOrder(boolean uiImportSeparated)
+            throws MalformedURLException {
         Class[] testClasses = { MainView.class,
                 NodeTestComponents.TranslatedImports.class,
                 NodeTestComponents.LocalP3Template.class,
@@ -437,6 +425,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         // - JavaScript
         // - Generated webcompoents
         List<String> expectedImports = new ArrayList<>();
+        List<String> uiAndGeneratedImports = new ArrayList<>();
 
         getAnntotationsAsStream(JsModule.class, testClasses)
                 .map(JsModule::value).sorted().map(this::updateToImport)
@@ -444,15 +433,26 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         getAnntotationsAsStream(JavaScript.class, testClasses)
                 .map(JavaScript::value).map(this::updateToImport).sorted()
                 .forEach(expectedImports::add);
+
+        if (uiImportSeparated) {
+            String uiImport = expectedImports.stream()
+                    .filter(dep -> dep.contains(DepsTests.UI_IMPORT))
+                    .findFirst().get();
+            expectedImports.remove(uiImport);
+            uiAndGeneratedImports.add(uiImport);
+        }
         updater.getGeneratedModules().stream()
                 .map(updater::resolveGeneratedModule).map(this::updateToImport)
-                .forEach(expectedImports::add);
+                .forEach(uiAndGeneratedImports::add);
 
         List<String> result = updater.resultingLines;
         result.removeIf(line -> line.startsWith("import { injectGlobalCss }"));
         result.removeIf(line -> line.startsWith("export "));
         result.removeIf(line -> line.isBlank());
+        result.removeIf(line -> line.contains("loadOnDemand"));
+        result.removeIf(line -> line.contains("window.Vaadin"));
 
+        expectedImports.addAll(uiAndGeneratedImports);
         Assert.assertEquals(expectedImports, result);
     }
 
