@@ -1,12 +1,18 @@
 package com.vaadin.flow.testnpmonlyfeatures.nobuildmojo;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.BundleValidationUtil;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class NoAppBundleIT extends ChromeBrowserTest {
@@ -17,16 +23,16 @@ public class NoAppBundleIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void noFrontendFilesCreated() {
+    public void noFrontendFilesCreated() throws IOException {
         File baseDir = new File(System.getProperty("user.dir", "."));
 
         // shouldn't create a dev-bundle
         Assert.assertFalse("No dev-bundle should be created",
                 new File(baseDir, Constants.DEV_BUNDLE_LOCATION).exists());
-        Assert.assertFalse("No prod-bundle should be created",
-                new File(baseDir,
-                        "target/classes/META-INF/VAADIN/config/stats.json")
-                        .exists());
+
+        // should use default prod bundle
+        assertDefaultProdBundle(baseDir);
+
         Assert.assertFalse("No node_modules should be created",
                 new File(baseDir, "node_modules").exists());
 
@@ -50,5 +56,22 @@ public class NoAppBundleIT extends ChromeBrowserTest {
         Assert.assertFalse("Service Worker is not served properly",
                 pageSource.contains("Error 404 Not Found")
                         || pageSource.contains("Could not navigate to"));
+    }
+
+    private void assertDefaultProdBundle(File baseDir) throws IOException {
+        try {
+            findElement(By.tagName("vaadin-dev-tools"));
+        } catch (NoSuchElementException e) {
+            // prod mode
+            File stats = new File(baseDir,
+                    "target/classes/META-INF/VAADIN/config/stats.json");
+            Assert.assertTrue("Prod bundle should be copied", stats.exists());
+            String statsContent = FileUtils.readFileToString(stats,
+                    StandardCharsets.UTF_8);
+            String hash = BundleValidationUtil.calculateHash(statsContent);
+            Assert.assertEquals("Unexpected prod bundle hash",
+                    "3cb07a6193f2b3deaeec859541b83b405fe7af59bd1be44bbf5a5a0edcf7ff4a",
+                    hash);
+        }
     }
 }

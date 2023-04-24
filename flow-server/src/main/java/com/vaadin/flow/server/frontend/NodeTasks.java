@@ -112,6 +112,7 @@ public class NodeTasks implements FallibleCommand {
                 boolean needBuild = BundleValidationUtil.needsBuildProdBundle(
                         options, frontendDependencies, classFinder);
                 options.withRunNpmInstall(needBuild);
+                options.withBundleBuild(needBuild);
                 if (!needBuild) {
                     commands.add(new TaskCopyBundleFiles(options));
                 }
@@ -120,7 +121,7 @@ public class NodeTasks implements FallibleCommand {
             // The dev bundle check needs the frontendDependencies to be able to
             // determine if we need a rebuild as the check happens immediately
             // and no update tasks are executed before it.
-            if (!options.isProductionMode() && options.isDevBundleBuild()) {
+            if (!options.isProductionMode() && options.isBundleBuild()) {
                 if (TaskRunDevBundleBuild.needsBuild(options,
                         frontendDependencies, classFinder)) {
                     options.withRunNpmInstall(true);
@@ -128,7 +129,7 @@ public class NodeTasks implements FallibleCommand {
                     UsageStatistics.markAsUsed("flow/app-dev-bundle", null);
                 } else {
                     // A dev bundle build is not needed after all, skip it
-                    options.withDevBundleBuild(false);
+                    options.withBundleBuild(false);
                     File devBundleFolder = DevBundleUtils
                             .getDevBundleFolder(options.getNpmFolder());
                     if (devBundleFolder.exists()) {
@@ -172,7 +173,8 @@ public class NodeTasks implements FallibleCommand {
                 commands.add(new TaskInstallFrontendBuildPlugins(options));
             }
 
-            if (packageUpdater != null && options.isDevBundleBuild()) {
+            if (packageUpdater != null && options.isBundleBuild()
+                    && !options.isProductionMode()) {
                 commands.add(new TaskRunDevBundleBuild(options));
             }
 
@@ -188,8 +190,7 @@ public class NodeTasks implements FallibleCommand {
             addGenerateServiceWorkerTask(options,
                     frontendDependencies.getPwaConfiguration());
 
-            if (options.isProductionMode() || options.isFrontendHotdeploy()
-                    || options.isDevBundleBuild()) {
+            if (options.isFrontendHotdeploy() || options.isBundleBuild()) {
                 addGenerateTsConfigTask(options);
             }
         }
@@ -225,8 +226,7 @@ public class NodeTasks implements FallibleCommand {
             pwa = new PwaConfiguration();
         }
         commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
-        if (options.isProductionMode() || options.isFrontendHotdeploy()
-                || options.isDevBundleBuild()) {
+        if (options.isFrontendHotdeploy() || options.isBundleBuild()) {
             commands.add(new TaskUpdateVite(options, webComponentTags));
         }
 
@@ -246,8 +246,7 @@ public class NodeTasks implements FallibleCommand {
 
     private void addBootstrapTasks(Options options) {
         commands.add(new TaskGenerateIndexHtml(options));
-        if (options.isProductionMode() || options.isFrontendHotdeploy()
-                || options.isDevBundleBuild()) {
+        if (options.isFrontendHotdeploy() || options.isBundleBuild()) {
             commands.add(new TaskGenerateIndexTs(options));
             if (!options.isProductionMode()) {
                 commands.add(new TaskGenerateViteDevMode(options));

@@ -388,7 +388,7 @@ public class BuildFrontendUtil {
                     .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                     .setJavaResourceFolder(adapter.javaResourceFolder())
                     .withPostinstallPackages(adapter.postinstallPackages())
-                    .withDevBundleBuild(true)
+                    .withBundleBuild(true)
                     .skipDevBundleBuild(adapter.skipDevBundleBuild());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {

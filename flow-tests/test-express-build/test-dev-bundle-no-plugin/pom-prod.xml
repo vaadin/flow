@@ -25,7 +25,7 @@
 
     <artifactId>flow-test-prod-bundle-no-plugin</artifactId>
 
-    <name>Test use default prod bundle when no frontend customisations</name>
+    <name>Flow test for default prod bundle</name>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -63,7 +63,8 @@
         <plugins>
             <plugin>
                 <groupId>com.vaadin</groupId>
-                <artifactId>flow-maven-plugin</artifactId>
+                <artifactId>test-flow-maven-plugin</artifactId>
+                <version>${project.version}</version>
                 <executions>
                     <execution>
                         <goals>
