@@ -59,12 +59,12 @@ public class AtmospherePushConnectionTest {
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
         Mockito.doAnswer(i -> {
             // Introduce a small delay to hold the lock during disconnect
-            Thread.sleep(5);
+            Thread.sleep(30);
             return null;
         }).when(resource).close();
         Mockito.doAnswer(i -> {
             // Introduce a small delay to hold the lock during message push
-            Thread.sleep(5);
+            Thread.sleep(30);
             return CompletableFuture.completedFuture(null);
         }).when(broadcaster).broadcast(ArgumentMatchers.any(),
                 ArgumentMatchers.any(AtmosphereResource.class));
@@ -100,6 +100,11 @@ public class AtmospherePushConnectionTest {
         CountDownLatch latch = new CountDownLatch(1);
         CompletableFuture.runAsync(() -> {
             try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            try {
                 vaadinSession.runWithLock(() -> {
                     connection.push();
                     return null;
@@ -128,7 +133,7 @@ public class AtmospherePushConnectionTest {
                 vaadinSession.runWithLock(() -> {
                     CompletableFuture.runAsync(() -> {
                         try {
-                            Thread.sleep(1);
+                            Thread.sleep(5);
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }
