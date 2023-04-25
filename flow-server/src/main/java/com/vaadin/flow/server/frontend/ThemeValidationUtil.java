@@ -97,7 +97,7 @@ public class ThemeValidationUtil {
                 if (!objectIncludesEntry(content, themeContent.getValue(),
                         missedKeys)) {
                     getLogger().info(
-                            "Custom theme '{}' has imports/assets in 'theme.json' not present in the bundle",
+                            "Custom theme '{}' has imports/assets removed or added in 'theme.json' not represented in the bundle ('stats.json').",
                             themeContent.getKey());
                     logMissedEntries(missedKeys);
                     return true;
@@ -170,7 +170,7 @@ public class ThemeValidationUtil {
     private static void logMissedEntries(List<String> missedKeys) {
         Collections.reverse(missedKeys);
         BundleValidationUtil.logChangedFiles(missedKeys,
-                "Detected missed entries:");
+                "Detected missed or added entries:");
     }
 
     private static void getPackagedThemeJsonContents(File jarFileToLookup,
@@ -242,8 +242,7 @@ public class ThemeValidationUtil {
         // jsonArrayFromBundle = [1,2,3]
         // jsonArrayFromProject = [1,2]
         // and the check would pass
-        if (jsonArrayFromBundle.length() == 0
-                && jsonArrayFromProject.length() == 0) {
+        if (jsonArrayFromBundle.length() != jsonArrayFromProject.length()) {
             allEntriesFound = allEntriesFound && checkMissedKeys(missedKeys,
                     jsonArrayFromProject, jsonArrayFromBundle);
         }
