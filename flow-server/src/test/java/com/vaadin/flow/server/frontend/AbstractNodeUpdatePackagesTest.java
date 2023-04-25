@@ -344,7 +344,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater.updateVaadinJsonContents(
                 Collections.singletonMap(VAADIN_VERSION, "1.1.1"));
 
-        FileUtils.write(versions, "{\"platform\": \"1.2.3\"}", StandardCharsets.UTF_8);
+        FileUtils.write(versions, "{\"platform\": \"1.2.3\"}",
+                StandardCharsets.UTF_8);
         packageUpdater.execute();
         assertCleanUp();
     }
