@@ -35,7 +35,6 @@ public class TaskGenerateWebComponentBootstrap
         extends AbstractTaskClientGenerator {
 
     private final File frontendGeneratedDirectory;
-    private final File generatedImports;
 
     /**
      * Create a task to generate <code>vaadin-web-component.ts</code> if
@@ -47,8 +46,6 @@ public class TaskGenerateWebComponentBootstrap
     TaskGenerateWebComponentBootstrap(Options options) {
         this.frontendGeneratedDirectory = new File(
                 options.getFrontendDirectory(), GENERATED);
-        this.generatedImports = FrontendUtils
-                .getFlowGeneratedImports(options.getFrontendDirectory());
     }
 
     @Override
