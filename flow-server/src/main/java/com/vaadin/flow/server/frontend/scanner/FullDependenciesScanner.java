@@ -69,8 +69,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private PwaConfiguration pwaConfiguration;
     private Set<String> classes = new HashSet<>();
     private Map<String, String> packages;
-    private Set<String> scripts = new LinkedHashSet<>();
-    private Set<CssData> cssData;
+    private List<String> scripts;
+    private List<CssData> cssData;
     private List<String> modules;
 
     private final Class<?> abstractTheme;
@@ -119,6 +119,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         Map<String, Set<String>> themeModules = new HashMap<>();
         LinkedHashSet<String> regularModules = new LinkedHashSet<>();
+        LinkedHashSet<String> scriptsSet = new LinkedHashSet<>();
 
         collectAnnotationValues(
                 (clazz, module) -> handleModule(clazz, module, regularModules,
@@ -128,7 +129,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         collectAnnotationValues((clazz, script) -> {
             classes.add(clazz.getName());
-            scripts.add(script);
+            scriptsSet.add(script);
         }, JavaScript.class,
                 module -> getAnnotationValueAsString(module, VALUE));
         cssData = discoverCss();
@@ -136,6 +137,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         discoverTheme();
 
         modules = calculateModules(regularModules, themeModules);
+        scripts = new ArrayList<>(scriptsSet);
 
         pwaConfiguration = discoverPwa();
 
@@ -154,13 +156,13 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     @Override
-    public Set<String> getScripts() {
-        return Collections.unmodifiableSet(scripts);
+    public List<String> getScripts() {
+        return Collections.unmodifiableList(scripts);
     }
 
     @Override
-    public Set<CssData> getCss() {
-        return Collections.unmodifiableSet(cssData);
+    public List<CssData> getCss() {
+        return Collections.unmodifiableList(cssData);
     }
 
     @Override
@@ -238,7 +240,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         }
     }
 
-    private Set<CssData> discoverCss() {
+    private List<CssData> discoverCss() {
         try {
             Class<? extends Annotation> loadedAnnotation = getFinder()
                     .loadClass(CssImport.class.getName());
@@ -251,7 +253,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                         .apply(clazz, loadedAnnotation);
                 imports.stream().forEach(imp -> result.add(createCssData(imp)));
             }
-            return result;
+            return new ArrayList<>(result);
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
                     COULD_NOT_LOAD_ERROR_MSG + CssData.class.getName(),

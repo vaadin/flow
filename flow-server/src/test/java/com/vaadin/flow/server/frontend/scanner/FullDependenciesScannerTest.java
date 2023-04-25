@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,7 +56,7 @@ import com.vaadin.flow.theme.Theme;
 
 public class FullDependenciesScannerTest {
 
-    private ClassFinder finder = Mockito.mock(ClassFinder.class);
+    private ClassFinder finder;
 
     @JsModule("./foo-bar-baz.js")
     public static class FakeLumoTheme implements AbstractTheme {
@@ -89,6 +90,7 @@ public class FullDependenciesScannerTest {
 
     @Before
     public void setUp() throws ClassNotFoundException {
+        finder = Mockito.mock(ClassFinder.class);
         Mockito.when(finder.loadClass(AbstractTheme.class.getName()))
                 .thenReturn((Class) AbstractTheme.class);
     }
@@ -197,21 +199,9 @@ public class FullDependenciesScannerTest {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 JavaScript.class);
 
-        Set<String> scripts = scanner.getScripts();
-        Assert.assertTrue(scripts.contains("javascript/a.js"));
-        Assert.assertTrue(scripts.contains("javascript/b.js"));
-        Assert.assertTrue(scripts.contains("javascript/c.js"));
-
-        Assert.assertTrue(scripts.contains("ExampleConnector.js"));
-
-        Assert.assertEquals(5, scripts.size());
-
-        List<String> orderedJs = scripts.stream()
-                .filter(script -> script.startsWith("javascript"))
-                .collect(Collectors.toList());
-        Assert.assertEquals(orderedJs.get(0), "javascript/a.js");
-        Assert.assertEquals(orderedJs.get(1), "javascript/b.js");
-        Assert.assertEquals(orderedJs.get(2), "javascript/c.js");
+        DepsTests.assertImports(scanner.getScripts(), "javascript/a.js",
+                "javascript/b.js", "javascript/c.js",
+                "experimental-Connector.js", "ExampleConnector.js");
 
         Set<String> visitedClasses = scanner.getClasses();
         Assert.assertTrue(
@@ -226,26 +216,17 @@ public class FullDependenciesScannerTest {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 CssImport.class);
 
-        List<CssData> css = new ArrayList<>(scanner.getCss());
+        List<CssData> expected = new ArrayList<>();
+        expected.add(createCssData("@vaadin/vaadin-mixed-component/bar.css",
+                null, null, null));
+        expected.add(createCssData("./foo.css", null, null, null));
+        expected.add(createCssData("./foo.css", null, "bar", null));
+        expected.add(createCssData("./foo.css", "baz", null, null));
+        expected.add(createCssData("./foo.css", "baz", "bar", null));
+        expected.add(createCssData("./foo.css", null, null, "foo-bar"));
+        expected.add(createCssData("./foo.css", null, "bar", "foo-bar"));
 
-        Assert.assertEquals(7, css.size());
-        Assert.assertEquals(
-                createCssData("@vaadin/vaadin-mixed-component/bar.css", null,
-                        null, null),
-                css.get(0));
-        Assert.assertEquals(createCssData("./foo.css", null, null, null),
-                css.get(1));
-        Assert.assertEquals(createCssData("./foo.css", null, "bar", null),
-                css.get(2));
-        Assert.assertEquals(createCssData("./foo.css", "baz", null, null),
-                css.get(3));
-        Assert.assertEquals(createCssData("./foo.css", "baz", "bar", null),
-                css.get(4));
-        Assert.assertEquals(createCssData("./foo.css", null, null, "foo-bar"),
-                css.get(5));
-        Assert.assertEquals(createCssData("./foo.css", null, "bar", "foo-bar"),
-                css.get(6));
-
+        DepsTests.assertCss(scanner.getCss(), expected);
         Set<String> visitedClasses = scanner.getClasses();
         Assert.assertEquals(1, visitedClasses.size());
         Assert.assertEquals(FlatImport.class.getName(),
@@ -258,8 +239,7 @@ public class FullDependenciesScannerTest {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 JsModule.class);
         List<String> modules = scanner.getModules();
-
-        Assert.assertEquals(19, modules.size());
+        DepsTests.assertImportCount(19, modules);
 
         assertJsModules(modules);
 
@@ -312,7 +292,7 @@ public class FullDependenciesScannerTest {
                 }, null);
 
         List<String> modules = scanner.getModules();
-        Assert.assertEquals(25, modules.size());
+        DepsTests.assertImportCount(25, modules);
         assertJsModules(modules);
 
         // Theme modules should be included now
@@ -353,7 +333,7 @@ public class FullDependenciesScannerTest {
     private Set<Class<?>> getAnnotatedClasses(
             Class<? extends Annotation> annotationType) {
         Class<?>[] classes = NodeTestComponents.class.getDeclaredClasses();
-        Set<Class<?>> result = new HashSet<>();
+        Set<Class<?>> result = new LinkedHashSet<>();
         for (Class<?> clazz : classes) {
             if (clazz.getAnnotationsByType(annotationType).length > 0) {
                 result.add(clazz);
