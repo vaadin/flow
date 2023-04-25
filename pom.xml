@@ -562,6 +562,8 @@
                         <!-- export test server port to integration tests -->
                         <systemPropertyVariables>
                             <serverPort>${server.port}</serverPort>
+                            <jdk.internal.httpclient.debug>true</jdk.internal.httpclient.debug>
+                            <jdk.internal.httpclient.websocket.debug>true</jdk.internal.httpclient.websocket.debug>
                         </systemPropertyVariables>
                         <excludes>
                             <exclude>**/*$*</exclude>
