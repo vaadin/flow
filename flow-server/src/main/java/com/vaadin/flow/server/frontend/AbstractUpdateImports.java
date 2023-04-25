@@ -168,12 +168,12 @@ abstract class AbstractUpdateImports implements Runnable {
         return FrontendUtils.FRONTEND_GENERATED_FLOW_IMPORT_PATH + module;
     }
 
-    protected Collection<String> getCssLines() {
-        Set<CssData> css = scanner.getCss();
+    protected List<String> getCssLines() {
+        List<CssData> css = scanner.getCss();
         if (css.isEmpty()) {
             return Collections.emptyList();
         }
-        Collection<String> lines = new ArrayList<>();
+        List<String> lines = new ArrayList<>();
 
         Set<String> cssNotFound = new HashSet<>();
         int i = 0;
