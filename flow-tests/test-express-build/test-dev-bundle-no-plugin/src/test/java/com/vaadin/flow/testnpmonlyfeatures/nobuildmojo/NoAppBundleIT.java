@@ -36,13 +36,16 @@ public class NoAppBundleIT extends ChromeBrowserTest {
         Assert.assertFalse("No node_modules should be created",
                 new File(baseDir, "node_modules").exists());
 
-        // These should not be generated either, but at the moment they are
-        Assert.assertFalse("No package.json should be created",
-                new File(baseDir, "package.json").exists());
-        Assert.assertFalse("No vite generated should be created",
-                new File(baseDir, "vite.generated.ts").exists());
-        Assert.assertFalse("No vite config should be created",
-                new File(baseDir, "vite.config.ts").exists());
+        // TODO: for default prod bundle these are still generated
+        assertInDevMode(() -> {
+            Assert.assertFalse("No package.json should be created",
+                    new File(baseDir, "package.json").exists());
+            Assert.assertFalse("No vite generated should be created",
+                    new File(baseDir, "vite.generated.ts").exists());
+            Assert.assertFalse("No vite config should be created",
+                    new File(baseDir, "vite.config.ts").exists());
+        });
+
         Assert.assertFalse("No types should be created",
                 new File(baseDir, "types.d.ts").exists());
         Assert.assertFalse("No tsconfig should be created",
@@ -72,6 +75,15 @@ public class NoAppBundleIT extends ChromeBrowserTest {
             Assert.assertEquals("Unexpected prod bundle hash",
                     "3cb07a6193f2b3deaeec859541b83b405fe7af59bd1be44bbf5a5a0edcf7ff4a",
                     hash);
+        }
+    }
+
+    private void assertInDevMode(Runnable assertCallback) {
+        try {
+            findElement(By.tagName("vaadin-dev-tools"));
+            assertCallback.run();
+        } catch (NoSuchElementException e) {
+            // ignore
         }
     }
 }

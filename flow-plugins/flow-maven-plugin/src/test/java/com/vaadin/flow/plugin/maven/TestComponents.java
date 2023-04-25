@@ -28,7 +28,7 @@ import com.vaadin.flow.theme.CustomLumo;
  * A container class for all components used in tests.
  */
 public class TestComponents {
-    @NpmPackage(value = "@vaadin/vaadin-button", version = "0.0.0")
+    @NpmPackage(value = "@vaadin/button", version = "24.0.3")
     class ButtonComponent extends Component {
     }
 
@@ -44,7 +44,7 @@ public class TestComponents {
     public static class VaadinComponent extends Component {
     }
 
-    @NpmPackage(value = "@vaadin/vaadin-element-mixin", version = "0.0.0")
+    @NpmPackage(value = "@vaadin/vaadin-element-mixin", version = "2.4.2")
     @JsModule("@vaadin/vaadin-element-mixin/vaadin-element-mixin.js")
     public static class VaadinElementMixin extends Component {
     }

@@ -191,6 +191,8 @@ public class BuildFrontendMojoTest {
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
                 Paths.get(projectBase.toString(), "target").toString());
+        ReflectionUtils.setVariableValueInObject(mojo, "postinstallPackages",
+                Collections.emptyList());
         Mockito.when(mojo.getJarFiles()).thenReturn(
                 Set.of(jarResourcesSource.getParentFile().getParentFile()));
 
@@ -423,11 +425,11 @@ public class BuildFrontendMojoTest {
             throws Exception {
         JsonObject json = TestUtils.getInitialPackageJson();
         JsonObject dependencies = Json.createObject();
-        // Add dependencies foo-bar and bar-foo
-        dependencies.put("foo", "bar");
-        dependencies.put("bar", "foo");
+        dependencies.put("@polymer/polymer", "3.5.1");
+        dependencies.put("line-awesome", "1.3.0");
         // Make foo framework handled
-        json.getObject("vaadin").getObject("dependencies").put("foo", "bar");
+        json.getObject("vaadin").getObject("dependencies")
+                .put("@polymer/polymer", "3.5.1");
         json.put("dependencies", dependencies);
         FileUtils.fileWrite(packageJson, "UTF-8", json.toJson());
 
@@ -438,9 +440,10 @@ public class BuildFrontendMojoTest {
         assertContainsPackage(dependencies, "@vaadin/vaadin-button",
                 "@vaadin/vaadin-element-mixin");
 
-        Assert.assertFalse("Foo should have been removed",
-                dependencies.hasKey("foo"));
-        Assert.assertTrue("Bar should remain", dependencies.hasKey("bar"));
+        Assert.assertFalse("Polymer should have been removed",
+                dependencies.hasKey("@polymer/polymer"));
+        Assert.assertTrue("line-awesome should remain",
+                dependencies.hasKey("line-awesome"));
     }
 
     @Test
