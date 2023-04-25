@@ -84,7 +84,7 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void getGeneratedModules_should_includeWebComponents()
+    public void getGeneratedModules_should_includeOnlyWebComponents()
             throws IOException {
         File frontend = temporaryFolder.newFolder();
         File generated = new File(frontend, FrontendUtils.GENERATED);
