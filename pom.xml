@@ -568,7 +568,12 @@
                             <exclude>${exclude.it.tests}</exclude>
                             <exclude>${exclude.windows.failed.it.tests}</exclude>
                         </excludes>
+                        <!--
+                        <forkedProcessExitTimeoutInSeconds></forkedProcessExitTimeoutInSeconds>
+                        <forkedProcessTimeoutInSeconds></forkedProcessTimeoutInSeconds>
                         <parallelTestsTimeoutForcedInSeconds>120</parallelTestsTimeoutForcedInSeconds>
+                        <perCoreThreadCount>false</perCoreThreadCount>
+                        -->
                     </configuration>
                     <dependencies>
                         <dependency>
