@@ -76,8 +76,11 @@ public class ChromeBrowserTest extends ViewOrUITest {
             try {
                 super.setup();
             } catch (SessionNotCreatedException ex) {
+                System.out.println("============== SessionNotCreatedException");
                 Throwable cause = ex.getCause();
                 while (cause != null) {
+                    System.out.println(
+                            "============== SessionNotCreatedException cause by InterruptedException");
                     if (cause instanceof InterruptedException) {
                         Thread.currentThread().interrupt();
                     }
