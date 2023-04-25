@@ -37,8 +37,8 @@ public class DepsTests {
         Assert.assertTrue(modules.containsAll(List.of(urls)));
     }
 
-    static void assertCss(List<CssData> set, List<CssData> expected) {
-        Assert.assertEquals(expected, set);
+    static void assertCss(List<CssData> actual, List<CssData> expected) {
+        Assert.assertEquals(expected, actual);
     }
 
     public static <T> void assertImportCount(int expected,
