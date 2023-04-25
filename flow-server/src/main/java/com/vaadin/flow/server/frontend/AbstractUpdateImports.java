@@ -175,10 +175,7 @@ abstract class AbstractUpdateImports implements Runnable {
      * @return generated modules
      */
     Collection<String> getGeneratedModules() {
-        File flowGeneratedFolder = FrontendUtils
-                .getFlowGeneratedFolder(options.getFrontendDirectory());
-        return NodeUpdater.getGeneratedModules(flowGeneratedFolder,
-                Set.of(FrontendUtils.IMPORTS_NAME));
+        return NodeUpdater.getGeneratedModules(options.getFrontendDirectory());
     }
 
     /**
