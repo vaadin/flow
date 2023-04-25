@@ -78,6 +78,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     private File mainNodeModules;
     private File packageLock;
     private Options options;
+    private File versions;
 
     @Before
     public void setup() throws Exception {
@@ -90,7 +91,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageCreator = new TaskGeneratePackageJson(options);
 
         classFinder = Mockito.spy(getClassFinder());
-        File versions = temporaryFolder.newFile();
+        versions = temporaryFolder.newFile();
         FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
         Mockito.when(
                 classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
@@ -343,13 +344,9 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater.updateVaadinJsonContents(
                 Collections.singletonMap(VAADIN_VERSION, "1.1.1"));
 
-        try (MockedStatic<Platform> platform = Mockito
-                .mockStatic(Platform.class)) {
-            platform.when(Platform::getVaadinVersion)
-                    .thenReturn(Optional.of("1.2.3"));
-            packageUpdater.execute();
-            assertCleanUp();
-        }
+        FileUtils.write(versions, "{\"platform\": \"1.2.3\"}", StandardCharsets.UTF_8);
+        packageUpdater.execute();
+        assertCleanUp();
     }
 
     @Test
