@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
+import org.openqa.selenium.SessionNotCreatedException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
@@ -72,7 +73,18 @@ public class ChromeBrowserTest extends ViewOrUITest {
             setDriver(createHeadlessChromeDriver(
                     this::updateHeadlessChromeOptions));
         } else {
-            super.setup();
+            try {
+                super.setup();
+            } catch (SessionNotCreatedException ex) {
+                Throwable cause = ex.getCause();
+                while (cause != null) {
+                    if (cause instanceof InterruptedException) {
+                        Thread.currentThread().interrupt();
+                    }
+                    cause = cause.getCause();
+                }
+                throw ex;
+            }
         }
     }
 
