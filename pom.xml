@@ -568,6 +568,7 @@
                             <exclude>${exclude.it.tests}</exclude>
                             <exclude>${exclude.windows.failed.it.tests}</exclude>
                         </excludes>
+                        <parallelTestsTimeoutForcedInSeconds>120</parallelTestsTimeoutForcedInSeconds>
                     </configuration>
                     <dependencies>
                         <dependency>
