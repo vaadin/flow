@@ -36,6 +36,7 @@ import com.vaadin.flow.testcategory.ChromeTests;
 import com.vaadin.flow.testutil.net.PortProber;
 import com.vaadin.testbench.TestBench;
 import com.vaadin.testbench.parallel.Browser;
+import com.vaadin.testbench.parallel.setup.RemoteDriver;
 
 /**
  * Base class for TestBench tests to run locally in the Chrome browser.
@@ -77,6 +78,9 @@ public class ChromeBrowserTest extends ViewOrUITest {
                 super.setup();
             } catch (SessionNotCreatedException ex) {
                 System.out.println("============== SessionNotCreatedException");
+                if (driver != null && driver instanceof RemoteDriver) {
+                    driver.quit();
+                }
                 Throwable cause = ex.getCause();
                 while (cause != null) {
                     System.out.println(
