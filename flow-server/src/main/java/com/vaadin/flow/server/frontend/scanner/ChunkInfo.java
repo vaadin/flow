@@ -15,6 +15,18 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+/**
+ * Identifier for a chunk or part of the JS bundle.
+ * <p>
+ * Each chunk can be loaded at a separate time. Chunks marked as eager are
+ * loaded immediately when the JS bundle is loaded while chunks marked as not
+ * eager (i.e. lazy) are loaded on demand later.
+ * <p>
+ * There is one special, global chunk, defined as {@link #GLOBAL} in this class,
+ * which is used for gathering all data that relates to internal entry points.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ **/
 public class ChunkInfo {
 
     public static final ChunkInfo GLOBAL = new ChunkInfo(
