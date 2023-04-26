@@ -259,6 +259,8 @@
                 </property>
             </activation>
             <modules>
+                <module>test-express-build/test-prod-bundle</module>
+                <module>test-express-build/test-flow-maven-plugin</module>
                 <module>test-root-context</module>
                 <module>test-embedding</module>
                 <module>test-frontend</module>
