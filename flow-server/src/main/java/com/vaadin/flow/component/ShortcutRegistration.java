@@ -762,16 +762,39 @@ public class ShortcutRegistration implements Registration, Serializable {
 
         final List<Key> realMods = modifiers.stream().filter(Key::isModifier)
                 .collect(Collectors.toList());
-
         // build a filter based on all the modifier keys. if modifier is not
         // in the parameter collection, require it to be passive to match the
         // shortcut
+
+        /*
+         * Due to https://github.com/vaadin/flow/issues/15906. Browsers having
+         * different implementation for Option keys: -> Mozilla: ALT_GRAPH and
+         * ALT both are triggered (getModifierState() return true for ALT AND
+         * ALT_GRAPH), -> Chrome: ALT is triggered only (getModifierState()
+         * return true for only ALT).
+         *
+         * So we need to check if ALT is in the modifiers list, if it is, we do
+         * not check anymore that !ALT_GRAPH is not in filter list, because it
+         * can be based on browser implementations.
+         */
+
+        final boolean altAdded = modifiers.stream()
+                .anyMatch(key -> key.matches(Key.ALT.getKeys().get(0)));
+
         return Arrays.stream(KeyModifier.values()).map(modifier -> {
-            boolean modifierRequired = realMods.stream()
-                    .anyMatch(mod -> mod.matches(modifier.getKeys().get(0)));
-            return (modifierRequired ? "" : "!") + "event.getModifierState('"
-                    + modifier.getKeys().get(0) + "')";
-        }).collect(Collectors.joining(" && "));
+                    String modKey = modifier.getKeys().get(0);
+                    boolean modifierRequired = realMods.stream()
+                            .anyMatch(mod -> mod.matches(modKey));
+                    if (!modifierRequired && modifier == KeyModifier.ALT_GRAPH
+                            && altAdded) {
+                        return null;
+                    } else {
+                        return (modifierRequired ? "" : "!")
+                                + "event.getModifierState('" + modKey + "')";
+                    }
+                }).filter(Objects::nonNull).filter(s -> !s.trim().isEmpty())
+                .collect(Collectors.joining(" && "));
+
     }
 
     private static String generateEventKeyFilter(Key key) {
@@ -813,7 +836,7 @@ public class ShortcutRegistration implements Registration, Serializable {
 
     /**
      * Get the sent listenOn event data or initialize new listenOn data.
-     * 
+     *
      * @param listenOn
      *            component to listen events on
      * @return set with already executed expressions.
