@@ -234,20 +234,17 @@ public class FullDependenciesScannerTest {
     }
 
     @Test
-    public void getModules_noTheme_returnAllNoThemeModules_orderPerClassIsPreserved_getClassesReturnAllModuleAnnotatedComponents()
+    public void getModules_noTheme_returnAllModules_orderPerClassIsPreserved_getClassesReturnAllModuleAnnotatedComponents()
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 JsModule.class);
-        List<String> modules = scanner.getModules();
-        DepsTests.assertImportCount(19, modules);
-
-        assertJsModules(modules);
+        DepsTests.assertImportCount(19, scanner.getModules());
+        assertJsModules(DepsTests.merge(scanner.getModules()));
 
         Set<String> classes = scanner.getClasses();
         Assert.assertEquals(13, classes.size());
 
         assertJsModulesClasses(classes);
-        Assert.assertFalse(classes.contains(LumoTest.class.getName()));
     }
 
     @Test
@@ -291,8 +288,8 @@ public class FullDependenciesScannerTest {
                     return null;
                 }, null);
 
-        List<String> modules = scanner.getModules();
-        DepsTests.assertImportCount(25, modules);
+        DepsTests.assertImportCount(25, scanner.getModules());
+        List<String> modules = DepsTests.merge(scanner.getModules());
         assertJsModules(modules);
 
         // Theme modules should be included now

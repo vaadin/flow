@@ -43,29 +43,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 public class TaskUpdateImports extends NodeUpdater {
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
-        private final File generatedFlowImports;
-        private final File generatedFlowDefinitions;
-
         UpdateMainImportsFile(ClassFinder classFinder, Options options,
                 FrontendDependenciesScanner scanner) {
             super(options, scanner, classFinder);
-            generatedFlowImports = FrontendUtils
-                    .getFlowGeneratedImports(options.getFrontendDirectory());
-            generatedFlowDefinitions = new File(
-                    generatedFlowImports.getParentFile(), IMPORTS_D_TS_NAME);
-        }
-
-        @Override
-        protected void writeImportLines(List<String> lines) {
-            try {
-                FileIOUtils.writeIfChanged(generatedFlowImports, lines);
-                FileIOUtils.writeIfChanged(generatedFlowDefinitions,
-                        getDefinitionLines());
-            } catch (IOException e) {
-                throw new IllegalStateException(String.format(
-                        "Failed to update the Flow imports file '%s'",
-                        generatedFlowImports), e);
-            }
         }
 
         @Override
@@ -78,9 +58,6 @@ public class TaskUpdateImports extends NodeUpdater {
             return getAbsentPackagesMessage();
         }
 
-        protected List<String> getDefinitionLines() {
-            return Collections.singletonList("export {}");
-        }
     }
 
     /**
