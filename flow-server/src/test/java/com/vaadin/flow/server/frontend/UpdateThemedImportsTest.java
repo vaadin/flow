@@ -23,7 +23,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -127,8 +126,8 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
             }
 
             @Override
-            public Set<String> getScripts() {
-                return Collections.emptySet();
+            public List<String> getScripts() {
+                return Collections.emptyList();
             }
 
             @Override

@@ -84,7 +84,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.boot.version>3.0.5</spring.boot.version>
+        <spring.boot.version>3.0.6</spring.boot.version>
         <spring.security.oauth2.authorization.server.version>1.0.2</spring.security.oauth2.authorization.server.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
@@ -140,6 +140,9 @@
         <!-- Skip these categories in validation, use -Pslow-tests to run them
             and override slow-tests profile to add more categories -->
         <excludedGroups>com.vaadin.flow.testcategory.SlowTests</excludedGroups>
+        <failsafe.parallel>all</failsafe.parallel>
+        <failsafe.threadCount>2</failsafe.threadCount>
+        <failsafe.perCoreThreadCount>true</failsafe.perCoreThreadCount>
     </properties>
 
     <repositories>
@@ -262,7 +265,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>5.3.0</version>
+                <version>5.3.1</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
@@ -461,7 +464,7 @@
                             <groupId>de.skuzzle.enforcer</groupId>
                             <artifactId>restrict-imports-enforcer-rule
                             </artifactId>
-                            <version>2.1.0</version>
+                            <version>2.2.0</version>
                         </dependency>
                     </dependencies>
                     <executions>
@@ -557,8 +560,9 @@
                         <argLine>${failsafe.argLine}</argLine>
                         <trimStackTrace>false</trimStackTrace>
                         <enableAssertions>true</enableAssertions>
-                        <parallel>all</parallel>
-                        <threadCount>2</threadCount>
+                        <parallel>${failsafe.parallel}</parallel>
+                        <threadCount>${failsafe.threadCount}</threadCount>
+                        <perCoreThreadCount>${failsafe.perCoreThreadCount}</perCoreThreadCount>
                         <!-- export test server port to integration tests -->
                         <systemPropertyVariables>
                             <serverPort>${server.port}</serverPort>
