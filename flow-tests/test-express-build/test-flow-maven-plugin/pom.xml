@@ -75,57 +75,6 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>unpack</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>com.vaadin</groupId>
-                                    <artifactId>flow-maven-plugin</artifactId>
-                                    <version>${flow.version}</version>
-                                    <classifier>sources</classifier>
-                                    <includes>**/*.java</includes>
-                                    <outputDirectory>src/main/java</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>com.vaadin</groupId>
-                                    <artifactId>flow-maven-plugin</artifactId>
-                                    <version>${flow.version}</version>
-                                    <excludes>**/*.class</excludes>
-                                    <outputDirectory>src/main/resources</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>com.vaadin</groupId>
-                                    <artifactId>flow-maven-plugin</artifactId>
-                                    <version>${flow.version}</version>
-                                    <includes>**/lifecycle-mapping-metadata.xml</includes>
-                                    <outputDirectory>src/main/resources</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-
     </build>
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.6.2</version>
-            </plugin>
-        </plugins>
-    </reporting>
+
 </project>
