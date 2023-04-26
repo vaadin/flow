@@ -236,8 +236,9 @@ public class ThemeValidationUtil {
         boolean allEntriesFound = checkMissedKeys(missedKeys,
                 jsonArrayFromBundle, jsonArrayFromProject);
 
-        // making sure that backward is good as well so the jsonArrays should be
-        // containing the same entries
+        // making sure that from the other jsonArray we also check and compare
+        // the entries
+        // to make sure both arrays have the exact same entries
         // without this it could happen that:
         // jsonArrayFromBundle = [1,2,3]
         // jsonArrayFromProject = [1,2]
