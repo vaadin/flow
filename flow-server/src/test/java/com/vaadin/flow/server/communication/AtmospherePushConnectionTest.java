@@ -58,12 +58,12 @@ public class AtmospherePushConnectionTest {
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
         Mockito.doAnswer(i -> {
             // Introduce a small delay to hold the lock during disconnect
-            Thread.sleep(5);
+            Thread.sleep(30);
             return null;
         }).when(resource).close();
         Mockito.doAnswer(i -> {
             // Introduce a small delay to hold the lock during message push
-            Thread.sleep(5);
+            Thread.sleep(30);
             return CompletableFuture.completedFuture(null);
         }).when(broadcaster).broadcast(ArgumentMatchers.any(),
                 ArgumentMatchers.any(AtmosphereResource.class));
@@ -107,10 +107,11 @@ public class AtmospherePushConnectionTest {
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
-        }).exceptionally(error -> {
-            error.printStackTrace();
-            return null;
-        });
+        }, CompletableFuture.delayedExecutor(5, TimeUnit.MILLISECONDS))
+                .exceptionally(error -> {
+                    error.printStackTrace();
+                    return null;
+                });
         connection.disconnect();
         Assert.assertTrue("AtmospherePushConnection not disconnected",
                 latch.await(2, TimeUnit.SECONDS));
@@ -128,7 +129,7 @@ public class AtmospherePushConnectionTest {
                     CompletableFuture.runAsync(() -> {
                         connection.disconnect();
                         latch.countDown();
-                    }, CompletableFuture.delayedExecutor(1,
+                    }, CompletableFuture.delayedExecutor(5,
                             TimeUnit.MILLISECONDS)).exceptionally(error -> {
                                 error.printStackTrace();
                                 return null;
