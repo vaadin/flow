@@ -33,18 +33,24 @@ import com.vaadin.flow.router.Route;
  * @since 2.0
  */
 public final class EntryPointData implements Serializable {
-    final String name;
+    private final EntryPointType type;
+    private final String name;
     Set<String> reachableClasses;
     private LinkedHashSet<String> modules = new LinkedHashSet<>();
     private LinkedHashSet<String> scripts = new LinkedHashSet<>();
     private LinkedHashSet<CssData> css = new LinkedHashSet<>();
 
-    EntryPointData(Class<?> clazz) {
+    EntryPointData(Class<?> clazz, EntryPointType type) {
         this.name = clazz.getName();
+        this.type = type;
     }
 
     String getName() {
         return name;
+    }
+
+    public EntryPointType getType() {
+        return type;
     }
 
     public LinkedHashSet<String> getModules() {

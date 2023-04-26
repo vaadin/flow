@@ -69,8 +69,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private PwaConfiguration pwaConfiguration;
     private Set<String> classes = new HashSet<>();
     private Map<String, String> packages;
-    private Set<String> scripts = new LinkedHashSet<>();
-    private Set<CssData> cssData;
+    private List<String> scripts;
+    private List<CssData> cssData;
     private List<String> modules;
 
     private final Class<?> abstractTheme;
@@ -117,8 +117,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         packages = discoverPackages();
 
-        Map<String, Set<String>> themeModules = new HashMap<>();
+        Map<String, LinkedHashSet<String>> themeModules = new HashMap<>();
         LinkedHashSet<String> regularModules = new LinkedHashSet<>();
+        LinkedHashSet<String> scriptsSet = new LinkedHashSet<>();
 
         collectAnnotationValues(
                 (clazz, module) -> handleModule(clazz, module, regularModules,
@@ -128,7 +129,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         collectAnnotationValues((clazz, script) -> {
             classes.add(clazz.getName());
-            scripts.add(script);
+            scriptsSet.add(script);
         }, JavaScript.class,
                 module -> getAnnotationValueAsString(module, VALUE));
         cssData = discoverCss();
@@ -136,6 +137,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         discoverTheme();
 
         modules = calculateModules(regularModules, themeModules);
+        scripts = new ArrayList<>(scriptsSet);
 
         pwaConfiguration = discoverPwa();
 
@@ -149,18 +151,21 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     @Override
-    public List<String> getModules() {
-        return Collections.unmodifiableList(modules);
+    public Map<ChunkInfo, List<String>> getModules() {
+        return Collections.singletonMap(ChunkInfo.GLOBAL,
+                Collections.unmodifiableList(modules));
     }
 
     @Override
-    public Set<String> getScripts() {
-        return Collections.unmodifiableSet(scripts);
+    public Map<ChunkInfo, List<String>> getScripts() {
+        return Collections.singletonMap(ChunkInfo.GLOBAL,
+                new ArrayList<>(scripts));
     }
 
     @Override
-    public Set<CssData> getCss() {
-        return Collections.unmodifiableSet(cssData);
+    public Map<ChunkInfo, List<CssData>> getCss() {
+        return Collections.singletonMap(ChunkInfo.GLOBAL,
+                new ArrayList<>(cssData));
     }
 
     @Override
@@ -238,20 +243,20 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         }
     }
 
-    private Set<CssData> discoverCss() {
+    private List<CssData> discoverCss() {
         try {
             Class<? extends Annotation> loadedAnnotation = getFinder()
                     .loadClass(CssImport.class.getName());
             Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
-            Set<CssData> result = new LinkedHashSet<>();
+            LinkedHashSet<CssData> result = new LinkedHashSet<>();
             for (Class<?> clazz : annotatedClasses) {
                 classes.add(clazz.getName());
                 List<? extends Annotation> imports = annotationFinder
                         .apply(clazz, loadedAnnotation);
                 imports.stream().forEach(imp -> result.add(createCssData(imp)));
             }
-            return result;
+            return new ArrayList<>(result);
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
                     COULD_NOT_LOAD_ERROR_MSG + CssData.class.getName(),
@@ -385,7 +390,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private void handleModule(Class<?> clazz, String module,
-            Set<String> modules, Map<String, Set<String>> themeModules) {
+            LinkedHashSet<String> modules,
+            Map<String, LinkedHashSet<String>> themeModules) {
 
         if (abstractTheme.isAssignableFrom(clazz)) {
             Set<String> themingModules = themeModules.computeIfAbsent(
@@ -397,9 +403,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         }
     }
 
-    private List<String> calculateModules(Set<String> modules,
-            Map<String, Set<String>> themeModules) {
-        Set<String> themingModules = themeModules
+    private List<String> calculateModules(LinkedHashSet<String> modules,
+            Map<String, LinkedHashSet<String>> themeModules) {
+        LinkedHashSet<String> themingModules = themeModules
                 .get(getThemeDefinition() == null ? null
                         : getThemeDefinition().getTheme().getName());
         if (themingModules == null) {

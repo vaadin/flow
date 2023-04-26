@@ -17,7 +17,10 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,10 +31,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -350,7 +358,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     private boolean isPlatformVersionUpdated() throws IOException {
         // if no record of current version is present, version is not
         // considered updated
-        Optional<String> platformVersion = Platform.getVaadinVersion();
+        Optional<String> platformVersion = getVaadinVersion();
         if (platformVersion.isPresent()
                 && options.getNodeModulesFolder().exists()) {
             JsonObject vaadinJsonContents = getVaadinJsonContents();
@@ -363,6 +371,28 @@ public class TaskUpdatePackages extends NodeUpdater {
                     platformVersion.get());
         }
         return false;
+    }
+
+    protected Optional<String> getVaadinVersion() {
+        URL coreVersionsResource = finder
+                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
+
+        if (coreVersionsResource == null) {
+            return Optional.empty();
+        }
+        try (InputStream vaadinVersionsStream = coreVersionsResource
+                .openStream()) {
+            final JsonObject versionsJson = Json.parse(IOUtils
+                    .toString(vaadinVersionsStream, StandardCharsets.UTF_8));
+            if (versionsJson.hasKey("platform")) {
+                return Optional.of(versionsJson.getString("platform"));
+            }
+        } catch (Exception e) {
+            LoggerFactory.getLogger(Platform.class)
+                    .error("Unable to determine version information", e);
+        }
+
+        return Optional.empty();
     }
 
     /**
