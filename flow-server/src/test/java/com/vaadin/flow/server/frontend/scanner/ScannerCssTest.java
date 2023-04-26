@@ -66,7 +66,7 @@ public class ScannerCssTest {
     public void should_sumarizeCssImports() throws Exception {
         FrontendDependencies deps = getFrontendDependencies(CssClass1.class,
                 CssClass2.class);
-        assertEquals(4, deps.getCss().size());
+        DepsTests.assertImportCount(4, deps.getCss());
     }
 
     // Moved here from ScannerTestComponents. Otherwise this would affect

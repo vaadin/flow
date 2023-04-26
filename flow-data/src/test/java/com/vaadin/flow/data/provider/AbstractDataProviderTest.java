@@ -61,6 +61,35 @@ public class AbstractDataProviderTest {
         dataProvider.refreshAll();
         Assert.assertNotNull(event.get());
         Assert.assertEquals(dataProvider, event.get().getSource());
+        Assert.assertTrue(event.get().isClearSelection());
+    }
+
+    @Test
+    public void refreshItems_withClearSelectionFalse_notifyListeners() {
+        TestDataProvider dataProvider = new TestDataProvider();
+        AtomicReference<DataChangeEvent<Object>> event = new AtomicReference<>();
+        dataProvider.addDataProviderListener(ev -> {
+            Assert.assertNull(event.get());
+            event.set(ev);
+        });
+        dataProvider.refreshItems(false);
+        Assert.assertNotNull(event.get());
+        Assert.assertEquals(dataProvider, event.get().getSource());
+        Assert.assertFalse(event.get().isClearSelection());
+    }
+
+    @Test
+    public void refreshItems_withClearSelectionTrue_notifyListeners() {
+        TestDataProvider dataProvider = new TestDataProvider();
+        AtomicReference<DataChangeEvent<Object>> event = new AtomicReference<>();
+        dataProvider.addDataProviderListener(ev -> {
+            Assert.assertNull(event.get());
+            event.set(ev);
+        });
+        dataProvider.refreshItems(true);
+        Assert.assertNotNull(event.get());
+        Assert.assertEquals(dataProvider, event.get().getSource());
+        Assert.assertTrue(event.get().isClearSelection());
     }
 
     @Test
