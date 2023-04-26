@@ -213,6 +213,31 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
+    public void mavenGoal_when_frontendGeneratedExists_shouldClearFolder()
+            throws Exception {
+        if (!generatedTsFolder.mkdirs()) {
+            Assert.fail("Failed to generate Frontend/generated folders.");
+        }
+        final File flowFolder = new File(generatedTsFolder, "flow");
+        if (!flowFolder.mkdir()) {
+            Assert.fail("Failed to generate flow folder");
+        }
+        final File oldFile = new File(flowFolder, "old.js");
+        if (!oldFile.createNewFile()) {
+            Assert.fail("Failed to generate old.js in Frontend/generated/flow");
+        }
+        ;
+
+        mojo.execute();
+        Assert.assertTrue("Missing generated folder",
+                generatedTsFolder.exists());
+        Assert.assertFalse("Old file should have been removed",
+                oldFile.exists());
+        Assert.assertFalse("Flow folder should have been deleted",
+                flowFolder.exists());
+    }
+
+    @Test
     public void should_updateAndkeepDependencies_when_packageJsonExists()
             throws Exception {
         JsonObject json = TestUtils.getInitialPackageJson();

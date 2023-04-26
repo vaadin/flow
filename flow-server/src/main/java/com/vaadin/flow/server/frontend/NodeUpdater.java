@@ -182,25 +182,22 @@ public abstract class NodeUpdater implements FallibleCommand {
         return versionsJson;
     }
 
-    static Set<String> getGeneratedModules(File directory,
-            Set<String> excludes) {
-        if (!directory.exists()) {
+    static Set<String> getGeneratedModules(File frontendFolder) {
+        final Function<String, String> unixPath = str -> str.replace("\\", "/");
+
+        File generatedImportsFolder = FrontendUtils
+                .getFlowGeneratedFolder(frontendFolder);
+        File webComponentsFolder = FrontendUtils
+                .getFlowGeneratedWebComponentsFolder(frontendFolder);
+        final URI baseDir = generatedImportsFolder.toURI();
+
+        if (!webComponentsFolder.exists()) {
             return Collections.emptySet();
         }
 
-        final Function<String, String> unixPath = str -> str.replace("\\", "/");
-
-        final URI baseDir = directory.toURI();
-
-        return FileUtils.listFiles(directory, new String[] { "js" }, true)
-                .stream().filter(file -> {
-                    String path = unixPath.apply(file.getPath());
-                    if (path.contains("/node_modules/")) {
-                        return false;
-                    }
-                    return excludes.stream().noneMatch(
-                            postfix -> path.endsWith(unixPath.apply(postfix)));
-                })
+        return FileUtils
+                .listFiles(webComponentsFolder, new String[] { "js" }, true)
+                .stream()
                 .map(file -> unixPath
                         .apply(baseDir.relativize(file.toURI()).getPath()))
                 .collect(Collectors.toSet());

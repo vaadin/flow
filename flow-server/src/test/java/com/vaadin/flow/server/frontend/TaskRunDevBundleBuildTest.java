@@ -1499,7 +1499,7 @@ public class TaskRunDevBundleBuildTest {
                 null, null);
 
         Mockito.when(depScanner.getCss())
-                .thenReturn(Collections.singleton(cssData));
+                .thenReturn(Collections.singletonList(cssData));
 
         JsonObject stats = getBasicStats();
 
