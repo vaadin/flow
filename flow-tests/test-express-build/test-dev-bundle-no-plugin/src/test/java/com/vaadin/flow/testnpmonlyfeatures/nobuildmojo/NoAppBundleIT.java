@@ -24,6 +24,8 @@ public class NoAppBundleIT extends ChromeBrowserTest {
 
     @Test
     public void noFrontendFilesCreated() throws IOException {
+        waitForElementPresent(By.id("hello-component"));
+
         File baseDir = new File(System.getProperty("user.dir", "."));
 
         // shouldn't create a dev-bundle
@@ -66,15 +68,14 @@ public class NoAppBundleIT extends ChromeBrowserTest {
             findElement(By.tagName("vaadin-dev-tools"));
         } catch (NoSuchElementException e) {
             // prod mode
-            File stats = new File(baseDir,
-                    "target/classes/META-INF/VAADIN/config/stats.json");
-            Assert.assertTrue("Prod bundle should be copied", stats.exists());
-            String statsContent = FileUtils.readFileToString(stats,
+            File indexHtml = new File(baseDir,
+                    "target/classes/META-INF/VAADIN/webapp/index.html");
+            Assert.assertTrue("Prod bundle should be copied",
+                    indexHtml.exists());
+            String indexHtmlContent = FileUtils.readFileToString(indexHtml,
                     StandardCharsets.UTF_8);
-            String hash = BundleValidationUtil.calculateHash(statsContent);
-            Assert.assertEquals("Unexpected prod bundle hash",
-                    "3cb07a6193f2b3deaeec859541b83b405fe7af59bd1be44bbf5a5a0edcf7ff4a",
-                    hash);
+            Assert.assertTrue("Expected default production bundle to be used",
+                    indexHtmlContent.contains("default production bundle"));
         }
     }
 
