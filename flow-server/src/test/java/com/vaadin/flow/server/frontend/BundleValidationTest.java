@@ -847,8 +847,10 @@ public class BundleValidationTest {
         devBundleUtils
                 .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
-        frontendUtils.when(
-                () -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
+        frontendUtils
+                .when(() -> FrontendUtils.getJarResourceString(
+                        Mockito.eq("TodoTemplate.js"),
+                        Mockito.any(ClassFinder.class)))
                 .thenReturn(fileContent);
         devBundleUtils
                 .when(() -> DevBundleUtils
@@ -890,8 +892,10 @@ public class BundleValidationTest {
         devBundleUtils
                 .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
-        frontendUtils.when(
-                () -> FrontendUtils.getJarResourceString("TodoTemplate.js"))
+        frontendUtils
+                .when(() -> FrontendUtils.getJarResourceString(
+                        Mockito.eq("TodoTemplate.js"),
+                        Mockito.any(ClassFinder.class)))
                 .thenReturn(fileContent);
         devBundleUtils
                 .when(() -> DevBundleUtils
@@ -1630,10 +1634,13 @@ public class BundleValidationTest {
                 .when(() -> DevBundleUtils
                         .findBundleStatsJson(temporaryFolder.getRoot()))
                 .thenAnswer(q -> stats.toJson());
-        frontendUtils.when(
-                () -> FrontendUtils.getJarResourceString(Mockito.anyString()))
+        frontendUtils
+                .when(() -> FrontendUtils.getJarResourceString(
+                        Mockito.anyString(), Mockito.any(ClassFinder.class)))
                 .thenAnswer(q -> jarResources.get(q.getArgument(0)));
-        bundleUtils.when(BundleValidationUtil::findProdBundleStatsJson)
+        bundleUtils
+                .when(() -> BundleValidationUtil.findProdBundleStatsJson(
+                        Mockito.any(ClassFinder.class)))
                 .thenReturn(stats.toJson());
     }
 }

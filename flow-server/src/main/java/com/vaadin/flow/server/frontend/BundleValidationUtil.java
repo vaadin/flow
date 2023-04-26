@@ -76,7 +76,8 @@ public class BundleValidationUtil {
 
         if (!options.isProductionMode()
                 && !DevBundleUtils.getDevBundleFolder(npmFolder).exists()
-                && !BundleValidationUtil.hasJarBundle(DEV_BUNDLE_JAR_PATH)) {
+                && !BundleValidationUtil.hasJarBundle(DEV_BUNDLE_JAR_PATH,
+                        finder)) {
             getLogger().info("No dev-bundle found.");
             return true;
         }
@@ -90,7 +91,7 @@ public class BundleValidationUtil {
         }
 
         String statsJsonContent = options.isProductionMode()
-                ? BundleValidationUtil.findProdBundleStatsJson()
+                ? BundleValidationUtil.findProdBundleStatsJson(finder)
                 : DevBundleUtils.findBundleStatsJson(npmFolder);
 
         if (statsJsonContent == null) {
@@ -145,9 +146,8 @@ public class BundleValidationUtil {
      *            JAR path where bunlde to check is located
      * @return {@code true} if bundle stats.json is found
      */
-    public static boolean hasJarBundle(String jarPath) {
-        final URL resource = BundleValidationUtil.class.getClassLoader()
-                .getResource(jarPath + "config/stats.json");
+    public static boolean hasJarBundle(String jarPath, ClassFinder finder) {
+        final URL resource = finder.getResource(jarPath + "config/stats.json");
         return resource != null;
     }
 
@@ -518,7 +518,7 @@ public class BundleValidationUtil {
 
         for (String jarImport : jarImports) {
             final String jarResourceString = FrontendUtils
-                    .getJarResourceString(jarImport);
+                    .getJarResourceString(jarImport, finder);
             if (jarResourceString == null) {
                 getLogger().info("No file found for '{}'", jarImport);
                 return false;
@@ -708,8 +708,9 @@ public class BundleValidationUtil {
         getLogger().info(message, handledFiles);
     }
 
-    public static String findProdBundleStatsJson() throws IOException {
-        URL statsJson = getProdBundleResource("config/stats.json");
+    public static String findProdBundleStatsJson(ClassFinder finder)
+            throws IOException {
+        URL statsJson = getProdBundleResource("config/stats.json", finder);
         if (statsJson == null) {
             getLogger().warn("There is no production bundle in the classpath.");
             return null;
@@ -717,9 +718,9 @@ public class BundleValidationUtil {
         return IOUtils.toString(statsJson, StandardCharsets.UTF_8);
     }
 
-    public static URL getProdBundleResource(String filename) {
-        return BundleValidationUtil.class.getClassLoader()
-                .getResource(Constants.PROD_BUNDLE_JAR_PATH + filename);
+    public static URL getProdBundleResource(String filename,
+            ClassFinder finder) {
+        return finder.getResource(Constants.PROD_BUNDLE_JAR_PATH + filename);
     }
 
     private static Logger getLogger() {
