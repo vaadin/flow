@@ -212,4 +212,5 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     public static class JavaScriptOrder extends Component {
 
     }
+
 }

@@ -60,6 +60,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -82,10 +83,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     }
 
-    private File tmpRoot;
-    private File frontendDirectory;
-    private File nodeModulesPath;
-    private UpdateImports updater;
+    protected File tmpRoot;
+    protected File frontendDirectory;
+    protected File nodeModulesPath;
+    protected UpdateImports updater;
 
     private MockLogger logger;
 
@@ -93,11 +94,13 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     private FeatureFlags featureFlags;
 
-    private Options options;
+    protected Options options;
 
-    private class UpdateImports extends AbstractUpdateImports {
+    private File tokenFile;
 
-        private List<String> resultingLines;
+    class UpdateImports extends AbstractUpdateImports {
+
+        private Map<File, List<String>> output;
 
         UpdateImports(ClassFinder classFinder,
                 FrontendDependenciesScanner scanner, Options options) {
@@ -106,7 +109,15 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         @Override
         protected void writeOutput(Map<File, List<String>> output) {
-            resultingLines = merge(output);
+            this.output = output;
+        }
+
+        public Map<File, List<String>> getOutput() {
+            return output;
+        }
+
+        protected List<String> getMergedOutput() {
+            return merge(output);
         }
 
         @Override
@@ -134,7 +145,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
-        File tokenFile = new File(tmpRoot, TOKEN_FILE);
+        tokenFile = new File(tmpRoot, TOKEN_FILE);
 
         ClassFinder classFinder = getClassFinder();
         featureFlags = Mockito.mock(FeatureFlags.class);
@@ -321,14 +332,14 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         for (String line : expectedLines) {
             Assert.assertTrue(
                     "\n" + line + " IS NOT FOUND IN: \n"
-                            + updater.resultingLines,
-                    updater.resultingLines.contains(line));
+                            + updater.getMergedOutput(),
+                    updater.getMergedOutput().contains(line));
         }
 
         // All generated module ids are distinct
         Pattern moduleIdPattern = Pattern
                 .compile(".*moduleId: '(flow_css_mod_[^']*)'.*");
-        List<String> moduleIds = updater.resultingLines.stream()
+        List<String> moduleIds = updater.getMergedOutput().stream()
                 .map(moduleIdPattern::matcher).filter(Matcher::matches)
                 .map(m -> m.group(1)).collect(Collectors.toList());
         long uniqueModuleIds = moduleIds.stream().distinct().count();
@@ -400,7 +411,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Route(value = "")
-    private static class MainView extends Component {
+    static class MainView extends Component {
         NodeTestComponents.TranslatedImports translatedImports;
         NodeTestComponents.LocalP3Template localP3Template;
         NodeTestComponents.JavaScriptOrder javaScriptOrder;
@@ -445,7 +456,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .map(updater::resolveGeneratedModule).map(this::updateToImport)
                 .forEach(uiAndGeneratedImports::add);
 
-        List<String> result = updater.resultingLines;
+        List<String> result = updater.getMergedOutput();
         result.removeIf(line -> line.startsWith("import { injectGlobalCss }"));
         result.removeIf(line -> line.startsWith("export "));
         result.removeIf(line -> line.isBlank());
@@ -475,10 +486,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     private void assertContainsImports(boolean contains, String... imports) {
         for (String line : imports) {
-            boolean result = updater.resultingLines
+            boolean result = updater.getMergedOutput()
                     .contains("import '" + addWebpackPrefix(line) + "';");
             String message = "\n  " + (contains ? "NOT " : "") + "FOUND '"
-                    + line + " IN: \n" + updater.resultingLines;
+                    + line + " IN: \n" + updater.getMergedOutput();
             if (contains) {
                 assertTrue(message, result);
             } else {
@@ -491,7 +502,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         int curIndex = -1;
         for (String line : imports) {
             String prefixed = addWebpackPrefix(line);
-            int nextIndex = updater.resultingLines
+            int nextIndex = updater.getMergedOutput()
                     .indexOf("import '" + prefixed + "';");
             assertTrue("import '" + prefixed + "' not found", nextIndex != -1);
             assertTrue("import '" + prefixed + "' appears in the wrong order",
