@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,6 +32,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -153,13 +155,13 @@ public class TaskGenerateBootstrapTest {
         return new FrontendDependencies(finder) {
 
             @Override
-            public List<String> getModules() {
-                return Collections.emptyList();
+            public Map<ChunkInfo, List<String>> getModules() {
+                return Collections.emptyMap();
             }
 
             @Override
-            public List<String> getScripts() {
-                return Collections.emptyList();
+            public Map<ChunkInfo, List<String>> getScripts() {
+                return Collections.emptyMap();
             }
 
             @Override

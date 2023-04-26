@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -103,8 +104,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         }
 
         @Override
-        protected void writeImportLines(List<String> lines) {
-            resultingLines = lines;
+        protected void writeOutput(Map<File, List<String>> output) {
+            resultingLines = merge(output);
         }
 
         @Override
@@ -436,7 +437,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         // - JavaScript
         // - Generated webcompoents
         List<String> expectedImports = new ArrayList<>();
-        expectedImports.addAll(updater.getExportLines());
 
         getAnntotationsAsStream(JsModule.class, testClasses)
                 .map(JsModule::value).sorted().map(this::updateToImport)
@@ -445,10 +445,15 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .map(JavaScript::value).map(this::updateToImport).sorted()
                 .forEach(expectedImports::add);
         updater.getGeneratedModules().stream()
-                .map(updater::resolveGeneretedModule).map(this::updateToImport)
+                .map(updater::resolveGeneratedModule).map(this::updateToImport)
                 .forEach(expectedImports::add);
 
-        Assert.assertEquals(expectedImports, updater.resultingLines);
+        List<String> result = updater.resultingLines;
+        result.removeIf(line -> line.startsWith("import { injectGlobalCss }"));
+        result.removeIf(line -> line.startsWith("export "));
+        result.removeIf(line -> line.isBlank());
+
+        Assert.assertEquals(expectedImports, result);
     }
 
     private <T extends Annotation> Stream<T> getAnntotationsAsStream(

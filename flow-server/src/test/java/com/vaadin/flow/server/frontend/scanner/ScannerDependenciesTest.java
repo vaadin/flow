@@ -48,12 +48,12 @@ public class ScannerDependenciesTest {
                 RouteInterfaceComponent.class);
 
         assertTrue("Missing dependency from implemented interface",
-                deps.getModules().contains("myModule.js"));
+                DepsTests.merge(deps.getModules()).contains("myModule.js"));
 
         DepsTests.assertImportCount(1, deps.getCss());
 
         assertEquals("Invalid css import", "frontend://styles/interface.css",
-                deps.getCss().iterator().next().getValue());
+                DepsTests.merge(deps.getCss()).get(0).getValue());
     }
 
     @Test

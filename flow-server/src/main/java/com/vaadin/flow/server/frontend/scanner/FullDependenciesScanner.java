@@ -117,7 +117,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         packages = discoverPackages();
 
-        Map<String, Set<String>> themeModules = new HashMap<>();
+        Map<String, LinkedHashSet<String>> themeModules = new HashMap<>();
         LinkedHashSet<String> regularModules = new LinkedHashSet<>();
         LinkedHashSet<String> scriptsSet = new LinkedHashSet<>();
 
@@ -151,18 +151,21 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     @Override
-    public List<String> getModules() {
-        return Collections.unmodifiableList(modules);
+    public Map<ChunkInfo, List<String>> getModules() {
+        return Collections.singletonMap(ChunkInfo.GLOBAL,
+                Collections.unmodifiableList(modules));
     }
 
     @Override
-    public List<String> getScripts() {
-        return Collections.unmodifiableList(scripts);
+    public Map<ChunkInfo, List<String>> getScripts() {
+        return Collections.singletonMap(ChunkInfo.GLOBAL,
+                new ArrayList<>(scripts));
     }
 
     @Override
-    public List<CssData> getCss() {
-        return Collections.unmodifiableList(cssData);
+    public Map<ChunkInfo, List<CssData>> getCss() {
+        return Collections.singletonMap(ChunkInfo.GLOBAL,
+                new ArrayList<>(cssData));
     }
 
     @Override
@@ -246,7 +249,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     .loadClass(CssImport.class.getName());
             Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
-            Set<CssData> result = new LinkedHashSet<>();
+            LinkedHashSet<CssData> result = new LinkedHashSet<>();
             for (Class<?> clazz : annotatedClasses) {
                 classes.add(clazz.getName());
                 List<? extends Annotation> imports = annotationFinder
@@ -387,7 +390,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private void handleModule(Class<?> clazz, String module,
-            Set<String> modules, Map<String, Set<String>> themeModules) {
+            LinkedHashSet<String> modules,
+            Map<String, LinkedHashSet<String>> themeModules) {
 
         if (abstractTheme.isAssignableFrom(clazz)) {
             Set<String> themingModules = themeModules.computeIfAbsent(
@@ -399,9 +403,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         }
     }
 
-    private List<String> calculateModules(Set<String> modules,
-            Map<String, Set<String>> themeModules) {
-        Set<String> themingModules = themeModules
+    private List<String> calculateModules(LinkedHashSet<String> modules,
+            Map<String, LinkedHashSet<String>> themeModules) {
+        LinkedHashSet<String> themingModules = themeModules
                 .get(getThemeDefinition() == null ? null
                         : getThemeDefinition().getTheme().getName());
         if (themingModules == null) {

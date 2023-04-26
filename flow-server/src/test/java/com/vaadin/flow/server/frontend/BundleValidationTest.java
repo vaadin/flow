@@ -24,6 +24,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -672,8 +673,10 @@ public class BundleValidationTest {
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
-        Mockito.when(depScanner.getModules()).thenReturn(Collections
-                .singletonList("@polymer/paper-checkbox/paper-checkbox.js"));
+        Mockito.when(depScanner.getModules())
+                .thenReturn(Collections.singletonMap(ChunkInfo.GLOBAL,
+                        Collections.singletonList(
+                                "@polymer/paper-checkbox/paper-checkbox.js")));
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
@@ -708,8 +711,10 @@ public class BundleValidationTest {
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
-        Mockito.when(depScanner.getModules()).thenReturn(Collections
-                .singletonList("@polymer/paper-checkbox/paper-checkbox.js"));
+        Mockito.when(depScanner.getModules())
+                .thenReturn(Collections.singletonMap(ChunkInfo.GLOBAL,
+                        Collections.singletonList(
+                                "@polymer/paper-checkbox/paper-checkbox.js")));
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
@@ -749,7 +754,8 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages())
                 .thenReturn(Collections.emptyMap());
         Mockito.when(depScanner.getModules()).thenReturn(
-                Collections.singletonList("@vaadin/grid/src/vaadin-grid.js"));
+                Collections.singletonMap(ChunkInfo.GLOBAL, Collections
+                        .singletonList("@vaadin/grid/src/vaadin-grid.js")));
         Mockito.when(depScanner.getTheme())
                 .thenReturn(new NodeTestComponents.LumoTest());
 
@@ -789,9 +795,9 @@ public class BundleValidationTest {
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
-        Mockito.when(depScanner.getModules())
-                .thenReturn(Collections.singletonList(
-                        "Frontend/generated/jar-resources/TodoTemplate.js"));
+        Mockito.when(depScanner.getModules()).thenReturn(Collections
+                .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
+                        "Frontend/generated/jar-resources/TodoTemplate.js")));
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
@@ -828,9 +834,9 @@ public class BundleValidationTest {
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
-        Mockito.when(depScanner.getModules())
-                .thenReturn(Collections.singletonList(
-                        "Frontend/generated/jar-resources/TodoTemplate.js"));
+        Mockito.when(depScanner.getModules()).thenReturn(Collections
+                .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
+                        "Frontend/generated/jar-resources/TodoTemplate.js")));
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
@@ -869,9 +875,9 @@ public class BundleValidationTest {
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
-        Mockito.when(depScanner.getModules())
-                .thenReturn(Collections.singletonList(
-                        "Frontend/generated/jar-resources/TodoTemplate.js"));
+        Mockito.when(depScanner.getModules()).thenReturn(Collections
+                .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
+                        "Frontend/generated/jar-resources/TodoTemplate.js")));
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
@@ -915,7 +921,8 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getModules()).thenReturn(
-                Collections.singletonList("Frontend/my-styles.css?inline"));
+                Collections.singletonMap(ChunkInfo.GLOBAL, Collections
+                        .singletonList("Frontend/my-styles.css?inline")));
 
         JsonObject stats = getBasicStats();
         JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
@@ -941,7 +948,8 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getModules()).thenReturn(
-                Collections.singletonList("Frontend/views/lit-view.ts"));
+                Collections.singletonMap(ChunkInfo.GLOBAL, Collections
+                        .singletonList("Frontend/views/lit-view.ts")));
 
         JsonObject stats = getBasicStats();
         stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/views/lit-view.ts");
@@ -964,7 +972,8 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getModules()).thenReturn(
-                Collections.singletonList("Frontend/views/lit-view.ts"));
+                Collections.singletonMap(ChunkInfo.GLOBAL, Collections
+                        .singletonList("Frontend/views/lit-view.ts")));
 
         JsonObject stats = getBasicStats();
         JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
@@ -988,7 +997,8 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getModules()).thenReturn(
-                Collections.singletonList("Frontend/views/lit-view.ts"));
+                Collections.singletonMap(ChunkInfo.GLOBAL, Collections
+                        .singletonList("Frontend/views/lit-view.ts")));
 
         JsonObject stats = getBasicStats();
         stats.getArray(BUNDLE_IMPORTS).set(0, "Frontend/views/lit-view.ts");
@@ -1520,8 +1530,8 @@ public class BundleValidationTest {
         CssData cssData = new CssData("./addons-styles/my-styles.css", null,
                 null, null);
 
-        Mockito.when(depScanner.getCss())
-                .thenReturn(Collections.singletonList(cssData));
+        Mockito.when(depScanner.getCss()).thenReturn(Collections.singletonMap(
+                ChunkInfo.GLOBAL, Collections.singletonList(cssData)));
 
         JsonObject stats = getBasicStats();
 
