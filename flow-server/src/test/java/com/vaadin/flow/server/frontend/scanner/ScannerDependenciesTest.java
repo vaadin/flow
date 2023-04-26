@@ -48,12 +48,12 @@ public class ScannerDependenciesTest {
                 RouteInterfaceComponent.class);
 
         assertTrue("Missing dependency from implemented interface",
-                deps.getModules().contains("myModule.js"));
+                DepsTests.merge(deps.getModules()).contains("myModule.js"));
 
-        assertEquals("There should be 1 css import", 1, deps.getCss().size());
+        DepsTests.assertImportCount(1, deps.getCss());
 
         assertEquals("Invalid css import", "frontend://styles/interface.css",
-                deps.getCss().iterator().next().getValue());
+                DepsTests.merge(deps.getCss()).get(0).getValue());
     }
 
     @Test
@@ -136,27 +136,26 @@ public class ScannerDependenciesTest {
 
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
 
-        assertTrue(8 <= deps.getModules().size());
+        DepsTests.assertImportCount(9, deps.getModules());
         assertEquals(1, deps.getPackages().size());
-        assertEquals(6, deps.getScripts().size());
+        DepsTests.assertImportCount(6, deps.getScripts());
     }
 
     @Test
     public void should_visit_Constructor() {
         FrontendDependencies deps = getFrontendDependencies(SecondView.class);
-        assertTrue(deps.getModules().contains("./component-3.js"));
+        DepsTests.assertHasImports(deps.getModules(), "./component-3.js");
     }
 
     @Test
     public void should_resolveComponentFactories() {
         FrontendDependencies deps = getFrontendDependencies(ThirdView.class);
 
-        assertTrue(3 <= deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
-        assertEquals(0, deps.getScripts().size());
-        assertTrue(deps.getModules().contains("./my-component.js"));
-        assertTrue(deps.getModules().contains("./my-static-factory.js"));
-        assertTrue(deps.getModules().contains("./my-another-component.js"));
+        DepsTests.assertImportCount(0, deps.getScripts());
+        DepsTests.assertImportsExcludingUI(deps.getModules(),
+                "./my-component.js", "./my-static-factory.js",
+                "./my-another-component.js");
     }
 
     @Test
@@ -214,26 +213,24 @@ public class ScannerDependenciesTest {
     public void should_visitDynamicRoute() {
         FrontendDependencies deps = getFrontendDependencies(
                 RouteWithNestedDynamicRouteClass.class);
-        assertTrue(3 <= deps.getModules().size());
-        assertTrue(deps.getModules().contains("dynamic-route.js"));
-        assertTrue(deps.getModules().contains("dynamic-component.js"));
-        assertTrue(deps.getModules().contains("dynamic-layout.js"));
+        DepsTests.assertImportsExcludingUI(deps.getModules(),
+                "dynamic-component.js", "dynamic-route.js",
+                "dynamic-layout.js");
     }
 
     @Test // #5658
     public void should_visitFactoryBeans() {
         FrontendDependencies deps = getFrontendDependencies(
                 RouteWithViewBean.class);
-        assertTrue(1 <= deps.getModules().size());
-        assertTrue(deps.getModules().contains("dynamic-component.js"));
+        DepsTests.assertImportsExcludingUI(deps.getModules(),
+                "dynamic-component.js");
     }
 
     @Test
     public void should_visitServices() {
         FrontendDependencies deps = getFrontendDependencies(
                 RouteWithService.class);
-        assertTrue(2 <= deps.getModules().size());
-        assertTrue(deps.getModules().contains("dynamic-component.js"));
-        assertTrue(deps.getModules().contains("dynamic-layout.js"));
+        DepsTests.assertImportsExcludingUI(deps.getModules(),
+                "dynamic-component.js", "dynamic-layout.js");
     }
 }
