@@ -41,7 +41,6 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
-import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.router.Load;
 import com.vaadin.flow.server.Constants;

@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 
 import org.slf4j.Logger;
 
@@ -28,7 +24,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.Theme;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode

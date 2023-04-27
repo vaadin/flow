@@ -60,7 +60,6 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-import com.vaadin.flow.shared.ui.LoadMode;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
