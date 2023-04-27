@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
@@ -35,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.MessageDigestUtil;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -189,6 +189,10 @@ public class ServerRpcHandler implements Serializable {
             return json;
         }
 
+        private boolean isUnloadBeaconRequest() {
+            return json.hasKey(ApplicationConstants.UNLOAD_BEACON);
+        }
+
     }
 
     private static final int MAX_BUFFER_SIZE = 64 * 1024;
@@ -280,7 +284,6 @@ public class ServerRpcHandler implements Serializable {
             // did not reach the client. When the client re-sends the message,
             // it would only get an empty response (because the dirty flags have
             // been cleared on the server) and would be out of sync
-
             if (requestId == expectedId - 1 && Arrays.equals(messageHash,
                     ui.getInternals().getLastProcessedMessageHash())) {
                 /*
@@ -340,6 +343,24 @@ public class ServerRpcHandler implements Serializable {
             // signature for source and binary compatibility
             throw new ResynchronizationRequiredException();
         }
+        if (rpcRequest.isUnloadBeaconRequest()) {
+            if (isPreserveOnRefreshTarget(ui)) {
+                getLogger().debug(
+                        "Eager UI close ignored for @PreserveOnRefresh view");
+            } else {
+                ui.close();
+                getLogger().debug("UI closed with a beacon request");
+            }
+        }
+
+    }
+
+    // Kind of same as in AbstractNavigationStateRenderer, but gets
+    // "routeLayoutTypes" & class from UI instance.
+    private static boolean isPreserveOnRefreshTarget(UI ui) {
+        return ui.getInternals().getActiveRouterTargetsChain().stream()
+                .anyMatch(rt -> rt.getClass()
+                        .isAnnotationPresent(PreserveOnRefresh.class));
     }
 
     private String getMessageDetails(RpcRequest rpcRequest) {
@@ -474,6 +495,7 @@ public class ServerRpcHandler implements Serializable {
     }
 
     private static class LazyInvocationHandlers {
+
         private static final Map<String, RpcInvocationHandler> HANDLERS = loadHandlers()
                 .stream()
                 .collect(Collectors.toMap(RpcInvocationHandler::getRpcType,
