@@ -137,10 +137,10 @@ public class UpdateImportsWithByteCodeScannerTest
         String lazyChunkContent = String.join("\n", output.get(lazyChunk));
 
         assertImports(mainImportContent, lazyChunkContent,
-                new String[] { "Frontend/local-p3-template.js",
-                        "Frontend/lazy-component-cssimport.css" },
+                new String[] { "Frontend/local-p3-template.js", },
                 new String[] { "Frontend/lazy-component-javascript.js",
-                        "Frontend/lazy-component-jsmodule.js" });
+                        "Frontend/lazy-component-jsmodule.js",
+                        "Frontend/lazy-component-cssimport.css" });
     }
 
     @Test
@@ -175,11 +175,11 @@ public class UpdateImportsWithByteCodeScannerTest
         String lazyChunkContent = String.join("\n", output.get(lazyChunk));
 
         assertImports(mainImportContent, lazyChunkContent,
-                new String[] { "Frontend/lazy-component-cssimport.css",
-                        "Frontend/eager-component-cssimport.css",
+                new String[] { "Frontend/eager-component-cssimport.css",
                         "Frontend/eager-component-javascript.js",
                         "Frontend/eager-component-jsmodule.js" },
-                new String[] { "Frontend/lazy-component-javascript.js",
+                new String[] { "Frontend/lazy-component-cssimport.css",
+                        "Frontend/lazy-component-javascript.js",
                         "Frontend/lazy-component-jsmodule.js", });
     }
 

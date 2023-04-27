@@ -35,7 +35,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -152,30 +151,40 @@ abstract class AbstractUpdateImports implements Runnable {
             Map<ChunkInfo, List<String>> javascript) {
         Map<File, List<String>> files = new HashMap<>();
 
-        Map<ChunkInfo, List<String>> lazyImports = new LinkedHashMap<>();
-        List<String> eagerImports = new ArrayList<>();
+        Map<ChunkInfo, List<String>> lazyJavascript = new LinkedHashMap<>();
+        List<String> eagerJavascript = new ArrayList<>();
+        Map<ChunkInfo, List<String>> lazyCss = new LinkedHashMap<>();
+        List<String> eagerCss = new ArrayList<>();
 
         for (Entry<ChunkInfo, List<String>> entry : javascript.entrySet()) {
             if (isLazyRoute(entry.getKey())) {
-                lazyImports.put(entry.getKey(), entry.getValue());
+                lazyJavascript.put(entry.getKey(), entry.getValue());
             } else {
-                eagerImports.addAll(entry.getValue());
+                eagerJavascript.addAll(entry.getValue());
+            }
+        }
+
+        for (Entry<ChunkInfo, List<CssData>> entry : css.entrySet()) {
+            List<String> cssLines = getCssLines(entry.getValue());
+            if (isLazyRoute(entry.getKey())) {
+                lazyCss.put(entry.getKey(), cssLines);
+            } else {
+                eagerCss.addAll(cssLines);
             }
         }
 
         List<String> chunkLoader = new ArrayList<>();
-        if (!lazyImports.isEmpty()) {
+        if (!lazyJavascript.isEmpty() || !lazyCss.isEmpty()) {
             chunkLoader.add("");
             chunkLoader.add("const loadOnDemand = (key) => {");
             chunkLoader.add("  const pending = [];");
-            for (Entry<ChunkInfo, List<String>> entry : lazyImports
-                    .entrySet()) {
-                String routeHash = BundleUtils
-                        .getChunkId(entry.getKey().getName());
+            for (ChunkInfo chunkInfo : merge(lazyJavascript.keySet(),
+                    lazyCss.keySet())) {
+                String routeHash = BundleUtils.getChunkId(chunkInfo.getName());
                 String chunkFilename = "chunk-" + routeHash + ".js";
 
-                String ifClauses = entry.getKey().getDependencyTriggers()
-                        .stream().map(cls -> BundleUtils.getChunkId(cls))
+                String ifClauses = chunkInfo.getDependencyTriggers().stream()
+                        .map(cls -> BundleUtils.getChunkId(cls))
                         .map(hash -> "key === '" + hash + "'")
                         .collect(Collectors.joining(" || "));
                 chunkLoader.add("  if (" + ifClauses + ") {");
@@ -183,8 +192,14 @@ abstract class AbstractUpdateImports implements Runnable {
                         + chunkFilename + "'));");
                 chunkLoader.add("  }");
 
-                List<String> chunkLines = getModuleLines(entry.getValue());
-
+                List<String> chunkLines = new ArrayList<>();
+                if (lazyJavascript.containsKey(chunkInfo)) {
+                    chunkLines
+                            .addAll(getModuleLines(javascript.get(chunkInfo)));
+                }
+                if (lazyCss.containsKey(chunkInfo)) {
+                    chunkLines.addAll(lazyCss.get(chunkInfo));
+                }
                 File chunkFile = new File(chunkFolder, chunkFilename);
                 files.put(chunkFile, chunkLines);
             }
@@ -200,8 +215,8 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> mainLines = new ArrayList<>();
         mainLines.add(IMPORT_INJECT);
 
-        mainLines.addAll(getCssLines(css));
-        mainLines.addAll(getModuleLines(eagerImports));
+        mainLines.addAll(eagerCss);
+        mainLines.addAll(getModuleLines(eagerJavascript));
         mainLines.addAll(chunkLoader);
         mainLines.add("window.Vaadin = window.Vaadin || {};");
         mainLines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
@@ -271,20 +286,17 @@ abstract class AbstractUpdateImports implements Runnable {
         return FrontendUtils.FRONTEND_GENERATED_FLOW_IMPORT_PATH + module;
     }
 
-    protected List<String> getCssLines(Map<ChunkInfo, List<CssData>> css) {
+    protected List<String> getCssLines(List<CssData> css) {
         List<String> lines = new ArrayList<>();
 
         Set<String> cssNotFound = new HashSet<>();
 
-        for (ChunkInfo key : css.keySet()) {
-
-            int i = 0;
-            for (CssData cssData : css.get(key)) {
-                if (!addCssLines(lines, cssData, i)) {
-                    cssNotFound.add(cssData.getValue());
-                }
-                i++;
+        int i = 0;
+        for (CssData cssData : css) {
+            if (!addCssLines(lines, cssData, i)) {
+                cssNotFound.add(cssData.getValue());
             }
+            i++;
         }
 
         if (!cssNotFound.isEmpty()) {
@@ -365,6 +377,12 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> result = new ArrayList<>();
         css.forEach((key, value) -> result.addAll(value));
         return result;
+    }
+
+    private Set<ChunkInfo> merge(Set<ChunkInfo> set1, Set<ChunkInfo> set2) {
+        Set<ChunkInfo> set = new HashSet<>(set1);
+        set.addAll(set2);
+        return set;
     }
 
     private Set<String> getUniqueEs6ImportPaths(Collection<String> modules) {
