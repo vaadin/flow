@@ -91,7 +91,7 @@ public final class BundleUtils {
 
     /**
      * Gets the id for a chunk defined by the given class.
-     * 
+     *
      * @param componentClass
      *            the class
      * @return an identifier for the component class that does not reveal the
@@ -103,7 +103,7 @@ public final class BundleUtils {
 
     /**
      * Gets the id for a chunk defined by the given class.
-     * 
+     *
      * @param className
      *            the name of the class
      * @return an identifier for the component class that does not reveal the

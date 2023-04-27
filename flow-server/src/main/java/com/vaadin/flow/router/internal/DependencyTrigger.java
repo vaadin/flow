@@ -21,7 +21,7 @@ import com.vaadin.flow.component.Component;
 public @interface DependencyTrigger {
     /**
      * The classes the should trigger loading of dependencies.
-     * 
+     *
      * @return the trigger classes
      */
     Class<? extends Component>[] value();
