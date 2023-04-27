@@ -31,6 +31,7 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -109,21 +110,19 @@ public class NodeTasks implements FallibleCommand {
                             featureFlags);
 
             if (options.isProductionMode()) {
-                boolean needBuild = BundleValidationUtil.needsBuildProdBundle(
-                        options, frontendDependencies, classFinder);
+                boolean needBuild = BundleValidationUtil.needsBuild(
+                        options, frontendDependencies, classFinder, Mode.PRODUCTION);
                 options.withRunNpmInstall(needBuild);
                 options.withBundleBuild(needBuild);
                 if (!needBuild) {
                     commands.add(new TaskCopyBundleFiles(options));
                 }
-            }
-
-            // The dev bundle check needs the frontendDependencies to be able to
-            // determine if we need a rebuild as the check happens immediately
-            // and no update tasks are executed before it.
-            if (!options.isProductionMode() && options.isBundleBuild()) {
-                if (TaskRunDevBundleBuild.needsBuild(options,
-                        frontendDependencies, classFinder)) {
+            } else if (options.isBundleBuild()) {
+                // The dev bundle check needs the frontendDependencies to be able to
+                // determine if we need a rebuild as the check happens immediately
+                // and no update tasks are executed before it.
+                if (BundleValidationUtil.needsBuild(options,
+                        frontendDependencies, classFinder, Mode.DEVELOPMENT_BUNDLE)) {
                     options.withRunNpmInstall(true);
                     options.withCopyTemplates(true);
                     UsageStatistics.markAsUsed("flow/app-dev-bundle", null);
@@ -173,8 +172,7 @@ public class NodeTasks implements FallibleCommand {
                 commands.add(new TaskInstallFrontendBuildPlugins(options));
             }
 
-            if (packageUpdater != null && options.isBundleBuild()
-                    && !options.isProductionMode()) {
+            if (packageUpdater != null && options.isDevBundleBuild()) {
                 commands.add(new TaskRunDevBundleBuild(options));
             }
 

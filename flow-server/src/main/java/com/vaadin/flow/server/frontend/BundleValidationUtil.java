@@ -26,6 +26,7 @@ import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.server.webcomponent.WebComponentExporterTagExtractor;
@@ -43,36 +44,53 @@ import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
  *
  * @since 24.1
  */
-public class BundleValidationUtil {
+public final class BundleValidationUtil {
 
-    public static boolean needsBuildProdBundle(Options options,
-            FrontendDependenciesScanner frontendDependencies,
-            ClassFinder finder) {
+    /**
+     * Checks if an application needs a new frontend bundle.
+     *
+     * @param options Flow plugin options
+     * @param frontendDependencies frontend dependencies scanner to lookup
+     *                             for frontend imports
+     * @param finder class finder to obtain classes and resources from
+     *               class-path
+     * @param mode Vaadin application mode
+     * @return true if a new frontend bundle is needed, false otherwise
+     */
+    public static boolean needsBuild(Options options,
+                                              FrontendDependenciesScanner frontendDependencies,
+                                              ClassFinder finder,
+                                              Mode mode) {
         getLogger()
-                .info("Checking if a production mode bundle build is needed");
+                .info("Checking if a {} mode bundle build is needed", mode);
 
         try {
-            boolean needsBuild = needsBundleBuild(options, frontendDependencies,
+            boolean needsBuild = needsBuildInternal(options, frontendDependencies,
                     finder);
-            saveResultInTokenFile(needsBuild, options);
+
+            if (options.isProductionMode()) {
+                saveResultInTokenFile(needsBuild, options);
+            }
+
             if (needsBuild) {
-                getLogger().info("A production mode bundle build is needed");
+                getLogger().info("A {} mode bundle build is needed", mode);
             } else {
                 getLogger()
-                        .info("A production mode bundle build is not needed");
+                        .info("A {} mode bundle build is not needed", mode);
             }
             return needsBuild;
         } catch (Exception e) {
             getLogger().error(
-                    "Error when checking if a production bundle build is needed",
+                    String.format("Error when checking if a %s bundle build " +
+                                  "is needed", mode),
                     e);
             return true;
         }
     }
 
-    public static boolean needsBundleBuild(Options options,
-            FrontendDependenciesScanner frontendDependencies,
-            ClassFinder finder) throws IOException {
+    static boolean needsBuildInternal(Options options,
+                                      FrontendDependenciesScanner frontendDependencies,
+                                      ClassFinder finder) throws IOException {
         File npmFolder = options.getNpmFolder();
 
         if (!options.isProductionMode()

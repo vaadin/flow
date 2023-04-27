@@ -104,30 +104,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         addReadme();
     }
 
-    public static boolean needsBuild(Options options,
-            FrontendDependenciesScanner frontendDependencies,
-            ClassFinder finder) {
-        getLogger()
-                .info("Checking if a development mode bundle build is needed");
-
-        try {
-            boolean needsBuild = BundleValidationUtil.needsBundleBuild(options,
-                    frontendDependencies, finder);
-            if (needsBuild) {
-                getLogger().info("A development mode bundle build is needed");
-            } else {
-                getLogger()
-                        .info("A development mode bundle build is not needed");
-            }
-            return needsBuild;
-        } catch (Exception e) {
-            getLogger().error(
-                    "Error when checking if a development bundle build is needed",
-                    e);
-            return true;
-        }
-    }
-
     private static Logger getLogger() {
         return LoggerFactory.getLogger(TaskRunDevBundleBuild.class);
     }

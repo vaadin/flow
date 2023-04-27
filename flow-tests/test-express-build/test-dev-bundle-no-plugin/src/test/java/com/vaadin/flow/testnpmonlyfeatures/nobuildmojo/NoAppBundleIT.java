@@ -38,7 +38,7 @@ public class NoAppBundleIT extends ChromeBrowserTest {
         Assert.assertFalse("No node_modules should be created",
                 new File(baseDir, "node_modules").exists());
 
-        // TODO: for default prod bundle these are still generated
+        // TODO: for default prod bundle these are still generated, see #16696
         assertInDevMode(() -> {
             Assert.assertFalse("No package.json should be created",
                     new File(baseDir, "package.json").exists());

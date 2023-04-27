@@ -498,6 +498,15 @@ public class Options implements Serializable {
     }
 
     /**
+     * Check if a dev mode bundle build should run.
+     *
+     * @return true to run the build, false otherwise
+     */
+    public boolean isDevBundleBuild() {
+        return !isProductionMode() && isBundleBuild();
+    }
+
+    /**
      * Whether to run bundle build. Needed when not using a dev server or
      * running for production.
      *
