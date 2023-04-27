@@ -77,7 +77,8 @@ public class ComponentMetaData {
         }
 
         public boolean isEmpty() {
-            return javaScripts.isEmpty() && jsModules.isEmpty() && styleSheets.isEmpty() && cssImports.isEmpty();
+            return javaScripts.isEmpty() && jsModules.isEmpty()
+                    && styleSheets.isEmpty() && cssImports.isEmpty();
         }
     }
 

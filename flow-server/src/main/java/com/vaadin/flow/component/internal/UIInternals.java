@@ -66,6 +66,7 @@ import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.BeforeLeaveListener;
 import com.vaadin.flow.router.ListenerPriority;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
@@ -841,7 +842,7 @@ public class UIInternals implements Serializable {
                 .getDependencies(session.getService(), componentClass);
         // In npm mode, add external JavaScripts directly to the page.
         addExternalDependencies(dependencies);
-        if (!dependencies.isEmpty()) {
+        if (mightHaveChunk(componentClass, dependencies)) {
             triggerChunkLoading(componentClass);
         }
 
@@ -851,7 +852,16 @@ public class UIInternals implements Serializable {
         warnForUnavailableBundledDependencies(componentClass, dependencies);
     }
 
-    private void triggerChunkLoading(Class<? extends Component> componentClass) {
+    private boolean mightHaveChunk(Class<? extends Component> componentClass,
+            DependencyInfo dependencies) {
+        if (!dependencies.isEmpty()) {
+            return true;
+        }
+        return componentClass.getAnnotation(Route.class) != null;
+    }
+
+    private void triggerChunkLoading(
+            Class<? extends Component> componentClass) {
         ui.getPage().addDynamicImport("return window.Vaadin.Flow.loadOnDemand('"
                 + getChunkForClass(componentClass) + "');");
     }

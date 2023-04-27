@@ -167,20 +167,22 @@ abstract class AbstractUpdateImports implements Runnable {
         if (!lazyImports.isEmpty()) {
             chunkLoader.add("");
             chunkLoader.add("const loadOnDemand = (key) => {");
+            chunkLoader.add("  const pending = [];");
             for (Entry<ChunkInfo, List<String>> entry : lazyImports
                     .entrySet()) {
                 String routeHash = StringUtil.getHash(entry.getKey().getName(),
                         StandardCharsets.UTF_8);
                 String chunkFilename = "chunk-" + routeHash + ".js";
 
-                String ifClauses = entry.getKey().getDependencyTriggers().stream()
+                String ifClauses = entry.getKey().getDependencyTriggers()
+                        .stream()
                         .map(cls -> StringUtil.getHash(cls,
                                 StandardCharsets.UTF_8))
                         .map(hash -> "key === '" + hash + "'")
                         .collect(Collectors.joining(" || "));
                 chunkLoader.add("  if (" + ifClauses + ") {");
-                chunkLoader.add(
-                        "    return import('./chunks/" + chunkFilename + "');");
+                chunkLoader.add("    pending.push(import('./chunks/"
+                        + chunkFilename + "'));");
                 chunkLoader.add("  }");
 
                 List<String> chunkLines = getModuleLines(entry.getValue());
@@ -189,7 +191,7 @@ abstract class AbstractUpdateImports implements Runnable {
                 files.put(chunkFile, chunkLines);
             }
 
-            chunkLoader.add("  return Promise.resolve(0);");
+            chunkLoader.add("  return Promise.all(pending);");
             chunkLoader.add("}");
             chunkLoader.add("");
         } else {
