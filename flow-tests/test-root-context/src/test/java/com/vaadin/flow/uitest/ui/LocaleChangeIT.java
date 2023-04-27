@@ -20,6 +20,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 import static com.vaadin.flow.uitest.ui.LocaleChangeView.CHANGE_LOCALE_BUTTON_ID;
 import static com.vaadin.flow.uitest.ui.LocaleChangeView.SAME_UI_RESULT_ID;
 import static com.vaadin.flow.uitest.ui.LocaleChangeView.SHOW_RESULTS_BUTTON_ID;
+import org.openqa.selenium.WindowType;
 
 public class LocaleChangeIT extends ChromeBrowserTest {
 
@@ -27,7 +28,10 @@ public class LocaleChangeIT extends ChromeBrowserTest {
     public void setSessionLocale_currentUIInstanceUpdatedUponEachLocaleUpdate() {
         final int openedUI = 3;
 
-        IntStream.range(0, openedUI).forEach(i -> open());
+        IntStream.range(0, openedUI).forEach(i -> {
+            driver.switchTo().newWindow(WindowType.TAB);
+            open();
+        });
 
         waitForElementPresent(By.id(CHANGE_LOCALE_BUTTON_ID));
         findElement(By.id(CHANGE_LOCALE_BUTTON_ID)).click();
