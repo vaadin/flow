@@ -863,12 +863,7 @@ public class UIInternals implements Serializable {
     private void triggerChunkLoading(
             Class<? extends Component> componentClass) {
         ui.getPage().addDynamicImport("return window.Vaadin.Flow.loadOnDemand('"
-                + getChunkForClass(componentClass) + "');");
-    }
-
-    private String getChunkForClass(Class<? extends Component> componentClass) {
-        return StringUtil.getHash(componentClass.getName(),
-                StandardCharsets.UTF_8);
+                + BundleUtils.getChunkId(componentClass) + "');");
     }
 
     private void warnForUnavailableBundledDependencies(

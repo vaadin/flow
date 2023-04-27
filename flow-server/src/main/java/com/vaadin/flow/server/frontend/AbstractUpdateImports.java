@@ -170,14 +170,12 @@ abstract class AbstractUpdateImports implements Runnable {
             chunkLoader.add("  const pending = [];");
             for (Entry<ChunkInfo, List<String>> entry : lazyImports
                     .entrySet()) {
-                String routeHash = StringUtil.getHash(entry.getKey().getName(),
-                        StandardCharsets.UTF_8);
+                String routeHash = BundleUtils
+                        .getChunkId(entry.getKey().getName());
                 String chunkFilename = "chunk-" + routeHash + ".js";
 
                 String ifClauses = entry.getKey().getDependencyTriggers()
-                        .stream()
-                        .map(cls -> StringUtil.getHash(cls,
-                                StandardCharsets.UTF_8))
+                        .stream().map(cls -> BundleUtils.getChunkId(cls))
                         .map(hash -> "key === '" + hash + "'")
                         .collect(Collectors.joining(" || "));
                 chunkLoader.add("  if (" + ifClauses + ") {");
