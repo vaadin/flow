@@ -351,7 +351,7 @@ public class AtmospherePushConnection implements PushConnection {
                 } catch (TimeoutException e) {
                     if (ui.isClosing()) {
                         getLogger().debug(
-                                "Something was not sent to client on an UI that was already closed by beacon reqeuest or similar. This seems to happen with Safari occassionally when navigating away from a UI.");
+                                "Something was not sent to client on an UI that was already closed by beacon request or similar. This seems to happen with Safari occassionally when navigating away from a UI.");
                     } else {
                         getLogger().info(
                                 "Timeout waiting for messages to be sent to client before disconnect",
