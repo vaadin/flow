@@ -18,9 +18,11 @@ package com.vaadin.flow.server.frontend.scanner;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.router.Load;
 import com.vaadin.flow.router.Route;
 
 /**
@@ -35,16 +37,20 @@ import com.vaadin.flow.router.Route;
 public final class EntryPointData implements Serializable {
     private final EntryPointType type;
     private final String name;
+    private final Load dependencies;
+    private List<String> dependencyTriggers;
+
     Set<String> reachableClasses;
     private LinkedHashSet<String> modules = new LinkedHashSet<>();
     private LinkedHashSet<String> scripts = new LinkedHashSet<>();
     private LinkedHashSet<CssData> css = new LinkedHashSet<>();
-    private boolean eager = true;
 
-    EntryPointData(Class<?> clazz, EntryPointType type, boolean eager) {
+    EntryPointData(Class<?> clazz, EntryPointType type, Load dependencies,
+            List<String> dependencyTriggers) {
         this.name = clazz.getName();
         this.type = type;
-        this.eager = eager;
+        this.dependencies = dependencies;
+        this.dependencyTriggers = dependencyTriggers;
     }
 
     String getName() {
@@ -67,8 +73,15 @@ public final class EntryPointData implements Serializable {
         return css;
     }
 
-    public boolean isEager() {
-        return eager;
+    public Load getDependencies() {
+        return dependencies;
     }
 
+    public void setDependencyTriggers(List<String> dependencyTriggers) {
+        this.dependencyTriggers = dependencyTriggers;
+    }
+
+    public List<String> getDependencyTriggers() {
+        return dependencyTriggers;
+    }
 }

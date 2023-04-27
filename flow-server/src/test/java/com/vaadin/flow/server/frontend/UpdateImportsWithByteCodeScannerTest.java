@@ -16,12 +16,14 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hsqldb.Trigger;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,10 +33,11 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.router.Load;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.internal.DependencyTrigger;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-import com.vaadin.flow.shared.ui.LoadMode;
 
 public class UpdateImportsWithByteCodeScannerTest
         extends AbstractUpdateImportsTest {
@@ -57,8 +60,27 @@ public class UpdateImportsWithByteCodeScannerTest
 
     }
 
-    @Route(value = "lazy", loadMode = LoadMode.LAZY)
+    @Route(value = "lazy", dependencies = Load.ON_DEMAND)
     static class LazyRoute extends Component {
+        LazyComponent lazyComponent;
+    }
+
+    public static class TriggerClass1 extends Component {
+
+    }
+
+    public static class TriggerClass2 extends Component {
+    }
+
+    @Route(value = "lazy", dependencies = Load.ON_DEMAND)
+    @DependencyTrigger(TriggerClass1.class)
+    static class LazyRouteWithOtherTrigger extends Component {
+        LazyComponent lazyComponent;
+    }
+
+    @Route(value = "lazy", dependencies = Load.ON_DEMAND)
+    @DependencyTrigger({ TriggerClass1.class, TriggerClass2.class })
+    static class LazyRouteWithOtherTriggers extends Component {
         LazyComponent lazyComponent;
     }
 
@@ -69,12 +91,7 @@ public class UpdateImportsWithByteCodeScannerTest
                 NodeTestComponents.LocalP3Template.class, LazyRoute.class,
                 UI.class };
 
-        createExpectedImport(frontendDirectory, nodeModulesPath,
-                "./lazy-component-javascript.js");
-        createExpectedImport(frontendDirectory, nodeModulesPath,
-                "./lazy-component-jsmodule.js");
-        createExpectedImport(frontendDirectory, nodeModulesPath,
-                "./lazy-component-cssimport.css");
+        createExpectedLazyImports();
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 options);
@@ -105,6 +122,83 @@ public class UpdateImportsWithByteCodeScannerTest
                         "Frontend/lazy-component-cssimport.css" },
                 new String[] { "Frontend/lazy-component-javascript.js",
                         "Frontend/lazy-component-jsmodule.js" });
+    }
+
+    private void createExpectedLazyImports() throws IOException {
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./lazy-component-javascript.js");
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./lazy-component-jsmodule.js");
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./lazy-component-cssimport.css");
+    }
+
+    @Test
+    public void lazyRouteTriggeredByOtherComponent() throws Exception {
+        createExpectedLazyImports();
+
+        Class<?>[] testClasses = { LazyRouteWithOtherTrigger.class, UI.class };
+
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                options);
+        updater.run();
+
+        Map<File, List<String>> output = updater.getOutput();
+        File flowGeneratedImports = FrontendUtils
+                .getFlowGeneratedImports(frontendDirectory);
+        String mainImportContent = String.join("\n",
+                output.get(flowGeneratedImports));
+
+        String routeHash = StringUtil.getHash(
+                LazyRouteWithOtherTrigger.class.getName(),
+                StandardCharsets.UTF_8);
+        String triggerHash = StringUtil.getHash(TriggerClass1.class.getName(),
+                StandardCharsets.UTF_8);
+        // Chunk named after route
+        Assert.assertTrue(mainImportContent
+                .contains("chunks/chunk-" + routeHash + ".js"));
+        // Trigger is only trigger and not route
+        Assert.assertTrue(
+                mainImportContent.contains("key === '" + triggerHash + "'"));
+        Assert.assertFalse(
+                mainImportContent.contains("key === '" + routeHash + "'"));
+    }
+
+    @Test
+    public void lazyRouteTriggeredByOtherComponents() throws Exception {
+        createExpectedLazyImports();
+
+        Class<?>[] testClasses = { LazyRouteWithOtherTriggers.class, UI.class };
+
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                options);
+        updater.run();
+
+        Map<File, List<String>> output = updater.getOutput();
+        File flowGeneratedImports = FrontendUtils
+                .getFlowGeneratedImports(frontendDirectory);
+        String mainImportContent = String.join("\n",
+                output.get(flowGeneratedImports));
+
+        String routeHash = StringUtil.getHash(
+                LazyRouteWithOtherTriggers.class.getName(),
+                StandardCharsets.UTF_8);
+        String trigger1Hash = StringUtil.getHash(TriggerClass1.class.getName(),
+                StandardCharsets.UTF_8);
+        String trigger2Hash = StringUtil.getHash(TriggerClass2.class.getName(),
+                StandardCharsets.UTF_8);
+        // Chunk named after route
+        Assert.assertTrue(mainImportContent
+                .contains("chunks/chunk-" + routeHash + ".js"));
+        // Trigger is only trigger and not route
+        Assert.assertTrue(
+                mainImportContent.contains("key === '" + trigger1Hash + "'"));
+        Assert.assertTrue(
+                mainImportContent.contains("key === '" + trigger2Hash + "'"));
+        Assert.assertFalse(
+                mainImportContent.contains("key === '" + routeHash + "'"));
     }
 
     private void assertImports(String mainImportContent,

@@ -15,6 +15,11 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+import java.util.Collections;
+import java.util.List;
+
+import com.vaadin.flow.router.Load;
+
 /**
  * Identifier for a chunk or part of the JS bundle.
  * <p>
@@ -30,20 +35,24 @@ package com.vaadin.flow.server.frontend.scanner;
 public class ChunkInfo {
 
     public static final ChunkInfo GLOBAL = new ChunkInfo(
-            EntryPointType.INTERNAL, null, true);
+            EntryPointType.INTERNAL, null, Load.ON_STARTUP, null);
 
     private final EntryPointType type;
     private final String name;
-    private final boolean eager;
+    private final Load dependencies;
 
-    public ChunkInfo(EntryPointType type, String name, boolean eager) {
+    private List<String> dependencyTriggers = null;
+
+    public ChunkInfo(EntryPointType type, String name, Load dependencies,
+            List<String> dependencyTriggers) {
         this.type = type;
         if (type == EntryPointType.INTERNAL) {
             this.name = null;
-            this.eager = true;
+            this.dependencies = Load.ON_STARTUP;
         } else {
             this.name = name;
-            this.eager = eager;
+            this.dependencies = dependencies;
+            this.dependencyTriggers = dependencyTriggers;
         }
     }
 
@@ -89,8 +98,16 @@ public class ChunkInfo {
         return true;
     }
 
-    public boolean isEager() {
-        return eager;
+    public Load getDependencies() {
+        return dependencies;
+    }
+
+    public List<String> getDependencyTriggers() {
+        if (this.dependencyTriggers != null) {
+            return this.dependencyTriggers;
+        } else {
+            return Collections.singletonList(getName());
+        }
     }
 
 }

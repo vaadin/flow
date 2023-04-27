@@ -31,8 +31,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.objectweb.asm.ClassReader;
 import org.slf4j.Logger;
@@ -47,12 +49,13 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.Load;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.internal.DependencyTrigger;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -133,8 +136,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 Class<? extends AbstractTheme> themeClass = themeDefinition
                         .getTheme();
                 if (!visitedClasses.containsKey(themeClass.getName())) {
-                    addEntryPoint(themeClass, EntryPointType.INTERNAL,
-                            LoadMode.EAGER);
+                    addInternalEntryPoint(themeClass);
                     visitEntryPoint(entryPoints.get(themeClass.getName()));
                 }
             }
@@ -253,7 +255,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             return ChunkInfo.GLOBAL;
         }
 
-        return new ChunkInfo(data.getType(), data.getName(), data.isEager());
+        return new ChunkInfo(data.getType(), data.getName(),
+                data.getDependencies(), data.getDependencyTriggers());
     }
 
     /**
@@ -341,36 +344,37 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // references loaded by the specific class finder loader
         Class<? extends Annotation> routeClass = getFinder()
                 .loadClass(Route.class.getName());
+        Class<? extends Annotation> triggerClass = getFinder()
+                .loadClass(DependencyTrigger.class.getName());
         for (Class<?> route : getFinder().getAnnotatedClasses(routeClass)) {
-            addEntryPoint(route, EntryPointType.ROUTE,
-                    getLoadMode(route, routeClass));
+            Map<String, Object> routeValues = getRouteValues(route, routeClass,
+                    triggerClass);
+            addEntryPoint(route, EntryPointType.ROUTE, getLoadMode(routeValues),
+                    getDependencyTriggers(routeValues));
         }
 
         for (Class<?> initListener : getFinder().getSubTypesOf(
                 getFinder().loadClass(UIInitListener.class.getName()))) {
-            addEntryPoint(initListener, EntryPointType.INTERNAL,
-                    LoadMode.EAGER);
+            addInternalEntryPoint(initListener);
         }
 
         for (Class<?> initListener : getFinder().getSubTypesOf(getFinder()
                 .loadClass(VaadinServiceInitListener.class.getName()))) {
-            addEntryPoint(initListener, EntryPointType.INTERNAL,
-                    LoadMode.EAGER);
+            addInternalEntryPoint(initListener);
         }
 
         for (Class<?> appShell : getFinder().getSubTypesOf(
                 getFinder().loadClass(AppShellConfigurator.class.getName()))) {
-            addEntryPoint(appShell, EntryPointType.INTERNAL, LoadMode.EAGER);
+            addInternalEntryPoint(appShell);
         }
 
         for (Class<?> errorParameters : getFinder().getSubTypesOf(
                 getFinder().loadClass(HasErrorParameter.class.getName()))) {
-            addEntryPoint(errorParameters, EntryPointType.INTERNAL,
-                    LoadMode.EAGER);
+            addInternalEntryPoint(errorParameters);
         }
 
         // UI should always be collected as it contains 'ConnectionIndicator.js'
-        addEntryPoint(UI.class, EntryPointType.INTERNAL, LoadMode.EAGER);
+        addInternalEntryPoint(UI.class);
 
         if (generateEmbeddableWebComponents) {
             collectExporterEntrypoints(WebComponentExporter.class);
@@ -379,18 +383,38 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
     }
 
-    private LoadMode getLoadMode(Class<?> route, Class routeClass) {
-        Annotation annotation = route.getAnnotation(routeClass);
+    private List<String> getDependencyTriggers(
+            Map<String, Object> routeValues) {
+        return (List<String>) routeValues.get("dependencyTriggers");
+    }
+
+    private Map<String, Object> getRouteValues(Class<?> route, Class routeClass,
+            Class triggerClass) {
+        Map<String, Object> values = new HashMap<>();
+
         try {
-            Method loadModeMethod = routeClass.getMethod("loadMode");
-            Object loadMode = loadModeMethod.invoke(annotation);
-            Object name = loadMode.getClass().getMethod("name")
-                    .invoke(loadMode);
-            if (name.equals(LoadMode.EAGER.name())) {
-                return LoadMode.EAGER;
+            Annotation routeAnnotation = route.getAnnotation(routeClass);
+            Method dependenciesMethod = routeClass.getMethod("dependencies");
+            Object dependencies = dependenciesMethod.invoke(routeAnnotation);
+            Object name = dependencies.getClass().getMethod("name")
+                    .invoke(dependencies);
+            if (name.equals(Load.ON_STARTUP.name())) {
+                values.put("dependencies", Load.ON_STARTUP);
             } else {
-                return LoadMode.LAZY;
+                values.put("dependencies", Load.ON_DEMAND);
             }
+
+            Annotation triggerAnnotation = route.getAnnotation(triggerClass);
+            if (triggerAnnotation != null) {
+                Method valueMethod = triggerClass.getMethod("value");
+                Class<?> triggers[] = (Class<?>[]) valueMethod
+                        .invoke(triggerAnnotation);
+                if (triggers != null) {
+                    values.put("dependencyTriggers", Stream.of(triggers)
+                            .map(cls -> cls.getName()).toList());
+                }
+            }
+
         } catch (SecurityException | IllegalArgumentException
                 | IllegalAccessException | NoSuchMethodException
                 | InvocationTargetException e) {
@@ -398,18 +422,28 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     "Unable to determine load mode for route class {}. Using eager.",
                     route.getName(), e);
         }
-        return LoadMode.EAGER;
+        return values;
+    }
+
+    private Load getLoadMode(Map<String, Object> routeValues) {
+        return (Load) Optional.ofNullable(routeValues.get("dependencies"))
+                .orElse(Load.ON_STARTUP);
+    }
+
+    private void addInternalEntryPoint(Class<?> entryPointClass) {
+        addEntryPoint(entryPointClass, EntryPointType.INTERNAL, Load.ON_STARTUP,
+                null);
     }
 
     private void addEntryPoint(Class<?> entryPointClass, EntryPointType type,
-            LoadMode loadMode) {
+            Load dependencies, List<String> dependencyTriggers) {
         String className = entryPointClass.getName();
         if (entryPoints.containsKey(className)) {
             return;
         }
 
         EntryPointData data = new EntryPointData(entryPointClass, type,
-                loadMode == LoadMode.EAGER);
+                dependencies, dependencyTriggers);
         entryPoints.put(className, data);
     }
 
@@ -626,7 +660,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             String exporterClassName = exporter.getName();
             if (!entryPoints.containsKey(exporterClassName)) {
                 addEntryPoint(exporter, EntryPointType.WEB_COMPONENT,
-                        LoadMode.EAGER);
+                        Load.ON_STARTUP, null);
             }
 
             if (!Modifier.isAbstract(exporter.getModifiers())) {
@@ -635,7 +669,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 if (componentClass != null
                         && !componentClass.isAnnotationPresent(routeClass)) {
                     addEntryPoint(componentClass, EntryPointType.WEB_COMPONENT,
-                            LoadMode.EAGER);
+                            Load.ON_STARTUP, null);
                 }
             }
         }

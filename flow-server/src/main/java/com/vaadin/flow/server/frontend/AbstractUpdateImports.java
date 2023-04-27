@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.router.Load;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -155,7 +156,7 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> eagerImports = new ArrayList<>();
 
         for (Entry<ChunkInfo, List<String>> entry : javascript.entrySet()) {
-            if (entry.getKey().isEager()) {
+            if (entry.getKey().getDependencies() == Load.ON_STARTUP) {
                 eagerImports.addAll(entry.getValue());
             } else {
                 lazyImports.put(entry.getKey(), entry.getValue());
@@ -168,10 +169,16 @@ abstract class AbstractUpdateImports implements Runnable {
             chunkLoader.add("const loadOnDemand = (key) => {");
             for (Entry<ChunkInfo, List<String>> entry : lazyImports
                     .entrySet()) {
-                String hash = StringUtil.getHash(entry.getKey().getName(),
+                String routeHash = StringUtil.getHash(entry.getKey().getName(),
                         StandardCharsets.UTF_8);
-                String chunkFilename = "chunk-" + hash + ".js";
-                chunkLoader.add("  if (key === '" + hash + "') {");
+                String chunkFilename = "chunk-" + routeHash + ".js";
+
+                String ifClauses = entry.getKey().getDependencyTriggers().stream()
+                        .map(cls -> StringUtil.getHash(cls,
+                                StandardCharsets.UTF_8))
+                        .map(hash -> "key === '" + hash + "'")
+                        .collect(Collectors.joining(" || "));
+                chunkLoader.add("  if (" + ifClauses + ") {");
                 chunkLoader.add(
                         "    return import('./chunks/" + chunkFilename + "');");
                 chunkLoader.add("  }");

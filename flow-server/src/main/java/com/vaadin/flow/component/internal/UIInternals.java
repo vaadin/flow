@@ -841,7 +841,9 @@ public class UIInternals implements Serializable {
                 .getDependencies(session.getService(), componentClass);
         // In npm mode, add external JavaScripts directly to the page.
         addExternalDependencies(dependencies);
-        lazyLoadIfNeeded(componentClass);
+        if (!dependencies.isEmpty()) {
+            triggerChunkLoading(componentClass);
+        }
 
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
@@ -849,7 +851,7 @@ public class UIInternals implements Serializable {
         warnForUnavailableBundledDependencies(componentClass, dependencies);
     }
 
-    private void lazyLoadIfNeeded(Class<? extends Component> componentClass) {
+    private void triggerChunkLoading(Class<? extends Component> componentClass) {
         ui.getPage().addDynamicImport("return window.Vaadin.Flow.loadOnDemand('"
                 + getChunkForClass(componentClass) + "');");
     }

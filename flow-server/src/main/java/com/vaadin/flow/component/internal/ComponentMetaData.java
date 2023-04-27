@@ -75,6 +75,10 @@ public class ComponentMetaData {
         List<CssImport> getCssImports() {
             return Collections.unmodifiableList(cssImports);
         }
+
+        public boolean isEmpty() {
+            return javaScripts.isEmpty() && jsModules.isEmpty() && styleSheets.isEmpty() && cssImports.isEmpty();
+        }
     }
 
     /**
