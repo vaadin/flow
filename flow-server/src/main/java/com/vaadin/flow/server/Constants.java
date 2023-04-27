@@ -288,6 +288,12 @@ public final class Constants implements Serializable {
      */
     public static final String ASSETS = "assets";
 
+    /**
+     * Name of the internal flag showing that Flow needs to re-build the
+     * production bundle or doesn't.
+     */
+    public static final String NEEDS_BUNDLE_BUILD = "needsBuild";
+
     private Constants() {
         // prevent instantiation constants class only
     }

@@ -54,6 +54,7 @@ public class BundleValidationUtil {
         try {
             boolean needsBuild = needsBundleBuild(options, frontendDependencies,
                     finder);
+            saveResultInTokenFile(needsBuild, options);
             if (needsBuild) {
                 getLogger().info("A production mode bundle build is needed");
             } else {
@@ -720,6 +721,16 @@ public class BundleValidationUtil {
     public static URL getProdBundleResource(String filename) {
         return BundleValidationUtil.class.getClassLoader()
                 .getResource(Constants.PROD_BUNDLE_JAR_PATH + filename);
+    }
+
+    private static void saveResultInTokenFile(boolean needsBundle,
+            Options options) throws IOException {
+        String tokenFile = FileUtils.readFileToString(options.getTokenFile(),
+                StandardCharsets.UTF_8);
+        final JsonObject token = Json.parse(tokenFile);
+        token.put(Constants.NEEDS_BUNDLE_BUILD, needsBundle);
+        FileUtils.write(options.getTokenFile(), token.toJson(),
+                StandardCharsets.UTF_8);
     }
 
     private static Logger getLogger() {

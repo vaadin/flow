@@ -69,9 +69,11 @@ public class ThemeValidationUtil {
             String key;
             if (statsThemeJson.hasKey(projectThemeName)) {
                 key = projectThemeName;
-            } else if (!options.isProductionMode() && statsThemeJson.hasKey(Constants.DEV_BUNDLE_NAME)) {
+            } else if (!options.isProductionMode()
+                    && statsThemeJson.hasKey(Constants.DEV_BUNDLE_NAME)) {
                 key = Constants.DEV_BUNDLE_NAME;
-            } else if (options.isProductionMode() && statsThemeJson.hasKey(Constants.PROD_BUNDLE_NAME)) {
+            } else if (options.isProductionMode()
+                    && statsThemeJson.hasKey(Constants.PROD_BUNDLE_NAME)) {
                 key = Constants.PROD_BUNDLE_NAME;
             } else {
                 getLogger().info(
