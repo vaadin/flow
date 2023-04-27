@@ -137,7 +137,7 @@ public class ThemeValidationUtil {
         themeJsonContents.put(themeName, themeJson);
     }
 
-    private static boolean objectIncludesEntry(JsonValue jsonFromBundle,
+    protected static boolean objectIncludesEntry(JsonValue jsonFromBundle,
             JsonValue projectJson, Collection<String> missedKeys) {
         JsonType bundleJsonType = jsonFromBundle.getType();
         JsonType projectJsonObjectTypeType = projectJson.getType();
