@@ -141,7 +141,7 @@ public class ApplicationConnection {
             // with browser buttons
             // Chrome discards our state as beforeunload is used
             // As state is most likely cleared on the server already (especially
-            // now with beacon API request, it is probably
+            // now with Beacon API request, it is probably
             // better resyncronize the state (would happen on first server
             // visit)
             Browser.getWindow().getLocation().reload();
