@@ -37,6 +37,18 @@ import elemental.json.JsonValue;
  */
 public class MessageSender {
 
+    public void sendUnloadBeacon() {
+        JsonArray dummyEmptyJson = Json.createArray();
+        JsonObject extraJson = Json.createObject();
+        extraJson.put(ApplicationConstants.UNLOAD_BEACON, true);
+        JsonObject payload = preparePayload(dummyEmptyJson, extraJson);
+        sendBeacon(registry.getXhrConnection().getUri(), payload.toJson());
+    }
+
+    public static native void sendBeacon(String url, String payload) /*-{
+        $wnd.navigator.sendBeacon(url, payload);
+    }-*/;
+
     public enum ResynchronizationState {
         NOT_ACTIVE, SEND_TO_SERVER, WAITING_FOR_RESPONSE
     }
@@ -135,7 +147,12 @@ public class MessageSender {
     protected void send(final JsonArray reqInvocations,
             final JsonObject extraJson) {
         registry.getRequestResponseTracker().startRequest();
+        send(preparePayload(reqInvocations, extraJson));
 
+    }
+
+    private JsonObject preparePayload(final JsonArray reqInvocations,
+            final JsonObject extraJson) {
         JsonObject payload = Json.createObject();
         String csrfToken = registry.getMessageHandler().getCsrfToken();
         if (!csrfToken.equals(ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE)) {
@@ -146,16 +163,13 @@ public class MessageSender {
                 registry.getMessageHandler().getLastSeenServerSyncId());
         payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
                 clientToServerMessageId++);
-
         if (extraJson != null) {
             for (String key : extraJson.keys()) {
                 JsonValue value = extraJson.get(key);
                 payload.put(key, value);
             }
         }
-
-        send(payload);
-
+        return payload;
     }
 
     /**
