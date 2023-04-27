@@ -346,7 +346,7 @@ public class ServerRpcHandler implements Serializable {
         if (rpcRequest.isUnloadBeaconRequest()) {
             if (isPreserveOnRefreshTarget(ui)) {
                 getLogger().debug(
-                        "Eager UI close ignorer for PreserveOnRefresh view");
+                        "Eager UI close ignored for @PreserveOnRefresh view");
             } else {
                 ui.close();
                 getLogger().debug("UI closed with a beacon request");
