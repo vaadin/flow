@@ -37,6 +37,7 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.internal.DependencyTrigger;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.ErrorComponent;
@@ -57,6 +58,8 @@ public class FrontendDependenciesTest {
     public void setUp() throws ClassNotFoundException {
         Mockito.when(classFinder.loadClass(Route.class.getName()))
                 .thenReturn((Class) Route.class);
+        Mockito.when(classFinder.loadClass(DependencyTrigger.class.getName()))
+                .thenReturn((Class) DependencyTrigger.class);
 
         Mockito.when(classFinder.loadClass(UIInitListener.class.getName()))
                 .thenReturn((Class) UIInitListener.class);
