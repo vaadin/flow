@@ -48,6 +48,8 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
     @TaskAction
     public fun vaadinPrepareFrontend() {
         val extension: VaadinFlowPluginExtension = VaadinFlowPluginExtension.get(project)
+        // Remove Frontend/generated folder to get clean files copied/generated
+        project.delete(extension.generatedTsFolder.absolutePath)
         logger.info("Running the vaadinPrepareFrontend task with effective configuration $extension")
         val adapter = GradlePluginAdapter(project, true)
         val tokenFile = BuildFrontendUtil.propagateBuildInfo(adapter)

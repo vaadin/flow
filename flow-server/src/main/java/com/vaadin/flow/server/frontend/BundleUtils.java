@@ -74,7 +74,6 @@ public final class BundleUtils {
         URL statsUrl = BundleUtils.class.getClassLoader()
                 .getResource("META-INF/VAADIN/config/stats.json");
         if (statsUrl == null) {
-            getLogger().warn("No META-INF/VAADIN/config/stats.json found");
             return Json.createObject();
         }
         try {
