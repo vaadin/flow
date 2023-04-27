@@ -78,13 +78,19 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Route(value = "simplecss")
     @CssImport("./foo.css")
-    public static class SimpleCssImport extends Component {
+    public static class FooCssImport extends Component {
+
+    }
+
+    @Route(value = "simplecss")
+    @CssImport("./bar.css")
+    public static class BarCssImport extends Component {
 
     }
 
     @Route(value = "simplecss2")
     @CssImport("./foo.css")
-    public static class SimpleCssImport2 extends Component {
+    public static class FooCssImport2 extends Component {
 
     }
 
@@ -400,15 +406,52 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void duplicateCssOnlyImportedOnce() throws Exception {
-        Class<?>[] testClasses = { SimpleCssImport.class,
-                SimpleCssImport2.class, UI.class };
+        Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
+                UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 options);
         updater.run();
 
+        Map<File, List<String>> output = updater.getOutput();
+
+        File flowGeneratedImports = FrontendUtils
+                .getFlowGeneratedImports(frontendDirectory);
+
+        assertOnce("import { injectGlobalCss } from",
+                output.get(flowGeneratedImports));
+        assertOnce("import { css, unsafeCSS, registerStyles } from",
+                output.get(flowGeneratedImports));
         assertOnce("from 'Frontend/foo.css?inline';",
-                updater.getMergedOutput());
+                output.get(flowGeneratedImports));
+    }
+
+    @Test
+    public void eagerCssImportsMerged() throws Exception {
+        Class<?>[] testClasses = { FooCssImport.class, BarCssImport.class,
+                UI.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                options);
+        updater.run();
+
+        Map<File, List<String>> output = updater.getOutput();
+
+        File flowGeneratedImports = FrontendUtils
+                .getFlowGeneratedImports(frontendDirectory);
+
+        assertOnce("import { injectGlobalCss } from",
+                output.get(flowGeneratedImports));
+        assertOnce("import { css, unsafeCSS, registerStyles } from",
+                output.get(flowGeneratedImports));
+        assertOnce("from 'Frontend/foo.css?inline';",
+                output.get(flowGeneratedImports));
+        assertOnce("from 'Frontend/bar.css?inline';",
+                output.get(flowGeneratedImports));
+        assertOnce("import $cssFromFile_0 from",
+                output.get(flowGeneratedImports));
+        assertOnce("import $cssFromFile_1 from",
+                output.get(flowGeneratedImports));
     }
 
     private void assertOnce(String key, List<String> output) {
@@ -418,7 +461,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 found++;
             }
         }
-        Assert.assertEquals("Expected one instance of " + key, 1, found);
+        Assert.assertEquals("Expected one instance of '" + key + "'", 1, found);
     }
 
     @Test

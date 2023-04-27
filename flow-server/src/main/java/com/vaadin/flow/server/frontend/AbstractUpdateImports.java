@@ -154,8 +154,7 @@ abstract class AbstractUpdateImports implements Runnable {
         Map<ChunkInfo, List<String>> lazyJavascript = new LinkedHashMap<>();
         List<String> eagerJavascript = new ArrayList<>();
         Map<ChunkInfo, List<String>> lazyCss = new LinkedHashMap<>();
-        List<String> eagerCss = new ArrayList<>();
-
+        List<CssData> eagerCssData = new ArrayList<>();
         for (Entry<ChunkInfo, List<String>> entry : javascript.entrySet()) {
             if (isLazyRoute(entry.getKey())) {
                 lazyJavascript.put(entry.getKey(), entry.getValue());
@@ -165,11 +164,11 @@ abstract class AbstractUpdateImports implements Runnable {
         }
 
         for (Entry<ChunkInfo, List<CssData>> entry : css.entrySet()) {
-            List<String> cssLines = getCssLines(entry.getValue());
             if (isLazyRoute(entry.getKey())) {
+                List<String> cssLines = getCssLines(entry.getValue());
                 lazyCss.put(entry.getKey(), cssLines);
             } else {
-                eagerCss.addAll(cssLines);
+                eagerCssData.addAll(entry.getValue());
             }
         }
 
@@ -198,6 +197,7 @@ abstract class AbstractUpdateImports implements Runnable {
                             .addAll(getModuleLines(javascript.get(chunkInfo)));
                 }
                 if (lazyCss.containsKey(chunkInfo)) {
+                    chunkLines.add(THEMABLE_MIXIN_IMPORT);
                     chunkLines.addAll(lazyCss.get(chunkInfo));
                 }
                 File chunkFile = new File(chunkFolder, chunkFilename);
@@ -214,8 +214,10 @@ abstract class AbstractUpdateImports implements Runnable {
 
         List<String> mainLines = new ArrayList<>();
         mainLines.add(IMPORT_INJECT);
+        mainLines.add(THEMABLE_MIXIN_IMPORT);
 
-        mainLines.addAll(eagerCss);
+        // Convert eager CSS data to JS and deduplicate it
+        mainLines.addAll(getCssLines(eagerCssData));
         mainLines.addAll(getModuleLines(eagerJavascript));
         mainLines.addAll(chunkLoader);
         mainLines.add("window.Vaadin = window.Vaadin || {};");
@@ -286,13 +288,23 @@ abstract class AbstractUpdateImports implements Runnable {
         return FrontendUtils.FRONTEND_GENERATED_FLOW_IMPORT_PATH + module;
     }
 
+    /**
+     * Returns the JS code lines representing the CSS data provided as a
+     * parameter.
+     * <p>
+     * Deduplicates the data so that each CSSData instance is loaded / injected
+     * only once.
+     *
+     * @param css
+     *            the CSS import data
+     * @return the JS statements needed to import and apply the CSS data
+     */
     protected List<String> getCssLines(List<CssData> css) {
         List<String> lines = new ArrayList<>();
 
         Set<String> cssNotFound = new HashSet<>();
-
+        LinkedHashSet<CssData> allCss = new LinkedHashSet<>(css);
         int i = 0;
-        Set<CssData> allCss = new LinkedHashSet<>();
         for (CssData cssData : allCss) {
             if (!addCssLines(lines, cssData, i)) {
                 cssNotFound.add(cssData.getValue());
@@ -620,12 +632,6 @@ abstract class AbstractUpdateImports implements Runnable {
             optionals = ", " + optionalsMap.keySet().stream()
                     .map(k -> k + ": '" + optionalsMap.get(k) + "'")
                     .collect(Collectors.joining(", ", "{", "}"));
-        }
-
-        if (!lines.contains(THEMABLE_MIXIN_IMPORT)) {
-            // Imports are always needed for Vite CSS handling and extra imports
-            // is no harm
-            addLines(lines, THEMABLE_MIXIN_IMPORT);
         }
 
         if (cssData.getThemefor() != null || cssData.getId() != null) {

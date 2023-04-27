@@ -97,8 +97,8 @@ public class NodeUpdateTestUtil {
                 "3rdparty/component.js", "./local-p3-template.js", "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "./local-template.js", "./foo-dir/vaadin-npm-component.js",
-                "./foo.css", "@vaadin/vaadin-mixed-component/bar.css",
-                "./common-js-file.js",
+                "./foo.css", "./bar.css",
+                "@vaadin/vaadin-mixed-component/bar.css", "./common-js-file.js",
                 "@vaadin/example-flag/experimental-module-1.js",
                 "@vaadin/example-flag/experimental-module-2.js",
                 "experimental-Connector.js");
