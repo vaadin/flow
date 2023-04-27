@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.helpers.NOPLogger;
@@ -40,8 +42,8 @@ import elemental.json.JsonObject;
  * For internal use only. May be renamed or removed in a future release.
  */
 public class GenerateMainImports extends AbstractUpdateImports {
-    private List<String> lines;
     private JsonObject statsJson;
+    private Map<File, List<String>> output;
 
     public GenerateMainImports(ClassFinder classFinder,
             FrontendDependenciesScanner frontendDepScanner, Options options,
@@ -51,10 +53,15 @@ public class GenerateMainImports extends AbstractUpdateImports {
     }
 
     public List<String> getLines() {
-        if (lines == null) {
+        if (output == null) {
             return Collections.emptyList();
         }
-        return lines;
+        return merge(output);
+    }
+
+    @Override
+    protected void writeOutput(Map<File, List<String>> outputFiles) {
+        this.output = outputFiles;
     }
 
     @Override
@@ -65,12 +72,6 @@ public class GenerateMainImports extends AbstractUpdateImports {
         // moment, so not let the application interrupt and continue with
         // checking the dev-bundle
         return true;
-    }
-
-    @Override
-    protected void writeImportLines(List<String> lines) {
-        // NO-OP. Only store the lines to write
-        this.lines = lines;
     }
 
     @Override

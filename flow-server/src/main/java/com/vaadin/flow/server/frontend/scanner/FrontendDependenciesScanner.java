@@ -111,21 +111,21 @@ public interface FrontendDependenciesScanner extends Serializable {
      *
      * @return list of JS modules
      */
-    List<String> getModules();
+    Map<ChunkInfo, List<String>> getModules();
 
     /**
      * Get all the JS files used by the application.
      *
      * @return the set of JS files
      */
-    List<String> getScripts();
+    Map<ChunkInfo, List<String>> getScripts();
 
     /**
      * Get all the CSS files used by the application.
      *
      * @return the set of CSS files
      */
-    List<CssData> getCss();
+    Map<ChunkInfo, List<CssData>> getCss();
 
     /**
      * Get the {@link ThemeDefinition} of the application.
