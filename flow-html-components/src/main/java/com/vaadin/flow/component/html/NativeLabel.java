@@ -15,18 +15,17 @@
  */
 package com.vaadin.flow.component.html;
 
-import java.util.Optional;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import java.util.Optional;
 
 /**
  * Component for a <code>&lt;label&gt;</code> element, which represents a
- * caption for an item in a user interface.
+ * caption for an input field in a user interface.
  * <p>
  * Note that Label components are not meant for loose text in the page - they
  * should be coupled with another component by using the
@@ -45,18 +44,17 @@ import com.vaadin.flow.component.Tag;
  * @author Vaadin Ltd
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label">https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label</a>
- * @since 1.0
+ * @since 24.1
  */
 @Tag(Tag.LABEL)
-@Deprecated(since = "24.1", forRemoval = true)
-public class Label extends HtmlContainer {
+public class NativeLabel extends HtmlContainer {
     private static final PropertyDescriptor<String, Optional<String>> forDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("for", "");
 
     /**
      * Creates a new empty label.
      */
-    public Label() {
+    public NativeLabel() {
         super();
     }
 
@@ -66,7 +64,7 @@ public class Label extends HtmlContainer {
      * @param text
      *            the text content
      */
-    public Label(String text) {
+    public NativeLabel(String text) {
         this();
         setText(text);
     }
