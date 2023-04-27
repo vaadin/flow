@@ -25,14 +25,14 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class UIsCollectedWithBeaconAPIIT extends ChromeBrowserTest {
 
     @Test
-    public void firstRun() {
-        open_ui_and_expect_1();
+    public void beaconHandling_navigateAwayFromApplication_uiClosedEarly() {
+        openUiAndExpect1();
         goToGoogle();
         // If previous UI is not properly detached, following will fail
-        open_ui_and_expect_1();
+        openUiAndExpect1();
     }
 
-    protected void open_ui_and_expect_1() throws NumberFormatException {
+    private void openUiAndExpect1() throws NumberFormatException {
         open();
         WebElement uisCount = findElement(By.id("uis"));
         int count = Integer.parseInt(uisCount.getText());
