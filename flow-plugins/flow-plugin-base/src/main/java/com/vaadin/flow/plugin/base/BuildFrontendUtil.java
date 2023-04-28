@@ -629,7 +629,6 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);
-            buildInfo.remove(Constants.NEEDS_BUNDLE_BUILD);
             buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, true);
 
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
@@ -651,36 +650,6 @@ public class BuildFrontendUtil {
         File tokenFile = getTokenFile(adapter);
         if (tokenFile.exists()) {
             FileUtils.delete(tokenFile);
-        }
-    }
-
-    /**
-     * Checks if a new production bundle is needed by restoring re-bundle
-     * checker result flag from a token file.
-     *
-     * @param adapter
-     *            used plugin adapter implementation
-     * @return true if a new bundle is needed, false otherwise
-     */
-    public static boolean needsBundleBuild(PluginAdapterBuild adapter) {
-        final File tokenFile = getTokenFile(adapter);
-        if (!tokenFile.exists()) {
-            adapter.logWarn("Require bundle build due to missing token file.");
-            return true;
-        }
-        try {
-            String token = FileUtils.readFileToString(tokenFile,
-                    StandardCharsets.UTF_8.name());
-            JsonObject buildInfo = JsonUtil.parse(token);
-            if (!buildInfo.hasKey(Constants.NEEDS_BUNDLE_BUILD)) {
-                return true;
-            }
-            return buildInfo.getBoolean(Constants.NEEDS_BUNDLE_BUILD);
-        } catch (IOException e) {
-            adapter.logError(
-                    "Failed to read re-bundle checker result from token file",
-                    e);
-            return true;
         }
     }
 }

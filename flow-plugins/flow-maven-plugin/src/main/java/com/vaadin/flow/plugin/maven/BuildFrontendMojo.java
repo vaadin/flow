@@ -34,6 +34,7 @@ import com.vaadin.flow.plugin.base.PluginAdapterBuild;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.BundleValidationUtil;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.theme.Theme;
 
@@ -117,7 +118,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                     "Could not execute build-frontend goal", exception);
         }
 
-        if (generateBundle() && BuildFrontendUtil.needsBundleBuild(this)) {
+        if (generateBundle() && BundleValidationUtil
+                .needsBundleBuild(servletResourceOutputDirectory())) {
             try {
                 BuildFrontendUtil.runFrontendBuild(this);
             } catch (URISyntaxException | TimeoutException exception) {

@@ -41,8 +41,8 @@ public class TaskCopyBundleFiles implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        URL statsJson = BundleValidationUtil
-                .getProdBundleResource("config/stats.json");
+        URL statsJson = BundleValidationUtil.getProdBundleResource(
+                "config/stats.json", options.getClassFinder());
         if (statsJson == null) {
             throw new IllegalStateException(
                     "Could not copy production bundle files, because couldn't find production bundle in the class-path");

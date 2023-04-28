@@ -110,19 +110,22 @@ public class NodeTasks implements FallibleCommand {
                             featureFlags);
 
             if (options.isProductionMode()) {
-                boolean needBuild = BundleValidationUtil.needsBuild(
-                        options, frontendDependencies, classFinder, Mode.PRODUCTION);
+                boolean needBuild = BundleValidationUtil.needsBuild(options,
+                        frontendDependencies, classFinder, Mode.PRODUCTION);
                 options.withRunNpmInstall(needBuild);
                 options.withBundleBuild(needBuild);
                 if (!needBuild) {
                     commands.add(new TaskCopyBundleFiles(options));
                 }
             } else if (options.isBundleBuild()) {
-                // The dev bundle check needs the frontendDependencies to be able to
-                // determine if we need a rebuild as the check happens immediately
+                // The dev bundle check needs the frontendDependencies to be
+                // able to
+                // determine if we need a rebuild as the check happens
+                // immediately
                 // and no update tasks are executed before it.
                 if (BundleValidationUtil.needsBuild(options,
-                        frontendDependencies, classFinder, Mode.DEVELOPMENT_BUNDLE)) {
+                        frontendDependencies, classFinder,
+                        Mode.DEVELOPMENT_BUNDLE)) {
                     options.withRunNpmInstall(true);
                     options.withCopyTemplates(true);
                     UsageStatistics.markAsUsed("flow/app-dev-bundle", null);

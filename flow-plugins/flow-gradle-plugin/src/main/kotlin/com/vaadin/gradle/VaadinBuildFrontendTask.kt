@@ -17,6 +17,7 @@ package com.vaadin.gradle
 
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
+import com.vaadin.flow.server.frontend.BundleValidationUtil
 import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
@@ -70,7 +71,8 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
 
         BuildFrontendUtil.runNodeUpdater(adapter)
 
-        if (adapter.generateBundle() && BuildFrontendUtil.needsBundleBuild(adapter)) {
+        if (adapter.generateBundle() && BundleValidationUtil.needsBundleBuild
+                (adapter.servletResourceOutputDirectory())) {
             BuildFrontendUtil.runFrontendBuild(adapter)
         } else {
             logger.info("Not running webpack since generateBundle is false")

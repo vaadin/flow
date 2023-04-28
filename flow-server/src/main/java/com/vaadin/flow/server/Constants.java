@@ -289,10 +289,11 @@ public final class Constants implements Serializable {
     public static final String ASSETS = "assets";
 
     /**
-     * Name of the internal flag showing that Flow needs to re-build the
-     * production bundle or doesn't.
+     * Name of the temporary file storing internal flag showing that Flow needs
+     * to re-build the production bundle or not.
      */
-    public static final String NEEDS_BUNDLE_BUILD = "needsBuild";
+    public static final String NEEDS_BUNDLE_BUILD_FILE = Constants.VAADIN_CONFIGURATION
+            + "needs-build";
 
     private Constants() {
         // prevent instantiation constants class only
