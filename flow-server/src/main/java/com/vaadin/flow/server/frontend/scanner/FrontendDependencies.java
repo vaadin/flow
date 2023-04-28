@@ -31,12 +31,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,9 +49,9 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.Load;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.DependencyTrigger;
+import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.UIInitListener;
@@ -79,6 +79,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private final Map<String, ClassInfo> visitedClasses = new HashMap<>();
 
     private PwaConfiguration pwaConfiguration;
+    private Class<? extends Annotation> routeClass;
+    private Set<String> eagerRoutes = null;
 
     /**
      * Default Constructor.
@@ -129,6 +131,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 "Scanning classes to find frontend configurations and dependencies...");
         long start = System.nanoTime();
         try {
+            routeClass = getFinder().loadClass(Route.class.getName());
+            computeEagerRouteConfiguration();
+
             collectEntryPoints(generateEmbeddableWebComponents);
             visitEntryPoints();
             computeApplicationTheme();
@@ -254,9 +259,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         if (data.getType() == EntryPointType.INTERNAL) {
             return ChunkInfo.GLOBAL;
         }
-
         return new ChunkInfo(data.getType(), data.getName(),
-                data.getDependencies(), data.getDependencyTriggers());
+                data.getDependencyTriggers(), data.isEager());
     }
 
     /**
@@ -342,15 +346,13 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             throws ClassNotFoundException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
-        Class<? extends Annotation> routeClass = getFinder()
-                .loadClass(Route.class.getName());
         Class<? extends Annotation> triggerClass = getFinder()
                 .loadClass(DependencyTrigger.class.getName());
         for (Class<?> route : getFinder().getAnnotatedClasses(routeClass)) {
-            Map<String, Object> routeValues = getRouteValues(route, routeClass,
+            List<String> triggerClasses = getDependencyTriggers(route,
                     triggerClass);
-            addEntryPoint(route, EntryPointType.ROUTE, getLoadMode(routeValues),
-                    getDependencyTriggers(routeValues));
+            boolean eager = isEagerRoute(route);
+            addEntryPoint(route, EntryPointType.ROUTE, triggerClasses, eager);
         }
 
         for (Class<?> initListener : getFinder().getSubTypesOf(
@@ -383,35 +385,30 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
     }
 
-    private List<String> getDependencyTriggers(
-            Map<String, Object> routeValues) {
-        return (List<String>) routeValues.get("dependencyTriggers");
+    private boolean isEagerRoute(Class<?> route) {
+        if (this.eagerRoutes == null) {
+            // No annotation present, use the Flow default
+            return true;
+        }
+        if (this.eagerRoutes.isEmpty()) {
+            // Everything is eager
+            return true;
+        }
+
+        return this.eagerRoutes.contains(route.getName());
     }
 
-    private Map<String, Object> getRouteValues(Class<?> route, Class routeClass,
+    private List<String> getDependencyTriggers(Class<?> route,
             Class triggerClass) {
-        Map<String, Object> values = new HashMap<>();
-
         try {
-            Annotation routeAnnotation = route.getAnnotation(routeClass);
-            Method dependenciesMethod = routeClass.getMethod("dependencies");
-            Object dependencies = dependenciesMethod.invoke(routeAnnotation);
-            Object name = dependencies.getClass().getMethod("name")
-                    .invoke(dependencies);
-            if (name.equals(Load.ON_STARTUP.name())) {
-                values.put("dependencies", Load.ON_STARTUP);
-            } else {
-                values.put("dependencies", Load.ON_DEMAND);
-            }
-
             Annotation triggerAnnotation = route.getAnnotation(triggerClass);
             if (triggerAnnotation != null) {
                 Method valueMethod = triggerClass.getMethod("value");
                 Class<?> triggers[] = (Class<?>[]) valueMethod
                         .invoke(triggerAnnotation);
                 if (triggers != null) {
-                    values.put("dependencyTriggers", Stream.of(triggers)
-                            .map(cls -> cls.getName()).toList());
+                    return Stream.of(triggers).map(cls -> cls.getName())
+                            .toList();
                 }
             }
 
@@ -422,28 +419,22 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     "Unable to determine load mode for route class {}. Using eager.",
                     route.getName(), e);
         }
-        return values;
-    }
-
-    private Load getLoadMode(Map<String, Object> routeValues) {
-        return (Load) Optional.ofNullable(routeValues.get("dependencies"))
-                .orElse(Load.ON_STARTUP);
+        return null;
     }
 
     private void addInternalEntryPoint(Class<?> entryPointClass) {
-        addEntryPoint(entryPointClass, EntryPointType.INTERNAL, Load.ON_STARTUP,
-                null);
+        addEntryPoint(entryPointClass, EntryPointType.INTERNAL, null, true);
     }
 
     private void addEntryPoint(Class<?> entryPointClass, EntryPointType type,
-            Load dependencies, List<String> dependencyTriggers) {
+            List<String> dependencyTriggers, boolean eager) {
         String className = entryPointClass.getName();
         if (entryPoints.containsKey(className)) {
             return;
         }
 
         EntryPointData data = new EntryPointData(entryPointClass, type,
-                dependencies, dependencyTriggers);
+                dependencyTriggers, eager);
         entryPoints.put(className, data);
     }
 
@@ -567,6 +558,33 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         }
     }
 
+    private void computeEagerRouteConfiguration()
+            throws ClassNotFoundException {
+        FrontendAnnotatedClassVisitor loadDependenciesOnStartupVisitor = new FrontendAnnotatedClassVisitor(
+                getFinder(), LoadDependenciesOnStartup.class.getName());
+        Class<?> appShellConfiguratorClass = getFinder()
+                .loadClass(AppShellConfigurator.class.getName());
+        for (Class<?> hopefullyAppShellClass : getFinder().getAnnotatedClasses(
+                LoadDependenciesOnStartup.class.getName())) {
+            if (!Arrays.asList(hopefullyAppShellClass.getInterfaces())
+                    .contains(appShellConfiguratorClass)) {
+                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+            }
+            loadDependenciesOnStartupVisitor
+                    .visitClass(hopefullyAppShellClass.getName());
+            List<Type> eagerViews = loadDependenciesOnStartupVisitor
+                    .getValue("value");
+            if (eagerViews != null) {
+                eagerRoutes = new HashSet<>();
+                for (Type eagerView : eagerViews) {
+                    eagerRoutes.add(eagerView.getClassName());
+
+                }
+            }
+        }
+
+    }
+
     /**
      * Find the class with a {@link com.vaadin.flow.server.PWA} annotation and
      * read it into a {@link com.vaadin.flow.server.PwaConfiguration} object.
@@ -659,8 +677,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         for (Class<?> exporter : exporterClasses) {
             String exporterClassName = exporter.getName();
             if (!entryPoints.containsKey(exporterClassName)) {
-                addEntryPoint(exporter, EntryPointType.WEB_COMPONENT,
-                        Load.ON_STARTUP, null);
+                addEntryPoint(exporter, EntryPointType.WEB_COMPONENT, null,
+                        true);
             }
 
             if (!Modifier.isAbstract(exporter.getModifiers())) {
@@ -669,7 +687,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 if (componentClass != null
                         && !componentClass.isAnnotationPresent(routeClass)) {
                     addEntryPoint(componentClass, EntryPointType.WEB_COMPONENT,
-                            Load.ON_STARTUP, null);
+                            null, true);
                 }
             }
         }

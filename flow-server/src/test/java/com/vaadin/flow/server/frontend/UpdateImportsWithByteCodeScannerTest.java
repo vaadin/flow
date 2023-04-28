@@ -31,10 +31,11 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.StringUtil;
-import com.vaadin.flow.router.Load;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.DependencyTrigger;
+import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -59,33 +60,52 @@ public class UpdateImportsWithByteCodeScannerTest
 
     }
 
-    @Route(value = "lazy", dependencies = Load.ON_DEMAND)
+    @JavaScript("./eager-component-javascript.js")
+    @JsModule("./eager-component-jsmodule.js")
+    @CssImport("./eager-component-cssimport.css")
+    public static class EagerComponent extends Component {
+
+    }
+
+    @Route(value = "lazy")
     static class LazyRoute extends Component {
         LazyComponent lazyComponent;
     }
 
-    public static class TriggerClass1 extends Component {
+    @Route(value = "eager")
+    static class EagerRoute extends Component {
+        EagerComponent eagerComponent;
+    }
 
+    public static class TriggerClass1 extends Component {
     }
 
     public static class TriggerClass2 extends Component {
     }
 
-    @Route(value = "lazy", dependencies = Load.ON_DEMAND)
+    @Route(value = "lazy")
     @DependencyTrigger(TriggerClass1.class)
     static class LazyRouteWithOtherTrigger extends Component {
         LazyComponent lazyComponent;
     }
 
-    @Route(value = "lazy", dependencies = Load.ON_DEMAND)
+    @Route(value = "lazy")
     @DependencyTrigger({ TriggerClass1.class, TriggerClass2.class })
     static class LazyRouteWithOtherTriggers extends Component {
         LazyComponent lazyComponent;
     }
 
+    @LoadDependenciesOnStartup(EagerRoute.class)
+    static class LazyEagerAppConf implements AppShellConfigurator {
+    }
+
+    @LoadDependenciesOnStartup(MainView.class)
+    static class LazyAppConf implements AppShellConfigurator {
+    }
+
     @Test
     public void lazyRouteIsLazyLoaded() throws Exception {
-        Class<?>[] testClasses = { MainView.class,
+        Class<?>[] testClasses = { MainView.class, LazyAppConf.class,
                 NodeTestComponents.TranslatedImports.class,
                 NodeTestComponents.LocalP3Template.class, LazyRoute.class,
                 UI.class };
@@ -123,6 +143,46 @@ public class UpdateImportsWithByteCodeScannerTest
                         "Frontend/lazy-component-jsmodule.js" });
     }
 
+    @Test
+    public void lazyAndEagerRoutesProperlyHandled() throws Exception {
+        Class<?>[] testClasses = { LazyRoute.class, EagerRoute.class,
+                LazyEagerAppConf.class, UI.class };
+
+        createExpectedLazyImports();
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                options);
+        updater.run();
+
+        Map<File, List<String>> output = updater.getOutput();
+
+        File flowGeneratedFolder = FrontendUtils
+                .getFlowGeneratedFolder(frontendDirectory);
+        File flowGeneratedImports = FrontendUtils
+                .getFlowGeneratedImports(frontendDirectory);
+        File flowGeneratedImportsDTs = new File(flowGeneratedFolder,
+                FrontendUtils.IMPORTS_D_TS_NAME);
+
+        File lazyChunk = new File(new File(flowGeneratedFolder, "chunks"),
+                "chunk-" + StringUtil.getHash(LazyRoute.class.getName(),
+                        StandardCharsets.UTF_8) + ".js");
+
+        Assert.assertEquals(Set.of(flowGeneratedImports,
+                flowGeneratedImportsDTs, lazyChunk), output.keySet());
+
+        String mainImportContent = String.join("\n",
+                output.get(flowGeneratedImports));
+        String lazyChunkContent = String.join("\n", output.get(lazyChunk));
+
+        assertImports(mainImportContent, lazyChunkContent,
+                new String[] { "Frontend/lazy-component-cssimport.css",
+                        "Frontend/eager-component-cssimport.css",
+                        "Frontend/eager-component-javascript.js",
+                        "Frontend/eager-component-jsmodule.js" },
+                new String[] { "Frontend/lazy-component-javascript.js",
+                        "Frontend/lazy-component-jsmodule.js", });
+    }
+
     private void createExpectedLazyImports() throws IOException {
         createExpectedImport(frontendDirectory, nodeModulesPath,
                 "./lazy-component-javascript.js");
@@ -130,13 +190,20 @@ public class UpdateImportsWithByteCodeScannerTest
                 "./lazy-component-jsmodule.js");
         createExpectedImport(frontendDirectory, nodeModulesPath,
                 "./lazy-component-cssimport.css");
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./eager-component-javascript.js");
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./eager-component-jsmodule.js");
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./eager-component-cssimport.css");
     }
 
     @Test
     public void lazyRouteTriggeredByOtherComponent() throws Exception {
         createExpectedLazyImports();
 
-        Class<?>[] testClasses = { LazyRouteWithOtherTrigger.class, UI.class };
+        Class<?>[] testClasses = { LazyRouteWithOtherTrigger.class,
+                LazyAppConf.class, UI.class };
 
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
@@ -168,7 +235,8 @@ public class UpdateImportsWithByteCodeScannerTest
     public void lazyRouteTriggeredByOtherComponents() throws Exception {
         createExpectedLazyImports();
 
-        Class<?>[] testClasses = { LazyRouteWithOtherTriggers.class, UI.class };
+        Class<?>[] testClasses = { LazyRouteWithOtherTriggers.class,
+                LazyAppConf.class, UI.class };
 
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
@@ -214,7 +282,7 @@ public class UpdateImportsWithByteCodeScannerTest
         for (String lazyImport : lazyImports) {
             Assert.assertFalse("Main import should not contain " + lazyImport,
                     mainImportContent.contains(lazyImport));
-            Assert.assertTrue("Lazy import should not contain " + lazyImport,
+            Assert.assertTrue("Lazy import should contain " + lazyImport,
                     lazyImportContent.contains(lazyImport));
         }
 

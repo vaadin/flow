@@ -7,8 +7,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.component.Component;
-
 /**
  * Marks which classes should trigger loading of a chunk defined by a route.
  * <p>
@@ -24,5 +22,5 @@ public @interface DependencyTrigger {
      *
      * @return the trigger classes
      */
-    Class<? extends Component>[] value();
+    Class<?>[] value();
 }

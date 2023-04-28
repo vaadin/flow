@@ -35,6 +35,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,11 +43,11 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 
 import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.router.Load;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
+import com.vaadin.flow.server.frontend.scanner.EntryPointType;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -155,10 +156,10 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> eagerImports = new ArrayList<>();
 
         for (Entry<ChunkInfo, List<String>> entry : javascript.entrySet()) {
-            if (entry.getKey().getDependencies() == Load.ON_STARTUP) {
-                eagerImports.addAll(entry.getValue());
-            } else {
+            if (isLazyRoute(entry.getKey())) {
                 lazyImports.put(entry.getKey(), entry.getValue());
+            } else {
+                eagerImports.addAll(entry.getValue());
             }
         }
 
@@ -211,6 +212,14 @@ abstract class AbstractUpdateImports implements Runnable {
                 Collections.singletonList("export {}"));
 
         return files;
+    }
+
+    private boolean isLazyRoute(ChunkInfo key) {
+        if (key.getType() != EntryPointType.ROUTE) {
+            return false;
+        }
+
+        return !key.isEager();
     }
 
     /**

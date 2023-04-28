@@ -114,13 +114,4 @@ public @interface Route {
      */
     boolean registerAtStartup() default true;
 
-    /**
-     * Defines if the route dependencies should be on application startup or
-     * when accessing the route the first time.
-     * <p>
-     * The default is to load when on startup
-     *
-     * @return when to load dependencies
-     */
-    Load dependencies() default Load.ON_STARTUP;
 }
