@@ -39,6 +39,18 @@ public class ThemeValidationUtilTest {
     }
 
     @Test
+    public void testObjectsIncludeMethodWithSameElementsInArraysDifferentOrder() {
+        JsonArray jsonFromBundle = createJsonArray("a", "b", "c");
+        JsonArray projectJson = createJsonArray("b", "a", "c");
+        List<String> missedKeys = new ArrayList<>();
+
+        boolean result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundle,
+                projectJson, missedKeys);
+        Assert.assertTrue(result);
+        Assert.assertTrue(missedKeys.isEmpty());
+    }
+
+    @Test
     public void testObjectsIncludeMethodArraysAreDifferent() {
         List<String> missedKeysForBundle = new ArrayList<>();
         JsonArray jsonFromBundle = createJsonArray("a", "c");
