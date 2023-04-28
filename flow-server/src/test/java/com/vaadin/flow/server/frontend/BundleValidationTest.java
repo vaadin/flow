@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1574,8 +1575,9 @@ public class BundleValidationTest {
     }
 
     @Test
-    public void bundleMissesSomeEntries_skipBundleBuildSet_noBundleRebuild()
+    public void bundleMissesSomeEntries_devMode_skipBundleBuildSet_noBundleRebuild()
             throws IOException {
+        Assume.assumeTrue(mode == Mode.DEVELOPMENT_BUNDLE);
         options.skipDevBundleBuild(true);
 
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
