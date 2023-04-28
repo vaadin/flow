@@ -15,15 +15,13 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,14 +32,16 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TSX;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.getClassFinder;
 
@@ -155,13 +155,13 @@ public class TaskGenerateBootstrapTest {
         return new FrontendDependencies(finder) {
 
             @Override
-            public List<String> getModules() {
-                return Collections.emptyList();
+            public Map<ChunkInfo, List<String>> getModules() {
+                return Collections.emptyMap();
             }
 
             @Override
-            public Set<String> getScripts() {
-                return Collections.emptySet();
+            public Map<ChunkInfo, List<String>> getScripts() {
+                return Collections.emptyMap();
             }
 
             @Override

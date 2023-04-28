@@ -16,7 +16,9 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
+import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -46,6 +48,15 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (productionMode != null) {
             logWarn("The productionMode parameter no longer has any effect. Production mode is automatically enabled when you run the build-frontend target.");
+        }
+
+        try {
+            FileUtils.deleteDirectory(generatedTsFolder());
+            logDebug("Cleaned the generated folder '"
+                    + generatedTsFolder().getPath() + "'");
+        } catch (IOException e) {
+            throw new MojoFailureException("Failed to clean generated folder "
+                    + generatedTsFolder().getPath(), e);
         }
 
         // propagate info via System properties and token file

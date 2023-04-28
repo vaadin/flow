@@ -127,6 +127,22 @@ class VaadinSmokeTest : AbstractGradleTest() {
     }
 
     /**
+     * Tests that VaadinClean task removes default fronted/generated directory
+     */
+    @Test
+    fun vaadinPrepareFrontendDeletesFrontendGeneratedFolder() {
+        val generatedFolder = testProject.newFolder("frontend/generated")
+        val generatedFile = testProject.newFile("frontend/generated/index.ts")
+        val generatedFlowFolder = testProject.newFolder("frontend/generated/flow")
+        val generatedOldFlowFile = testProject.newFolder("frontend/generated/flow/extra.js")
+        testProject.build("vaadinPrepareFrontend")
+        expect(true) { generatedFolder.exists() }
+        expect(false) { generatedFile.exists() }
+        expect(false) { generatedOldFlowFile.exists() }
+        expect(false) { generatedFlowFolder.exists() }
+    }
+
+    /**
      * Tests https://github.com/vaadin/vaadin-gradle-plugin/issues/73
      */
     @Test
