@@ -32,8 +32,8 @@ public class ThemeValidationUtilTest {
         JsonArray projectJson = createJsonArray("a", "b", "c");
         List<String> missedKeys = new ArrayList<>();
 
-        boolean result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundle,
-                projectJson, missedKeys);
+        boolean result = TaskRunDevBundleBuild
+                .objectIncludesEntry(jsonFromBundle, projectJson, missedKeys);
         Assert.assertTrue(result);
         Assert.assertTrue(missedKeys.isEmpty());
     }
@@ -44,8 +44,8 @@ public class ThemeValidationUtilTest {
         JsonArray projectJson = createJsonArray("b", "a", "c");
         List<String> missedKeys = new ArrayList<>();
 
-        boolean result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundle,
-                projectJson, missedKeys);
+        boolean result = TaskRunDevBundleBuild
+                .objectIncludesEntry(jsonFromBundle, projectJson, missedKeys);
         Assert.assertTrue(result);
         Assert.assertTrue(missedKeys.isEmpty());
     }
@@ -56,8 +56,8 @@ public class ThemeValidationUtilTest {
         JsonArray jsonFromBundle = createJsonArray("a", "c");
         JsonArray jsonFromProject = createJsonArray("a", "b", "c");
 
-        boolean result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundle,
-                jsonFromProject, missedKeysForBundle);
+        boolean result = TaskRunDevBundleBuild.objectIncludesEntry(
+                jsonFromBundle, jsonFromProject, missedKeysForBundle);
         Assert.assertFalse(result);
         // the missed keys should be the same as the jsonFromBundle as the other
         // array is empty
@@ -67,7 +67,7 @@ public class ThemeValidationUtilTest {
         List<String> missedKeysForProject = new ArrayList<>();
         jsonFromBundle = createJsonArray("a", "b", "c");
         jsonFromProject = createJsonArray("a");
-        result = ThemeValidationUtil.objectIncludesEntry(jsonFromProject,
+        result = TaskRunDevBundleBuild.objectIncludesEntry(jsonFromProject,
                 jsonFromBundle, missedKeysForProject);
         Assert.assertFalse(result);
         Assert.assertEquals(missedKeysForProject, List.of("\"b\"", "\"c\""));
@@ -77,7 +77,7 @@ public class ThemeValidationUtilTest {
     public void testObjectsIncludeMethodBothEmptyArraysAreEmpty() {
         List<String> missedKeys = new ArrayList<>();
 
-        boolean result = ThemeValidationUtil.objectIncludesEntry(
+        boolean result = TaskRunDevBundleBuild.objectIncludesEntry(
                 Json.createArray(), Json.createArray(), missedKeys);
         Assert.assertTrue(result);
         Assert.assertTrue(missedKeys.isEmpty());
@@ -89,8 +89,8 @@ public class ThemeValidationUtilTest {
         JsonArray jsonFromBundle = createJsonArray("a", "b", "c");
         JsonArray jsonFromProjectEmpty = createJsonArray();
 
-        boolean result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundle,
-                jsonFromProjectEmpty, missedKeysFromProject);
+        boolean result = TaskRunDevBundleBuild.objectIncludesEntry(
+                jsonFromBundle, jsonFromProjectEmpty, missedKeysFromProject);
         Assert.assertFalse(result);
 
         // the missed keys should be the same as the jsonFromBundle as the other
@@ -103,7 +103,7 @@ public class ThemeValidationUtilTest {
         JsonArray jsonFromProject = createJsonArray("a", "b", "c");
         JsonArray jsonFromBundleEmpty = createJsonArray();
 
-        result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundleEmpty,
+        result = TaskRunDevBundleBuild.objectIncludesEntry(jsonFromBundleEmpty,
                 jsonFromProject, missedKeysFromBundle);
         Assert.assertFalse(result);
         Assert.assertEquals(missedKeysFromBundle,

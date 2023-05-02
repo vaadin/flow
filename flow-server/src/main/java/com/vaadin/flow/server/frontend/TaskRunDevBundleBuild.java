@@ -357,7 +357,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         return false;
     }
 
-    private static boolean objectIncludesEntry(JsonValue jsonFromBundle,
+    static boolean objectIncludesEntry(JsonValue jsonFromBundle,
             JsonValue projectJson, Collection<String> missedKeys) {
         JsonType bundleJsonType = jsonFromBundle.getType();
         JsonType projectJsonObjectTypeType = projectJson.getType();
@@ -1059,27 +1059,49 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
     }
 
     private static boolean compareArrays(Collection<String> missedKeys,
-            JsonArray jsonArrayFromBundle, JsonArray projectJsonArray) {
+            JsonArray jsonArrayFromBundle, JsonArray jsonArrayFromProject) {
+
+        boolean allEntriesFound = checkMissedKeys(missedKeys,
+                jsonArrayFromBundle, jsonArrayFromProject);
+
+        // making sure that from the other jsonArray we also check and compare
+        // the entries
+        // to make sure both arrays have the exact same entries
+        // without this it could happen that:
+        // jsonArrayFromBundle = [1,2,3]
+        // jsonArrayFromProject = [1,2]
+        // and the check would pass
+        if (jsonArrayFromBundle.length() != jsonArrayFromProject.length()) {
+            allEntriesFound = allEntriesFound && checkMissedKeys(missedKeys,
+                    jsonArrayFromProject, jsonArrayFromBundle);
+        }
+
+        return allEntriesFound;
+    }
+
+    private static boolean checkMissedKeys(Collection<String> missedKeys,
+            JsonArray arrayIterating, JsonArray arrayComparing) {
         boolean allEntriesFound = true;
 
-        for (int projectArrayIndex = 0; projectArrayIndex < projectJsonArray
-                .length(); projectArrayIndex++) {
-            JsonValue projectArrayEntry = projectJsonArray
-                    .get(projectArrayIndex);
+        for (int arrayComparingIndex = 0; arrayComparingIndex < arrayComparing
+                .length(); arrayComparingIndex++) {
+            JsonValue arrayComparingEntry = arrayComparing
+                    .get(arrayComparingIndex);
             boolean entryFound = false;
-            for (int bundleArrayIndex = 0; bundleArrayIndex < jsonArrayFromBundle
-                    .length(); bundleArrayIndex++) {
-                JsonValue bundleArrayEntry = jsonArrayFromBundle
-                        .get(bundleArrayIndex);
-                if (bundleArrayEntry.getType() == projectArrayEntry.getType()
-                        && objectIncludesEntry(bundleArrayEntry,
-                                projectArrayEntry, missedKeys)) {
+            for (int arrayIteratingIndex = 0; arrayIteratingIndex < arrayIterating
+                    .length(); arrayIteratingIndex++) {
+                JsonValue arrayIteratingEntry = arrayIterating
+                        .get(arrayIteratingIndex);
+                if (arrayIteratingEntry.getType() == arrayComparingEntry
+                        .getType()
+                        && objectIncludesEntry(arrayIteratingEntry,
+                                arrayComparingEntry, missedKeys)) {
                     entryFound = true;
                     break;
                 }
             }
             if (!entryFound) {
-                missedKeys.add(projectArrayEntry.toJson());
+                missedKeys.add(arrayComparingEntry.toJson());
             }
             allEntriesFound = allEntriesFound && entryFound;
         }
