@@ -13,25 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server;
+package com.vaadin.flow.plugin.maven;
 
-/**
- * The mode the application is running in.
- *
- * One of production, development using livereload or development using bundle
- */
-public enum Mode {
-    PRODUCTION("production"), DEVELOPMENT_FRONTEND_LIVERELOAD(
-            "development"), DEVELOPMENT_BUNDLE("development");
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
-    private final String name;
+@Mojo(name = "prepare-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
+public class TestPrepareFrontendMojo extends PrepareFrontendMojo {
 
-    Mode(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
 }
