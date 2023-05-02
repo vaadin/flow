@@ -578,11 +578,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 eagerRoutes = new HashSet<>();
                 for (Type eagerView : eagerViews) {
                     eagerRoutes.add(eagerView.getClassName());
-
                 }
             }
         }
-
     }
 
     /**
