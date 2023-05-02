@@ -27,7 +27,7 @@ import io.methvin.watcher.DirectoryWatcher;
 /**
  * Watches for the file or sub-directory changes in the given directory.
  */
-public class FileWatcher implements Serializable {
+public class FileWatcher {
 
     private DirectoryWatcher watcher;
 
@@ -59,21 +59,18 @@ public class FileWatcher implements Serializable {
 
     /**
      * Starts the file watching.
-     *
-     * @throws Exception
-     *             if an error occurs during startup
      */
-    public void start() throws Exception {
+    public void start() {
         watcher.watchAsync();
     }
 
     /**
      * Stops the file watching.
      *
-     * @throws Exception
+     * @throws IOException
      *             if an error occurs during stop
      */
-    public void stop() throws Exception {
+    public void stop() throws IOException {
         watcher.close();
     }
 
