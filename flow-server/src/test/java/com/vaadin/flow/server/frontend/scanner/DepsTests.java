@@ -10,7 +10,7 @@ import org.junit.Assert;
 
 public class DepsTests {
 
-    private static final Object UI_IMPORT = "@vaadin/common-frontend/ConnectionIndicator.js";
+    public static final String UI_IMPORT = "@vaadin/common-frontend/ConnectionIndicator.js";
 
     public static <T> List<T> merge(Map<ChunkInfo, List<T>> values) {
         LinkedHashSet<T> result = new LinkedHashSet<>();

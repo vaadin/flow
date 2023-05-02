@@ -35,6 +35,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,6 +47,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
+import com.vaadin.flow.server.frontend.scanner.EntryPointType;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -91,6 +93,7 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private final File generatedFlowImports;
     private final File generatedFlowDefinitions;
+    private File chunkFolder;
 
     AbstractUpdateImports(Options options, FrontendDependenciesScanner scanner,
             ClassFinder classFinder) {
@@ -103,6 +106,9 @@ abstract class AbstractUpdateImports implements Runnable {
         generatedFlowDefinitions = new File(
                 generatedFlowImports.getParentFile(),
                 FrontendUtils.IMPORTS_D_TS_NAME);
+        this.chunkFolder = new File(generatedFlowImports.getParentFile(),
+                "chunks");
+
     }
 
     @Override
@@ -118,6 +124,13 @@ abstract class AbstractUpdateImports implements Runnable {
         try {
             for (Entry<File, List<String>> output : outputFiles.entrySet()) {
                 FileIOUtils.writeIfChanged(output.getKey(), output.getValue());
+            }
+            if (chunkFolder.exists() && chunkFolder.isDirectory()) {
+                for (File existingChunk : chunkFolder.listFiles()) {
+                    if (!outputFiles.containsKey(existingChunk)) {
+                        existingChunk.delete();
+                    }
+                }
             }
         } catch (IOException e) {
             throw new IllegalStateException(
@@ -139,10 +152,49 @@ abstract class AbstractUpdateImports implements Runnable {
             Map<ChunkInfo, List<String>> javascript) {
         Map<File, List<String>> files = new HashMap<>();
 
+        Map<ChunkInfo, List<String>> lazyImports = new LinkedHashMap<>();
         List<String> eagerImports = new ArrayList<>();
 
         for (Entry<ChunkInfo, List<String>> entry : javascript.entrySet()) {
-            eagerImports.addAll(entry.getValue());
+            if (isLazyRoute(entry.getKey())) {
+                lazyImports.put(entry.getKey(), entry.getValue());
+            } else {
+                eagerImports.addAll(entry.getValue());
+            }
+        }
+
+        List<String> chunkLoader = new ArrayList<>();
+        if (!lazyImports.isEmpty()) {
+            chunkLoader.add("");
+            chunkLoader.add("const loadOnDemand = (key) => {");
+            chunkLoader.add("  const pending = [];");
+            for (Entry<ChunkInfo, List<String>> entry : lazyImports
+                    .entrySet()) {
+                String routeHash = BundleUtils
+                        .getChunkId(entry.getKey().getName());
+                String chunkFilename = "chunk-" + routeHash + ".js";
+
+                String ifClauses = entry.getKey().getDependencyTriggers()
+                        .stream().map(cls -> BundleUtils.getChunkId(cls))
+                        .map(hash -> "key === '" + hash + "'")
+                        .collect(Collectors.joining(" || "));
+                chunkLoader.add("  if (" + ifClauses + ") {");
+                chunkLoader.add("    pending.push(import('./chunks/"
+                        + chunkFilename + "'));");
+                chunkLoader.add("  }");
+
+                List<String> chunkLines = getModuleLines(entry.getValue());
+
+                File chunkFile = new File(chunkFolder, chunkFilename);
+                files.put(chunkFile, chunkLines);
+            }
+
+            chunkLoader.add("  return Promise.all(pending);");
+            chunkLoader.add("}");
+            chunkLoader.add("");
+        } else {
+            chunkLoader.add(
+                    "const loadOnDemand = (key) => { return Promise.resolve(0); }");
         }
 
         List<String> mainLines = new ArrayList<>();
@@ -150,12 +202,24 @@ abstract class AbstractUpdateImports implements Runnable {
 
         mainLines.addAll(getCssLines(css));
         mainLines.addAll(getModuleLines(eagerImports));
+        mainLines.addAll(chunkLoader);
+        mainLines.add("window.Vaadin = window.Vaadin || {};");
+        mainLines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
+        mainLines.add("window.Vaadin.Flow.loadOnDemand = loadOnDemand;");
 
         files.put(generatedFlowImports, mainLines);
         files.put(generatedFlowDefinitions,
                 Collections.singletonList("export {}"));
 
         return files;
+    }
+
+    private boolean isLazyRoute(ChunkInfo key) {
+        if (key.getType() != EntryPointType.ROUTE) {
+            return false;
+        }
+
+        return !key.isEager();
     }
 
     /**
@@ -280,7 +344,7 @@ abstract class AbstractUpdateImports implements Runnable {
     private Map<ChunkInfo, List<String>> mergeJavascript(
             Map<ChunkInfo, List<String>> modules,
             Map<ChunkInfo, List<String>> scripts) {
-        Map<ChunkInfo, List<String>> result = new HashMap<>();
+        Map<ChunkInfo, List<String>> result = new LinkedHashMap<>();
         Collection<? extends String> generated = resolveGeneratedModules(
                 getGeneratedModules());
         for (Entry<ChunkInfo, List<String>> entry : modules.entrySet()) {
