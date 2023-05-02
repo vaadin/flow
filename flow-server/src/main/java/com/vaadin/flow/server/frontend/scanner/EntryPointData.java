@@ -36,7 +36,7 @@ import com.vaadin.flow.router.Route;
 public final class EntryPointData implements Serializable {
     private final EntryPointType type;
     private final String name;
-    private boolean eagerRoute = false;
+    private boolean eager = false;
     private List<String> dependencyTriggers;
 
     Set<String> reachableClasses;
@@ -45,11 +45,11 @@ public final class EntryPointData implements Serializable {
     private LinkedHashSet<CssData> css = new LinkedHashSet<>();
 
     EntryPointData(Class<?> clazz, EntryPointType type,
-            List<String> dependencyTriggers, boolean eagerRoute) {
+            List<String> dependencyTriggers, boolean eager) {
         this.name = clazz.getName();
         this.type = type;
         this.dependencyTriggers = dependencyTriggers;
-        this.eagerRoute = eagerRoute;
+        this.eager = eager;
     }
 
     String getName() {
@@ -81,6 +81,6 @@ public final class EntryPointData implements Serializable {
     }
 
     public boolean isEager() {
-        return eagerRoute;
+        return eager;
     }
 }
