@@ -568,7 +568,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 LoadDependenciesOnStartup.class.getName())) {
             if (!Arrays.asList(hopefullyAppShellClass.getInterfaces())
                     .contains(appShellConfiguratorClass)) {
-                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+                throw new IllegalStateException(
+                        ERROR_INVALID_LOAD_DEPENDENCIES_ANNOTATION);
             }
             loadDependenciesOnStartupVisitor
                     .visitClass(hopefullyAppShellClass.getName());
