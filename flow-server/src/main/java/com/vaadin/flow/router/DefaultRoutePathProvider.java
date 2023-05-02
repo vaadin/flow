@@ -35,14 +35,9 @@ public class DefaultRoutePathProvider implements RoutePathProvider {
         if (route == null) {
             return null;
         }
-        return getRoutePath(route.value(), navigationTarget);
 
-    }
-
-    public static String getRoutePath(String routeValue, Class<?> routeClass) {
-
-        if (routeValue.equals(Route.NAMING_CONVENTION)) {
-            String simpleName = routeClass.getSimpleName();
+        if (route.value().equals(Route.NAMING_CONVENTION)) {
+            String simpleName = navigationTarget.getSimpleName();
             if ("MainView".equals(simpleName) || "Main".equals(simpleName)) {
                 return "";
             }
@@ -53,7 +48,7 @@ public class DefaultRoutePathProvider implements RoutePathProvider {
             }
             return simpleName.toLowerCase();
         }
-        return routeValue;
+        return route.value();
 
     }
 
