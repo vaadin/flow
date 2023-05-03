@@ -214,10 +214,13 @@ abstract class AbstractUpdateImports implements Runnable {
 
         List<String> mainLines = new ArrayList<>();
         mainLines.add(IMPORT_INJECT);
-        mainLines.add(THEMABLE_MIXIN_IMPORT);
 
         // Convert eager CSS data to JS and deduplicate it
-        mainLines.addAll(getCssLines(eagerCssData));
+        List<String> mainCssLines = getCssLines(eagerCssData);
+        if (!mainCssLines.isEmpty()) {
+            mainLines.add(THEMABLE_MIXIN_IMPORT);
+            mainLines.addAll(mainCssLines);
+        }
         mainLines.addAll(getModuleLines(eagerJavascript));
         mainLines.addAll(chunkLoader);
         mainLines.add("window.Vaadin = window.Vaadin || {};");
@@ -332,7 +335,6 @@ abstract class AbstractUpdateImports implements Runnable {
             throw new IllegalStateException(
                     notFoundMessage(cssNotFound, prefix, suffix));
         }
-        lines.add("");
         return lines;
     }
 
