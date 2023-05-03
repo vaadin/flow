@@ -35,7 +35,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -276,15 +275,14 @@ abstract class AbstractUpdateImports implements Runnable {
 
         Set<String> cssNotFound = new HashSet<>();
 
-        for (ChunkInfo key : css.keySet()) {
-
-            int i = 0;
-            for (CssData cssData : css.get(key)) {
-                if (!addCssLines(lines, cssData, i)) {
-                    cssNotFound.add(cssData.getValue());
-                }
-                i++;
+        Set<CssData> allCss = new LinkedHashSet<>();
+        css.values().forEach(cssList -> allCss.addAll(cssList));
+        int i = 0;
+        for (CssData cssData : allCss) {
+            if (!addCssLines(lines, cssData, i)) {
+                cssNotFound.add(cssData.getValue());
             }
+            i++;
         }
 
         if (!cssNotFound.isEmpty()) {

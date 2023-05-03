@@ -84,6 +84,12 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     }
 
+    @Route(value = "simplecss2")
+    @CssImport("./foo.css")
+    public static class SimpleCssImport2 extends Component {
+
+    }
+
     protected File tmpRoot;
     protected File frontendDirectory;
     protected File nodeModulesPath;
@@ -392,6 +398,29 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertImportOrder("jsmodule/g.js", "javascript/a.js", "javascript/b.js",
                 "javascript/c.js");
+    }
+
+    @Test
+    public void duplicateCssOnlyImportedOnce() throws Exception {
+        Class<?>[] testClasses = { SimpleCssImport.class,
+                SimpleCssImport2.class, UI.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                options);
+        updater.run();
+
+        assertOnce("from 'Frontend/foo.css?inline';",
+                updater.getMergedOutput());
+    }
+
+    private void assertOnce(String key, List<String> output) {
+        int found = 0;
+        for (String row : output) {
+            if (row.contains(key)) {
+                found++;
+            }
+        }
+        Assert.assertEquals("Expected one instance of " + key, 1, found);
     }
 
     @Test
