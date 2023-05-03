@@ -37,6 +37,7 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.internal.DependencyTrigger;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.ErrorComponent;
@@ -55,29 +56,14 @@ public class FrontendDependenciesTest {
 
     @Before
     public void setUp() throws ClassNotFoundException {
-        Mockito.when(classFinder.loadClass(Route.class.getName()))
-                .thenReturn((Class) Route.class);
-
-        Mockito.when(classFinder.loadClass(UIInitListener.class.getName()))
-                .thenReturn((Class) UIInitListener.class);
-
-        Mockito.when(classFinder
-                .loadClass(VaadinServiceInitListener.class.getName()))
-                .thenReturn((Class) VaadinServiceInitListener.class);
-
-        Mockito.when(
-                classFinder.loadClass(WebComponentExporter.class.getName()))
-                .thenReturn((Class) WebComponentExporter.class);
-
-        Mockito.when(classFinder.loadClass(HasErrorParameter.class.getName()))
-                .thenReturn((Class) HasErrorParameter.class);
-
-        Mockito.when(classFinder.loadClass(FrontendDependencies.LUMO))
-                .thenReturn((Class) FakeLumo.class);
-
-        Mockito.when(
-                classFinder.loadClass(AppShellConfigurator.class.getName()))
-                .thenReturn((Class) AppShellConfigurator.class);
+        Mockito.when(classFinder.loadClass(Mockito.anyString()))
+                .thenAnswer(q -> {
+                    String className = q.getArgument(0);
+                    if (className.equals(FrontendDependencies.LUMO)) {
+                        return FakeLumo.class;
+                    }
+                    return Class.forName(className);
+                });
 
         Mockito.doAnswer(invocation -> FrontendDependenciesTest.class
                 .getClassLoader().getResource(invocation.getArgument(0)))

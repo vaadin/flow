@@ -34,9 +34,11 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -280,6 +282,11 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Assert.assertFalse(hasDevServerProcess(handler));
     }
 
+    @LoadDependenciesOnStartup
+    public static class AppConfEager implements AppShellConfigurator {
+
+    }
+
     @Test
     public void shouldUseByteCodeScannerIfPropertySet() throws Exception {
         Mockito.when(appConfig.getBooleanProperty(
@@ -291,6 +298,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         classes.add(NotVisitedWithDeps.class);
         classes.add(Visited.class);
         classes.add(RoutedWithReferenceToVisited.class);
+        classes.add(AppConfEager.class);
         devModeStartupListener.onStartup(classes, servletContext);
         handler = getDevModeHandler();
         waitForDevServer();

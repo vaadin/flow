@@ -1225,6 +1225,13 @@ public class ComponentTest {
 
     }
 
+    public static <T> Map<String, T> filterLazyLoading(
+            Map<String, T> dependenciesMap) {
+        dependenciesMap.entrySet().removeIf(
+                entry -> entry.getKey().contains("Flow.loadOnDemand"));
+        return dependenciesMap;
+    }
+
     @Test
     public void noJsDependenciesAreAdded() {
         UIInternals internals = new MockUI().getInternals();
@@ -1343,8 +1350,8 @@ public class ComponentTest {
 
     private Map<String, Dependency> getDependenciesMap(
             Collection<Dependency> dependencies) {
-        return dependencies.stream().collect(
-                Collectors.toMap(Dependency::getUrl, Function.identity()));
+        return filterLazyLoading(dependencies.stream().collect(
+                Collectors.toMap(Dependency::getUrl, Function.identity())));
     }
 
     @Test // 3818

@@ -8,6 +8,8 @@ import com.vaadin.flow.router.Route;
 public class NoAppBundleView extends Div {
 
     public NoAppBundleView() {
-        add(new Span("Hello"));
+        Span hello = new Span("Hello");
+        hello.setId("hello-component");
+        add(hello);
     }
 }
