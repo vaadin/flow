@@ -428,6 +428,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void eagerCssImportsMerged() throws Exception {
+        createExpectedImport(frontendDirectory, nodeModulesPath, "./bar.css");
         Class<?>[] testClasses = { FooCssImport.class, BarCssImport.class,
                 UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
