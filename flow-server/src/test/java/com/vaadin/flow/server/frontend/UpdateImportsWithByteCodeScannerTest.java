@@ -288,4 +288,66 @@ public class UpdateImportsWithByteCodeScannerTest
 
     }
 
+    @Route("")
+    public static class RootView extends Component {
+
+    }
+
+    @Route("login")
+    public static class LoginView extends Component {
+
+    }
+
+    @Route("other")
+    public static class OtherView extends Component {
+
+    }
+
+    @Test
+    public void loginAndRootEagerByDefault() throws Exception {
+        createExpectedLazyImports();
+
+        Class<?>[] testClasses = { RootView.class, LoginView.class,
+                OtherView.class, UI.class };
+
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                options);
+        updater.run();
+
+        Map<File, List<String>> output = updater.getOutput();
+
+        assertEagerRoute(output, LoginView.class);
+        assertEagerRoute(output, RootView.class);
+        assertLazyRoute(output, OtherView.class);
+    }
+
+    private void assertLazyRoute(Map<File, List<String>> output,
+            Class<?> routeClass) {
+        assertRoute(true, output, routeClass);
+    }
+
+    private void assertEagerRoute(Map<File, List<String>> output,
+            Class<?> routeClass) {
+        assertRoute(false, output, routeClass);
+    }
+
+    private void assertRoute(boolean lazy, Map<File, List<String>> output,
+            Class<?> routeClass) {
+        File flowGeneratedImports = FrontendUtils
+                .getFlowGeneratedImports(frontendDirectory);
+        String mainImportContent = String.join("\n",
+                output.get(flowGeneratedImports));
+
+        String hash = StringUtil.getHash(routeClass.getName(),
+                StandardCharsets.UTF_8);
+
+        String chunkName = "chunks/chunk-" + hash + ".js";
+        File chunkFile = new File(
+                FrontendUtils.getFlowGeneratedFolder(frontendDirectory),
+                chunkName);
+        Assert.assertEquals(lazy, output.containsKey(chunkFile));
+        Assert.assertEquals(lazy, mainImportContent.contains(chunkName));
+    }
+
 }
