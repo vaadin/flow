@@ -112,6 +112,32 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
+    public void viteShouldNotDowngradeFromEs2021() throws Exception {
+        // Write a file with es2021
+        taskGenerateTsConfig.execute();
+        String content = IOUtils.toString(
+                taskGenerateTsConfig.getGeneratedFile().toURI(),
+                StandardCharsets.UTF_8);
+        content = content.replace("es2020", "es2021");
+        try (FileWriter fw = new FileWriter(
+                taskGenerateTsConfig.getGeneratedFile(),
+                StandardCharsets.UTF_8)) {
+            fw.write(content);
+        }
+        Assert.assertTrue("The config file should use es2021", IOUtils
+                .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8)
+                .contains("\"target\": \"es2021\""));
+        taskGenerateTsConfig.execute();
+        Assert.assertTrue("Vite should not have changed the config file",
+                IOUtils.toString(
+                        taskGenerateTsConfig.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8)
+                        .contains("\"target\": \"es2021\""));
+
+    }
+
+    @Test
     public void should_notGenerateTsConfig_TsConfigExist() throws Exception {
         Files.createFile(new File(npmFolder, "tsconfig.json").toPath());
         taskGenerateTsConfig.execute();
@@ -220,5 +246,16 @@ public class TaskGenerateTsConfigTest {
                 StandardCharsets.UTF_8);
         FileUtils.writeStringToFile(tsconfig, content, UTF_8);
         return tsconfig;
+    }
+
+    @Test
+    public void testIsOlder() {
+        Assert.assertTrue(TaskGenerateTsConfig.isOlder("es2019", "es2020"));
+        Assert.assertTrue(TaskGenerateTsConfig.isOlder("es2020", "es2021"));
+        Assert.assertFalse(TaskGenerateTsConfig.isOlder("es2020", "es2020"));
+        Assert.assertFalse(TaskGenerateTsConfig.isOlder("es2020", "es2019"));
+        Assert.assertFalse(TaskGenerateTsConfig.isOlder("es2021", "es2019"));
+
+        Assert.assertTrue(TaskGenerateTsConfig.isOlder("2019", "2021"));
     }
 }
