@@ -166,7 +166,9 @@ abstract class AbstractUpdateImports implements Runnable {
         for (Entry<ChunkInfo, List<CssData>> entry : css.entrySet()) {
             if (isLazyRoute(entry.getKey())) {
                 List<String> cssLines = getCssLines(entry.getValue());
-                lazyCss.put(entry.getKey(), cssLines);
+                if (!cssLines.isEmpty()) {
+                    lazyCss.put(entry.getKey(), cssLines);
+                }
             } else {
                 eagerCssData.addAll(entry.getValue());
             }
