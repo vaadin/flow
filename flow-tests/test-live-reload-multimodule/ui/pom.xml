@@ -14,7 +14,6 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <vaadin.frontend.hotdeploy.dependencies>../library</vaadin.frontend.hotdeploy.dependencies>
     </properties>
 
     <dependencies>

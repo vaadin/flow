@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
@@ -44,14 +45,26 @@ public class ExternalDependencyWatcher implements Closeable {
             File jarFrontendResourcesFolder) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
 
-        String hotdeployDependencies = config.getStringProperty(
+        String hotdeployDependenciesProperty = config.getStringProperty(
                 InitParameters.FRONTEND_HOTDEPLOY_DEPENDENCIES, null);
 
         List<String> hotdeployDependencyFolders = new ArrayList<>();
-        if (hotdeployDependencies != null) {
-            for (String folder : hotdeployDependencies.split(",")) {
+        if (hotdeployDependenciesProperty != null) {
+            for (String folder : hotdeployDependenciesProperty.split(",")) {
                 if (!folder.isBlank()) {
                     hotdeployDependencyFolders.add(folder.trim());
+                }
+            }
+        } else {
+            File parentPomFile = MavenUtils.getParentPomOfMultiModuleProject(
+                    new File(config.getProjectFolder(), "pom.xml"));
+            if (parentPomFile != null) {
+                Document parentPom = MavenUtils.parsePomFile(parentPomFile);
+                if (parentPom != null) {
+                    hotdeployDependencyFolders = MavenUtils
+                            .getModuleFolders(parentPom).stream()
+                            .map(folder -> ".." + File.separator + folder)
+                            .toList();
                 }
             }
         }
@@ -62,7 +75,8 @@ public class ExternalDependencyWatcher implements Closeable {
             Path metaInf = moduleFolder
                     .resolve(Path.of("src", "main", "resources", "META-INF"));
             if (!watchDependencyFolder(metaInf.toFile(),
-                    jarFrontendResourcesFolder)) {
+                    jarFrontendResourcesFolder)
+                    && hotdeployDependenciesProperty != null) {
                 getLogger().warn("No folders to watch were found in "
                         + metaInf.normalize().toAbsolutePath()
                         + ". This should be the META-INF folder that contains either frontend or resources/frontend");
