@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend.scanner;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.theme.AbstractTheme;
 
 /**
@@ -32,6 +33,10 @@ abstract class AbstractDependenciesScanner
 
     public static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
 
+    protected static final String ERROR_INVALID_LOAD_DEPENDENCIES_ANNOTATION = "There can only be one @"
+            + LoadDependenciesOnStartup.class.getSimpleName()
+            + " annotation and it must be set on the "
+            + AppShellConfigurator.class.getSimpleName() + " implementor.";
     protected static final String ERROR_INVALID_PWA_ANNOTATION = "There can only be one @PWA annotation and it must be set on the "
             + AppShellConfigurator.class.getSimpleName() + " implementor.";
 

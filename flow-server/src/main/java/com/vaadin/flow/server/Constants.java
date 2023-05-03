@@ -263,6 +263,11 @@ public final class Constants implements Serializable {
     public static final String DEV_BUNDLE_NAME = "vaadin-dev-bundle";
 
     /**
+     * The name of the default production bundle.
+     */
+    public static final String PROD_BUNDLE_NAME = "vaadin-prod-bundle";
+
+    /**
      * The folder in the project where Flow generates Express Build mode
      * application dev bundle.
      */
@@ -274,9 +279,21 @@ public final class Constants implements Serializable {
     public static final String DEV_BUNDLE_JAR_PATH = DEV_BUNDLE_NAME + "/";
 
     /**
+     * The path part where production bundle is located inside the jar.
+     */
+    public static final String PROD_BUNDLE_JAR_PATH = PROD_BUNDLE_NAME + "/";
+
+    /**
      * The directory name inside dev bundle for the frontend assets.
      */
     public static final String ASSETS = "assets";
+
+    /**
+     * Name of the temporary file storing internal flag showing that Flow needs
+     * to re-build the production bundle or not.
+     */
+    public static final String NEEDS_BUNDLE_BUILD_FILE = Constants.VAADIN_CONFIGURATION
+            + "needs-build";
 
     private Constants() {
         // prevent instantiation constants class only

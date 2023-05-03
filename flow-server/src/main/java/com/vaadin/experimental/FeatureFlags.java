@@ -55,7 +55,7 @@ public class FeatureFlags implements Serializable {
             false,
             "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");
     public static final Feature COLLABORATION_ENGINE_BACKEND = new Feature(
-            "Collaboration Engine backend for clustering support",
+            "Collaboration Kit backend for clustering support",
             "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
     public static final Feature THEME_EDITOR = new Feature(
