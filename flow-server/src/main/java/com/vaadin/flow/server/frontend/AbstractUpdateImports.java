@@ -292,7 +292,8 @@ abstract class AbstractUpdateImports implements Runnable {
         Set<String> cssNotFound = new HashSet<>();
 
         int i = 0;
-        for (CssData cssData : css) {
+        Set<CssData> allCss = new LinkedHashSet<>();
+        for (CssData cssData : allCss) {
             if (!addCssLines(lines, cssData, i)) {
                 cssNotFound.add(cssData.getValue());
             }
