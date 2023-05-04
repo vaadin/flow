@@ -22,6 +22,11 @@
             <artifactId>flow-test-live-reload-multimodule-library-hotdeploy</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-live-reload-multimodule-theme-hotdeploy</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
