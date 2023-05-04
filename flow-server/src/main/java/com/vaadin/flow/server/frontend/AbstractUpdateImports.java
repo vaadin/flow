@@ -440,8 +440,9 @@ abstract class AbstractUpdateImports implements Runnable {
                     notFoundMessage(resourceNotFound, prefix, suffix));
         }
 
-        boolean devModeWithoutServer = !options.isProductionMode()
-                && !options.isFrontendHotdeploy() && !options.isBundleBuild();
+        boolean devModeWithoutServer = !(options.isProductionMode()
+                && options.isBundleBuild()) && !options.isFrontendHotdeploy()
+                && !options.isBundleBuild();
         if (!npmNotFound.isEmpty() && getLogger().isInfoEnabled()
                 && !devModeWithoutServer) {
             getLogger().info(notFoundMessage(npmNotFound,
