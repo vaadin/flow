@@ -199,6 +199,7 @@ abstract class AbstractUpdateImports implements Runnable {
                             .addAll(getModuleLines(javascript.get(chunkInfo)));
                 }
                 if (lazyCss.containsKey(chunkInfo)) {
+                    chunkLines.add(IMPORT_INJECT);
                     chunkLines.add(THEMABLE_MIXIN_IMPORT);
                     chunkLines.addAll(lazyCss.get(chunkInfo));
                 }
@@ -215,11 +216,11 @@ abstract class AbstractUpdateImports implements Runnable {
         }
 
         List<String> mainLines = new ArrayList<>();
-        mainLines.add(IMPORT_INJECT);
 
         // Convert eager CSS data to JS and deduplicate it
         List<String> mainCssLines = getCssLines(eagerCssData);
         if (!mainCssLines.isEmpty()) {
+            mainLines.add(IMPORT_INJECT);
             mainLines.add(THEMABLE_MIXIN_IMPORT);
             mainLines.addAll(mainCssLines);
         }

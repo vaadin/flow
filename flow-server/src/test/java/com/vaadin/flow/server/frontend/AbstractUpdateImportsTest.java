@@ -407,9 +407,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void duplicateCssOnlyImportedOnce() throws Exception {
+    public void duplicateEagerCssOnlyImportedOnce() throws Exception {
         Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
-                UI.class };
+                UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 options);
@@ -432,7 +432,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     public void eagerCssImportsMerged() throws Exception {
         createExpectedImport(frontendDirectory, nodeModulesPath, "./bar.css");
         Class<?>[] testClasses = { FooCssImport.class, BarCssImport.class,
-                UI.class };
+                UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 options);
@@ -455,6 +455,27 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 output.get(flowGeneratedImports));
         assertOnce("import $cssFromFile_1 from",
                 output.get(flowGeneratedImports));
+    }
+
+    @Test
+    public void cssInLazyChunkWorks() throws Exception {
+        createExpectedImport(frontendDirectory, nodeModulesPath, "./bar.css");
+        Class<?>[] testClasses = { FooCssImport.class, UI.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                options);
+        updater.run();
+
+        Map<File, List<String>> output = updater.getOutput();
+
+        File flowGenerated = FrontendUtils
+                .getFlowGeneratedFolder(frontendDirectory);
+        File chunk = new File(new File(flowGenerated, "chunks"), "chunk-"
+                + BundleUtils.getChunkId(FooCssImport.class.getName()) + ".js");
+
+        assertOnce("import { injectGlobalCss } from", output.get(chunk));
+        assertOnce("from 'Frontend/foo.css?inline';", output.get(chunk));
+        assertOnce("import $cssFromFile_0 from", output.get(chunk));
     }
 
     private void assertOnce(String key, List<String> output) {
