@@ -497,7 +497,7 @@ public class BuildFrontendUtil {
      */
     public static void validateLicenses(PluginAdapterBase adapter) {
         File outputFolder = adapter.webpackOutputDirectory();
-        
+
         String statsJsonContent = null;
         try {
             statsJsonContent = BundleValidationUtil.findProdBundleStatsJson(adapter.getClassFinder());
