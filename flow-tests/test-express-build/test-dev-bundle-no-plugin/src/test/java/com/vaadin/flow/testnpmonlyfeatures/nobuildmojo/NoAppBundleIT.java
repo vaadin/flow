@@ -38,15 +38,12 @@ public class NoAppBundleIT extends ChromeBrowserTest {
         Assert.assertFalse("No node_modules should be created",
                 new File(baseDir, "node_modules").exists());
 
-        // TODO: for default prod bundle these are still generated, see #16696
-        assertInDevMode(() -> {
-            Assert.assertFalse("No package.json should be created",
-                    new File(baseDir, "package.json").exists());
-            Assert.assertFalse("No vite generated should be created",
-                    new File(baseDir, "vite.generated.ts").exists());
-            Assert.assertFalse("No vite config should be created",
-                    new File(baseDir, "vite.config.ts").exists());
-        });
+        Assert.assertFalse("No package.json should be created",
+                new File(baseDir, "package.json").exists());
+        Assert.assertFalse("No vite generated should be created",
+                new File(baseDir, "vite.generated.ts").exists());
+        Assert.assertFalse("No vite config should be created",
+                new File(baseDir, "vite.config.ts").exists());
 
         Assert.assertFalse("No types should be created",
                 new File(baseDir, "types.d.ts").exists());

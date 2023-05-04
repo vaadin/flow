@@ -164,7 +164,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         featureFlags = Mockito.mock(FeatureFlags.class);
         options = new Options(Mockito.mock(Lookup.class), tmpRoot)
                 .withTokenFile(tokenFile).withProductionMode(true)
-                .withFeatureFlags(featureFlags);
+                .withFeatureFlags(featureFlags).withBundleBuild(true);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 options);
         assertTrue(nodeModulesPath.mkdirs());
@@ -409,7 +409,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     @Test
     public void duplicateCssOnlyImportedOnce() throws Exception {
         Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
-                UI.class };
+                UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 options);
@@ -432,7 +432,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     public void eagerCssImportsMerged() throws Exception {
         createExpectedImport(frontendDirectory, nodeModulesPath, "./bar.css");
         Class<?>[] testClasses = { FooCssImport.class, BarCssImport.class,
-                UI.class };
+                UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 options);
