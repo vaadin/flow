@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -407,9 +408,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void duplicateCssOnlyImportedOnce() throws Exception {
+    public void duplicateEagerCssOnlyImportedOnce() throws Exception {
         Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
-                UI.class };
+                UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 options);
@@ -432,7 +433,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     public void eagerCssImportsMerged() throws Exception {
         createExpectedImport(frontendDirectory, nodeModulesPath, "./bar.css");
         Class<?>[] testClasses = { FooCssImport.class, BarCssImport.class,
-                UI.class };
+                UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 options);
@@ -457,7 +458,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 output.get(flowGeneratedImports));
     }
 
-    private void assertOnce(String key, List<String> output) {
+    protected void assertOnce(String key, List<String> output) {
         int found = 0;
         for (String row : output) {
             if (row.contains(key)) {
