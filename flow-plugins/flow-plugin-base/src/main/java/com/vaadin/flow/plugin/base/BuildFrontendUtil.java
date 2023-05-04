@@ -440,9 +440,6 @@ public class BuildFrontendUtil {
             Map<String, String> environment, String... params)
             throws TimeoutException {
 
-        // Check License
-        validateLicenses(adapter);
-
         File buildExecutable = new File(adapter.npmFolder(),
                 NODE_MODULES + executable);
         if (!buildExecutable.isFile()) {
@@ -488,6 +485,9 @@ public class BuildFrontendUtil {
                     String.format("Failed to run %s due to an error", toolName),
                     e);
         }
+
+        // Check License
+        validateLicenses(adapter);
     }
 
     /**
@@ -496,7 +496,8 @@ public class BuildFrontendUtil {
      * @param adapter the PluginAdapterBase
      */
     public static void validateLicenses(PluginAdapterBase adapter) {
-
+        File outputFolder = adapter.webpackOutputDirectory();
+        
         String statsJsonContent = null;
         try {
             statsJsonContent = BundleValidationUtil.findProdBundleStatsJson(adapter.getClassFinder());
@@ -522,9 +523,15 @@ public class BuildFrontendUtil {
                 LicenseChecker.checkLicense(component.getName(),
                         component.getVersion(), BuildType.PRODUCTION);
             } catch (Exception e) {
-                getLogger().debug(
-                        "License check for {} failed. Invalidating output",
-                        component);
+                try {
+                    getLogger().debug(
+                            "License check for {} failed. Invalidating output",
+                            component);
+
+                    FileUtils.deleteDirectory(outputFolder);
+                } catch (IOException e1) {
+                    getLogger().debug("Failed to remove {}", outputFolder);
+                }
                 throw e;
             }
         }
