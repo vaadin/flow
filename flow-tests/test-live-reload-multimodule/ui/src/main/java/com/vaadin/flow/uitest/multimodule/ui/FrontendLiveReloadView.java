@@ -19,13 +19,11 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.multimodule.ui.FrontendLiveReloadView", layout = ViewTestLayout.class)
-public class FrontendLiveReloadView extends Div
-        implements AppShellConfigurator {
+public class FrontendLiveReloadView extends Div {
 
     @Tag("in-frontend")
     @JsModule("./in-frontend.js")

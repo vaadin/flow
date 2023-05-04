@@ -91,6 +91,7 @@ const moduleWeights = {
   'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints': { pos: 5, weight: 2 },
   'flow-tests/test-live-reload-multimodule/ui': {pos:6},
   'flow-tests/test-live-reload-multimodule/library': {pos:6},
+  'flow-tests/test-live-reload-multimodule/theme': {pos:6},
   'flow-tests/test-redeployment': { weight: 13 },
   'flow-tests/test-pwa': { weight: 10 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 7 },
