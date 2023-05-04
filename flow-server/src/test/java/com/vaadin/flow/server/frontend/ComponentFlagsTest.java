@@ -29,7 +29,9 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.frontend.NodeTestComponents.FlagView;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -53,7 +55,8 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
     private File frontendDirectory;
     private File nodeModulesPath;
     private File tmpRoot;
-    private Class<?>[] testClasses = { FlagView.class };
+    private Class<?>[] testClasses = { FlagView.class,
+            EagerFlagRouteAppConf.class };
 
     @Before
     public void before() throws IOException {
@@ -132,6 +135,11 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
         FileUtils.write(
                 new File(propertiesDir, FeatureFlags.PROPERTIES_FILENAME), data,
                 StandardCharsets.UTF_8);
+    }
+
+    @LoadDependenciesOnStartup()
+    public static class EagerFlagRouteAppConf implements AppShellConfigurator {
+
     }
 
     private TaskUpdateImports createUpdater() throws IOException {

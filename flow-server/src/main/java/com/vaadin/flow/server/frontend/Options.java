@@ -42,7 +42,7 @@ public class Options implements Serializable {
 
     private boolean runNpmInstall = false;
 
-    private boolean devBundleBuild = false;
+    private boolean bundleBuild = false;
 
     private Set<File> jarFiles = null;
 
@@ -498,24 +498,34 @@ public class Options implements Serializable {
     }
 
     /**
-     * Whether to run dev mode bundle build, useful when not using a dev server.
-     *
-     * @param devBundleBuild
-     *            true to run a dev mode bundle build
-     * @return this builder
-     */
-    public Options withDevBundleBuild(boolean devBundleBuild) {
-        this.devBundleBuild = devBundleBuild;
-        return this;
-    }
-
-    /**
      * Check if a dev mode bundle build should run.
      *
      * @return true to run the build, false otherwise
      */
     public boolean isDevBundleBuild() {
-        return devBundleBuild;
+        return !isProductionMode() && isBundleBuild();
+    }
+
+    /**
+     * Whether to run bundle build. Needed when not using a dev server or
+     * running for production.
+     *
+     * @param bundleBuild
+     *            true to run a bundle build
+     * @return this builder
+     */
+    public Options withBundleBuild(boolean bundleBuild) {
+        this.bundleBuild = bundleBuild;
+        return this;
+    }
+
+    /**
+     * Check if a bundle build should run.
+     *
+     * @return true to run the build, false otherwise
+     */
+    public boolean isBundleBuild() {
+        return bundleBuild;
     }
 
     /**
