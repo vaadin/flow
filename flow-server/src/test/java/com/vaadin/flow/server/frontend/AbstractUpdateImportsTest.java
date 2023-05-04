@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -457,28 +458,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 output.get(flowGeneratedImports));
     }
 
-    @Test
-    public void cssInLazyChunkWorks() throws Exception {
-        createExpectedImport(frontendDirectory, nodeModulesPath, "./bar.css");
-        Class<?>[] testClasses = { FooCssImport.class, UI.class };
-        ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(classFinder, getScanner(classFinder),
-                options);
-        updater.run();
-
-        Map<File, List<String>> output = updater.getOutput();
-
-        File flowGenerated = FrontendUtils
-                .getFlowGeneratedFolder(frontendDirectory);
-        File chunk = new File(new File(flowGenerated, "chunks"), "chunk-"
-                + BundleUtils.getChunkId(FooCssImport.class.getName()) + ".js");
-
-        assertOnce("import { injectGlobalCss } from", output.get(chunk));
-        assertOnce("from 'Frontend/foo.css?inline';", output.get(chunk));
-        assertOnce("import $cssFromFile_0 from", output.get(chunk));
-    }
-
-    private void assertOnce(String key, List<String> output) {
+    protected void assertOnce(String key, List<String> output) {
         int found = 0;
         for (String row : output) {
             if (row.contains(key)) {
