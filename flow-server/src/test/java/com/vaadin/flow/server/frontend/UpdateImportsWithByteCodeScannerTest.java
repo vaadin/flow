@@ -268,6 +268,27 @@ public class UpdateImportsWithByteCodeScannerTest
                 mainImportContent.contains("key === '" + routeHash + "'"));
     }
 
+    @Test
+    public void cssInLazyChunkWorks() throws Exception {
+        createExpectedImport(frontendDirectory, nodeModulesPath, "./bar.css");
+        Class<?>[] testClasses = { FooCssImport.class, UI.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                options);
+        updater.run();
+
+        Map<File, List<String>> output = updater.getOutput();
+
+        File flowGenerated = FrontendUtils
+                .getFlowGeneratedFolder(frontendDirectory);
+        File chunk = new File(new File(flowGenerated, "chunks"), "chunk-"
+                + BundleUtils.getChunkId(FooCssImport.class.getName()) + ".js");
+
+        assertOnce("import { injectGlobalCss } from", output.get(chunk));
+        assertOnce("from 'Frontend/foo.css?inline';", output.get(chunk));
+        assertOnce("import $cssFromFile_0 from", output.get(chunk));
+    }
+
     private void assertImports(String mainImportContent,
             String lazyImportContent, String[] mainImports,
             String[] lazyImports) {
