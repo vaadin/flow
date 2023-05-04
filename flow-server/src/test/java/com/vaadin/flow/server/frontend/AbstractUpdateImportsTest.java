@@ -54,9 +54,11 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -78,13 +80,19 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Route(value = "simplecss")
     @CssImport("./foo.css")
-    public static class SimpleCssImport extends Component {
+    public static class FooCssImport extends Component {
+
+    }
+
+    @Route(value = "simplecss")
+    @CssImport("./bar.css")
+    public static class BarCssImport extends Component {
 
     }
 
     @Route(value = "simplecss2")
     @CssImport("./foo.css")
-    public static class SimpleCssImport2 extends Component {
+    public static class FooCssImport2 extends Component {
 
     }
 
@@ -400,15 +408,53 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void duplicateCssOnlyImportedOnce() throws Exception {
-        Class<?>[] testClasses = { SimpleCssImport.class,
-                SimpleCssImport2.class, UI.class };
+        Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
+                UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 options);
         updater.run();
 
+        Map<File, List<String>> output = updater.getOutput();
+
+        File flowGeneratedImports = FrontendUtils
+                .getFlowGeneratedImports(frontendDirectory);
+
+        assertOnce("import { injectGlobalCss } from",
+                output.get(flowGeneratedImports));
+        assertOnce("import { css, unsafeCSS, registerStyles } from",
+                output.get(flowGeneratedImports));
         assertOnce("from 'Frontend/foo.css?inline';",
-                updater.getMergedOutput());
+                output.get(flowGeneratedImports));
+    }
+
+    @Test
+    public void eagerCssImportsMerged() throws Exception {
+        createExpectedImport(frontendDirectory, nodeModulesPath, "./bar.css");
+        Class<?>[] testClasses = { FooCssImport.class, BarCssImport.class,
+                UI.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                options);
+        updater.run();
+
+        Map<File, List<String>> output = updater.getOutput();
+
+        File flowGeneratedImports = FrontendUtils
+                .getFlowGeneratedImports(frontendDirectory);
+
+        assertOnce("import { injectGlobalCss } from",
+                output.get(flowGeneratedImports));
+        assertOnce("import { css, unsafeCSS, registerStyles } from",
+                output.get(flowGeneratedImports));
+        assertOnce("from 'Frontend/foo.css?inline';",
+                output.get(flowGeneratedImports));
+        assertOnce("from 'Frontend/bar.css?inline';",
+                output.get(flowGeneratedImports));
+        assertOnce("import $cssFromFile_0 from",
+                output.get(flowGeneratedImports));
+        assertOnce("import $cssFromFile_1 from",
+                output.get(flowGeneratedImports));
     }
 
     private void assertOnce(String key, List<String> output) {
@@ -418,7 +464,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 found++;
             }
         }
-        Assert.assertEquals("Expected one instance of " + key, 1, found);
+        Assert.assertEquals("Expected one instance of '" + key + "'", 1, found);
     }
 
     @Test
@@ -445,12 +491,18 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         NodeTestComponents.JavaScriptOrder javaScriptOrder;
     }
 
+    @LoadDependenciesOnStartup
+    static class AllEagerAppConf implements AppShellConfigurator {
+
+    }
+
     public void assertFullSortOrder(boolean uiImportSeparated)
             throws MalformedURLException {
         Class[] testClasses = { MainView.class,
                 NodeTestComponents.TranslatedImports.class,
                 NodeTestComponents.LocalP3Template.class,
-                NodeTestComponents.JavaScriptOrder.class, UI.class };
+                NodeTestComponents.JavaScriptOrder.class, UI.class,
+                AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
 
         options.withTokenFile(new File(tmpRoot, TOKEN_FILE));
