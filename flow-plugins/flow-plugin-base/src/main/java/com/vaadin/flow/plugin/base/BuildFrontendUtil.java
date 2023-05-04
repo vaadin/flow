@@ -425,8 +425,6 @@ public class BuildFrontendUtil {
      *            - frontend tools access object
      * @throws TimeoutException
      *             - while running vite
-     * @throws URISyntaxException
-     *             - while parsing nodeDownloadRoot()) to URI
      */
     public static void runVite(PluginAdapterBase adapter,
             FrontendTools frontendTools)
