@@ -134,8 +134,7 @@ public final class BundleValidationUtil {
     private static boolean needsBuildProdBundle(Options options,
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder) throws IOException {
-        String statsJsonContent = BundleValidationUtil
-                .findProdBundleStatsJson(finder);
+        String statsJsonContent = findProdBundleStatsJson(finder);
 
         if (statsJsonContent == null) {
             // without stats.json in bundle we can not say if it is up-to-date
@@ -144,36 +143,8 @@ public final class BundleValidationUtil {
             return true;
         }
 
-        final List<Product> productsUsed = collectLicensedProducts(
-                frontendDependencies, statsJsonContent);
-        for (Product component : productsUsed) {
-            LicenseChecker.checkLicense(component.getName(),
-                    component.getVersion(), BuildType.PRODUCTION);
-        }
-
         return needsBuildInternal(options, frontendDependencies, finder,
                 statsJsonContent);
-    }
-
-    static List<Product> collectLicensedProducts(
-            FrontendDependenciesScanner scanner, String statsJsonContent) {
-        List<Product> components = new ArrayList<>();
-
-        final JsonObject statsJson = Json.parse(statsJsonContent);
-
-        if (statsJson.hasKey("cvdlModules")) {
-            final JsonObject cvdlModules = statsJson.getObject("cvdlModules");
-            for (String key : cvdlModules.keys()) {
-                if (!scanner.getPackages().containsKey(key)) {
-                    // If product is not used do not collect it.
-                    continue;
-                }
-                final JsonObject cvdlModule = cvdlModules.getObject(key);
-                components.add(new Product(cvdlModule.getString("name"),
-                        cvdlModule.getString("version")));
-            }
-        }
-        return components;
     }
 
     private static boolean needsBuildInternal(Options options,

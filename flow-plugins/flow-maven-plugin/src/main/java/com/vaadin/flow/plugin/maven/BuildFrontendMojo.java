@@ -37,6 +37,7 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.BundleValidationUtil;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.pro.licensechecker.LicenseChecker;
 
 /**
  * Goal that builds the frontend bundle.
@@ -126,6 +127,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                 throw new MojoExecutionException(exception.getMessage(),
                         exception);
             }
+        } else {
+            LicenseChecker.setStrictOffline(true);
+            BuildFrontendUtil.validateLicenses(this);
         }
 
         BuildFrontendUtil.updateBuildFile(this);

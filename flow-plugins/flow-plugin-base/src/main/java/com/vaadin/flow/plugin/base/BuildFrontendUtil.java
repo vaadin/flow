@@ -63,6 +63,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.BundleValidationUtil;
 import com.vaadin.flow.server.frontend.CvdlProducts;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
@@ -70,6 +71,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.utils.FlowFileUtils;
 import com.vaadin.pro.licensechecker.BuildType;
@@ -428,7 +430,7 @@ public class BuildFrontendUtil {
      */
     public static void runVite(PluginAdapterBase adapter,
             FrontendTools frontendTools)
-            throws TimeoutException, URISyntaxException {
+            throws TimeoutException {
         runFrontendBuildTool(adapter, frontendTools, "Vite", "vite/bin/vite.js",
                 Collections.emptyMap(), "build");
     }
@@ -436,7 +438,10 @@ public class BuildFrontendUtil {
     private static void runFrontendBuildTool(PluginAdapterBase adapter,
             FrontendTools frontendTools, String toolName, String executable,
             Map<String, String> environment, String... params)
-            throws TimeoutException, URISyntaxException {
+            throws TimeoutException {
+
+        // Check License
+        validateLicenses(adapter);
 
         File buildExecutable = new File(adapter.npmFolder(),
                 NODE_MODULES + executable);
@@ -483,25 +488,33 @@ public class BuildFrontendUtil {
                     String.format("Failed to run %s due to an error", toolName),
                     e);
         }
-
-        // Check License
-        validateLicenses(adapter);
     }
 
-    private static void validateLicenses(PluginAdapterBase adapter) {
-        File nodeModulesFolder = new File(adapter.npmFolder(),
-                FrontendUtils.NODE_MODULES);
+    /**
+     * Validate pro component licenses.
+     *
+     * @param adapter the PluginAdapterBase
+     */
+    public static void validateLicenses(PluginAdapterBase adapter) {
 
-        File outputFolder = adapter.webpackOutputDirectory();
-        File statsFile = new File(adapter.servletResourceOutputDirectory(),
-                Constants.VAADIN_CONFIGURATION + "/stats.json");
-
-        if (!statsFile.exists()) {
-            throw new RuntimeException(
-                    "Stats file " + statsFile + " does not exist");
+        String statsJsonContent = null;
+        try {
+            statsJsonContent = BundleValidationUtil.findProdBundleStatsJson(adapter.getClassFinder());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
+        if (statsJsonContent == null) {
+            // without stats.json in bundle we can not say if it is up-to-date
+            throw new RuntimeException(
+                    "No bundle's stats.json found for production-bundle validation.");
+        }
+
+        FrontendDependenciesScanner scanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
+                .createScanner(true, adapter.getClassFinder(),
+                        true, null);
         List<Product> commercialComponents = findCommercialFrontendComponents(
-                nodeModulesFolder, statsFile);
+                scanner, statsJsonContent);
         commercialComponents.addAll(findCommercialJavaComponents(adapter));
 
         for (Product component : commercialComponents) {
@@ -509,15 +522,9 @@ public class BuildFrontendUtil {
                 LicenseChecker.checkLicense(component.getName(),
                         component.getVersion(), BuildType.PRODUCTION);
             } catch (Exception e) {
-                try {
-                    getLogger().debug(
-                            "License check for {} failed. Invalidating output",
-                            component);
-
-                    FileUtils.deleteDirectory(outputFolder);
-                } catch (IOException e1) {
-                    getLogger().debug("Failed to remove {}", outputFolder);
-                }
+                getLogger().debug(
+                        "License check for {} failed. Invalidating output",
+                        component);
                 throw e;
             }
         }
@@ -529,23 +536,24 @@ public class BuildFrontendUtil {
     }
 
     static List<Product> findCommercialFrontendComponents(
-            File nodeModulesFolder, File statsFile) {
+            FrontendDependenciesScanner scanner, String statsJsonContent) {
         List<Product> components = new ArrayList<>();
-        try (InputStream in = new FileInputStream(statsFile)) {
-            String contents = IOUtils.toString(in, StandardCharsets.UTF_8);
-            JsonObject npmModules = Json.parse(contents)
-                    .getObject("npmModules");
-            for (String npmModule : npmModules.keys()) {
-                Product product = CvdlProducts
-                        .getProductIfCvdl(nodeModulesFolder, npmModule);
-                if (product != null) {
-                    components.add(product);
+
+        final JsonObject statsJson = Json.parse(statsJsonContent);
+
+        if (statsJson.hasKey("cvdlModules")) {
+            final JsonObject cvdlModules = statsJson.getObject("cvdlModules");
+            for (String key : cvdlModules.keys()) {
+                if (!scanner.getPackages().containsKey(key)) {
+                    // If product is not used do not collect it.
+                    continue;
                 }
+                final JsonObject cvdlModule = cvdlModules.getObject(key);
+                components.add(new Product(cvdlModule.getString("name"),
+                        cvdlModule.getString("version")));
             }
-            return components;
-        } catch (Exception e) {
-            throw new RuntimeException("Error reading file " + statsFile, e);
         }
+        return components;
     }
 
     static List<Product> findCommercialJavaComponents(
@@ -578,16 +586,6 @@ public class BuildFrontendUtil {
         }
 
         return components;
-    }
-
-    private static FeatureFlags getFeatureFlags(PluginAdapterBase adapter) {
-        ClassFinder classFinder = adapter.getClassFinder();
-
-        Lookup lookup = adapter.createLookup(classFinder);
-
-        final FeatureFlags featureFlags = new FeatureFlags(lookup);
-        featureFlags.setPropertiesLocation(adapter.javaResourceFolder());
-        return featureFlags;
     }
 
     /**
