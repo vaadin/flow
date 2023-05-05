@@ -75,13 +75,4 @@ public class NoAppBundleIT extends ChromeBrowserTest {
                     indexHtmlContent.contains("default production bundle"));
         }
     }
-
-    private void assertInDevMode(Runnable assertCallback) {
-        try {
-            findElement(By.tagName("vaadin-dev-tools"));
-            assertCallback.run();
-        } catch (NoSuchElementException e) {
-            // ignore
-        }
-    }
 }

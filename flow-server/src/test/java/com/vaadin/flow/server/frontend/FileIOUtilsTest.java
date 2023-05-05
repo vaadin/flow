@@ -17,8 +17,8 @@ public class FileIOUtilsTest {
 
         URL url = new URL(
                 "file:/C:/Users/John%20Doe/Downloads/my-app%20(21)/my-app/target/classes/");
-        Assert.assertEquals(new File(
-                "C:\\Users\\John Doe\\Downloads\\my-app (21)\\my-app\\target\\classes"),
+        Assert.assertEquals(
+                new File("C:\\Users\\John Doe\\Downloads\\my-app (21)\\my-app"),
                 FileIOUtils.getProjectFolderFromClasspath(url));
     }
 
