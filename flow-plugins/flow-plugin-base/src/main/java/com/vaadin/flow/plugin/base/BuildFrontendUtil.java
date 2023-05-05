@@ -427,8 +427,7 @@ public class BuildFrontendUtil {
      *             - while running vite
      */
     public static void runVite(PluginAdapterBase adapter,
-            FrontendTools frontendTools)
-            throws TimeoutException {
+            FrontendTools frontendTools) throws TimeoutException {
         runFrontendBuildTool(adapter, frontendTools, "Vite", "vite/bin/vite.js",
                 Collections.emptyMap(), "build");
     }
@@ -491,26 +490,37 @@ public class BuildFrontendUtil {
     /**
      * Validate pro component licenses.
      *
-     * @param adapter the PluginAdapterBase
+     * @param adapter
+     *            the PluginAdapterBase
      */
     public static void validateLicenses(PluginAdapterBase adapter) {
         File outputFolder = adapter.webpackOutputDirectory();
 
         String statsJsonContent = null;
         try {
-            statsJsonContent = BundleValidationUtil.findProdBundleStatsJson(adapter.getClassFinder());
+            // First check for compiled bundle
+            URL statsJson = adapter.getClassFinder().getResource(
+                    Constants.VAADIN_SERVLET_RESOURCES + "config/stats.json");
+            if (statsJson == null) {
+                // If no compiled bundle available check for jar-bundle
+                statsJsonContent = BundleValidationUtil
+                        .findProdBundleStatsJson(adapter.getClassFinder());
+            } else {
+                statsJsonContent = IOUtils.toString(statsJson,
+                        StandardCharsets.UTF_8);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         if (statsJsonContent == null) {
             // without stats.json in bundle we can not say if it is up-to-date
-            throw new RuntimeException("No production bundle stats.json available.");
+            throw new RuntimeException(
+                    "No production bundle stats.json available.");
         }
 
         FrontendDependenciesScanner scanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(true, adapter.getClassFinder(),
-                        true, null);
+                .createScanner(true, adapter.getClassFinder(), true, null);
         List<Product> commercialComponents = findCommercialFrontendComponents(
                 scanner, statsJsonContent);
         commercialComponents.addAll(findCommercialJavaComponents(adapter));
