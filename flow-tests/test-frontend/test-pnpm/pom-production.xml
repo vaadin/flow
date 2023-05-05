@@ -62,7 +62,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <productionMode>true</productionMode>
                     <generatedDependencies>${flow.dev.dependencies.folder}/${flow.dev.dependencies.file}</generatedDependencies>
                     <requireHomeNodeExec>true</requireHomeNodeExec>
                     <nodeAutoUpdate>true</nodeAutoUpdate>
