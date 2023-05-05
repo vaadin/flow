@@ -61,31 +61,6 @@ public class TaskPrepareProdBundle implements FallibleCommand {
     public void execute() throws ExecutionFailedException {
         copyBundleFilesFromJar();
         copyProjectThemes();
-        writeMainThemeNameToStatsJson();
-    }
-
-    private void writeMainThemeNameToStatsJson() {
-        ThemeDefinition themeDefinition = frontendDependenciesScanner
-                .getThemeDefinition();
-        if (themeDefinition != null) {
-            try {
-                String themeName = themeDefinition.getName();
-                if (!themeName.isEmpty()) {
-                    File statsJsonFile = new File(
-                            options.getResourceOutputDirectory(),
-                            "config/stats.json");
-                    JsonObject statsJsonContent = Json
-                            .parse(FileUtils.readFileToString(statsJsonFile,
-                                    StandardCharsets.UTF_8));
-                    statsJsonContent.put("application-theme", themeName);
-                    FileUtils.write(statsJsonFile,
-                            JsonUtil.stringify(statsJsonContent, 2) + "\n",
-                            StandardCharsets.UTF_8.name());
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
     }
 
     private void copyProjectThemes() {

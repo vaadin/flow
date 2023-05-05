@@ -1613,6 +1613,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * (typically styles.css or document.css), which are served in express build
      * mode by static file server directly from frontend/themes folder.
      *
+     * @param context
+     *            the vaadin context
      * @param config
      *            deployment configuration
      * @param fileName
@@ -1622,8 +1624,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *             if theme name cannot be extracted from file
      */
     protected static Collection<Element> getStylesheetTags(
-            AbstractConfiguration config, String fileName) throws IOException {
-        return ThemeUtils.getActiveThemes(config).stream()
+            VaadinContext context, AbstractConfiguration config,
+            String fileName) throws IOException {
+        return ThemeUtils.getActiveThemes(context, config).stream()
                 .map(theme -> getStyleTag(theme, fileName, config)).toList();
     }
 
@@ -1632,6 +1635,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * (typically styles.css or document.css), which are served in express build
      * mode by static file server directly from frontend/themes folder.
      *
+     * @param context
+     *            the vaadin context
      * @param config
      *            deployment configuration
      * @param fileName
@@ -1641,8 +1646,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *             if theme name cannot be extracted from file
      */
     protected static Collection<String> getStylesheetLinks(
-            AbstractConfiguration config, String fileName) throws IOException {
-        return ThemeUtils.getActiveThemes(config).stream()
+            VaadinContext context, AbstractConfiguration config,
+            String fileName) throws IOException {
+        return ThemeUtils.getActiveThemes(context, config).stream()
                 .map(theme -> ThemeUtils.getThemeFilePath(theme, fileName))
                 .toList();
     }

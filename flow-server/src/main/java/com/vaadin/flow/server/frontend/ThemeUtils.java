@@ -65,6 +65,8 @@ public class ThemeUtils {
      * <p>
      * Should be only used in the development mode.
      *
+     * @param context
+     *            the vaadin context
      * @param config
      *            the application configuration
      * @return custom theme name or empty optional if no theme is used
@@ -72,21 +74,10 @@ public class ThemeUtils {
      *             if I/O exceptions occur while trying to extract the theme
      *             name.
      */
-    public static Optional<String> getThemeName(AbstractConfiguration config)
-            throws IOException {
+    public static Optional<String> getThemeName(VaadinContext context,
+            AbstractConfiguration config) throws IOException {
         if (config.isProductionMode()) {
-            URL statsJsonUrl = ThemeUtils.class.getClassLoader().getResource(
-                    Constants.VAADIN_SERVLET_RESOURCES + "config/stats.json");
-            if (statsJsonUrl == null) {
-                return Optional.empty();
-            }
-            String statsJsonContent = IOUtils.toString(statsJsonUrl,
-                    StandardCharsets.UTF_8);
-            JsonObject statsJson = Json.parse(statsJsonContent);
-            if (statsJson.hasKey("application-theme")) {
-                return Optional.of(statsJson.getString("application-theme"));
-            }
-            return Optional.empty();
+            return getThemeAnnotation(context).map(Theme::value);
         } else {
             File themeJs = new File(config.getProjectFolder(),
                     FrontendUtils.FRONTEND + FrontendUtils.GENERATED
@@ -193,13 +184,15 @@ public class ThemeUtils {
      * Gets the active themes in parent to child order, starting from the
      * application theme.
      *
+     * @param context
+     *            the vaadin context
      * @param config
      *            the application configuration
      * @return a list of active themes, in parent to child order
      */
-    public static List<String> getActiveThemes(AbstractConfiguration config)
-            throws IOException {
-        Optional<String> applicationTheme = getThemeName(config);
+    public static List<String> getActiveThemes(VaadinContext context,
+            AbstractConfiguration config) throws IOException {
+        Optional<String> applicationTheme = getThemeName(context, config);
         if (!applicationTheme.isPresent()) {
             return Collections.emptyList();
         }
