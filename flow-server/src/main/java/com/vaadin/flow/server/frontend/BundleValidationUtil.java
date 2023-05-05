@@ -346,7 +346,7 @@ public final class BundleValidationUtil {
 
         if (bundleModules == null) {
             getLogger().error(
-                    "Dev bundle did not contain package json dependencies to validate.\n"
+                    "Bundle did not contain package json dependencies to validate.\n"
                             + "Rebuild of bundle needed.");
             return false;
         }
@@ -465,7 +465,7 @@ public final class BundleValidationUtil {
                 if (!webComponents.isEmpty()) {
                     getLogger().info(
                             "Found embedded web components not yet included "
-                                    + "into the dev bundle: {}",
+                                    + "into the bundle: {}",
                             String.join(", ", webComponents));
                     return true;
                 }
@@ -482,7 +482,7 @@ public final class BundleValidationUtil {
             if (!webComponents.isEmpty()) {
                 getLogger().info(
                         "Found newly added embedded web components not "
-                                + "yet included into the dev bundle: {}",
+                                + "yet included into the bundle: {}",
                         String.join(", ", webComponents));
                 return true;
             }

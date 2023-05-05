@@ -34,29 +34,83 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 
 /**
  * Copies production bundle files from pre-compiled bundle JAR into a folder
  * where production bundle is normally located.
  * <p>
+ * Copies project's custom theme files to the resources output folder.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @since 24.1
  */
-public class TaskCopyBundleFiles implements FallibleCommand {
+public class TaskPrepareProdBundle implements FallibleCommand {
 
     private final Options options;
 
     private final FrontendDependenciesScanner frontendDependenciesScanner;
 
-    public TaskCopyBundleFiles(Options options, FrontendDependenciesScanner frontendDependencies) {
+    public TaskPrepareProdBundle(Options options,
+            FrontendDependenciesScanner frontendDependencies) {
         this.options = options;
         this.frontendDependenciesScanner = frontendDependencies;
     }
 
     @Override
     public void execute() throws ExecutionFailedException {
+        copyBundleFilesFromJar();
+        copyProjectThemes();
+        writeMainThemeNameToStatsJson();
+    }
+
+    private void writeMainThemeNameToStatsJson() {
+        ThemeDefinition themeDefinition = frontendDependenciesScanner
+                .getThemeDefinition();
+        if (themeDefinition != null) {
+            try {
+                String themeName = themeDefinition.getName();
+                if (!themeName.isEmpty()) {
+                    File statsJsonFile = new File(
+                            options.getResourceOutputDirectory(),
+                            "config/stats.json");
+                    JsonObject statsJsonContent = Json
+                            .parse(FileUtils.readFileToString(statsJsonFile,
+                                    StandardCharsets.UTF_8));
+                    statsJsonContent.put("application-theme", themeName);
+                    FileUtils.write(statsJsonFile,
+                            JsonUtil.stringify(statsJsonContent, 2) + "\n",
+                            StandardCharsets.UTF_8.name());
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void copyProjectThemes() {
+        File localThemesRoot = new File(options.getFrontendDirectory(),
+                APPLICATION_THEME_ROOT);
+        if (localThemesRoot.exists()) {
+            File target = new File(options.getResourceOutputDirectory(),
+                    Paths.get(Constants.VAADIN_WEBAPP, Constants.VAADIN_MAPPING,
+                            "static", APPLICATION_THEME_ROOT).toString());
+            File[] localThemes = localThemesRoot.listFiles(File::isDirectory);
+            if (localThemes == null) {
+                throw new IllegalStateException();
+            }
+            for (File theme : localThemes) {
+                try {
+                    FileUtils.copyDirectory(theme,
+                            new File(target, theme.getName()));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    private void copyBundleFilesFromJar() {
         URL statsJson = BundleValidationUtil.getProdBundleResource(
                 "config/stats.json", options.getClassFinder());
         if (statsJson == null) {
@@ -77,42 +131,6 @@ public class TaskCopyBundleFiles implements FallibleCommand {
                     options.getResourceOutputDirectory(), "**/*.*");
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
-        }
-
-        File localThemesRoot = new File(options.getFrontendDirectory(),
-                APPLICATION_THEME_ROOT);
-        if (localThemesRoot.exists()) {
-            File target = new File(options.getResourceOutputDirectory(),
-                    Paths.get(Constants.VAADIN_WEBAPP, Constants.VAADIN_MAPPING, "static",
-                            APPLICATION_THEME_ROOT).toString());
-            File[] localThemes = localThemesRoot.listFiles(File::isDirectory);
-            if (localThemes == null) {
-                throw new IllegalStateException();
-            }
-            for (File theme : localThemes) {
-                try {
-                    FileUtils.copyDirectory(theme, new File(target, theme.getName()));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
-
-        ThemeDefinition themeDefinition = frontendDependenciesScanner.getThemeDefinition();
-        if (themeDefinition != null) {
-            File statsJsonFile = new File(options.getResourceOutputDirectory(),
-                    "config/stats.json");
-            try {
-                JsonObject statsJsonContent = Json.parse(FileUtils.readFileToString(statsJsonFile,
-                        StandardCharsets.UTF_8));
-                statsJsonContent.put("application-theme", themeDefinition.getName());
-                FileUtils.write(statsJsonFile,
-                        JsonUtil.stringify(statsJsonContent, 2) + "\n",
-                        StandardCharsets.UTF_8.name());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
         }
     }
 }

@@ -32,8 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.Constants;
@@ -67,28 +65,32 @@ public class ThemeUtils {
      * <p>
      * Should be only used in the development mode.
      *
-     * @param projectFolder the project root folder
-     * @param context
+     * @param config
+     *            the application configuration
      * @return custom theme name or empty optional if no theme is used
-     * @throws IOException if I/O exceptions occur while trying to extract the theme
-     *                     name.
+     * @throws IOException
+     *             if I/O exceptions occur while trying to extract the theme
+     *             name.
      */
-    public static Optional<String> getThemeName(VaadinContext context, AbstractConfiguration config)
+    public static Optional<String> getThemeName(AbstractConfiguration config)
             throws IOException {
-
         if (config.isProductionMode()) {
-            URL statsJsonUrl = context.getAttribute(Lookup.class)
-                    .lookup(ResourceProvider.class)
-                    .getApplicationResource(Constants.VAADIN_SERVLET_RESOURCES + "config/stats.json");
-            String statsJsonContent = IOUtils.toString(statsJsonUrl, StandardCharsets.UTF_8);
+            URL statsJsonUrl = ThemeUtils.class.getClassLoader().getResource(
+                    Constants.VAADIN_SERVLET_RESOURCES + "config/stats.json");
+            if (statsJsonUrl == null) {
+                return Optional.empty();
+            }
+            String statsJsonContent = IOUtils.toString(statsJsonUrl,
+                    StandardCharsets.UTF_8);
             JsonObject statsJson = Json.parse(statsJsonContent);
             if (statsJson.hasKey("application-theme")) {
                 return Optional.of(statsJson.getString("application-theme"));
             }
             return Optional.empty();
         } else {
-            File themeJs = new File(config.getProjectFolder(), FrontendUtils.FRONTEND
-                                                               + FrontendUtils.GENERATED + FrontendUtils.THEME_IMPORTS_NAME);
+            File themeJs = new File(config.getProjectFolder(),
+                    FrontendUtils.FRONTEND + FrontendUtils.GENERATED
+                            + FrontendUtils.THEME_IMPORTS_NAME);
 
             if (!themeJs.exists()) {
                 return Optional.empty();
@@ -96,7 +98,8 @@ public class ThemeUtils {
 
             String themeJsContent = FileUtils.readFileToString(themeJs,
                     StandardCharsets.UTF_8);
-            Matcher matcher = THEME_GENERATED_FILE_PATTERN.matcher(themeJsContent);
+            Matcher matcher = THEME_GENERATED_FILE_PATTERN
+                    .matcher(themeJsContent);
             if (matcher.find()) {
                 return Optional.of(matcher.group(1));
             } else {
@@ -123,20 +126,21 @@ public class ThemeUtils {
     }
 
     public static Optional<JsonObject> getThemeJson(String themeName,
-                                                    AbstractConfiguration config) {
+            AbstractConfiguration config) {
         String content = null;
         try {
             if (config.isProductionMode()) {
-                URL themeJsonUrl =
-                        ThemeUtils.class.getClassLoader().getResource(VAADIN_WEBAPP_RESOURCES +
-                                                 "VAADIN" +
-                                                "/static/themes/" + themeName +
-                                                "/theme.json");
+                URL themeJsonUrl = ThemeUtils.class.getClassLoader()
+                        .getResource(VAADIN_WEBAPP_RESOURCES
+                                + "VAADIN/static/themes/" + themeName
+                                + "/theme.json");
                 if (themeJsonUrl != null) {
-                    content = IOUtils.toString(themeJsonUrl, StandardCharsets.UTF_8);
+                    content = IOUtils.toString(themeJsonUrl,
+                            StandardCharsets.UTF_8);
                 }
             } else {
-                File frontendFolder = FrontendUtils.getProjectFrontendDir(config);
+                File frontendFolder = FrontendUtils
+                        .getProjectFrontendDir(config);
                 File themeFolder = getThemeFolder(frontendFolder, themeName);
                 File themeJsonFile = new File(themeFolder, "theme.json");
                 if (themeJsonFile.exists()) {
@@ -149,11 +153,12 @@ public class ThemeUtils {
                     "Unable to read theme.json file of theme=" + themeName, e);
         }
 
-        return content != null ? Optional.of(Json.parse(content)) :
-                Optional.empty();
+        return content != null ? Optional.of(Json.parse(content))
+                : Optional.empty();
     }
 
-    public static Optional<JsonObject> getThemeJson(String themeName, Options options) {
+    public static Optional<JsonObject> getThemeJson(String themeName,
+            Options options) {
         File themeJsonFile;
         File frontendFolder = options.getFrontendDirectory();
         File themeFolder = getThemeFolder(frontendFolder, themeName);
@@ -188,14 +193,13 @@ public class ThemeUtils {
      * Gets the active themes in parent to child order, starting from the
      * application theme.
      *
-     * @param context
-     * @param config  the application configuration
+     * @param config
+     *            the application configuration
      * @return a list of active themes, in parent to child order
      */
-    public static List<String> getActiveThemes(VaadinContext context,
-                                               AbstractConfiguration config)
+    public static List<String> getActiveThemes(AbstractConfiguration config)
             throws IOException {
-        Optional<String> applicationTheme = getThemeName(context, config);
+        Optional<String> applicationTheme = getThemeName(config);
         if (!applicationTheme.isPresent()) {
             return Collections.emptyList();
         }
@@ -245,11 +249,10 @@ public class ThemeUtils {
     }
 
     private static void findActiveThemes(String themeName, List<String> themes,
-                                         AbstractConfiguration config) {
+            AbstractConfiguration config) {
         themes.add(themeName);
 
-        Optional<JsonObject> themeJson = getThemeJson(themeName,
-                config);
+        Optional<JsonObject> themeJson = getThemeJson(themeName, config);
         if (themeJson.isPresent()) {
             Optional<String> parentTheme = getParentThemeName(themeJson.get());
             if (parentTheme.isPresent()) {

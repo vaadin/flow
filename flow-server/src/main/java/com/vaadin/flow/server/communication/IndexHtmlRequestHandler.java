@@ -182,9 +182,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static void addDevBundleTheme(Document document,
             VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
-        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE || config.getMode() == Mode.PRODUCTION) {
+        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE
+                || config.getMode() == Mode.PRODUCTION) {
             try {
-                BootstrapHandler.getStylesheetTags(context, config, "styles.css")
+                BootstrapHandler.getStylesheetTags(config, "styles.css")
                         .forEach(link -> document.head().appendChild(link));
             } catch (IOException e) {
                 throw new UncheckedIOException(

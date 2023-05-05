@@ -76,7 +76,7 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdateThemeImport.class,
             TaskCopyTemplateFiles.class,
             TaskRunDevBundleBuild.class,
-            TaskCopyBundleFiles.class
+            TaskPrepareProdBundle.class
         ));
     // @formatter:on
 
@@ -115,7 +115,8 @@ public class NodeTasks implements FallibleCommand {
                 options.withRunNpmInstall(needBuild);
                 options.withBundleBuild(needBuild);
                 if (!needBuild) {
-                    commands.add(new TaskCopyBundleFiles(options, frontendDependencies));
+                    commands.add(new TaskPrepareProdBundle(options,
+                            frontendDependencies));
                 }
             } else if (options.isBundleBuild()) {
                 // The dev bundle check needs the frontendDependencies to be

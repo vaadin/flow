@@ -40,8 +40,9 @@ public class ThemeValidationUtil {
             .compile("themes\\/([\\s\\S]+?)\\/theme.json");
 
     public static boolean themeConfigurationChanged(Options options,
-                                                    JsonObject statsJson,
-                                                    FrontendDependenciesScanner frontendDependencies, ClassFinder finder) {
+            JsonObject statsJson,
+            FrontendDependenciesScanner frontendDependencies,
+            ClassFinder finder) {
         Map<String, JsonObject> themeJsonContents = new HashMap<>();
 
         if (options.getJarFiles() != null) {
@@ -54,9 +55,8 @@ public class ThemeValidationUtil {
         Optional<String> maybeThemeName = Optional
                 .ofNullable(frontendDependencies.getThemeDefinition())
                 .map(ThemeDefinition::getName).filter(name -> !name.isBlank());
-        Optional<JsonObject> projectThemeJson = maybeThemeName
-                .flatMap(themeName -> ThemeUtils.getThemeJson(themeName,
-                        options));
+        Optional<JsonObject> projectThemeJson = maybeThemeName.flatMap(
+                themeName -> ThemeUtils.getThemeJson(themeName, options));
         String projectThemeName = maybeThemeName.orElse(null);
 
         JsonObject statsThemeJson = statsJson.getObject("themeJsonContents");
@@ -126,17 +126,18 @@ public class ThemeValidationUtil {
     }
 
     private static void collectThemeJsonContentsInFrontend(Options options,
-                                                           Map<String, JsonObject> themeJsonContents, String themeName,
-                                                           JsonObject themeJson, ClassFinder finder) {
+            Map<String, JsonObject> themeJsonContents, String themeName,
+            JsonObject themeJson, ClassFinder finder) {
         Optional<String> parentThemeInFrontend = ThemeUtils
                 .getParentThemeName(themeJson);
         if (parentThemeInFrontend.isPresent()) {
             String parentThemeName = parentThemeInFrontend.get();
-            Optional<JsonObject> parentThemeJson =
-                    ThemeUtils.getThemeJson(parentThemeName, options);
+            Optional<JsonObject> parentThemeJson = ThemeUtils
+                    .getThemeJson(parentThemeName, options);
             parentThemeJson.ifPresent(
                     jsonObject -> collectThemeJsonContentsInFrontend(options,
-                            themeJsonContents, parentThemeName, jsonObject, finder));
+                            themeJsonContents, parentThemeName, jsonObject,
+                            finder));
         }
 
         themeJsonContents.put(themeName, themeJson);

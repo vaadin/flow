@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 
@@ -52,7 +53,7 @@ public class ParentThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void parentTheme_stylesAppliedFromParentTheme_devBundleCreated() {
+    public void parentTheme_stylesAppliedFromParentTheme() {
         open();
 
         // check that the background colour is overriden by the child theme
@@ -60,10 +61,16 @@ public class ParentThemeIT extends ChromeBrowserTest {
         waitUntilParentThemeStyles();
         checkLogsForErrors();
 
-        // check that the bundle has the expected asset
-        verifyThemeJsonHash();
-        verifyExternalAssetInBundle();
-        waitUntilExternalAsset();
+        try {
+            findElement(By.tagName("vaadin-dev-tools"));
+            // app dev bundle has reusable theme in stats.json
+            verifyThemeJsonHashReusableThemeRecord();
+            // check that the bundle has the expected asset for dev mode
+            verifyExternalAssetInBundle();
+            waitUntilExternalAsset();
+        } catch (NoSuchElementException e) {
+            // ignore in prod mode
+        }
     }
 
     private void waitUntilParentThemeStyles() {
@@ -97,7 +104,7 @@ public class ParentThemeIT extends ChromeBrowserTest {
                 lineAwesome.exists());
     }
 
-    private void verifyThemeJsonHash() {
+    private void verifyThemeJsonHashReusableThemeRecord() {
         try {
             String themeJsonContent = FileUtils.readFileToString(statsJson,
                     StandardCharsets.UTF_8);

@@ -388,14 +388,15 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
         DeploymentConfiguration config = response.getService()
                 .getDeploymentConfiguration();
-        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE || config.getMode() == Mode.PRODUCTION) {
+        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE
+                || config.getMode() == Mode.PRODUCTION) {
             // Add styles.css link to the web component shadow DOM
-            BootstrapHandler.getStylesheetTags(response.getService().getContext(), config, "styles.css")
+            BootstrapHandler.getStylesheetTags(config, "styles.css")
                     .forEach(element -> ElementUtil.fromJsoup(element)
                             .ifPresent(elementsForShadows::add));
 
             // Add document.css link to the document
-            BootstrapHandler.getStylesheetLinks(response.getService().getContext(), config, "document.css")
+            BootstrapHandler.getStylesheetLinks(config, "document.css")
                     .forEach(link -> UI.getCurrent().getPage().executeJs(
                             BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG,
                             link));

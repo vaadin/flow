@@ -24,6 +24,7 @@
         <module>frontend-add-on</module>
         <module>java-add-on</module>
         <module>test-reusable-theme-express-build</module>
+        <module>test-reusable-theme-no-assets</module>
     </modules>
 
     <profiles>
@@ -42,8 +43,11 @@
                 <module>test-dev-bundle-java-add-on</module>
                 <module>test-reusing-theme-express-build</module>
                 <module>test-parent-theme-express-build</module>
+                <module>test-parent-theme-express-build/pom-prod.xml</module>
                 <module>test-parent-theme-in-frontend</module>
+                <module>test-parent-theme-in-frontend/pom-prod.xml</module>
                 <module>test-embedding-express-build</module>
+                <module>test-embedding-express-build/pom-prod.xml</module>
             </modules>
         </profile>
     </profiles>

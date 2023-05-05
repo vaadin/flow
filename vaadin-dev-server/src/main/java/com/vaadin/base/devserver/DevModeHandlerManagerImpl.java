@@ -107,8 +107,8 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         }
 
         try {
-            Optional<String> maybeThemeName = ThemeUtils
-                    .getThemeName(context, config);
+            Optional<String> maybeThemeName = ThemeUtils.getThemeName(context,
+                    config);
 
             if (maybeThemeName.isEmpty()) {
                 getLogger().debug("Found no custom theme in the project. "
