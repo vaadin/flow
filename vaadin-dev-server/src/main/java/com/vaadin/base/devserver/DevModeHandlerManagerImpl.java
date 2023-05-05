@@ -18,8 +18,9 @@ package com.vaadin.base.devserver;
 import jakarta.servlet.annotation.HandlesTypes;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -28,13 +29,10 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.base.devserver.startup.DevModeStartupListener;
-import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.frontend.CssBundler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -65,7 +63,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     private DevModeHandler devModeHandler;
     private BrowserLauncher browserLauncher;
-    private FileWatcher themeFilesWatcher;
+    private Set<ThemeLiveUpdater> themeLiveUpdaters = new HashSet<>();
 
     @Override
     public Class<?>[] getHandlesTypes() {
@@ -115,38 +113,12 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
                         + "Skipping watching the theme files");
                 return;
             }
-            String themeName = maybeThemeName.get();
-            File themeFolder = ThemeUtils.getThemeFolder(
-                    FrontendUtils.getProjectFrontendDir(config), themeName);
-            File stylesCss = new File(themeFolder, "styles.css");
-
-            Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
-                    .getLiveReloadFromContext(context);
-            if (liveReload.isPresent()) {
-                themeFilesWatcher = new FileWatcher(file -> {
-                    if (file.getName().endsWith(".css")) {
-                        try {
-                            // All changes are merged into one style block
-                            liveReload.get()
-                                    .update(ThemeUtils.getThemeFilePath(
-                                            themeName, "styles.css"),
-                                            CssBundler.inlineImports(
-                                                    stylesCss.getParentFile(),
-                                                    stylesCss));
-                        } catch (IOException e) {
-                            getLogger().error(
-                                    "Unable to perform hot update of " + file,
-                                    e);
-                            liveReload.get().reload();
-                        }
-                    } else {
-                        liveReload.get().reload();
-                    }
-                }, themeFolder);
-                themeFilesWatcher.start();
-            } else {
-                getLogger().error(
-                        "Browser live reload is not available. Failed to start live-reload for theme files");
+            List<String> activeThemes = ThemeUtils.getActiveThemes(config);
+            for (String themeName : activeThemes) {
+                File themeFolder = ThemeUtils.getThemeFolder(
+                        FrontendUtils.getProjectFrontendDir(config), themeName);
+                themeLiveUpdaters
+                        .add(new ThemeLiveUpdater(themeFolder, context));
             }
         } catch (Exception e) {
             getLogger().error("Failed to start live-reload for theme files", e);
@@ -158,13 +130,10 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             devModeHandler.stop();
             devModeHandler = null;
         }
-        if (themeFilesWatcher != null) {
-            try {
-                themeFilesWatcher.stop();
-            } catch (Exception e) {
-                getLogger().error("Failed to stop theme files watcher", e);
-            }
+        for (ThemeLiveUpdater themeLiveUpdater : themeLiveUpdaters) {
+            themeLiveUpdater.stop();
         }
+        themeLiveUpdaters.clear();
     }
 
     @Override
