@@ -29,6 +29,7 @@ import java.util.function.Supplier;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.slf4j.LoggerFactory;
@@ -55,6 +56,10 @@ public class FrontendLiveReloadIT extends ChromeBrowserTest {
     @Test
     public void modifyMetaInfFrontendFile() throws IOException {
         open();
+        boolean hotdeploy = $("project-hotdeploy-info").first().getText()
+                .equalsIgnoreCase("true");
+        // Live reload of frontend files only works when using hotdeploy
+        Assume.assumeTrue(hotdeploy);
 
         String uiModuleFolder = $("project-folder-info").first().getText();
         File libraryFolder = new File(new File(uiModuleFolder).getParentFile(),
@@ -80,6 +85,10 @@ public class FrontendLiveReloadIT extends ChromeBrowserTest {
     @Test
     public void modifyMetaInfResourcesFrontendFile() throws IOException {
         open();
+        boolean hotdeploy = $("project-hotdeploy-info").first().getText()
+                .equalsIgnoreCase("true");
+        // Live reload of frontend files only works when using hotdeploy
+        Assume.assumeTrue(hotdeploy);
 
         String uiModuleFolder = $("project-folder-info").first().getText();
         File libraryFolder = new File(new File(uiModuleFolder).getParentFile(),
