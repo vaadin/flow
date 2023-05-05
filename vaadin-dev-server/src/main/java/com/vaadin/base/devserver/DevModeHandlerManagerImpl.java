@@ -19,6 +19,8 @@ import jakarta.servlet.annotation.HandlesTypes;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -61,7 +63,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     private DevModeHandler devModeHandler;
     private BrowserLauncher browserLauncher;
-    private ThemeLiveUpdater themeLiveUpdater;
+    private Set<ThemeLiveUpdater> themeLiveUpdaters = new HashSet<>();
 
     @Override
     public Class<?>[] getHandlesTypes() {
@@ -112,10 +114,13 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
                         + "Skipping watching the theme files");
                 return;
             }
-            String themeName = maybeThemeName.get();
-            File themeFolder = ThemeUtils.getThemeFolder(
-                    FrontendUtils.getProjectFrontendDir(config), themeName);
-            themeLiveUpdater = new ThemeLiveUpdater(themeFolder, context);
+            List<String> activeThemes = ThemeUtils.getActiveThemes(config);
+            for (String themeName : activeThemes) {
+                File themeFolder = ThemeUtils.getThemeFolder(
+                        FrontendUtils.getProjectFrontendDir(config), themeName);
+                themeLiveUpdaters
+                        .add(new ThemeLiveUpdater(themeFolder, context));
+            }
         } catch (Exception e) {
             getLogger().error("Failed to start live-reload for theme files", e);
         }
@@ -126,9 +131,10 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             devModeHandler.stop();
             devModeHandler = null;
         }
-        if (themeLiveUpdater != null) {
+        for (ThemeLiveUpdater themeLiveUpdater : themeLiveUpdaters) {
             themeLiveUpdater.stop();
         }
+        themeLiveUpdaters.clear();
     }
 
     @Override
