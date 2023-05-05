@@ -505,8 +505,7 @@ public class BuildFrontendUtil {
 
         if (statsJsonContent == null) {
             // without stats.json in bundle we can not say if it is up-to-date
-            getLogger().debug("No production bundle stats.json available.");
-            statsJsonContent = "{}";
+            throw new RuntimeException("No production bundle stats.json available.");
         }
 
         FrontendDependenciesScanner scanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
