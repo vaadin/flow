@@ -125,7 +125,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     private String failedOutput = null;
 
-    private Runnable onDestroy = null;
+    private Runnable onStop = null;
 
     /**
      * Craete an instance that waits for the given task to complete before
@@ -563,12 +563,16 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     }
 
     @Override
-    public void onDestroy(Runnable callback) {
-        this.onDestroy = callback;
+    public void onStop(Runnable callback) {
+        this.onStop = callback;
     }
 
     @Override
     public void stop() {
+        if (onStop != null) {
+            // Always run the callbacks, even if the dev server itself is reused
+            onStop.run();
+        }
         if (reuseDevServer) {
             return;
         }
@@ -597,9 +601,6 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         devServerProcess.set(null);
         usingAlreadyStartedProcess = false;
         removeRunningDevServerPort();
-        if (onDestroy != null) {
-            onDestroy.run();
-        }
     }
 
     @Override

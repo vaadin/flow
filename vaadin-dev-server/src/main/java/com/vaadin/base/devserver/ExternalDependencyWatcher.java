@@ -99,7 +99,7 @@ public class ExternalDependencyWatcher {
 
     }
 
-    public void destroy() {
+    public void stop() {
         for (FileWatcher watcher : watchers) {
             try {
                 watcher.stop();

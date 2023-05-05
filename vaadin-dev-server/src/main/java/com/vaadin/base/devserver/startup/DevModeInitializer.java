@@ -323,10 +323,10 @@ public class DevModeInitializer implements Serializable {
                     options.getNpmFolder(), nodeTasksFuture);
             VaadinServlet.whenFrontendMappingAvailable(
                     () -> ViteWebsocketEndpoint.init(context, handler));
-            ExternalDependencyWatcher jarWatcher = new ExternalDependencyWatcher(
+            ExternalDependencyWatcher dependencyWatcher = new ExternalDependencyWatcher(
                     context, jarFrontendResourcesFolder);
-            handler.onDestroy(() -> {
-                jarWatcher.destroy();
+            handler.onStop(() -> {
+                dependencyWatcher.stop();
             });
             return handler;
         }

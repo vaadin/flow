@@ -80,10 +80,10 @@ public interface DevModeHandler extends RequestHandler {
     int getPort();
 
     /**
-     * Callback invoked when the handler is destroyed.
+     * Callback invoked when the handler is stopped.
      *
      * @param callback
      *            the callback to run
      */
-    void onDestroy(Runnable callback);
+    void onStop(Runnable callback);
 }
