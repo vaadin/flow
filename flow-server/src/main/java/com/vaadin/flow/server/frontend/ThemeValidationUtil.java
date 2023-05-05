@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.theme.ThemeDefinition;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -39,8 +40,8 @@ public class ThemeValidationUtil {
             .compile("themes\\/([\\s\\S]+?)\\/theme.json");
 
     public static boolean themeConfigurationChanged(Options options,
-            JsonObject statsJson,
-            FrontendDependenciesScanner frontendDependencies) {
+                                                    JsonObject statsJson,
+                                                    FrontendDependenciesScanner frontendDependencies, ClassFinder finder) {
         Map<String, JsonObject> themeJsonContents = new HashMap<>();
 
         if (options.getJarFiles() != null) {
@@ -54,8 +55,8 @@ public class ThemeValidationUtil {
                 .ofNullable(frontendDependencies.getThemeDefinition())
                 .map(ThemeDefinition::getName).filter(name -> !name.isBlank());
         Optional<JsonObject> projectThemeJson = maybeThemeName
-                .flatMap(themeName -> ThemeUtils.getThemeJson(
-                        options.getFrontendDirectory(), themeName));
+                .flatMap(themeName -> ThemeUtils.getThemeJson(themeName,
+                        options));
         String projectThemeName = maybeThemeName.orElse(null);
 
         JsonObject statsThemeJson = statsJson.getObject("themeJsonContents");
@@ -84,7 +85,7 @@ public class ThemeValidationUtil {
             }
 
             collectThemeJsonContentsInFrontend(options, themeJsonContents, key,
-                    projectThemeJson.get());
+                    projectThemeJson.get(), finder);
         }
 
         for (Map.Entry<String, JsonObject> themeContent : themeJsonContents
@@ -125,17 +126,17 @@ public class ThemeValidationUtil {
     }
 
     private static void collectThemeJsonContentsInFrontend(Options options,
-            Map<String, JsonObject> themeJsonContents, String themeName,
-            JsonObject themeJson) {
+                                                           Map<String, JsonObject> themeJsonContents, String themeName,
+                                                           JsonObject themeJson, ClassFinder finder) {
         Optional<String> parentThemeInFrontend = ThemeUtils
                 .getParentThemeName(themeJson);
         if (parentThemeInFrontend.isPresent()) {
             String parentThemeName = parentThemeInFrontend.get();
-            Optional<JsonObject> parentThemeJson = ThemeUtils.getThemeJson(
-                    options.getFrontendDirectory(), parentThemeName);
+            Optional<JsonObject> parentThemeJson =
+                    ThemeUtils.getThemeJson(parentThemeName, options);
             parentThemeJson.ifPresent(
                     jsonObject -> collectThemeJsonContentsInFrontend(options,
-                            themeJsonContents, parentThemeName, jsonObject));
+                            themeJsonContents, parentThemeName, jsonObject, finder));
         }
 
         themeJsonContents.put(themeName, themeJson);

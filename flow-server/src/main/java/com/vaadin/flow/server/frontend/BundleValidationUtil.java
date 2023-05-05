@@ -162,7 +162,7 @@ public final class BundleValidationUtil {
         }
 
         if (ThemeValidationUtil.themeConfigurationChanged(options, statsJson,
-                frontendDependencies)) {
+                frontendDependencies, finder)) {
             UsageStatistics.markAsUsed(
                     "flow/rebundle-reason-changed-theme-config", null);
             return true;

@@ -16,12 +16,25 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+
+import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.flow.theme.ThemeDefinition;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
+import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 
 /**
  * Copies production bundle files from pre-compiled bundle JAR into a folder
@@ -35,8 +48,11 @@ public class TaskCopyBundleFiles implements FallibleCommand {
 
     private final Options options;
 
-    public TaskCopyBundleFiles(Options options) {
+    private final FrontendDependenciesScanner frontendDependenciesScanner;
+
+    public TaskCopyBundleFiles(Options options, FrontendDependenciesScanner frontendDependencies) {
         this.options = options;
+        this.frontendDependenciesScanner = frontendDependencies;
     }
 
     @Override
@@ -61,6 +77,42 @@ public class TaskCopyBundleFiles implements FallibleCommand {
                     options.getResourceOutputDirectory(), "**/*.*");
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
+        }
+
+        File localThemesRoot = new File(options.getFrontendDirectory(),
+                APPLICATION_THEME_ROOT);
+        if (localThemesRoot.exists()) {
+            File target = new File(options.getResourceOutputDirectory(),
+                    Paths.get(Constants.VAADIN_WEBAPP, Constants.VAADIN_MAPPING, "static",
+                            APPLICATION_THEME_ROOT).toString());
+            File[] localThemes = localThemesRoot.listFiles(File::isDirectory);
+            if (localThemes == null) {
+                throw new IllegalStateException();
+            }
+            for (File theme : localThemes) {
+                try {
+                    FileUtils.copyDirectory(theme, new File(target, theme.getName()));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+
+        ThemeDefinition themeDefinition = frontendDependenciesScanner.getThemeDefinition();
+        if (themeDefinition != null) {
+            File statsJsonFile = new File(options.getResourceOutputDirectory(),
+                    "config/stats.json");
+            try {
+                JsonObject statsJsonContent = Json.parse(FileUtils.readFileToString(statsJsonFile,
+                        StandardCharsets.UTF_8));
+                statsJsonContent.put("application-theme", themeDefinition.getName());
+                FileUtils.write(statsJsonFile,
+                        JsonUtil.stringify(statsJsonContent, 2) + "\n",
+                        StandardCharsets.UTF_8.name());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }
