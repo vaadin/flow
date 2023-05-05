@@ -482,9 +482,6 @@ public class BuildFrontendUtil {
                     String.format("Failed to run %s due to an error", toolName),
                     e);
         }
-
-        // Check License
-        validateLicenses(adapter);
     }
 
     /**

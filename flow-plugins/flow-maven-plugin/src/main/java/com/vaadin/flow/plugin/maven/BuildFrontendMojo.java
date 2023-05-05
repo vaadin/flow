@@ -127,10 +127,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                 throw new MojoExecutionException(exception.getMessage(),
                         exception);
             }
-        } else {
-            LicenseChecker.setStrictOffline(true);
-            BuildFrontendUtil.validateLicenses(this);
         }
+        LicenseChecker.setStrictOffline(true);
+        BuildFrontendUtil.validateLicenses(this);
 
         BuildFrontendUtil.updateBuildFile(this);
 

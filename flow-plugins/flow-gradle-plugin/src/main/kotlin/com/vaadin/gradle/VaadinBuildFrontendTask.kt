@@ -74,9 +74,9 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
         if (adapter.generateBundle() && BundleValidationUtil.needsBundleBuild
                 (adapter.servletResourceOutputDirectory())) {
             BuildFrontendUtil.runFrontendBuild(adapter)
-        } else {
-            logger.info("Not running webpack since generateBundle is false")
         }
+        LicenseChecker.setStrictOffline(true)
+        BuildFrontendUtil.validateLicenses(this)
 
         BuildFrontendUtil.updateBuildFile(adapter)
     }
