@@ -289,6 +289,7 @@
                 <module>test-router-custom-context</module>
                 <module>test-live-reload</module>
                 <module>test-live-reload-multimodule</module>
+                <module>test-live-reload-multimodule/pom-devbundle.xml</module>
                 <module>test-redeployment</module>
 
                 <module>test-scalability</module>

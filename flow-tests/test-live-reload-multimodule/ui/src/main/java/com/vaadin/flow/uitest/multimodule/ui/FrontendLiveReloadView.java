@@ -39,6 +39,7 @@ public class FrontendLiveReloadView extends Div {
 
     public FrontendLiveReloadView() {
         add(new ProjectFolderInfo());
+        add(new ProjectHotdeployInfo());
         add(new InFrontend());
         add(new InResourcesFrontend());
     }
