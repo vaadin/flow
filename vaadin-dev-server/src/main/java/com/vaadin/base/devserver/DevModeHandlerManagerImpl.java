@@ -19,6 +19,7 @@ import jakarta.servlet.annotation.HandlesTypes;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -62,7 +63,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     private DevModeHandler devModeHandler;
     private BrowserLauncher browserLauncher;
-    private Set<ThemeLiveUpdater> themeLiveUpdaters;
+    private Set<ThemeLiveUpdater> themeLiveUpdaters = new HashSet<>();
 
     @Override
     public Class<?>[] getHandlesTypes() {
@@ -133,6 +134,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         for (ThemeLiveUpdater themeLiveUpdater : themeLiveUpdaters) {
             themeLiveUpdater.stop();
         }
+        themeLiveUpdaters.clear();
     }
 
     @Override
