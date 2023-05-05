@@ -73,7 +73,6 @@
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
                 <configuration>
-                    <productionMode>false</productionMode>
                     <requireHomeNodeExec>true</requireHomeNodeExec>
                     <nodeAutoUpdate>true</nodeAutoUpdate>
                 </configuration>
