@@ -58,7 +58,9 @@ public class NodeInstaller {
 
     public static final String PROVIDED_VERSION = "provided";
 
-    private static final int MAX_DOWNLOAD_ATTEMPS = 3;
+    private static final int MAX_DOWNLOAD_ATTEMPS = 5;
+
+    private static final int DOWNLOAD_ATTEMPT_DELAY = 5;
 
     private final Object lock = new Object();
 
@@ -522,7 +524,12 @@ public class NodeInstaller {
 
                     getLogger().debug("Error during downloading " + downloadUrl,
                             e);
-                    getLogger().warn("Download failed, retrying...");
+                    getLogger().warn("Download failed, retrying in "
+                            + DOWNLOAD_ATTEMPT_DELAY + "s...");
+                    try {
+                        Thread.sleep(DOWNLOAD_ATTEMPT_DELAY * 1000);
+                    } catch (InterruptedException e1) {
+                    }
                 }
 
             }

@@ -102,9 +102,6 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
-                <configuration>
-                    <productionMode>false</productionMode>
-                </configuration>
             </plugin>
         </plugins>
     </build>
