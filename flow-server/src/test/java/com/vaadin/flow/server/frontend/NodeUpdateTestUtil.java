@@ -107,11 +107,17 @@ public class NodeUpdateTestUtil {
     void createExpectedImports(File directoryWithImportsJs,
             File nodeModulesPath) throws IOException {
         for (String expectedImport : getExpectedImports()) {
-            File newFile = resolveImportFile(directoryWithImportsJs,
-                    nodeModulesPath, expectedImport);
-            newFile.getParentFile().mkdirs();
-            Assert.assertTrue(newFile.createNewFile());
+            createExpectedImport(directoryWithImportsJs, nodeModulesPath,
+                    expectedImport);
         }
+    }
+
+    void createExpectedImport(File directoryWithImportsJs, File nodeModulesPath,
+            String expectedImport) throws IOException {
+        File newFile = resolveImportFile(directoryWithImportsJs,
+                nodeModulesPath, expectedImport);
+        newFile.getParentFile().mkdirs();
+        Assert.assertTrue(newFile.createNewFile());
     }
 
     void deleteExpectedImports(File directoryWithImportsJs,

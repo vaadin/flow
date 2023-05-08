@@ -285,8 +285,8 @@ public class DevModeInitializer implements Serializable {
                         Arrays.asList(additionalPostinstallPackages))
                 .withFrontendHotdeploy(
                         mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
-                .withDevBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE);
-        ;
+                .withBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE);
+
         NodeTasks tasks = new NodeTasks(options);
 
         Runnable runnable = () -> {

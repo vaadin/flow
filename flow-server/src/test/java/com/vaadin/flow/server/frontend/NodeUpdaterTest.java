@@ -22,8 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.MatcherAssert;
@@ -84,22 +82,28 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void getGeneratedModules_should_excludeByFileName()
+    public void getGeneratedModules_should_includeOnlyWebComponents()
             throws IOException {
-        File generated = temporaryFolder.newFolder();
-        File fileA = new File(generated, "a.js");
-        File fileB = new File(generated, "b.js");
+        File frontend = temporaryFolder.newFolder();
+        File generated = new File(frontend, FrontendUtils.GENERATED);
+        File flow = new File(generated, "flow");
+        File webComponents = new File(flow, "web-components");
+        File fileA = new File(webComponents, "a.js");
+        File fileB = new File(webComponents, "b.js");
         File fileC = new File(generated, "c.js");
-        fileA.createNewFile();
-        fileB.createNewFile();
-        fileC.createNewFile();
+        create(fileA);
+        create(fileB);
+        create(fileC);
 
-        Set<String> modules = NodeUpdater.getGeneratedModules(generated,
-                Stream.of("a.js", "/b.js").collect(Collectors.toSet()));
+        Set<String> modules = NodeUpdater.getGeneratedModules(frontend);
 
-        Assert.assertEquals(1, modules.size());
-        // GENERATED/ is an added prefix for files from this method
-        Assert.assertTrue(modules.contains("c.js"));
+        Assert.assertEquals(
+                Set.of("web-components/a.js", "web-components/b.js"), modules);
+    }
+
+    private void create(File file) throws IOException {
+        file.getParentFile().mkdirs();
+        file.createNewFile();
     }
 
     @Test

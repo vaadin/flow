@@ -55,11 +55,16 @@ public class FeatureFlags implements Serializable {
             false,
             "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");
     public static final Feature COLLABORATION_ENGINE_BACKEND = new Feature(
-            "Collaboration Engine backend for clustering support",
+            "Collaboration Kit backend for clustering support",
             "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
     public static final Feature THEME_EDITOR = new Feature(
             "Theme Editor (Free Preview)", "themeEditor", null, true, null);
+
+    public static final Feature SIDE_NAV_COMPONENT = new Feature(
+            "SideNav component (Experimental)", "sideNavComponent", null, true,
+            "com.vaadin.flow.component.sidenav.SideNav");
+
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -79,6 +84,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
         features.add(new Feature(THEME_EDITOR));
+        features.add(new Feature(SIDE_NAV_COMPONENT));
         loadProperties();
     }
 

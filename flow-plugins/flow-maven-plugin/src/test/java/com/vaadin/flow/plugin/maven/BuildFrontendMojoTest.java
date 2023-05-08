@@ -191,6 +191,8 @@ public class BuildFrontendMojoTest {
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
                 Paths.get(projectBase.toString(), "target").toString());
+        ReflectionUtils.setVariableValueInObject(mojo, "postinstallPackages",
+                Collections.emptyList());
         Mockito.when(mojo.getJarFiles()).thenReturn(
                 Set.of(jarResourcesSource.getParentFile().getParentFile()));
 
@@ -423,11 +425,11 @@ public class BuildFrontendMojoTest {
             throws Exception {
         JsonObject json = TestUtils.getInitialPackageJson();
         JsonObject dependencies = Json.createObject();
-        // Add dependencies foo-bar and bar-foo
-        dependencies.put("foo", "bar");
-        dependencies.put("bar", "foo");
-        // Make foo framework handled
-        json.getObject("vaadin").getObject("dependencies").put("foo", "bar");
+        dependencies.put("proj4", "2.9.0");
+        dependencies.put("line-awesome", "1.3.0");
+        // Make proj4 framework handled
+        json.getObject("vaadin").getObject("dependencies").put("proj4",
+                "2.9.0");
         json.put("dependencies", dependencies);
         FileUtils.fileWrite(packageJson, "UTF-8", json.toJson());
 
@@ -435,12 +437,13 @@ public class BuildFrontendMojoTest {
         JsonObject packageJsonObject = getPackageJson(packageJson);
         dependencies = packageJsonObject.getObject("dependencies");
 
-        assertContainsPackage(dependencies, "@vaadin/vaadin-button",
+        assertContainsPackage(dependencies, "@vaadin/button",
                 "@vaadin/vaadin-element-mixin");
 
-        Assert.assertFalse("Foo should have been removed",
-                dependencies.hasKey("foo"));
-        Assert.assertTrue("Bar should remain", dependencies.hasKey("bar"));
+        Assert.assertFalse("proj4 should have been removed",
+                dependencies.hasKey("proj4"));
+        Assert.assertTrue("line-awesome should remain",
+                dependencies.hasKey("line-awesome"));
     }
 
     @Test
@@ -607,11 +610,11 @@ public class BuildFrontendMojoTest {
                 "@vaadin/vaadin-lumo-styles/typography.js",
                 "@vaadin/vaadin-lumo-styles/color.js",
                 "@vaadin/vaadin-lumo-styles/sizing.js",
-                "@vaadin/vaadin-date-picker/theme/lumo/vaadin-date-picker.js",
+                "@vaadin/vaadin-date-picker/src/vaadin-date-picker.js",
                 "@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js",
                 "@vaadin/vaadin-element-mixin/vaadin-element-mixin.js",
-                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
+                "@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js",
+                "@vaadin/vaadin-mixed-component/src/vaadin-something-else.js",
                 "./generated/jar-resources/ExampleConnector.js",
                 "./local-p3-template.js", "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",

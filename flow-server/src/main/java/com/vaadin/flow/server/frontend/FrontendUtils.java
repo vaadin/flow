@@ -52,6 +52,7 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import elemental.json.JsonObject;
 
@@ -581,12 +582,12 @@ public class FrontendUtils {
      *            jar file to get (no resource folder should be added)
      * @return resource as String or {@code null} if not found
      */
-    public static String getJarResourceString(String jarImport) {
-        final ClassLoader classLoader = FrontendUtils.class.getClassLoader();
-        URL resource = classLoader
+    public static String getJarResourceString(String jarImport,
+            ClassFinder finder) {
+        URL resource = finder
                 .getResource(RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
         if (resource == null) {
-            resource = classLoader.getResource(
+            resource = finder.getResource(
                     COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
         }
 

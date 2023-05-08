@@ -24,7 +24,7 @@ public class ScannerCssTest {
                 CssClass2.class);
         assertEquals(3, deps.getEntryPoints().size());
         for (EntryPointData entryPoint : deps.getEntryPoints()) {
-            if (entryPoint.name.equals(UI.class.getName())) {
+            if (entryPoint.getName().equals(UI.class.getName())) {
                 continue;
             }
             assertEquals("Wrong amount of css in " + entryPoint.getName(), 4,
@@ -46,7 +46,7 @@ public class ScannerCssTest {
         FrontendDependencies deps = getFrontendDependencies(CssClass3.class);
         assertEquals(2, deps.getEntryPoints().size());
         for (EntryPointData entryPoint : deps.getEntryPoints()) {
-            if (entryPoint.name.equals(UI.class.getName())) {
+            if (entryPoint.getName().equals(UI.class.getName())) {
                 continue;
             }
             assertEquals("Wrong amount of css in " + entryPoint.getName(), 4,
@@ -66,7 +66,7 @@ public class ScannerCssTest {
     public void should_sumarizeCssImports() throws Exception {
         FrontendDependencies deps = getFrontendDependencies(CssClass1.class,
                 CssClass2.class);
-        assertEquals(4, deps.getCss().size());
+        DepsTests.assertImportCount(4, deps.getCss());
     }
 
     // Moved here from ScannerTestComponents. Otherwise this would affect

@@ -35,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -548,6 +549,51 @@ public class TaskUpdatePackagesNpmTest {
                 && newPackageJson.getObject("overrides").hasKey("localdep"));
     }
 
+    @Test
+    public void platformVersion_returnsExpectedVersion() throws IOException {
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+
+        //@formatter:off
+        String versionJsonString = "{"
+                        + "  \"platform\": \"21.0.0\"\n"
+                        + "}\n";
+        //@formatter:on
+        FileUtils.write(versionJsonFile, versionJsonString,
+                StandardCharsets.UTF_8);
+
+        Optional<String> vaadinVersion = task.getVaadinVersion();
+
+        Assert.assertTrue("versions.json should have had the platform field",
+                vaadinVersion.isPresent());
+        Assert.assertEquals("Received faulty version", "21.0.0",
+                vaadinVersion.get());
+
+        //@formatter:off
+        versionJsonString = "{"
+                + "}\n";
+        //@formatter:on
+        FileUtils.write(versionJsonFile, versionJsonString,
+                StandardCharsets.UTF_8);
+        vaadinVersion = task.getVaadinVersion();
+
+        Assert.assertFalse("versions.json should not contain platform version",
+                vaadinVersion.isPresent());
+    }
+
+    @Test
+    public void noVersionsJson_getVersionsDoesntThrow() {
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(null);
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+
+        Optional<String> vaadinVersion = task.getVaadinVersion();
+
+        Assert.assertFalse("versions.json should not contain platform version",
+                vaadinVersion.isPresent());
+    }
+
     private void createBasicVaadinVersionsJson() {
         createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
                 PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
@@ -600,7 +646,8 @@ public class TaskUpdatePackagesNpmTest {
         Mockito.when(frontendDependenciesScanner.getPackages())
                 .thenReturn(applicationDependencies);
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm);
+                .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm)
+                .withBundleBuild(true);
 
         return new TaskUpdatePackages(finder, frontendDependenciesScanner,
                 options) {

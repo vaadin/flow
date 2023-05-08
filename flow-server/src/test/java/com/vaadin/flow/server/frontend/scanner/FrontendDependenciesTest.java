@@ -15,13 +15,8 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,6 +37,7 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.internal.DependencyTrigger;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.ErrorComponent;
@@ -60,29 +56,14 @@ public class FrontendDependenciesTest {
 
     @Before
     public void setUp() throws ClassNotFoundException {
-        Mockito.when(classFinder.loadClass(Route.class.getName()))
-                .thenReturn((Class) Route.class);
-
-        Mockito.when(classFinder.loadClass(UIInitListener.class.getName()))
-                .thenReturn((Class) UIInitListener.class);
-
-        Mockito.when(classFinder
-                .loadClass(VaadinServiceInitListener.class.getName()))
-                .thenReturn((Class) VaadinServiceInitListener.class);
-
-        Mockito.when(
-                classFinder.loadClass(WebComponentExporter.class.getName()))
-                .thenReturn((Class) WebComponentExporter.class);
-
-        Mockito.when(classFinder.loadClass(HasErrorParameter.class.getName()))
-                .thenReturn((Class) HasErrorParameter.class);
-
-        Mockito.when(classFinder.loadClass(FrontendDependencies.LUMO))
-                .thenReturn((Class) FakeLumo.class);
-
-        Mockito.when(
-                classFinder.loadClass(AppShellConfigurator.class.getName()))
-                .thenReturn((Class) AppShellConfigurator.class);
+        Mockito.when(classFinder.loadClass(Mockito.anyString()))
+                .thenAnswer(q -> {
+                    String className = q.getArgument(0);
+                    if (className.equals(FrontendDependencies.LUMO)) {
+                        return FakeLumo.class;
+                    }
+                    return Class.forName(className);
+                });
 
         Mockito.doAnswer(invocation -> FrontendDependenciesTest.class
                 .getClassLoader().getResource(invocation.getArgument(0)))
@@ -98,13 +79,9 @@ public class FrontendDependenciesTest {
                 .thenReturn(Collections.singleton(RouteComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
-        List<String> modules = dependencies.getModules();
-        Assert.assertTrue(1 <= modules.size());
-        Assert.assertTrue(modules.contains("foo.js"));
 
-        Set<String> scripts = dependencies.getScripts();
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("bar.js", scripts.iterator().next());
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(), "foo.js");
+        DepsTests.assertImports(dependencies.getScripts(), "bar.js");
     }
 
     @Test
@@ -198,13 +175,9 @@ public class FrontendDependenciesTest {
                 .thenReturn(Collections.singleton(ErrorComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
-        List<String> modules = dependencies.getModules();
-        Assert.assertTrue(1 <= modules.size());
-        Assert.assertTrue(modules.contains("./src/bar.js"));
-
-        Set<String> scripts = dependencies.getScripts();
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("./src/baz.js", scripts.iterator().next());
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(),
+                "./src/bar.js");
+        DepsTests.assertImports(dependencies.getScripts(), "./src/baz.js");
     }
 
     @Test
@@ -213,13 +186,10 @@ public class FrontendDependenciesTest {
                 .thenReturn(Collections.singleton(MyUIInitListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
-        List<String> modules = dependencies.getModules();
-        Assert.assertTrue(1 <= modules.size());
-        Assert.assertTrue(modules.contains("baz.js"));
 
-        Set<String> scripts = dependencies.getScripts();
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("foobar.js", scripts.iterator().next());
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(), "baz.js");
+        DepsTests.assertImports(dependencies.getScripts(), "foobar.js");
+
     }
 
     @Test
@@ -228,13 +198,8 @@ public class FrontendDependenciesTest {
                 .thenReturn(Collections.singleton(MyServiceListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
-        List<String> modules = dependencies.getModules();
-        Assert.assertTrue(1 <= modules.size());
-        Assert.assertTrue(modules.contains("baz.js"));
-
-        Set<String> scripts = dependencies.getScripts();
-        Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("foobar.js", scripts.iterator().next());
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(), "baz.js");
+        DepsTests.assertImports(dependencies.getScripts(), "foobar.js");
     }
 
     @Test
@@ -244,11 +209,8 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
 
-        Set<String> scripts = dependencies.getScripts();
-        Assert.assertEquals(LinkedHashSet.class, scripts.getClass());
-
-        Assert.assertEquals(new ArrayList<>(dependencies.getScripts()),
-                Arrays.asList("a.js", "b.js", "c.js"));
+        DepsTests.assertImports(dependencies.getScripts(), "a.js", "b.js",
+                "c.js");
     }
 
     // flow #6524
@@ -260,11 +222,8 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
 
-        List<String> modules = dependencies.getModules();
-        Assert.assertTrue(3 <= modules.size());
-        Assert.assertTrue(modules.contains("foo.js"));
-        Assert.assertTrue(modules.contains("bar.js"));
-        Assert.assertTrue(modules.contains("baz.js"));
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(), "foo.js",
+                "baz.js", "bar.js");
     }
 
     @Test
@@ -304,11 +263,8 @@ public class FrontendDependenciesTest {
 
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
-        List<String> modules = dependencies.getModules();
-
-        Assert.assertEquals("Should contain UI and Referenced modules", 2,
-                modules.size());
-        Assert.assertTrue(modules.contains("reference.js"));
+        DepsTests.assertImports(dependencies.getModules(), "reference.js",
+                "@vaadin/common-frontend/ConnectionIndicator.js");
     }
 
     @Test // #9861
@@ -327,12 +283,8 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, true);
 
-        List<String> modules = dependencies.getModules();
-
-        Assert.assertEquals(4, dependencies.getEntryPoints().size());
-        Assert.assertEquals("Should contain UI and Referenced modules", 2,
-                modules.size());
-        Assert.assertTrue(modules.contains("reference.js"));
+        DepsTests.assertImports(dependencies.getModules(), "reference.js",
+                "@vaadin/common-frontend/ConnectionIndicator.js");
     }
 
     public static class MyComponent extends Component {

@@ -23,9 +23,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +38,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -121,14 +120,14 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
         FrontendDependencies deps = new FrontendDependencies(finder) {
 
             @Override
-            public List<String> getModules() {
-                return Stream.of("./src/main-template.js")
-                        .collect(Collectors.toList());
+            public Map<ChunkInfo, List<String>> getModules() {
+                return Collections.singletonMap(ChunkInfo.GLOBAL,
+                        List.of("./src/main-template.js"));
             }
 
             @Override
-            public Set<String> getScripts() {
-                return Collections.emptySet();
+            public Map<ChunkInfo, List<String>> getScripts() {
+                return Collections.emptyMap();
             }
 
             @Override
