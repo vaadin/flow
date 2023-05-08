@@ -142,7 +142,6 @@ public class BuildFrontendMojoTest {
                 "jar-resources-source/META-INF/frontend");
         jarResourcesSource.mkdirs();
 
-
         File statsfile = new File(resourceOutputDirectory,
                 Constants.VAADIN_CONFIGURATION + "/stats.json");
 
