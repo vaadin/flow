@@ -21,5 +21,17 @@ package com.vaadin.flow.server;
  * One of production, development using livereload or development using bundle
  */
 public enum Mode {
-    PRODUCTION, DEVELOPMENT_FRONTEND_LIVERELOAD, DEVELOPMENT_BUNDLE
+    PRODUCTION("production"), DEVELOPMENT_FRONTEND_LIVERELOAD(
+            "development"), DEVELOPMENT_BUNDLE("development");
+
+    private final String name;
+
+    Mode(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

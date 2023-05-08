@@ -29,7 +29,7 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <exclude.it.tests>ByteCodeScanningIT</exclude.it.tests>
+        <exclude.it.tests>ByteCodeScanningIT,LazyIT</exclude.it.tests>
         <surefire.reportNameSuffix>devmode</surefire.reportNameSuffix>
     </properties>
 

@@ -26,6 +26,9 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.StringUtil;
+
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -84,6 +87,30 @@ public final class BundleUtils {
                     "Unable to parse META-INF/VAADIN/config/stats.json", e);
             return Json.createObject();
         }
+    }
+
+    /**
+     * Gets the id for a chunk defined by the given class.
+     *
+     * @param componentClass
+     *            the class
+     * @return an identifier for the component class that does not reveal the
+     *         name of the component class
+     */
+    public static String getChunkId(Class<? extends Component> componentClass) {
+        return getChunkId(componentClass.getName());
+    }
+
+    /**
+     * Gets the id for a chunk defined by the given class.
+     *
+     * @param className
+     *            the name of the class
+     * @return an identifier for the component class that does not reveal the
+     *         name of the component class
+     */
+    public static String getChunkId(String className) {
+        return StringUtil.getHash(className, StandardCharsets.UTF_8);
     }
 
     private static Logger getLogger() {

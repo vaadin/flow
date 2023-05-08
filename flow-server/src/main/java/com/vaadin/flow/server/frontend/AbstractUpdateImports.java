@@ -46,6 +46,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
+import com.vaadin.flow.server.frontend.scanner.EntryPointType;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -91,6 +92,7 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private final File generatedFlowImports;
     private final File generatedFlowDefinitions;
+    private File chunkFolder;
 
     AbstractUpdateImports(Options options, FrontendDependenciesScanner scanner,
             ClassFinder classFinder) {
@@ -103,6 +105,9 @@ abstract class AbstractUpdateImports implements Runnable {
         generatedFlowDefinitions = new File(
                 generatedFlowImports.getParentFile(),
                 FrontendUtils.IMPORTS_D_TS_NAME);
+        this.chunkFolder = new File(generatedFlowImports.getParentFile(),
+                "chunks");
+
     }
 
     @Override
@@ -118,6 +123,13 @@ abstract class AbstractUpdateImports implements Runnable {
         try {
             for (Entry<File, List<String>> output : outputFiles.entrySet()) {
                 FileIOUtils.writeIfChanged(output.getKey(), output.getValue());
+            }
+            if (chunkFolder.exists() && chunkFolder.isDirectory()) {
+                for (File existingChunk : chunkFolder.listFiles()) {
+                    if (!outputFiles.containsKey(existingChunk)) {
+                        existingChunk.delete();
+                    }
+                }
             }
         } catch (IOException e) {
             throw new IllegalStateException(
@@ -139,23 +151,98 @@ abstract class AbstractUpdateImports implements Runnable {
             Map<ChunkInfo, List<String>> javascript) {
         Map<File, List<String>> files = new HashMap<>();
 
-        List<String> eagerImports = new ArrayList<>();
-
+        Map<ChunkInfo, List<String>> lazyJavascript = new LinkedHashMap<>();
+        List<String> eagerJavascript = new ArrayList<>();
+        Map<ChunkInfo, List<String>> lazyCss = new LinkedHashMap<>();
+        List<CssData> eagerCssData = new ArrayList<>();
         for (Entry<ChunkInfo, List<String>> entry : javascript.entrySet()) {
-            eagerImports.addAll(entry.getValue());
+            if (isLazyRoute(entry.getKey())) {
+                lazyJavascript.put(entry.getKey(), entry.getValue());
+            } else {
+                eagerJavascript.addAll(entry.getValue());
+            }
+        }
+
+        for (Entry<ChunkInfo, List<CssData>> entry : css.entrySet()) {
+            if (isLazyRoute(entry.getKey())) {
+                List<String> cssLines = getCssLines(entry.getValue());
+                if (!cssLines.isEmpty()) {
+                    lazyCss.put(entry.getKey(), cssLines);
+                }
+            } else {
+                eagerCssData.addAll(entry.getValue());
+            }
+        }
+
+        List<String> chunkLoader = new ArrayList<>();
+        if (!lazyJavascript.isEmpty() || !lazyCss.isEmpty()) {
+            chunkLoader.add("");
+            chunkLoader.add("const loadOnDemand = (key) => {");
+            chunkLoader.add("  const pending = [];");
+            for (ChunkInfo chunkInfo : merge(lazyJavascript.keySet(),
+                    lazyCss.keySet())) {
+                String routeHash = BundleUtils.getChunkId(chunkInfo.getName());
+                String chunkFilename = "chunk-" + routeHash + ".js";
+
+                String ifClauses = chunkInfo.getDependencyTriggers().stream()
+                        .map(cls -> BundleUtils.getChunkId(cls))
+                        .map(hash -> "key === '" + hash + "'")
+                        .collect(Collectors.joining(" || "));
+                chunkLoader.add("  if (" + ifClauses + ") {");
+                chunkLoader.add("    pending.push(import('./chunks/"
+                        + chunkFilename + "'));");
+                chunkLoader.add("  }");
+
+                List<String> chunkLines = new ArrayList<>();
+                if (lazyJavascript.containsKey(chunkInfo)) {
+                    chunkLines
+                            .addAll(getModuleLines(javascript.get(chunkInfo)));
+                }
+                if (lazyCss.containsKey(chunkInfo)) {
+                    chunkLines.add(IMPORT_INJECT);
+                    chunkLines.add(THEMABLE_MIXIN_IMPORT);
+                    chunkLines.addAll(lazyCss.get(chunkInfo));
+                }
+                File chunkFile = new File(chunkFolder, chunkFilename);
+                files.put(chunkFile, chunkLines);
+            }
+
+            chunkLoader.add("  return Promise.all(pending);");
+            chunkLoader.add("}");
+            chunkLoader.add("");
+        } else {
+            chunkLoader.add(
+                    "const loadOnDemand = (key) => { return Promise.resolve(0); }");
         }
 
         List<String> mainLines = new ArrayList<>();
-        mainLines.add(IMPORT_INJECT);
 
-        mainLines.addAll(getCssLines(css));
-        mainLines.addAll(getModuleLines(eagerImports));
+        // Convert eager CSS data to JS and deduplicate it
+        List<String> mainCssLines = getCssLines(eagerCssData);
+        if (!mainCssLines.isEmpty()) {
+            mainLines.add(IMPORT_INJECT);
+            mainLines.add(THEMABLE_MIXIN_IMPORT);
+            mainLines.addAll(mainCssLines);
+        }
+        mainLines.addAll(getModuleLines(eagerJavascript));
+        mainLines.addAll(chunkLoader);
+        mainLines.add("window.Vaadin = window.Vaadin || {};");
+        mainLines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
+        mainLines.add("window.Vaadin.Flow.loadOnDemand = loadOnDemand;");
 
         files.put(generatedFlowImports, mainLines);
         files.put(generatedFlowDefinitions,
                 Collections.singletonList("export {}"));
 
         return files;
+    }
+
+    private boolean isLazyRoute(ChunkInfo key) {
+        if (key.getType() != EntryPointType.ROUTE) {
+            return false;
+        }
+
+        return !key.isEager();
     }
 
     /**
@@ -207,20 +294,28 @@ abstract class AbstractUpdateImports implements Runnable {
         return FrontendUtils.FRONTEND_GENERATED_FLOW_IMPORT_PATH + module;
     }
 
-    protected List<String> getCssLines(Map<ChunkInfo, List<CssData>> css) {
+    /**
+     * Returns the JS code lines representing the CSS data provided as a
+     * parameter.
+     * <p>
+     * Deduplicates the data so that each CSSData instance is loaded / injected
+     * only once.
+     *
+     * @param css
+     *            the CSS import data
+     * @return the JS statements needed to import and apply the CSS data
+     */
+    protected List<String> getCssLines(List<CssData> css) {
         List<String> lines = new ArrayList<>();
 
         Set<String> cssNotFound = new HashSet<>();
-
-        for (ChunkInfo key : css.keySet()) {
-
-            int i = 0;
-            for (CssData cssData : css.get(key)) {
-                if (!addCssLines(lines, cssData, i)) {
-                    cssNotFound.add(cssData.getValue());
-                }
-                i++;
+        LinkedHashSet<CssData> allCss = new LinkedHashSet<>(css);
+        int i = 0;
+        for (CssData cssData : allCss) {
+            if (!addCssLines(lines, cssData, i)) {
+                cssNotFound.add(cssData.getValue());
             }
+            i++;
         }
 
         if (!cssNotFound.isEmpty()) {
@@ -243,7 +338,6 @@ abstract class AbstractUpdateImports implements Runnable {
             throw new IllegalStateException(
                     notFoundMessage(cssNotFound, prefix, suffix));
         }
-        lines.add("");
         return lines;
     }
 
@@ -280,7 +374,7 @@ abstract class AbstractUpdateImports implements Runnable {
     private Map<ChunkInfo, List<String>> mergeJavascript(
             Map<ChunkInfo, List<String>> modules,
             Map<ChunkInfo, List<String>> scripts) {
-        Map<ChunkInfo, List<String>> result = new HashMap<>();
+        Map<ChunkInfo, List<String>> result = new LinkedHashMap<>();
         Collection<? extends String> generated = resolveGeneratedModules(
                 getGeneratedModules());
         for (Entry<ChunkInfo, List<String>> entry : modules.entrySet()) {
@@ -301,6 +395,12 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> result = new ArrayList<>();
         css.forEach((key, value) -> result.addAll(value));
         return result;
+    }
+
+    private Set<ChunkInfo> merge(Set<ChunkInfo> set1, Set<ChunkInfo> set2) {
+        Set<ChunkInfo> set = new HashSet<>(set1);
+        set.addAll(set2);
+        return set;
     }
 
     private Set<String> getUniqueEs6ImportPaths(Collection<String> modules) {
@@ -378,11 +478,10 @@ abstract class AbstractUpdateImports implements Runnable {
                     notFoundMessage(resourceNotFound, prefix, suffix));
         }
 
-        boolean devModeWithoutServer = !options.isProductionMode()
-                && !options.isFrontendHotdeploy()
-                && !options.isDevBundleBuild();
+        boolean needsNodeModules = options.isFrontendHotdeploy()
+                || options.isBundleBuild();
         if (!npmNotFound.isEmpty() && getLogger().isInfoEnabled()
-                && !devModeWithoutServer) {
+                && needsNodeModules) {
             getLogger().info(notFoundMessage(npmNotFound,
                     "Failed to find the following imports in the `node_modules` tree:",
                     getImportsNotFoundMessage()));
@@ -538,12 +637,6 @@ abstract class AbstractUpdateImports implements Runnable {
             optionals = ", " + optionalsMap.keySet().stream()
                     .map(k -> k + ": '" + optionalsMap.get(k) + "'")
                     .collect(Collectors.joining(", ", "{", "}"));
-        }
-
-        if (!lines.contains(THEMABLE_MIXIN_IMPORT)) {
-            // Imports are always needed for Vite CSS handling and extra imports
-            // is no harm
-            addLines(lines, THEMABLE_MIXIN_IMPORT);
         }
 
         if (cssData.getThemefor() != null || cssData.getId() != null) {
