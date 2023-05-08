@@ -15,8 +15,6 @@ import org.openqa.selenium.StaleElementReferenceException;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-import static org.junit.Assume.assumeTrue;
-
 @NotThreadSafe
 public class FrontendLiveReloadIT extends ChromeBrowserTest {
 
