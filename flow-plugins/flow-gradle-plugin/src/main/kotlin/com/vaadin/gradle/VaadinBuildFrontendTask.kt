@@ -19,6 +19,7 @@ import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.frontend.BundleValidationUtil
 import com.vaadin.flow.server.frontend.FrontendUtils
+import com.vaadin.pro.licensechecker.LicenseChecker
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.Jar
@@ -76,7 +77,7 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
             BuildFrontendUtil.runFrontendBuild(adapter)
         }
         LicenseChecker.setStrictOffline(true)
-        BuildFrontendUtil.validateLicenses(this)
+        BuildFrontendUtil.validateLicenses(adapter)
 
         BuildFrontendUtil.updateBuildFile(adapter)
     }
