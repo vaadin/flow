@@ -27,8 +27,6 @@ import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -49,18 +47,15 @@ public class TaskPrepareProdBundle implements FallibleCommand {
 
     private final Options options;
 
-    private final FrontendDependenciesScanner frontendDependenciesScanner;
-
-    public TaskPrepareProdBundle(Options options,
-            FrontendDependenciesScanner frontendDependencies) {
+    public TaskPrepareProdBundle(Options options) {
         this.options = options;
-        this.frontendDependenciesScanner = frontendDependencies;
     }
 
     @Override
     public void execute() throws ExecutionFailedException {
         copyBundleFilesFromJar();
         copyProjectThemes();
+        writePreCompiledMarker();
     }
 
     private void copyProjectThemes() {
@@ -106,6 +101,22 @@ public class TaskPrepareProdBundle implements FallibleCommand {
                     options.getResourceOutputDirectory(), "**/*.*");
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void writePreCompiledMarker() throws ExecutionFailedException {
+        try {
+            File statsJsonFile = new File(options.getResourceOutputDirectory(),
+                    "config/stats.json");
+            JsonObject statsJsonContent = Json.parse(FileUtils
+                    .readFileToString(statsJsonFile, StandardCharsets.UTF_8));
+            statsJsonContent.put("pre-compiled", true);
+            FileUtils.write(statsJsonFile,
+                    JsonUtil.stringify(statsJsonContent, 2) + "\n",
+                    StandardCharsets.UTF_8.name());
+        } catch (IOException e) {
+            throw new ExecutionFailedException(
+                    "Couldn't access stats.json file", e);
         }
     }
 }

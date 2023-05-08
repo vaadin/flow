@@ -58,6 +58,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -391,14 +392,15 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 .getDeploymentConfiguration();
         VaadinContext context = response.getService().getContext();
         if (config.getMode() == Mode.DEVELOPMENT_BUNDLE
-                || config.getMode() == Mode.PRODUCTION) {
+                || (config.getMode() == Mode.PRODUCTION
+                        && BundleUtils.isPreCompiledBundle())) {
             // Add styles.css link to the web component shadow DOM
-            BootstrapHandler.getStylesheetTags(context, config, "styles.css")
+            BootstrapHandler.getStylesheetTags(context, "styles.css")
                     .forEach(element -> ElementUtil.fromJsoup(element)
                             .ifPresent(elementsForShadows::add));
 
             // Add document.css link to the document
-            BootstrapHandler.getStylesheetLinks(context, config, "document.css")
+            BootstrapHandler.getStylesheetLinks(context, "document.css")
                     .forEach(link -> UI.getCurrent().getPage().executeJs(
                             BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG,
                             link));

@@ -88,6 +88,7 @@ import com.vaadin.flow.server.frontend.CssBundler;
 import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -1624,9 +1625,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *             if theme name cannot be extracted from file
      */
     protected static Collection<Element> getStylesheetTags(
-            VaadinContext context, AbstractConfiguration config,
-            String fileName) throws IOException {
-        return ThemeUtils.getActiveThemes(context, config).stream()
+            VaadinContext context, String fileName) throws IOException {
+        ApplicationConfiguration config = ApplicationConfiguration.get(context);
+        return ThemeUtils.getActiveThemes(context).stream()
                 .map(theme -> getStyleTag(theme, fileName, config)).toList();
     }
 
@@ -1637,18 +1638,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *
      * @param context
      *            the vaadin context
-     * @param config
-     *            deployment configuration
      * @param fileName
      *            the stylesheet file name to add a reference to
      * @return the collection of links to be added to the page
-     * @throws IOException
-     *             if theme name cannot be extracted from file
      */
     protected static Collection<String> getStylesheetLinks(
-            VaadinContext context, AbstractConfiguration config,
-            String fileName) throws IOException {
-        return ThemeUtils.getActiveThemes(context, config).stream()
+            VaadinContext context, String fileName) {
+        return ThemeUtils.getActiveThemes(context).stream()
                 .map(theme -> ThemeUtils.getThemeFilePath(theme, fileName))
                 .toList();
     }

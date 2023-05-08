@@ -115,8 +115,7 @@ public class NodeTasks implements FallibleCommand {
                 options.withRunNpmInstall(needBuild);
                 options.withBundleBuild(needBuild);
                 if (!needBuild) {
-                    commands.add(new TaskPrepareProdBundle(options,
-                            frontendDependencies));
+                    commands.add(new TaskPrepareProdBundle(options));
                 }
             } else if (options.isBundleBuild()) {
                 // The dev bundle check needs the frontendDependencies to be

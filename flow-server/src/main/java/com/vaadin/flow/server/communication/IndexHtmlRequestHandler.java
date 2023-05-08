@@ -48,6 +48,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -183,10 +184,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
         if (config.getMode() == Mode.DEVELOPMENT_BUNDLE
-                || config.getMode() == Mode.PRODUCTION) {
+                || (config.getMode() == Mode.PRODUCTION
+                        && BundleUtils.isPreCompiledBundle())) {
             try {
-                BootstrapHandler
-                        .getStylesheetTags(context, config, "styles.css")
+                BootstrapHandler.getStylesheetTags(context, "styles.css")
                         .forEach(link -> document.head().appendChild(link));
             } catch (IOException e) {
                 throw new UncheckedIOException(

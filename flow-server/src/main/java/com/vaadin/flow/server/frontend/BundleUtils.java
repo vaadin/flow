@@ -113,6 +113,18 @@ public final class BundleUtils {
         return StringUtil.getHash(className, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Returns whether the application uses pre-compiled production bundle or a
+     * custom bundle.
+     *
+     * @return <code>true</code> in case of pre-compiled bundle,
+     *         <code>false</code> otherwise
+     */
+    public static boolean isPreCompiledBundle() {
+        JsonObject stats = loadStatsJson();
+        return stats.hasKey("pre-compiled");
+    }
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(BundleUtils.class);
     }
