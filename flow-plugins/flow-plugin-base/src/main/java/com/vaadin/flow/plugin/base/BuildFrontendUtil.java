@@ -496,14 +496,14 @@ public class BuildFrontendUtil {
         String statsJsonContent = null;
         try {
             // First check for compiled bundle
-            URL statsJson = adapter.getClassFinder().getResource(
-                    Constants.VAADIN_SERVLET_RESOURCES + "config/stats.json");
-            if (statsJson == null) {
+            File statsFile = new File(adapter.servletResourceOutputDirectory(),
+                    Constants.VAADIN_CONFIGURATION + "/stats.json");
+            if (!statsFile.exists()) {
                 // If no compiled bundle available check for jar-bundle
                 statsJsonContent = BundleValidationUtil
                         .findProdBundleStatsJson(adapter.getClassFinder());
             } else {
-                statsJsonContent = IOUtils.toString(statsJson,
+                statsJsonContent = IOUtils.toString(statsFile.toURI().toURL(),
                         StandardCharsets.UTF_8);
             }
         } catch (IOException e) {
