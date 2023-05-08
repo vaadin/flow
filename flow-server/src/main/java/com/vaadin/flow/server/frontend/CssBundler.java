@@ -76,7 +76,8 @@ public class CssBundler {
                 // CSS file we are processing, not always relative to the theme
                 // folder
                 String relativePath = themeFolder.getParentFile().toPath()
-                        .relativize(potentialFile.toPath()).toString();
+                        .relativize(potentialFile.toPath()).toString()
+                        .replaceAll("\\\\", "/");
                 return "url('VAADIN/themes/" + relativePath + "')";
             }
 

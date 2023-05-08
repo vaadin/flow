@@ -32,21 +32,15 @@ public class NoAppBundleIT extends ChromeBrowserTest {
         Assert.assertFalse("No dev-bundle should be created",
                 new File(baseDir, Constants.DEV_BUNDLE_LOCATION).exists());
 
-        // should use default prod bundle
-        assertDefaultProdBundle(baseDir);
-
         Assert.assertFalse("No node_modules should be created",
                 new File(baseDir, "node_modules").exists());
 
-        // TODO: for default prod bundle these are still generated, see #16696
-        assertInDevMode(() -> {
-            Assert.assertFalse("No package.json should be created",
-                    new File(baseDir, "package.json").exists());
-            Assert.assertFalse("No vite generated should be created",
-                    new File(baseDir, "vite.generated.ts").exists());
-            Assert.assertFalse("No vite config should be created",
-                    new File(baseDir, "vite.config.ts").exists());
-        });
+        Assert.assertFalse("No package.json should be created",
+                new File(baseDir, "package.json").exists());
+        Assert.assertFalse("No vite generated should be created",
+                new File(baseDir, "vite.generated.ts").exists());
+        Assert.assertFalse("No vite config should be created",
+                new File(baseDir, "vite.config.ts").exists());
 
         Assert.assertFalse("No types should be created",
                 new File(baseDir, "types.d.ts").exists());
@@ -63,28 +57,4 @@ public class NoAppBundleIT extends ChromeBrowserTest {
                         || pageSource.contains("Could not navigate to"));
     }
 
-    private void assertDefaultProdBundle(File baseDir) throws IOException {
-        try {
-            findElement(By.tagName("vaadin-dev-tools"));
-        } catch (NoSuchElementException e) {
-            // prod mode
-            File indexHtml = new File(baseDir,
-                    "target/classes/META-INF/VAADIN/webapp/index.html");
-            Assert.assertTrue("Prod bundle should be copied",
-                    indexHtml.exists());
-            String indexHtmlContent = FileUtils.readFileToString(indexHtml,
-                    StandardCharsets.UTF_8);
-            Assert.assertTrue("Expected default production bundle to be used",
-                    indexHtmlContent.contains("default production bundle"));
-        }
-    }
-
-    private void assertInDevMode(Runnable assertCallback) {
-        try {
-            findElement(By.tagName("vaadin-dev-tools"));
-            assertCallback.run();
-        } catch (NoSuchElementException e) {
-            // ignore
-        }
-    }
 }

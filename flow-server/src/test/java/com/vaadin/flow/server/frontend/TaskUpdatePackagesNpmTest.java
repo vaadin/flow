@@ -646,7 +646,8 @@ public class TaskUpdatePackagesNpmTest {
         Mockito.when(frontendDependenciesScanner.getPackages())
                 .thenReturn(applicationDependencies);
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm);
+                .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm)
+                .withBundleBuild(true);
 
         return new TaskUpdatePackages(finder, frontendDependenciesScanner,
                 options) {

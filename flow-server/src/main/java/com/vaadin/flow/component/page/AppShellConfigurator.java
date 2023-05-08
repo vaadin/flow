@@ -48,7 +48,7 @@ import com.vaadin.flow.server.AppShellSettings;
  *
  * <p>
  * NOTE: the application shell class is the only valid target for the page
- * configuration annotations listed above. The application would fail to start
+ * configuration annotations listed below. The application would fail to start
  * if any of these annotations is wrongly placed on a class other than the
  * application shell class.
  * <p>
