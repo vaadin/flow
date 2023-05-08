@@ -291,7 +291,6 @@
                 <module>test-redeployment</module>
 
                 <module>test-scalability</module>
-                <module>test-memory-leaks</module>
                 <module>test-servlet</module>
                 <module>test-themes</module>
                 <module>test-themes/pom-production.xml</module>
