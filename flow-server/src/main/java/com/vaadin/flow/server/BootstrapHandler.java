@@ -16,10 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -100,6 +96,9 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -1654,16 +1653,34 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         Element element = new Element("style");
         element.attr("data-file-path",
                 ThemeUtils.getThemeFilePath(themeName, fileName));
-        File frontendDirectory = FrontendUtils.getProjectFrontendDir(config);
-        File stylesCss = new File(
-                ThemeUtils.getThemeFolder(frontendDirectory, themeName),
-                fileName);
+
+        File stylesCss;
         try {
+            if (config.isProductionMode()) {
+                URL stylesCssUrl = ThemeUtils
+                        .getThemeResourceFromBundle(themeName, fileName);
+                if (stylesCssUrl == null) {
+                    stylesCssUrl = ThemeUtils.getThemeResourceFromJar(themeName,
+                            fileName);
+                }
+                if (stylesCssUrl == null) {
+                    throw new RuntimeException("Couldn't find stylesheet file "
+                            + fileName + " from the class-path for theme "
+                            + themeName);
+                }
+                stylesCss = new File(stylesCssUrl.getFile());
+            } else {
+                File frontendDirectory = FrontendUtils
+                        .getProjectFrontendDir(config);
+                stylesCss = new File(
+                        ThemeUtils.getThemeFolder(frontendDirectory, themeName),
+                        fileName);
+            }
             element.appendChild(new DataNode(CssBundler
                     .inlineImports(stylesCss.getParentFile(), stylesCss)));
         } catch (IOException e) {
             throw new RuntimeException(
-                    "Unable to read theme file from " + stylesCss, e);
+                    "Unable to read theme file from " + fileName, e);
         }
         return element;
     }

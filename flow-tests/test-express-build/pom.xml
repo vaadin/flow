@@ -47,7 +47,6 @@
                 <module>test-parent-theme-in-frontend</module>
                 <module>test-parent-theme-in-frontend/pom-prod.xml</module>
                 <module>test-embedding-express-build</module>
-                <module>test-embedding-express-build/pom-prod.xml</module>
             </modules>
         </profile>
     </profiles>

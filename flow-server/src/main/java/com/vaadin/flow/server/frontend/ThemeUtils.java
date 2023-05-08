@@ -94,10 +94,12 @@ public class ThemeUtils {
         String content = null;
         try {
             if (config.isProductionMode()) {
-                URL themeJsonUrl = ThemeUtils.class.getClassLoader()
-                        .getResource(VAADIN_WEBAPP_RESOURCES
-                                + "VAADIN/static/themes/" + themeName
-                                + "/theme.json");
+                URL themeJsonUrl = getThemeResourceFromBundle(themeName,
+                        "theme.json");
+                if (themeJsonUrl == null) {
+                    themeJsonUrl = getThemeResourceFromJar(themeName,
+                            "theme.json");
+                }
                 if (themeJsonUrl != null) {
                     content = IOUtils.toString(themeJsonUrl,
                             StandardCharsets.UTF_8);
@@ -119,6 +121,21 @@ public class ThemeUtils {
 
         return content != null ? Optional.of(Json.parse(content))
                 : Optional.empty();
+    }
+
+    public static URL getThemeResourceFromJar(String themeName,
+            String fileName) {
+        return ThemeUtils.class.getClassLoader()
+                .getResource(Constants.RESOURCES_THEME_JAR_DEFAULT + themeName
+                        + "/" + fileName);
+    }
+
+    public static URL getThemeResourceFromBundle(String themeName,
+            String fileName) {
+        return ThemeUtils.class.getClassLoader()
+                .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
+                        + Constants.APPLICATION_THEME_ROOT + "/" + themeName
+                        + "/" + fileName);
     }
 
     public static Optional<JsonObject> getThemeJson(String themeName,

@@ -391,9 +391,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         DeploymentConfiguration config = response.getService()
                 .getDeploymentConfiguration();
         VaadinContext context = response.getService().getContext();
-        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE
-                || (config.getMode() == Mode.PRODUCTION
-                        && BundleUtils.isPreCompiledBundle())) {
+
+        // stylesheet tags are only added in dev mode, because Flow always
+        // rebuilds prod bundle whenever it spots embedded web components, so
+        // all the styles are included into the custom bundle
+        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE) {
             // Add styles.css link to the web component shadow DOM
             BootstrapHandler.getStylesheetTags(context, "styles.css")
                     .forEach(element -> ElementUtil.fromJsoup(element)
@@ -404,7 +406,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     .forEach(link -> UI.getCurrent().getPage().executeJs(
                             BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG,
                             link));
-
         }
 
         WebComponentConfigurationRegistry
