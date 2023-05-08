@@ -165,7 +165,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         featureFlags = Mockito.mock(FeatureFlags.class);
         options = new Options(Mockito.mock(Lookup.class), tmpRoot)
                 .withTokenFile(tokenFile).withProductionMode(true)
-                .withFeatureFlags(featureFlags);
+                .withFeatureFlags(featureFlags).withBundleBuild(true);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 options);
         assertTrue(nodeModulesPath.mkdirs());
