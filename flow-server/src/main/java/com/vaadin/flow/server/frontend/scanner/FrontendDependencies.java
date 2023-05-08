@@ -48,6 +48,7 @@ import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.DependencyTrigger;
@@ -387,15 +388,39 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
     private boolean isEagerRoute(Class<?> route) {
         if (this.eagerRoutes == null) {
-            // No annotation present, use the Flow default
-            return true;
+            return defaultIsRouteEager(route);
         }
+
         if (this.eagerRoutes.isEmpty()) {
             // Everything is eager
             return true;
         }
 
         return this.eagerRoutes.contains(route.getName());
+    }
+
+    private boolean defaultIsRouteEager(Class<?> route) {
+        // No annotation present, use the Flow default of making "" and
+        // "login" eager
+        try {
+            Annotation routeAnnotation = route.getAnnotation(routeClass);
+            Method valueMethod = routeClass.getMethod("value");
+            String annotationRoutePath = (String) valueMethod
+                    .invoke(routeAnnotation);
+            String routePath = DefaultRoutePathProvider
+                    .getRoutePath(annotationRoutePath, route);
+            boolean eagerRoute = ("".equals(routePath)
+                    || "login".equals(routePath));
+            return eagerRoute;
+        } catch (NoSuchMethodException | SecurityException
+                | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
+            log().error(
+                    "Unable to read @Route annotation for " + route.getName(),
+                    e);
+        }
+
+        return false;
     }
 
     private List<String> getDependencyTriggers(Class<?> route,

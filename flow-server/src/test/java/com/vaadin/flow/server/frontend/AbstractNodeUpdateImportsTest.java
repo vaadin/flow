@@ -79,7 +79,8 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         ClassFinder classFinder = getClassFinder();
         Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
                 .withFrontendDirectory(frontendDirectory)
-                .withBuildDirectory(TARGET).withProductionMode(true);
+                .withBuildDirectory(TARGET).withProductionMode(true)
+                .withBundleBuild(true);
         updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
                 options) {
             @Override

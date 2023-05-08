@@ -30,9 +30,11 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -45,6 +47,11 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
             .getName();
     public static final String ICON_COMPONENT_FQN = IconComponent.class
             .getName();
+
+    @LoadDependenciesOnStartup
+    public static class AllEager implements AppShellConfigurator {
+
+    }
 
     @NpmPackage(value = "@vaadin/vaadin-button", version = "1.1.1")
     class ButtonComponent extends Component {
