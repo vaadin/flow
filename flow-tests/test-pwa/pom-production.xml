@@ -43,9 +43,6 @@
                         <phase>compile</phase>
                     </execution>
                 </executions>
-                <configuration>
-                    <productionMode>true</productionMode>
-                </configuration>
             </plugin>
             <!-- This module is mapped to default web context -->
             <plugin>

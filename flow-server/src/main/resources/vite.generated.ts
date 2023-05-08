@@ -234,14 +234,34 @@ function statsExtracterPlugin(): PluginOption {
         .filter((bundle) => bundle.isEntry)
         .map((bundle) => bundle.fileName);
       //After dev-bundle build add used Flow frontend imports JsModule/JavaScript/CssImport
-      const generatedImports = readFileSync(
+
+      const parseImports = (filename: string, result: Set<string>): void => {
+        const content: string = readFileSync(filename, { encoding: 'utf-8' });
+        const lines = content.split('\n');
+        const staticImports = lines
+          .filter((line) => line.startsWith('import '))
+          .map((line) => line.substring(line.indexOf("'") + 1, line.lastIndexOf("'")))
+          .map((line) => (line.includes('?') ? line.substring(0, line.lastIndexOf('?')) : line));
+        const dynamicImports = lines
+          .filter((line) => line.includes('import('))
+          .map((line) => line.replace(/.*import\(/, ''))
+          .map((line) => line.split(/'/)[1])
+          .map((line) => (line.includes('?') ? line.substring(0, line.lastIndexOf('?')) : line));
+
+        staticImports.forEach((staticImport) => result.add(staticImport));
+
+        dynamicImports.map((dynamicImport) => {
+          const importedFile = path.resolve(path.dirname(filename), dynamicImport);
+          parseImports(importedFile, result);
+        });
+      };
+
+      const generatedImportsSet = new Set<string>();
+      parseImports(
         path.resolve(themeOptions.frontendGeneratedFolder, 'flow', 'generated-flow-imports.js'),
-        { encoding: 'utf-8' }
-      )
-        .split('\n')
-        .filter((line: string) => line.startsWith('import'))
-        .map((line: string) => line.substring(line.indexOf("'") + 1, line.lastIndexOf("'")))
-        .map((line: string) => (line.includes('?') ? line.substring(0, line.lastIndexOf('?')) : line));
+        generatedImportsSet
+      );
+      const generatedImports = Array.from(generatedImportsSet).sort();
 
       const frontendFiles: Record<string, string> = {};
 

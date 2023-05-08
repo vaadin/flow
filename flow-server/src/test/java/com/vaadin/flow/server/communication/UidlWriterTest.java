@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,13 +25,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.servlet.http.HttpServletRequest;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentTest;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -61,6 +63,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
@@ -219,7 +222,8 @@ public class UidlWriterTest {
                 new ChildComponent());
 
         JsonObject response = uidlWriter.createUidl(ui, false);
-        Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
+        Map<String, JsonObject> dependenciesMap = ComponentTest
+                .filterLazyLoading(getDependenciesMap(response));
 
         assertEquals(4, dependenciesMap.size());
         assertDependency("childinterface1-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
@@ -252,7 +256,8 @@ public class UidlWriterTest {
                             result.addAll(list2);
                             return result;
                         }));
-
+        dependenciesMap.get(LoadMode.LAZY).removeIf(obj -> obj
+                .getString(Dependency.KEY_URL).contains("Flow.loadOnDemand"));
         assertThat(
                 "Dependencies with all types of load mode should be present in this response",
                 dependenciesMap.size(), is(LoadMode.values().length));
@@ -395,7 +400,8 @@ public class UidlWriterTest {
         ui.add(new ActualComponent());
 
         JsonObject response = uidlWriter.createUidl(ui, false);
-        Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
+        Map<String, JsonObject> dependenciesMap = ComponentTest
+                .filterLazyLoading(getDependenciesMap(response));
 
         assertEquals(4, dependenciesMap.size());
 
