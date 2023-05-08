@@ -124,12 +124,6 @@ public class BuildFrontendMojoTest {
         tokenFile = new File(temporaryFolder.getRoot(),
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
-        File statsfile = new File(projectBase,
-                "target/classes/META-INF/VAADIN/config/stats.json");
-
-        statsfile.getParentFile().mkdirs();
-        FileUtils.fileWrite(statsfile, "UTF-8", "{}");
-
         File npmFolder = projectBase;
         nodeModulesPath = new File(npmFolder, NODE_MODULES);
         frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
@@ -147,6 +141,13 @@ public class BuildFrontendMojoTest {
         jarResourcesSource = new File(projectBase,
                 "jar-resources-source/META-INF/frontend");
         jarResourcesSource.mkdirs();
+
+
+        File statsfile = new File(resourceOutputDirectory,
+                Constants.VAADIN_CONFIGURATION + "/stats.json");
+
+        statsfile.getParentFile().mkdirs();
+        FileUtils.fileWrite(statsfile, "UTF-8", "{}");
 
         projectFrontendResourcesDirectory = new File(npmFolder,
                 "flow_resources");
