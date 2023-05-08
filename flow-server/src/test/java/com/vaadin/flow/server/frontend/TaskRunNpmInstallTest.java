@@ -90,7 +90,7 @@ public class TaskRunNpmInstallTest {
         npmFolder = temporaryFolder.newFolder();
         finder = Mockito.mock(ClassFinder.class);
         options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withBuildDirectory(TARGET);
+                .withBuildDirectory(TARGET).withBundleBuild(true);
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), options) {
 

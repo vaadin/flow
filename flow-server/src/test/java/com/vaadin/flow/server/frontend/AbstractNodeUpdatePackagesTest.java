@@ -86,7 +86,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
         options = new Options(Mockito.mock(Lookup.class), baseDir)
-                .withBuildDirectory(TARGET);
+                .withBuildDirectory(TARGET).withBundleBuild(true);
         // .withJarFrontendResourcesFolder(jarResourceFolder);
         packageCreator = new TaskGeneratePackageJson(options);
 
