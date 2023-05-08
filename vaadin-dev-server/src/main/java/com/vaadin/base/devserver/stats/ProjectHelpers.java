@@ -16,8 +16,6 @@
 
 package com.vaadin.base.devserver.stats;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import java.io.File;
@@ -33,10 +31,11 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import com.vaadin.base.devserver.MavenUtils;
 
 /**
  * Helper methods for extracting and updating project statistics data.
@@ -64,31 +63,13 @@ class ProjectHelpers {
      *         the folder.
      */
     static String generateProjectId(File projectFolder) {
-        File pomFile = new File(projectFolder, "pom.xml");
+        Document pom = MavenUtils.parsePomFileFromFolder(projectFolder);
+        if (pom != null) {
+            // Maven project
 
-        // Maven project
-        if (pomFile.exists()) {
-            try {
-                DocumentBuilderFactory dbf = DocumentBuilderFactory
-                        .newInstance();
-                dbf.setFeature(
-                        "http://xml.org/sax/features/external-general-entities",
-                        false);
-                dbf.setFeature(
-                        "http://xml.org/sax/features/external-parameter-entities",
-                        false);
-                DocumentBuilder db = dbf.newDocumentBuilder();
-                Document pom = db.parse(pomFile);
-                String groupId = getFirstElementTextByName(
-                        pom.getDocumentElement(), "groupId");
-                String artifactId = getFirstElementTextByName(
-                        pom.getDocumentElement(), "artifactId");
-                return "pom" + createHash(groupId + artifactId);
-            } catch (SAXException | IOException
-                    | ParserConfigurationException e) {
-                getLogger().debug("Failed to parse maven project id from "
-                        + pomFile.getPath(), e);
-            }
+            String groupId = MavenUtils.getGroupId(pom);
+            String artifactId = MavenUtils.getArtifactId(pom);
+            return "pom" + createHash(groupId + artifactId);
         }
 
         // Gradle project
@@ -135,26 +116,6 @@ class ProjectHelpers {
     }
 
     /**
-     * DOM helper to find the text content of the first direct child node by
-     * given name.
-     *
-     * @param parent
-     *            Parent element to search.
-     * @param nodeName
-     *            Name of the node to search for.
-     * @return Text content of the first mach or null if not found.
-     */
-    static String getFirstElementTextByName(Element parent, String nodeName) {
-        NodeList nodeList = parent.getChildNodes();
-        for (int i = 0; i < nodeList.getLength(); i++) {
-            if (nodeList.item(i).getNodeName().equals(nodeName)) {
-                return nodeList.item(i).getTextContent();
-            }
-        }
-        return null;
-    }
-
-    /**
      * Get the source URL for the project.
      * <p>
      * Looks for comment in either pom.xml or or settings.gradle that points
@@ -185,20 +146,10 @@ class ProjectHelpers {
 
     private static String getMavenProjectSource(File projectFolder)
             throws ParserConfigurationException, SAXException, IOException {
-        File pomFile = new File(projectFolder, "pom.xml");
-
-        if (!pomFile.exists()) {
+        Document pom = MavenUtils.parsePomFileFromFolder(projectFolder);
+        if (pom == null) {
             return null;
         }
-
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setFeature("http://xml.org/sax/features/external-general-entities",
-                false);
-        dbf.setFeature(
-                "http://xml.org/sax/features/external-parameter-entities",
-                false);
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        Document pom = db.parse(pomFile);
         NodeList nodeList = pom.getDocumentElement().getChildNodes();
         for (int i = 0; i < nodeList.getLength(); i++) {
             if (nodeList.item(i).getNodeType() == Node.COMMENT_NODE) {
