@@ -21,6 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 
 /**
  *
@@ -40,7 +41,7 @@ import com.vaadin.flow.component.Component;
  * will be loaded on startup.
  * <p>
  * This annotation must be added to the class implementing
- * {@link com.vaadin.flow.server.startup.ApplicationConfiguration}.
+ * {@link AppShellConfigurator}.
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
