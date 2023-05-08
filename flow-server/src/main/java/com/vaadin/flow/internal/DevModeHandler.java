@@ -78,12 +78,4 @@ public interface DevModeHandler extends RequestHandler {
      * @return the listening port
      */
     int getPort();
-
-    /**
-     * Callback invoked when the handler is stopped.
-     *
-     * @param callback
-     *            the callback to run
-     */
-    void onStop(Runnable callback);
 }

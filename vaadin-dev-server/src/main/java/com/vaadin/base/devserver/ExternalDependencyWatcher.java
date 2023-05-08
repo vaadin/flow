@@ -15,6 +15,7 @@
  */
 package com.vaadin.base.devserver;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -33,7 +34,7 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-public class ExternalDependencyWatcher {
+public class ExternalDependencyWatcher implements Closeable {
 
     private static Set<FileWatcher> watchers = new HashSet<>();
 
@@ -99,7 +100,8 @@ public class ExternalDependencyWatcher {
 
     }
 
-    public void stop() {
+    @Override
+    public void close() throws IOException {
         for (FileWatcher watcher : watchers) {
             try {
                 watcher.stop();

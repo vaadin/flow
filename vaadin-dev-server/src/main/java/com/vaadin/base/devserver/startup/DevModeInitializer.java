@@ -50,7 +50,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.base.devserver.ExternalDependencyWatcher;
 import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.base.devserver.stats.StatisticsSender;
@@ -305,7 +304,6 @@ public class DevModeInitializer implements Serializable {
                     }
                 }
             }
-
         };
 
         CompletableFuture<Void> nodeTasksFuture = CompletableFuture
@@ -323,11 +321,6 @@ public class DevModeInitializer implements Serializable {
                     options.getNpmFolder(), nodeTasksFuture);
             VaadinServlet.whenFrontendMappingAvailable(
                     () -> ViteWebsocketEndpoint.init(context, handler));
-            ExternalDependencyWatcher dependencyWatcher = new ExternalDependencyWatcher(
-                    context, jarFrontendResourcesFolder);
-            handler.onStop(() -> {
-                dependencyWatcher.stop();
-            });
             return handler;
         }
     }
