@@ -113,7 +113,8 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
                         + "Skipping watching the theme files");
                 return;
             }
-            List<String> activeThemes = ThemeUtils.getActiveThemes(config);
+            List<String> activeThemes = ThemeUtils.getActiveThemes(context,
+                    config);
             for (String themeName : activeThemes) {
                 File themeFolder = ThemeUtils.getThemeFolder(
                         FrontendUtils.getProjectFrontendDir(config), themeName);
