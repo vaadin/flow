@@ -62,7 +62,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <productionMode>true</productionMode>
                     <pnpmEnable>false</pnpmEnable>
                     <requireHomeNodeExec>true</requireHomeNodeExec>
                     <nodeAutoUpdate>true</nodeAutoUpdate>
