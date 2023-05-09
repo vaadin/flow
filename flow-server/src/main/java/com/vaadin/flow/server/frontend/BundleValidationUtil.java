@@ -31,6 +31,9 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.server.webcomponent.WebComponentExporterTagExtractor;
 import com.vaadin.flow.server.webcomponent.WebComponentExporterUtils;
+import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.Product;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -116,6 +119,14 @@ public final class BundleValidationUtil {
         }
 
         String statsJsonContent = DevBundleUtils.findBundleStatsJson(npmFolder);
+
+        if (statsJsonContent == null) {
+            // without stats.json in bundle we can not say if it is up-to-date
+            getLogger().info(
+                    "No bundle's stats.json found for dev-bundle validation.");
+            return true;
+        }
+
         return needsBuildInternal(options, frontendDependencies, finder,
                 statsJsonContent);
     }
@@ -123,8 +134,15 @@ public final class BundleValidationUtil {
     private static boolean needsBuildProdBundle(Options options,
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder) throws IOException {
-        String statsJsonContent = BundleValidationUtil
-                .findProdBundleStatsJson(finder);
+        String statsJsonContent = findProdBundleStatsJson(finder);
+
+        if (statsJsonContent == null) {
+            // without stats.json in bundle we can not say if it is up-to-date
+            getLogger().info(
+                    "No bundle's stats.json found for production-bundle validation.");
+            return true;
+        }
+
         return needsBuildInternal(options, frontendDependencies, finder,
                 statsJsonContent);
     }
@@ -132,11 +150,6 @@ public final class BundleValidationUtil {
     private static boolean needsBuildInternal(Options options,
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder, String statsJsonContent) throws IOException {
-        if (statsJsonContent == null) {
-            // without stats.json in bundle we can not say if it is up-to-date
-            getLogger().info("No bundle's stats.json found for validation.");
-            return true;
-        }
 
         JsonObject packageJson = getPackageJson(options, frontendDependencies,
                 finder);
