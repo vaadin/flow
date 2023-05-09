@@ -53,6 +53,51 @@ public interface ClickNotifier<T extends Component> extends Serializable {
     }
 
     /**
+     * Adds a double click listener to this component.
+     *
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
+    default Registration addDoubleClickListener(
+            ComponentEventListener<ClickEvent<T>> listener) {
+        if (this instanceof Component) {
+            return ComponentUtil.addListener((Component) this, ClickEvent.class,
+                    (ComponentEventListener) listener,
+                    d -> d.setFilter("event.detail == 2"));
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addDoubleClickListener"));
+        }
+    }
+
+    /**
+     * Adds a single click listener to this component.
+     *
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
+    default Registration addSingleClickListener(
+            ComponentEventListener<ClickEvent<T>> listener) {
+        if (this instanceof Component) {
+            // If JavaScript click() function was used detail is < 1
+            return ComponentUtil.addListener((Component) this, ClickEvent.class,
+                    (ComponentEventListener) listener,
+                    d -> d.setFilter("event.detail <= 1"));
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addSingleClickListener"));
+        }
+    }
+
+    /**
      * Adds a shortcut which 'clicks' the {@link Component} which implements
      * {@link ClickNotifier} interface. The shortcut's event listener is in
      * global scope and the shortcut's lifecycle is tied to {@code this}
