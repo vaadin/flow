@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -29,6 +31,7 @@ import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 import com.vaadin.flow.server.frontend.TaskRunNpmInstall;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.utils.LookupImpl;
 import com.vaadin.pro.licensechecker.Product;
 
@@ -140,21 +143,32 @@ public class BuildFrontendUtilTest {
     }
 
     @Test
-    public void detectsCommercialComponents()
-            throws URISyntaxException, ExecutionFailedException, IOException {
+    public void detectsCommercialComponents() {
 
-        try (FileOutputStream out = new FileOutputStream(statsJson)) {
-            IOUtils.write(
-                    "{\"npmModules\":{\"component\":\"1.2.3\", \"comm-component\":\"4.6.5\"}}",
-                    out, StandardCharsets.UTF_8);
-        }
+        // @formatter:off
+        String statsJson = "{"
+                + " \"cvdlModules\": { "
+                + "  \"component\": {"
+                + "      \"name\": \"component\","
+                + "      \"version\":\"1.2.3\""
+                + "  }, "
+                + "  \"comm-component\": {"
+                + "      \"name\":\"comm-comp\","
+                + "      \"version\":\"4.6.5\""
+                + "  }"
+                + " }"
+                + "}";
+        // @formatter:on
 
-        File nodeModulesFolder = new File(baseDir, "node_modules");
-        writePackageJson(nodeModulesFolder, "component", "1.2.3", null);
-        writePackageJson(nodeModulesFolder, "comm-component", "4.6.5",
-                "comm-comp");
+        final FrontendDependenciesScanner scanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Map<String, String> packages = new HashMap<>();
+        packages.put("comm-component", "4.6.5");
+        packages.put("@vaadin/button", "1.2.1");
+        Mockito.when(scanner.getPackages()).thenReturn(packages);
+
         List<Product> components = BuildFrontendUtil
-                .findCommercialFrontendComponents(nodeModulesFolder, statsJson);
+                .findCommercialFrontendComponents(scanner, statsJson);
         Assert.assertEquals(1, components.size());
         Assert.assertEquals("comm-comp", components.get(0).getName());
         Assert.assertEquals("4.6.5", components.get(0).getVersion());

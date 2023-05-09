@@ -17,12 +17,15 @@ package com.vaadin.base.devserver;
 
 import jakarta.servlet.annotation.HandlesTypes;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +66,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     private DevModeHandler devModeHandler;
     private BrowserLauncher browserLauncher;
-    private Set<ThemeLiveUpdater> themeLiveUpdaters = new HashSet<>();
+    final private Set<Closeable> watchers = new HashSet<>();
 
     @Override
     public Class<?>[] getHandlesTypes() {
@@ -91,13 +94,34 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             throws VaadinInitializerException {
         setDevModeHandler(
                 DevModeInitializer.initDevModeHandler(classes, context));
-        startWatchingThemeFolder(context);
+        CompletableFuture.runAsync(() -> {
+            DevModeHandler devModeHandler = getDevModeHandler();
+            if (devModeHandler instanceof AbstractDevServerRunner) {
+                ((AbstractDevServerRunner) devModeHandler).waitForDevServer();
+            }
+
+            ApplicationConfiguration config = ApplicationConfiguration
+                    .get(context);
+
+            startWatchingThemeFolder(context, config);
+            watchExternalDependencies(context, config);
+        });
         setDevModeStarted(context);
         this.browserLauncher = new BrowserLauncher(context);
     }
 
-    private void startWatchingThemeFolder(VaadinContext context) {
-        ApplicationConfiguration config = ApplicationConfiguration.get(context);
+    private void watchExternalDependencies(VaadinContext context,
+            ApplicationConfiguration config) {
+        File frontendFolder = FrontendUtils.getProjectFrontendDir(config);
+        File jarFrontendResourcesFolder = FrontendUtils
+                .getJarResourcesFolder(frontendFolder);
+        watchers.add(new ExternalDependencyWatcher(context,
+                jarFrontendResourcesFolder));
+
+    }
+
+    private void startWatchingThemeFolder(VaadinContext context,
+            ApplicationConfiguration config) {
 
         if (config.getMode() != Mode.DEVELOPMENT_BUNDLE) {
             // Theme files are watched by Vite or app runs in prod mode
@@ -118,8 +142,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             for (String themeName : activeThemes) {
                 File themeFolder = ThemeUtils.getThemeFolder(
                         FrontendUtils.getProjectFrontendDir(config), themeName);
-                themeLiveUpdaters
-                        .add(new ThemeLiveUpdater(themeFolder, context));
+                watchers.add(new ThemeLiveUpdater(themeFolder, context));
             }
         } catch (Exception e) {
             getLogger().error("Failed to start live-reload for theme files", e);
@@ -131,10 +154,15 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             devModeHandler.stop();
             devModeHandler = null;
         }
-        for (ThemeLiveUpdater themeLiveUpdater : themeLiveUpdaters) {
-            themeLiveUpdater.stop();
+        for (Closeable watcher : watchers) {
+            try {
+                watcher.close();
+            } catch (IOException e) {
+                getLogger().error("Failed to stop watcher "
+                        + watcher.getClass().getName(), e);
+            }
         }
-        themeLiveUpdaters.clear();
+        watchers.clear();
     }
 
     @Override
