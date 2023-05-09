@@ -32,4 +32,12 @@ public class FileIOUtilsTest {
                 new File("/Users/John Doe/Downloads/my-app (21)/my-app"),
                 FileIOUtils.getProjectFolderFromClasspath(url));
     }
+
+    @Test
+    public void tempFilesAreTempFiles() {
+        Assert.assertTrue(
+                FileIOUtils.isProbablyTemporaryFile(new File("foo.txt~")));
+        Assert.assertFalse(
+                FileIOUtils.isProbablyTemporaryFile(new File("foo.txt")));
+    }
 }

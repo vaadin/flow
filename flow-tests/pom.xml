@@ -46,6 +46,7 @@
         <vaadin.reuseDevServer>false</vaadin.reuseDevServer>
         <vaadin.devServerPort>0</vaadin.devServerPort>
         <vaadin.frontend.hotdeploy>true</vaadin.frontend.hotdeploy>
+        <vaadin.frontend.hotdeploy.dependencies></vaadin.frontend.hotdeploy.dependencies>
     </properties>
 
     <dependencies>
@@ -228,6 +229,7 @@
                             <!-- Allow test clients not on localhost to connect to Vite-->
                             <vaadin.devmode.vite.options>${vaadin.devmode.vite.options}</vaadin.devmode.vite.options>
                             <vaadin.frontend.hotdeploy>${vaadin.frontend.hotdeploy}</vaadin.frontend.hotdeploy>
+                            <vaadin.frontend.hotdeploy.dependencies>${vaadin.frontend.hotdeploy.dependencies}</vaadin.frontend.hotdeploy.dependencies>
                         </systemProperties>
                     </configuration>
                 </plugin>
@@ -288,6 +290,7 @@
                 <module>test-pwa-disabled-offline/pom-production.xml</module>
                 <module>test-router-custom-context</module>
                 <module>test-live-reload</module>
+                <module>test-live-reload-multimodule</module>
                 <module>test-redeployment</module>
 
                 <module>test-scalability</module>

@@ -226,6 +226,8 @@ function statsExtracterPlugin(): PluginOption {
         .sort()
         .filter((value, index, self) => self.indexOf(value) === index);
       const npmModuleAndVersion = Object.fromEntries(npmModules.map((module) => [module, getVersion(module)]));
+      const cvdls = Object.fromEntries(npmModules.filter((module) => getCvdlName(module) != null)
+          .map((module) => [module, {name: getCvdlName(module),version: getVersion(module)}]));
 
       mkdirSync(path.dirname(statsFile), { recursive: true });
       const projectPackageJson = JSON.parse(readFileSync(projectPackageJsonFile, { encoding: 'utf-8' }));
@@ -337,6 +339,7 @@ function statsExtracterPlugin(): PluginOption {
         themeJsonContents: themeJsonContents,
         entryScripts,
         webComponents,
+        cvdlModules: cvdls,
         packageJsonHash: projectPackageJson?.vaadin?.hash
       };
       writeFileSync(statsFile, JSON.stringify(stats, null, 1));
@@ -781,4 +784,8 @@ export const overrideVaadinConfig = (customConfig: UserConfigFn) => {
 function getVersion(module: string): string {
   const packageJson = path.resolve(nodeModulesFolder, module, 'package.json');
   return JSON.parse(readFileSync(packageJson, { encoding: 'utf-8' })).version;
+}
+function getCvdlName(module: string): string {
+  const packageJson = path.resolve(nodeModulesFolder, module, 'package.json');
+  return JSON.parse(readFileSync(packageJson, { encoding: 'utf-8' })).cvdlName;
 }

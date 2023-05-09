@@ -3,7 +3,11 @@ const fs = require("fs");
 
 /****************** START CONFIG */
 // Do not run the following modules except 'flow-tests' that is handled separatelly in this script
-const globalExclusions = ['flow-tests/servlet-containers/tomcat10', 'flow-tests/test-multi-war/test-war1', 'flow-tests/test-multi-war/test-war2'];
+const globalExclusions = [
+  'flow-tests/servlet-containers/tomcat10',
+  'flow-tests/test-multi-war/test-war1',
+  'flow-tests/test-multi-war/test-war2'
+];
 // Set modules or tests weights and fixed slice position for better distribution
 //  weight: it's time in half-minutes, default 1 = 30secs
 //  pos:    certain modules need to be allocated manually. Use position for that.
@@ -19,6 +23,8 @@ const globalExclusions = ['flow-tests/servlet-containers/tomcat10', 'flow-tests/
 //  Tests that need shared modules, check validation.yml to see how they are generated before running ITs
 // Containers 4, 5 & 6:
 //  Spring tests, they need also spring shared modules to be generated in validation.yml
+// Container 6:
+//  Live Reload Multimodule test needs being executed in the same container
 const moduleWeights = {
   'flow-client': { weight: 8 },
   'flow-server': { weight: 5 },
@@ -83,6 +89,8 @@ const moduleWeights = {
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-urlmapping': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-reverseproxy': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints': { pos: 5, weight: 2 },
+  'flow-tests/test-live-reload-multimodule/ui': {pos:6},
+  'flow-tests/test-live-reload-multimodule/library': {pos:6},
   'flow-tests/test-redeployment': { weight: 13 },
   'flow-tests/test-pwa': { weight: 10 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 7 },
