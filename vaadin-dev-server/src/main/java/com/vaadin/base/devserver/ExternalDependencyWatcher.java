@@ -70,7 +70,7 @@ public class ExternalDependencyWatcher implements Closeable {
 
     /**
      * Starts watching the given META-INF folders for changes.
-     * 
+     *
      * @param metaInfFolder
      *            the folder to watch
      * @param jarFrontendResourcesFolder
