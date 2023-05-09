@@ -53,7 +53,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
     }
 
     /**
-     * Adds a single click listener to this component.
+     * Adds a double click listener to this component.
      *
      * @param listener
      *            the listener to add, not <code>null</code>
