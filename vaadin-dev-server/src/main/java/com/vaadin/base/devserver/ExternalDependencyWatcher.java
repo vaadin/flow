@@ -18,16 +18,15 @@ package com.vaadin.base.devserver;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,10 +82,10 @@ public class ExternalDependencyWatcher implements Closeable {
                 Path target = targetFolder.toPath()
                         .resolve(pathInsideWatchFolder);
                 try {
-                    Files.copy(updatedFile.toPath(), target);
+                    Files.copy(updatedFile.toPath(), target, StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException e) {
                     getLogger().warn("Unable to copy modified file from "
-                            + updatedFile + " to " + target);
+                            + updatedFile + " to " + target, e);
                 }
             }, watchFolder);
             watcher.start();
