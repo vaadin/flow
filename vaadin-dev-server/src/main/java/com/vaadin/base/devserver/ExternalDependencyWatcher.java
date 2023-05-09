@@ -47,8 +47,11 @@ public class ExternalDependencyWatcher implements Closeable {
 
         List<String> hotdeployDependencyFolders = new ArrayList<>();
         if (hotdeployDependencies != null) {
-            Collections.addAll(hotdeployDependencyFolders,
-                    hotdeployDependencies.split(","));
+            for (String folder : hotdeployDependencies.split(",")) {
+                if (!folder.isBlank()) {
+                    hotdeployDependencyFolders.add(folder.trim());
+                }
+            }
         }
 
         for (String hotdeployDependencyFolder : hotdeployDependencyFolders) {
