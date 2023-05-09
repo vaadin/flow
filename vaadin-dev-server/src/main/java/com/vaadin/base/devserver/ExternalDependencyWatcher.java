@@ -82,7 +82,8 @@ public class ExternalDependencyWatcher implements Closeable {
                 Path target = targetFolder.toPath()
                         .resolve(pathInsideWatchFolder);
                 try {
-                    Files.copy(updatedFile.toPath(), target, StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(updatedFile.toPath(), target,
+                            StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException e) {
                     getLogger().warn("Unable to copy modified file from "
                             + updatedFile + " to " + target, e);
