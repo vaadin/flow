@@ -59,7 +59,7 @@ public class ExternalDependencyWatcher implements Closeable {
             if (!watchDependencyFolder(metaInf.toFile(),
                     jarFrontendResourcesFolder)) {
                 getLogger().warn("No folders to watch were found in "
-                        + metaInf.toAbsolutePath()
+                        + metaInf.normalize().toAbsolutePath()
                         + ". This should be the META-INF folder that contains either frontend or resources/frontend");
             }
         }
