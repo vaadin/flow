@@ -66,7 +66,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     private DevModeHandler devModeHandler;
     private BrowserLauncher browserLauncher;
-    private Set<Closeable> watchers = new HashSet<>();
+    final private Set<Closeable> watchers = new HashSet<>();
 
     @Override
     public Class<?>[] getHandlesTypes() {

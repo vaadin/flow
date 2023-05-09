@@ -19,6 +19,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,7 +37,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 public class ExternalDependencyWatcher implements Closeable {
 
-    private static Set<FileWatcher> watchers = new HashSet<>();
+    final private static Set<FileWatcher> watchers = new HashSet<>();
 
     public ExternalDependencyWatcher(VaadinContext context,
             File jarFrontendResourcesFolder) {
@@ -82,8 +83,7 @@ public class ExternalDependencyWatcher implements Closeable {
                 Path target = targetFolder.toPath()
                         .resolve(pathInsideWatchFolder);
                 try {
-                    URL src = updatedFile.toURI().toURL();
-                    IOUtils.copy(src, target.toFile());
+                    Files.copy(updatedFile.toPath(), target);
                 } catch (IOException e) {
                     getLogger().warn("Unable to copy modified file from "
                             + updatedFile + " to " + target);
