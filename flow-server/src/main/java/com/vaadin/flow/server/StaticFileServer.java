@@ -44,8 +44,10 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.ThemeUtils;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
@@ -276,6 +278,11 @@ public class StaticFileServer implements StaticFileHandler {
                         deploymentConfiguration.getProjectFolder(),
                         filenameWithPath.replace(VAADIN_MAPPING, ""));
             }
+        } else if (deploymentConfiguration.getMode() == Mode.PRODUCTION
+                && BundleUtils.isPreCompiledBundle()
+                && APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
+            resourceUrl = findAssetInProdBundleOrClassPath(filenameWithPath
+                    .replace(VAADIN_MAPPING, "").replaceFirst("^/", ""));
         } else if (APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath).find()) {
             resourceUrl = vaadinService.getClassLoader()
                     .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
@@ -325,6 +332,16 @@ public class StaticFileServer implements StaticFileHandler {
         responseWriter.writeResponseContents(filenameWithPath, resourceUrl,
                 request, response);
         return true;
+    }
+
+    private static URL findAssetInProdBundleOrClassPath(String assetPath) {
+        // lookup in the prod bundle, where themes are copied from project's
+        URL resourceUrl = ThemeUtils.getThemeResourceFromBundle(assetPath);
+        if (resourceUrl == null) {
+            // lookup in the JARs for packaged themes
+            resourceUrl = ThemeUtils.getThemeResourceFromJar(assetPath);
+        }
+        return resourceUrl;
     }
 
     private static URL findAssetInFrontendThemesOrDevBundle(

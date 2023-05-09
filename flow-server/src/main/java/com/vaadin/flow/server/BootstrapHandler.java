@@ -1648,34 +1648,27 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static Element getStyleTag(String themeName, String fileName,
             AbstractConfiguration config) {
-        Element element = new Element("style");
-        element.attr("data-file-path",
-                ThemeUtils.getThemeFilePath(themeName, fileName));
-
-        File stylesCss;
+        Element element;
         try {
+            String themeFilePath = ThemeUtils.getThemeFilePath(themeName,
+                    fileName);
             if (config.isProductionMode()) {
-                URL stylesCssUrl = ThemeUtils
-                        .getThemeResourceFromBundle(themeName, fileName);
-                if (stylesCssUrl == null) {
-                    stylesCssUrl = ThemeUtils.getThemeResourceFromJar(themeName,
-                            fileName);
-                }
-                if (stylesCssUrl == null) {
-                    throw new RuntimeException("Couldn't find stylesheet file "
-                            + fileName + " from the class-path for theme "
-                            + themeName);
-                }
-                stylesCss = new File(stylesCssUrl.getFile());
+                element = new Element("link");
+                element.attr("rel", "stylesheet");
+                element.attr("type", "text/css");
+                element.attr("href", themeFilePath);
             } else {
+                element = new Element("style");
+                element.attr("data-file-path", themeFilePath);
                 File frontendDirectory = FrontendUtils
                         .getProjectFrontendDir(config);
-                stylesCss = new File(
+                File stylesCss = new File(
                         ThemeUtils.getThemeFolder(frontendDirectory, themeName),
                         fileName);
+                // Inline CSS into style tag to have hot module reload feature
+                element.appendChild(new DataNode(CssBundler
+                        .inlineImports(stylesCss.getParentFile(), stylesCss)));
             }
-            element.appendChild(new DataNode(CssBundler
-                    .inlineImports(stylesCss.getParentFile(), stylesCss)));
         } catch (IOException e) {
             throw new RuntimeException(
                     "Unable to read theme file from " + fileName, e);
