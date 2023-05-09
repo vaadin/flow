@@ -19,6 +19,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 public class ExternalDependencyWatcher implements Closeable {
@@ -99,6 +101,9 @@ public class ExternalDependencyWatcher implements Closeable {
 
         try {
             FileWatcher watcher = new FileWatcher(updatedFile -> {
+                if (FileIOUtils.isProbablyTemporaryFile(updatedFile)) {
+                    return;
+                }
                 Path pathInsideWatchFolder = watchFolder.toPath()
                         .relativize(updatedFile.toPath());
                 Path target = targetFolder.toPath()
@@ -106,6 +111,9 @@ public class ExternalDependencyWatcher implements Closeable {
                 try {
                     Files.copy(updatedFile.toPath(), target,
                             StandardCopyOption.REPLACE_EXISTING);
+                } catch (NoSuchFileException e) {
+                    // This happens if an editor creates temporary files and
+                    // they are removed before copy is called
                 } catch (IOException e) {
                     getLogger().warn("Unable to copy modified file from "
                             + updatedFile + " to " + target, e);
