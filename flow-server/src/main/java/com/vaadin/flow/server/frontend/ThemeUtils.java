@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -70,7 +71,36 @@ public class ThemeUtils {
      * @return custom theme name or empty optional if no theme is used
      */
     public static Optional<String> getThemeName(VaadinContext context) {
-        return getThemeAnnotation(context).map(Theme::value);
+        ApplicationConfiguration config = ApplicationConfiguration.get(context);
+        if (config.isProductionMode()) {
+            return getThemeAnnotation(context).map(Theme::value);
+        } else {
+            File themeJs = new File(config.getProjectFolder(),
+                    FrontendUtils.FRONTEND + FrontendUtils.GENERATED
+                            + FrontendUtils.THEME_IMPORTS_NAME);
+
+            if (!themeJs.exists()) {
+                return Optional.empty();
+            }
+
+            try {
+                String themeJsContent = FileUtils.readFileToString(themeJs,
+                        StandardCharsets.UTF_8);
+                Matcher matcher = THEME_GENERATED_FILE_PATTERN
+                        .matcher(themeJsContent);
+                if (matcher.find()) {
+                    return Optional.of(matcher.group(1));
+                } else {
+                    throw new IllegalStateException(
+                            "Couldn't extract theme name from theme imports file 'theme.js'");
+                }
+            } catch (IOException e) {
+                getLogger().error(
+                        "Couldn't read theme generated file to get the theme name",
+                        e);
+                return Optional.empty();
+            }
+        }
     }
 
     /**
