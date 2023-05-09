@@ -1604,6 +1604,19 @@ public class BundleValidationTest {
         Assert.assertFalse("Rebuild should be skipped", needsBuild);
     }
 
+    @Test
+    public void forceProductionBundle_bundleRequired() {
+        Assume.assumeTrue(mode == Mode.PRODUCTION);
+
+        options.withForceProductionBuild(true);
+
+        final boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                Mockito.mock(FrontendDependenciesScanner.class), finder, mode);
+        Assert.assertTrue(
+                "Production bundle required due to force.production.bundle flag.",
+                needsBuild);
+    }
+
     private void createPackageJsonStub(String content) throws IOException {
         File packageJson = new File(temporaryFolder.getRoot(),
                 Constants.PACKAGE_JSON);

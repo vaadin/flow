@@ -25,6 +25,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -69,8 +70,13 @@ public final class BundleValidationUtil {
         try {
             boolean needsBuild;
             if (Mode.PRODUCTION == mode) {
-                needsBuild = needsBuildProdBundle(options, frontendDependencies,
-                        finder);
+                if (options.isForceProductionBuild()
+                        || EndpointRequestUtil.isHillaAvailable()) {
+                    needsBuild = true;
+                } else {
+                    needsBuild = needsBuildProdBundle(options,
+                            frontendDependencies, finder);
+                }
             } else if (Mode.DEVELOPMENT_BUNDLE == mode) {
                 needsBuild = needsBuildDevBundle(options, frontendDependencies,
                         finder);
