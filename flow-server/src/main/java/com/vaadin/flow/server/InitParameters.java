@@ -217,7 +217,7 @@ public class InitParameters implements Serializable {
     public static final String SKIP_DEV_BUNDLE_REBUILD = "skip.dev.bundle";
 
     /**
-     * Configuration name for forcing optimized productio bundle build.
+     * Configuration name for forcing optimized production bundle build.
      */
-    public static final String FORCE_PRODUCTION_BUILD = "force.production.bundle";
+    public static final String FORCE_PRODUCTION_BUILD = "force.production.build";
 }
