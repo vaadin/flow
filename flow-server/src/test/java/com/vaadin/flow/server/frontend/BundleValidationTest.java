@@ -113,7 +113,7 @@ public class BundleValidationTest {
         bundleUtils.close();
         File needsBuildFile = new File(options.getResourceOutputDirectory(),
                 Constants.NEEDS_BUNDLE_BUILD_FILE);
-        if(needsBuildFile.exists()) {
+        if (needsBuildFile.exists()) {
             needsBuildFile.delete();
         }
     }
