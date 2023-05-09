@@ -56,23 +56,42 @@ public class ExternalDependencyWatcher implements Closeable {
                     .resolve(hotdeployDependencyFolder);
             Path metaInf = moduleFolder
                     .resolve(Path.of("src", "main", "resources", "META-INF"));
-            watchDependencyFolder(metaInf.toFile(), jarFrontendResourcesFolder);
+            if (!watchDependencyFolder(metaInf.toFile(),
+                    jarFrontendResourcesFolder)) {
+                getLogger().warn("No folders to watch were found in "
+                        + metaInf.toAbsolutePath()
+                        + ". This should be the META-INF folder that contains either frontend or resources/frontend");
+            }
         }
     }
 
-    private void watchDependencyFolder(File metaInfFolder,
+    /**
+     * Starts watching the given META-INF folders for changes.
+     * 
+     * @param metaInfFolder
+     *            the folder to watch
+     * @param jarFrontendResourcesFolder
+     *            the jar frontend resource folder to copy changed files to
+     * @return true if at least one folder is watched, false if no folders to
+     *         watch were found
+     */
+    private boolean watchDependencyFolder(File metaInfFolder,
             File jarFrontendResourcesFolder) {
         File metaInfFrontend = new File(metaInfFolder, "frontend");
         File metaInfResourcesFrontend = new File(
                 new File(metaInfFolder, "resources"), "frontend");
 
-        watchAndCopy(metaInfFrontend, jarFrontendResourcesFolder);
-        watchAndCopy(metaInfResourcesFrontend, jarFrontendResourcesFolder);
+        boolean watching1 = watchAndCopy(metaInfFrontend,
+                jarFrontendResourcesFolder);
+        boolean watching2 = watchAndCopy(metaInfResourcesFrontend,
+                jarFrontendResourcesFolder);
+
+        return watching1 || watching2;
     }
 
-    private void watchAndCopy(File watchFolder, File targetFolder) {
+    private boolean watchAndCopy(File watchFolder, File targetFolder) {
         if (!watchFolder.exists()) {
-            return;
+            return false;
         }
 
         try {
@@ -93,11 +112,12 @@ public class ExternalDependencyWatcher implements Closeable {
             watchers.add(watcher);
             getLogger().debug("Watching {} for frontend file changes",
                     watchFolder);
+            return true;
         } catch (Exception e) {
             getLogger().error("Unable to start file watcher for " + watchFolder,
                     e);
         }
-
+        return false;
     }
 
     @Override
