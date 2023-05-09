@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
- package com.vaadin.flow.uitest.multimodule.ui;
+package com.vaadin.flow.uitest.multimodule.ui;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
