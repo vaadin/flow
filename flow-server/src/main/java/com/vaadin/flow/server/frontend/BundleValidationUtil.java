@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -72,10 +73,13 @@ public final class BundleValidationUtil {
             if (Mode.PRODUCTION == mode) {
                 if (options.isForceProductionBuild()
                         || EndpointRequestUtil.isHillaAvailable()) {
-                    needsBuild = true;
+                    getLogger().info("Frontend build requested.");
+                    saveResultInFile(true, options);
+                    return true;
                 } else {
                     needsBuild = needsBuildProdBundle(options,
                             frontendDependencies, finder);
+                    saveResultInFile(needsBuild, options);
                 }
             } else if (Mode.DEVELOPMENT_BUNDLE == mode) {
                 needsBuild = needsBuildDevBundle(options, frontendDependencies,
@@ -84,10 +88,6 @@ public final class BundleValidationUtil {
                 return false;
             } else {
                 throw new IllegalArgumentException("Unexpected mode");
-            }
-
-            if (options.isProductionMode()) {
-                saveResultInFile(needsBuild, options);
             }
 
             if (needsBuild) {
