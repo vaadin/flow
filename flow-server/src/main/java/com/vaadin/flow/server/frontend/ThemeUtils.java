@@ -176,8 +176,6 @@ public class ThemeUtils {
      *
      * @param context
      *            the vaadin context
-     * @param config
-     *            the application configuration
      * @return a list of active themes, in parent to child order
      */
     public static List<String> getActiveThemes(VaadinContext context) {

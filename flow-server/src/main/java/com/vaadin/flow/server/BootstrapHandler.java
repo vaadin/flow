@@ -1615,8 +1615,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *
      * @param context
      *            the vaadin context
-     * @param config
-     *            deployment configuration
      * @param fileName
      *            the stylesheet file name to add a reference to
      * @return the collection of link tags to be added to the page
