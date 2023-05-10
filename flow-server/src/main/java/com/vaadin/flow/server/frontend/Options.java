@@ -64,6 +64,8 @@ public class Options implements Serializable {
 
     private boolean ciBuild;
 
+    private boolean forceProductionBuild;
+
     private boolean useGlobalPnpm = false;
 
     private File frontendGeneratedFolder;
@@ -409,6 +411,15 @@ public class Options implements Serializable {
     }
 
     /**
+     * Setting this to {@code true} will force a build of the production build
+     * even if there is a default production bundle that could be used.
+     */
+    public Options withForceProductionBuild(boolean forceProductionBuild) {
+        this.forceProductionBuild = forceProductionBuild;
+        return this;
+    }
+
+    /**
      * Uses globally installed pnpm tool for frontend packages installation.
      *
      * @param useGlobalPnpm
@@ -719,6 +730,10 @@ public class Options implements Serializable {
 
     public boolean isCiBuild() {
         return ciBuild;
+    }
+
+    public boolean isForceProductionBuild() {
+        return forceProductionBuild;
     }
 
     public boolean isUseGlobalPnpm() {
