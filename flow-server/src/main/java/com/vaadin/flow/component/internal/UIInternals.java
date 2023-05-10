@@ -10,6 +10,7 @@ package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -308,6 +309,13 @@ public class UIInternals implements Serializable {
      */
     public void incrementServerId() {
         serverSyncId++;
+        if (getLogger().isTraceEnabled()) {
+            getLogger().trace("Increment syncId {} -> {}:\n{}",
+                    (serverSyncId - 1), serverSyncId,
+                    Arrays.stream(Thread.currentThread().getStackTrace())
+                            .skip(1).map(String::valueOf).collect(Collectors
+                                    .joining(System.lineSeparator())));
+        }
     }
 
     /**
