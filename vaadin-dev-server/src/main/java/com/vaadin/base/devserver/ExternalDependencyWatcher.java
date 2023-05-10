@@ -49,6 +49,7 @@ public class ExternalDependencyWatcher implements Closeable {
                 InitParameters.FRONTEND_HOTDEPLOY_DEPENDENCIES, null);
 
         List<String> hotdeployDependencyFolders = new ArrayList<>();
+        File projectFolder = config.getProjectFolder();
         if (hotdeployDependenciesProperty != null) {
             for (String folder : hotdeployDependenciesProperty.split(",")) {
                 if (!folder.isBlank()) {
@@ -56,7 +57,7 @@ public class ExternalDependencyWatcher implements Closeable {
                 }
             }
         } else {
-            File pomFile = new File(config.getProjectFolder(), "pom.xml");
+            File pomFile = new File(projectFolder, "pom.xml");
             File parentPomFile = MavenUtils
                     .getParentPomOfMultiModuleProject(pomFile);
             if (parentPomFile != null) {
@@ -75,8 +76,12 @@ public class ExternalDependencyWatcher implements Closeable {
         }
 
         for (String hotdeployDependencyFolder : hotdeployDependencyFolders) {
-            Path moduleFolder = config.getProjectFolder().toPath()
-                    .resolve(hotdeployDependencyFolder);
+            Path moduleFolder = projectFolder.toPath()
+                    .resolve(hotdeployDependencyFolder).normalize();
+            if (moduleFolder.equals(projectFolder.toPath())) {
+                // Don't watch the active module
+                continue;
+            }
             Path metaInf = moduleFolder
                     .resolve(Path.of("src", "main", "resources", "META-INF"));
             if (!watchDependencyFolder(metaInf.toFile(),
