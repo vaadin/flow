@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.uitest.multimodule.ui;
 
-import java.io.File;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
