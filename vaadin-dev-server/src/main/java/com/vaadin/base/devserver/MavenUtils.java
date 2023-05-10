@@ -82,7 +82,7 @@ public class MavenUtils {
      * @return Text content of the first mach or null if not found.
      */
     static String getFirstElementTextByName(Node parent, String nodeName) {
-        return findChild(parent, nodeName).map(node -> node.getTextContent())
+        return findChild(parent, nodeName).map(Node::getTextContent)
                 .orElse(null);
     }
 
@@ -124,14 +124,13 @@ public class MavenUtils {
     private static String getParentArtifactId(Document pom) {
         return findParentTag(pom)
                 .flatMap(parentNode -> findChild(parentNode, "artifactId"))
-                .map(artifactIdNode -> artifactIdNode.getTextContent())
-                .orElse(null);
+                .map(Node::getTextContent).orElse(null);
     }
 
     private static Optional<String> getParentRelativePath(Document pom) {
         return findParentTag(pom)
                 .flatMap(parentNode -> findChild(parentNode, "relativePath"))
-                .map(artifactIdNode -> artifactIdNode.getTextContent());
+                .map(Node::getTextContent);
     }
 
     private static Optional<Node> findChild(Node node, String tagname) {
@@ -201,7 +200,7 @@ public class MavenUtils {
     public static List<String> getModuleFolders(Document pom) {
         return findChild(pom.getDocumentElement(), "modules").stream()
                 .flatMap(node -> findChildren(node, "module"))
-                .map(moduleNode -> moduleNode.getTextContent())
+                .map(Node::getTextContent)
                 .map(possiblyFilename -> removeAfter(possiblyFilename, "/"))
                 .toList();
     }
