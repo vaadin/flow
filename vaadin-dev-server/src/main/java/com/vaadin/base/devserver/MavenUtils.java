@@ -121,10 +121,10 @@ public class MavenUtils {
                 "artifactId");
     }
 
-    private static String getParentArtifactId(Document pom) {
+    private static Optional<String> getParentArtifactId(Document pom) {
         return findParentTag(pom)
                 .flatMap(parentNode -> findChild(parentNode, "artifactId"))
-                .map(Node::getTextContent).orElse(null);
+                .map(Node::getTextContent);
     }
 
     private static Optional<String> getParentRelativePath(Document pom) {
@@ -165,12 +165,21 @@ public class MavenUtils {
         if (pom == null) {
             return null;
         }
-        String parent = getParentArtifactId(pom);
+        Optional<String> parent = getParentArtifactId(pom);
+        if (!parent.isPresent()) {
+            return null;
+        }
 
         File pomFolder = pomFile.getParentFile();
         File parentPomFile = getParentRelativePath(pom)
                 .map(relativePath -> new File(pomFolder, relativePath))
-                .orElse(new File(pomFolder.getParentFile(), "pom.xml"));
+                .map(relativePath -> {
+                    if (!relativePath.isFile()) {
+                        // relative path can refer to a folder
+                        relativePath = new File(relativePath, "pom.xml");
+                    }
+                    return relativePath;
+                }).orElse(new File(pomFolder.getParentFile(), "pom.xml"));
 
         Document parentFolderPom = parsePomFile(parentPomFile);
         if (parentFolderPom == null) {
@@ -178,7 +187,7 @@ public class MavenUtils {
         }
         String parentFolderArtifactId = getArtifactId(parentFolderPom);
 
-        if (Objects.equals(parent, parentFolderArtifactId)) {
+        if (Objects.equals(parent.get(), parentFolderArtifactId)) {
             try {
                 return parentPomFile.getCanonicalFile();
             } catch (IOException e) {

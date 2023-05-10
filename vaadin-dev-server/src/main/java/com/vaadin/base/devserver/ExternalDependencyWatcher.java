@@ -56,14 +56,19 @@ public class ExternalDependencyWatcher implements Closeable {
                 }
             }
         } else {
-            File parentPomFile = MavenUtils.getParentPomOfMultiModuleProject(
-                    new File(config.getProjectFolder(), "pom.xml"));
+            File pomFile = new File(config.getProjectFolder(), "pom.xml");
+            File parentPomFile = MavenUtils
+                    .getParentPomOfMultiModuleProject(pomFile);
             if (parentPomFile != null) {
                 Document parentPom = MavenUtils.parsePomFile(parentPomFile);
                 if (parentPom != null) {
+                    Path currentPomToParentPomPath = pomFile.getParentFile()
+                            .toPath()
+                            .relativize(parentPomFile.getParentFile().toPath());
                     hotdeployDependencyFolders = MavenUtils
                             .getModuleFolders(parentPom).stream()
-                            .map(folder -> ".." + File.separator + folder)
+                            .map(folder -> currentPomToParentPomPath
+                                    + File.separator + folder)
                             .toList();
                 }
             }

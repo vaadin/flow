@@ -52,6 +52,14 @@ public class MavenUtilsTest {
     }
 
     @Test
+    public void detectsPomWithRelativePathIsPartOfASimpleMultimoduleProject()
+            throws Exception {
+        File parent = getPomXml("standard-multimodule/pom.xml");
+        Assert.assertEquals(parent, MavenUtils.getParentPomOfMultiModuleProject(
+                getPomXml("standard-multimodule/module2/pom.xml")));
+    }
+
+    @Test
     public void detectsPomIsPartOfAComplexMultimoduleProject()
             throws Exception {
         File parent = getPomXml("complex-multimodule/pom-parent.xml");

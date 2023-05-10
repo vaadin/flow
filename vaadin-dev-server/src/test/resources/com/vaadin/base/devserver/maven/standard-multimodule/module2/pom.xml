@@ -7,6 +7,7 @@
         <artifactId>parent-artifact</artifactId>
         <groupId>this.group</groupId>
         <version>1.7.2-SNAPSHOT</version>
+        <relativePath>..</relativePath>
     </parent>
     <artifactId>another-artifact</artifactId>
     <name>Something something</name>
