@@ -124,4 +124,15 @@ public class FileIOUtils {
         return null;
     }
 
+    /**
+     * Checks if the given file is likely a temporary file created by an editor.
+     *
+     * @param file
+     *            the file to check
+     * @return true if the file is likely a temporary file, false otherwise
+     */
+    public static boolean isProbablyTemporaryFile(File file) {
+        return file.getName().endsWith("~");
+    }
+
 }
