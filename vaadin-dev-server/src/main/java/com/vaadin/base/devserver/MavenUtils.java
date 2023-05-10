@@ -4,6 +4,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
@@ -11,7 +14,6 @@ import java.util.stream.Stream.Builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -80,7 +82,7 @@ public class MavenUtils {
      * @return Text content of the first mach or null if not found.
      */
     static String getFirstElementTextByName(Node parent, String nodeName) {
-        return findChild(parent, nodeName).map(node -> node.getTextContent())
+        return findChild(parent, nodeName).map(Node::getTextContent)
                 .orElse(null);
     }
 
@@ -95,12 +97,16 @@ public class MavenUtils {
         String groupId = getFirstElementTextByName(pom.getDocumentElement(),
                 "groupId");
         if (groupId == null) {
-            groupId = findChild(pom.getDocumentElement(), "parent")
+            groupId = findParentTag(pom)
                     .map(parentNode -> getFirstElementTextByName(parentNode,
                             "groupId"))
                     .orElse(null);
         }
         return groupId;
+    }
+
+    private static Optional<Node> findParentTag(Document pom) {
+        return findChild(pom.getDocumentElement(), "parent");
     }
 
     /**
@@ -113,6 +119,18 @@ public class MavenUtils {
     public static String getArtifactId(Document pom) {
         return getFirstElementTextByName(pom.getDocumentElement(),
                 "artifactId");
+    }
+
+    private static Optional<String> getParentArtifactId(Document pom) {
+        return findParentTag(pom)
+                .flatMap(parentNode -> findChild(parentNode, "artifactId"))
+                .map(Node::getTextContent);
+    }
+
+    private static Optional<String> getParentRelativePath(Document pom) {
+        return findParentTag(pom)
+                .flatMap(parentNode -> findChild(parentNode, "relativePath"))
+                .map(Node::getTextContent);
     }
 
     private static Optional<Node> findChild(Node node, String tagname) {
@@ -130,6 +148,90 @@ public class MavenUtils {
         }
 
         return builder.build();
+    }
+
+    /**
+     * Gets the parent pom location for the given pom file, if the given pom
+     * file is part of a multi module project.
+     *
+     * @param pomFile
+     *            the pom file
+     * @return the location of the parent pom file or {@code null} if the given
+     *         pom file does not have a parent inside the same multi module
+     *         project
+     */
+    public static File getParentPomOfMultiModuleProject(File pomFile) {
+        Document pom = parsePomFile(pomFile);
+        if (pom == null) {
+            return null;
+        }
+        Optional<String> parent = getParentArtifactId(pom);
+        if (!parent.isPresent()) {
+            return null;
+        }
+
+        File pomFolder = pomFile.getParentFile();
+        File parentPomFile = getParentRelativePath(pom)
+                .map(relativePath -> new File(pomFolder, relativePath))
+                .map(relativePath -> {
+                    if (!relativePath.isFile()) {
+                        // relative path can refer to a folder
+                        relativePath = new File(relativePath, "pom.xml");
+                    }
+                    return relativePath;
+                }).orElse(new File(pomFolder.getParentFile(), "pom.xml"));
+
+        Document parentFolderPom = parsePomFile(parentPomFile);
+        if (parentFolderPom == null) {
+            return null;
+        }
+        String parentFolderArtifactId = getArtifactId(parentFolderPom);
+
+        if (Objects.equals(parent.get(), parentFolderArtifactId)) {
+            try {
+                return parentPomFile.getCanonicalFile();
+            } catch (IOException e) {
+                return parentPomFile;
+            }
+        }
+        return null;
+
+    }
+
+    /**
+     * Gets a list of the folders containing the sub modules for the given pom
+     * file.
+     *
+     * @param pom
+     *            the pom file containing sub modules
+     * @return a list of folders for the sub modules
+     */
+    public static List<String> getModuleFolders(Document pom) {
+        return findChild(pom.getDocumentElement(), "modules").stream()
+                .flatMap(node -> findChildren(node, "module"))
+                .map(Node::getTextContent)
+                .map(possiblyFilename -> removeAfter(possiblyFilename, "/"))
+                .toList();
+    }
+
+    /**
+     * Removes the part of the given string that comes after the (last) instance
+     * of the given delimiter.
+     *
+     * Returns the original string if it does not contain the delimiter.
+     *
+     * @param str
+     *            the string to parse
+     * @param delimiter
+     *            the delimiter to look for
+     * @return the modified string
+     */
+    private static String removeAfter(String str, String delimiter) {
+        int i = str.lastIndexOf(delimiter);
+        if (i != -1) {
+            return str.substring(0, i);
+        }
+        return str;
     }
 
 }
