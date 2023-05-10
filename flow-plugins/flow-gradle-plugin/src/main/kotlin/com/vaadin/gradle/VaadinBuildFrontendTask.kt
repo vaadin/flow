@@ -72,12 +72,13 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
 
         BuildFrontendUtil.runNodeUpdater(adapter)
 
-        if (adapter.generateBundle() && BundleValidationUtil.needsBundleBuild
-                (adapter.servletResourceOutputDirectory())) {
-            BuildFrontendUtil.runFrontendBuild(adapter)
+        if (adapter.generateBundle()) {
+            if (BundleValidationUtil.needsBundleBuild(adapter.servletResourceOutputDirectory())) {
+                BuildFrontendUtil.runFrontendBuild(adapter)
+            }
+            LicenseChecker.setStrictOffline(true)
+            BuildFrontendUtil.validateLicenses(adapter)
         }
-        LicenseChecker.setStrictOffline(true)
-        BuildFrontendUtil.validateLicenses(adapter)
 
         BuildFrontendUtil.updateBuildFile(adapter)
     }
