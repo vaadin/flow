@@ -151,6 +151,16 @@ public class MavenUtils {
         return builder.build();
     }
 
+    /**
+     * Gets the parent pom location for the given pom file, if the given pom
+     * file is part of a multi module project.
+     *
+     * @param pomFile
+     *            the pom file
+     * @return the location of the parent pom file or {@code null} if the given
+     *         pom file does not have a parent inside the same multi module
+     *         project
+     */
     public static File getParentPomOfMultiModuleProject(File pomFile) {
         Document pom = parsePomFile(pomFile);
         if (pom == null) {
