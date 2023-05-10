@@ -45,7 +45,7 @@ public class CssLoadingIT extends ChromeBrowserTest {
                 STYLESHEET_LUMO_FONT_SIZE_M,
                 executeScript(
                         "return getComputedStyle(arguments[0]).getPropertyValue('--lumo-font-size-m')",
-                        htmlElement));
+                        htmlElement).toString().trim());
     }
 
     @Test
