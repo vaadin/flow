@@ -185,4 +185,6 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
     override fun ciBuild(): Boolean = extension.ciBuild
 
     override fun skipDevBundleBuild(): Boolean = extension.skipDevBundleBuild
+
+    override fun forceProductionBuild(): Boolean = extension.forceProductionBuild
 }

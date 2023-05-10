@@ -108,6 +108,16 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Parameter(property = InitParameters.CI_BUILD, defaultValue = "false")
     private boolean ciBuild;
 
+    /**
+     * Setting this to {@code true} will force a build of the production build
+     * even if there is a default production bundle that could be used.
+     *
+     * Created production bundle optimization is defined by
+     * {@link #optimizeBundle} parameter.
+     */
+    @Parameter(property = InitParameters.FORCE_PRODUCTION_BUILD, defaultValue = "false")
+    private boolean forceProductionBuild;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
@@ -170,6 +180,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Override
     public boolean ciBuild() {
         return ciBuild;
+    }
+
+    @Override
+    public boolean forceProductionBuild() {
+        return forceProductionBuild;
     }
 
 }

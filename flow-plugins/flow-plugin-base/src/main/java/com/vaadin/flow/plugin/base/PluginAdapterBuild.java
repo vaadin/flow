@@ -17,6 +17,8 @@ package com.vaadin.flow.plugin.base;
 
 import java.io.File;
 
+import com.vaadin.flow.server.InitParameters;
+
 /**
  * Gives access to plugin-specific implementations and configurations.
  *
@@ -76,4 +78,13 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
      * @return true if ci build should be enabled
      */
     boolean ciBuild();
+
+    /**
+     * Setting this to {@code true} will force a build of the production build
+     * even if there is a default production bundle that could be used.
+     *
+     * Created production bundle optimization is defined by
+     * {@link #optimizeBundle} parameter.
+     */
+    boolean forceProductionBuild();
 }

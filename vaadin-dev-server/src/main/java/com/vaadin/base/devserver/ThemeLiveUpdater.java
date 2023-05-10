@@ -15,6 +15,7 @@
  */
 package com.vaadin.base.devserver;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
@@ -33,7 +34,7 @@ import com.vaadin.flow.server.frontend.ThemeUtils;
  * pushes the new version to the browser.
  *
  */
-public class ThemeLiveUpdater {
+public class ThemeLiveUpdater implements Closeable {
 
     private FileWatcher watcher;
 
@@ -93,15 +94,10 @@ public class ThemeLiveUpdater {
     /**
      * Stops watching the folder and cleans up resources.
      */
-    public void stop() {
-        if (watcher != null) {
-            try {
-                watcher.stop();
-            } catch (IOException e) {
-                getLogger().error("Failed to stop theme files watcher", e);
-            }
-            watcher = null;
-        }
+    @Override
+    public void close() throws IOException {
+        watcher.stop();
+        watcher = null;
     }
 
 }

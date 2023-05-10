@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +26,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -69,8 +71,16 @@ public final class BundleValidationUtil {
         try {
             boolean needsBuild;
             if (Mode.PRODUCTION == mode) {
-                needsBuild = needsBuildProdBundle(options, frontendDependencies,
-                        finder);
+                if (options.isForceProductionBuild()
+                        || EndpointRequestUtil.isHillaAvailable()) {
+                    getLogger().info("Frontend build requested.");
+                    saveResultInFile(true, options);
+                    return true;
+                } else {
+                    needsBuild = needsBuildProdBundle(options,
+                            frontendDependencies, finder);
+                    saveResultInFile(needsBuild, options);
+                }
             } else if (Mode.DEVELOPMENT_BUNDLE == mode) {
                 needsBuild = needsBuildDevBundle(options, frontendDependencies,
                         finder);
@@ -78,10 +88,6 @@ public final class BundleValidationUtil {
                 return false;
             } else {
                 throw new IllegalArgumentException("Unexpected mode");
-            }
-
-            if (options.isProductionMode()) {
-                saveResultInFile(needsBuild, options);
             }
 
             if (needsBuild) {

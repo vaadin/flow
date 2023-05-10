@@ -70,6 +70,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <forceProductionBuild>true</forceProductionBuild>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
