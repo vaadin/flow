@@ -210,6 +210,11 @@ public class BuildDevBundleMojo extends AbstractMojo
         return false; // ci build not applicable for dev mode
     }
 
+    @Override
+    public boolean forceProductionBuild() {
+        return false; // not applicable for dev bundle generation.
+    }
+
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
      * MavenProject.
