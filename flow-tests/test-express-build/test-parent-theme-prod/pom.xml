@@ -6,9 +6,8 @@
         <version>24.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>flow-test-parent-theme-in-frontend-prod</artifactId>
-    <name>Flow tests for parent custom theme located in project frontend
-        folder with prod pre-compiled bundle</name>
+    <artifactId>flow-test-parent-theme-prod</artifactId>
+    <name>Flow tests of parent custom theme for pre-compiled prod bundle</name>
 
     <packaging>war</packaging>
     <properties>
@@ -30,6 +29,11 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-lumo</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-reusable-theme-no-assets</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

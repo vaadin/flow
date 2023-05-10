@@ -61,16 +61,11 @@ public class ParentThemeIT extends ChromeBrowserTest {
         waitUntilParentThemeStyles();
         checkLogsForErrors();
 
-        try {
-            findElement(By.tagName("vaadin-dev-tools"));
-            // app dev bundle has reusable theme in stats.json
-            verifyThemeJsonHashReusableThemeRecord();
-            // check that the bundle has the expected asset for dev mode
-            verifyExternalAssetInBundle();
-            waitUntilExternalAsset();
-        } catch (NoSuchElementException e) {
-            // ignore in prod mode
-        }
+        // app dev bundle has reusable theme in stats.json
+        verifyThemeJsonHashReusableThemeRecord();
+        // check that the bundle has the expected asset for dev mode
+        verifyExternalAssetInBundle();
+        waitUntilExternalAsset();
     }
 
     private void waitUntilParentThemeStyles() {
