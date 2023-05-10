@@ -1990,7 +1990,8 @@ public abstract class VaadinService implements Serializable {
                 session.unlock();
             }
         } catch (InterruptedException e) {
-            // Just ignore
+            // Restore the interrupted flag
+            Thread.currentThread().interrupt();
         }
     }
 
