@@ -321,7 +321,8 @@ public class BuildFrontendUtil {
                     .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                     .setJavaResourceFolder(adapter.javaResourceFolder())
                     .withPostinstallPackages(adapter.postinstallPackages())
-                    .withCiBuild(adapter.ciBuild());
+                    .withCiBuild(adapter.ciBuild())
+                    .withForceProductionBuild(adapter.forceProductionBuild());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
