@@ -20,6 +20,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +35,7 @@ import com.vaadin.flow.server.startup.EnableOSGiRunner;
 public class OSGiVaadinServletTest {
 
     @Test
-    public void init_onlyLookupAttributeFromFakeOSGiContextAreSetFromServletContext()
+    public void init_withEmptyAttributeNamesInServletContext_onlyLookupAttributeFromFakeOSGiContextAreSetFromServletContext()
             throws ServletException {
         ServletContext context = OSGiAccess.getInstance()
                 .getOsgiServletContext();
@@ -48,12 +49,51 @@ public class OSGiVaadinServletTest {
         Mockito.when(servletContext.getAttributeNames())
                 .thenReturn(Collections.emptyEnumeration());
 
+        VaadinServlet servlet = createVaadinServletStub();
+
+        servlet.init(config);
+
+        Mockito.verify(servletContext).setAttribute(Lookup.class.getName(),
+                context.getAttribute(Lookup.class.getName()));
+        Mockito.verify(servletContext, Mockito.times(0)).setAttribute("foo",
+                "bar");
+    }
+
+    @Test
+    public void init_withNotEmptyAttributeNamesInServletContext_onlyLookupAttributeFromFakeOSGiContextAreSetFromServletContext()
+            throws ServletException {
+        List<String> servletContextAttributes = Collections
+                .singletonList("bar");
+
+        ServletContext context = OSGiAccess.getInstance()
+                .getOsgiServletContext();
+
+        context.setAttribute("foo", "bar");
+
+        ServletConfig config = Mockito.mock(ServletConfig.class);
+
+        ServletContext servletContext = Mockito.mock(ServletContext.class);
+        Mockito.when(config.getServletContext()).thenReturn(servletContext);
+        Mockito.when(servletContext.getAttributeNames())
+                .thenReturn(Collections.enumeration(servletContextAttributes));
+
+        VaadinServlet servlet = createVaadinServletStub();
+
+        servlet.init(config);
+
+        Mockito.verify(servletContext).setAttribute(Lookup.class.getName(),
+                context.getAttribute(Lookup.class.getName()));
+        Mockito.verify(servletContext, Mockito.times(0)).setAttribute("foo",
+                "bar");
+    }
+
+    private VaadinServlet createVaadinServletStub() {
         VaadinServlet servlet = new VaadinServlet() {
             @Override
             protected DeploymentConfiguration createDeploymentConfiguration() {
                 return Mockito.mock(DeploymentConfiguration.class);
             }
-
+    
             @Override
             protected VaadinServletService createServletService(
                     DeploymentConfiguration deploymentConfiguration)
@@ -65,12 +105,6 @@ public class OSGiVaadinServletTest {
                 return service;
             }
         };
-
-        servlet.init(config);
-
-        Mockito.verify(servletContext).setAttribute(Lookup.class.getName(),
-                context.getAttribute(Lookup.class.getName()));
-        Mockito.verify(servletContext, Mockito.times(0)).setAttribute("foo",
-                "bar");
+        return servlet;
     }
 }
