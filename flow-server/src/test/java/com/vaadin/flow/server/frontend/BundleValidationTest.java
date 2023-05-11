@@ -23,8 +23,10 @@ import org.junit.runners.Parameterized;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -152,7 +154,7 @@ public class BundleValidationTest {
     }
 
     @Test
-    public void noDevBundle_bundleCompilationRequires() throws IOException {
+    public void noDevBundle_bundleCompilationRequires() {
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 Mockito.mock(FrontendDependenciesScanner.class), finder, mode);
         Assert.assertTrue("Bundle should require creation if not available",
@@ -160,8 +162,7 @@ public class BundleValidationTest {
     }
 
     @Test
-    public void devBundleStatsJsonMissing_bundleCompilationRequires()
-            throws IOException {
+    public void devBundleStatsJsonMissing_bundleCompilationRequires() {
         devBundleUtils
                 .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
@@ -201,7 +202,42 @@ public class BundleValidationTest {
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, finder, mode);
-        Assert.assertFalse("Missing stats.json should require bundling",
+        Assert.assertFalse("Matching hashes should not require compilation",
+                needsBuild);
+    }
+
+    @Test
+    public void loadDependenciesOnStartup_annotatedClassInProject_compilationRequiredForProduction()
+            throws IOException {
+        Assume.assumeTrue(mode == Mode.PRODUCTION);
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"1.7.5\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages())
+                .thenReturn(Collections.emptyMap());
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
+                "1.7.5");
+
+        setupFrontendUtilsMock(stats);
+
+        Mockito.when(
+                finder.getAnnotatedClasses(LoadDependenciesOnStartup.class))
+                .thenReturn(Collections.singleton(AllEagerAppConf.class));
+
+        final boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, finder, mode);
+        Assert.assertTrue(
+                "'LoadDependenciesOnStartup' annotation requires build",
                 needsBuild);
     }
 
@@ -588,8 +624,7 @@ public class BundleValidationTest {
     }
 
     @Test
-    public void noPackageJson_defaultPackagesAndModulesInStats_noBuildNeeded()
-            throws IOException {
+    public void noPackageJson_defaultPackagesAndModulesInStats_noBuildNeeded() {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
@@ -615,8 +650,7 @@ public class BundleValidationTest {
     }
 
     @Test
-    public void noPackageJson_defaultPackagesInStats_missingNpmModules_buildNeeded()
-            throws IOException {
+    public void noPackageJson_defaultPackagesInStats_missingNpmModules_buildNeeded() {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
@@ -642,8 +676,7 @@ public class BundleValidationTest {
     }
 
     @Test
-    public void noPackageJson_defaultPackagesInStats_noBuildNeeded()
-            throws IOException {
+    public void noPackageJson_defaultPackagesInStats_noBuildNeeded() {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
@@ -1651,20 +1684,28 @@ public class BundleValidationTest {
     }
 
     private void setupFrontendUtilsMock(JsonObject stats) {
-        devBundleUtils
-                .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
-                .thenReturn(temporaryFolder.getRoot());
-        devBundleUtils
-                .when(() -> DevBundleUtils
-                        .findBundleStatsJson(temporaryFolder.getRoot()))
-                .thenAnswer(q -> stats.toJson());
+        if (mode == Mode.PRODUCTION) {
+            bundleUtils
+                    .when(() -> BundleValidationUtil.findProdBundleStatsJson(
+                            Mockito.any(ClassFinder.class)))
+                    .thenReturn(stats.toJson());
+        } else {
+            devBundleUtils.when(
+                    () -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            devBundleUtils
+                    .when(() -> DevBundleUtils
+                            .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenAnswer(q -> stats.toJson());
+        }
         frontendUtils
                 .when(() -> FrontendUtils.getJarResourceString(
                         Mockito.anyString(), Mockito.any(ClassFinder.class)))
                 .thenAnswer(q -> jarResources.get(q.getArgument(0)));
-        bundleUtils
-                .when(() -> BundleValidationUtil.findProdBundleStatsJson(
-                        Mockito.any(ClassFinder.class)))
-                .thenReturn(stats.toJson());
+    }
+
+    @LoadDependenciesOnStartup
+    static class AllEagerAppConf implements AppShellConfigurator {
+
     }
 }

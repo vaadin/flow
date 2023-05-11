@@ -28,6 +28,7 @@ import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -141,6 +142,13 @@ public final class BundleValidationUtil {
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder) throws IOException {
         String statsJsonContent = findProdBundleStatsJson(finder);
+
+        if (!finder.getAnnotatedClasses(LoadDependenciesOnStartup.class)
+                .isEmpty()) {
+            getLogger()
+                    .info("Custom eager routes defined. Require bundle build.");
+            return true;
+        }
 
         if (statsJsonContent == null) {
             // without stats.json in bundle we can not say if it is up-to-date
