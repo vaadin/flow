@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -127,7 +128,8 @@ public class ThemeUtils {
             if (config.isProductionMode()) {
                 URL themeJsonUrl = ThemeUtils
                         .getThemeResourceFromPrecompiledProductionBundle(
-                                themeName + "/theme.json");
+                                Paths.get(Constants.APPLICATION_THEME_ROOT,
+                                        themeName, "theme.json").toString());
                 if (themeJsonUrl != null) {
                     content = IOUtils.toString(themeJsonUrl,
                             StandardCharsets.UTF_8);
@@ -151,12 +153,22 @@ public class ThemeUtils {
                 : Optional.empty();
     }
 
+    /**
+     * Gets the URL of the theme resource located in the pre-compiled production
+     * bundle JAR or in the external packaged theme JAR.
+     *
+     * @param themeAssetPath
+     *            theme resource path relative to 'themes' folder, e.g.
+     *            'my-theme/styles.css'
+     * @return URL to theme resource if the resource was found,
+     *         <code>null</code> otherwise
+     */
     public static URL getThemeResourceFromPrecompiledProductionBundle(
             String themeAssetPath) {
         // lookup in the prod bundle, where themes are copied from project's
         URL resourceUrl = ThemeUtils.class.getClassLoader()
-                .getResource(VAADIN_WEBAPP_RESOURCES + VAADIN_STATIC_FILES_PATH
-                        + themeAssetPath);
+                .getResource(Paths.get(VAADIN_WEBAPP_RESOURCES,
+                        VAADIN_STATIC_FILES_PATH, themeAssetPath).toString());
         if (resourceUrl == null) {
             // lookup in the JARs for packaged themes
             resourceUrl = ThemeUtils.class.getClassLoader().getResource(
