@@ -129,19 +129,17 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                     "Could not execute build-frontend goal", exception);
         }
 
-        if (generateBundle()) {
-            if (BundleValidationUtil
-                    .needsBundleBuild(servletResourceOutputDirectory())) {
-                try {
-                    BuildFrontendUtil.runFrontendBuild(this);
-                } catch (URISyntaxException | TimeoutException exception) {
-                    throw new MojoExecutionException(exception.getMessage(),
-                            exception);
-                }
+        if (generateBundle() && BundleValidationUtil
+                .needsBundleBuild(servletResourceOutputDirectory())) {
+            try {
+                BuildFrontendUtil.runFrontendBuild(this);
+            } catch (URISyntaxException | TimeoutException exception) {
+                throw new MojoExecutionException(exception.getMessage(),
+                        exception);
             }
-            LicenseChecker.setStrictOffline(true);
-            BuildFrontendUtil.validateLicenses(this);
         }
+        LicenseChecker.setStrictOffline(true);
+        BuildFrontendUtil.validateLicenses(this);
 
         BuildFrontendUtil.updateBuildFile(this);
 
