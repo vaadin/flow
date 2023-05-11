@@ -109,13 +109,17 @@ public class ExternalDependencyWatcher implements Closeable {
         File metaInfFrontend = new File(metaInfFolder, "frontend");
         File metaInfResourcesFrontend = new File(
                 new File(metaInfFolder, "resources"), "frontend");
+        File metaInfResourcesThemes = new File(
+                new File(metaInfFolder, "resources"), "themes");
 
         boolean watching1 = watchAndCopy(metaInfFrontend,
                 jarFrontendResourcesFolder);
         boolean watching2 = watchAndCopy(metaInfResourcesFrontend,
                 jarFrontendResourcesFolder);
+        boolean watching3 = watchAndCopy(metaInfResourcesThemes,
+                new File(jarFrontendResourcesFolder, "themes"));
 
-        return watching1 || watching2;
+        return watching1 || watching2 || watching3;
     }
 
     private boolean watchAndCopy(File watchFolder, File targetFolder) {

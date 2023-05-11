@@ -8,14 +8,14 @@
         <groupId>com.vaadin</groupId>
         <version>24.1-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-live-reload-multimodule-hotdeploy</artifactId>
-    <name>The main module for a live reload multi module project (hotdeploy)</name>
+    <artifactId>flow-test-live-reload-multimodule-devbundle</artifactId>
+    <name>The main module for a live reload multi module project (dev bundle)</name>
 
     <packaging>pom</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <vaadin.devmode.liveReload.enabled>true</vaadin.devmode.liveReload.enabled>
-        <vaadin.frontend.hotdeploy>true</vaadin.frontend.hotdeploy>
+        <vaadin.frontend.hotdeploy>false</vaadin.frontend.hotdeploy>
     </properties>
 
     <dependencies>
@@ -42,9 +42,9 @@
     </dependencies>
 
     <modules>
-        <module>library</module>
-        <module>ui</module>
-        <module>theme</module>
+        <module>library/pom-devbundle.xml</module>
+        <module>ui/pom-devbundle.xml</module>
+        <module>theme/pom-devbundle.xml</module>
     </modules>
 
 </project>

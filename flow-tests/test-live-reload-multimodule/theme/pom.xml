@@ -8,8 +8,8 @@
         <groupId>com.vaadin</groupId>
         <version>24.1-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-live-reload-multimodule-library-hotdeploy</artifactId>
-    <name>The frontend library module for a live reload multi module project (hotdeploy)</name>
+    <artifactId>flow-test-live-reload-multimodule-theme-hotdeploy</artifactId>
+    <name>The theme module for a live reload multi module project (hotdeploy)</name>
 
     <packaging>jar</packaging>
     <properties>
