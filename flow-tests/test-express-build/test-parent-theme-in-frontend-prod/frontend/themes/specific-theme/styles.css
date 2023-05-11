@@ -1,3 +1,7 @@
 body {
     background-color: rgba(0, 0, 255, 1);
 }
+
+.hilla-logo {
+    background-image: url("./images/hilla-logo.png");
+}
