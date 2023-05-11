@@ -42,6 +42,7 @@ import com.vaadin.flow.theme.Theme;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
 /**
  * Helpers related to theme handling.
@@ -124,13 +125,9 @@ public class ThemeUtils {
         String content = null;
         try {
             if (config.isProductionMode()) {
-                URL themeJsonUrl = getThemeResourceFromBundle(
-                        Constants.APPLICATION_THEME_ROOT + "/" + themeName
-                                + "/theme.json");
-                if (themeJsonUrl == null) {
-                    themeJsonUrl = getThemeResourceFromJar(
-                            themeName + "/theme.json");
-                }
+                URL themeJsonUrl = ThemeUtils
+                        .getThemeResourceFromPrecompiledProductionBundle(
+                                themeName + "/theme.json");
                 if (themeJsonUrl != null) {
                     content = IOUtils.toString(themeJsonUrl,
                             StandardCharsets.UTF_8);
@@ -154,22 +151,24 @@ public class ThemeUtils {
                 : Optional.empty();
     }
 
-    public static URL getThemeResourceFromJar(String themeAssetPath) {
-        return ThemeUtils.class.getClassLoader()
-                .getResource(Constants.RESOURCES_JAR_DEFAULT + themeAssetPath);
-    }
-
-    public static URL getThemeResourceFromBundle(String themeAssetPath) {
-        return ThemeUtils.class.getClassLoader().getResource(
-                VAADIN_WEBAPP_RESOURCES + "VAADIN/static/" + themeAssetPath);
+    public static URL getThemeResourceFromPrecompiledProductionBundle(
+            String themeAssetPath) {
+        // lookup in the prod bundle, where themes are copied from project's
+        URL resourceUrl = ThemeUtils.class.getClassLoader()
+                .getResource(VAADIN_WEBAPP_RESOURCES + VAADIN_STATIC_FILES_PATH
+                        + themeAssetPath);
+        if (resourceUrl == null) {
+            // lookup in the JARs for packaged themes
+            resourceUrl = ThemeUtils.class.getClassLoader().getResource(
+                    Constants.RESOURCES_JAR_DEFAULT + themeAssetPath);
+        }
+        return resourceUrl;
     }
 
     public static Optional<JsonObject> getThemeJson(String themeName,
-            Options options) {
-        File themeJsonFile;
-        File frontendFolder = options.getFrontendDirectory();
+            File frontendFolder) {
         File themeFolder = getThemeFolder(frontendFolder, themeName);
-        themeJsonFile = new File(themeFolder, "theme.json");
+        File themeJsonFile = new File(themeFolder, "theme.json");
 
         if (themeJsonFile.exists()) {
             String content;

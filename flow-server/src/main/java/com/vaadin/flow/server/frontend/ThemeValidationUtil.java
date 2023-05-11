@@ -55,8 +55,9 @@ public class ThemeValidationUtil {
         Optional<String> maybeThemeName = Optional
                 .ofNullable(frontendDependencies.getThemeDefinition())
                 .map(ThemeDefinition::getName).filter(name -> !name.isBlank());
-        Optional<JsonObject> projectThemeJson = maybeThemeName.flatMap(
-                themeName -> ThemeUtils.getThemeJson(themeName, options));
+        Optional<JsonObject> projectThemeJson = maybeThemeName
+                .flatMap(themeName -> ThemeUtils.getThemeJson(themeName,
+                        options.getFrontendDirectory()));
         String projectThemeName = maybeThemeName.orElse(null);
 
         JsonObject statsThemeJson = statsJson.getObject("themeJsonContents");
@@ -132,8 +133,8 @@ public class ThemeValidationUtil {
                 .getParentThemeName(themeJson);
         if (parentThemeInFrontend.isPresent()) {
             String parentThemeName = parentThemeInFrontend.get();
-            Optional<JsonObject> parentThemeJson = ThemeUtils
-                    .getThemeJson(parentThemeName, options);
+            Optional<JsonObject> parentThemeJson = ThemeUtils.getThemeJson(
+                    parentThemeName, options.getFrontendDirectory());
             parentThemeJson.ifPresent(
                     jsonObject -> collectThemeJsonContentsInFrontend(options,
                             themeJsonContents, parentThemeName, jsonObject,

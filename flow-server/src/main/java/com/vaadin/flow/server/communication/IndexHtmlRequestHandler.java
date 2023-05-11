@@ -184,8 +184,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
         if (config.getMode() == Mode.DEVELOPMENT_BUNDLE
-                || (config.getMode() == Mode.PRODUCTION
-                        && BundleUtils.isPreCompiledBundle())) {
+                || (config.getMode() == Mode.PRODUCTION_PRECOMPILED_BUNDLE)) {
             try {
                 BootstrapHandler.getStylesheetTags(context, "styles.css")
                         .forEach(link -> document.head().appendChild(link));
@@ -411,7 +410,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         Document indexHtmlDocument = Jsoup.parse(index);
         Mode mode = config.getMode();
-        if (mode == Mode.PRODUCTION) {
+        if (mode.isProduction()) {
             // The index.html is fetched from the bundle so it includes the
             // entry point javascripts
         } else if (mode == Mode.DEVELOPMENT_BUNDLE) {

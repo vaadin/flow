@@ -70,7 +70,7 @@ public final class BundleValidationUtil {
         getLogger().info("Checking if a {} mode bundle build is needed", mode);
         try {
             boolean needsBuild;
-            if (Mode.PRODUCTION == mode) {
+            if (mode.isProduction()) {
                 if (options.isForceProductionBuild()
                         || EndpointRequestUtil.isHillaAvailable()) {
                     getLogger().info("Frontend build requested.");

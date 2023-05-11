@@ -32,6 +32,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
 /**
  * Copies production bundle files from pre-compiled bundle JAR into a folder
@@ -62,9 +63,17 @@ public class TaskPrepareProdBundle implements FallibleCommand {
         File localThemesRoot = new File(options.getFrontendDirectory(),
                 APPLICATION_THEME_ROOT);
         if (localThemesRoot.exists()) {
-            File target = new File(options.getResourceOutputDirectory(),
-                    Paths.get(Constants.VAADIN_WEBAPP, Constants.VAADIN_MAPPING,
-                            "static", APPLICATION_THEME_ROOT).toString());
+            File webappResourcesDirectory = options
+                    .getWebappResourcesDirectory();
+            if (webappResourcesDirectory == null) {
+                String buildDirectory = options.getBuildDirectoryName();
+                webappResourcesDirectory = new File(buildDirectory,
+                        Paths.get("classes", Constants.VAADIN_WEBAPP_RESOURCES)
+                                .toString());
+            }
+            File target = new File(webappResourcesDirectory,
+                    Paths.get(VAADIN_STATIC_FILES_PATH, APPLICATION_THEME_ROOT)
+                            .toString());
             File[] localThemes = localThemesRoot.listFiles(File::isDirectory);
             if (localThemes == null) {
                 throw new IllegalStateException();
@@ -80,7 +89,7 @@ public class TaskPrepareProdBundle implements FallibleCommand {
         }
     }
 
-    private void copyBundleFilesFromJar() {
+    private void copyBundleFilesFromJar() throws ExecutionFailedException {
         URL statsJson = BundleValidationUtil.getProdBundleResource(
                 "config/stats.json", options.getClassFinder());
         if (statsJson == null) {
@@ -100,7 +109,8 @@ public class TaskPrepareProdBundle implements FallibleCommand {
                     new File(jarUri), Constants.PROD_BUNDLE_NAME,
                     options.getResourceOutputDirectory(), "**/*.*");
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new ExecutionFailedException(
+                    "Couldn't copy production bundle files", e);
         }
     }
 

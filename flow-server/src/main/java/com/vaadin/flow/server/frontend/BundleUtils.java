@@ -120,7 +120,7 @@ public final class BundleUtils {
      * @return <code>true</code> in case of pre-compiled bundle,
      *         <code>false</code> otherwise
      */
-    public static boolean isPreCompiledBundle() {
+    public static boolean isPreCompiledProductionBundle() {
         JsonObject stats = loadStatsJson();
         return stats.hasKey("pre-compiled");
     }

@@ -111,7 +111,8 @@ public class NodeTasks implements FallibleCommand {
 
             if (options.isProductionMode()) {
                 boolean needBuild = BundleValidationUtil.needsBuild(options,
-                        frontendDependencies, classFinder, Mode.PRODUCTION);
+                        frontendDependencies, classFinder,
+                        Mode.PRODUCTION_PRECOMPILED_BUNDLE);
                 options.withRunNpmInstall(needBuild);
                 options.withBundleBuild(needBuild);
                 if (!needBuild) {

@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -61,12 +62,14 @@ public interface AbstractConfiguration extends Serializable {
     /**
      * Gets the mode the application is running in.
      *
-     * @return production, development using livereload or development using
-     *         bundle
+     * @return custom production bundle, pre-compiled production bundle,
+     *         development using livereload or development using bundle
      **/
     default Mode getMode() {
         if (isProductionMode()) {
-            return Mode.PRODUCTION;
+            return BundleUtils.isPreCompiledProductionBundle()
+                    ? Mode.PRODUCTION_PRECOMPILED_BUNDLE
+                    : Mode.PRODUCTION_CUSTOM;
         } else if (frontendHotdeploy()) {
             return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD;
         } else {
