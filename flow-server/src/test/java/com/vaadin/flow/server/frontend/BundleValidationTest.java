@@ -209,7 +209,7 @@ public class BundleValidationTest {
     @Test
     public void loadDependenciesOnStartup_annotatedClassInProject_compilationRequiredForProduction()
             throws IOException {
-        Assume.assumeTrue(mode == Mode.PRODUCTION);
+        Assume.assumeTrue(mode.isProduction());
 
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
@@ -1684,7 +1684,7 @@ public class BundleValidationTest {
     }
 
     private void setupFrontendUtilsMock(JsonObject stats) {
-        if (mode == Mode.PRODUCTION) {
+        if (mode.isProduction()) {
             bundleUtils
                     .when(() -> BundleValidationUtil.findProdBundleStatsJson(
                             Mockito.any(ClassFinder.class)))
