@@ -68,7 +68,8 @@ public class BundleValidationTest {
 
     @Parameterized.Parameters
     public static Collection<Mode> modes() {
-        return List.of(Mode.PRODUCTION, Mode.DEVELOPMENT_BUNDLE);
+        return List.of(Mode.PRODUCTION_PRECOMPILED_BUNDLE,
+                Mode.DEVELOPMENT_BUNDLE);
     }
 
     @Parameterized.Parameter
@@ -96,8 +97,8 @@ public class BundleValidationTest {
         options = new Options(Mockito.mock(Lookup.class),
                 temporaryFolder.getRoot()).withBuildDirectory("target");
         options.copyResources(Collections.emptySet());
-        options.withProductionMode(mode == Mode.PRODUCTION);
-        bundleLocation = mode == Mode.PRODUCTION ? Constants.PROD_BUNDLE_NAME
+        options.withProductionMode(mode.isProduction());
+        bundleLocation = mode.isProduction() ? Constants.PROD_BUNDLE_NAME
                 : Constants.DEV_BUNDLE_NAME;
         finder = Mockito.mock(ClassFinder.class);
         frontendUtils = Mockito.mockStatic(FrontendUtils.class,
@@ -208,7 +209,7 @@ public class BundleValidationTest {
     @Test
     public void loadDependenciesOnStartup_annotatedClassInProject_compilationRequiredForProduction()
             throws IOException {
-        Assume.assumeTrue(mode == Mode.PRODUCTION);
+        Assume.assumeTrue(mode.isProduction());
 
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
@@ -1644,7 +1645,7 @@ public class BundleValidationTest {
 
     @Test
     public void forceProductionBundle_bundleRequired() {
-        Assume.assumeTrue(mode == Mode.PRODUCTION);
+        Assume.assumeTrue(mode.isProduction());
 
         options.withForceProductionBuild(true);
 
@@ -1683,7 +1684,7 @@ public class BundleValidationTest {
     }
 
     private void setupFrontendUtilsMock(JsonObject stats) {
-        if (mode == Mode.PRODUCTION) {
+        if (mode.isProduction()) {
             bundleUtils
                     .when(() -> BundleValidationUtil.findProdBundleStatsJson(
                             Mockito.any(ClassFinder.class)))
