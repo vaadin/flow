@@ -85,9 +85,6 @@ public class RouteNotFoundError extends Component
                 } else {
                     template = readHtmlFile("NoRoutesError_dev.html");
                 }
-
-                var logMessage = stripHTML(template);
-                getLogger().info(logMessage);
             } else {
                 template = readHtmlFile("RouteNotFoundError_dev.html");
 
@@ -106,12 +103,6 @@ public class RouteNotFoundError extends Component
 
         getElement().setChild(0, new Html(template).getElement());
         return HttpStatusCode.NOT_FOUND.getCode();
-    }
-
-    private static String stripHTML(String html) {
-        return html.lines().map(line -> line.replaceAll("<[^>]+>", ""))
-                .map(String::trim).filter(line -> !line.isEmpty())
-                .collect(Collectors.joining("\n"));
     }
 
     private static Logger getLogger() {
