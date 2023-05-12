@@ -116,6 +116,8 @@ public class NodeTasks implements FallibleCommand {
                 options.withBundleBuild(needBuild);
                 if (!needBuild) {
                     commands.add(new TaskCopyBundleFiles(options));
+                } else {
+                    BundleUtils.copyPackageLock(options);
                 }
             } else if (options.isBundleBuild()) {
                 // The dev bundle check needs the frontendDependencies to be
@@ -128,6 +130,7 @@ public class NodeTasks implements FallibleCommand {
                         Mode.DEVELOPMENT_BUNDLE)) {
                     options.withRunNpmInstall(true);
                     options.withCopyTemplates(true);
+                    BundleUtils.copyPackageLock(options);
                     UsageStatistics.markAsUsed("flow/app-dev-bundle", null);
                 } else {
                     // A dev bundle build is not needed after all, skip it

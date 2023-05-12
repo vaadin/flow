@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -22,16 +23,19 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.server.Constants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
 public final class BundleUtils {
 
@@ -115,5 +119,50 @@ public final class BundleUtils {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(BundleUtils.class);
+    }
+
+    /**
+     * Copy package-lock.json file from existing dev-bundle for building new
+     * bundle.
+     *
+     * @param options
+     *            task options
+     */
+    public static void copyPackageLock(Options options) {
+        File packageLockJson = new File(options.getNpmFolder(),
+                "package-lock.json");
+        if (packageLockJson.exists()) {
+            // NO-OP due to existing package-lock.json
+            return;
+        }
+
+        try {
+            copyAppropriatePackageLock(options, packageLockJson);
+        } catch (IOException ioe) {
+            getLogger().error(
+                    "Failed to copy existing `package-lock.json` to use", ioe);
+        }
+
+    }
+
+    private static void copyAppropriatePackageLock(Options options,
+            File packageLockJson) throws IOException {
+        File devBundleFolder = new File(options.getNpmFolder(),
+                Constants.DEV_BUNDLE_LOCATION);
+        if (devBundleFolder.exists()) {
+            File devPackageLockJson = new File(devBundleFolder,
+                    Constants.PACKAGE_LOCK_JSON);
+            if (devPackageLockJson.exists()) {
+                FileUtils.copyFile(devPackageLockJson, packageLockJson);
+                return;
+            }
+        }
+        final URL resource = options.getClassFinder()
+                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON);
+        if (resource != null) {
+            FileUtils.write(packageLockJson,
+                    IOUtils.toString(resource, StandardCharsets.UTF_8),
+                    StandardCharsets.UTF_8);
+        }
     }
 }

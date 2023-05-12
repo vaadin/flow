@@ -33,8 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
@@ -100,6 +98,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         runFrontendBuildTool("Vite", "vite/bin/vite.js", Collections.emptyMap(),
                 "build");
+
+        copyPackageLockJson();
 
         addReadme();
     }
@@ -200,6 +200,24 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         } finally {
             if (process != null) {
                 process.destroyForcibly();
+            }
+        }
+    }
+
+    private void copyPackageLockJson() {
+        File devBundleFolder = new File(options.getNpmFolder(),
+                Constants.DEV_BUNDLE_LOCATION);
+        assert devBundleFolder.exists() : "No dev-bundle folder created";
+
+        File packageLockJson = new File(options.getNpmFolder(),
+                "package-lock.json");
+        if (packageLockJson.exists()) {
+            try {
+                FileUtils.copyFile(packageLockJson,
+                        new File(devBundleFolder, Constants.PACKAGE_LOCK_JSON));
+            } catch (IOException e) {
+                getLogger().error("Failed to copy 'package-lock.json' to "
+                        + Constants.DEV_BUNDLE_LOCATION, e);
             }
         }
     }
