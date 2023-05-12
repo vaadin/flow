@@ -95,8 +95,7 @@ public class OSGiVaadinServletTest {
             }
             @Override
             protected VaadinServletService createServletService(
-                    DeploymentConfiguration deploymentConfiguration)
-                    throws ServiceException {
+                    DeploymentConfiguration deploymentConfiguration) {
                 VaadinServletService service = Mockito
                         .mock(VaadinServletService.class);
                 Mockito.when(service.getDeploymentConfiguration())
