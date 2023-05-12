@@ -85,8 +85,9 @@ public class StreamResourceHandler implements Serializable {
             try {
                 writer.accept(outputStream, session);
             } catch (Exception exception) {
-                // Set status before output is closed by try-with-resources (see #8740)
-                response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+                // Set status before output is closed (see #8740)
+                response.setStatus(
+                        HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
                 throw exception;
             }
         }
