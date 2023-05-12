@@ -173,7 +173,7 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         Mockito.when(configuration.getMode()).thenAnswer(q -> {
             if (configuration.isProductionMode()) {
-                return Mode.PRODUCTION;
+                return Mode.PRODUCTION_CUSTOM;
             } else if (configuration.frontendHotdeploy()) {
                 return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD;
             } else {
