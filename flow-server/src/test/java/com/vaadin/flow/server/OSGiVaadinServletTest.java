@@ -20,6 +20,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 
 import org.junit.Test;
@@ -44,14 +45,10 @@ public class OSGiVaadinServletTest {
 
         ServletConfig config = Mockito.mock(ServletConfig.class);
 
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(config.getServletContext()).thenReturn(servletContext);
-        Mockito.when(servletContext.getAttributeNames())
-                .thenReturn(Collections.emptyEnumeration());
+        ServletContext servletContext = mockServletContext(config,
+                Collections.emptyEnumeration());
 
-        VaadinServlet servlet = createVaadinServletStub();
-
-        servlet.init(config);
+        initVaadinServletStub(config);
 
         Mockito.verify(servletContext).setAttribute(Lookup.class.getName(),
                 context.getAttribute(Lookup.class.getName()));
@@ -72,14 +69,10 @@ public class OSGiVaadinServletTest {
 
         ServletConfig config = Mockito.mock(ServletConfig.class);
 
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(config.getServletContext()).thenReturn(servletContext);
-        Mockito.when(servletContext.getAttributeNames())
-                .thenReturn(Collections.enumeration(servletContextAttributes));
+        ServletContext servletContext = mockServletContext(config,
+                Collections.enumeration(servletContextAttributes));
 
-        VaadinServlet servlet = createVaadinServletStub();
-
-        servlet.init(config);
+        initVaadinServletStub(config);
 
         Mockito.verify(servletContext).setAttribute(Lookup.class.getName(),
                 context.getAttribute(Lookup.class.getName()));
@@ -87,7 +80,17 @@ public class OSGiVaadinServletTest {
                 "bar");
     }
 
-    private VaadinServlet createVaadinServletStub() {
+    private ServletContext mockServletContext(ServletConfig config,
+            Enumeration<String> servletContextAttributes) {
+        ServletContext servletContext = Mockito.mock(ServletContext.class);
+        Mockito.when(config.getServletContext()).thenReturn(servletContext);
+        Mockito.when(servletContext.getAttributeNames())
+                .thenReturn(servletContextAttributes);
+        return servletContext;
+    }
+
+    private void initVaadinServletStub(ServletConfig config)
+            throws ServletException {
         VaadinServlet servlet = new VaadinServlet() {
             @Override
             protected DeploymentConfiguration createDeploymentConfiguration() {
@@ -103,6 +106,6 @@ public class OSGiVaadinServletTest {
                 return service;
             }
         };
-        return servlet;
+        servlet.init(config);
     }
 }
