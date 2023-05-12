@@ -28,11 +28,6 @@ import com.vaadin.flow.component.Tag;
  * Component for a <code>&lt;label&gt;</code> element, which represents a
  * caption for an item in a user interface.
  * <p>
- * Note that Label components are not meant for loose text in the page - they
- * should be coupled with another component by using the
- * {@link #setFor(Component)} or by adding them to it with the
- * {@link #add(Component...)} method.
- * <p>
  * Clicking on a label automatically transfers the focus to the associated
  * component. This is especially helpful when building forms with
  * {@link Input}s.
@@ -46,6 +41,18 @@ import com.vaadin.flow.component.Tag;
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label">https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label</a>
  * @since 1.0
+ * @deprecated Use {@link NativeLabel} instead, if you need the HTML
+ *             <code>&lt;label&gt;</code> element, which is normally not needed
+ *             within a Vaadin Flow application's high-level components. This
+ *             component was deprecated because it was confusing users of
+ *             earlier Vaadin Versions and users migrating from Swing to the
+ *             modern Vaadin Flow Framework. The {@link Label} component /
+ *             <code>&lt;label&gt;</code> element is not meant for loose text in
+ *             the page - it should only be coupled with another component by
+ *             using the {@link #setFor(Component)} or by adding them to it with
+ *             the {@link #add(Component...)} method, for example if you use
+ *             {@link Input}.
+ *
  */
 @Tag(Tag.LABEL)
 @Deprecated(since = "24.1", forRemoval = true)
