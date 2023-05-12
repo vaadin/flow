@@ -32,6 +32,8 @@ import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/r
 
 import { createRequire } from 'module';
 
+import { visualizer } from 'rollup-plugin-visualizer';
+
 // Make `require` compatible with ES modules
 const require = createRequire(import.meta.url);
 
@@ -49,6 +51,7 @@ const projectPackageJsonFile = path.resolve(__dirname, 'package.json');
 const buildOutputFolder = devBundle ? devBundleFolder : frontendBundleFolder;
 const statsFolder = path.resolve(__dirname, devBundle ? settings.devBundleStatsOutput : settings.statsOutput);
 const statsFile = path.resolve(statsFolder, 'stats.json');
+const bundleSizeFile = path.resolve(statsFolder, 'bundle-size.html');
 const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
 const webComponentTags = '#webComponentTags#';
 
@@ -773,7 +776,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
       },
       checker({
         typescript: true
-      })
+      }),
+      !devMode && visualizer({ brotliSize: true, filename: bundleSizeFile })
     ]
   };
 };
