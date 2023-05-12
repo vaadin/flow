@@ -147,6 +147,8 @@ public final class BundleValidationUtil {
                 .isEmpty()) {
             getLogger()
                     .info("Custom eager routes defined. Require bundle build.");
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-bundle-optimization", null);
             return true;
         }
 
