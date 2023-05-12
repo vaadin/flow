@@ -20,7 +20,7 @@ import com.vaadin.flow.component.HasValue.ValueChangeListener;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.NotFoundException;
@@ -68,7 +68,7 @@ public class RerouteView extends AbstractDivView {
     public class CheckBox extends HtmlContainer {
 
         Input input;
-        Label captionLabel;
+        NativeLabel captionLabel;
 
         public CheckBox() {
             input = new Input();
@@ -81,7 +81,7 @@ public class RerouteView extends AbstractDivView {
 
         public CheckBox(String caption) {
             this();
-            captionLabel = new Label(caption);
+            captionLabel = new NativeLabel(caption);
             add(captionLabel);
         }
 

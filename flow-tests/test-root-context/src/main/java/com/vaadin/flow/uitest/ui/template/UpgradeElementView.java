@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -33,7 +33,7 @@ public class UpgradeElementView extends AbstractDivView {
 
         @EventHandler
         private void valueUpdated() {
-            Label label = new Label(getModel().getText());
+            NativeLabel label = new NativeLabel(getModel().getText());
             label.setId("text-update");
             getUI().get().add(label);
         }

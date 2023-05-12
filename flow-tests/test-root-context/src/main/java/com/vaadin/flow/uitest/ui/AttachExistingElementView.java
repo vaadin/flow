@@ -19,7 +19,7 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
@@ -30,7 +30,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.AttachExistingElementView", layout = ViewTestLayout.class)
 public class AttachExistingElementView extends AbstractDivView {
 
-    private Label attachedLabel;
+    private NativeLabel attachedLabel;
 
     private class NonExistingElementCallback implements ChildElementConsumer {
 
@@ -87,7 +87,7 @@ public class AttachExistingElementView extends AbstractDivView {
     }
 
     private void handleLabel(Element label) {
-        attachedLabel = Component.from(label, Label.class);
+        attachedLabel = Component.from(label, NativeLabel.class);
         attachedLabel.setText("Client side label");
         attachedLabel.setId("label");
 
@@ -120,7 +120,7 @@ public class AttachExistingElementView extends AbstractDivView {
     }
 
     private void handleLabelInShadow(Element label) {
-        Label lbl = Component.from(label, Label.class);
+        Label lbl = Component.from(label, NativeLabel.class);
         lbl.setText("Client side label in shadow root");
         lbl.setId("label-in-shadow");
     }

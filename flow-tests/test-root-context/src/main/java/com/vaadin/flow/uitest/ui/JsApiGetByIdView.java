@@ -16,7 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -25,11 +25,11 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class JsApiGetByIdView extends AbstractDivView {
 
     public JsApiGetByIdView() {
-        Label label = new Label("Original label");
+        NativeLabel label = new NativeLabel("Original label");
         label.setId("source");
         add(label);
 
-        Label target = new Label();
+        NativeLabel target = new NativeLabel();
         target.setId("target");
         add(target);
 

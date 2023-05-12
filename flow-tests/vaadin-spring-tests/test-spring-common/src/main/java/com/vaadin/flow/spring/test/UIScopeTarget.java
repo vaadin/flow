@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.router.Route;
 
 @Route("ui-scope")
@@ -37,7 +37,7 @@ public class UIScopeTarget extends Div {
 
         @Override
         protected void onAttach(AttachEvent attachEvent) {
-            Label label = new Label(String.valueOf(bean.getUid()));
+            NativeLabel label = new NativeLabel(String.valueOf(bean.getUid()));
             label.setId("inner");
             add(label);
         }
@@ -45,7 +45,7 @@ public class UIScopeTarget extends Div {
 
     public UIScopeTarget(@Autowired UIScopedBean bean,
             @Autowired InnerComponent component) {
-        Label label = new Label(String.valueOf(bean.getUid()));
+        NativeLabel label = new NativeLabel(String.valueOf(bean.getUid()));
         label.setId("main");
         add(label);
 
