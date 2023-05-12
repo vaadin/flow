@@ -17,7 +17,6 @@
 package com.vaadin.flow.prodbuild;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
@@ -26,20 +25,18 @@ import com.vaadin.flow.router.Route;
 public class ParentThemeInFrontendView extends Div {
 
     public ParentThemeInFrontendView() {
-        Image addonResource = new Image("images/vaadin-logo.png",
-                "Vaadin Logo");
-        addonResource.setSizeFull();
-        add(addonResource);
-
-        Image projectStaticResource = new Image("images/vaadin-logo-static.png",
-                "Vaadin Logo Static");
-        projectStaticResource.setSizeFull();
-        add(projectStaticResource);
+        Div staticResource = new Div();
+        staticResource.setHeight("360px");
+        staticResource.setWidth("360px");
+        staticResource.addClassName("vaadin-logo");
+        staticResource.setId("vaadin-logo");
+        add(staticResource);
 
         Div themeResource = new Div();
         themeResource.setHeight("360px");
         themeResource.setWidth("360px");
         themeResource.addClassName("hilla-logo");
+        themeResource.setId("hilla-logo");
         add(themeResource);
 
         add(new Paragraph("Red color text from parent 'reusable-theme'"));

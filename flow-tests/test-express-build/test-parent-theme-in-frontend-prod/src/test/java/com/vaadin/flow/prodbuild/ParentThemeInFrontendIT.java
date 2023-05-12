@@ -25,6 +25,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class ParentThemeInFrontendIT extends ChromeBrowserTest {
@@ -51,6 +52,26 @@ public class ParentThemeInFrontendIT extends ChromeBrowserTest {
         waitUntilChildThemeBackgroundColor();
         waitUntilParentThemeStyles();
         waitUntilImportedStyles();
+        checkLogsForErrors();
+    }
+
+    @Test
+    public void imagesLocatedInThemeAndWebapp_shouldResolveUrlsAndRenderImages() {
+        open();
+
+        waitForElementPresent(By.id("vaadin-logo"));
+
+        String staticResourceUrl = $(DivElement.class).id("vaadin-logo")
+                .getCssValue("background-image");
+        Assert.assertTrue("Should render the background image of element with static resource image",
+                staticResourceUrl.contains("/images/vaadin-logo.png"));
+
+        String themeResourceUrl = $(DivElement.class).id("hilla-logo")
+                .getCssValue("background-image");
+        Assert.assertTrue("Should render the background image of element with theme resource image",
+                themeResourceUrl.contains("VAADIN/themes/specific-theme/images/hilla-logo.png"));
+
+        // no 404 errors
         checkLogsForErrors();
     }
 
