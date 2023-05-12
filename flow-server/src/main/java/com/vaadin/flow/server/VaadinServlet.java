@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
@@ -548,7 +549,8 @@ public class VaadinServlet extends HttpServlet {
             synchronized (getServletContext()) {
                 ArrayList<String> attributes = Collections
                         .list(getServletContext().getAttributeNames());
-                if (attributes.isEmpty()) {
+                if (attributes.isEmpty()
+                        || !attributes.contains(Lookup.class.getName())) {
                     ArrayList<String> list = Collections
                             .list(osgiServletContext.getAttributeNames());
                     list.forEach(attr -> getServletContext().setAttribute(attr,
