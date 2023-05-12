@@ -48,6 +48,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -182,9 +183,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static void addDevBundleTheme(Document document,
             VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
-        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE) {
+        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE
+                || (config.getMode() == Mode.PRODUCTION_PRECOMPILED_BUNDLE)) {
             try {
-                BootstrapHandler.getStylesheetTags(config, "styles.css")
+                BootstrapHandler.getStylesheetTags(context, "styles.css")
                         .forEach(link -> document.head().appendChild(link));
             } catch (IOException e) {
                 throw new UncheckedIOException(
@@ -408,7 +410,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         Document indexHtmlDocument = Jsoup.parse(index);
         Mode mode = config.getMode();
-        if (mode == Mode.PRODUCTION) {
+        if (mode.isProduction()) {
             // The index.html is fetched from the bundle so it includes the
             // entry point javascripts
         } else if (mode == Mode.DEVELOPMENT_BUNDLE) {
