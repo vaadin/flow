@@ -76,7 +76,7 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdateThemeImport.class,
             TaskCopyTemplateFiles.class,
             TaskRunDevBundleBuild.class,
-            TaskCopyBundleFiles.class
+            TaskPrepareProdBundle.class
         ));
     // @formatter:on
 
@@ -111,11 +111,12 @@ public class NodeTasks implements FallibleCommand {
 
             if (options.isProductionMode()) {
                 boolean needBuild = BundleValidationUtil.needsBuild(options,
-                        frontendDependencies, classFinder, Mode.PRODUCTION);
+                        frontendDependencies, classFinder,
+                        Mode.PRODUCTION_PRECOMPILED_BUNDLE);
                 options.withRunNpmInstall(needBuild);
                 options.withBundleBuild(needBuild);
                 if (!needBuild) {
-                    commands.add(new TaskCopyBundleFiles(options));
+                    commands.add(new TaskPrepareProdBundle(options));
                 } else {
                     BundleUtils.copyPackageLock(options);
                 }

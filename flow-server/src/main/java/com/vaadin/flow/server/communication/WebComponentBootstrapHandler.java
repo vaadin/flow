@@ -52,11 +52,13 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.PwaRegistry;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -388,18 +390,22 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
         DeploymentConfiguration config = response.getService()
                 .getDeploymentConfiguration();
+        VaadinContext context = response.getService().getContext();
+
+        // stylesheet tags are only added in dev mode, because Flow always
+        // rebuilds prod bundle whenever it spots embedded web components, so
+        // all the styles are included into the custom bundle
         if (config.getMode() == Mode.DEVELOPMENT_BUNDLE) {
             // Add styles.css link to the web component shadow DOM
-            BootstrapHandler.getStylesheetTags(config, "styles.css")
+            BootstrapHandler.getStylesheetTags(context, "styles.css")
                     .forEach(element -> ElementUtil.fromJsoup(element)
                             .ifPresent(elementsForShadows::add));
 
             // Add document.css link to the document
-            BootstrapHandler.getStylesheetLinks(config, "document.css")
+            BootstrapHandler.getStylesheetLinks(context, "document.css")
                     .forEach(link -> UI.getCurrent().getPage().executeJs(
                             BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG,
                             link));
-
         }
 
         WebComponentConfigurationRegistry
