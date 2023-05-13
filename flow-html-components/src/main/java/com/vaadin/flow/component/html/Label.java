@@ -18,11 +18,13 @@ package com.vaadin.flow.component.html;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import org.slf4j.LoggerFactory;
 
 /**
  * Component for a <code>&lt;label&gt;</code> element, which represents a
@@ -125,5 +127,52 @@ public class Label extends HtmlContainer {
      */
     public Optional<String> getFor() {
         return get(forDescriptor);
+    }
+
+    private static Boolean productionMode = null;
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
+        if (isProductionMode(detachEvent)) {
+            return; // skip check in production so that customer / clients /
+                    // ops-teams are not complaining about this warning to the
+                    // devs. This should be dealt with by devs in development
+                    // mode.
+        }
+        // Label was not associated with a for-attribute
+        // AND
+        // Label was not associated by adding a nested component
+        if (getFor().isEmpty() && getChildren().findAny().isEmpty()) {
+            LoggerFactory.getLogger(Label.class.getName())
+                    .warn("The Label '{}' was not associated with a component. "
+                            + "Labels should not be used for loose text on the page. "
+                            + "Consider alternatives like Text, Paragraph, Span or Div. "
+                            + "See the JavaDocs and Deprecation Warning for more Information.",
+                            getText());
+        }
+    }
+
+    /**
+     * Checks if the application is running in production mode.
+     * <p>
+     * When unsure, reports that production mode is true so spam-like logging
+     * does not take place in production.
+     *
+     * @return true if in production mode or the mode is unclear, false if in
+     *         development mode
+     **/
+    private static boolean isProductionMode(DetachEvent detachEvent) {
+        if (productionMode != null) {
+            return productionMode;
+        }
+
+        var session = detachEvent.getSession();
+        if (session == null) {
+            return true;
+        }
+
+        productionMode = session.getConfiguration().isProductionMode();
+        return productionMode;
     }
 }
