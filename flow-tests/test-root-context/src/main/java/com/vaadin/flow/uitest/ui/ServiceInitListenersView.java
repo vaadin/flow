@@ -27,10 +27,10 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class ServiceInitListenersView extends Div
         implements HasUrlParameter<Integer> {
     private static final String OPTIONAL_PARAMETER_LABEL_TEXT_PREFIX = "Before init count: ";
-    private final Label optionalParameterLabel;
+    private final NativeLabel optionalParameterLabel;
 
     public ServiceInitListenersView() {
-        optionalParameterLabel = new Label();
+        optionalParameterLabel = new NativeLabel();
         add(optionalParameterLabel);
         add(new NativeLabel(
                 "Init count: " + TestingServiceInitListener.getInitCount()));

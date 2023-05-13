@@ -120,7 +120,7 @@ public class AttachExistingElementView extends AbstractDivView {
     }
 
     private void handleLabelInShadow(Element label) {
-        Label lbl = Component.from(label, NativeLabel.class);
+        NativeLabel lbl = Component.from(label, NativeLabel.class);
         lbl.setText("Client side label in shadow root");
         lbl.setId("label-in-shadow");
     }
