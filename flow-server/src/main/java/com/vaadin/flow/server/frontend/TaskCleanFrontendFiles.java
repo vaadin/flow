@@ -38,7 +38,7 @@ import com.vaadin.flow.server.ExecutionFailedException;
  * @since 2.0
  */
 public class TaskCleanFrontendFiles implements FallibleCommand {
-    private Options options;
+    private File projectRoot;
 
     private List<String> generatedFiles = List.of("node_modules",
             Constants.PACKAGE_JSON, Constants.PACKAGE_LOCK_JSON,
@@ -50,27 +50,26 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
     /**
      * Scans the jar files given defined by {@code resourcesToScan}.
      *
-     * @param options
-     *            build options
+     * @param projectRoot
+     *            project root folder
      */
-    TaskCleanFrontendFiles(Options options) {
-        this.options = options;
+    public TaskCleanFrontendFiles(File projectRoot) {
+        this.projectRoot = projectRoot;
 
-        final File npmFolder = options.getNpmFolder();
-        Arrays.stream(npmFolder
+        Arrays.stream(projectRoot
                 .listFiles(file -> generatedFiles.contains(file.getName())))
                 .forEach(existingFiles::add);
     }
 
     @Override
     public void execute() throws ExecutionFailedException {
-        final File npmFolder = options.getNpmFolder();
         final List<File> filesToRemove = Arrays
-                .stream(npmFolder.listFiles(
+                .stream(projectRoot.listFiles(
                         file -> generatedFiles.contains(file.getName())
                                 && !existingFiles.contains(file)))
                 .collect(Collectors.toList());
         for (File file : filesToRemove) {
+            log().debug("Removing file {}", file);
             try {
                 if (file.isDirectory()) {
                     FrontendUtils.deleteDirectory(file);

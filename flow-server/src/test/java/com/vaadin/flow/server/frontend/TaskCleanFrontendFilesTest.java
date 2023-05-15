@@ -25,19 +25,17 @@ public class TaskCleanFrontendFilesTest {
     @Rule
     public final TemporaryFolder rootFolder = new TemporaryFolder();
 
-    private Options options;
+    private File projectRoot;
 
     @Before
     public void init() {
-        options = new Options(Mockito.mock(Lookup.class), rootFolder.getRoot())
-                .withBuildDirectory(TARGET).withProductionMode(true)
-                .withBundleBuild(true);
+        projectRoot = rootFolder.getRoot();
     }
 
     @Test
     public void createdFileAreRemoved()
             throws IOException, ExecutionFailedException {
-        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(options);
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot);
 
         final Set<String> generatedFiles = Stream
                 .of(FrontendUtils.VITE_CONFIG,
@@ -62,7 +60,7 @@ public class TaskCleanFrontendFilesTest {
                 .collect(Collectors.toSet());
         createFiles(existingfiles);
 
-        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(options);
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot);
 
         final Set<String> generatedFiles = Stream
                 .of(FrontendUtils.VITE_GENERATED_CONFIG, "node_modules",
@@ -80,7 +78,7 @@ public class TaskCleanFrontendFilesTest {
     @Test
     public void nodeModulesFolderIsCleared()
             throws IOException, ExecutionFailedException {
-        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(options);
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot);
 
         final File nodeModules = rootFolder.newFolder("node_modules");
         new File(nodeModules, "file").createNewFile();
@@ -102,7 +100,7 @@ public class TaskCleanFrontendFilesTest {
     private void assertFilesNotExist(Set<String> files) {
         Set<String> existingFiles = new HashSet<>();
         for (String file : files) {
-            if (new File(rootFolder.getRoot(), file).exists()) {
+            if (new File(projectRoot, file).exists()) {
                 existingFiles.add(file);
             }
         }
@@ -119,7 +117,7 @@ public class TaskCleanFrontendFilesTest {
     private void assertFilesExist(Set<String> files) {
         Set<String> existingFiles = new HashSet<>(files);
         for (String file : files) {
-            if (new File(rootFolder.getRoot(), file).exists()) {
+            if (new File(projectRoot, file).exists()) {
                 existingFiles.remove(file);
             }
         }

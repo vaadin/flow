@@ -282,7 +282,7 @@ public class BuildFrontendUtil {
      * @throws URISyntaxException
      *             - - Could not build an URI from nodeDownloadRoot().
      */
-    public static void runNodeUpdater(PluginAdapterBuild adapter)
+    public static Options runNodeUpdater(PluginAdapterBuild adapter)
             throws ExecutionFailedException, URISyntaxException {
 
         Set<File> jarFiles = adapter.getJarFiles();
@@ -306,6 +306,9 @@ public class BuildFrontendUtil {
                     .useByteCodeScanner(adapter.optimizeBundle())
                     .withJarFrontendResourcesFolder(
                             getJarFrontendResourcesFolder(adapter))
+                    .createMissingPackageJson(
+                            new File(adapter.npmFolder(), PACKAGE_JSON)
+                                    .exists())
                     .copyResources(jarFiles).withCopyTemplates(true)
                     .copyLocalResources(adapter.frontendResourcesDirectory())
                     .enableImportsUpdate(true)
@@ -324,6 +327,7 @@ public class BuildFrontendUtil {
                     .withCiBuild(adapter.ciBuild())
                     .withForceProductionBuild(adapter.forceProductionBuild());
             new NodeTasks(options).execute();
+            return options;
         } catch (ExecutionFailedException exception) {
             throw exception;
         } catch (Throwable throwable) { // NOSONAR Intentionally throwable

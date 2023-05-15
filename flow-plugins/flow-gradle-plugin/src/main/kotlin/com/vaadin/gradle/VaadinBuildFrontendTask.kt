@@ -70,11 +70,13 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
         val tokenFile = BuildFrontendUtil.getTokenFile(adapter)
         check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
 
+        val cleanTask = TaskCleanFrontendFiles(npmFolder())
         BuildFrontendUtil.runNodeUpdater(adapter)
 
         if (adapter.generateBundle() && BundleValidationUtil.needsBundleBuild
                 (adapter.servletResourceOutputDirectory())) {
             BuildFrontendUtil.runFrontendBuild(adapter)
+            cleanTask.execute()
         }
         LicenseChecker.setStrictOffline(true)
         BuildFrontendUtil.validateLicenses(adapter)
