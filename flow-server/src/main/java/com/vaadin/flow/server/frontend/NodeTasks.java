@@ -119,8 +119,6 @@ public class NodeTasks implements FallibleCommand {
                     commands.add(new TaskPrepareProdBundle(options));
                     UsageStatistics.markAsUsed("flow/prod-pre-compiled-bundle",
                             null);
-                } else {
-                    UsageStatistics.markAsUsed("flow/prod-build", null);
                 }
             } else if (options.isBundleBuild()) {
                 // The dev bundle check needs the frontendDependencies to be
