@@ -1595,17 +1595,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         setupPwa(document, service.getPwaRegistry());
     }
 
-    protected static void addJavaScriptEntryPoints(
+    protected static void addGeneratedIndexContent(
             DeploymentConfiguration config, Document targetDocument)
             throws IOException {
-        URL statsJsonUrl = DevBundleUtils
-                .findBundleFile(config.getProjectFolder(), "config/stats.json");
-        Objects.requireNonNull(statsJsonUrl,
+        String statsJson = DevBundleUtils
+                .findBundleStatsJson(config.getProjectFolder());
+        Objects.requireNonNull(statsJson,
                 "Frontend development bundle is expected to be in the project"
                         + " or on the classpath, but not found.");
-        String statsJson = IOUtils.toString(statsJsonUrl,
-                StandardCharsets.UTF_8);
-        addEntryScripts(targetDocument, Json.parse(statsJson));
+        addGeneratedIndexContent(targetDocument, Json.parse(statsJson));
     }
 
     /**
@@ -1676,31 +1674,27 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return element;
     }
 
-    private static void addEntryScripts(Document targetDocument,
+    private static void addGeneratedIndexContent(Document targetDocument,
             JsonObject statsJson) {
         boolean addIndexHtml = true;
-        Element indexHtmlScript = null;
-        JsonArray entryScripts = statsJson.getArray("entryScripts");
-        for (int i = 0; i < entryScripts.length(); i++) {
-            String entryScript = entryScripts.getString(i);
-            Element elm = new Element(SCRIPT_TAG);
-            elm.attr("type", "module");
-            elm.attr("src", entryScript);
-            targetDocument.head().appendChild(elm);
+        JsonArray indexHtmlGeneratedRows = statsJson
+                .getArray("indexHtmlGenerated");
+        List<String> toAdd = new ArrayList<>();
 
-            if (entryScript.contains("indexhtml")) {
-                indexHtmlScript = elm;
-            }
+        for (int i = 0; i < indexHtmlGeneratedRows.length(); i++) {
+            String indexHtmlGeneratedRow = indexHtmlGeneratedRows.getString(i);
+            toAdd.add(indexHtmlGeneratedRow);
 
-            if (entryScript.contains("webcomponenthtml")) {
+            if (indexHtmlGeneratedRow.contains("webcomponenthtml")) {
                 addIndexHtml = false;
             }
         }
 
-        // If a reference to webcomponenthtml is present, the embedded
-        // components are used, thus we don't need to serve indexhtml script
-        if (!addIndexHtml && indexHtmlScript != null) {
-            indexHtmlScript.remove();
+        for (String row : toAdd) {
+            if (!addIndexHtml && row.contains("indexhtml")) {
+                continue;
+            }
+            targetDocument.head().append(row);
         }
     }
 

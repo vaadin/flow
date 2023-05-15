@@ -55,6 +55,8 @@ const bundleSizeFile = path.resolve(statsFolder, 'bundle-size.html');
 const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
 const webComponentTags = '#webComponentTags#';
 
+const projectIndexHtml = path.resolve(frontendFolder, 'index.html');
+
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
   path.resolve(__dirname, 'src', 'main', 'resources', 'static'),
@@ -229,8 +231,11 @@ function statsExtracterPlugin(): PluginOption {
         .sort()
         .filter((value, index, self) => self.indexOf(value) === index);
       const npmModuleAndVersion = Object.fromEntries(npmModules.map((module) => [module, getVersion(module)]));
-      const cvdls = Object.fromEntries(npmModules.filter((module) => getCvdlName(module) != null)
-          .map((module) => [module, {name: getCvdlName(module),version: getVersion(module)}]));
+      const cvdls = Object.fromEntries(
+        npmModules
+          .filter((module) => getCvdlName(module) != null)
+          .map((module) => [module, { name: getCvdlName(module), version: getVersion(module) }])
+      );
 
       mkdirSync(path.dirname(statsFile), { recursive: true });
       const projectPackageJson = JSON.parse(readFileSync(projectPackageJsonFile, { encoding: 'utf-8' }));
@@ -238,6 +243,25 @@ function statsExtracterPlugin(): PluginOption {
       const entryScripts = Object.values(bundle)
         .filter((bundle) => bundle.isEntry)
         .map((bundle) => bundle.fileName);
+
+      const generatedIndexHtml = path.resolve(buildOutputFolder, 'index.html');
+      console.log('Reading', projectIndexHtml);
+      const customIndexData: string = readFileSync(projectIndexHtml, { encoding: 'utf-8' });
+      console.log('Reading', generatedIndexHtml);
+      const generatedIndexData: string = readFileSync(generatedIndexHtml, {
+        encoding: 'utf-8'
+      });
+
+      const customIndexRows = new Set(customIndexData.split(/[\r\n]/).filter((row) => row.trim() !== ''));
+      const generatedIndexRows = generatedIndexData.split(/[\r\n]/).filter((row) => row.trim() !== '');
+
+      const rowsGenerated: string[] = [];
+      generatedIndexRows.forEach((row) => {
+        if (!customIndexRows.has(row)) {
+          rowsGenerated.push(row);
+        }
+      });
+
       //After dev-bundle build add used Flow frontend imports JsModule/JavaScript/CssImport
 
       const parseImports = (filename: string, result: Set<string>): void => {
@@ -343,7 +367,8 @@ function statsExtracterPlugin(): PluginOption {
         entryScripts,
         webComponents,
         cvdlModules: cvdls,
-        packageJsonHash: projectPackageJson?.vaadin?.hash
+        packageJsonHash: projectPackageJson?.vaadin?.hash,
+        indexHtmlGenerated: rowsGenerated
       };
       writeFileSync(statsFile, JSON.stringify(stats, null, 1));
     }
@@ -663,7 +688,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       assetsDir: 'VAADIN/build',
       rollupOptions: {
         input: {
-          indexhtml: path.resolve(frontendFolder, 'index.html'),
+          indexhtml: projectIndexHtml,
 
           ...(hasExportedWebComponents ? { webcomponenthtml: path.resolve(frontendFolder, 'web-component.html') } : {})
         },
