@@ -70,36 +70,29 @@ public class RouteNotFoundError extends Component
         boolean productionMode = event.getUI().getSession().getConfiguration()
                 .isProductionMode();
         String template;
+        String routes = getRoutes(event);
 
         if (productionMode) {
             template = LazyInit.PRODUCTION_MODE_TEMPLATE;
+        } else if (routes.isEmpty()) {
+            // The idea of showing a different error page when there are no
+            // routes comes from application generated from start.spring.io, see
+            // https://github.com/vaadin/flow/issues/16432
+            template = readHtmlFile(EndpointRequestUtil.isHillaAvailable()
+                    ? "NoRoutesError_hilla.html"
+                    : "NoRoutesError_dev.html");
         } else {
-            var routes = getRoutes(event);
-
-            if (routes.isEmpty()) {
-                // The idea of showing a different error page when there are no
-                // routes comes from application generated from start.spring.io,
-                // see https://github.com/vaadin/flow/issues/16432
-                if (EndpointRequestUtil.isHillaAvailable()) {
-                    template = readHtmlFile("NoRoutesError_hilla.html");
-                } else {
-                    template = readHtmlFile("NoRoutesError_dev.html");
-                }
-            } else {
-                template = readHtmlFile("RouteNotFoundError_dev.html");
-
-                // {{routes}} should be replaced first so that it's not possible
-                // to insert {{routes}} snippet via other template values which
-                // may result in the listing of all available routes when this
-                // shouldn't not happen
-                if (template.contains("{{routes}}")) {
-                    template = template.replace("{{routes}}", routes);
-                }
-                template = template.replace("{{additionalInfo}}",
-                        additionalInfo);
-                template = template.replace("{{path}}", path);
-            }
+            template = readHtmlFile("RouteNotFoundError_dev.html");
         }
+
+        // {{routes}} should be replaced first so that it's not possible to
+        // insert {{routes}} snippet via other template values which may result
+        // in the listing of all available routes when this shouldn't not happen
+        if (template.contains("{{routes}}")) {
+            template = template.replace("{{routes}}", routes);
+        }
+        template = template.replace("{{additionalInfo}}", additionalInfo);
+        template = template.replace("{{path}}", path);
 
         getElement().setChild(0, new Html(template).getElement());
         return HttpStatusCode.NOT_FOUND.getCode();
