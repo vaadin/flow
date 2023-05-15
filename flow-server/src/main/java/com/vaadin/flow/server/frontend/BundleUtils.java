@@ -141,14 +141,13 @@ public final class BundleUtils {
      *            task options
      */
     public static void copyPackageLockFromBundle(Options options) {
-        File packageLock;
+        String lockFile;
         if (options.isEnablePnpm()) {
-            packageLock = new File(options.getNpmFolder(),
-                    Constants.PACKAGE_LOCK_YAML);
+            lockFile = Constants.PACKAGE_LOCK_YAML;
         } else {
-            packageLock = new File(options.getNpmFolder(),
-                    Constants.PACKAGE_LOCK_JSON);
+            lockFile = Constants.PACKAGE_LOCK_JSON;
         }
+        File packageLock = new File(options.getNpmFolder(), lockFile);
         if (packageLock.exists()) {
             // NO-OP due to existing package-lock
             return;
@@ -158,7 +157,7 @@ public final class BundleUtils {
             copyAppropriatePackageLock(options, packageLock);
         } catch (IOException ioe) {
             getLogger().error(
-                    "Failed to copy existing `package-lock.json` to use", ioe);
+                    "Failed to copy existing `" + lockFile + "` to use", ioe);
         }
 
     }
