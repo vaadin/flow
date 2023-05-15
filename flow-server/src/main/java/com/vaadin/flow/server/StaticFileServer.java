@@ -46,6 +46,7 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.ThemeUtils;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
@@ -276,6 +277,13 @@ public class StaticFileServer implements StaticFileHandler {
                         deploymentConfiguration.getProjectFolder(),
                         filenameWithPath.replace(VAADIN_MAPPING, ""));
             }
+        } else if (deploymentConfiguration
+                .getMode() == Mode.PRODUCTION_PRECOMPILED_BUNDLE
+                && APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
+            resourceUrl = ThemeUtils
+                    .getThemeResourceFromPrecompiledProductionBundle(
+                            filenameWithPath.replace(VAADIN_MAPPING, "")
+                                    .replaceFirst("^/", ""));
         } else if (APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath).find()) {
             resourceUrl = vaadinService.getClassLoader()
                     .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"

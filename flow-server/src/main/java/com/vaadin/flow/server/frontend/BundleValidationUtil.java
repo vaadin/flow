@@ -28,6 +28,7 @@ import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -70,7 +71,7 @@ public final class BundleValidationUtil {
         getLogger().info("Checking if a {} mode bundle build is needed", mode);
         try {
             boolean needsBuild;
-            if (Mode.PRODUCTION == mode) {
+            if (mode.isProduction()) {
                 if (options.isForceProductionBuild()
                         || EndpointRequestUtil.isHillaAvailable()) {
                     getLogger().info("Frontend build requested.");
@@ -142,6 +143,13 @@ public final class BundleValidationUtil {
             ClassFinder finder) throws IOException {
         String statsJsonContent = findProdBundleStatsJson(finder);
 
+        if (!finder.getAnnotatedClasses(LoadDependenciesOnStartup.class)
+                .isEmpty()) {
+            getLogger()
+                    .info("Custom eager routes defined. Require bundle build.");
+            return true;
+        }
+
         if (statsJsonContent == null) {
             // without stats.json in bundle we can not say if it is up-to-date
             getLogger().info(
@@ -181,7 +189,7 @@ public final class BundleValidationUtil {
         }
 
         if (ThemeValidationUtil.themeConfigurationChanged(options, statsJson,
-                frontendDependencies)) {
+                frontendDependencies, finder)) {
             UsageStatistics.markAsUsed(
                     "flow/rebundle-reason-changed-theme-config", null);
             return true;
@@ -365,7 +373,7 @@ public final class BundleValidationUtil {
 
         if (bundleModules == null) {
             getLogger().error(
-                    "Dev bundle did not contain package json dependencies to validate.\n"
+                    "Bundle did not contain package json dependencies to validate.\n"
                             + "Rebuild of bundle needed.");
             return false;
         }
@@ -484,7 +492,7 @@ public final class BundleValidationUtil {
                 if (!webComponents.isEmpty()) {
                     getLogger().info(
                             "Found embedded web components not yet included "
-                                    + "into the dev bundle: {}",
+                                    + "into the bundle: {}",
                             String.join(", ", webComponents));
                     return true;
                 }
@@ -501,7 +509,7 @@ public final class BundleValidationUtil {
             if (!webComponents.isEmpty()) {
                 getLogger().info(
                         "Found newly added embedded web components not "
-                                + "yet included into the dev bundle: {}",
+                                + "yet included into the bundle: {}",
                         String.join(", ", webComponents));
                 return true;
             }
