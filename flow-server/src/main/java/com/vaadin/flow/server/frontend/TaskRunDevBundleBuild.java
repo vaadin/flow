@@ -99,7 +99,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         runFrontendBuildTool("Vite", "vite/bin/vite.js", Collections.emptyMap(),
                 "build");
 
-        copyPackageLockJsonToBundleFolder();
+        copyPackageLockToBundleFolder();
 
         addReadme();
     }
@@ -204,19 +204,23 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
     }
 
-    private void copyPackageLockJsonToBundleFolder() {
+    private void copyPackageLockToBundleFolder() {
         File devBundleFolder = new File(options.getNpmFolder(),
                 Constants.DEV_BUNDLE_LOCATION);
         assert devBundleFolder.exists() : "No dev-bundle folder created";
 
+        String packageLockFile = options.isEnablePnpm()
+                ? Constants.PACKAGE_LOCK_YAML
+                : Constants.PACKAGE_LOCK_JSON;
+
         File packageLockJson = new File(options.getNpmFolder(),
-                Constants.PACKAGE_LOCK_JSON);
+                packageLockFile);
         if (packageLockJson.exists()) {
             try {
                 FileUtils.copyFile(packageLockJson,
-                        new File(devBundleFolder, Constants.PACKAGE_LOCK_JSON));
+                        new File(devBundleFolder, packageLockFile));
             } catch (IOException e) {
-                getLogger().error("Failed to copy 'package-lock.json' to "
+                getLogger().error("Failed to copy '" + packageLockFile + "' to "
                         + Constants.DEV_BUNDLE_LOCATION, e);
             }
         }

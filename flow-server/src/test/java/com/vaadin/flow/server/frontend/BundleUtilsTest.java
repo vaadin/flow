@@ -193,4 +193,72 @@ public class BundleUtilsTest {
         Assert.assertEquals("File should be gotten from jar on classpath",
                 jarPackageLockContent, packageLockContents);
     }
+
+    @Test
+    public void pnpm_noPackageLockExists_devBundleLockYamlIsCopied_notJarLockOrJson()
+            throws IOException {
+        final Lookup lookup = Mockito.mock(Lookup.class);
+        ClassFinder finder = Mockito.mock(ClassFinder.class);
+        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
+
+        Options options = new Options(lookup, temporaryFolder.getRoot())
+                .withBuildDirectory("target").withEnablePnpm(true);
+
+        File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
+        final String jarPackageLockContent = "{ \"jarData\"}";
+        FileUtils.write(jarPackageLock, jarPackageLockContent);
+
+        Mockito.when(finder
+                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_YAML))
+                .thenReturn(jarPackageLock.toURI().toURL());
+
+        File devBundleFolder = new File(options.getNpmFolder(),
+                Constants.DEV_BUNDLE_LOCATION);
+        devBundleFolder.mkdirs();
+        File devPackageLockJson = new File(devBundleFolder,
+                Constants.PACKAGE_LOCK_JSON);
+        File devPackageLock = new File(devBundleFolder,
+                Constants.PACKAGE_LOCK_YAML);
+
+        final String packageLockContent = "{ \"bundleFile\"}";
+        FileUtils.write(devPackageLock, packageLockContent);
+        FileUtils.write(devPackageLockJson, "{ \"json\"}");
+
+        BundleUtils.copyPackageLockFromBundle(options);
+
+        final String packageLockContents = FileUtils.readFileToString(
+                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_YAML),
+                StandardCharsets.UTF_8);
+
+        Assert.assertEquals("dev-bundle file should be used",
+                packageLockContent, packageLockContents);
+    }
+
+    @Test
+    public void pnpm_packageLockExists_nothingIsCopied() throws IOException {
+        Options options = new Options(Mockito.mock(Lookup.class),
+                temporaryFolder.getRoot()).withBuildDirectory("target")
+                .withEnablePnpm(true);
+
+        File packageLockFile = temporaryFolder
+                .newFile(Constants.PACKAGE_LOCK_YAML);
+        File devBundleFolder = new File(options.getNpmFolder(),
+                Constants.DEV_BUNDLE_LOCATION);
+        devBundleFolder.mkdirs();
+        File devPackageLockJson = new File(devBundleFolder,
+                Constants.PACKAGE_LOCK_YAML);
+
+        final String existingLockFile = "{ \"existing\" }";
+        FileUtils.write(packageLockFile, existingLockFile);
+
+        FileUtils.write(devPackageLockJson, "{ \"bundleFile\"}");
+
+        BundleUtils.copyPackageLockFromBundle(options);
+
+        final String packageLockContents = FileUtils
+                .readFileToString(packageLockFile, StandardCharsets.UTF_8);
+
+        Assert.assertEquals("Existing file should not be overwritten",
+                existingLockFile, packageLockContents);
+    }
 }

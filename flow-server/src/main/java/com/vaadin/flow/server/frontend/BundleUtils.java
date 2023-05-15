@@ -134,22 +134,28 @@ public final class BundleUtils {
     }
 
     /**
-     * Copy package-lock.json file from existing dev-bundle for building new
-     * bundle.
+     * Copy package-lock.json/.yaml file from existing dev-bundle for building
+     * new bundle.
      *
      * @param options
      *            task options
      */
     public static void copyPackageLockFromBundle(Options options) {
-        File packageLockJson = new File(options.getNpmFolder(),
-                Constants.PACKAGE_LOCK_JSON);
-        if (packageLockJson.exists()) {
-            // NO-OP due to existing package-lock.json
+        File packageLock;
+        if (options.isEnablePnpm()) {
+            packageLock = new File(options.getNpmFolder(),
+                    Constants.PACKAGE_LOCK_YAML);
+        } else {
+            packageLock = new File(options.getNpmFolder(),
+                    Constants.PACKAGE_LOCK_JSON);
+        }
+        if (packageLock.exists()) {
+            // NO-OP due to existing package-lock
             return;
         }
 
         try {
-            copyAppropriatePackageLock(options, packageLockJson);
+            copyAppropriatePackageLock(options, packageLock);
         } catch (IOException ioe) {
             getLogger().error(
                     "Failed to copy existing `package-lock.json` to use", ioe);
@@ -158,21 +164,23 @@ public final class BundleUtils {
     }
 
     private static void copyAppropriatePackageLock(Options options,
-            File packageLockJson) throws IOException {
+            File packageLock) throws IOException {
         File devBundleFolder = new File(options.getNpmFolder(),
                 Constants.DEV_BUNDLE_LOCATION);
+        String packageLockFile = options.isEnablePnpm()
+                ? Constants.PACKAGE_LOCK_YAML
+                : Constants.PACKAGE_LOCK_JSON;
         if (devBundleFolder.exists()) {
-            File devPackageLockJson = new File(devBundleFolder,
-                    Constants.PACKAGE_LOCK_JSON);
-            if (devPackageLockJson.exists()) {
-                FileUtils.copyFile(devPackageLockJson, packageLockJson);
+            File devPackageLock = new File(devBundleFolder, packageLockFile);
+            if (devPackageLock.exists()) {
+                FileUtils.copyFile(devPackageLock, packageLock);
                 return;
             }
         }
         final URL resource = options.getClassFinder()
-                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON);
+                .getResource(DEV_BUNDLE_JAR_PATH + packageLockFile);
         if (resource != null) {
-            FileUtils.write(packageLockJson,
+            FileUtils.write(packageLock,
                     IOUtils.toString(resource, StandardCharsets.UTF_8),
                     StandardCharsets.UTF_8);
         }
