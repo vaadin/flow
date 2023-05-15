@@ -26,10 +26,7 @@
             <artifactId>flow</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
-<!--            This should be optional, but currently doesn't work-->
-<!--            because of class loader issues-->
-<!--            https://github.com/vaadin/flow/issues/16671-->
-<!--            <optional>true</optional>-->
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -73,6 +70,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <forceProductionBuild>true</forceProductionBuild>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>

@@ -21,13 +21,20 @@ package com.vaadin.flow.server;
  * One of production, development using livereload or development using bundle
  */
 public enum Mode {
-    PRODUCTION("production"), DEVELOPMENT_FRONTEND_LIVERELOAD(
-            "development"), DEVELOPMENT_BUNDLE("development");
+    PRODUCTION_CUSTOM("production", true), PRODUCTION_PRECOMPILED_BUNDLE(
+            "production", true), DEVELOPMENT_FRONTEND_LIVERELOAD("development",
+                    false), DEVELOPMENT_BUNDLE("development", false);
 
     private final String name;
+    private final boolean production;
 
-    Mode(String name) {
+    Mode(String name, boolean production) {
         this.name = name;
+        this.production = production;
+    }
+
+    public boolean isProduction() {
+        return production;
     }
 
     @Override

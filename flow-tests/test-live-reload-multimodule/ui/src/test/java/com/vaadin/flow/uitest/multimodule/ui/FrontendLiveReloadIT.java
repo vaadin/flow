@@ -29,6 +29,7 @@ import java.util.function.Supplier;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.slf4j.LoggerFactory;
@@ -55,6 +56,10 @@ public class FrontendLiveReloadIT extends ChromeBrowserTest {
     @Test
     public void modifyMetaInfFrontendFile() throws IOException {
         open();
+        boolean hotdeploy = $("project-hotdeploy-info").first().getText()
+                .equalsIgnoreCase("true");
+        // Live reload of frontend files only works when using hotdeploy
+        Assume.assumeTrue(hotdeploy);
 
         String uiModuleFolder = $("project-folder-info").first().getText();
         File libraryFolder = new File(new File(uiModuleFolder).getParentFile(),
@@ -80,6 +85,10 @@ public class FrontendLiveReloadIT extends ChromeBrowserTest {
     @Test
     public void modifyMetaInfResourcesFrontendFile() throws IOException {
         open();
+        boolean hotdeploy = $("project-hotdeploy-info").first().getText()
+                .equalsIgnoreCase("true");
+        // Live reload of frontend files only works when using hotdeploy
+        Assume.assumeTrue(hotdeploy);
 
         String uiModuleFolder = $("project-folder-info").first().getText();
         File libraryFolder = new File(new File(uiModuleFolder).getParentFile(),
@@ -105,6 +114,29 @@ public class FrontendLiveReloadIT extends ChromeBrowserTest {
                 () -> $("in-resources-frontend").first().getText());
     }
 
+    @Test
+    public void modifyThemeFile() throws IOException {
+        open();
+        String uiModuleFolder = $("project-folder-info").first().getText();
+        File themeFolder = new File(new File(uiModuleFolder).getParentFile(),
+                "theme");
+        Path stylesCssPath = Path.of("src", "main", "resources", "META-INF",
+                "resources", "themes", "mytheme", "styles.css");
+        Path stylesCss = themeFolder.toPath().resolve(stylesCssPath);
+
+        revertThemeIfNeeded(stylesCss);
+        this.cleanup.add(() -> revertThemeIfNeeded(stylesCss));
+        Assert.assertEquals("rgba(173, 216, 230, 1)", getBackgroundColor());
+
+        modifyTheme(stylesCss.toFile());
+
+        waitUntilEquals("rgba(144, 238, 144, 1)", this::getBackgroundColor);
+    }
+
+    private String getBackgroundColor() {
+        return $("body").first().getCssValue("background-color");
+    }
+
     private void waitUntilEquals(String expected, Supplier<String> supplier) {
         waitUntil(driver -> {
             try {
@@ -121,6 +153,15 @@ public class FrontendLiveReloadIT extends ChromeBrowserTest {
 
     private void revertJsFileIfNeeded(Path path) throws UncheckedIOException {
         modify(path.toFile(), ". It was modified</span>", "</span>", false);
+    }
+
+    private void modifyTheme(File file) throws UncheckedIOException {
+        modify(file, "lightblue", "lightgreen", true);
+    }
+
+    private void revertThemeIfNeeded(Path stylesCss)
+            throws UncheckedIOException {
+        modify(stylesCss.toFile(), "lightgreen", "lightblue", false);
     }
 
     private void modify(File file, String from, String to,

@@ -228,6 +228,16 @@ public open class VaadinFlowPluginExtension(project: Project) {
      */
     public var skipDevBundleBuild: Boolean = false
 
+
+    /**
+     * Setting this to `true` will force a build of the production build
+     * even if there is a default production bundle that could be used.
+     *
+     * Created production bundle optimization is defined by
+     * [.optimizeBundle] parameter.
+     */
+    public var forceProductionBuild: Boolean = false
+
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>? = null): ClasspathFilter {
         if (block != null) {
             block.delegate = classpathFilter
