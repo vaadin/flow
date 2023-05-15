@@ -99,7 +99,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         runFrontendBuildTool("Vite", "vite/bin/vite.js", Collections.emptyMap(),
                 "build");
 
-        copyPackageLockJson();
+        copyPackageLockJsonToBundleFolder();
 
         addReadme();
     }
@@ -204,13 +204,13 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
     }
 
-    private void copyPackageLockJson() {
+    private void copyPackageLockJsonToBundleFolder() {
         File devBundleFolder = new File(options.getNpmFolder(),
                 Constants.DEV_BUNDLE_LOCATION);
         assert devBundleFolder.exists() : "No dev-bundle folder created";
 
         File packageLockJson = new File(options.getNpmFolder(),
-                "package-lock.json");
+                Constants.PACKAGE_LOCK_JSON);
         if (packageLockJson.exists()) {
             try {
                 FileUtils.copyFile(packageLockJson,

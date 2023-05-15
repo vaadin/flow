@@ -120,7 +120,7 @@ public class BundleUtilsTest {
 
         FileUtils.write(devPackageLockJson, "{ \"bundleFile\"}");
 
-        BundleUtils.copyPackageLock(options);
+        BundleUtils.copyPackageLockFromBundle(options);
 
         final String packageLockContents = FileUtils
                 .readFileToString(packageLockFile, StandardCharsets.UTF_8);
@@ -156,7 +156,7 @@ public class BundleUtilsTest {
         final String packageLockContent = "{ \"bundleFile\"}";
         FileUtils.write(devPackageLockJson, packageLockContent);
 
-        BundleUtils.copyPackageLock(options);
+        BundleUtils.copyPackageLockFromBundle(options);
 
         final String packageLockContents = FileUtils.readFileToString(
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
@@ -184,7 +184,7 @@ public class BundleUtilsTest {
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
-        BundleUtils.copyPackageLock(options);
+        BundleUtils.copyPackageLockFromBundle(options);
 
         final String packageLockContents = FileUtils.readFileToString(
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),

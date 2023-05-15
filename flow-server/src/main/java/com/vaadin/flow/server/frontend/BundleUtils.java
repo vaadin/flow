@@ -140,9 +140,9 @@ public final class BundleUtils {
      * @param options
      *            task options
      */
-    public static void copyPackageLock(Options options) {
+    public static void copyPackageLockFromBundle(Options options) {
         File packageLockJson = new File(options.getNpmFolder(),
-                "package-lock.json");
+                Constants.PACKAGE_LOCK_JSON);
         if (packageLockJson.exists()) {
             // NO-OP due to existing package-lock.json
             return;
