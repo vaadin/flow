@@ -150,9 +150,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         redirectToOldBrowserPageWhenNeeded(indexDocument);
 
-        // modify the page based on registered IndexHtmlRequestListener:
-        service.modifyIndexHtmlResponse(indexHtmlResponse);
-
         if (!config.isProductionMode()) {
             // Ensure no older tools incorrectly detect a bundle as production
             // mode
@@ -169,6 +166,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
             addLicenseChecker(indexDocument);
         }
+
+        // this invokes any custom listeners and should be run when the whole
+        // page is constructed
+        service.modifyIndexHtmlResponse(indexHtmlResponse);
 
         try {
             response.getOutputStream()
