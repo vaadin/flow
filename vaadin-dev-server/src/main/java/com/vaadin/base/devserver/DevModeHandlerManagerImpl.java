@@ -129,16 +129,14 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         }
 
         try {
-            File projectFolder = config.getProjectFolder();
-            Optional<String> maybeThemeName = ThemeUtils
-                    .getThemeName(projectFolder);
+            Optional<String> maybeThemeName = ThemeUtils.getThemeName(context);
 
             if (maybeThemeName.isEmpty()) {
                 getLogger().debug("Found no custom theme in the project. "
                         + "Skipping watching the theme files");
                 return;
             }
-            List<String> activeThemes = ThemeUtils.getActiveThemes(config);
+            List<String> activeThemes = ThemeUtils.getActiveThemes(context);
             for (String themeName : activeThemes) {
                 File themeFolder = ThemeUtils.getThemeFolder(
                         FrontendUtils.getProjectFrontendDir(config), themeName);

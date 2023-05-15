@@ -54,6 +54,7 @@ public class ParentThemeInFrontendIT extends ChromeBrowserTest {
         // check that the background colour is overridden by the child theme
         waitUntilChildThemeBackgroundColor();
         waitUntilParentThemeStyles();
+        waitUntilImportedStyles();
         checkLogsForErrors();
     }
 
@@ -64,6 +65,19 @@ public class ParentThemeInFrontendIT extends ChromeBrowserTest {
                 final WebElement span = findElement(By.tagName("span"));
                 return RED_COLOR.equals(p.getCssValue("color"))
                         && GREEN_COLOR.equals(span.getCssValue("color"));
+            } catch (StaleElementReferenceException e) {
+                return false;
+            }
+        });
+    }
+
+    private void waitUntilImportedStyles() {
+        waitUntil(driver -> {
+            try {
+                final WebElement span = findElement(By.tagName("span"));
+                String border = span.getCssValue("border");
+                System.out.println(border);
+                return "3px dashed rgb(255, 255, 255)".equals(border);
             } catch (StaleElementReferenceException e) {
                 return false;
             }
