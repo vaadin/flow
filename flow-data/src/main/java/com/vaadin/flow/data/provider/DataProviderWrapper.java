@@ -65,11 +65,6 @@ public abstract class DataProviderWrapper<T, F, M>
     }
 
     @Override
-    public void refreshItems(boolean clearSelection) {
-        dataProvider.refreshItems(clearSelection);
-    }
-
-    @Override
     public void refreshItem(T item) {
         dataProvider.refreshItem(item);
     }
