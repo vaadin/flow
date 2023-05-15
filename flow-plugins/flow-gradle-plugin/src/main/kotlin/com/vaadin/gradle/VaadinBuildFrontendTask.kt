@@ -19,6 +19,7 @@ import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.frontend.BundleValidationUtil
 import com.vaadin.flow.server.frontend.FrontendUtils
+import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles
 import com.vaadin.pro.licensechecker.LicenseChecker
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
@@ -70,7 +71,7 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
         val tokenFile = BuildFrontendUtil.getTokenFile(adapter)
         check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
 
-        val cleanTask = TaskCleanFrontendFiles(npmFolder())
+        val cleanTask = TaskCleanFrontendFiles(extension.npmFolder)
         BuildFrontendUtil.runNodeUpdater(adapter)
 
         if (adapter.generateBundle() && BundleValidationUtil.needsBundleBuild
