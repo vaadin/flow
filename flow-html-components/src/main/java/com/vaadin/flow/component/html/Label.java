@@ -17,13 +17,14 @@ package com.vaadin.flow.component.html;
 
 import java.util.Optional;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.shared.Registration;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -61,6 +62,10 @@ import org.slf4j.LoggerFactory;
 public class Label extends HtmlContainer {
     private static final PropertyDescriptor<String, Optional<String>> forDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("for", "");
+
+    private static Boolean productionMode = null;
+
+    private Registration checkForAttributeOnAttach;
 
     /**
      * Creates a new empty label.
@@ -129,28 +134,32 @@ public class Label extends HtmlContainer {
         return get(forDescriptor);
     }
 
-    private static Boolean productionMode = null;
-
     @Override
-    protected void onDetach(DetachEvent detachEvent) {
-        super.onDetach(detachEvent);
-        if (isProductionMode(detachEvent)) {
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        if (skipForAttributeCheck(attachEvent)
+                || !attachEvent.isInitialAttach()) {
             return; // skip check in production so that customer / clients /
-                    // ops-teams are not complaining about this warning to the
-                    // devs. This should be dealt with by devs in development
-                    // mode.
+            // ops-teams are not complaining about this warning to the
+            // devs. This should be dealt with by devs in development
+            // mode.
         }
-        // Label was not associated with a for-attribute
-        // AND
-        // Label was not associated by adding a nested component
-        if (getFor().isEmpty() && getChildren().findAny().isEmpty()) {
-            LoggerFactory.getLogger(Label.class.getName())
-                    .warn("The Label '{}' was not associated with a component. "
-                            + "Labels should not be used for loose text on the page. "
-                            + "Consider alternatives like Text, Paragraph, Span or Div. "
-                            + "See the JavaDocs and Deprecation Warning for more Information.",
-                            getText());
-        }
+        checkForAttributeOnAttach = attachEvent.getUI()
+                .beforeClientResponse(this, ctx -> {
+                    // Label was not associated with a for-attribute
+                    // AND
+                    // Label was not associated by adding a nested component
+                    if (getFor().isEmpty()
+                            && getChildren().findAny().isEmpty()) {
+                        LoggerFactory.getLogger(Label.class.getName()).warn(
+                                "The Label '{}' was not associated with a component. "
+                                        + "Labels should not be used for loose text on the page. "
+                                        + "Consider alternatives like Text, Paragraph, Span or Div. "
+                                        + "See the JavaDocs and Deprecation Warning for more Information.",
+                                getText());
+                    }
+                    checkForAttributeOnAttach.remove();
+                });
     }
 
     /**
@@ -162,12 +171,12 @@ public class Label extends HtmlContainer {
      * @return true if in production mode or the mode is unclear, false if in
      *         development mode
      **/
-    private static boolean isProductionMode(DetachEvent detachEvent) {
+    private static boolean skipForAttributeCheck(AttachEvent attachEvent) {
         if (productionMode != null) {
             return productionMode;
         }
 
-        var session = detachEvent.getSession();
+        var session = attachEvent.getSession();
         if (session == null) {
             return true;
         }
