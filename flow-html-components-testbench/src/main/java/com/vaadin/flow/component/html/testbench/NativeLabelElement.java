@@ -21,11 +21,9 @@ import com.vaadin.testbench.elementsbase.Element;
 /**
  * A TestBench element representing a <code>&lt;label&gt;</code> element.
  *
- * @since 1.0
- * @deprecated Use {@link NativeLabelElement} instead.
+ * @since 24.1
  */
 @Element("label")
-@Deprecated(since = "24.1", forRemoval = true)
-public class LabelElement extends TestBenchElement {
+public class NativeLabelElement extends TestBenchElement {
 
 }

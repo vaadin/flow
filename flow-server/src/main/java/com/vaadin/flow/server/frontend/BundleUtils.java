@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -22,16 +23,19 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.server.Constants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
 public final class BundleUtils {
 
@@ -127,5 +131,57 @@ public final class BundleUtils {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(BundleUtils.class);
+    }
+
+    /**
+     * Copy package-lock.json/.yaml file from existing dev-bundle for building
+     * new bundle.
+     *
+     * @param options
+     *            task options
+     */
+    public static void copyPackageLockFromBundle(Options options) {
+        String lockFile;
+        if (options.isEnablePnpm()) {
+            lockFile = Constants.PACKAGE_LOCK_YAML;
+        } else {
+            lockFile = Constants.PACKAGE_LOCK_JSON;
+        }
+        File packageLock = new File(options.getNpmFolder(), lockFile);
+        if (packageLock.exists()) {
+            // NO-OP due to existing package-lock
+            return;
+        }
+
+        try {
+            copyAppropriatePackageLock(options, packageLock);
+        } catch (IOException ioe) {
+            getLogger().error(
+                    "Failed to copy existing `" + lockFile + "` to use", ioe);
+        }
+
+    }
+
+    private static void copyAppropriatePackageLock(Options options,
+            File packageLock) throws IOException {
+        File devBundleFolder = new File(options.getNpmFolder(),
+                Constants.DEV_BUNDLE_LOCATION);
+        String packageLockFile = options.isEnablePnpm()
+                ? Constants.PACKAGE_LOCK_YAML
+                : Constants.PACKAGE_LOCK_JSON;
+        if (devBundleFolder.exists()) {
+            File devPackageLock = new File(devBundleFolder, packageLockFile);
+            if (devPackageLock.exists()) {
+                FileUtils.copyFile(devPackageLock, packageLock);
+                return;
+            }
+        }
+        final URL resource = options.getClassFinder()
+                .getResource(DEV_BUNDLE_JAR_PATH + packageLockFile);
+        if (resource != null) {
+            FileUtils.write(packageLock,
+                    IOUtils.toString(resource, StandardCharsets.UTF_8),
+                    StandardCharsets.UTF_8);
+        }
     }
 }

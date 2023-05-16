@@ -21,7 +21,7 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
@@ -55,7 +55,7 @@ public class UpdatableModelPropertiesView extends
     public UpdatableModelPropertiesView() {
         setId("template");
 
-        Label label = new Label();
+        NativeLabel label = new NativeLabel();
         label.setId("property-value");
         add(label);
 

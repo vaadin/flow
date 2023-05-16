@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 
@@ -29,7 +29,7 @@ public class RootNavigationTarget extends Div {
     public RootNavigationTarget(@Autowired DataBean dataBean,
             @Autowired FooNavigationTarget section) {
         setId("main");
-        Label label = new Label(dataBean.getMessage());
+        NativeLabel label = new NativeLabel(dataBean.getMessage());
         label.setId("message");
         add(label);
 
@@ -41,7 +41,8 @@ public class RootNavigationTarget extends Div {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        Label label = new Label(String.valueOf(getUI().get().getUIId()));
+        NativeLabel label = new NativeLabel(
+                String.valueOf(getUI().get().getUIId()));
         label.setId("ui-id");
         add(label);
 

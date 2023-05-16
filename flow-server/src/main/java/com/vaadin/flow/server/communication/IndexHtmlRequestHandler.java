@@ -418,7 +418,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             // When running without a frontend server, the index.html comes
             // directly from the frontend folder and the JS entrypoint(s) need
             // to be added
-            addJavaScriptEntryPoints(config, indexHtmlDocument);
+            addGeneratedIndexContent(config, indexHtmlDocument);
         }
         modifyIndexHtmlForVite(indexHtmlDocument);
         return indexHtmlDocument;
