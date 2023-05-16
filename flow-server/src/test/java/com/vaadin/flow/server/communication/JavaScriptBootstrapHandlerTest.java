@@ -150,9 +150,9 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertTrue(hasNodeTag(visitor, "^<flow-container-.*>.*",
                 ElementType.VIRTUAL_ATTACHED));
         Assert.assertTrue(hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
-        Assert.assertTrue(
-                hasNodeTag(visitor, "^<div>.*Could not navigate to 'a-route'.*",
-                        ElementType.REGULAR));
+        // There are no routes, so it will get the "no views found" message
+        Assert.assertTrue(hasNodeTag(visitor, "^<div>.*No views found.*",
+                ElementType.REGULAR));
 
     }
 
