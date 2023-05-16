@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.router.internal.DefaultErrorHandler;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
@@ -68,13 +69,27 @@ public class RouteNotFoundError extends Component
 
         boolean productionMode = event.getUI().getSession().getConfiguration()
                 .isProductionMode();
+        String template;
+        String routes = getRoutes(event);
 
-        String template = getErrorHtml(productionMode);
+        if (productionMode) {
+            template = LazyInit.PRODUCTION_MODE_TEMPLATE;
+        } else if (routes.isEmpty()) {
+            // The idea of showing a different error page when there are no
+            // routes comes from application generated from start.spring.io, see
+            // https://github.com/vaadin/flow/issues/16432
+            template = readHtmlFile(EndpointRequestUtil.isHillaAvailable()
+                    ? "NoRoutesError_hilla.html"
+                    : "NoRoutesError_dev.html");
+        } else {
+            template = readHtmlFile("RouteNotFoundError_dev.html");
+        }
+
         // {{routes}} should be replaced first so that it's not possible to
         // insert {{routes}} snippet via other template values which may result
-        // in the listing of all available routes when this shouldn't not happen
+        // in the listing of all available routes when this shouldn't happen
         if (template.contains("{{routes}}")) {
-            template = template.replace("{{routes}}", getRoutes(event));
+            template = template.replace("{{routes}}", routes);
         }
         template = template.replace("{{additionalInfo}}", additionalInfo);
         template = template.replace("{{path}}", path);
@@ -85,14 +100,6 @@ public class RouteNotFoundError extends Component
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(RouteNotFoundError.class);
-    }
-
-    private static String getErrorHtml(boolean productionMode) {
-        if (productionMode) {
-            return LazyInit.PRODUCTION_MODE_TEMPLATE;
-        } else {
-            return readHtmlFile("RouteNotFoundError_dev.html");
-        }
     }
 
     private static String readHtmlFile(String templateName) {

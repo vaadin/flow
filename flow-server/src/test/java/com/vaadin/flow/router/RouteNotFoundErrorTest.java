@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -40,21 +41,7 @@ public class RouteNotFoundErrorTest {
     public void setErrorParameter_productionMode_pathContainRoutesTemplate_renderedElementHasNoRoutes() {
 
         RouteNotFoundError page = new RouteNotFoundError();
-
-        BeforeEnterEvent event = Mockito.mock(BeforeEnterEvent.class);
-        Location location = Mockito.mock(Location.class);
-        Mockito.when(location.getPath()).thenReturn("{{routes}}");
-        Mockito.when(event.getLocation()).thenReturn(location);
-
-        UI ui = Mockito.mock(UI.class);
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        Mockito.when(ui.getSession()).thenReturn(session);
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(session.getConfiguration()).thenReturn(config);
-        Mockito.when(config.isProductionMode()).thenReturn(true);
-
-        Mockito.when(event.getUI()).thenReturn(ui);
+        BeforeEnterEvent event = createEvent(true);
 
         ErrorParameter<NotFoundException> param = new ErrorParameter<NotFoundException>(
                 NotFoundException.class, new NotFoundException());
@@ -75,6 +62,44 @@ public class RouteNotFoundErrorTest {
 
         MatcherAssert.assertThat(page.getElement().toString(),
                 CoreMatchers.not(CoreMatchers.containsString("bar")));
+    }
+
+    @Test
+    public void setErrorParameter_devMode_noRoutes() {
+        RouteNotFoundError page = new RouteNotFoundError();
+        BeforeEnterEvent event = createEvent(false);
+
+        ErrorParameter<NotFoundException> param = new ErrorParameter<>(
+                NotFoundException.class, new NotFoundException());
+
+        Router router = Mockito.mock(Router.class);
+        Mockito.when(event.getSource()).thenReturn(router);
+        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
+        Mockito.when(router.getRegistry()).thenReturn(registry);
+        Mockito.when(registry.getRegisteredRoutes()).thenReturn(List.of());
+
+        event.getSource().getRegistry().getRegisteredRoutes();
+
+        page.setErrorParameter(event, param);
+
+        MatcherAssert.assertThat(page.getElement().toString(),
+                CoreMatchers.containsString("No views found"));
+    }
+
+    private BeforeEnterEvent createEvent(boolean productionMode) {
+        BeforeEnterEvent event = Mockito.mock(BeforeEnterEvent.class);
+        Location location = Mockito.mock(Location.class);
+        Mockito.when(location.getPath()).thenReturn("{{routes}}");
+        Mockito.when(event.getLocation()).thenReturn(location);
+        UI ui = Mockito.mock(UI.class);
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        Mockito.when(ui.getSession()).thenReturn(session);
+        DeploymentConfiguration config = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(session.getConfiguration()).thenReturn(config);
+        Mockito.when(config.isProductionMode()).thenReturn(productionMode);
+        Mockito.when(event.getUI()).thenReturn(ui);
+        return event;
     }
 
 }
