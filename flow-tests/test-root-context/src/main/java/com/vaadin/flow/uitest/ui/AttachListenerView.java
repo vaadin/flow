@@ -21,7 +21,7 @@ import java.util.Map;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -146,7 +146,7 @@ public class AttachListenerView extends AbstractDivView {
         input.setId(id);
         radioButtons.put(id, input);
 
-        Label label = new Label(text);
+        NativeLabel label = new NativeLabel(text);
         label.setFor(id);
 
         parent.add(input, label);

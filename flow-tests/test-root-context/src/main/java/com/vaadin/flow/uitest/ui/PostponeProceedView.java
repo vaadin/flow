@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.BeforeLeaveEvent;
@@ -34,7 +34,7 @@ public class PostponeProceedView extends Div implements BeforeLeaveObserver {
     @Route(value = "com.vaadin.flow.uitest.ui.PostponeProceedView.ProceedResultView", layout = ViewTestLayout.class)
     public static class ProceedResultView extends Div {
         public ProceedResultView() {
-            Label label = new Label("Another view");
+            NativeLabel label = new NativeLabel("Another view");
             label.setId("target");
             add(label);
         }
@@ -43,7 +43,7 @@ public class PostponeProceedView extends Div implements BeforeLeaveObserver {
     @Route(value = "com.vaadin.flow.uitest.ui.PostponeProceedView.DelayedProceedTargetView", layout = ViewTestLayout.class)
     public static class DelayedProceedTargetView extends Div {
         public DelayedProceedTargetView() {
-            Label label = new Label("Delayed Proceed Target View");
+            NativeLabel label = new NativeLabel("Delayed Proceed Target View");
             label.setId("target");
             add(label);
         }

@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
@@ -32,7 +32,7 @@ public class EventListenersView extends AbstractDivView {
         button.setId("click");
         button.addClickListener(evt -> {
             int value = count.incrementAndGet();
-            Label label = new Label(String.valueOf(value));
+            NativeLabel label = new NativeLabel(String.valueOf(value));
             label.addClassName("count");
             add(label);
             add(button);

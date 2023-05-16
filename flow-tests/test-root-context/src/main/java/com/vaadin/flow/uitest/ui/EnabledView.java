@@ -16,7 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -32,7 +32,7 @@ public class EnabledView extends AbstractDivView {
         div.setId("enabled");
         div.getElement().setEnabled(false);
 
-        Label label = new Label("Nested element");
+        NativeLabel label = new NativeLabel("Nested element");
         label.setId("nested-label");
         div.add(label);
 

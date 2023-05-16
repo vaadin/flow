@@ -6,7 +6,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -21,7 +21,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 public class TemplatePushView extends PolymerTemplate<TemplateModel> {
 
     @Id
-    private Label label;
+    private NativeLabel label;
 
     @Id
     private NativeButton elementTest;
