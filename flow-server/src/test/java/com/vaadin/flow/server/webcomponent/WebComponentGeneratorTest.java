@@ -163,7 +163,7 @@ public class WebComponentGeneratorTest {
         module = module.replace("\r", "");
         MatcherAssert.assertThat(module,
                 startsWith("import {applyTheme} from '"
-                        + "/generated/theme';\n\nclass Tag extends "
+                        + "Frontend/generated/theme.js';\n\nclass Tag extends "
                         + "HTMLElement {"));
         MatcherAssert.assertThat(module, containsString("style.innerHTML = `\n" //
                 + "      :host {\n" //
