@@ -58,7 +58,7 @@ public class PushConfiguration extends Div {
         serverCounterLabel = new Div();
         serverCounterLabel.setId("server-counter");
         serverCounterLabel.setText(String.valueOf(counter2));
-        NativeLabel = new NativeLabel(
+        label = new NativeLabel(
                 "Server counter (updates each 1s by server thread) :");
         label.setFor(serverCounterLabel);
         add(label, serverCounterLabel);
