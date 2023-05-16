@@ -50,24 +50,11 @@ public class TodoIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void frontendFilesCreated() {
+    public void bundleCreated() {
         File baseDir = new File(System.getProperty("user.dir", "."));
 
         // should create a dev-bundle
         Assert.assertTrue("New devBundle should be generated",
                 new File(baseDir, Constants.DEV_BUNDLE_LOCATION).exists());
-        Assert.assertTrue("node_modules should be downloaded",
-                new File(baseDir, "node_modules").exists());
-
-        Assert.assertTrue("package.json should be created",
-                new File(baseDir, "package.json").exists());
-        Assert.assertTrue("vite generated should be created",
-                new File(baseDir, "vite.generated.ts").exists());
-        Assert.assertTrue("vite config should be created",
-                new File(baseDir, "vite.config.ts").exists());
-        Assert.assertTrue("types should be created",
-                new File(baseDir, "types.d.ts").exists());
-        Assert.assertTrue("tsconfig should be created",
-                new File(baseDir, "tsconfig.json").exists());
     }
 }

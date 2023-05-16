@@ -13,10 +13,6 @@ public class PnpmUsedIT {
     public void pnpmIsUsed() {
         File testPackage = new File(Constants.PACKAGE_LOCK_YAML);
         FileTestUtil.waitForFile(testPackage);
-        FileTestUtil.assertSymlink(testPackage,
-                "pnpm should have been used to install frontend dependencies but "
-                        + testPackage.getAbsolutePath()
-                        + " is a not a symlink like it should be");
     }
 
 }

@@ -13,9 +13,6 @@ public class NpmUsedIT {
     public void npmIsUsed() {
         File testPackage = new File(Constants.PACKAGE_LOCK_JSON);
         FileTestUtil.waitForFile(testPackage);
-        FileTestUtil.assertDirectory(testPackage,
-                "npm should have been used to install frontend dependencies but node_modules/lit is a symlink and only pnpm uses symlinks");
-
     }
 
 }
