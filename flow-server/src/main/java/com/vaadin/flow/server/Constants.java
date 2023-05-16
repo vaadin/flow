@@ -74,6 +74,11 @@ public final class Constants implements Serializable {
     public static final String PACKAGE_LOCK_JSON = "package-lock.json";
 
     /**
+     * Name of the <code>pnpm</code> version locking ile.
+     */
+    public static final String PACKAGE_LOCK_YAML = "pnpm-lock.yaml";
+
+    /**
      * Target folder constant.
      */
     public static final String TARGET = "target";
