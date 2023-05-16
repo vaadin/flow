@@ -144,22 +144,24 @@ public class Label extends HtmlContainer {
             // devs. This should be dealt with by devs in development
             // mode.
         }
-        checkForAttributeOnAttach = attachEvent.getUI()
-                .beforeClientResponse(this, ctx -> {
-                    // Label was not associated with a for-attribute
-                    // AND
-                    // Label was not associated by adding a nested component
-                    if (getFor().isEmpty()
-                            && getChildren().findAny().isEmpty()) {
-                        LoggerFactory.getLogger(Label.class.getName()).warn(
-                                "The Label '{}' was not associated with a component. "
-                                        + "Labels should not be used for loose text on the page. "
-                                        + "Consider alternatives like Text, Paragraph, Span or Div. "
-                                        + "See the JavaDocs and Deprecation Warning for more Information.",
-                                getText());
-                    }
-                    checkForAttributeOnAttach.remove();
-                });
+        if (checkForAttributeOnAttach == null) {
+            checkForAttributeOnAttach = attachEvent.getUI()
+                    .beforeClientResponse(this, ctx -> {
+                        // Label was not associated with a for-attribute
+                        // AND
+                        // Label was not associated by adding a nested component
+                        if (getFor().isEmpty()
+                                && getChildren().findAny().isEmpty()) {
+                            LoggerFactory.getLogger(Label.class.getName()).warn(
+                                    "The Label '{}' was not associated with a component. "
+                                            + "Labels should not be used for loose text on the page. "
+                                            + "Consider alternatives like Text, Paragraph, Span or Div. "
+                                            + "See the JavaDocs and Deprecation Warning for more Information.",
+                                    getText());
+                        }
+                        checkForAttributeOnAttach.remove();
+                    });
+        }
     }
 
     /**
