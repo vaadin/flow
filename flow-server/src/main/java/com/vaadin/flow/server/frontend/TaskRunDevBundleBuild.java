@@ -33,8 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
@@ -100,6 +98,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         runFrontendBuildTool("Vite", "vite/bin/vite.js", Collections.emptyMap(),
                 "build");
+
+        copyPackageLockToBundleFolder();
 
         addReadme();
     }
@@ -200,6 +200,28 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         } finally {
             if (process != null) {
                 process.destroyForcibly();
+            }
+        }
+    }
+
+    private void copyPackageLockToBundleFolder() {
+        File devBundleFolder = new File(options.getNpmFolder(),
+                Constants.DEV_BUNDLE_LOCATION);
+        assert devBundleFolder.exists() : "No dev-bundle folder created";
+
+        String packageLockFile = options.isEnablePnpm()
+                ? Constants.PACKAGE_LOCK_YAML
+                : Constants.PACKAGE_LOCK_JSON;
+
+        File packageLockJson = new File(options.getNpmFolder(),
+                packageLockFile);
+        if (packageLockJson.exists()) {
+            try {
+                FileUtils.copyFile(packageLockJson,
+                        new File(devBundleFolder, packageLockFile));
+            } catch (IOException e) {
+                getLogger().error("Failed to copy '" + packageLockFile + "' to "
+                        + Constants.DEV_BUNDLE_LOCATION, e);
             }
         }
     }
