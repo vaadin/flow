@@ -87,7 +87,7 @@ public class RouteNotFoundError extends Component
 
         // {{routes}} should be replaced first so that it's not possible to
         // insert {{routes}} snippet via other template values which may result
-        // in the listing of all available routes when this shouldn't not happen
+        // in the listing of all available routes when this shouldn't happen
         if (template.contains("{{routes}}")) {
             template = template.replace("{{routes}}", routes);
         }
