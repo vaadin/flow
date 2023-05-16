@@ -245,9 +245,7 @@ function statsExtracterPlugin(): PluginOption {
         .map((bundle) => bundle.fileName);
 
       const generatedIndexHtml = path.resolve(buildOutputFolder, 'index.html');
-      console.log('Reading', projectIndexHtml);
       const customIndexData: string = readFileSync(projectIndexHtml, { encoding: 'utf-8' });
-      console.log('Reading', generatedIndexHtml);
       const generatedIndexData: string = readFileSync(generatedIndexHtml, {
         encoding: 'utf-8'
       });
