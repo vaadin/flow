@@ -74,6 +74,10 @@ public final class BundleValidationUtil {
             if (mode.isProduction()) {
                 if (options.isForceProductionBuild()
                         || EndpointRequestUtil.isHillaAvailable()) {
+                    if (options.isForceProductionBuild()) {
+                        UsageStatistics.markAsUsed("flow/prod-build-requested",
+                                null);
+                    }
                     getLogger().info("Frontend build requested.");
                     saveResultInFile(true, options);
                     return true;
@@ -147,6 +151,8 @@ public final class BundleValidationUtil {
                 .isEmpty()) {
             getLogger()
                     .info("Custom eager routes defined. Require bundle build.");
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-bundle-custom-loading", null);
             return true;
         }
 

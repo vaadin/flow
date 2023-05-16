@@ -16,7 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
@@ -27,14 +27,14 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class ServiceInitListenersView extends Div
         implements HasUrlParameter<Integer> {
     private static final String OPTIONAL_PARAMETER_LABEL_TEXT_PREFIX = "Before init count: ";
-    private final Label optionalParameterLabel;
+    private final NativeLabel optionalParameterLabel;
 
     public ServiceInitListenersView() {
-        optionalParameterLabel = new Label();
+        optionalParameterLabel = new NativeLabel();
         add(optionalParameterLabel);
-        add(new Label(
+        add(new NativeLabel(
                 "Init count: " + TestingServiceInitListener.getInitCount()));
-        add(new Label("Request count: "
+        add(new NativeLabel("Request count: "
                 + TestingServiceInitListener.getRequestCount()));
     }
 

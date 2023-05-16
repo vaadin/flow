@@ -25,7 +25,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,7 +48,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -70,6 +68,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.router.InvalidLocationException;
@@ -96,6 +95,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -1595,17 +1595,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         setupPwa(document, service.getPwaRegistry());
     }
 
-    protected static void addJavaScriptEntryPoints(
+    protected static void addGeneratedIndexContent(
             DeploymentConfiguration config, Document targetDocument)
             throws IOException {
-        URL statsJsonUrl = DevBundleUtils
-                .findBundleFile(config.getProjectFolder(), "config/stats.json");
-        Objects.requireNonNull(statsJsonUrl,
+        String statsJson = DevBundleUtils
+                .findBundleStatsJson(config.getProjectFolder());
+        Objects.requireNonNull(statsJson,
                 "Frontend development bundle is expected to be in the project"
                         + " or on the classpath, but not found.");
-        String statsJson = IOUtils.toString(statsJsonUrl,
-                StandardCharsets.UTF_8);
-        addEntryScripts(targetDocument, Json.parse(statsJson));
+        addGeneratedIndexContent(targetDocument, Json.parse(statsJson));
     }
 
     /**
@@ -1676,31 +1674,30 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return element;
     }
 
-    private static void addEntryScripts(Document targetDocument,
+    private static void addGeneratedIndexContent(Document targetDocument,
             JsonObject statsJson) {
-        boolean addIndexHtml = true;
-        Element indexHtmlScript = null;
-        JsonArray entryScripts = statsJson.getArray("entryScripts");
-        for (int i = 0; i < entryScripts.length(); i++) {
-            String entryScript = entryScripts.getString(i);
+        JsonArray indexHtmlGeneratedRows = statsJson
+                .getArray("indexHtmlGenerated");
+        List<String> toAdd = new ArrayList<>();
+
+        Optional<String> webComponentScript = JsonUtils
+                .stream(statsJson.getArray("entryScripts"))
+                .map(value -> value.asString())
+                .filter(script -> script.contains("webcomponenthtml"))
+                .findFirst();
+
+        if (webComponentScript.isPresent()) {
             Element elm = new Element(SCRIPT_TAG);
             elm.attr("type", "module");
-            elm.attr("src", entryScript);
-            targetDocument.head().appendChild(elm);
-
-            if (entryScript.contains("indexhtml")) {
-                indexHtmlScript = elm;
-            }
-
-            if (entryScript.contains("webcomponenthtml")) {
-                addIndexHtml = false;
-            }
+            elm.attr("src", webComponentScript.get());
+            toAdd.add(elm.outerHtml());
+        } else {
+            toAdd.addAll(JsonUtils.stream(indexHtmlGeneratedRows)
+                    .map(value -> value.asString()).toList());
         }
 
-        // If a reference to webcomponenthtml is present, the embedded
-        // components are used, thus we don't need to serve indexhtml script
-        if (!addIndexHtml && indexHtmlScript != null) {
-            indexHtmlScript.remove();
+        for (String row : toAdd) {
+            targetDocument.head().append(row);
         }
     }
 

@@ -13,17 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.component.html.NativeLabel;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import org.junit.Assert;
+import org.junit.Test;
 
-@Route(value = "com.vaadin.flow.uitest.ui.BodyScrollView", layout = ViewTestLayout.class)
-public class BodyScrollView extends AbstractDivView {
+public class NativeLabelTest extends ComponentTest {
 
-    public BodyScrollView() {
-        add(new NativeLabel("Check scroll attribute"));
+    // Actual test methods in super class
+
+    @Override
+    protected void addProperties() {
+        addOptionalStringProperty("for");
+    }
+
+    @Test
+    public void setForComponent() {
+        NativeLabel otherComponent = new NativeLabel();
+        otherComponent.setId("otherC");
+        NativeLabel l = (NativeLabel) getComponent();
+        l.setFor(otherComponent);
+        Assert.assertEquals(otherComponent.getId().get(), l.getFor().get());
     }
 
 }

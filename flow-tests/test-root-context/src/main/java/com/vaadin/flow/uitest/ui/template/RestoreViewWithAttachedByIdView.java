@@ -19,7 +19,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.template.Id;
@@ -32,7 +32,7 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class RestoreViewWithAttachedByIdView extends AbstractDivView {
 
     private TemplateWithInjectedId template;
-    private Label label;
+    private NativeLabel label;
 
     private Component current;
 
@@ -54,7 +54,7 @@ public class RestoreViewWithAttachedByIdView extends AbstractDivView {
 
     public RestoreViewWithAttachedByIdView() {
         template = new TemplateWithInjectedId();
-        label = new Label("Switched component");
+        label = new NativeLabel("Switched component");
         label.setId("info");
         template.setId("template");
 
