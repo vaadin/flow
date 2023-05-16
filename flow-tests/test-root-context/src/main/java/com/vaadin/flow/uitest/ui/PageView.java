@@ -4,7 +4,7 @@ import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.IFrame;
 import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Route;
@@ -81,7 +81,7 @@ public class PageView extends AbstractDivView {
             }));
         }));
 
-        Label directionLbl = new Label();
+        NativeLabel directionLbl = new NativeLabel();
         directionLbl.setId("direction-value");
         add(directionLbl);
 

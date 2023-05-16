@@ -16,7 +16,7 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -29,7 +29,7 @@ public abstract class AbstractAttachExistingElementByIdTemplate
     private Input input;
 
     @Id("label")
-    private Label label;
+    private NativeLabel label;
 
     protected AbstractAttachExistingElementByIdTemplate(String id) {
         setId(id);
