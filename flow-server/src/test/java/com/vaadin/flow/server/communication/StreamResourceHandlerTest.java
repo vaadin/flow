@@ -114,9 +114,12 @@ public class StreamResourceHandlerTest {
     @Test
     public void inputStreamResourceWriterAndResponseThrows_streamResourceWriterExceptionIsPropagated()
             throws IOException {
-        ServletOutputStream servletOutputStream = Mockito.mock(ServletOutputStream.class);
-        Mockito.when(response.getOutputStream()).thenReturn(servletOutputStream);
-        Mockito.doThrow(new RuntimeException("Error on close")).when(servletOutputStream).close();
+        ServletOutputStream servletOutputStream = Mockito
+                .mock(ServletOutputStream.class);
+        Mockito.when(response.getOutputStream())
+                .thenReturn(servletOutputStream);
+        Mockito.doThrow(new RuntimeException("Error on close"))
+                .when(servletOutputStream).close();
         StreamResource res = new StreamResource("readme.md",
                 (StreamResourceWriter) (stream, session) -> {
                     throw new RuntimeException("Simulated-3");
@@ -127,7 +130,7 @@ public class StreamResourceHandlerTest {
             Assert.assertEquals("Simulated-3", exception.getMessage());
         }
         Mockito.verify(response)
-              .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
     @Test
