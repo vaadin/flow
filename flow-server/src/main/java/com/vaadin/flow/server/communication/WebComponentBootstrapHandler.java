@@ -135,7 +135,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     // directly from the frontend folder and the JS
                     // entrypoint(s) need
                     // to be added
-                    addJavaScriptEntryPoints(deploymentConfiguration, document);
+                    addGeneratedIndexContent(deploymentConfiguration, document);
                 }
 
                 // Specify the application ID for scripts of the
