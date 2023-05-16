@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -27,7 +27,7 @@ public class InMemoryChildrenView extends AbstractDivView {
 
     @Override
     protected void onShow() {
-        Label label = new Label();
+        NativeLabel label = new NativeLabel();
         label.setId("in-memory");
         label.setText("In memory element");
         getElement().appendVirtualChild(label.getElement());

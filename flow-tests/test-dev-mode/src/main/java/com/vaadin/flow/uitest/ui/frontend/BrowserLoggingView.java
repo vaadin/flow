@@ -19,7 +19,7 @@ package com.vaadin.flow.uitest.ui.frontend;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -29,7 +29,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @JavaScript(value = "./consoleLoggingProxy.js", loadMode = LoadMode.INLINE)
 public class BrowserLoggingView extends Div {
     public BrowserLoggingView() {
-        Label label = new Label("Just a label");
+        NativeLabel label = new NativeLabel("Just a label");
         label.setId("elementId");
         add(label);
     }

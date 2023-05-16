@@ -290,7 +290,7 @@ public class DefaultDeploymentConfiguration
                 .stream().filter(f -> f.isEnabled())
                 .collect(Collectors.toList());
         if (!enabledFeatures.isEmpty()) {
-            info.add("\nThe following EXPERIMENTAL features are enabled:");
+            info.add("\nThe following feature previews are enabled:");
             enabledFeatures.forEach(feature -> {
                 info.add("- " + feature.getTitle());
             });

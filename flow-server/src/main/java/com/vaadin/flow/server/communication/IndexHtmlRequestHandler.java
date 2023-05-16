@@ -48,6 +48,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -149,9 +150,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         redirectToOldBrowserPageWhenNeeded(indexDocument);
 
-        // modify the page based on registered IndexHtmlRequestListener:
-        service.modifyIndexHtmlResponse(indexHtmlResponse);
-
         if (!config.isProductionMode()) {
             // Ensure no older tools incorrectly detect a bundle as production
             // mode
@@ -169,6 +167,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             addLicenseChecker(indexDocument);
         }
 
+        // this invokes any custom listeners and should be run when the whole
+        // page is constructed
+        service.modifyIndexHtmlResponse(indexHtmlResponse);
+
         try {
             response.getOutputStream()
                     .write(indexDocument.html().getBytes(UTF_8));
@@ -182,9 +184,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static void addDevBundleTheme(Document document,
             VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
-        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE) {
+        if (config.getMode() == Mode.DEVELOPMENT_BUNDLE
+                || (config.getMode() == Mode.PRODUCTION_PRECOMPILED_BUNDLE)) {
             try {
-                BootstrapHandler.getStylesheetTags(config, "styles.css")
+                BootstrapHandler.getStylesheetTags(context, "styles.css")
                         .forEach(link -> document.head().appendChild(link));
             } catch (IOException e) {
                 throw new UncheckedIOException(
@@ -408,14 +411,14 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         Document indexHtmlDocument = Jsoup.parse(index);
         Mode mode = config.getMode();
-        if (mode == Mode.PRODUCTION) {
+        if (mode.isProduction()) {
             // The index.html is fetched from the bundle so it includes the
             // entry point javascripts
         } else if (mode == Mode.DEVELOPMENT_BUNDLE) {
             // When running without a frontend server, the index.html comes
             // directly from the frontend folder and the JS entrypoint(s) need
             // to be added
-            addJavaScriptEntryPoints(config, indexHtmlDocument);
+            addGeneratedIndexContent(config, indexHtmlDocument);
         }
         modifyIndexHtmlForVite(indexHtmlDocument);
         return indexHtmlDocument;

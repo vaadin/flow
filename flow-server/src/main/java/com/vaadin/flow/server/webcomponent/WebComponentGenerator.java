@@ -151,7 +151,7 @@ public class WebComponentGenerator {
 
         if (themeName != null && !themeName.isEmpty()) {
             replacements.put("ThemeImport",
-                    "import {applyTheme} from '/generated/theme';\n\n");
+                    "import {applyTheme} from 'Frontend/generated/theme.js';\n\n");
             replacements.put("ApplyTheme", "applyTheme(shadow);\n    ");
         } else {
             replacements.put("ThemeImport", "");
