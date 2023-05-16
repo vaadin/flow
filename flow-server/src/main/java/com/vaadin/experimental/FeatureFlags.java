@@ -62,7 +62,8 @@ public class FeatureFlags implements Serializable {
             "Theme Editor (Free Preview)", "themeEditor", null, true, null);
 
     public static final Feature SIDE_NAV_COMPONENT = new Feature(
-            "SideNav component (Experimental)", "sideNavComponent", null, true,
+            "SideNav component (Production ready but tweaks to at least the internal DOM will still take place)",
+            "sideNavComponent", null, true,
             "com.vaadin.flow.component.sidenav.SideNav");
 
     private List<Feature> features = new ArrayList<>();
