@@ -76,7 +76,8 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdateThemeImport.class,
             TaskCopyTemplateFiles.class,
             TaskRunDevBundleBuild.class,
-            TaskPrepareProdBundle.class
+            TaskPrepareProdBundle.class,
+            TaskCleanFrontendFiles.class
         ));
     // @formatter:on
 
@@ -117,6 +118,8 @@ public class NodeTasks implements FallibleCommand {
                 options.withBundleBuild(needBuild);
                 if (!needBuild) {
                     commands.add(new TaskPrepareProdBundle(options));
+                } else {
+                    BundleUtils.copyPackageLockFromBundle(options);
                 }
             } else if (options.isBundleBuild()) {
                 // The dev bundle check needs the frontendDependencies to be
@@ -127,8 +130,11 @@ public class NodeTasks implements FallibleCommand {
                 if (BundleValidationUtil.needsBuild(options,
                         frontendDependencies, classFinder,
                         Mode.DEVELOPMENT_BUNDLE)) {
+                    commands.add(
+                            new TaskCleanFrontendFiles(options.getNpmFolder()));
                     options.withRunNpmInstall(true);
                     options.withCopyTemplates(true);
+                    BundleUtils.copyPackageLockFromBundle(options);
                     UsageStatistics.markAsUsed("flow/app-dev-bundle", null);
                 } else {
                     // A dev bundle build is not needed after all, skip it
