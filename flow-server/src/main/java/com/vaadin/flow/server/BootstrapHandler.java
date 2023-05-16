@@ -25,7 +25,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,7 +48,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -70,6 +68,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.router.InvalidLocationException;
@@ -96,6 +95,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -1676,24 +1676,27 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static void addGeneratedIndexContent(Document targetDocument,
             JsonObject statsJson) {
-        boolean addIndexHtml = true;
         JsonArray indexHtmlGeneratedRows = statsJson
                 .getArray("indexHtmlGenerated");
         List<String> toAdd = new ArrayList<>();
 
-        for (int i = 0; i < indexHtmlGeneratedRows.length(); i++) {
-            String indexHtmlGeneratedRow = indexHtmlGeneratedRows.getString(i);
-            toAdd.add(indexHtmlGeneratedRow);
+        Optional<String> webComponentScript = JsonUtils
+                .stream(statsJson.getArray("entryScripts"))
+                .map(value -> value.asString())
+                .filter(script -> script.contains("webcomponenthtml"))
+                .findFirst();
 
-            if (indexHtmlGeneratedRow.contains("webcomponenthtml")) {
-                addIndexHtml = false;
-            }
+        if (webComponentScript.isPresent()) {
+            Element elm = new Element(SCRIPT_TAG);
+            elm.attr("type", "module");
+            elm.attr("src", webComponentScript.get());
+            toAdd.add(elm.outerHtml());
+        } else {
+            toAdd.addAll(JsonUtils.stream(indexHtmlGeneratedRows)
+                    .map(value -> value.asString()).toList());
         }
 
         for (String row : toAdd) {
-            if (!addIndexHtml && row.contains("indexhtml")) {
-                continue;
-            }
             targetDocument.head().append(row);
         }
     }
