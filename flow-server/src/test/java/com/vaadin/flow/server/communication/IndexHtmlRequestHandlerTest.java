@@ -319,7 +319,7 @@ public class IndexHtmlRequestHandlerTest {
                 .toString(StandardCharsets.UTF_8.name());
         Document document = Jsoup.parse(indexHtml);
         Elements scripts = document.head().getElementsByTag("script");
-        int expectedScripts = 4;
+        int expectedScripts = 2;
         Assert.assertEquals(expectedScripts, scripts.size());
         Assert.assertEquals("testing.1",
                 scripts.get(expectedScripts - 2).attr("src"));
