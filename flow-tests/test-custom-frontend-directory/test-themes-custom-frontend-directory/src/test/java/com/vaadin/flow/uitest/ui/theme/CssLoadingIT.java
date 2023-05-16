@@ -34,7 +34,7 @@ public class CssLoadingIT extends ChromeBrowserTest {
     private static final String BLUE_RGBA = "rgba(0, 0, 255, 1)";
     private static final String GREEN_RGBA = "rgba(0, 255, 0, 1)";
     private static final String YELLOW_RGBA = "rgba(255, 255, 0, 1)";
-    private static final String STYLESHEET_LUMO_FONT_SIZE_M = " 1.1rem";
+    private static final String STYLESHEET_LUMO_FONT_SIZE_M = "1.1rem";
 
     @Test
     public void CssImport_overrides_Lumo() {
@@ -45,7 +45,7 @@ public class CssLoadingIT extends ChromeBrowserTest {
                 STYLESHEET_LUMO_FONT_SIZE_M,
                 executeScript(
                         "return getComputedStyle(arguments[0]).getPropertyValue('--lumo-font-size-m')",
-                        htmlElement));
+                        htmlElement).toString().trim());
     }
 
     @Test
