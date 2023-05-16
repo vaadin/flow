@@ -24,6 +24,7 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
 import org.slf4j.LoggerFactory;
 
@@ -137,8 +138,7 @@ public class Label extends HtmlContainer {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-        if (skipForAttributeCheck(attachEvent)
-                || !attachEvent.isInitialAttach()) {
+        if (skipForAttributeCheck() || !attachEvent.isInitialAttach()) {
             return; // skip check in production so that customer / clients /
             // ops-teams are not complaining about this warning to the
             // devs. This should be dealt with by devs in development
@@ -173,17 +173,18 @@ public class Label extends HtmlContainer {
      * @return true if in production mode or the mode is unclear, false if in
      *         development mode
      **/
-    private static boolean skipForAttributeCheck(AttachEvent attachEvent) {
+    private static boolean skipForAttributeCheck() {
         if (productionMode != null) {
             return productionMode;
         }
 
-        var session = attachEvent.getSession();
-        if (session == null) {
+        var service = VaadinService.getCurrent();
+        if (service == null) {
             return true;
         }
 
-        productionMode = session.getConfiguration().isProductionMode();
+        productionMode = service.getDeploymentConfiguration()
+                .isProductionMode();
         return productionMode;
     }
 }
