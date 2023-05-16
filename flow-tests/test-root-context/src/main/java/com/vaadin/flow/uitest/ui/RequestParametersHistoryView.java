@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
 
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
@@ -36,12 +36,12 @@ public class RequestParametersHistoryView extends AbstractDivView
     static final String REQUEST_PARAM_ID = "requestParamDisplayLabel";
     static final String BACK_BUTTON_ID = "backButton";
 
-    private final Label requestParamLabel;
+    private final NativeLabel requestParamLabel;
 
     public RequestParametersHistoryView() {
         NativeButton backwardButton = createButton("Go back", BACK_BUTTON_ID,
                 event -> getPage().getHistory().back());
-        requestParamLabel = new Label(NO_INPUT_TEXT);
+        requestParamLabel = new NativeLabel(NO_INPUT_TEXT);
         requestParamLabel.setId(REQUEST_PARAM_ID);
         add(requestParamLabel, backwardButton);
     }

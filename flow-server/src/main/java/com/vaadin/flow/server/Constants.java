@@ -70,7 +70,6 @@ public final class Constants implements Serializable {
     /**
      * Name of the <code>npm</code> version locking ile.
      */
-
     public static final String PACKAGE_LOCK_JSON = "package-lock.json";
 
     /**

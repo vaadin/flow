@@ -56,7 +56,7 @@
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-            <version>5.1.0</version>
+            <version>7.0.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.guava</groupId>

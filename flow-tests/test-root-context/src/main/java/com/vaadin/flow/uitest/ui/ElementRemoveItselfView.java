@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
@@ -33,7 +33,7 @@ public class ElementRemoveItselfView extends AbstractDivView {
         layout.appendChild(button);
         button.addEventListener("click", evt -> {
             layout.removeAllChildren();
-            Label label = new Label("All removed!");
+            NativeLabel label = new NativeLabel("All removed!");
             label.setId("all-removed");
             add(label);
         });

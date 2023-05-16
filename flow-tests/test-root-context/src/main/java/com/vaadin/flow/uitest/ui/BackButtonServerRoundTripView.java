@@ -4,7 +4,7 @@ import java.util.Collections;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -20,10 +20,10 @@ public class BackButtonServerRoundTripView extends Div
     static final String BUTTON_ID = "button";
     static final String QUERY_LABEL_ID = "query";
 
-    private final Label queryLabel;
+    private final NativeLabel queryLabel;
 
     public BackButtonServerRoundTripView() {
-        queryLabel = new Label();
+        queryLabel = new NativeLabel();
         queryLabel.setId(QUERY_LABEL_ID);
         add(queryLabel);
 

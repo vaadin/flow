@@ -110,7 +110,8 @@ public class TestUtil {
             throws IOException {
         String content = "{\"npmModules\": {}, "
                 + "\"entryScripts\": [\"foo.js\"], "
-                + "\"packageJsonHash\": \"42\"}";
+                + "\"packageJsonHash\": \"42\","
+                + "\"indexHtmlGenerated\": []}";
         createStubFile(projectRootFolder,
                 Constants.DEV_BUNDLE_LOCATION + "/config/stats.json", content);
     }

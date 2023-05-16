@@ -76,7 +76,8 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdateThemeImport.class,
             TaskCopyTemplateFiles.class,
             TaskRunDevBundleBuild.class,
-            TaskPrepareProdBundle.class
+            TaskPrepareProdBundle.class,
+            TaskCleanFrontendFiles.class
         ));
     // @formatter:on
 
@@ -117,6 +118,8 @@ public class NodeTasks implements FallibleCommand {
                 options.withBundleBuild(needBuild);
                 if (!needBuild) {
                     commands.add(new TaskPrepareProdBundle(options));
+                    UsageStatistics.markAsUsed("flow/prod-pre-compiled-bundle",
+                            null);
                 } else {
                     BundleUtils.copyPackageLockFromBundle(options);
                 }
@@ -129,6 +132,8 @@ public class NodeTasks implements FallibleCommand {
                 if (BundleValidationUtil.needsBuild(options,
                         frontendDependencies, classFinder,
                         Mode.DEVELOPMENT_BUNDLE)) {
+                    commands.add(
+                            new TaskCleanFrontendFiles(options.getNpmFolder()));
                     options.withRunNpmInstall(true);
                     options.withCopyTemplates(true);
                     BundleUtils.copyPackageLockFromBundle(options);

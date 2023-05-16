@@ -23,7 +23,7 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.router.Route;
@@ -140,7 +140,7 @@ public class JavaScriptReturnValueView extends AbstractDivView {
                 input.getElement().setAttribute("checked", true);
             }
 
-            Label label = new Label(caption);
+            NativeLabel label = new NativeLabel(caption);
             label.setFor(input);
 
             getContent().add(new Div(input, label));
