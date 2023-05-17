@@ -55,7 +55,7 @@ In short debugging is building flow client JS in pretty/detailed mode and then a
 
 #### Note for debugging:
    - you shall add the `flow-client` dependency if it is not present.
-     - For example, your project may use Vaadin `24.0.0`, but you rebuild the flow client at version `24.1-SNAPSHOT`. 
+     - For example, your project may use Vaadin `24.2.0`, but you rebuild the flow client at version `24.2-SNAPSHOT`. 
 In this case, you should probably add the `flow-client` dependency to overwrite the version the project is bringing in. 
    - Delete the dev-bundle (`src/main/dev-bundle`) directory to be sure the project will not use a previously bundled version of the client
    - clean the application project (`mvn vaadin:clean-frontend` or `mvn:flow-clean-frontend`) is also recommanded
