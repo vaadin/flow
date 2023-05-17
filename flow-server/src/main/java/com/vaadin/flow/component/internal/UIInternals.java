@@ -566,10 +566,17 @@ public class UIInternals implements Serializable {
             PendingJavaScriptInvocation invocation) {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
+
+        invocation.getOwner()
+                .addDetachListener(() -> pendingJsInvocations
+                        .removeIf(pendingInvocation -> pendingInvocation
+                                .equals(invocation)));
     }
 
     /**
-     * Gets all the pending JavaScript invocations and clears the queue.
+     * Gets all the pending JavaScript invocations that are ready to be sent to
+     * a client. Retains pending JavaScript invocations owned by invisible
+     * components in the queue.
      *
      * @return a list of pending JavaScript invocations
      */
@@ -580,13 +587,16 @@ public class UIInternals implements Serializable {
             return Collections.emptyList();
         }
 
-        List<PendingJavaScriptInvocation> currentList = getPendingJavaScriptInvocations()
+        List<PendingJavaScriptInvocation> readyToSend = getPendingJavaScriptInvocations()
+                .filter(invocation -> invocation.getOwner().isVisible())
                 .peek(PendingJavaScriptInvocation::setSentToBrowser)
                 .collect(Collectors.toList());
 
-        pendingJsInvocations = new ArrayList<>();
+        pendingJsInvocations = getPendingJavaScriptInvocations()
+                .filter(invocation -> !invocation.getOwner().isVisible())
+                .collect(Collectors.toCollection(ArrayList::new));
 
-        return currentList;
+        return readyToSend;
     }
 
     /**
