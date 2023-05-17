@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateTree.BeforeClientResponseEntry;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
@@ -634,8 +635,11 @@ public class StateNode implements Serializable {
             return;
         }
 
-        if (!isVisible()) {
-            doCollectChanges(collector, getDisallowFeatures());
+        if (isInitialChanges && !isVisible()) {
+            if (hasFeature(ElementData.class)) {
+                doCollectChanges(collector,
+                        Stream.of(getFeature(ElementData.class)));
+            }
             return;
         }
 
@@ -979,7 +983,7 @@ public class StateNode implements Serializable {
             }
             return parent.isVisible();
         }
-        return getParent() == null ? true : parent.isVisible();
+        return getParent() == null || parent.isVisible();
     }
 
     /**
