@@ -459,4 +459,5 @@ public class StateTree implements NodeOwner {
     public void prepareForResync() {
         rootNode.prepareForResync();
     }
+
 }
