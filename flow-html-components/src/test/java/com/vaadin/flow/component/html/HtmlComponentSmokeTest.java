@@ -206,6 +206,11 @@ public class HtmlComponentSmokeTest {
                 && method.getParameterTypes()[0] == Component.class) {
             return true;
         }
+        if (method.getDeclaringClass() == NativeLabel.class
+                && method.getName().equals("setFor")
+                && method.getParameterTypes()[0] == Component.class) {
+            return true;
+        }
 
         // Anchor.setTarget(AnchorTargetValue) -
         // https://github.com/vaadin/flow/issues/8346

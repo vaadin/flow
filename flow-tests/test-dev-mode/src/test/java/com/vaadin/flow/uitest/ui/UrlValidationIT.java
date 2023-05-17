@@ -22,7 +22,7 @@ import java.net.URL;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.html.testbench.LabelElement;
+import com.vaadin.flow.component.html.testbench.NativeLabelElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class UrlValidationIT extends ChromeBrowserTest {
@@ -36,7 +36,8 @@ public class UrlValidationIT extends ChromeBrowserTest {
             throws Exception {
         // open a view and wait till the expected label is displayed
         open();
-        waitUntil(input -> $(LabelElement.class).id("elementId").isDisplayed());
+        waitUntil(input -> $(NativeLabelElement.class).id("elementId")
+                .isDisplayed());
         // check the forbidden url
         sendRequestAndValidateResponseStatusBadRequest(
                 "/VAADIN/build/%252E%252E");
@@ -47,7 +48,8 @@ public class UrlValidationIT extends ChromeBrowserTest {
             throws Exception {
         // open a view and wait till the expected label is displayed
         open();
-        waitUntil(input -> $(LabelElement.class).id("elementId").isDisplayed());
+        waitUntil(input -> $(NativeLabelElement.class).id("elementId")
+                .isDisplayed());
         // check the forbidden url
         sendRequestAndValidateResponseStatusBadRequest(
                 "/VAADIN/build/%252E%252E/some-resource.css");

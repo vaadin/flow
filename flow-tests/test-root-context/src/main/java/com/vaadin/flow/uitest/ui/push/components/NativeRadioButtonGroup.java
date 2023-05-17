@@ -8,7 +8,7 @@ import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 
 public class NativeRadioButtonGroup<T> extends Composite<Div> {
     private final String group;
@@ -43,7 +43,7 @@ public class NativeRadioButtonGroup<T> extends Composite<Div> {
             input.getElement().setAttribute("checked", true);
         }
 
-        Label label = new Label(caption);
+        NativeLabel label = new NativeLabel(caption);
         label.setFor(input);
 
         getContent().add(new Div(input, label));

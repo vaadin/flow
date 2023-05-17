@@ -321,7 +321,8 @@ public class BuildFrontendUtil {
                     .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                     .setJavaResourceFolder(adapter.javaResourceFolder())
                     .withPostinstallPackages(adapter.postinstallPackages())
-                    .withCiBuild(adapter.ciBuild());
+                    .withCiBuild(adapter.ciBuild())
+                    .withForceProductionBuild(adapter.forceProductionBuild());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -512,8 +513,9 @@ public class BuildFrontendUtil {
 
         if (statsJsonContent == null) {
             // without stats.json in bundle we can not say if it is up-to-date
-            throw new RuntimeException(
-                    "No production bundle stats.json available.");
+            getLogger().debug(
+                    "No production bundle stats.json available for licenses validation.");
+            statsJsonContent = "{}";
         }
 
         FrontendDependenciesScanner scanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()

@@ -36,6 +36,7 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.BundleValidationUtil;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 
@@ -108,10 +109,22 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Parameter(property = InitParameters.CI_BUILD, defaultValue = "false")
     private boolean ciBuild;
 
+    /**
+     * Setting this to {@code true} will force a build of the production build
+     * even if there is a default production bundle that could be used.
+     *
+     * Created production bundle optimization is defined by
+     * {@link #optimizeBundle} parameter.
+     */
+    @Parameter(property = InitParameters.FORCE_PRODUCTION_BUILD, defaultValue = "false")
+    private boolean forceProductionBuild;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
 
+        TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(
+                npmFolder());
         try {
             BuildFrontendUtil.runNodeUpdater(this);
         } catch (ExecutionFailedException | URISyntaxException exception) {
@@ -123,7 +136,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                 .needsBundleBuild(servletResourceOutputDirectory())) {
             try {
                 BuildFrontendUtil.runFrontendBuild(this);
-            } catch (URISyntaxException | TimeoutException exception) {
+                cleanTask.execute();
+            } catch (URISyntaxException | TimeoutException
+                    | ExecutionFailedException exception) {
                 throw new MojoExecutionException(exception.getMessage(),
                         exception);
             }
@@ -170,6 +185,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Override
     public boolean ciBuild() {
         return ciBuild;
+    }
+
+    @Override
+    public boolean forceProductionBuild() {
+        return forceProductionBuild;
     }
 
 }

@@ -10,9 +10,10 @@
   "license": "Apache-2.0",
   "dependencies": {},
   "devDependencies": {
-    "vite": "4.3.5",
+    "vite": "4.3.7",
     "@rollup/plugin-replace": "5.0.2",
     "@rollup/pluginutils": "5.0.2",
+    "rollup-plugin-visualizer": "5.9.0",
     "rollup-plugin-brotli": "3.1.0",
     "vite-plugin-checker": "0.5.5",
     "mkdirp": "1.0.4",

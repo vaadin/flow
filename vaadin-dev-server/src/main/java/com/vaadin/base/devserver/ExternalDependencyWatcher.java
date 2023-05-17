@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
@@ -44,25 +45,48 @@ public class ExternalDependencyWatcher implements Closeable {
             File jarFrontendResourcesFolder) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
 
-        String hotdeployDependencies = config.getStringProperty(
+        String hotdeployDependenciesProperty = config.getStringProperty(
                 InitParameters.FRONTEND_HOTDEPLOY_DEPENDENCIES, null);
 
         List<String> hotdeployDependencyFolders = new ArrayList<>();
-        if (hotdeployDependencies != null) {
-            for (String folder : hotdeployDependencies.split(",")) {
+        File projectFolder = config.getProjectFolder();
+        if (hotdeployDependenciesProperty != null) {
+            for (String folder : hotdeployDependenciesProperty.split(",")) {
                 if (!folder.isBlank()) {
                     hotdeployDependencyFolders.add(folder.trim());
+                }
+            }
+        } else {
+            File pomFile = new File(projectFolder, "pom.xml");
+            File parentPomFile = MavenUtils
+                    .getParentPomOfMultiModuleProject(pomFile);
+            if (parentPomFile != null) {
+                Document parentPom = MavenUtils.parsePomFile(parentPomFile);
+                if (parentPom != null) {
+                    Path currentPomToParentPomPath = pomFile.getParentFile()
+                            .toPath()
+                            .relativize(parentPomFile.getParentFile().toPath());
+                    hotdeployDependencyFolders = MavenUtils
+                            .getModuleFolders(parentPom).stream()
+                            .map(folder -> currentPomToParentPomPath
+                                    + File.separator + folder)
+                            .toList();
                 }
             }
         }
 
         for (String hotdeployDependencyFolder : hotdeployDependencyFolders) {
-            Path moduleFolder = config.getProjectFolder().toPath()
-                    .resolve(hotdeployDependencyFolder);
+            Path moduleFolder = projectFolder.toPath()
+                    .resolve(hotdeployDependencyFolder).normalize();
+            if (moduleFolder.equals(projectFolder.toPath())) {
+                // Don't watch the active module
+                continue;
+            }
             Path metaInf = moduleFolder
                     .resolve(Path.of("src", "main", "resources", "META-INF"));
             if (!watchDependencyFolder(metaInf.toFile(),
-                    jarFrontendResourcesFolder)) {
+                    jarFrontendResourcesFolder)
+                    && hotdeployDependenciesProperty != null) {
                 getLogger().warn("No folders to watch were found in "
                         + metaInf.normalize().toAbsolutePath()
                         + ". This should be the META-INF folder that contains either frontend or resources/frontend");
@@ -85,13 +109,17 @@ public class ExternalDependencyWatcher implements Closeable {
         File metaInfFrontend = new File(metaInfFolder, "frontend");
         File metaInfResourcesFrontend = new File(
                 new File(metaInfFolder, "resources"), "frontend");
+        File metaInfResourcesThemes = new File(
+                new File(metaInfFolder, "resources"), "themes");
 
         boolean watching1 = watchAndCopy(metaInfFrontend,
                 jarFrontendResourcesFolder);
         boolean watching2 = watchAndCopy(metaInfResourcesFrontend,
                 jarFrontendResourcesFolder);
+        boolean watching3 = watchAndCopy(metaInfResourcesThemes,
+                new File(jarFrontendResourcesFolder, "themes"));
 
-        return watching1 || watching2;
+        return watching1 || watching2 || watching3;
     }
 
     private boolean watchAndCopy(File watchFolder, File targetFolder) {

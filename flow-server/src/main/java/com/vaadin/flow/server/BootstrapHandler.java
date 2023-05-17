@@ -16,10 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -29,7 +25,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +48,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -74,6 +68,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.router.InvalidLocationException;
@@ -88,6 +83,7 @@ import com.vaadin.flow.server.frontend.CssBundler;
 import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -99,6 +95,10 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -1595,17 +1595,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         setupPwa(document, service.getPwaRegistry());
     }
 
-    protected static void addJavaScriptEntryPoints(
+    protected static void addGeneratedIndexContent(
             DeploymentConfiguration config, Document targetDocument)
             throws IOException {
-        URL statsJsonUrl = DevBundleUtils
-                .findBundleFile(config.getProjectFolder(), "config/stats.json");
-        Objects.requireNonNull(statsJsonUrl,
+        String statsJson = DevBundleUtils
+                .findBundleStatsJson(config.getProjectFolder());
+        Objects.requireNonNull(statsJson,
                 "Frontend development bundle is expected to be in the project"
                         + " or on the classpath, but not found.");
-        String statsJson = IOUtils.toString(statsJsonUrl,
-                StandardCharsets.UTF_8);
-        addEntryScripts(targetDocument, Json.parse(statsJson));
+        addGeneratedIndexContent(targetDocument, Json.parse(statsJson));
     }
 
     /**
@@ -1613,8 +1611,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * (typically styles.css or document.css), which are served in express build
      * mode by static file server directly from frontend/themes folder.
      *
-     * @param config
-     *            deployment configuration
+     * @param context
+     *            the vaadin context
      * @param fileName
      *            the stylesheet file name to add a reference to
      * @return the collection of link tags to be added to the page
@@ -1622,10 +1620,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *             if theme name cannot be extracted from file
      */
     protected static Collection<Element> getStylesheetTags(
-            AbstractConfiguration config, String fileName) throws IOException {
-        return ThemeUtils.getActiveThemes(config).stream()
-                .map(theme -> getDevModeStyleTag(theme, fileName, config))
-                .toList();
+            VaadinContext context, String fileName) throws IOException {
+        ApplicationConfiguration config = ApplicationConfiguration.get(context);
+        return ThemeUtils.getActiveThemes(context).stream()
+                .map(theme -> getStyleTag(theme, fileName, config)).toList();
     }
 
     /**
@@ -1633,65 +1631,73 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * (typically styles.css or document.css), which are served in express build
      * mode by static file server directly from frontend/themes folder.
      *
-     * @param config
-     *            deployment configuration
+     * @param context
+     *            the vaadin context
      * @param fileName
      *            the stylesheet file name to add a reference to
      * @return the collection of links to be added to the page
-     * @throws IOException
-     *             if theme name cannot be extracted from file
      */
     protected static Collection<String> getStylesheetLinks(
-            AbstractConfiguration config, String fileName) throws IOException {
-        return ThemeUtils.getActiveThemes(config).stream()
+            VaadinContext context, String fileName) {
+        return ThemeUtils.getActiveThemes(context).stream()
                 .map(theme -> ThemeUtils.getThemeFilePath(theme, fileName))
                 .toList();
     }
 
-    private static Element getDevModeStyleTag(String themeName, String fileName,
+    private static Element getStyleTag(String themeName, String fileName,
             AbstractConfiguration config) {
-        Element element = new Element("style");
-        element.attr("data-file-path",
-                ThemeUtils.getThemeFilePath(themeName, fileName));
-        File frontendDirectory = FrontendUtils.getProjectFrontendDir(config);
-        File stylesCss = new File(
-                ThemeUtils.getThemeFolder(frontendDirectory, themeName),
-                fileName);
+        Element element;
         try {
-            element.appendChild(new DataNode(CssBundler
-                    .inlineImports(stylesCss.getParentFile(), stylesCss)));
+            String themeFilePath = ThemeUtils.getThemeFilePath(themeName,
+                    fileName);
+            if (config.isProductionMode()) {
+                element = new Element("link");
+                element.attr("rel", "stylesheet");
+                element.attr("type", "text/css");
+                element.attr("href", themeFilePath);
+            } else {
+                element = new Element("style");
+                element.attr("data-file-path", themeFilePath);
+                File frontendDirectory = FrontendUtils
+                        .getProjectFrontendDir(config);
+                File stylesCss = new File(
+                        ThemeUtils.getThemeFolder(frontendDirectory, themeName),
+                        fileName);
+                // Inline CSS into style tag to have hot module reload feature
+                element.appendChild(new DataNode(CssBundler
+                        .inlineImports(stylesCss.getParentFile(), stylesCss)));
+            }
         } catch (IOException e) {
             throw new RuntimeException(
-                    "Unable to read theme file from " + stylesCss, e);
+                    "Unable to read theme file from " + fileName, e);
         }
         return element;
     }
 
-    private static void addEntryScripts(Document targetDocument,
+    private static void addGeneratedIndexContent(Document targetDocument,
             JsonObject statsJson) {
-        boolean addIndexHtml = true;
-        Element indexHtmlScript = null;
-        JsonArray entryScripts = statsJson.getArray("entryScripts");
-        for (int i = 0; i < entryScripts.length(); i++) {
-            String entryScript = entryScripts.getString(i);
+        JsonArray indexHtmlGeneratedRows = statsJson
+                .getArray("indexHtmlGenerated");
+        List<String> toAdd = new ArrayList<>();
+
+        Optional<String> webComponentScript = JsonUtils
+                .stream(statsJson.getArray("entryScripts"))
+                .map(value -> value.asString())
+                .filter(script -> script.contains("webcomponenthtml"))
+                .findFirst();
+
+        if (webComponentScript.isPresent()) {
             Element elm = new Element(SCRIPT_TAG);
             elm.attr("type", "module");
-            elm.attr("src", entryScript);
-            targetDocument.head().appendChild(elm);
-
-            if (entryScript.contains("indexhtml")) {
-                indexHtmlScript = elm;
-            }
-
-            if (entryScript.contains("webcomponenthtml")) {
-                addIndexHtml = false;
-            }
+            elm.attr("src", webComponentScript.get());
+            toAdd.add(elm.outerHtml());
+        } else {
+            toAdd.addAll(JsonUtils.stream(indexHtmlGeneratedRows)
+                    .map(value -> value.asString()).toList());
         }
 
-        // If a reference to webcomponenthtml is present, the embedded
-        // components are used, thus we don't need to serve indexhtml script
-        if (!addIndexHtml && indexHtmlScript != null) {
-            indexHtmlScript.remove();
+        for (String row : toAdd) {
+            targetDocument.head().append(row);
         }
     }
 

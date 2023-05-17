@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -23,7 +23,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class BodyScrollView extends AbstractDivView {
 
     public BodyScrollView() {
-        add(new Label("Check scroll attribute"));
+        add(new NativeLabel("Check scroll attribute"));
     }
 
 }

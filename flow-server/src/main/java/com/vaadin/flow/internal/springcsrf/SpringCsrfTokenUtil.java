@@ -38,6 +38,7 @@ public class SpringCsrfTokenUtil {
     private static final String SPRING_CSRF_PARAMETER_NAME_ATTRIBUTE = "_csrf_parameter";
     private static final String SPRING_CSRF_HEADER_NAME_ATTRIBUTE = "_csrf_header";
     private static final String SPRING_CSRF_TOKEN_ATTRIBUTE = "_csrf";
+    private static final String SPRING_CSRF_COOKIE_NAME = "XSRF-TOKEN";
     private static final String META_TAG = "meta";
 
     private SpringCsrfTokenUtil() {
@@ -85,6 +86,8 @@ public class SpringCsrfTokenUtil {
             VaadinRequest request) {
         Optional<SpringCsrfToken> springCsrfToken = getSpringCsrfToken(request);
         springCsrfToken.ifPresent(csrfToken -> {
+            addFormDataHandlerScriptToHead(head, csrfToken.getParameterName(),
+                    SPRING_CSRF_COOKIE_NAME);
             addMetaTagToHead(head, SPRING_CSRF_TOKEN_ATTRIBUTE,
                     csrfToken.getToken());
             addMetaTagToHead(head, SPRING_CSRF_HEADER_NAME_ATTRIBUTE,
@@ -100,5 +103,34 @@ public class SpringCsrfTokenUtil {
         meta.attr(NAME_ATTRIBUTE, name);
         meta.attr(CONTENT_ATTRIBUTE, value);
         head.insertChildren(0, meta);
+    }
+
+    private static void addFormDataHandlerScriptToHead(Element head,
+            String parameterName, String cookieName) {
+        // Replace the CSRF form data parameter with the value from cookies for
+        // compatibility with `CookieCsrfTokenRepository` in Spring Security.
+        // Essential for the login form to work with stateless authentication.
+        // See: https://github.com/vaadin/hilla/issues/910
+        Element script = new Element("script");
+        script.attr("type", "module");
+        script.append(
+                """
+                        const csrfParameterName = '%s';
+                        const csrfCookieName = '%s';
+                        window.addEventListener('formdata', (e) => {
+                          if (!e.formData.has(csrfParameterName)) {
+                            return;
+                          }
+
+                          const cookies = new URLSearchParams(document.cookie.replace(/;\\s*/, '&'));
+                          if (!cookies.has(csrfCookieName)) {
+                            return;
+                          }
+
+                          e.formData.set(csrfParameterName, cookies.get(csrfCookieName));
+                        });
+                        """
+                        .formatted(parameterName, cookieName));
+        head.insertChildren(0, script);
     }
 }

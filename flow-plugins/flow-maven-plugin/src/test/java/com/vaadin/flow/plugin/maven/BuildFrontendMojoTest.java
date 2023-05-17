@@ -142,12 +142,6 @@ public class BuildFrontendMojoTest {
                 "jar-resources-source/META-INF/frontend");
         jarResourcesSource.mkdirs();
 
-        File statsfile = new File(resourceOutputDirectory,
-                Constants.VAADIN_CONFIGURATION + "/stats.json");
-
-        statsfile.getParentFile().mkdirs();
-        FileUtils.fileWrite(statsfile, "UTF-8", "{}");
-
         projectFrontendResourcesDirectory = new File(npmFolder,
                 "flow_resources");
 
@@ -179,6 +173,8 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
         ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle", true);
+        ReflectionUtils.setVariableValueInObject(mojo, "forceProductionBuild",
+                false);
 
         ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
                 openApiJsonFile);

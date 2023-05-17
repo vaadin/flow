@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -79,7 +79,7 @@ public class DebounceSynchronizePropertyView
             }
         }).addEventData("element.checked");
 
-        Label label = new Label(caption);
+        NativeLabel label = new NativeLabel(caption);
         label.getElement().insertChild(0, checkbox);
         label.getElement().getStyle().set("display", "block");
         return label;
