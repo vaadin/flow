@@ -6,7 +6,7 @@ const fs = require("fs");
 const globalExclusions = ['flow-tests', 'flow-tests/servlet-containers/tomcat9', 'flow-tests/servlet-containers/tomcat85'];
 // Set modules or tests weights and fixed slice position for better distribution
 //  weight: it's time in half-minutes, default 1 = 30secs
-//  pos:    certain modules need to be allocated manually. Use position for that.
+//  pos: certain modules need to be allocated manually. Use position for that.
 const moduleWeights = {
   // There are some modules that last more than usual
   'flow-server': { weight: 3 },
