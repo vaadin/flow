@@ -49,6 +49,7 @@ import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateTree;
@@ -569,11 +570,6 @@ public class UIInternals implements Serializable {
             PendingJavaScriptInvocation invocation) {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
-
-        invocation.getOwner()
-                .addDetachListener(() -> pendingJsInvocations
-                        .removeIf(pendingInvocation -> pendingInvocation
-                                .equals(invocation)));
     }
 
     /**
@@ -598,8 +594,25 @@ public class UIInternals implements Serializable {
         pendingJsInvocations = getPendingJavaScriptInvocations()
                 .filter(invocation -> !invocation.getOwner().isVisible())
                 .collect(Collectors.toCollection(ArrayList::new));
-
+        pendingJsInvocations
+                .forEach(this::registerDetachListenerForPendingInvocation);
         return readyToSend;
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private void registerDetachListenerForPendingInvocation(
+            PendingJavaScriptInvocation invocation) {
+        AtomicReference<Registration> registrationHolder = new AtomicReference<>();
+        Registration registration = invocation.getOwner()
+                .addDetachListener(() -> {
+                    this.pendingJsInvocations
+                            .removeIf(pendingInvocation -> pendingInvocation
+                                    .equals(invocation));
+                    registrationHolder.get().remove();
+                });
+        registrationHolder.set(registration);
+        SerializableConsumer callback = unused -> registration.remove();
+        invocation.then(callback, callback);
     }
 
     /**
