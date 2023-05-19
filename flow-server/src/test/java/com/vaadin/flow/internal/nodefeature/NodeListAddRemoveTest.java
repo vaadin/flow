@@ -3,13 +3,16 @@ package com.vaadin.flow.internal.nodefeature;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.change.AbstractListChange;
 import com.vaadin.flow.internal.change.ListAddChange;
 import com.vaadin.flow.internal.change.ListClearChange;
 import com.vaadin.flow.internal.change.ListRemoveChange;
@@ -114,7 +117,16 @@ public class NodeListAddRemoveTest
         nodeList.add("bar1");
 
         int index = items.size();
+        String item = nodeList.get(index);
         nodeList.remove(index);
+        // verify that nodelist is adjusted immediately to avoid memory leaks
+        Optional<AbstractListChange<String>> optionalChange = nodeList
+                .getChangeTracker().stream().filter(change -> {
+                    ListAddChange<String> addChange = (ListAddChange<String>) change;
+                    return addChange.getNewItems().contains(item);
+                }).findFirst();
+        Assert.assertFalse(optionalChange.isPresent());
+        Assert.assertEquals(2, nodeList.getChangeTracker().size());
 
         List<NodeChange> changes = collectChanges(nodeList);
 
@@ -275,9 +287,9 @@ public class NodeListAddRemoveTest
         List<NodeChange> changes = collectChanges(nodeList);
 
         Assert.assertEquals(2, changes.size());
-        Assert.assertThat(changes.get(0),
+        MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(ListClearChange.class));
-        Assert.assertThat(changes.get(1),
+        MatcherAssert.assertThat(changes.get(1),
                 CoreMatchers.instanceOf(ListAddChange.class));
 
         Assert.assertEquals(1, nodeList.size());
@@ -306,21 +318,168 @@ public class NodeListAddRemoveTest
         nodeList.getNode().collectChanges(changes::add);
 
         Assert.assertEquals(3, changes.size());
-        Assert.assertThat(changes.get(0),
+        MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(NodeAttachChange.class));
-        Assert.assertThat(changes.get(1),
+        MatcherAssert.assertThat(changes.get(1),
                 CoreMatchers.instanceOf(ListClearChange.class));
-        Assert.assertThat(changes.get(2),
+        MatcherAssert.assertThat(changes.get(2),
                 CoreMatchers.instanceOf(ListAddChange.class));
 
         nodeList.add("baz");
 
         changes.clear();
         nodeList.getNode().collectChanges(changes::add);
-        // Now there is not anymore clear change (so the previous one is not
+        // Now there is no anymore clear change (so the previous one is not
         // preserved)
         Assert.assertEquals(1, changes.size());
         Assert.assertTrue(changes.get(0) instanceof ListAddChange<?>);
+    }
+
+    @Test
+    public void clear_collectChanges_resetChangeTracker_reattach_clearEventIsCollected() {
+        resetToRemoveAfterAddCase();
+
+        nodeList.add("foo");
+
+        nodeList.clear();
+
+        StateTree tree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
+        // attach the feature node to the tree
+        tree.getRootNode().getFeature(ElementChildrenList.class)
+                .add(nodeList.getNode());
+
+        nodeList.add("bar");
+
+        // detach the feature node to the tree
+
+        tree.getRootNode().getFeature(ElementChildrenList.class).remove(0);
+        // if there was no changes collection after detach (and node is attached
+        // again) then the node has not been detached de-facto: detach-attach is
+        // no-op in this case, so to avoid no-op the changes should be collected
+        // in between
+        nodeList.getNode().collectChanges(change -> {
+        });
+
+        // reattach it back
+        tree.getRootNode().getFeature(ElementChildrenList.class)
+                .add(nodeList.getNode());
+
+        List<NodeChange> changes = new ArrayList<>();
+        nodeList.getNode().collectChanges(changes::add);
+
+        Assert.assertEquals(3, changes.size());
+        Assert.assertEquals(NodeAttachChange.class, changes.get(0).getClass());
+        Assert.assertEquals(ListClearChange.class, changes.get(1).getClass());
+        Assert.assertEquals(ListAddChange.class, changes.get(2).getClass());
+
+        changes.clear();
+
+        nodeList.add("baz");
+
+        nodeList.getNode().collectChanges(changes::add);
+        // Now there is no anymore clear change (so the previous one is not
+        // preserved)
+        Assert.assertEquals(1, changes.size());
+        Assert.assertTrue(changes.get(0) instanceof ListAddChange<?>);
+    }
+
+    @Test
+    public void clearNodeList_clearChanges_generateChangesFromEmpty_clearChangeIsCollected() {
+        // removes all children
+        nodeList.clear();
+
+        StateTree tree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
+        // attach the feature node to the tree
+        tree.getRootNode().getFeature(ElementChildrenList.class)
+                .add(nodeList.getNode());
+
+        List<NodeChange> changes = new ArrayList<>();
+        nodeList.getNode().collectChanges(changes::add);
+
+        Assert.assertEquals(2, changes.size());
+        Assert.assertEquals(NodeAttachChange.class, changes.get(0).getClass());
+        Assert.assertEquals(ListClearChange.class, changes.get(1).getClass());
+    }
+
+    @Test
+    public void clearNodeList_clearChanges_reatach_generateChangesFromEmpty_clearChangeIsCollected() {
+        // removes all children
+        nodeList.clear();
+
+        StateTree tree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
+        // attach the feature node to the tree
+        tree.getRootNode().getFeature(ElementChildrenList.class)
+                .add(nodeList.getNode());
+
+        nodeList.getNode().collectChanges(change -> {
+        });
+
+        // detach the feature node to the tree
+
+        tree.getRootNode().getFeature(ElementChildrenList.class).remove(0);
+        // if there was no changes collection after detach (and node is attached
+        // again) then the node has not been detached de-facto: detach-attach is
+        // no-op in this case, so to avoid no-op the changes should be collected
+        // in between
+        nodeList.getNode().collectChanges(change -> {
+        });
+
+        // reattach it back
+        tree.getRootNode().getFeature(ElementChildrenList.class)
+                .add(nodeList.getNode());
+
+        List<NodeChange> changes = new ArrayList<>();
+        nodeList.getNode().collectChanges(changes::add);
+
+        Assert.assertEquals(2, changes.size());
+        Assert.assertEquals(NodeAttachChange.class, changes.get(0).getClass());
+        Assert.assertEquals(ListClearChange.class, changes.get(1).getClass());
+    }
+
+    @Test
+    public void collectChanges_clearNodeListIsDoneFirst_noClearEventinCollectedChanges() {
+        // removes all children
+        nodeList.clear();
+
+        StateTree tree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
+        // attach the feature node to the tree
+        tree.getRootNode().getFeature(ElementChildrenList.class)
+                .add(nodeList.getNode());
+
+        List<NodeChange> changes = new ArrayList<>();
+        nodeList.getNode().collectChanges(changes::add);
+
+        changes.clear();
+
+        nodeList.add("foo");
+
+        nodeList.getNode().collectChanges(changes::add);
+        Assert.assertEquals(1, changes.size());
+        Assert.assertEquals(ListAddChange.class, changes.get(0).getClass());
+    }
+
+    @Test
+    public void clear_modifyList_collectChanges_clearChangeIsCollected() {
+        nodeList.clear();
+        nodeList.add("foo");
+
+        StateTree tree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
+        // attach the feature node to the tree
+        tree.getRootNode().getFeature(ElementChildrenList.class)
+                .add(nodeList.getNode());
+
+        List<NodeChange> changes = new ArrayList<>();
+        nodeList.getNode().collectChanges(changes::add);
+
+        Assert.assertEquals(3, changes.size());
+        Assert.assertEquals(NodeAttachChange.class, changes.get(0).getClass());
+        Assert.assertEquals(ListClearChange.class, changes.get(1).getClass());
+        Assert.assertEquals(ListAddChange.class, changes.get(2).getClass());
     }
 
     private List<String> addOriginalItems(int numberOfOriginalItems) {
@@ -357,7 +516,7 @@ public class NodeListAddRemoveTest
     private void verifyCleared(List<NodeChange> changes) {
         Assert.assertEquals(1, changes.size());
         NodeChange nodeChange = changes.get(0);
-        Assert.assertThat(nodeChange,
+        MatcherAssert.assertThat(nodeChange,
                 CoreMatchers.instanceOf(ListClearChange.class));
     }
 
@@ -366,7 +525,7 @@ public class NodeListAddRemoveTest
         Assert.assertTrue(changes.size() > 0);
         for (int i = 0; i < indexes.length; i++) {
             NodeChange nodeChange = changes.get(i);
-            Assert.assertThat(nodeChange,
+            MatcherAssert.assertThat(nodeChange,
                     CoreMatchers.instanceOf(ListRemoveChange.class));
             ListRemoveChange<?> change = (ListRemoveChange<?>) nodeChange;
             Assert.assertEquals(indexes[i].intValue(), change.getIndex());
@@ -378,7 +537,7 @@ public class NodeListAddRemoveTest
             Integer... indexes) {
         for (int i = 0; i < indexes.length; i++) {
             NodeChange nodeChange = changes.get(i);
-            Assert.assertThat(nodeChange,
+            MatcherAssert.assertThat(nodeChange,
                     CoreMatchers.instanceOf(ListAddChange.class));
             ListAddChange<?> change = (ListAddChange<?>) nodeChange;
             Assert.assertEquals(indexes[i].intValue(), change.getIndex());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,12 +23,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.shared.Registration;
 
 /**
  * A thread-safe cache for the result of doing some reflection lookup based on a
  * class. Cached values never expire since it's assumed that the there is a
  * finite number of classes for which reflection results are used.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -44,6 +47,12 @@ public class ReflectionCache<C, T> {
     private final ConcurrentHashMap<Class<? extends C>, T> values = new ConcurrentHashMap<>();
 
     private final SerializableFunction<Class<? extends C>, T> valueProvider;
+
+    /*
+     * Capture the action in a field to prevent garbage collection. This is
+     * necessary because the actions are stored with weak references.
+     */
+    private final SerializableRunnable clearAction = this::clear;
 
     /**
      * Creates a new reflection cache with the given value provider. The value
@@ -62,7 +71,7 @@ public class ReflectionCache<C, T> {
         }
         this.valueProvider = wrapValueProvider(valueProvider);
 
-        addClearAllAction(this::clear);
+        addClearAllAction(clearAction);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -134,8 +143,7 @@ public class ReflectionCache<C, T> {
      * @return a registration for removing the action
      */
     public static Registration addClearAllAction(Runnable action) {
-        clearAllActions.add(action);
-        return () -> clearAllActions.remove(action);
+        return Registration.addAndRemove(clearAllActions, action);
     }
 
     /**

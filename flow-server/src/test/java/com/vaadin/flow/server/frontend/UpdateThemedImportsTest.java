@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,27 +23,29 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
@@ -72,7 +74,6 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
     public ExpectedException exception = ExpectedException.none();
 
     private File importsFile;
-    private File generatedPath;
     private File frontendDirectory;
     private File nodeModulesPath;
     private TaskUpdateImports updater;
@@ -83,17 +84,17 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
-        generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
-        importsFile = new File(generatedPath, IMPORTS_NAME);
+        importsFile = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
 
         Assert.assertTrue(nodeModulesPath.mkdirs());
         createImport("./src/subfolder/sub-template.js", "");
         createImport("./src/client-side-template.js",
-                "import 'xx' from './subfolder/sub-template.js';");
+                "import 'xx' from './subfolder/sub-template.js';"
+                        + "import '@vaadin/vaadin-button/src/vaadin-button.js'");
         createImport("./src/client-side-no-themed-template.js", "");
         createImport("./src/main-template.js",
                 "import 'xx' from './client-side-template.js';"
-                        + "import \"./client-side-no-themed-template.js\"';"
+                        + "import \"./client-side-no-themed-template.js\";"
                         + "import './src/wrong-themed-template.js';"
                         + "import '@vaadin/vaadin-button/src/vaadin-button.js'");
 
@@ -119,14 +120,14 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
         FrontendDependencies deps = new FrontendDependencies(finder) {
 
             @Override
-            public List<String> getModules() {
-                return Stream.of("./src/main-template.js")
-                        .collect(Collectors.toList());
+            public Map<ChunkInfo, List<String>> getModules() {
+                return Collections.singletonMap(ChunkInfo.GLOBAL,
+                        List.of("./src/main-template.js"));
             }
 
             @Override
-            public Set<String> getScripts() {
-                return Collections.emptySet();
+            public Map<ChunkInfo, List<String>> getScripts() {
+                return Collections.emptyMap();
             }
 
             @Override
@@ -136,11 +137,13 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
             @Override
             public ThemeDefinition getThemeDefinition() {
-                return new ThemeDefinition(MyTheme.class, "");
+                return new ThemeDefinition(MyTheme.class, "", "");
             }
         };
-        updater = new TaskUpdateImports(finder, deps, tmpRoot, generatedPath,
-                frontendDirectory);
+        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+                .withFrontendDirectory(frontendDirectory)
+                .withBuildDirectory(TARGET).withProductionMode(true);
+        updater = new TaskUpdateImports(finder, deps, options);
     }
 
     @Test
@@ -150,7 +153,7 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
-        Assert.assertThat(content, CoreMatchers.allOf(
+        MatcherAssert.assertThat(content, CoreMatchers.allOf(
                 CoreMatchers.containsString(
                         "import 'Frontend/theme/myTheme/main-template.js';"),
                 CoreMatchers.containsString(
@@ -161,6 +164,78 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
                         "import '@vaadin/vaadin-button/theme/myTheme/vaadin-button.js';"),
                 CoreMatchers.not(CoreMatchers.containsString(
                         "import 'theme/myTheme/wrong-themed-template.js';"))));
+    }
+
+    @Test
+    public void noDuplicateImportEntryIsWrittenIntoImportsFile()
+            throws Exception {
+        updater.execute();
+
+        String content = FileUtils.readFileToString(importsFile,
+                Charset.defaultCharset());
+        int count = StringUtils.countMatches(content,
+                "import '@vaadin/vaadin-button/theme/myTheme/vaadin-button.js';");
+        Assert.assertEquals(
+                "Import entries in the imports file should be unique.", 1,
+                count);
+    }
+
+    @Test
+    public void directoryImportEntryIsResolvedAsIndexJS() throws Exception {
+
+        createImport("./src/directory/index.js",
+                "import { xx } from './sub1.js';");
+        createImport("./src/directory/sub1.js", "");
+        createImport("./src/main-template.js",
+                "import 'xx' from './directory';");
+
+        // create themed modules
+        createImport("./theme/myTheme/directory/index.js", "");
+        createImport("./theme/myTheme/directory/sub1.js", "");
+        createImport("./theme/myTheme/main-template.js", "");
+
+        updater.execute();
+
+        String content = FileUtils.readFileToString(importsFile,
+                Charset.defaultCharset());
+        MatcherAssert.assertThat(content, CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/main-template.js';"),
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/directory';"),
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/directory/sub1.js';")));
+    }
+
+    @Test
+    public void directoryImportEntry_avoidRecursion() throws Exception {
+
+        createImport("./src/directory/index.js",
+                "import { xx } from '../import2.js';");
+        createImport("./src/import1.js", "import { xx } from './directory/';");
+        createImport("./src/import2.js", "import 'xx' from './import1.js';");
+        createImport("./src/main-template.js",
+                "import 'xx' from './directory';");
+
+        // create themed modules
+        createImport("./theme/myTheme/directory", "");
+        createImport("./theme/myTheme/import1.js", "");
+        createImport("./theme/myTheme/import2.js", "");
+        createImport("./theme/myTheme/main-template.js", "");
+
+        updater.execute();
+
+        String content = FileUtils.readFileToString(importsFile,
+                Charset.defaultCharset());
+        MatcherAssert.assertThat(content, CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/main-template.js';"),
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/directory';"),
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/import1.js';"),
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/import2.js';")));
     }
 
     private void createImport(String path, String content) throws IOException {

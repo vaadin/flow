@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,9 +18,9 @@ package com.vaadin.flow.data.binder;
 import java.lang.annotation.Annotation;
 import java.util.Objects;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
@@ -56,8 +56,8 @@ public interface RequiredFieldConfigurator
      */
     RequiredFieldConfigurator NOT_EMPTY = (annotation,
             binding) -> (annotation.annotationType().equals(NotEmpty.class)
-                    || annotation.annotationType().getName()
-                            .equals("org.hibernate.validator.constraints.NotEmpty"))
+                    || annotation.annotationType().getName().equals(
+                            "org.hibernate.validator.constraints.NotEmpty"))
                     && RequiredFieldConfiguratorUtil.testConvertedDefaultValue(
                             binding,
                             RequiredFieldConfiguratorUtil::hasZeroSize);

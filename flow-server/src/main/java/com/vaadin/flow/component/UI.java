@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,43 +16,65 @@
 
 package com.vaadin.flow.component;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.internal.AllowInert;
+import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
+import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveListener;
+import com.vaadin.flow.router.ErrorNavigationEvent;
+import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.EventUtil;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.flow.router.NavigationState;
+import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.ErrorStateRenderer;
+import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
+import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.ErrorHandlingCommand;
@@ -60,12 +82,11 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.theme.NoTheme;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.ThemeDefinition;
-import com.vaadin.flow.theme.ThemeUtil;
+
+import elemental.json.JsonValue;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -87,7 +108,9 @@ import com.vaadin.flow.theme.ThemeUtil;
  *
  * @see #init(VaadinRequest)
  *
+ * @since 1.0
  */
+@JsModule("@vaadin/common-frontend/ConnectionIndicator.js")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
@@ -108,7 +131,7 @@ public class UI extends Component
 
     private Locale locale = Locale.getDefault();
 
-    private final UIInternals internals = new UIInternals(this);
+    private final UIInternals internals;
 
     private final Page page = new Page(this);
 
@@ -124,7 +147,20 @@ public class UI extends Component
      * Creates a new empty UI.
      */
     public UI() {
+        this(new UIInternalUpdater() {
+        });
+    }
+
+    /**
+     * Create a new empty UI with a custom {@link UIInternalUpdater}
+     * implementation.
+     *
+     * @param internalsHandler
+     *            an implementation of UIInternalsHandler.
+     */
+    protected UI(UIInternalUpdater internalsHandler) {
         super(null);
+        internals = new UIInternals(this, internalsHandler);
         getNode().getFeature(ElementData.class).setTag("body");
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
@@ -183,8 +219,29 @@ public class UI extends Component
      *            the id of the new ui
      *
      * @see #getUIId()
+     * @deprecated Use {@link #doInit(VaadinRequest, int, String)} instead
      */
+    @Deprecated
     public void doInit(VaadinRequest request, int uiId) {
+        doInit(request, uiId,
+                getSession().getService().getMainDivId(getSession(), request));
+    }
+
+    /**
+     * Internal initialization method, should not be overridden. This method is
+     * not declared as final because that would break compatibility with e.g.
+     * CDI.
+     *
+     * @param request
+     *            the initialization request
+     * @param uiId
+     *            the id of the new ui
+     * @param appId
+     *            the application id
+     *
+     * @see #getUIId()
+     */
+    public void doInit(VaadinRequest request, int uiId, String appId) {
         if (this.uiId != -1) {
             String message = "This UI instance is already initialized (as UI id "
                     + this.uiId
@@ -201,10 +258,15 @@ public class UI extends Component
         }
         this.uiId = uiId;
 
-        String appId = getSession().getService().getMainDivId(getSession(),
-                request);
-        appId = appId.substring(0, appId.indexOf('-'));
-        getInternals().setAppId(appId);
+        getInternals().setFullAppId(appId);
+
+        // Create flow reference for the client outlet element
+        wrapperElement = new Element(getInternals().getContainerTag());
+
+        // Connect server with client
+        getElement().getStateProvider().appendVirtualChild(
+                getElement().getNode(), wrapperElement,
+                NodeProperties.INJECT_BY_ID, appId);
 
         // Add any dependencies from the UI class
         getInternals().addComponentDependencies(getClass());
@@ -505,9 +567,24 @@ public class UI extends Component
                     if (command instanceof ErrorHandlingCommand) {
                         ErrorHandlingCommand errorHandlingCommand = (ErrorHandlingCommand) command;
                         errorHandlingCommand.handleError(exception);
-                    } else {
+                    } else if (getSession() != null) {
                         getSession().getErrorHandler()
                                 .error(new ErrorEvent(exception));
+                    } else {
+                        /*
+                         * The session has expired after `ui.access` was called.
+                         * It makes no sense to pollute the logs with a
+                         * UIDetachedException at this point.
+                         */
+                        if (exception instanceof ExecutionException
+                                && ((ExecutionException) exception)
+                                        .getCause() instanceof UIDetachedException) {
+                            getLogger().debug(exception.getMessage(),
+                                    exception);
+                        } else {
+                            getLogger().error(exception.getMessage(),
+                                    exception);
+                        }
                     }
                 } catch (Exception e) {
                     getLogger().error(e.getMessage(), e);
@@ -686,7 +763,7 @@ public class UI extends Component
         return getNode().getFeature(ReconnectDialogConfigurationMap.class);
     }
 
-    private static Logger getLogger() {
+    Logger getLogger() {
         return LoggerFactory.getLogger(UI.class.getName());
     }
 
@@ -732,6 +809,24 @@ public class UI extends Component
     }
 
     /**
+     * Sets the direction for the UI.
+     * <p>
+     * If you need the direction to update automatically upon {@link Locale}
+     * change, make the main layout implement
+     * {@link com.vaadin.flow.i18n.LocaleChangeObserver} and call this method
+     * from the
+     * {@link com.vaadin.flow.i18n.LocaleChangeObserver#localeChange(LocaleChangeEvent)}
+     * implementation.
+     *
+     * @param direction
+     *            the direction to use, not {@code null}
+     */
+    public void setDirection(Direction direction) {
+        Objects.requireNonNull(direction, "Direction cannot be null");
+        getPage().executeJs("document.dir = $0", direction.getClientName());
+    }
+
+    /**
      * Gets the element for this UI.
      * <p>
      * The UI element corresponds to the {@code <body>} tag on the page
@@ -755,6 +850,8 @@ public class UI extends Component
     /**
      * Gets the framework data object for this UI.
      *
+     * This method is for internal use only.
+     *
      * @return the framework data object
      */
     public UIInternals getInternals() {
@@ -771,44 +868,53 @@ public class UI extends Component
     }
 
     /**
-     * Gets the {@link ThemeDefinition} associated with the given navigation
-     * target, if any. The theme is defined by using the {@link Theme}
-     * annotation on the navigation target class.
-     * <p>
-     * If no {@link Theme} and {@link NoTheme} annotation are used, by default
-     * the {@code com.vaadin.flow.theme.lumo.Lumo} class is used (if present on
-     * the classpath).
-     *
-     * @param navigationTarget
-     *            the navigation target class
-     * @param path
-     *            the resolved route path so we can determine what the rendered
-     *            target is for
-     * @return the associated ThemeDefinition, or empty if none is defined and
-     *         the Lumo class is not in the classpath, or if the NoTheme
-     *         annotation is being used.
-     * @see ThemeUtil#findThemeForNavigationTarget(UI, Class, String)
-     */
-    public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-            String path) {
-        return Optional.ofNullable(ThemeUtil.findThemeForNavigationTarget(this,
-                navigationTarget, path));
-    }
-
-    /**
      * Updates this UI to show the view corresponding to the given navigation
      * target.
      * <p>
      * Besides the navigation to the {@code location} this method also updates
      * the browser location (and page history).
+     * <p>
+     * If the view change actually happens (e.g. the view itself doesn't cancel
+     * the navigation), all navigation listeners are notified and a reference of
+     * the new view is returned for additional configuration.
+     *
      *
      * @param navigationTarget
      *            navigation target to navigate to
+     * @throws IllegalArgumentException
+     *             if navigationTarget is a {@link HasUrlParameter} with a
+     *             mandatory parameter.
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget.
+     * @return the view instance, if navigation actually happened
+     * @see #navigate(Class, Object)
+     * @see #navigate(Class, RouteParameters)
      */
-    public void navigate(Class<? extends Component> navigationTarget) {
-        RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getRouter().getRegistry());
-        navigate(configuration.getUrl(navigationTarget));
+    public <T extends Component> Optional<T> navigate(
+            Class<T> navigationTarget) {
+        return navigate(navigationTarget, RouteParameters.empty());
+    }
+
+    /**
+     * For backwards compatibility, to be removed in V24
+     *
+     * @hidden
+     */
+    public void navigate$$bridge(Class<? extends Component> navigationTarget) {
+        navigate(navigationTarget);
+    }
+
+    private <T extends Component> Optional<T> findCurrentNavigationTarget(
+            Class<T> navigationTarget) {
+        List<HasElement> activeRouterTargetsChain = getInternals()
+                .getActiveRouterTargetsChain();
+        for (HasElement element : activeRouterTargetsChain) {
+            if (navigationTarget.isAssignableFrom(element.getClass())) {
+                return Optional.of((T) element);
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -822,6 +928,10 @@ public class UI extends Component
      * Note! A {@code null} parameter will be handled the same as
      * navigate(navigationTarget) and will throw an exception if HasUrlParameter
      * is not @OptionalParameter or @WildcardParameter.
+     * <p>
+     * If the view change actually happens (e.g. the view itself doesn't cancel
+     * the navigation), all navigation listeners are notified and a reference of
+     * the new view is returned for additional configuration.
      *
      * @param navigationTarget
      *            navigation target to navigate to
@@ -831,12 +941,211 @@ public class UI extends Component
      *            url parameter type
      * @param <C>
      *            navigation target type
+     * @return the view instance, if navigation actually happened
+     * @throws IllegalArgumentException
+     *             if a {@code null} parameter is given while navigationTarget's
+     *             parameter is not annotated with @OptionalParameter
+     *             or @WildcardParameter.
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
      */
-    public <T, C extends Component & HasUrlParameter<T>> void navigate(
+    @SuppressWarnings("unchecked")
+    public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
             Class<? extends C> navigationTarget, T parameter) {
+        navigate(navigationTarget,
+                HasUrlParameterFormat.getParameters(parameter));
+        return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
+    }
+
+    /**
+     * For backwards compatibility, to be removed in V24
+     *
+     * @hidden
+     */
+    public <T, C extends Component & HasUrlParameter<T>> void navigate$$bridge(
+            Class<? extends C> navigationTarget, T parameter) {
+        navigate(navigationTarget, parameter);
+    }
+
+    /**
+     * Updates this UI to show the view corresponding to the given navigation
+     * target with the specified parameters. The parameters needs to comply with
+     * the ones defined in one of the {@link com.vaadin.flow.router.Route} or
+     * {@link com.vaadin.flow.router.RouteAlias} annotating the navigationTarget
+     * and with any {@link com.vaadin.flow.router.RoutePrefix} annotating the
+     * parent layouts of the navigationTarget.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
+     * <p>
+     * If the view change actually happens (e.g. the view itself doesn't cancel
+     * the navigation), all navigation listeners are notified and a reference of
+     * the new view is returned for additional configuration.
+     *
+     * @param navigationTarget
+     *            navigation target to navigate to.
+     * @param parameters
+     *            parameters to pass to view.
+     * @return the view instance, if navigation actually happened
+     * @throws IllegalArgumentException
+     *             if navigationTarget is a {@link HasUrlParameter} with a
+     *             mandatory parameter, but parameters argument doesn't provide
+     *             {@link HasUrlParameterFormat#PARAMETER_NAME} parameter.
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
+     */
+    public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
+            RouteParameters parameters) {
         RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getRouter().getRegistry());
-        navigate(configuration.getUrl(navigationTarget, parameter));
+                .forRegistry(getInternals().getRouter().getRegistry());
+        navigate(configuration.getUrl(navigationTarget, parameters));
+        return findCurrentNavigationTarget(navigationTarget);
+    }
+
+    /**
+     * For backwards compatibility, to be removed in V24
+     *
+     * @hidden
+     */
+    public void navigate$$bridge(Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        navigate(navigationTarget, parameters);
+    }
+
+    /**
+     * Updates this UI to show the view corresponding to the given navigation
+     * target with the specified parameter. The parameter needs to be the same
+     * as defined in the route target HasUrlParameter.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
+     * <p>
+     * Note! A {@code null} parameter will be handled the same as
+     * navigate(navigationTarget) and will throw an exception if HasUrlParameter
+     * is not @OptionalParameter or @WildcardParameter.
+     * <p>
+     * If the view change actually happens (e.g. the view itself doesn't cancel
+     * the navigation), all navigation listeners are notified and a reference of
+     * the new view is returned for additional configuration.
+     *
+     * @param navigationTarget
+     *            navigation target to navigate to
+     * @param parameter
+     *            route parameter to pass to view
+     * @param queryParameters
+     *            additional query parameters to pass to view
+     * @param <T>
+     *            url parameter type
+     * @param <C>
+     *            navigation target type
+     * @return the view instance, if navigation actually happened
+     * @throws IllegalArgumentException
+     *             if a {@code null} parameter is given while navigationTarget's
+     *             parameter is not annotated with @OptionalParameter
+     *             or @WildcardParameter.
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
+     */
+    @SuppressWarnings("unchecked")
+    public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
+            Class<? extends C> navigationTarget, T parameter,
+            QueryParameters queryParameters) {
+
+        RouteConfiguration configuration = RouteConfiguration
+                .forRegistry(getInternals().getRouter().getRegistry());
+        RouteParameters parameters = HasUrlParameterFormat
+                .getParameters(parameter);
+        String url = configuration.getUrl(navigationTarget, parameters);
+        getInternals().getRouter().navigate(this,
+                new Location(url, queryParameters),
+                NavigationTrigger.UI_NAVIGATE);
+        return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
+    }
+
+    /**
+     * Updates this UI to show the view corresponding to the given navigation
+     * target with the specified parameters. The route parameters needs to
+     * comply with the ones defined in one of the
+     * {@link com.vaadin.flow.router.Route} or
+     * {@link com.vaadin.flow.router.RouteAlias} annotating the navigationTarget
+     * and with any {@link com.vaadin.flow.router.RoutePrefix} annotating the
+     * parent layouts of the navigationTarget.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
+     * <p>
+     * If the view change actually happens (e.g. the view itself doesn't cancel
+     * the navigation), all navigation listeners are notified and a reference of
+     * the new view is returned for additional configuration.
+     *
+     * @param navigationTarget
+     *            navigation target to navigate to
+     * @param routeParameter
+     *            route parameters to pass to view
+     * @param queryParameters
+     *            additional query parameters to pass to view
+     * @param <C>
+     *            navigation target type
+     * @return the view instance, if navigation actually happened
+     * @throws IllegalArgumentException
+     *             if a {@code null} parameter is given while navigationTarget's
+     *             parameter is not annotated with @OptionalParameter
+     *             or @WildcardParameter.
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
+     */
+    @SuppressWarnings("unchecked")
+    public <C extends Component> Optional<C> navigate(
+            Class<? extends C> navigationTarget, RouteParameters routeParameter,
+            QueryParameters queryParameters) {
+        RouteConfiguration configuration = RouteConfiguration
+                .forRegistry(getInternals().getRouter().getRegistry());
+        String url = configuration.getUrl(navigationTarget, routeParameter);
+        getInternals().getRouter().navigate(this,
+                new Location(url, queryParameters),
+                NavigationTrigger.UI_NAVIGATE);
+        return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
+    }
+
+    /**
+     * Updates this UI to show the view corresponding to the given navigation
+     * target and query parameters.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
+     * <p>
+     * If the view change actually happens (e.g. the view itself doesn't cancel
+     * the navigation), all navigation listeners are notified and a reference of
+     * the new view is returned for additional configuration.
+     *
+     * @param navigationTarget
+     *            navigation target to navigate to
+     * @param queryParameters
+     *            additional query parameters to pass to view
+     * @param <T>
+     *            navigation target type
+     * @return the view instance, if navigation actually happened
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends Component> Optional<T> navigate(
+            Class<? extends T> navigationTarget,
+            QueryParameters queryParameters) {
+
+        RouteConfiguration configuration = RouteConfiguration
+                .forRegistry(getInternals().getRouter().getRegistry());
+        String url = configuration.getUrl(navigationTarget,
+                RouteParameters.empty());
+        getInternals().getRouter().navigate(this,
+                new Location(url, queryParameters),
+                NavigationTrigger.UI_NAVIGATE);
+        return (Optional<T>) findCurrentNavigationTarget(navigationTarget);
     }
 
     /**
@@ -851,6 +1160,8 @@ public class UI extends Component
      *
      * @param location
      *            the location to navigate to, not {@code null}
+     * @throws NullPointerException
+     *             if the location is null.
      */
     public void navigate(String location) {
         navigate(location, QueryParameters.empty());
@@ -867,38 +1178,97 @@ public class UI extends Component
      * @see #navigate(String)
      * @see Router#navigate(UI, Location, NavigationTrigger)
      *
-     * @param location
+     * @param locationString
      *            the location to navigate to, not {@code null}
      * @param queryParameters
      *            query parameters that are used for navigation, not
      *            {@code null}
+     * @throws NullPointerException
+     *             if the location or queryParameters are null.
      */
-    public void navigate(String location, QueryParameters queryParameters) {
-        if (location == null) {
-            throw new IllegalArgumentException("Location may not be null");
-        }
-        if (queryParameters == null) {
-            throw new IllegalArgumentException(
-                    "Query parameters may not be null");
+    public void navigate(String locationString,
+            QueryParameters queryParameters) {
+        Objects.requireNonNull(locationString, "Location must not be null");
+        Objects.requireNonNull(queryParameters,
+                "Query parameters must not be null");
+        Location location = new Location(locationString, queryParameters);
+
+        // There is an in-progress navigation or there are no changes,
+        // prevent looping
+        if (navigationInProgress
+                || (getInternals().hasLastHandledLocation() && sameLocation(
+                        getInternals().getLastHandledLocation(), location))) {
+            return;
         }
 
-        Location navigationLocation = new Location(location, queryParameters);
-        if (!internals.hasLastHandledLocation()
-                || !navigationLocation.getPathWithQueryParameters()
-                        .equals(internals.getLastHandledLocation()
-                                .getPathWithQueryParameters())) {
-            // Enable navigating back
-            getPage().getHistory().pushState(null, navigationLocation);
+        navigationInProgress = true;
+        try {
+            Optional<NavigationState> navigationState = getInternals()
+                    .getRouter().resolveNavigationTarget(location);
+
+            if (navigationState.isPresent()) {
+                // Navigation can be done in server side without extra
+                // round-trip
+                handleNavigation(location, navigationState.get(),
+                        NavigationTrigger.UI_NAVIGATE);
+                if (getForwardToClientUrl() != null) {
+                    // Server is forwarding to a client route from a
+                    // BeforeEnter.
+                    navigateToClient(getForwardToClientUrl());
+                }
+            } else {
+                // Server cannot resolve navigation, let client-side to
+                // handle it.
+                navigateToClient(location.getPathWithQueryParameters());
+            }
+        } finally {
+            navigationInProgress = false;
         }
-        getRouter().navigate(this, navigationLocation,
-                NavigationTrigger.PROGRAMMATIC);
+    }
+
+    /**
+     * Returns true if this UI instance supports navigation.
+     *
+     * @return true if this UI instance supports navigation, otherwise false.
+     */
+    public boolean isNavigationSupported() {
+        // By default any UI supports navigation. Override this to return false
+        // if navigation is not supported.
+        return true;
+    }
+
+    /**
+     * Returns the currently active route aka navigation target shown in this
+     * UI.
+     * <p>
+     * Note, that certain UIs, like embedded apps, don't support routing and for
+     * those an exception will be thrown.
+     * <p>
+     * Also, the current route might not be initialized if this method is called
+     * while still building the view chain, for example in the constructor of
+     * layouts. Thus, consider postponing the usage of this method to for
+     * example AfterNavigationEvent.
+     *
+     * @return the currently active route instance if available
+     * @throws IllegalStateException
+     *             if current view is not yet available
+     */
+    public Component getCurrentView() {
+        if (getInternals().getActiveRouterTargetsChain().isEmpty()) {
+            throw new IllegalStateException(
+                    "Routing is not in use or not yet initialized. If you are not using embedded UI, try postponing the call to an onAttach method or to an AfterNavigationEvent listener.");
+        }
+        return (Component) getInternals().getActiveRouterTargetsChain().get(0);
     }
 
     /**
      * Gets the router used for navigating in this UI.
      *
      * @return a router
+     *
+     * @deprecated For internal use only. Will be removed in the future.
      */
+    @Deprecated
     public Router getRouter() {
         return internals.getRouter();
     }
@@ -929,9 +1299,12 @@ public class UI extends Component
      *
      * @return a registration that can be used to cancel the execution of the
      *         task
+     * @throws IllegalArgumentException
+     *             if the given component doesn't belong to this UI
      */
     public ExecutionRegistration beforeClientResponse(Component component,
-            SerializableConsumer<ExecutionContext> execution) {
+            SerializableConsumer<ExecutionContext> execution)
+            throws IllegalArgumentException {
 
         if (component == null) {
             throw new IllegalArgumentException(
@@ -940,6 +1313,11 @@ public class UI extends Component
         if (execution == null) {
             throw new IllegalArgumentException(
                     "The 'execution' parameter may not be null");
+        }
+
+        if (component.getUI().isPresent() && component.getUI().get() != this) {
+            throw new IllegalArgumentException(
+                    "The given component doesn't belong to the UI the task to be executed on");
         }
 
         return internals.getStateTree().beforeClientResponse(
@@ -987,6 +1365,12 @@ public class UI extends Component
      * Add a listener that will be informed when old components are detached.
      * <p>
      * Listeners will be executed before any found observers.
+     * <p>
+     * If a route target is left for reasons not under the control of the
+     * navigator (for instance using
+     * {@link com.vaadin.flow.component.page.Page#setLocation(URI)}, typing a
+     * URL into the address bar, or closing the browser), listeners are not
+     * called.
      *
      * @param listener
      *            the before leave listener
@@ -1058,7 +1442,7 @@ public class UI extends Component
             throw new IllegalArgumentException(
                     String.format(Shortcuts.NULL, "key"));
         }
-        return new ShortcutRegistration(this, () -> this,
+        return new ShortcutRegistration(this, () -> new Component[] { this },
                 event -> command.execute(), key).withModifiers(keyModifiers);
     }
 
@@ -1093,8 +1477,28 @@ public class UI extends Component
             throw new IllegalArgumentException(
                     String.format(Shortcuts.NULL, "key"));
         }
-        return new ShortcutRegistration(this, () -> this, listener, key)
-                .withModifiers(keyModifiers);
+        return new ShortcutRegistration(this, () -> new Component[] { this },
+                listener, key).withModifiers(keyModifiers);
+    }
+
+    /**
+     * Add a listener that will be informed when this UI received a heartbeat
+     * from the client-side.
+     * <p>
+     * Heartbeat requests are periodically sent by the client-side to inform the
+     * server that the UI sending the heartbeat is still alive (the browser
+     * window is open, the connection is up) even when there are no UIDL
+     * requests for a prolonged period of time. UIs that do not receive either
+     * heartbeat or UIDL requests are eventually removed from the session and
+     * garbage collected.
+     *
+     * @param listener
+     *            the heartbeat listener
+     * @return handler to remove the heartbeat listener
+     */
+    public Registration addHeartbeatListener(HeartbeatListener listener) {
+        Objects.requireNonNull(listener, NULL_LISTENER);
+        return internals.addHeartbeatListener(listener);
     }
 
     /**
@@ -1112,7 +1516,7 @@ public class UI extends Component
     }
 
     /**
-     * Gets the CSRF token (aka double submit cookie) that is used to protect
+     * Gets the CSRF token (synchronizer token pattern) that is used to protect
      * against Cross Site Request Forgery attacks.
      *
      * @return the csrf token string
@@ -1122,4 +1526,384 @@ public class UI extends Component
         return csrfToken;
     }
 
+    /**
+     * Adds the given component as a modal child to the UI, making the UI and
+     * all other (existing) components added to the UI impossible for the user
+     * to interact with. This is useful for modal dialogs which should make the
+     * UI in the background inert. Note that this only prevents user
+     * interaction, but doesn't show a modality curtain or change the visible
+     * state of the components in the UI - that should be handled by the
+     * component separately. Thus this is purely a server side feature.
+     * <p>
+     * When the modal component is removed the UI and its other children are no
+     * longer inert, unless there was another component added as modal before.
+     *
+     *
+     * @param component
+     *            the modal component to add
+     * @see #setChildComponentModal(Component, boolean)
+     */
+    public void addModal(Component component) {
+        add(component);
+        getInternals().setChildModal(component);
+    }
+
+    /**
+     * Makes the child component modal or modeless. The component needs to be a
+     * child of this UI. By default all child components are modeless.
+     *
+     * @param childComponent
+     *            the child component to change state for
+     * @param modal
+     *            {@code true} for modal, {@code false} for modeless
+     */
+    /*
+     * TODO decide and document whether resize listener still works for UI even
+     * when it is inert.
+     */
+    public void setChildComponentModal(Component childComponent,
+            boolean modal) {
+        Objects.requireNonNull(childComponent,
+                "Given child component may not be null");
+        final Optional<UI> ui = childComponent.getUI();
+        if (ui.isPresent() && !ui.get().equals(this)) {
+            throw new IllegalStateException(
+                    "Given component is not a child in this UI. "
+                            + "Add it first as a child of the UI so it is "
+                            + "attached or just use addModal(component).");
+        }
+        if (modal) {
+            getInternals().setChildModal(childComponent);
+        } else {
+            getInternals().setChildModeless(childComponent);
+        }
+    }
+
+    /**
+     * Check if UI has a defined modal component.
+     *
+     * @return {@code true} if a modal component has been set
+     */
+    public boolean hasModalComponent() {
+        return getInternals().hasModalComponent();
+    }
+
+    /**
+     * Add component as child to modal component if one is active. Else it will
+     * be added to the UI normally.
+     * <p>
+     * This is meant to be used with components that are not added as part of a
+     * layout, like dialog, so that they are interactive when a modal component
+     * opens up an overlay component.
+     *
+     * @param component
+     *            component to add to modal component
+     */
+    public void addToModalComponent(Component component) {
+        if (hasModalComponent()) {
+            final Component activeModalComponent = getInternals()
+                    .getActiveModalComponent();
+            if (activeModalComponent instanceof HasComponents) {
+                ((HasComponents) activeModalComponent).add(component);
+            } else {
+                activeModalComponent.getElement()
+                        .appendChild(component.getElement());
+            }
+        } else {
+            add(component);
+        }
+    }
+
+    @Override
+    public Stream<Component> getChildren() {
+        // server-side routing
+        if (wrapperElement == null) {
+            return super.getChildren();
+        }
+
+        // #9069 with client-side routing, since routing component is a virtual
+        // child, its children need to be included separately (there should only
+        // be one)
+        Stream.Builder<Component> childComponents = Stream.builder();
+        wrapperElement.getChildren().forEach(childElement -> ComponentUtil
+                .findComponents(childElement, childComponents::add));
+        super.getChildren().forEach(childComponents::add);
+        return childComponents.build();
+    }
+
+    static final String SERVER_CONNECTED = "this.serverConnected($0)";
+    public static final String CLIENT_NAVIGATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
+
+    public Element wrapperElement;
+    private NavigationState clientViewNavigationState;
+    private boolean navigationInProgress = false;
+
+    private String forwardToClientUrl = null;
+
+    private boolean firstNavigation = true;
+
+    /**
+     * Gets the new forward url.
+     *
+     * @return the new forward url
+     */
+    public String getForwardToClientUrl() {
+        return forwardToClientUrl;
+    }
+
+    /**
+     * Connect a client with the server side UI. This method is invoked each
+     * time client router navigates to a server route.
+     *
+     * @param flowRoutePath
+     *            flow route path that should be attached to the client element
+     * @param flowRouteQuery
+     *            flow route query string
+     * @param appShellTitle
+     *            client side title of the application shell
+     * @param historyState
+     *            client side history state value
+     * @param trigger
+     *            navigation trigger
+     */
+    @ClientCallable
+    @AllowInert
+    public void connectClient(String flowRoutePath, String flowRouteQuery,
+            String appShellTitle, JsonValue historyState, String trigger) {
+
+        if (appShellTitle != null && !appShellTitle.isEmpty()) {
+            getInternals().setAppShellTitle(appShellTitle);
+        }
+
+        final String trimmedRoute = PathUtil.trimPath(flowRoutePath);
+        if (!trimmedRoute.equals(flowRoutePath)) {
+            // See InternalRedirectHandler invoked via Router.
+            getPage().getHistory().replaceState(null, trimmedRoute);
+        }
+        final Location location = new Location(trimmedRoute,
+                QueryParameters.fromString(flowRouteQuery));
+        NavigationTrigger navigationTrigger;
+        if (trigger.isEmpty()) {
+            navigationTrigger = NavigationTrigger.PAGE_LOAD;
+        } else if (trigger.equalsIgnoreCase("link")) {
+            navigationTrigger = NavigationTrigger.ROUTER_LINK;
+        } else if (trigger.equalsIgnoreCase("client")) {
+            navigationTrigger = NavigationTrigger.CLIENT_SIDE;
+        } else {
+            navigationTrigger = NavigationTrigger.HISTORY;
+        }
+        if (firstNavigation) {
+            firstNavigation = false;
+            getPage().getHistory().setHistoryStateChangeHandler(
+                    event -> renderViewForRoute(event.getLocation(),
+                            event.getTrigger()));
+
+            if (getInternals().getActiveRouterTargetsChain().isEmpty()) {
+                // Render the route unless it was rendered eagerly
+                renderViewForRoute(location, navigationTrigger);
+            }
+        } else {
+            History.HistoryStateChangeHandler handler = getPage().getHistory()
+                    .getHistoryStateChangeHandler();
+            handler.onHistoryStateChange(
+                    new History.HistoryStateChangeEvent(getPage().getHistory(),
+                            historyState, location, navigationTrigger));
+        }
+
+        // true if the target is client-view and the push mode is disable
+        if (getForwardToClientUrl() != null) {
+            navigateToClient(getForwardToClientUrl());
+            acknowledgeClient();
+        } else if (isPostponed()) {
+            cancelClient();
+        } else {
+            acknowledgeClient();
+        }
+    }
+
+    /**
+     * Check that the view can be leave. This method is invoked when the client
+     * router tries to navigate to a client route while the current route is a
+     * server route.
+     *
+     * This is only called when client route navigates from a server to a client
+     * view.
+     *
+     * @param route
+     *            the route that is navigating to.
+     */
+    @ClientCallable
+    public void leaveNavigation(String route, String query) {
+        navigateToPlaceholder(new Location(PathUtil.trimPath(route),
+                QueryParameters.fromString(query)));
+
+        // Inform the client whether the navigation should be postponed
+        if (isPostponed()) {
+            cancelClient();
+        } else {
+            acknowledgeClient();
+        }
+    }
+
+    public void navigateToClient(String clientRoute) {
+        getPage().executeJs(CLIENT_NAVIGATE_TO, clientRoute);
+    }
+
+    private void acknowledgeClient() {
+        serverConnected(false);
+    }
+
+    private void cancelClient() {
+        serverConnected(true);
+    }
+
+    private void serverConnected(boolean cancel) {
+        wrapperElement.executeJs(SERVER_CONNECTED, cancel);
+    }
+
+    private void navigateToPlaceholder(Location location) {
+        if (clientViewNavigationState == null) {
+            clientViewNavigationState = new NavigationStateBuilder(
+                    getInternals().getRouter())
+                    .withTarget(ClientViewPlaceholder.class).build();
+        }
+        // Passing the `clientViewLocation` to make sure that the navigation
+        // events contain the correct location that we are navigating to.
+        handleNavigation(location, clientViewNavigationState,
+                NavigationTrigger.CLIENT_SIDE);
+    }
+
+    private void renderViewForRoute(Location location,
+            NavigationTrigger trigger) {
+        if (!shouldHandleNavigation(location)) {
+            return;
+        }
+        getInternals().setLastHandledNavigation(location);
+        Optional<NavigationState> navigationState = getInternals().getRouter()
+                .resolveNavigationTarget(location);
+        if (navigationState.isPresent()) {
+            // There is a valid route in flow.
+            handleNavigation(location, navigationState.get(), trigger);
+        } else {
+            // When route does not exist, try to navigate to current route
+            // in order to check if current view can be left before showing
+            // the error page
+            navigateToPlaceholder(location);
+
+            if (!isPostponed()) {
+                // Route does not exist, and current view does not prevent
+                // navigation thus an error page is shown
+                handleErrorNavigation(location);
+            }
+
+        }
+    }
+
+    private boolean shouldHandleNavigation(Location location) {
+        return !getInternals().hasLastHandledLocation()
+                || !sameLocation(getInternals().getLastHandledLocation(),
+                        location);
+    }
+
+    private boolean sameLocation(Location oldLocation, Location newLocation) {
+        return PathUtil.trimPath(newLocation.getPathWithQueryParameters())
+                .equals(PathUtil
+                        .trimPath(oldLocation.getPathWithQueryParameters()));
+    }
+
+    private void handleNavigation(Location location,
+            NavigationState navigationState, NavigationTrigger trigger) {
+        try {
+            NavigationEvent navigationEvent = new NavigationEvent(
+                    getInternals().getRouter(), location, this, trigger);
+
+            JavaScriptNavigationStateRenderer clientNavigationStateRenderer = new JavaScriptNavigationStateRenderer(
+                    navigationState);
+
+            clientNavigationStateRenderer.handle(navigationEvent);
+
+            forwardToClientUrl = clientNavigationStateRenderer
+                    .getClientForwardRoute();
+
+            adjustPageTitle();
+
+        } catch (Exception exception) {
+            handleExceptionNavigation(location, exception);
+        } finally {
+            getInternals().clearLastHandledNavigation();
+        }
+    }
+
+    private boolean handleExceptionNavigation(Location location,
+            Exception exception) {
+        Optional<ErrorTargetEntry> maybeLookupResult = getInternals()
+                .getRouter().getErrorNavigationTarget(exception);
+        if (maybeLookupResult.isPresent()) {
+            ErrorTargetEntry lookupResult = maybeLookupResult.get();
+
+            ErrorParameter<?> errorParameter = new ErrorParameter<>(
+                    lookupResult.getHandledExceptionType(), exception,
+                    exception.getMessage());
+            ErrorStateRenderer errorStateRenderer = new ErrorStateRenderer(
+                    new NavigationStateBuilder(getInternals().getRouter())
+                            .withTarget(lookupResult.getNavigationTarget())
+                            .build());
+
+            ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
+                    getInternals().getRouter(), location, this,
+                    NavigationTrigger.CLIENT_SIDE, errorParameter);
+
+            errorStateRenderer.handle(errorNavigationEvent);
+        } else {
+            throw new RuntimeException(exception);
+        }
+        return isPostponed();
+    }
+
+    private boolean isPostponed() {
+        return getInternals().getContinueNavigationAction() != null;
+    }
+
+    private void adjustPageTitle() {
+        // new title is empty if the flow route does not have a title
+        String newTitle = getInternals().getTitle();
+        // app shell title is computed from the title tag in index.html
+        String appShellTitle = getInternals().getAppShellTitle();
+        // restore the app shell title when there is no one for the route
+        if ((newTitle == null || newTitle.isEmpty()) && appShellTitle != null
+                && !appShellTitle.isEmpty()) {
+            getInternals().cancelPendingTitleUpdate();
+            getInternals().setTitle(appShellTitle);
+        }
+    }
+
+    private void handleErrorNavigation(Location location) {
+        NavigationState errorNavigationState = getInternals().getRouter()
+                .resolveRouteNotFoundNavigationTarget()
+                .orElse(getDefaultNavigationError());
+        ErrorStateRenderer errorStateRenderer = new ErrorStateRenderer(
+                errorNavigationState);
+        NotFoundException notFoundException = new NotFoundException(
+                "Couldn't find route for '" + location.getPath() + "'");
+        ErrorParameter<NotFoundException> errorParameter = new ErrorParameter<>(
+                NotFoundException.class, notFoundException);
+        ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
+                getInternals().getRouter(), location, this,
+                NavigationTrigger.CLIENT_SIDE, errorParameter);
+        errorStateRenderer.handle(errorNavigationEvent);
+    }
+
+    private NavigationState getDefaultNavigationError() {
+        return new NavigationStateBuilder(getInternals().getRouter())
+                .withTarget(RouteNotFoundError.class).build();
+    }
+
+    /**
+     * Placeholder view when navigating from server-side views to client-side
+     * views.
+     */
+    @Tag(Tag.DIV)
+    @AnonymousAllowed
+    public static class ClientViewPlaceholder extends Component {
+    }
 }

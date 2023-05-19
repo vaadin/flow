@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,6 +26,7 @@ import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushConstants;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -138,7 +139,7 @@ public class AtmospherePushConnection implements PushConnection {
 
     private AtmosphereConfiguration config;
 
-    private String uri;
+    private String pushUri;
 
     private String transport;
 
@@ -187,11 +188,34 @@ public class AtmospherePushConnection implements PushConnection {
             }
 
         });
-        if (getPushConfiguration().getPushUrl() == null) {
-            url = registry.getApplicationConfiguration().getServiceUrl();
+
+        String pushServletMapping = getPushConfiguration()
+                .getPushServletMapping();
+        if (pushServletMapping == null || pushServletMapping.trim().isEmpty()
+                || "/".equals(pushServletMapping)) {
+            // Handle null, empty and "/" mapping using just default push
+            // mapping and serviceUrl
+            url = Constants.PUSH_MAPPING;
+            // If a specific serviceUrl is defined, prepend pushUrl with it
+            String serviceUrl = registry.getApplicationConfiguration()
+                    .getServiceUrl();
+            if (!serviceUrl.equals(".")) {
+                if (!serviceUrl.endsWith("/")) {
+                    serviceUrl += "/";
+                }
+                url = serviceUrl + url;
+            }
         } else {
-            url = getPushConfiguration().getPushUrl();
+            // Append specific mapping directly to context root URL
+            String contextRootUrl = registry.getApplicationConfiguration()
+                    .getContextRootUrl();
+            if (contextRootUrl.endsWith("/")
+                    && pushServletMapping.startsWith("/")) {
+                pushServletMapping = pushServletMapping.substring(1);
+            }
+            url = contextRootUrl + pushServletMapping + Constants.PUSH_MAPPING;
         }
+
         runWhenAtmosphereLoaded(
                 () -> Scheduler.get().scheduleDeferred(this::connect));
     }
@@ -220,6 +244,7 @@ public class AtmospherePushConnection implements PushConnection {
         }
 
         Console.log("Establishing push connection");
+        pushUri = pushUrl;
         socket = doConnect(pushUrl, getConfig());
     }
 
@@ -311,7 +336,6 @@ public class AtmospherePushConnection implements PushConnection {
      *
      * @param response
      *            the response
-     *
      */
     protected void onConnect(AtmosphereResponse response) {
         transport = response.getTransport();
@@ -349,7 +373,7 @@ public class AtmospherePushConnection implements PushConnection {
         case CONNECTED:
             // Normal disconnect
             Console.log("Closing push connection");
-            doDisconnect(uri);
+            doDisconnect(pushUri);
             state = State.DISCONNECTED;
             command.execute();
             break;
@@ -447,6 +471,10 @@ public class AtmospherePushConnection implements PushConnection {
             state = State.CONNECT_PENDING;
         }
         getConnectionStateHandler().pushReconnectPending(this);
+    }
+
+    private int getLastSeenServerSyncId() {
+        return registry.getMessageHandler().getLastSeenServerSyncId();
     }
 
     /**
@@ -663,6 +691,7 @@ public class AtmospherePushConnection implements PushConnection {
             trackMessageLength: true,
             enableProtocol: true,
             handleOnlineOffline: false,
+            executeCallbackBeforeReconnect: true,
             messageDelimiter: String.fromCharCode(@com.vaadin.flow.shared.communication.PushConstants::MESSAGE_DELIMITER)
         };
     }-*/;
@@ -697,6 +726,11 @@ public class AtmospherePushConnection implements PushConnection {
         config.onClientTimeout = $entry(function(request) {
             self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
         });
+        config.headers = {
+            'X-Vaadin-LastSeenServerSyncId': function() {
+                return self.@com.vaadin.client.communication.AtmospherePushConnection::getLastSeenServerSyncId(*)();
+            }
+        };
 
         return $wnd.vaadinPush.atmosphere.subscribe(config);
     }-*/;
@@ -725,7 +759,7 @@ public class AtmospherePushConnection implements PushConnection {
             Console.log("Loading " + pushJs);
             ResourceLoader loader = registry.getResourceLoader();
             String pushScriptUrl = registry.getApplicationConfiguration()
-                    .getContextRootUrl() + pushJs;
+                    .getServiceUrl() + pushJs;
             ResourceLoadListener loadListener = new ResourceLoadListener() {
                 @Override
                 public void onLoad(ResourceLoadEvent event) {
@@ -743,7 +777,7 @@ public class AtmospherePushConnection implements PushConnection {
                 @Override
                 public void onError(ResourceLoadEvent event) {
                     getConnectionStateHandler()
-                            .pushScriptLoadError(event.getResourceUrl());
+                            .pushScriptLoadError(event.getResourceData());
 
                 }
             };

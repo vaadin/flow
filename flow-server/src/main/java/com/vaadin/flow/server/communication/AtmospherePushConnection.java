@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
+import org.atmosphere.cpr.BroadcastFilterAdapter;
 import org.atmosphere.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,8 @@ import elemental.json.JsonObject;
 /**
  * A {@link PushConnection} implementation using the Atmosphere push support
  * that is by default included in Vaadin.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -51,6 +54,8 @@ public class AtmospherePushConnection implements PushConnection {
     private transient AtmosphereResource resource;
     private transient FragmentedMessage incomingMessage;
     private transient Future<Object> outgoingMessage;
+    private transient Object lock = new Object();
+    private volatile boolean disconnecting;
 
     /**
      * Represents a message that can arrive as multiple fragments.
@@ -183,19 +188,21 @@ public class AtmospherePushConnection implements PushConnection {
      *            false if it is a response to a client request.
      */
     public void push(boolean async) {
-        if (!isConnected()) {
-            if (async && state != State.RESPONSE_PENDING) {
-                state = State.PUSH_PENDING;
+        synchronized (lock) {
+            if (!isConnected()) {
+                if (async && state != State.RESPONSE_PENDING) {
+                    state = State.PUSH_PENDING;
+                } else {
+                    state = State.RESPONSE_PENDING;
+                }
             } else {
-                state = State.RESPONSE_PENDING;
-            }
-        } else {
-            try {
-                JsonObject response = new UidlWriter().createUidl(getUI(),
-                        async);
-                sendMessage("for(;;);[" + response.toJson() + "]");
-            } catch (Exception e) {
-                throw new RuntimeException("Push failed", e);
+                try {
+                    JsonObject response = new UidlWriter().createUidl(getUI(),
+                            async);
+                    sendMessage("for(;;);[" + response.toJson() + "]");
+                } catch (Exception e) {
+                    throw new RuntimeException("Push failed", e);
+                }
             }
         }
     }
@@ -210,7 +217,9 @@ public class AtmospherePushConnection implements PushConnection {
     protected void sendMessage(String message) {
         assert (isConnected());
         // "Broadcast" the changes to the single client only
-        outgoingMessage = getResource().getBroadcaster().broadcast(message,
+        outgoingMessage = getResource().getBroadcaster().broadcast(
+                new PushMessage(ui.getInternals().getServerSyncId() - 1,
+                        message),
                 getResource());
     }
 
@@ -305,46 +314,64 @@ public class AtmospherePushConnection implements PushConnection {
 
     @Override
     public void disconnect() {
-        assert isConnected();
-
-        if (resource == null) {
-            // Already disconnected. Should not happen but if it does, we don't
-            // want to cause NPEs
+        // If a disconnection is already happening on another thread it is safe
+        // to skip the operation. This also prevents potential deadlocks if the
+        // container acquires locks during operations on HTTP session, as
+        // closing the AtmosphereResource may cause HTTP session access
+        if (disconnecting) {
             getLogger().debug(
-                    "AtmospherePushConnection.disconnect() called twice, this should not happen");
-            return;
-        }
-        if (resource.isResumed()) {
-            // This can happen for long polling because of
-            // http://dev.vaadin.com/ticket/16919
-            // Once that is fixed, this should never happen
-            connectionLost();
+                    "Disconnection already in progress, ignoring request");
             return;
         }
 
-        if (outgoingMessage != null) {
-            // Wait for the last message to be sent before closing the
-            // connection (assumes that futures are completed in order)
-            try {
-                outgoingMessage.get(1000, TimeUnit.MILLISECONDS);
-            } catch (TimeoutException e) {
-                getLogger().info(
-                        "Timeout waiting for messages to be sent to client before disconnect",
-                        e);
-            } catch (Exception e) {
-                getLogger().info(
-                        "Error waiting for messages to be sent to client before disconnect",
-                        e);
+        synchronized (lock) {
+            disconnecting = true;
+            assert isConnected();
+            if (resource == null) {
+                // Already disconnected. Should not happen but if it does,
+                // we
+                // don't
+                // want to cause NPEs
+                getLogger().debug(
+                        "AtmospherePushConnection.disconnect() called twice, this should not happen");
+                return;
             }
-            outgoingMessage = null;
+            if (resource.isResumed()) {
+                // This can happen for long polling because of
+                // http://dev.vaadin.com/ticket/16919
+                // Once that is fixed, this should never happen
+                connectionLost();
+                return;
+            }
+            if (outgoingMessage != null) {
+                // Wait for the last message to be sent before closing the
+                // connection (assumes that futures are completed in order)
+                try {
+                    outgoingMessage.get(1000, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    if (ui.isClosing()) {
+                        getLogger().debug(
+                                "Something was not sent to client on an UI that was already closed by beacon request or similar. This seems to happen with Safari occassionally when navigating away from a UI.");
+                    } else {
+                        getLogger().info(
+                                "Timeout waiting for messages to be sent to client before disconnect",
+                                e);
+                    }
+                } catch (Exception e) {
+                    getLogger().info(
+                            "Error waiting for messages to be sent to client before disconnect",
+                            e);
+                }
+                outgoingMessage = null;
+            }
+            try {
+                resource.close();
+            } catch (IOException e) {
+                getLogger().info("Error when closing push connection", e);
+            }
+            connectionLost();
+            disconnecting = false;
         }
-
-        try {
-            resource.close();
-        } catch (IOException e) {
-            getLogger().info("Error when closing push connection", e);
-        }
-        connectionLost();
     }
 
     /**
@@ -387,6 +414,8 @@ public class AtmospherePushConnection implements PushConnection {
             throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         state = State.DISCONNECTED;
+        disconnecting = false;
+        lock = new Object();
     }
 
     private static Logger getLogger() {
@@ -400,9 +429,38 @@ public class AtmospherePushConnection implements PushConnection {
      *
      */
     public static void enableAtmosphereDebugLogging() {
-        getLogger()
-                .warn("Enable logging of 'org.atmosphere' through your slf4j implementation"
+        getLogger().warn(
+                "Enable logging of 'org.atmosphere' through your slf4j implementation"
                         + " instead (i.e.: logback, log4j, etc)");
     }
 
+    static final class PushMessage implements Serializable {
+        final int serverSyncId;
+        final String message;
+
+        PushMessage(int serverSyncId, String message) {
+            this.serverSyncId = serverSyncId;
+            this.message = message;
+        }
+
+        boolean alreadySeen(int lastSeenOnClient) {
+            return serverSyncId <= lastSeenOnClient;
+        }
+    }
+
+    /**
+     * A {@link org.atmosphere.cpr.BroadcastFilter} that unwraps the message to
+     * be sent to the client from a {@link PushMessage} instance.
+     */
+    static final class PushMessageUnwrapFilter extends BroadcastFilterAdapter
+            implements Serializable {
+        @Override
+        public BroadcastAction filter(String broadcasterId,
+                AtmosphereResource r, Object originalMessage, Object message) {
+            if (message instanceof AtmospherePushConnection.PushMessage) {
+                message = ((PushMessage) message).message;
+            }
+            return new BroadcastAction(message);
+        }
+    }
 }

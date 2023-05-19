@@ -1,0 +1,21 @@
+{
+  "csrfToken": "${securityKey}",
+  "rpc": [
+    {
+      "type": "publishedEventHandler",
+      "node": 1,
+      "templateEventMethodName": "connectClient",
+      "templateEventMethodArgs": [
+        "flow-container-${appId}",
+        "${appId}",
+        "helloworld",
+        "",
+        "",
+        null
+      ],
+      "promise": 0
+    }
+  ],
+  "syncId": 0,
+  "clientId": 0
+}

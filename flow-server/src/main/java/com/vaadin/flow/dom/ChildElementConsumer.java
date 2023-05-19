@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,9 +21,9 @@ import java.util.function.Consumer;
 /**
  * Callback which allows to handle request to map a client side DOM element to
  * the server {@link Element} instance.
- * 
+ *
  * @see Node#attachExistingElement(String, Element, ChildElementConsumer)
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0
  *
@@ -36,7 +36,7 @@ public interface ChildElementConsumer extends Consumer<Element>, Serializable {
      * {@link Node#appendChild(Element...)} method is successfully executed.
      * <p>
      * The parameter value is the element created by the request.
-     * 
+     *
      * @param child
      *            the server side element mapped to the requested client-side
      *            element
@@ -48,7 +48,7 @@ public interface ChildElementConsumer extends Consumer<Element>, Serializable {
      * This callback method is called when the requested client element cannot
      * be found in the provided {@code parent} by the {@code tag} name after the
      * {@code previousSibling}.
-     * 
+     *
      * @param parent
      *            the server side parent node, not {@code null}
      * @param tag

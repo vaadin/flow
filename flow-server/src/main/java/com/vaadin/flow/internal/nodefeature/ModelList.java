@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,8 @@ import com.vaadin.flow.internal.StateNode;
 
 /**
  * List for model values used in data binding in templates.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -74,11 +76,11 @@ public class ModelList extends StateNodeNodeList {
     }
 
     /**
-     * Returns <tt>true</tt> if this list contains the specified node. More
+     * Returns <code>true</code> if this list contains the specified node. More
      *
      * @param node
      *            node whose presence in this list is to be tested
-     * @return <tt>true</tt> if this list contains the specified node
+     * @return <code>true</code> if this list contains the specified node
      */
     public boolean contains(StateNode node) {
         return indexOf(node) != -1;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,17 +16,23 @@
 package com.vaadin.flow.testutil;
 
 import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.testcategory.ChromeTests;
+import com.vaadin.flow.testutil.net.PortProber;
 import com.vaadin.testbench.TestBench;
 import com.vaadin.testbench.parallel.Browser;
 
@@ -48,42 +54,98 @@ import com.vaadin.testbench.parallel.Browser;
 @Category(ChromeTests.class)
 public class ChromeBrowserTest extends ViewOrUITest {
 
-    /**
-     * Sets up the chrome driver path in a system variable.
-     */
-    @BeforeClass
-    public static void setChromeDriverPath() {
-        ChromeDriverLocator.fillEnvironmentProperty();
+    private static InetAddress ipv4All;
+    private static InetAddress ipv6All;
+    static {
+        try {
+            ipv4All = InetAddress.getByName("0.0.0.0");
+            ipv6All = InetAddress.getByName("::0");
+        } catch (UnknownHostException e) {
+            throw new ExceptionInInitializerError(e);
+        }
     }
 
     @Before
     @Override
     public void setup() throws Exception {
         if (Browser.CHROME == getRunLocallyBrowser() && !isJavaInDebugMode()) {
-            setDriver(createHeadlessChromeDriver());
+            setDriver(createHeadlessChromeDriver(
+                    this::updateHeadlessChromeOptions));
         } else {
             super.setup();
         }
     }
 
-    private boolean isJavaInDebugMode() {
+    /**
+     * Allows modifying the chrome options to be used when running on a local
+     * Chrome.
+     *
+     * @param chromeOptions
+     *            chrome options to use when running on a local Chrome
+     */
+    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
+    }
+
+    static boolean isJavaInDebugMode() {
         return ManagementFactory.getRuntimeMXBean().getInputArguments()
                 .toString().contains("jdwp");
     }
 
-    private WebDriver createHeadlessChromeDriver() {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless", "--disable-gpu");
-        return TestBench.createDriver(new ChromeDriver(options));
+    static WebDriver createHeadlessChromeDriver(
+            Consumer<ChromeOptions> optionsUpdater) {
+        for (int i = 0; i < 3; i++) {
+            try {
+                return tryCreateHeadlessChromeDriver(optionsUpdater);
+            } catch (Exception e) {
+                getLogger().warn(
+                        "Unable to create chromedriver on attempt " + i, e);
+            }
+        }
+        throw new RuntimeException(
+                "Gave up trying to create a chromedriver instance");
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ChromeBrowserTest.class);
+    }
+
+    private static WebDriver tryCreateHeadlessChromeDriver(
+            Consumer<ChromeOptions> optionsUpdater) {
+        ChromeOptions headlessOptions = createHeadlessChromeOptions();
+        optionsUpdater.accept(headlessOptions);
+
+        int port = PortProber.findFreePort();
+        ChromeDriverService service = new ChromeDriverService.Builder()
+                .usingPort(port).withSilent(true).build();
+        ChromeDriver chromeDriver = new ChromeDriver(service, headlessOptions);
+        return TestBench.createDriver(chromeDriver);
     }
 
     @Override
     protected List<DesiredCapabilities> getHubBrowsersToTest() {
-        if (!getLocalExecution().isPresent() && USE_BROWSERSTACK) {
-            // Use IE11 when running with Browserstack
-            return getBrowserCapabilities(Browser.IE11);
-        }
-
         return getBrowserCapabilities(Browser.CHROME);
+    }
+
+    @Override
+    protected List<DesiredCapabilities> getBrowserCapabilities(
+            Browser... browsers) {
+        return customizeCapabilities(super.getBrowserCapabilities(browsers));
+    }
+
+    protected List<DesiredCapabilities> customizeCapabilities(
+            List<DesiredCapabilities> capabilities) {
+
+        capabilities.stream()
+                .filter(cap -> "chrome".equalsIgnoreCase(cap.getBrowserName()))
+                .forEach(cap -> cap.setCapability(ChromeOptions.CAPABILITY,
+                        createHeadlessChromeOptions()));
+
+        return capabilities;
+    }
+
+    static ChromeOptions createHeadlessChromeOptions() {
+        final ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless=new", "--disable-gpu");
+        return options;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,6 +34,8 @@ import elemental.json.JsonValue;
 
 /**
  * Change describing an add operation in a {@link NodeList list} node feature.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -71,7 +73,7 @@ public class ListAddChange<T extends Serializable>
      *
      * @return the added items
      */
-    public List<T> getNewItems() {
+    public List<? extends T> getNewItems() {
         return Collections.unmodifiableList(newItems);
     }
 
@@ -88,7 +90,7 @@ public class ListAddChange<T extends Serializable>
     /**
      * Gets a copy of the change with the same data except a list of new
      * {@code items}.
-     * 
+     *
      * @param items
      *            new list of items
      * @return a copy of the change based on new items
@@ -125,6 +127,21 @@ public class ListAddChange<T extends Serializable>
         JsonArray newItemsJson = newItems.stream().map(mapper)
                 .collect(JsonUtils.asArray());
         json.put(addKey, newItemsJson);
+    }
+
+    /**
+     * Removes item from the change list.
+     * <p>
+     * Note: This should be used only when list of changes is being re-indexed
+     * after adding a new change.
+     *
+     * @param item
+     *            Item to be removed.
+     */
+    public void removeItem(T item) {
+        assert (newItems.size() > 1)
+                : "Item list can't be empty after item removal";
+        newItems.remove(item);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,10 +18,8 @@ package com.vaadin.client.bootstrap;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.ValueMap;
@@ -127,8 +125,8 @@ public class Bootstrapper implements EntryPoint {
         String serviceUrl = jsoConfiguration
                 .getConfigString(ApplicationConstants.SERVICE_URL);
 
-        conf.setWebComponentMode(
-                jsoConfiguration.getConfigBoolean(ApplicationConstants.APP_WC_MODE));
+        conf.setWebComponentMode(jsoConfiguration
+                .getConfigBoolean(ApplicationConstants.APP_WC_MODE));
 
         if (serviceUrl == null) {
             conf.setServiceUrl(WidgetUtil.getAbsoluteUrl("."));
@@ -142,20 +140,15 @@ public class Bootstrapper implements EntryPoint {
                             ApplicationConstants.CONTEXT_ROOT_URL)));
         }
 
-        if (BrowserInfo.get().isEs6Supported()) {
-            conf.setFrontendRootUrl(jsoConfiguration
-                    .getConfigString(ApplicationConstants.FRONTEND_URL_ES6));
-        } else {
-            conf.setFrontendRootUrl(jsoConfiguration
-                    .getConfigString(ApplicationConstants.FRONTEND_URL_ES5));
-        }
-
         conf.setUIId(jsoConfiguration
                 .getConfigInteger(ApplicationConstants.UI_ID_PARAMETER)
                 .intValue());
 
         conf.setHeartbeatInterval(
                 jsoConfiguration.getConfigInteger("heartbeatInterval"));
+
+        conf.setMaxMessageSuspendTimeout(
+                jsoConfiguration.getConfigInteger("maxMessageSuspendTimeout"));
 
         conf.setServletVersion(jsoConfiguration.getVaadinVersion());
         conf.setAtmosphereVersion(jsoConfiguration.getAtmosphereVersion());
@@ -167,7 +160,17 @@ public class Bootstrapper implements EntryPoint {
         conf.setProductionMode(!jsoConfiguration.getConfigBoolean("debug"));
         conf.setRequestTiming(
                 jsoConfiguration.getConfigBoolean("requestTiming"));
+        conf.setExportedWebComponents(
+                jsoConfiguration.getConfigStringArray("webcomponents"));
 
+        conf.setDevToolsEnabled(jsoConfiguration
+                .getConfigBoolean(ApplicationConstants.DEV_TOOLS_ENABLED));
+        conf.setLiveReloadUrl(
+                jsoConfiguration.getConfigString("liveReloadUrl"));
+        conf.setLiveReloadBackend(
+                jsoConfiguration.getConfigString("liveReloadBackend"));
+        conf.setSpringBootLiveReloadPort(
+                jsoConfiguration.getConfigString("springBootLiveReloadPort"));
     }
 
     private static void doStartApplication(final String applicationId) {

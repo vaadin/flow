@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -78,10 +78,6 @@ public class NodeFeatureTest {
         expectedIds.put(ElementClassList.class, NodeFeatures.CLASS_LIST);
         expectedIds.put(ElementStylePropertyMap.class,
                 NodeFeatures.ELEMENT_STYLE_PROPERTIES);
-        expectedIds.put(SynchronizedPropertiesList.class,
-                NodeFeatures.SYNCHRONIZED_PROPERTIES);
-        expectedIds.put(SynchronizedPropertyEventsList.class,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
         expectedIds.put(ComponentMapping.class, NodeFeatures.COMPONENT_MAPPING);
         expectedIds.put(ModelList.class, NodeFeatures.TEMPLATE_MODELLIST);
         expectedIds.put(PolymerServerEventHandlers.class,
@@ -99,6 +95,7 @@ public class NodeFeatureTest {
                 NodeFeatures.VIRTUAL_CHILDREN);
         expectedIds.put(ReturnChannelMap.class,
                 NodeFeatures.RETURN_CHANNEL_MAP);
+        expectedIds.put(InertData.class, NodeFeatures.INERT_DATA);
 
         return expectedIds;
     }
@@ -147,8 +144,7 @@ public class NodeFeatureTest {
 
                 /* Supplementary element stuff */
                 ElementClassList.class, ElementAttributeMap.class,
-                ElementListenerMap.class, SynchronizedPropertiesList.class,
-                SynchronizedPropertyEventsList.class, VirtualChildrenList.class,
+                ElementListenerMap.class, VirtualChildrenList.class,
 
                 /* Supplementary generic stuff */
                 ReturnChannelMap.class,
@@ -159,6 +155,7 @@ public class NodeFeatureTest {
                 /* Rarely used element stuff */
                 ElementStylePropertyMap.class, ShadowRootData.class,
                 ShadowRootHost.class, AttachExistingElementFeature.class,
+                InertData.class,
 
                 /* Only used for the root node */
                 PushConfigurationMap.class,

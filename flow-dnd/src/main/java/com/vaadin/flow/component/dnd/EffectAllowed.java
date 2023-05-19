@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -90,7 +90,7 @@ public enum EffectAllowed {
     /**
      * Parses effect allowed from the given non-null string or throws an illegal
      * argument exception if fails to parse it.
-     * 
+     *
      * @param string
      *            the string to parse
      * @return the matching effect allowed

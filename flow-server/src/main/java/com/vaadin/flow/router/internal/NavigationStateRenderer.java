@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -34,8 +34,12 @@ import com.vaadin.flow.router.RouterLayout;
  * Handles navigation events by rendering a contained NavigationState in the
  * target UI.
  *
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
  * @see NavigationState
  * @see Route
+ * @since 1.0
  */
 public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
 
@@ -54,46 +58,47 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
     protected List<Class<? extends RouterLayout>> getRouterLayoutTypes(
             Class<? extends Component> targetType, Router router) {
         NavigationState navigationState = getNavigationState();
-        assert targetType == navigationState
-                .getNavigationTarget() : "Trying to get layouts for wrong route target";
+        assert targetType == navigationState.getNavigationTarget()
+                : "Trying to get layouts for wrong route target";
 
-        return router.getRegistry()
-                .getRouteLayouts(navigationState.getResolvedPath(), targetType);
+        NavigationRouteTarget target = router.getRegistry()
+                .getNavigationRouteTarget(navigationState.getResolvedPath());
+
+        if (target.hasTarget()) {
+            return target.getRouteTarget().getParentLayouts();
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @Override
     protected void notifyNavigationTarget(Component componentInstance,
             NavigationEvent navigationEvent, BeforeEnterEvent beforeEnterEvent,
             LocationChangeEvent locationChangeEvent) {
+
+        if (!(componentInstance instanceof HasUrlParameter)) {
+            return;
+        }
+
         NavigationState navigationState = getNavigationState();
         Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
 
-        Optional<List<String>> urlParameters = navigationState
-                .getUrlParameters();
-        if (urlParameters.isPresent()) {
-            Object deserializedParameter = null;
-            try {
-                deserializedParameter = ParameterDeserializer
-                        .deserializeUrlParameters(routeTargetType,
-                                urlParameters.get());
+        List<String> parameters = navigationState.getUrlParameters()
+                .orElse(null);
 
-            } catch (Exception e) {
-                beforeEnterEvent.rerouteToError(NotFoundException.class,
-                        String.format(
-                                "Failed to parse url parameter, exception: %s",
-                                e));
-            }
-            @SuppressWarnings("unchecked")
-            HasUrlParameter<Object> hasUrlParameter = (HasUrlParameter<Object>) componentInstance;
-            hasUrlParameter.setParameter(beforeEnterEvent,
-                    deserializedParameter);
+        Object deserializedParameter = null;
+        try {
+            deserializedParameter = ParameterDeserializer
+                    .deserializeRouteParameters(routeTargetType, parameters);
+        } catch (Exception e) {
+            beforeEnterEvent.rerouteToError(NotFoundException.class, String
+                    .format("Failed to parse url parameter, exception: %s", e));
+            return;
         }
-    }
 
-    @Override
-    protected boolean eventActionsSupported() {
-        return true;
+        HasUrlParameter<Object> hasUrlParameter = (HasUrlParameter<Object>) componentInstance;
+        hasUrlParameter.setParameter(beforeEnterEvent, deserializedParameter);
     }
 
 }

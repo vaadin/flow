@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,8 +34,9 @@ import elemental.json.JsonValue;
  * For objects without inner properties, like Strings, a property called
  * {@code value} is created in the model, so it can be accessed via
  * {@code [[item.value]]} in the template.
- * 
+ *
  * @author Vaadin Ltd.
+ * @since 1.2
  *
  * @param <T>
  *            the type of the bean to be serialized to the client

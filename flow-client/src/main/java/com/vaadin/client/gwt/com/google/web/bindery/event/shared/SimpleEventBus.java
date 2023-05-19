@@ -29,6 +29,8 @@ import com.vaadin.client.flow.collection.JsMap;
  *
  * Copied from the GWT project to use JsArray and JsMap instead of ArrayList and
  * HashMap
+ *
+ * @since 1.0
  */
 public class SimpleEventBus extends EventBus {
     @FunctionalInterface
@@ -111,7 +113,7 @@ public class SimpleEventBus extends EventBus {
     /**
      * Not documented in GWT, required by legacy features in GWT's old
      * HandlerManager.
-     * 
+     *
      * @param type
      *            the type
      * @param index

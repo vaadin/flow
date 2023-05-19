@@ -1,5 +1,6 @@
 package com.vaadin.flow.server.frontend.scanner;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -23,10 +24,10 @@ import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Theme1;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Theme2;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Theme4;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.ThemeExporter;
+import com.vaadin.flow.theme.AbstractTheme;
 
 import static com.vaadin.flow.server.frontend.scanner.ScannerDependenciesTest.getFrontendDependencies;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -38,75 +39,54 @@ public class ScannerThemeTest {
     public ExpectedException exception = ExpectedException.none();
 
     @Test
-    public void should_takeThemeFromTheView() throws Exception {
-        FrontendDependencies deps = getFrontendDependencies(RootViewWithTheme.class);
+    public void should_takeThemeFromTheView() {
+        FrontendDependencies deps = getFrontendDependencies(
+                RootViewWithTheme.class);
 
         assertEquals(Theme4.class, deps.getThemeDefinition().getTheme());
 
-        assertEquals(1, deps.getModules().size());
-        assertTrue(deps.getModules().contains("./theme-4.js"));
+        DepsTests.assertImportsExcludingUI(deps.getModules(), "./theme-4.js");
 
         assertEquals(0, deps.getPackages().size());
 
-        assertEquals(1, deps.getScripts().size());
-        assertTrue(deps.getScripts().contains("frontend://theme-0.js"));
+        DepsTests.assertImports(deps.getScripts(), "frontend://theme-0.js");
     }
 
     @Test
-    public void should_not_takeTheme_when_NoTheme() throws Exception {
-        FrontendDependencies deps = getFrontendDependencies(RootViewWithoutTheme.class);
-        assertNull(deps.getThemeDefinition());
-
-        assertEquals(2, deps.getModules().size());
-        assertEquals(0, deps.getPackages().size());
-        assertEquals(2, deps.getScripts().size());
-    }
-
-    @Test
-    public void should_takeThemeFromLayout() throws Exception {
-        FrontendDependencies deps = getFrontendDependencies(RootViewWithLayoutTheme.class);
+    public void should_takeThemeFromLayout() {
+        FrontendDependencies deps = getFrontendDependencies(
+                RootViewWithLayoutTheme.class);
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
         assertEquals(Theme1.DARK, deps.getThemeDefinition().getVariant());
 
-        assertEquals(8, deps.getModules().size());
+        DepsTests.assertImportCount(6, deps.getModules());
         assertEquals(1, deps.getPackages().size());
-        assertEquals(6, deps.getScripts().size());
+        DepsTests.assertImportCount(5, deps.getScripts());
 
         assertTrue(deps.getPackages().containsKey("@foo/first-view"));
         assertEquals("0.0.1", deps.getPackages().get("@foo/first-view"));
     }
 
-
     @Test
-    public void should_takeThemeWhenMultipleTheme() throws Exception {
-        FrontendDependencies deps = getFrontendDependencies(RootViewWithMultipleTheme.class);
-        assertEquals(Theme2.class, deps.getThemeDefinition().getTheme());
-        assertEquals(Theme2.FOO, deps.getThemeDefinition().getVariant());
-
-        assertEquals(4, deps.getModules().size());
-        assertEquals(0, deps.getPackages().size());
-        assertEquals(2, deps.getScripts().size());
-    }
-
-    @Test
-    public void should_takeTheme_when_AnyRouteValue() throws Exception {
+    public void should_takeTheme_when_AnyRouteValue() {
         FrontendDependencies deps = getFrontendDependencies(SecondView.class);
 
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
 
-        assertEquals(4, deps.getModules().size());
+        DepsTests.assertImportCount(5, deps.getModules());
         assertEquals(0, deps.getPackages().size());
-        assertEquals(2, deps.getScripts().size());
+        DepsTests.assertImportCount(2, deps.getScripts());
     }
 
     @Test
-    public void should_throw_when_MultipleThemes() throws Exception {
+    public void should_throw_when_MultipleThemes() {
         exception.expect(IllegalStateException.class);
-        getFrontendDependencies(RootViewWithMultipleTheme.class, FirstView.class);
+        getFrontendDependencies(RootViewWithMultipleTheme.class,
+                FirstView.class);
     }
 
     @Test
-    public void should_throw_when_ThemeAndNoTheme() throws Exception {
+    public void should_throw_when_ThemeAndNoTheme() {
         exception.expect(IllegalStateException.class);
         getFrontendDependencies(FirstView.class, RootViewWithoutTheme.class);
     }
@@ -122,21 +102,25 @@ public class ScannerThemeTest {
         // behavior of the DefaultClassFinder. Theme4 is used as a fake Lumo
         // since it has @JsModule annotation which makes it easy to verify
         // that the Theme was actually visited and modules collected
-        Mockito.doReturn(Theme4.class).when(finder)
-                .loadClass(FrontendDependencies.LUMO);
 
-        FrontendDependencies deps = new FrontendDependencies(finder);
+        FrontendDependencies deps = new FrontendDependencies(finder) {
+            @Override
+            Class<? extends AbstractTheme> getDefaultTheme()
+                    throws IOException {
+                return Theme4.class;
+            }
+        };
+
         assertEquals(
                 "Theme4 should have been returned when default theme was selected",
                 Theme4.class, deps.getThemeDefinition().getTheme());
-        assertTrue("Theme4 should have been visited and JsModule collected",
-                deps.getModules().contains("./theme-4.js"));
+        DepsTests.assertImportsExcludingUI(deps.getModules(), "./theme-4.js");
     }
 
     @Test
-    public void should_takeThemeFromExporter_when_exporterFound()
-            throws Exception {
-        FrontendDependencies deps = getFrontendDependencies(ThemeExporter.class);
+    public void should_takeThemeFromExporter_when_exporterFound() {
+        FrontendDependencies deps = getFrontendDependencies(
+                ThemeExporter.class);
 
         assertEquals(Theme2.class, deps.getThemeDefinition().getTheme());
     }
@@ -157,8 +141,7 @@ public class ScannerThemeTest {
         assertEquals(
                 "Theme4 should have been returned when default theme was selected",
                 Theme4.class, deps.getThemeDefinition().getTheme());
-        assertTrue("Theme4 should have been visited and JsModule collected",
-                deps.getModules().contains("./theme-4.js"));
+        DepsTests.assertImportsExcludingUI(deps.getModules(), "./theme-4.js");
     }
 
     @Test // flow#5715
@@ -172,12 +155,11 @@ public class ScannerThemeTest {
     }
 
     @Test
-    public void should_takeThemeFromLayout_ifLayoutAlreadyVisited() throws Exception {
-        // Make sure that all entry-points sharing layouts are correctly theming-configured
-        FrontendDependencies deps = getFrontendDependencies(RootViewWithLayoutTheme.class, RootView2WithLayoutTheme.class);
+    public void should_takeThemeFromLayout_ifLayoutAlreadyVisited() {
+        // Make sure that all entry-points sharing layouts are correctly
+        // theming-configured
+        FrontendDependencies deps = getFrontendDependencies(
+                RootViewWithLayoutTheme.class, RootView2WithLayoutTheme.class);
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
-        deps.getEndPoints().forEach(endPoint -> {
-            assertEquals(Theme1.class.getName(), endPoint.getTheme().getName());
-        });
     }
 }

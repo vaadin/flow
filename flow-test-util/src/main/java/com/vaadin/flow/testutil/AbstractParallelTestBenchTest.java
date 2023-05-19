@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,15 +15,12 @@
  */
 package com.vaadin.flow.testutil;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.Before;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.testbench.IPAddress;
@@ -34,8 +31,13 @@ import com.vaadin.testbench.annotations.RunOnHub;
 import com.vaadin.testbench.parallel.Browser;
 import com.vaadin.testbench.parallel.DefaultBrowserFactory;
 
+import static com.vaadin.flow.testutil.ChromeBrowserTest.createHeadlessChromeDriver;
+import static com.vaadin.flow.testutil.ChromeBrowserTest.isJavaInDebugMode;
+
 /**
  * Abstract base class for parallel flow TestBench tests.
+ *
+ * @since 1.0
  */
 @RunOnHub
 @RunLocally
@@ -66,10 +68,25 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
     @Before
     @Override
     public void setup() throws Exception {
-        if(USE_HUB) {
+        if (USE_HUB) {
             setDesiredCapabilities(Browser.CHROME.getDesiredCapabilities());
+        } else if (Browser.CHROME == getRunLocallyBrowser()
+                && !isJavaInDebugMode()) {
+            setDriver(createHeadlessChromeDriver(
+                    this::updateHeadlessChromeOptions));
+            return;
         }
         super.setup();
+    }
+
+    /**
+     * Allows modifying the chrome options to be used when running on a local
+     * Chrome.
+     *
+     * @param chromeOptions
+     *            chrome options to use when running on a local Chrome
+     */
+    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
     }
 
     /**

@@ -1,2 +1,0 @@
-generator.version=${project.version}
-flow.version=${project.version}

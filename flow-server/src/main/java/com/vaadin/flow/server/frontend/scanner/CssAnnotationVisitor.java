@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,12 +17,16 @@ package com.vaadin.flow.server.frontend.scanner;
 
 import java.util.List;
 
-import net.bytebuddy.jar.asm.AnnotationVisitor;
+import org.objectweb.asm.AnnotationVisitor;
 
 import com.vaadin.flow.component.dependency.CssImport;
 
 /**
  * Visitor for {@link CssImport}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 2.0
  */
 final class CssAnnotationVisitor extends RepeatedAnnotationVisitor {
     private CssData cssData;
@@ -30,7 +34,7 @@ final class CssAnnotationVisitor extends RepeatedAnnotationVisitor {
 
     /**
      * This visitor needs a list to be updated.
-     * 
+     *
      * @param cssList
      *            the list to update with this annotation values
      */
@@ -53,13 +57,13 @@ final class CssAnnotationVisitor extends RepeatedAnnotationVisitor {
             newData();
         }
         if (FrontendClassVisitor.VALUE.equals(name)) {
-            cssData.value = value;
+            cssData.setValue(value);
         } else if (FrontendClassVisitor.ID.equals(name)) {
-            cssData.id = value;
+            cssData.setId(value);
         } else if (FrontendClassVisitor.INCLUDE.equals(name)) {
-            cssData.include = value;
+            cssData.setInclude(value);
         } else if (FrontendClassVisitor.THEME_FOR.equals(name)) {
-            cssData.themefor = value;
+            cssData.setThemefor(value);
         }
     }
 

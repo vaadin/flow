@@ -1,11 +1,13 @@
 package com.vaadin.flow.contexttest.ui;
 
-import com.vaadin.flow.shared.ui.Transport;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
+
+import com.vaadin.flow.shared.ui.Transport;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class PushIT extends ChromeBrowserTest {
 
@@ -69,16 +71,26 @@ public class PushIT extends ChromeBrowserTest {
         doTest("routed/sub-context", Transport.LONG_POLLING, true);
     }
 
-    private void doTest(final String subContext, Transport transport, boolean pushMustWork) throws InterruptedException {
+    private void doTest(final String subContext, Transport transport,
+            boolean pushMustWork) throws InterruptedException {
         String url = getRootURL() + "/custom-context-router/" + subContext;
         if (transport != null) {
             url += "?transport=" + transport.getIdentifier();
         }
         getDriver().get(url);
+        waitForDevServer();
+
         findElement(By.id(DependencyLayout.RUN_PUSH_ID)).click();
-        Thread.sleep(300);
+
         WebElement signal = findElement(By.id(DependencyLayout.PUSH_SIGNAL_ID));
-        String sampleText = pushMustWork ? DependencyLayout.PUSH_WORKS_TEXT : DependencyLayout.NO_PUSH_YET_TEXT;
-        Assert.assertEquals("Push state check failed", sampleText, signal.getText());
+        String sampleText = pushMustWork ? DependencyLayout.PUSH_WORKS_TEXT
+                : DependencyLayout.NO_PUSH_YET_TEXT;
+        try {
+            waitUntil(driver -> signal.getText().equals(sampleText), 2);
+        } catch (TimeoutException e) {
+            Assert.fail("Push state check failed when waiting for '"
+                    + sampleText + "' in element #"
+                    + DependencyLayout.PUSH_SIGNAL_ID);
+        }
     }
 }

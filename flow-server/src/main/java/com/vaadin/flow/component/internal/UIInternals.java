@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,14 +16,19 @@
 package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
-import java.util.regex.Matcher;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,18 +39,16 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.HeartbeatEvent;
+import com.vaadin.flow.component.HeartbeatListener;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
-import com.vaadin.flow.component.internal.ComponentMetaData.HtmlImportDependency;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
-import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateTree;
@@ -61,6 +64,7 @@ import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.BeforeLeaveListener;
 import com.vaadin.flow.router.ListenerPriority;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
@@ -68,22 +72,30 @@ import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.communication.PushConnection;
+import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.NoTheme;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
  * framework.
  *
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
  * @author Vaadin Ltd
  * @since 1.0
  */
 public class UIInternals implements Serializable {
+
+    private static final Pattern APP_ID_REPLACE_PATTERN = Pattern
+            .compile("-\\d+$");
+
+    private static final Set<Class<? extends Component>> warnedAboutDeps = ConcurrentHashMap
+            .newKeySet();
+
+    private static Set<String> bundledImports = BundleUtils.loadBundleImports();
 
     /**
      * A {@link Page#executeJs(String, Serializable...)} invocation that has not
@@ -163,7 +175,11 @@ public class UIInternals implements Serializable {
      */
     private final UI ui;
 
+    private final UIInternalUpdater internalsHandler;
+
     private String title;
+
+    private String appShellTitle;
 
     private PendingJavaScriptInvocation pendingTitleUpdateCanceler;
 
@@ -185,20 +201,19 @@ public class UIInternals implements Serializable {
 
     private final ConstantPool constantPool = new ConstantPool();
 
-    private AbstractTheme theme = null;
-
-    private static final Pattern componentSource = Pattern
-            .compile(".*/src/vaadin-([\\w\\-]*).html");
-
     private byte[] lastProcessedMessageHash = null;
 
     private String contextRootRelativePath;
 
     private String appId;
 
+    private String fullAppId;
+
     private Component activeDragSourceComponent;
 
     private ExtendedClientDetails extendedClientDetails = null;
+
+    private ArrayDeque<Component> modalComponentStack;
 
     /**
      * Creates a new instance for the given UI.
@@ -207,6 +222,20 @@ public class UIInternals implements Serializable {
      *            the UI to use
      */
     public UIInternals(UI ui) {
+        this(ui, new UIInternalUpdater() {
+        });
+    }
+
+    /**
+     * Creates a new instance for the given UI.
+     *
+     * @param ui
+     *            the UI to use
+     * @param internalsHandler
+     *            an implementation of {@link UIInternalUpdater}
+     */
+    public UIInternals(UI ui, UIInternalUpdater internalsHandler) {
+        this.internalsHandler = internalsHandler;
         this.ui = ui;
         stateTree = new StateTree(this, getRootNodeFeatures());
     }
@@ -291,6 +320,13 @@ public class UIInternals implements Serializable {
      */
     public void incrementServerId() {
         serverSyncId++;
+        if (getLogger().isTraceEnabled()) {
+            getLogger().trace("Increment syncId {} -> {}:\n{}",
+                    (serverSyncId - 1), serverSyncId,
+                    Arrays.stream(Thread.currentThread().getStackTrace())
+                            .skip(1).map(String::valueOf).collect(Collectors
+                                    .joining(System.lineSeparator())));
+        }
     }
 
     /**
@@ -300,10 +336,9 @@ public class UIInternals implements Serializable {
      * should be taken since this method might be called in situations where
      * {@link UI#getCurrent()} does not return the UI.
      *
-     * @see VaadinService#closeInactiveUIs(VaadinSession)
-     *
      * @return The time the last heartbeat request occurred, in milliseconds
      *         since the epoch.
+     * @see VaadinService#closeInactiveUIs(VaadinSession)
      */
     public long getLastHeartbeatTimestamp() {
         return lastHeartbeatTimestamp;
@@ -342,8 +377,8 @@ public class UIInternals implements Serializable {
         features.add(LoadingIndicatorConfigurationMap.class);
 
         // And return them all
-        assert features.size() == new HashSet<>(features)
-                .size() : "There are duplicates";
+        assert features.size() == new HashSet<>(features).size()
+                : "There are duplicates";
         return (Class<? extends NodeFeature>[]) features
                 .toArray(new Class<?>[0]);
     }
@@ -364,10 +399,8 @@ public class UIInternals implements Serializable {
      *
      * @param session
      *            the session to set
-     *
      * @throws IllegalStateException
      *             if the session has already been set
-     *
      * @see #getSession()
      */
     public void setSession(VaadinSession session) {
@@ -391,9 +424,7 @@ public class UIInternals implements Serializable {
             this.session = session;
         }
 
-        if (session != null)
-
-        {
+        if (session != null) {
             ComponentUtil.onComponentAttach(ui, true);
         }
     }
@@ -524,7 +555,8 @@ public class UIInternals implements Serializable {
         List<E> registeredListeners = (List<E>) listeners
                 .computeIfAbsent(handler, key -> new ArrayList<>());
 
-        return Collections.unmodifiableList(registeredListeners);
+        return Collections
+                .unmodifiableList(new ArrayList<>(registeredListeners));
     }
 
     /**
@@ -537,10 +569,17 @@ public class UIInternals implements Serializable {
             PendingJavaScriptInvocation invocation) {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
+
+        invocation.getOwner()
+                .addDetachListener(() -> pendingJsInvocations
+                        .removeIf(pendingInvocation -> pendingInvocation
+                                .equals(invocation)));
     }
 
     /**
-     * Gets all the pending JavaScript invocations and clears the queue.
+     * Gets all the pending JavaScript invocations that are ready to be sent to
+     * a client. Retains pending JavaScript invocations owned by invisible
+     * components in the queue.
      *
      * @return a list of pending JavaScript invocations
      */
@@ -551,13 +590,16 @@ public class UIInternals implements Serializable {
             return Collections.emptyList();
         }
 
-        List<PendingJavaScriptInvocation> currentList = getPendingJavaScriptInvocations()
+        List<PendingJavaScriptInvocation> readyToSend = getPendingJavaScriptInvocations()
+                .filter(invocation -> invocation.getOwner().isVisible())
                 .peek(PendingJavaScriptInvocation::setSentToBrowser)
                 .collect(Collectors.toList());
 
-        pendingJsInvocations = new ArrayList<>();
+        pendingJsInvocations = getPendingJavaScriptInvocations()
+                .filter(invocation -> !invocation.getOwner().isVisible())
+                .collect(Collectors.toCollection(ArrayList::new));
 
-        return currentList;
+        return readyToSend;
     }
 
     /**
@@ -595,6 +637,18 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Records the text content of the title tag in the application shell.
+     * <p>
+     * <b>NOTE</b> Intended for internal use, you should not call this method.
+     *
+     * @param appShellTitle
+     *            the appShellTitle to set
+     */
+    public void setAppShellTitle(String appShellTitle) {
+        this.appShellTitle = appShellTitle;
+    }
+
+    /**
      * Gets the page title recorded with {@link Page#setTitle(String)}.
      * <p>
      * <b>NOTE</b> this might not be up to date with the actual title set since
@@ -606,6 +660,17 @@ public class UIInternals implements Serializable {
      */
     public String getTitle() {
         return title;
+    }
+
+    /**
+     * Gets the stored app shell title.
+     * <p>
+     * <b>NOTE</b> Intended for internal use, you should not call this method.
+     *
+     * @return the app shell title
+     */
+    public String getAppShellTitle() {
+        return appShellTitle;
     }
 
     /**
@@ -634,20 +699,13 @@ public class UIInternals implements Serializable {
      *            serving the UI, not <code>null</code>
      * @param target
      *            the component to show, not <code>null</code>
-     * @param path
-     *            the resolved route path so we can determine what the rendered
-     *            target is for
      * @param layouts
      *            the parent layouts
      */
-    public void showRouteTarget(Location viewLocation, String path,
-            Component target, List<RouterLayout> layouts) {
+    public void showRouteTarget(Location viewLocation, Component target,
+            List<RouterLayout> layouts) {
         assert target != null;
         assert viewLocation != null;
-
-        if (getSession().getConfiguration().isCompatibilityMode()) {
-            updateTheme(target, path);
-        }
 
         HasElement oldRoot = null;
         if (!routerTargetChain.isEmpty()) {
@@ -656,11 +714,9 @@ public class UIInternals implements Serializable {
 
         this.viewLocation = viewLocation;
 
-        Element uiElement = ui.getElement();
-
         // Assemble previous parent-child relationships to enable detecting
         // changes
-        Map<RouterLayout, HasElement> oldChildren = new HashMap<>();
+        Map<RouterLayout, HasElement> oldChildren = new IdentityHashMap<>();
         for (int i = 0; i < routerTargetChain.size() - 1; i++) {
             HasElement child = routerTargetChain.get(i);
             RouterLayout parent = (RouterLayout) routerTargetChain.get(i + 1);
@@ -675,6 +731,17 @@ public class UIInternals implements Serializable {
             routerTargetChain.addAll(layouts);
         }
 
+        // If the old and the new router target chains are not intersect,
+        // meaning that the new chain doesn't contain the root router
+        // layout node of the old chain, this aims to recursively remove
+        // content of the all nested router layouts of the given old content
+        // to be detached. This is needed to let Dependency Injection
+        // frameworks to re-create managed components with no
+        // duplicates/leftovers.
+        if (oldRoot != null && !routerTargetChain.contains(oldRoot)) {
+            oldChildren.forEach(RouterLayout::removeRouterLayoutContent);
+        }
+
         // Ensure the entire chain is connected
         HasElement previous = null;
         for (HasElement current : routerTargetChain) {
@@ -686,17 +753,16 @@ public class UIInternals implements Serializable {
                  * In either case, we should update the contents of the current
                  * entry based on its current position in the chain.
                  */
-                assert current instanceof RouterLayout : "All parts of the chain except the first must implement "
-                        + RouterLayout.class.getSimpleName();
+                assert current instanceof RouterLayout
+                        : "All parts of the chain except the first must implement "
+                                + RouterLayout.class.getSimpleName();
 
                 HasElement oldContent = oldChildren.get(current);
                 HasElement newContent = previous;
 
                 if (oldContent != newContent) {
                     RouterLayout layout = (RouterLayout) current;
-                    if (oldContent != null) {
-                        layout.removeRouterLayoutContent(oldContent);
-                    }
+                    removeChildrenContentFromRouterLayout(layout, oldChildren);
                     layout.showRouterLayoutContent(newContent);
                 }
             }
@@ -711,75 +777,17 @@ public class UIInternals implements Serializable {
                     "Root can't be null here since we know there's at least one item in the chain");
         }
 
-        Element rootElement = root.getElement();
-
-        if (!uiElement.equals(rootElement.getParent())) {
-            if (oldRoot != null) {
-                oldRoot.getElement().removeFromParent();
-            }
-            rootElement.removeFromParent();
-            uiElement.appendChild(rootElement);
-        }
-    }
-
-    private void updateTheme(Component target, String path) {
-        Optional<ThemeDefinition> themeDefinition = ui
-                .getThemeFor(target.getClass(), path);
-
-        if (themeDefinition.isPresent()) {
-            setTheme(themeDefinition.get().getTheme());
-        } else {
-            setTheme((Class<? extends AbstractTheme>) null);
-            if (!AnnotationReader
-                    .getAnnotationFor(target.getClass(), NoTheme.class)
-                    .isPresent()) {
-                getLogger().warn(
-                        "No @Theme defined for {}. See 'trace' level logs for the exact components missing theming.",
-                        target.getClass().getName());
-            }
-        }
+        internalsHandler.updateRoot(ui, oldRoot, root);
     }
 
     /**
-     * Set the Theme to use for HTML import theme translations.
-     * <p>
-     * Note! The set theme will be overridden for each call to
-     * {@link #showRouteTarget(Location, String, Component, List)} if the new
-     * theme is not the same as the set theme.
-     * <p>
-     * This method is intended for managed internal use only.
+     * Move all the children of the other UI to this current UI.
      *
-     * @param theme
-     *            theme implementation to set
-     * @deprecated use {@link #setTheme(Class)} instead
+     * @param otherUI
+     *            the other UI to transfer content from.
      */
-    @Deprecated
-    public void setTheme(AbstractTheme theme) {
-        this.theme = theme;
-    }
-
-    /**
-     * Sets the theme using its {@code themeClass}.
-     * <p>
-     * Note! The set theme will be overridden for each call to
-     * {@link #showRouteTarget(Location, String, Component, List)} if the new
-     * theme is not the same as the set theme.
-     * <p>
-     * This method is intended for managed internal use only.
-     *
-     * @see #setTheme(AbstractTheme)
-     *
-     * @param themeClass
-     *            theme class to set, may be {@code null}
-     */
-    public void setTheme(Class<? extends AbstractTheme> themeClass) {
-        if (themeClass == null) {
-            setTheme((AbstractTheme) null);
-        } else {
-            if (theme == null || !theme.getClass().equals(themeClass)) {
-                setTheme(Instantiator.get(getUI()).getOrCreate(themeClass));
-            }
-        }
+    public void moveElementsFrom(UI otherUI) {
+        internalsHandler.moveToNewUI(otherUI, ui);
     }
 
     /**
@@ -830,8 +838,8 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Adds the dependencies defined using {@link StyleSheet},
-     * {@link JavaScript} or {@link HtmlImport} on the given Component class.
+     * Adds the dependencies defined using {@link StyleSheet} or
+     * {@link JavaScript} on the given Component class.
      *
      * @param componentClass
      *            the component class to read annotations from
@@ -841,53 +849,80 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
-        if (getSession().getConfiguration().isCompatibilityMode()) {
-            dependencies.getHtmlImports()
-                    .forEach(html -> addHtmlImport(html, page));
-            dependencies.getJavaScripts().forEach(
-                    js -> page.addJavaScript(js.value(), js.loadMode()));
-        } else {
-            // In npm mode, add external JavaScripts directly to the page.
-            dependencies.getJavaScripts().stream()
-                    .filter(js -> UrlUtil.isExternal(js.value()))
-                    .forEach(js -> page.addJavaScript(js.value(),
-                            js.loadMode()));
-            dependencies.getJsModules().stream()
-                    .filter(js -> UrlUtil.isExternal(js.value()))
-                    .forEach(js -> page.addJsModule(js.value(), js.loadMode()));
+        // In npm mode, add external JavaScripts directly to the page.
+        addExternalDependencies(dependencies);
+        if (mightHaveChunk(componentClass, dependencies)) {
+            triggerChunkLoading(componentClass);
         }
+
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
+
+        warnForUnavailableBundledDependencies(componentClass, dependencies);
     }
 
-    private void addHtmlImport(HtmlImportDependency dependency, Page page) {
-        // The HTML dependency parser does not consider themes so it can
-        // cache raw information (e.g. vaadin-button/src/vaadin-button.html
-        // import) and not take into consideration which themes might
-        // contain versions for which files. They must be translated before
-        // added to page though, as whatever is added there is sent without
-        // modifications to the client
-        dependency.getUris().forEach(uri -> page
-                .addHtmlImport(translateTheme(uri), dependency.getLoadMode()));
-    }
-
-    private String translateTheme(String importValue) {
-        if (theme != null) {
-            VaadinService service = session.getService();
-            WebBrowser browser = session.getBrowser();
-            Optional<String> themedUrl = service.getThemedUrl(importValue,
-                    browser, theme);
-            return themedUrl.orElse(importValue);
-        } else {
-            Matcher componentMatcher = componentSource.matcher(importValue);
-            if (componentMatcher.matches()) {
-                String componentName = componentMatcher.group(1);
-                getLogger().trace(
-                        "Vaadin component '{}' is used and missing theme definition.",
-                        componentName);
-            }
+    private boolean mightHaveChunk(Class<? extends Component> componentClass,
+            DependencyInfo dependencies) {
+        if (!dependencies.isEmpty()) {
+            return true;
         }
-        return importValue;
+        return componentClass.getAnnotation(Route.class) != null;
+    }
+
+    private void triggerChunkLoading(
+            Class<? extends Component> componentClass) {
+        ui.getPage().addDynamicImport("return window.Vaadin.Flow.loadOnDemand('"
+                + BundleUtils.getChunkId(componentClass) + "');");
+    }
+
+    private void warnForUnavailableBundledDependencies(
+            Class<? extends Component> componentClass,
+            DependencyInfo dependencies) {
+        if (ui.getSession() == null
+                || !ui.getSession().getConfiguration().isProductionMode()) {
+            return;
+        }
+
+        List<String> jsDeps = new ArrayList<>();
+        jsDeps.addAll(dependencies.getJavaScripts().stream()
+                .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
+                .collect(Collectors.toList()));
+        jsDeps.addAll(dependencies.getJsModules().stream()
+                .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
+                .collect(Collectors.toList()));
+
+        if (!jsDeps.isEmpty()) {
+            maybeWarnAboutDependencies(componentClass, jsDeps);
+        }
+    }
+
+    private void maybeWarnAboutDependencies(
+            Class<? extends Component> componentClass, List<String> jsDeps) {
+        if (warnedAboutDeps.add(componentClass)) {
+            for (String jsDep : jsDeps) {
+                if (bundledImports != null && !bundledImports.contains(jsDep)) {
+                    getLogger().error("The component class "
+                            + componentClass.getName() + " includes '" + jsDep
+                            + "' but this file was not included when creating the production bundle. The component will not work properly. Check that you have a reference to the component and that you are not using it only through reflection. If needed add a @Uses("
+                            + componentClass.getSimpleName()
+                            + ".class) where it is used.");
+                    // Only warn for one file
+                    return;
+                }
+            }
+
+        }
+
+    }
+
+    private void addExternalDependencies(DependencyInfo dependency) {
+        Page page = ui.getPage();
+        dependency.getJavaScripts().stream()
+                .filter(js -> UrlUtil.isExternal(js.value()))
+                .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
+        dependency.getJsModules().stream()
+                .filter(js -> UrlUtil.isExternal(js.value()))
+                .forEach(js -> page.addJsModule(js.value()));
     }
 
     /**
@@ -950,7 +985,7 @@ public class UIInternals implements Serializable {
      * Set a {@link ContinueNavigationAction} or null to clear existing action.
      *
      * @param continueNavigationAction
-     *            continue navigatio action to store or null
+     *            continue navigation action to store or null
      */
     public void setContinueNavigationAction(
             ContinueNavigationAction continueNavigationAction) {
@@ -961,11 +996,13 @@ public class UIInternals implements Serializable {
      * Sets the application id tied with this UI. Different applications in the
      * same page have different unique ids.
      *
-     * @param appId
-     *            the id of the application tied with this UI
+     * @param fullAppId
+     *            the (full, not stripped) id of the application tied with this
+     *            UI
      */
-    public void setAppId(String appId) {
-        this.appId = appId;
+    public void setFullAppId(String fullAppId) {
+        this.fullAppId = fullAppId;
+        this.appId = APP_ID_REPLACE_PATTERN.matcher(fullAppId).replaceAll("");
     }
 
     /**
@@ -979,14 +1016,27 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Gets the full app id, which funnily enough is not the same as appId. This
+     * really should be removed but not right now. Don't use this method, it
+     * will be gone.
+     *
+     * @return the full app id
+     */
+    public String getFullAppId() {
+        return fullAppId;
+    }
+
+    /**
      * Gets the router used for navigating in this UI, if the router was active
      * when this UI was initialized.
      *
      * @return the router used for this UI, or <code>null</code> if there is no
-     *         router
+     *         router or the UI doesn't support navigation.
      */
     public Router getRouter() {
-        return getSession().getService().getRouter();
+        return ui.isNavigationSupported()
+                ? getSession().getService().getRouter()
+                : null;
     }
 
     /**
@@ -1069,5 +1119,131 @@ public class UIInternals implements Serializable {
      */
     public void setExtendedClientDetails(ExtendedClientDetails details) {
         this.extendedClientDetails = details;
+    }
+
+    /**
+     * Check if we have a modal component defined for the UI.
+     *
+     * @return {@code true} if modal component is defined
+     */
+    public boolean hasModalComponent() {
+        return modalComponentStack != null && !modalComponentStack.isEmpty();
+    }
+
+    /**
+     * Get the active modal component if modal components set.
+     *
+     * @return the current active modal component
+     */
+    public Component getActiveModalComponent() {
+        if (hasModalComponent()) {
+            return modalComponentStack.peek();
+        }
+        return null;
+    }
+
+    /**
+     * Makes an existing child component modal. This will make the UI and the
+     * other components inside it inert - they will not react to any user
+     * interaction until the modal component is removed.
+     * <p>
+     * In case there was an existing modal component in the UI already, that is
+     * made inert until the given new component is removed. The UI is no longer
+     * inert after all modal components have been removed from it. Inert state
+     * is updated automatically when a component is removed from the UI, no need
+     * to call anything. Moving an inert component will remove inert status.
+     *
+     * @param child
+     *            the child component to toggle modal
+     */
+    public void setChildModal(Component child) {
+        if (modalComponentStack == null) {
+            modalComponentStack = new ArrayDeque<>();
+        } else if (isTopMostModal(child)) {
+            return;
+        }
+        ElementUtil.setIgnoreParentInert(child.getElement(), true);
+
+        if (modalComponentStack.isEmpty()) {
+            ElementUtil.setInert(ui.getElement(), true);
+        } else {
+            // disable previous top most modal component
+            ElementUtil.setIgnoreParentInert(
+                    modalComponentStack.peek().getElement(), false);
+        }
+
+        final boolean needsListener = !modalComponentStack.remove(child);
+        modalComponentStack.push(child);
+
+        if (needsListener) {
+            /*
+             * Handle removal automatically on element level always due to
+             * possible component.getElement().removeFromParent() usage.
+             */
+            AtomicReference<Registration> registrationCombination = new AtomicReference<>();
+            final Registration componentRemoval = () -> setChildModeless(child);
+            final Registration listenerRegistration = child.getElement()
+                    .addDetachListener(
+                            event -> registrationCombination.get().remove());
+            registrationCombination.set(Registration.combine(componentRemoval,
+                    listenerRegistration));
+        }
+    }
+
+    /**
+     * Sets the given child modeless. The inert state of the UI and other child
+     * components is updated. This method is called automatically when a modal
+     * child component is removed from the UI.
+     *
+     * @param child
+     *            the child component to make modeless
+     */
+    public void setChildModeless(Component child) {
+        if (modalComponentStack == null) {
+            return;
+        }
+        boolean isTopmostModal = isTopMostModal(child);
+        if (modalComponentStack.remove(child)) {
+            if (isTopmostModal) {
+                // reset ignoring inert
+                ElementUtil.setIgnoreParentInert(child.getElement(), false);
+                if (modalComponentStack.isEmpty()) { // make UI active
+                    ElementUtil.setInert(ui.getElement(), false);
+                } else { // make top most modal component ignore inert
+                    ElementUtil.setIgnoreParentInert(
+                            modalComponentStack.peek().getElement(), true);
+                }
+            }
+        }
+    }
+
+    private boolean isTopMostModal(Component child) {
+        // null has been checked in calling code before this
+        return !modalComponentStack.isEmpty()
+                && modalComponentStack.peek() == child;
+    }
+
+    private void removeChildrenContentFromRouterLayout(
+            final RouterLayout targetRouterLayout,
+            final Map<RouterLayout, HasElement> oldChildren) {
+        HasElement oldContent = oldChildren.get(targetRouterLayout);
+        RouterLayout removeFrom = targetRouterLayout;
+        // Recursively remove content of the all nested router
+        // layouts of the given old content to be detached. This
+        // is needed to let Dependency Injection frameworks to
+        // re-create managed components with no
+        // duplicates/leftovers.
+        while (oldContent != null) {
+            removeFrom.removeRouterLayoutContent(oldContent);
+            if (oldContent instanceof RouterLayout) {
+                removeFrom = (RouterLayout) oldContent;
+            }
+            oldContent = oldChildren.get(oldContent);
+        }
+    }
+
+    public String getContainerTag() {
+        return "flow-container-" + getFullAppId().toLowerCase(Locale.ENGLISH);
+
     }
 }

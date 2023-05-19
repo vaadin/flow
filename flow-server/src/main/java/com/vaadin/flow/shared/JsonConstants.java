@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -216,6 +216,17 @@ public class JsonConstants implements Serializable {
     public static final String RPC_TEMPLATE_EVENT_ARGS = "templateEventMethodArgs";
 
     /**
+     * Key used to hold the promise id for a server side method call.
+     */
+    public static final String RPC_TEMPLATE_EVENT_PROMISE = "promise";
+
+    /**
+     * Name of the $server property that is used to track pending promises. The
+     * name is chosen to avoid conflicts with genuine $server method names.
+     */
+    public static final String RPC_PROMISE_CALLBACK_NAME = "}p";
+
+    /**
      * Type value for attach existing element server callback.
      *
      * @see #RPC_ATTACH_ASSIGNED_ID
@@ -269,6 +280,11 @@ public class JsonConstants implements Serializable {
     public static final String META_SESSION_EXPIRED = "sessionExpired";
 
     /**
+     * Key used when the message is sent asynchronously via push channel.
+     */
+    public static final String META_ASYNC = "async";
+
+    /**
      * Key holding the debounce phase for an event data map from the client.
      */
     // "for" is a reserved keyword, which means that this cannot be a valid JS
@@ -298,6 +314,20 @@ public class JsonConstants implements Serializable {
      * start of a valid JS expression.
      */
     public static final String SYNCHRONIZE_PROPERTY_TOKEN = "}";
+
+    /**
+     * Token used as an event data expression or prefix to an event data
+     * expression to represent that the state node ID should be fetched for the
+     * element, or its closest parent, that corresponds to {@code event.target}
+     * or the element returned by the evaluated expression.
+     * <p>
+     * The token is chosen to avoid collisions with regular event data
+     * expressions by using a character that cannot be the start of a valid JS
+     * expression.
+     *
+     * @since 9.0
+     */
+    public static final String MAP_STATE_NODE_EVENT_DATA = "]";
 
     /**
      * RPC type value used for return channel messages.

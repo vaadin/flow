@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,8 @@ package com.vaadin.flow.server;
 /**
  * Exception indicating that the application's I18N localization has been
  * configured incorrectly.
+ *
+ * @since 1.0
  */
 public class InvalidI18NConfigurationException extends RuntimeException {
 
@@ -42,7 +44,7 @@ public class InvalidI18NConfigurationException extends RuntimeException {
      *            retrieval by the {@link #getMessage()} method.
      * @param cause
      *            the cause (which is saved for later retrieval by the
-     *            {@link #getCause()} method). (A <tt>null</tt> value is
+     *            {@link #getCause()} method). (A <code>null</code> value is
      *            permitted, and indicates that the cause is nonexistent or
      *            unknown.)
      */

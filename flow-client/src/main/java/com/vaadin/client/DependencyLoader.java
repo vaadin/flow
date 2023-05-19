@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.client;
 import java.util.function.BiConsumer;
 
 import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.flow.collection.JsArray;
@@ -25,6 +26,7 @@ import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
@@ -47,7 +49,8 @@ public class DependencyLoader {
 
         @Override
         public void onError(ResourceLoadEvent event) {
-            Console.error(event.getResourceUrl() + " could not be loaded.");
+            Console.error(
+                    "'" + event.getResourceData() + "' could not be loaded.");
             // The show must go on
             onLoad(event);
         }
@@ -61,7 +64,7 @@ public class DependencyLoader {
 
         @Override
         public void onError(ResourceLoadEvent event) {
-            Console.error(event.getResourceUrl() + " could not be loaded.");
+            Console.error(event.getResourceData() + " could not be loaded.");
             // The show must go on
             onLoad(event);
         }
@@ -81,21 +84,15 @@ public class DependencyLoader {
         this.registry = registry;
     }
 
-    private void inlineDependency(String dependencyContents,
-            final BiConsumer<String, ResourceLoadListener> loader) {
-        startEagerDependencyLoading();
-        loader.accept(dependencyContents, EAGER_RESOURCE_LOAD_LISTENER);
-    }
-
-    private void loadEagerDependency(String dependencyUrl,
-            final BiConsumer<String, ResourceLoadListener> loader) {
-        startEagerDependencyLoading();
-        loader.accept(dependencyUrl, EAGER_RESOURCE_LOAD_LISTENER);
-    }
-
     private void loadLazyDependency(String dependencyUrl,
             final BiConsumer<String, ResourceLoadListener> loader) {
         loader.accept(dependencyUrl, LAZY_RESOURCE_LOAD_LISTENER);
+    }
+
+    private void loadDependencyEagerly(String data,
+            final BiConsumer<String, ResourceLoadListener> loader) {
+        startEagerDependencyLoading();
+        loader.accept(data, EAGER_RESOURCE_LOAD_LISTENER);
     }
 
     /**
@@ -188,28 +185,34 @@ public class DependencyLoader {
                 .map();
         for (int i = 0; i < dependencies.length(); i++) {
             JsonObject dependencyJson = dependencies.getObject(i);
+            Dependency.Type type = Dependency.Type
+                    .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
             BiConsumer<String, ResourceLoadListener> resourceLoader = getResourceLoader(
-                    Dependency.Type.valueOf(
-                            dependencyJson.getString(Dependency.KEY_TYPE)),
-                    loadMode);
+                    type, loadMode);
 
-            switch (loadMode) {
-            case EAGER:
-                loadEagerDependency(getDependencyUrl(dependencyJson),
+            if (type == Dependency.Type.DYNAMIC_IMPORT) {
+                loadDependencyEagerly(
+                        dependencyJson.getString(Dependency.KEY_URL),
                         resourceLoader);
-                break;
-            case LAZY:
-                lazyDependencies.set(getDependencyUrl(dependencyJson),
-                        resourceLoader);
-                break;
-            case INLINE:
-                inlineDependency(
-                        dependencyJson.getString(Dependency.KEY_CONTENTS),
-                        resourceLoader);
-                break;
-            default:
-                throw new IllegalArgumentException(
-                        "Unknown load mode = " + loadMode);
+            } else {
+                switch (loadMode) {
+                case EAGER:
+                    loadDependencyEagerly(getDependencyUrl(dependencyJson),
+                            resourceLoader);
+                    break;
+                case LAZY:
+                    lazyDependencies.set(getDependencyUrl(dependencyJson),
+                            resourceLoader);
+                    break;
+                case INLINE:
+                    loadDependencyEagerly(
+                            dependencyJson.getString(Dependency.KEY_CONTENTS),
+                            resourceLoader);
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            "Unknown load mode = " + loadMode);
+                }
             }
         }
         return lazyDependencies;
@@ -231,12 +234,6 @@ public class DependencyLoader {
                 return resourceLoader::inlineStyleSheet;
             }
             return resourceLoader::loadStylesheet;
-        case HTML_IMPORT:
-            if (inline) {
-                return resourceLoader::inlineHtml;
-            }
-            return (scriptUrl, resourceLoadListener) -> resourceLoader
-                    .loadHtml(scriptUrl, resourceLoadListener, false);
         case JAVASCRIPT:
             if (inline) {
                 return resourceLoader::inlineScript;
@@ -250,6 +247,8 @@ public class DependencyLoader {
             }
             return (scriptUrl, resourceLoadListener) -> resourceLoader
                     .loadJsModule(scriptUrl, resourceLoadListener, false, true);
+        case DYNAMIC_IMPORT:
+            return resourceLoader::loadDynamicImport;
         default:
             throw new IllegalArgumentException(
                     "Unknown dependency type " + resourceType);

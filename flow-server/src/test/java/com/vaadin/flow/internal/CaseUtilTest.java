@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,8 +16,6 @@
 package com.vaadin.flow.internal;
 
 import org.junit.Test;
-
-import com.vaadin.flow.internal.CaseUtil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -43,9 +41,7 @@ public class CaseUtilTest {
     public void capitalize() {
         assertNull(CaseUtil.capitalize(null));
         assertEquals("", CaseUtil.capitalize(""));
-        assertEquals("Great",
-                CaseUtil.capitalize("great"));
-        assertEquals("WONDERFUL",
-                CaseUtil.capitalize("WONDERFUL"));
+        assertEquals("Great", CaseUtil.capitalize("great"));
+        assertEquals("WONDERFUL", CaseUtil.capitalize("WONDERFUL"));
     }
 }

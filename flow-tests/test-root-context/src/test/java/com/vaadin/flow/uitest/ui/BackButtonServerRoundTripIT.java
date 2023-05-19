@@ -10,11 +10,12 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class BackButtonServerRoundTripIT extends ChromeBrowserTest {
     @Test
     public void testForwardingToViewInSetParameter() {
-        final String baseLoc =
-                "/view/com.vaadin.flow.uitest.ui.BackButtonServerRoundTripView";
+        final String baseLoc = "/view/com.vaadin.flow.uitest.ui.BackButtonServerRoundTripView";
         getDriver().get(getRootURL() + baseLoc + "/1?query=foo");
+        waitForDevServer();
 
-        WebElement button = findElement(By.id(BackButtonServerRoundTripView.BUTTON_ID));
+        WebElement button = findElement(
+                By.id(BackButtonServerRoundTripView.BUTTON_ID));
         button.click();
 
         final String queryValue0 = findElement(
@@ -30,5 +31,3 @@ public class BackButtonServerRoundTripIT extends ChromeBrowserTest {
                 queryValue1.equals("query=foo"));
     }
 }
-
-

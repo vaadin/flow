@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -178,7 +178,7 @@ public class InMemoryDataProviderHelpers {
      *            the data provider object type
      * @param <V>
      *            the provided value type
-     * 
+     *
      * @return the created predicate
      */
     public static <T, V> SerializablePredicate<T> createValueProviderFilter(

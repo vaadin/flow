@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,8 @@ import java.lang.annotation.Target;
 /**
  * Defines the route prefix that a Parent layout adds to a route when used in
  * the active view chain.
+ *
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -33,16 +35,19 @@ import java.lang.annotation.Target;
 public @interface RoutePrefix {
 
     /**
-     * Get the route prefix defined for class.
-     * 
+     * Sets the route prefix defined for class.
+     * <p>
+     * This value accepts also parameter template segments which can be defined
+     * using following format: <code>:parameterName[?|*][(regex)]</code>.
+     *
      * @return route prefix to add
      */
     String value();
 
     /**
-     * Have the rout chain break on defined class and not take into notice any
+     * Have the route chain break on defined class and not take into notice any
      * more parent layout route prefixes.
-     * 
+     *
      * @return route up to here should be absolute
      */
     boolean absolute() default false;

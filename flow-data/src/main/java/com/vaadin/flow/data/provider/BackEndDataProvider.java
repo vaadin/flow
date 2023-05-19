@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,6 +26,7 @@ import java.util.Objects;
  *            data provider data type
  * @param <F>
  *            data provider filter type
+ * @since 1.0
  */
 public interface BackEndDataProvider<T, F> extends DataProvider<T, F> {
 

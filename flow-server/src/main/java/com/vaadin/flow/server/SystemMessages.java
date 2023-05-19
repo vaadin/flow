@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,38 +31,38 @@ import java.io.Serializable;
  * <li><b>sessionExpiredURL</b> = null</li>
  * <li><b>sessionExpiredNotificationEnabled</b> = false</li>
  * <li><b>sessionExpiredCaption</b> = "Session Expired"</li>
- * <li><b>sessionExpiredMessage</b> = "Take note of any unsaved data, and
- * <u>click here</u> or press ESC key to continue."</li>
+ * <li><b>sessionExpiredMessage</b> = "Take note of any unsaved data, and click
+ * here or press ESC key to continue."</li>
  * <li><b>internalErrorURL</b> = null</li>
  * <li><b>internalErrorNotificationEnabled</b> = true</li>
  * <li><b>internalErrorCaption</b> = "Internal error"</li>
- * <li><b>internalErrorMessage</b> = "Please notify the administrator.<br>
- * Take note of any unsaved data, and <u>click here</u> or press ESC to
- * continue."</li>
+ * <li><b>internalErrorMessage</b> = "Please notify the administrator. Take note
+ * of any unsaved data, and click here or press ESC to continue."</li>
  * <li><b>cookiesDisabledURL</b> = null</li>
  * <li><b>cookiesDisabledNotificationEnabled</b> = true</li>
  * <li><b>cookiesDisabledCaption</b> = "Cookies disabled"</li>
  * <li><b>cookiesDisabledMessage</b> = "This application requires cookies to
- * function.<br>
- * Please enable cookies in your browser and <u>click here</u> or press ESC to
- * try again.</li>
+ * function. Please enable cookies in your browser and click here or press ESC
+ * to try again.</li>
  * </ul>
+ *
+ * @since 1.0
  */
 public class SystemMessages implements Serializable {
     protected String sessionExpiredURL = null;
     protected boolean sessionExpiredNotificationEnabled = false;
     protected String sessionExpiredCaption = "Session Expired";
-    protected String sessionExpiredMessage = "Take note of any unsaved data, and <u>click here</u> or press ESC key to continue.";
+    protected String sessionExpiredMessage = "Take note of any unsaved data, and click here or press ESC key to continue.";
 
     protected String internalErrorURL = null;
     protected boolean internalErrorNotificationEnabled = true;
     protected String internalErrorCaption = "Internal error";
-    protected String internalErrorMessage = "Please notify the administrator.<br>Take note of any unsaved data, and <u>click here</u> or press ESC to continue.";
+    protected String internalErrorMessage = "Please notify the administrator. Take note of any unsaved data, and click here or press ESC to continue.";
 
     protected String cookiesDisabledURL = null;
     protected boolean cookiesDisabledNotificationEnabled = true;
     protected String cookiesDisabledCaption = "Cookies disabled";
-    protected String cookiesDisabledMessage = "This application requires cookies to function.<br>Please enable cookies in your browser and <u>click here</u> or press ESC to try again.";
+    protected String cookiesDisabledMessage = "This application requires cookies to function. Please enable cookies in your browser and click here or press ESC to try again.";
 
     /**
      * Private constructor
@@ -75,6 +75,8 @@ public class SystemMessages implements Serializable {
      * Gets the URL the user will be redirected to after dismissing a session
      * expired message.
      *
+     * Default value is {@literal null}.
+     *
      * @return the URL to redirect to, or null to refresh the page
      */
     public String getSessionExpiredURL() {
@@ -86,6 +88,8 @@ public class SystemMessages implements Serializable {
      * user. If the notification is disabled the user will be immediately
      * redirected to the URL returned by {@link #getSessionExpiredURL()}.
      *
+     * By default, the "session expired" notification is disabled.
+     *
      * @return {@code true} to show the notification to the end user,
      *         {@code false} to redirect directly
      */
@@ -96,6 +100,9 @@ public class SystemMessages implements Serializable {
     /**
      * Gets the caption to show in a "session expired" notification.
      *
+     * Returns {@literal null} if the "session expired" notification is
+     * disabled.
+     *
      * @return The caption to show or {@code null} to show no caption.
      */
     public String getSessionExpiredCaption() {
@@ -105,6 +112,9 @@ public class SystemMessages implements Serializable {
 
     /**
      * Gets the message to show in a "session expired" notification.
+     *
+     * Returns {@literal null} if the "session expired" notification is
+     * disabled.
      *
      * @return The message to show or {@code null} to show no message.
      */
@@ -117,6 +127,8 @@ public class SystemMessages implements Serializable {
      * Gets the URL the user will be redirected to after dismissing an internal
      * error message.
      *
+     * Default value is {@literal null}.
+     *
      * @return the URL to redirect to, or null to refresh the page
      */
     public String getInternalErrorURL() {
@@ -128,6 +140,8 @@ public class SystemMessages implements Serializable {
      * If the notification is disabled the user will be immediately redirected
      * to the URL returned by {@link #getInternalErrorURL()}.
      *
+     * By default, the "internal error" notification is enabled.
+     *
      * @return {@code true} to show the notification to the end user,
      *         {@code false} to redirect directly
      */
@@ -138,6 +152,8 @@ public class SystemMessages implements Serializable {
     /**
      * Gets the caption to show in an "internal error" notification.
      *
+     * Returns {@literal null} if the "internal error" notification is disabled.
+     *
      * @return The caption to show or {@code null} to show no caption.
      */
     public String getInternalErrorCaption() {
@@ -146,6 +162,8 @@ public class SystemMessages implements Serializable {
 
     /**
      * Gets the message to show in a "internal error" notification.
+     *
+     * Returns {@literal null} if the "internal error" notification is disabled.
      *
      * @return The message to show or {@code null} to show no message.
      */
@@ -156,6 +174,8 @@ public class SystemMessages implements Serializable {
     /**
      * Gets the URL the user will be redirected to after dismissing a "cookies
      * disabled" message.
+     *
+     * Default value is {@literal null}.
      *
      * @return the URL to redirect to, or null to refresh the page
      */
@@ -168,6 +188,8 @@ public class SystemMessages implements Serializable {
      * user. If the notification is disabled the user will be immediately
      * redirected to the URL returned by {@link #getCookiesDisabledURL()}.
      *
+     * By default, the "cookies disable" notification is disabled.
+     *
      * @return {@code true} to show the notification to the end user,
      *         {@code false} to redirect directly
      */
@@ -178,6 +200,9 @@ public class SystemMessages implements Serializable {
     /**
      * Gets the caption to show in a "cookies disabled" notification.
      *
+     * Returns {@literal null} if the "cookies disable" notification is
+     * disabled.
+     *
      * @return The caption to show or {@code null} to show no caption.
      */
     public String getCookiesDisabledCaption() {
@@ -187,6 +212,9 @@ public class SystemMessages implements Serializable {
 
     /**
      * Gets the message to show in a "cookies disabled" notification.
+     *
+     * Returns {@literal null} if the "cookies disable" notification is
+     * disabled.
      *
      * @return The message to show or {@code null} to show no message.
      */

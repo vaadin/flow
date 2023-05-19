@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,6 +26,8 @@ import elemental.json.JsonValue;
 
 /**
  * Hierarchical array update strategy aware class.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.1
@@ -71,7 +73,7 @@ public interface HierarchicalArrayUpdater extends ArrayUpdater {
 
         /**
          * Enqueue function call with the given arguments.
-         * 
+         *
          * @see JsonCodec JsonCodec for supported argument types
          * @param name
          *            the name of the function to call, may contain dots to
@@ -85,7 +87,7 @@ public interface HierarchicalArrayUpdater extends ArrayUpdater {
 
         /**
          * Commits changes for the given {@code updateId} and parent key.
-         * 
+         *
          * @param updateId
          *            the update identifier of the commit for the target
          *            parentKey

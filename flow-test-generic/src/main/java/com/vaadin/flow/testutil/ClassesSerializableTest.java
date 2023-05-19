@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,8 +18,6 @@ package com.vaadin.flow.testutil;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -28,26 +26,16 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static java.lang.reflect.Modifier.isStatic;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 /**
@@ -56,11 +44,11 @@ import static org.junit.Assert.fail;
  * classpath. Subclasses may adjust the whitelist by overriding
  * {@link #getExcludedPatterns()}, {@link #getBasePackages()},
  * {@link #getJarPattern()}
+ *
+ * @since 1.0
  */
 
-public abstract class ClassesSerializableTest {
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+public abstract class ClassesSerializableTest extends ClassFinder {
 
     private final Class<?> COMPONENT_CLASS = loadComponent(
             "com.vaadin.flow.component.Component");
@@ -75,22 +63,58 @@ public abstract class ClassesSerializableTest {
         return Stream.of(
                 "com\\.vaadin\\.flow\\.data\\.validator\\.BeanValidator\\$LazyFactoryInitializer",
                 "com\\.vaadin\\.flow\\.internal\\.BeanUtil\\$LazyValidationAvailability",
-                ".*\\.slf4j\\..*", ".*\\.testbench\\..*", ".*\\.testutil\\..*",
+                ".*\\.fileupload2\\..*", ".*\\.slf4j\\..*",
+                ".*\\.testbench\\..*", ".*\\.testutil\\..*",
                 // Various utils with inner classes
                 ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$",
-
+                "com\\.vaadin\\.flow\\.osgi\\.support\\..*",
+                "com\\.vaadin\\.flow\\.server\\.osgi\\..*",
+                "com\\.vaadin\\.base\\.devserver\\.DevServerOutputTracker.*",
+                "com\\.vaadin\\.base\\.devserver\\.viteproxy\\..*",
+                "com\\.vaadin\\.base\\.devserver\\.stats..*",
+                "com\\.vaadin\\.flow\\.internal\\.VaadinContextInitializer",
+                "com\\.vaadin\\.flow\\.internal\\.ApplicationClassLoaderAccess",
+                "com\\.vaadin\\.base\\.devserver\\.BrowserLauncher",
+                "com\\.vaadin\\.base\\.devserver\\.BrowserLiveReloadAccessorImpl",
+                "com\\.vaadin\\.base\\.devserver\\.DebugWindowConnection",
+                "com\\.vaadin\\.base\\.devserver\\.DevModeHandlerManagerImpl",
+                "com\\.vaadin\\.base\\.devserver\\.DevServerWatchDog",
+                "com\\.vaadin\\.base\\.devserver\\.DevServerWatchDog\\$WatchDogServer",
+                "com\\.vaadin\\.base\\.devserver\\.ExternalDependencyWatcher",
+                "com\\.vaadin\\.base\\.devserver\\.FileWatcher",
+                "com\\.vaadin\\.base\\.devserver\\.IdeIntegration",
+                "com\\.vaadin\\.base\\.devserver\\.OpenInCurrentIde",
+                "com\\.vaadin\\.base\\.devserver\\.ThemeLiveUpdater",
+                "com\\.vaadin\\.base\\.devserver\\.editor..*",
+                "com\\.vaadin\\.base\\.devserver\\.themeeditor..*",
+                "com\\.vaadin\\.base\\.devserver\\.util\\.BrowserLauncher",
+                "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.PortProber",
+                "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.FixedIANAPortRange",
+                "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.EphemeralPortRangeDetector",
+                "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.LinuxEphemeralPortRangeDetector",
                 "com\\.vaadin\\.flow\\.data\\.provider\\.InMemoryDataProviderHelpers",
+                "com\\.vaadin\\.flow\\.di\\.InstantiatorFactory",
+                "com\\.vaadin\\.flow\\.di\\.Lookup(\\$.*)?",
+                "com\\.vaadin\\.flow\\.di\\.ResourceProvider",
+                "com\\.vaadin\\.flow\\.di\\.AbstractLookupInitializer",
+                "com\\.vaadin\\.flow\\.di\\.LookupInitializer(\\$.*)?",
+                "com\\.vaadin\\.flow\\.di\\.OneTimeInitializerPredicate",
                 "com\\.vaadin\\.flow\\.dom\\.ElementConstants",
                 "com\\.vaadin\\.flow\\.component\\.board\\.internal\\.FunctionCaller",
                 "com\\.vaadin\\.flow\\.component\\.grid\\.ColumnGroupHelpers",
                 "com\\.vaadin\\.flow\\.component\\.textfield\\.SlotHelpers",
                 "com\\.vaadin\\.flow\\.component\\.orderedlayout\\.FlexConstants",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.DefaultTemplateParser",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.NpmTemplateParser",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.BundleParser",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.BundleParser\\$DependencyVisitor",
                 "com\\.vaadin\\.flow\\.component\\.PropertyDescriptors(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.Shortcuts",
+                "com\\.vaadin\\.flow\\.component\\.dnd\\.osgi\\.DndConnectorResource",
+                "com\\.vaadin\\.flow\\.component\\.internal\\.DeadlockDetectingCompletableFuture",
+                "com\\.vaadin\\.flow\\.function\\.VaadinApplicationInitializationBootstrap",
+                "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReloadAccessor",
+                "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReloadAccess",
+                "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReload",
+                "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReloadImpl",
+                "com\\.vaadin\\.flow\\.internal\\.DevModeHandlerManager",
+                "com\\.vaadin\\.flow\\.internal\\.DevModeHandler",
                 "com\\.vaadin\\.flow\\.internal\\.JsonSerializer",
                 "com\\.vaadin\\.flow\\.internal\\.JsonCodec",
                 "com\\.vaadin\\.flow\\.internal\\.UsageStatistics(\\$.*)?",
@@ -105,47 +129,61 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.internal\\.JavaScriptSemantics",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeProperties",
                 "com\\.vaadin\\.flow\\.internal\\.AnnotationReader",
+                "com\\.vaadin\\.flow\\.server\\.StaticFileHandlerFactory",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.ServerRpcHandler\\$LazyInvocationHandlers",
                 "com\\.vaadin\\.flow\\.server\\.VaadinServletRequest",
                 "com\\.vaadin\\.flow\\.server\\.VaadinServletResponse",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.AnnotationValidator",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.AppShellPredicate",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationConfigurationFactory",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationRouteRegistry\\$RouteRegistryServletContextListener",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationRouteRegistry\\$OSGiRouteRegistry",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationRouteRegistry\\$OSGiDataCollector",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.ClassLoaderAwareServletContainerInitializer",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.VaadinServletContextStartupInitializer",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.VaadinContextStartupInitializer",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ServletDeployer",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ServletDeployer\\$StubServletConfig",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ServletContextListeners",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.DeferredServletContextInitializers(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.DevModeInitializer(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.LookupServletContainerInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication.JSR356WebsocketInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapHandler(\\$.*)?",
-                "com\\.vaadin\\.flow\\.server\\.BootstrapPageResponse",
                 "com\\.vaadin\\.flow\\.server\\.InlineTargets",
+                "com\\.vaadin\\.flow\\.server\\.AppShellSettings",
+                "com\\.vaadin\\.flow\\.server\\.communication\\.IndexHtmlResponse",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushRequestHandler(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.communication\\.JavaScriptBootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.templatemodel\\.PathLookup",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.ServletContainerInitializerExtender",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.OSGiAccess",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.OSGiAccess(\\$.*)",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.VaadinBundleTracker",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ErrorNavigationTargetInitializer",
-                "com\\.vaadin\\.flow\\.server\\.startup\\.ServletVerifier",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.RouteRegistryInitializer",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.WebComponentConfigurationRegistryInitializer",
                 "com\\.vaadin\\.flow\\.server\\.VaadinResponse",
                 "com\\.vaadin\\.flow\\.component\\.Key",
                 "com\\.vaadin\\.flow\\.server\\.VaadinRequest",
+                "com\\.vaadin\\.flow\\.server\\.DevServerWatchDog(\\$.*)?",
+                "com\\.vaadin\\.flow\\.router\\.DefaultRoutePathProvider",
+                "com\\.vaadin\\.flow\\.router\\.RoutePathProvider",
                 "com\\.vaadin\\.flow\\.router\\.RouteNotFoundError\\$LazyInit",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateDataAnalyzer\\$.*",
+                "com\\.vaadin\\.flow\\.router\\.internal\\.RouteSegment\\$RouteSegmentValue",
                 // De-facto abstract class
                 "com\\.vaadin\\.flow\\.component\\.HtmlComponent",
                 // De-facto abstract class
                 "com\\.vaadin\\.flow\\.component\\.HtmlContainer",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateInitializer(\\$.*)?",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateParser(\\$.*)?",
+                "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.AttributeInitializationStrategy",
+                "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.PropertyInitializationStrategy",
+                "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.ElementInitializationStrategy",
+                "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.AbstractInjectableElementInitializer",
                 "com\\.vaadin\\.flow\\.dom\\.impl\\.ThemeListImpl\\$ThemeListIterator",
                 "com\\.vaadin\\.flow\\.templatemodel\\.PropertyMapBuilder(\\$.*)?",
                 "com\\.vaadin\\.flow\\.internal\\.ReflectionCache",
+                "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.IdCollector",
+                "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.InjectableFieldConsumer",
+                "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.ParserData",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentMetaData(\\$.*)?",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateDataAnalyzer",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.IdCollector",
+                "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentTracker",
                 "com\\.vaadin\\.flow\\.dom\\.ElementFactory",
                 "com\\.vaadin\\.flow\\.dom\\.NodeVisitor",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeList(\\$.*)?",
@@ -163,8 +201,42 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.component\\.internal\\.HtmlImportParser",
                 "com\\.vaadin\\.flow\\.server\\.webcomponent\\.WebComponentGenerator",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.WebComponentBootstrapHandler(\\$.*)?",
+
+                "com\\.vaadin\\.flow\\.server\\.DevModeHandler(\\$.*)?",
+                // Frontend tasks classes which are not stored anywhere but used
+                // only once
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.scanner\\..*",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.CssBundler",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.FrontendTools",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonConverter",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonFilter",
+
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractUpdateImports",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.FallibleCommand",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeTasks",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeUpdater",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.Task.*",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractTaskClientGenerator",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.EndpointGeneratorTaskFactory",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.CvdlProducts",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.GenerateMainImports",
+
+                // Flow client classes
+                "com\\.vaadin\\.client\\..*",
+                "com\\.vaadin\\.flow\\.linker\\.ClientEngineLinker",
+                "com\\.vaadin\\.flow\\.linker\\.ClientEngineLinker\\$Script",
+
+                // Node downloader classes
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultArchiveExtractor",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ArchiveExtractor",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultFileDownloader",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.FileDownloader",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.NodeInstaller",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.NodeInstaller\\$InstallData",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.Platform",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ProxyConfig\\$Proxy",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ProxyConfig",
 
                 // Various test classes
                 ".*\\.test(s)?\\..*", ".*Test.*",
@@ -176,11 +248,6 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.internal\\.HasCurrentService",
                 "com\\.vaadin\\.flow\\.component\\.ValueChangeMonitor",
                 "com\\.vaadin\\.flow\\.templatemodel\\.BeanContainingBeans(\\$.*)?");
-    }
-
-    protected boolean isTestClassPath(String classPath) {
-        File file = new File(classPath);
-        return "test-classes".equals(file.getName());
     }
 
     /**
@@ -228,93 +295,6 @@ public abstract class ClassesSerializableTest {
      */
     @SuppressWarnings("WeakerAccess")
     protected void setupThreadLocals() {
-    }
-
-    private static boolean isFunctionalType(Type type) {
-        return type.getTypeName().contains("java.util.function");
-    }
-
-    /**
-     * Lists all class path entries by splitting the class path string.
-     * <p>
-     * Adapted from ClassPathExplorer.getRawClasspathEntries(), but without
-     * filtering.
-     *
-     * @return List of class path segment strings
-     */
-    private static List<String> getRawClasspathEntries() {
-        // try to keep the order of the classpath
-
-        String pathSep = System.getProperty("path.separator");
-        String classpath = System.getProperty("java.class.path");
-
-        if (classpath.startsWith("\"")) {
-            classpath = classpath.substring(1);
-        }
-        if (classpath.endsWith("\"")) {
-            classpath = classpath.substring(0, classpath.length() - 1);
-        }
-
-        String[] split = classpath.split(pathSep);
-        return Arrays.asList(split);
-    }
-
-    /**
-     * Lists class names (based on .class files) in a directory (a package path
-     * root).
-     *
-     * @param parentPackage
-     *            parent package name or null at root of hierarchy, used by
-     *            recursion
-     * @param parent
-     *            File representing the directory to scan
-     * @return collection of fully qualified class names in the directory
-     */
-    private static Collection<String> findClassesInDirectory(
-            String parentPackage, File parent) {
-        if (parent.isHidden()
-                || parent.getPath().contains(File.separator + ".")) {
-            return Collections.emptyList();
-        }
-
-        if (parentPackage == null) {
-            parentPackage = "";
-        } else {
-            parentPackage += ".";
-        }
-
-        Collection<String> classNames = new ArrayList<>();
-
-        // add all directories recursively
-        File[] files = parent.listFiles();
-        assertNotNull(files);
-        for (File child : files) {
-            if (child.isDirectory()) {
-                classNames.addAll(findClassesInDirectory(
-                        parentPackage + child.getName(), child));
-            } else if (child.getName().endsWith(".class")) {
-                classNames.add(parentPackage.replace(File.separatorChar, '.')
-                        + child.getName().replaceAll("\\.class", ""));
-            }
-        }
-
-        return classNames;
-    }
-
-    /**
-     * JARs that will be scanned for classes to test, in addition to classpath
-     * directories.
-     *
-     * @return the compiled pattern
-     */
-    @SuppressWarnings("WeakerAccess")
-    protected Pattern getJarPattern() {
-        return Pattern.compile("(.*vaadin.*)|(.*flow.*)\\.jar");
-    }
-
-    @SuppressWarnings("WeakerAccess")
-    protected Stream<String> getBasePackages() {
-        return Stream.of("com.vaadin");
     }
 
     /**
@@ -475,75 +455,6 @@ public abstract class ClassesSerializableTest {
         fail("Serializable not implemented by the following classes and interfaces: "
                 + nonSerializableString);
 
-    }
-
-    private boolean isTestClass(Class<?> cls) {
-        if (cls.getEnclosingClass() != null
-                && isTestClass(cls.getEnclosingClass())) {
-            return true;
-        }
-
-        // Test classes with a @Test annotation on some method
-        for (Method method : cls.getMethods()) {
-            if (method.isAnnotationPresent(Test.class)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Finds the server side classes/interfaces under a class path entry -
-     * either a directory or a JAR that matches {@link #getJarPattern()}.
-     * <p>
-     * Only classes under {@link #getBasePackages} are considered, and those
-     * matching {@link #getExcludedPatterns()} are filtered out.
-     */
-    private List<String> findServerClasses(String classpathEntry,
-            Collection<Pattern> excludes) throws IOException {
-        Collection<String> classes;
-
-        File file = new File(classpathEntry);
-        if (file.isDirectory()) {
-            classes = findClassesInDirectory(null, file);
-        } else if (getJarPattern().matcher(file.getName()).matches()) {
-            classes = findClassesInJar(file);
-        } else {
-            logger.debug("Ignoring " + classpathEntry);
-            return Collections.emptyList();
-        }
-        return classes.stream()
-                .filter(className -> getBasePackages().anyMatch(
-                        basePackage -> className.startsWith(basePackage + ".")))
-                .filter(className -> excludes.stream()
-                        .noneMatch(p -> p.matcher(className).matches()))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Lists class names (based on .class files) in a JAR file.
-     *
-     * @param file
-     *            a valid JAR file
-     * @return collection of fully qualified class names in the JAR
-     */
-    private Collection<String> findClassesInJar(File file) throws IOException {
-        Collection<String> classes = new ArrayList<>();
-
-        try (JarFile jar = new JarFile(file)) {
-            Enumeration<JarEntry> e = jar.entries();
-            while (e.hasMoreElements()) {
-                JarEntry entry = e.nextElement();
-                if (entry.getName().endsWith(".class")) {
-                    String nameWithoutExtension = entry.getName()
-                            .replaceAll("\\.class", "");
-                    String className = nameWithoutExtension.replace('/', '.');
-                    classes.add(className);
-                }
-            }
-        }
-        return classes;
     }
 
     private Class<?> loadComponent(String fqn) {

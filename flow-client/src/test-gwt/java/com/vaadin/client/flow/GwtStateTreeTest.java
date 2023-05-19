@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,14 +16,20 @@
 package com.vaadin.client.flow;
 
 import com.google.gwt.core.client.JavaScriptObject;
+
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.InitialPropertiesHandler;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.ServerConnector;
+import com.vaadin.client.flow.binding.ServerEventObject;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.reactive.Reactive;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
+import elemental.client.Browser;
+import elemental.dom.Element;
+import elemental.html.DivElement;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -50,7 +56,7 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
 
         @Override
         public void sendTemplateEventMessage(StateNode node, String methodName,
-                JsonArray array) {
+                JsonArray array, int promiseId) {
             this.node = node;
             this.methodName = methodName;
             args = array;
@@ -79,7 +85,7 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
         StateNode node = new StateNode(0, tree);
         tree.registerNode(node);
         JsArray array = getArgArray();
-        tree.sendTemplateEventToServer(node, "foo", array);
+        tree.sendTemplateEventToServer(node, "foo", array, -1);
 
         JsonObject object = Json.createObject();
         object.put("key", "value");
@@ -104,7 +110,7 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
         tree.registerNode(node);
 
         Reactive.addPostFlushListener(() -> {
-            tree.sendTemplateEventToServer(node, "click", null);
+            tree.sendTemplateEventToServer(node, "click", null, -1);
             TestServerConnector serverConnector = (TestServerConnector) registry
                     .getServerConnector();
             assertNull(
@@ -122,6 +128,50 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
         Reactive.flush();
     }
 
+    public void testPrepareForResync_unregistersDescendantsAndClearsRootChildren() {
+        // given
+        StateNode root = tree.getRootNode();
+        StateNode child = new StateNode(2, tree);
+        child.setParent(root);
+        tree.registerNode(child);
+        root.getList(NodeFeatures.VIRTUAL_CHILDREN).add(0,child);
+
+        StateNode grandChild = new StateNode(3, tree);
+        grandChild.setParent(child);
+        tree.registerNode(grandChild);
+        child.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, grandChild);
+
+        // when
+        tree.prepareForResync();
+
+        // then
+        assertTrue(!root.isUnregistered());
+        assertEquals(0, root.getList(NodeFeatures.VIRTUAL_CHILDREN).length());
+        assertTrue(child.isUnregistered());
+        assertEquals(0, child.getList(NodeFeatures.ELEMENT_CHILDREN).length());
+        assertTrue(grandChild.isUnregistered());
+    }
+
+    public void testPrepareForResync_rejectsPendingPromise() {
+        // given
+        StateNode root = tree.getRootNode();
+        StateNode child = new StateNode(2, tree);
+        child.setParent(root);
+        tree.registerNode(child);
+        root.getList(NodeFeatures.VIRTUAL_CHILDREN).add(0,child);
+
+        final DivElement element = Browser.getDocument().createDivElement();
+        child.setDomNode(element);
+        ServerEventObject.get(element);
+        createMockPromise(element);
+
+        // when
+        tree.prepareForResync();
+
+        // then
+        assertFalse(getMockPromiseResult(element));
+    }
+
     private native JsArray<JavaScriptObject> getArgArray()
     /*-{
         return [ true, "bar", 46.2];
@@ -131,4 +181,20 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
     /*-{
         return [ "item" ];
      }-*/;
+
+    private static native boolean createMockPromise(Element element)
+    /*-{
+       var eventObject = element.$server["}p"];
+       eventObject.promiseResult = null;
+       eventObject.promises[0] = [function() {
+           eventObject.promiseResult = true;
+       },function() {
+           eventObject.promiseResult = false;
+       }];
+    }-*/;
+
+    private static native boolean getMockPromiseResult(Element element)
+    /*-{
+        return element.$server["}p"].promiseResult;
+    }-*/;
 }

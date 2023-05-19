@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,6 +43,9 @@ public class MapProperty implements ReactiveValue {
      */
     private boolean isServerUpdate;
 
+    private static final Runnable NO_OP = () -> {
+    };
+
     private final ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent> eventRouter = new ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent>(
             this) {
         @Override
@@ -61,6 +64,8 @@ public class MapProperty implements ReactiveValue {
     private Object value;
     private boolean hasValue = false;
 
+    private final boolean forceValueUpdate;
+
     /**
      * Creates a new property.
      *
@@ -70,8 +75,24 @@ public class MapProperty implements ReactiveValue {
      *            the map that the property belongs to
      */
     public MapProperty(String name, NodeMap map) {
+        this(name, map, false);
+    }
+
+    /**
+     * Creates a new property.
+     *
+     * @param name
+     *            the name of the property
+     * @param map
+     *            the map that the property belongs to
+     * @param forceValueUpdate
+     *            whether value update for {@code name} property should be
+     *            applied regardless of previous value
+     */
+    public MapProperty(String name, NodeMap map, boolean forceValueUpdate) {
         this.name = name;
         this.map = map;
+        this.forceValueUpdate = forceValueUpdate;
     }
 
     /**
@@ -159,7 +180,8 @@ public class MapProperty implements ReactiveValue {
     }
 
     private void doSetValue(Object value) {
-        if (hasValue && Objects.equals(value, this.value)) {
+        if (!forceValueUpdate && hasValue
+                && Objects.equals(value, this.value)) {
             // Nothing to do
             return;
         }
@@ -262,8 +284,20 @@ public class MapProperty implements ReactiveValue {
      *
      * @param newValue
      *            the new value to set.
+     * @see #getSyncToServerCommand(Object)
      */
     public void syncToServer(Object newValue) {
+        getSyncToServerCommand(newValue).run();
+    }
+
+    /**
+     * Sets the value of this property and returns a synch to server command.
+     *
+     * @param newValue
+     *            the new value to set.
+     * @see #syncToServer(Object)
+     */
+    public Runnable getSyncToServerCommand(Object newValue) {
         Object currentValue = hasValue() ? getValue() : null;
 
         if (Objects.equals(newValue, currentValue)) {
@@ -282,7 +316,7 @@ public class MapProperty implements ReactiveValue {
             if (tree.isActive(node)) {
                 doSetValue(newValue);
 
-                tree.sendNodePropertySyncToServer(this);
+                return () -> tree.sendNodePropertySyncToServer(this);
             } else {
                 /*
                  * Fire an fake event to reset the property value back in the
@@ -297,5 +331,6 @@ public class MapProperty implements ReactiveValue {
                 Reactive.flush();
             }
         }
+        return NO_OP;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,8 @@ import com.vaadin.flow.internal.StateNode;
 
 /**
  * Map holding the data of a text node.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -44,7 +46,7 @@ public class TextNodeMap extends NodeValue<String> {
      * Sets the text of this node.
      *
      * @param text
-     *            the text, not null
+     *            the text, not <code>null</code>
      */
     public void setText(String text) {
         assert text != null;

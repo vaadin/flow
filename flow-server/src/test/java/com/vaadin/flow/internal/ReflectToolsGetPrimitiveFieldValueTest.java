@@ -4,8 +4,6 @@ import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
-import com.vaadin.flow.internal.ReflectTools;
-
 public class ReflectToolsGetPrimitiveFieldValueTest {
     @Test
     public void getFieldValueViaGetter() {

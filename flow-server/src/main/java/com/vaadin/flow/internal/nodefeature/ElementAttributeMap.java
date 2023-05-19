@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -33,8 +34,13 @@ import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 /**
  * Map for element attribute values.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -64,8 +70,7 @@ public class ElementAttributeMap extends NodeMap {
      *            the value
      */
     public void set(String attribute, String value) {
-        unregisterResource(attribute);
-        put(attribute, value);
+        doSet(attribute, value);
     }
 
     /**
@@ -102,7 +107,19 @@ public class ElementAttributeMap extends NodeMap {
      */
     @Override
     public String get(String attribute) {
-        return (String) super.get(attribute);
+        Serializable value = super.get(attribute);
+        if (value == null || value instanceof String) {
+            return (String) value;
+        } else {
+            // If the value is not a string then current impl only uses
+            // JsonObject
+            assert value instanceof JsonObject;
+            JsonObject object = (JsonObject) value;
+            // The only object which may be set by the current imlp contains
+            // "uri" attribute, only this situation is expected here.
+            assert object.hasKey(NodeProperties.URI_ATTRIBUTE);
+            return object.getString(NodeProperties.URI_ATTRIBUTE);
+        }
     }
 
     /**
@@ -123,12 +140,29 @@ public class ElementAttributeMap extends NodeMap {
      *            the value
      */
     public void setResource(String attribute, AbstractStreamResource resource) {
-        set(attribute, StreamResourceRegistry.getURI(resource).toASCIIString());
+        doSetResource(attribute, resource);
         if (getNode().isAttached()) {
             registerResource(attribute, resource);
         } else {
             deferRegistration(attribute, resource);
         }
+    }
+
+    private void doSetResource(String attribute,
+            AbstractStreamResource resource) {
+        final URI targetUri;
+        if (VaadinSession.getCurrent() != null) {
+            final StreamResourceRegistry resourceRegistry = VaadinSession
+                    .getCurrent().getResourceRegistry();
+            targetUri = resourceRegistry.getTargetURI(resource);
+        } else {
+            targetUri = StreamResourceRegistry.getURI(resource);
+        }
+        JsonObject object = Json.createObject();
+        object.put(NodeProperties.URI_ATTRIBUTE, targetUri.toASCIIString());
+        // don't use sring as a value, but wrap it into an object to let know
+        // the client side about specific nature of the value
+        doSet(attribute, object);
     }
 
     private void ensurePendingRegistrations() {
@@ -173,10 +207,11 @@ public class ElementAttributeMap extends NodeMap {
                 // This explicit class instantiation is the workaround
                 // which fixes a JVM optimization+serialization bug.
                 // Do not convert to lambda
-                // Detected under  Win7_64 /JDK 1.8.0_152, 1.8.0_172
+                // Detected under Win7_64 /JDK 1.8.0_152, 1.8.0_172
                 .addAttachListener(new Command() {
                     @Override
                     public void execute() {
+                        doSetResource(attribute, resource);
                         registerResource(attribute, resource);
                     }
                 });
@@ -196,19 +231,23 @@ public class ElementAttributeMap extends NodeMap {
         if (handle != null) {
             handle.remove();
         }
-        pendingRegistrations.put(attribute,
-                getNode().addDetachListener(
-                        // This explicit class instantiation is the workaround
-                        // which fixes a JVM optimization+serialization bug.
-                        // Do not convert to lambda
-                        // Detected under  Win7_64 /JDK 1.8.0_152, 1.8.0_172
-                        // see ElementAttributeMap#deferRegistration
-                        new Command() {
-                            @Override
-                            public void execute() {
-                                ElementAttributeMap.this.unsetResource(attribute);
-                            }
-                        }));
+        pendingRegistrations.put(attribute, getNode().addDetachListener(
+                // This explicit class instantiation is the workaround
+                // which fixes a JVM optimization+serialization bug.
+                // Do not convert to lambda
+                // Detected under Win7_64 /JDK 1.8.0_152, 1.8.0_172
+                // see ElementAttributeMap#deferRegistration
+                new Command() {
+                    @Override
+                    public void execute() {
+                        ElementAttributeMap.this.unsetResource(attribute);
+                    }
+                }));
+    }
+
+    private void doSet(String attribute, Serializable value) {
+        unregisterResource(attribute);
+        put(attribute, value);
     }
 
     private void unsetResource(String attribute) {

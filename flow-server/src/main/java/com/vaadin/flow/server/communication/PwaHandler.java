@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,18 +16,15 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.server.BootstrapHandler;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.server.PwaIcon;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
@@ -41,34 +38,36 @@ import com.vaadin.flow.server.VaadinSession;
  * Resources include:
  * <ul>
  * <li>manifest
- * <li>service worker
  * <li>offline fallback page
  * <li>icons
  * </ul>
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 1.2
  */
 public class PwaHandler implements RequestHandler {
-    private final Map<String, RequestHandler> requestHandlerMap = new HashMap<>();
-    private final PwaRegistry pwaRegistry;
+    public static final String SW_RUNTIME_PRECACHE_PATH = "/sw-runtime-resources-precache.js";
+    public static final String DEFAULT_OFFLINE_STUB_PATH = "offline-stub.html";
+
+    private final Map<String, RequestHandler> requestHandlerMap = Collections
+            .synchronizedMap(new HashMap<>());
+    private final SerializableSupplier<PwaRegistry> pwaRegistryGetter;
+
+    private boolean isInitialized;
 
     /**
-     * Creates PwaHandler from {@link PwaRegistry}.
+     * Creates PwaHandler from {@link PwaRegistry} getter.
      *
-     * Sets up handling for icons, manifest, service worker and offline page.
+     * @param pwaRegistryGetter
+     *            PWA registry getter
      *
-     * @param pwaRegistry
-     *            registry for PWA
      */
-    public PwaHandler(PwaRegistry pwaRegistry) {
-        this.pwaRegistry = pwaRegistry;
-        init();
+    public PwaHandler(SerializableSupplier<PwaRegistry> pwaRegistryGetter) {
+        this.pwaRegistryGetter = pwaRegistryGetter;
     }
 
-    private void init() {
-        // Don't init handlers, if not enabled
-        if (!pwaRegistry.getPwaConfiguration().isEnabled()) {
-            return;
-        }
-
+    private void init(PwaRegistry pwaRegistry) {
         // Icon handling
         for (PwaIcon icon : pwaRegistry.getIcons()) {
             requestHandlerMap.put(icon.getRelHref(),
@@ -86,35 +85,44 @@ public class PwaHandler implements RequestHandler {
                         return true;
                     });
         }
-        // Offline page handling
-        requestHandlerMap.put(
-                pwaRegistry.getPwaConfiguration().relOfflinePath(),
-                (session, request, response) -> {
-                    response.setContentType("text/html");
-                    try (PrintWriter writer = response.getWriter()) {
-                        writer.write(pwaRegistry.getOfflineHtml());
-                    }
-                    return true;
-                });
+
+        // Assume that offline page and offline stub (for display within app)
+        // are the same. This may change in the future.
+        List<String> offlinePaths = new ArrayList<>();
+        if (pwaRegistry.getPwaConfiguration().isOfflinePathEnabled()) {
+            offlinePaths
+                    .add(pwaRegistry.getPwaConfiguration().relOfflinePath());
+        }
+        offlinePaths.add("/" + DEFAULT_OFFLINE_STUB_PATH);
+        for (String offlinePath : offlinePaths) {
+            requestHandlerMap.put(offlinePath, (session, request, response) -> {
+                response.setContentType("text/html");
+                try (PrintWriter writer = response.getWriter()) {
+                    writer.write(pwaRegistry.getOfflineHtml());
+                }
+                return true;
+            });
+        }
 
         // manifest.webmanifest handling
         requestHandlerMap.put(
                 pwaRegistry.getPwaConfiguration().relManifestPath(),
                 (session, request, response) -> {
-                    response.setContentType("application/manifest+json");
+                    response.setContentType(
+                            "application/manifest+json;charset=utf-8");
                     try (PrintWriter writer = response.getWriter()) {
                         writer.write(pwaRegistry.getManifestJson());
                     }
                     return true;
                 });
 
-        // serviceworker.js handling
-        requestHandlerMap.put(
-                pwaRegistry.getPwaConfiguration().relServiceWorkerPath(),
+        // sw-runtime.js handling (service worker import for precaching runtime
+        // generated assets)
+        requestHandlerMap.put(SW_RUNTIME_PRECACHE_PATH,
                 (session, request, response) -> {
                     response.setContentType("application/javascript");
                     try (PrintWriter writer = response.getWriter()) {
-                        writer.write(pwaRegistry.getServiceWorkerJs());
+                        writer.write(pwaRegistry.getRuntimeServiceWorkerJs());
                     }
                     return true;
                 });
@@ -123,56 +131,27 @@ public class PwaHandler implements RequestHandler {
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        String requestUri = request.getPathInfo();
-
-        if (pwaRegistry.getPwaConfiguration().isEnabled()) {
-            if (requestHandlerMap.containsKey(requestUri)) {
-                return requestHandlerMap.get(requestUri)
-                        .handleRequest(session,request,response);
-            } else if (requestUri.startsWith("/"+PwaRegistry.WORKBOX_FOLDER)) {
-
-                // allow only files under workbox_folder
-                String resourceName = PwaRegistry.WORKBOX_FOLDER + requestUri
-                        // remove the extra '/'
-                        .substring(PwaRegistry.WORKBOX_FOLDER.length() + 1)
-                        .replaceAll("/", "");
-                return handleWorkboxResource(resourceName, response);
+        PwaRegistry pwaRegistry = pwaRegistryGetter.get();
+        boolean hasPwa = pwaRegistry != null
+                && pwaRegistry.getPwaConfiguration().isEnabled();
+        RequestHandler handler = null;
+        synchronized (requestHandlerMap) {
+            if (hasPwa) {
+                if (!isInitialized) {
+                    init(pwaRegistry);
+                    isInitialized = true;
+                }
+                handler = requestHandlerMap.get(request.getPathInfo());
+            } else if (isInitialized) {
+                requestHandlerMap.clear();
             }
-
         }
-        return false;
-    }
 
-    private boolean handleWorkboxResource(String fileName,
-            VaadinResponse response) {
-        try (InputStream stream = BootstrapHandler.class
-                .getResourceAsStream(fileName);
-             InputStreamReader reader = new InputStreamReader(
-                     stream, StandardCharsets.UTF_8);) {
-            PrintWriter writer = response.getWriter();
-            if (fileName.endsWith(".js")) {
-                response.setContentType("application/javascript");
-            } else {
-                response.setContentType("text/plain");
-            }
-
-            final char[] buffer = new char[1024];
-            int n;
-            while ((n = reader.read(buffer)) != -1) {
-                writer.write(buffer, 0, n);
-            }
-            return true;
-        } catch (NullPointerException e) {
-            getLogger().debug("Workbox file '{}' does not exist", fileName, e);
+        if (handler == null) {
             return false;
-        } catch (IOException e) {
-            getLogger().warn("Error while reading workbox file '{}'", fileName, e);
-            return false;
+        } else {
+            return handler.handleRequest(session, request, response);
         }
-    }
-
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(PwaHandler.class);
     }
 
 }

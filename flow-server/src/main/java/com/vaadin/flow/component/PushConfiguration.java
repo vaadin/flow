@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -61,6 +61,28 @@ public interface PushConfiguration extends Serializable {
      *             if push support is not available.
      */
     void setPushMode(PushMode pushMode);
+
+    /**
+     * Sets the servlet mapping to use for push requests.
+     * <p>
+     * This is only used when overriding the servlet mapping to use. Setting
+     * this to null (the default) will use the default URL.
+     *
+     * @param pushServletMapping
+     *            The servlet mapping to use for push
+     */
+    void setPushServletMapping(String pushServletMapping);
+
+    /**
+     * Returns the servlet mapping to use for push requests.
+     * <p>
+     * This is only used when overriding the servlet mapping to use. Returns
+     * null (the default) when the default URL is used.
+     *
+     * @return the servlet mapping to use for push requests, or null to use to
+     *         default
+     */
+    String getPushServletMapping();
 
     /**
      * Returns the primary transport type for push.
@@ -139,31 +161,12 @@ public interface PushConfiguration extends Serializable {
     void setParameter(String parameter, String value);
 
     /**
-     * Sets the URL to use for push requests.
-     * <p>
-     * This is only used when overriding the URL to use. Setting this to null
-     * (the default) will use the default URL.
-     *
-     * @param pushUrl
-     *            The push URL to use
-     */
-    void setPushUrl(String pushUrl);
-
-    /**
-     * Returns the URL to use for push requests.
-     * <p>
-     * This is only used when overriding the URL to use. Returns null (the
-     * default) when the default URL is used.
-     *
-     * @return the URL to use for push requests, or null to use to default
-     */
-    String getPushUrl();
-    
-    /**
-     * Sets the factory that will be used to create new instances of {@link PushConnection}.
+     * Sets the factory that will be used to create new instances of
+     * {@link PushConnection}.
      *
      * @param factory
-     *            the factory that will be used to create new instances of {@link PushConnection}
+     *            the factory that will be used to create new instances of
+     *            {@link PushConnection}
      */
     void setPushConnectionFactory(PushConnectionFactory factory);
 
@@ -198,6 +201,16 @@ class PushConfigurationImpl implements PushConfiguration {
     }
 
     @Override
+    public void setPushServletMapping(String pushServletMapping) {
+        getPushConfigurationMap().setPushServletMapping(pushServletMapping);
+    }
+
+    @Override
+    public String getPushServletMapping() {
+        return getPushConfigurationMap().getPushServletMapping();
+    }
+
+    @Override
     public void setPushMode(PushMode pushMode) {
         if (pushMode == null) {
             throw new IllegalArgumentException("Push mode cannot be null");
@@ -226,21 +239,11 @@ class PushConfigurationImpl implements PushConfiguration {
                 // The push connection is initially in a disconnected state;
                 // the client will establish the connection
                 ui.getInternals()
-                    .setPushConnection(pushConnectionFactory.apply(ui));
+                        .setPushConnection(pushConnectionFactory.apply(ui));
             }
             // Nothing to do here if disabling push;
             // the client will close the connection
         }
-    }
-
-    @Override
-    public void setPushUrl(String pushUrl) {
-        getPushConfigurationMap().setPushUrl(pushUrl);
-    }
-
-    @Override
-    public String getPushUrl() {
-        return getPushConfigurationMap().getPushUrl();
     }
 
     @Override
@@ -280,9 +283,10 @@ class PushConfigurationImpl implements PushConfiguration {
     }
 
     @Override
-    public void setPushConnectionFactory(PushConnectionFactory pushConnectionFactory) {
+    public void setPushConnectionFactory(
+            PushConnectionFactory pushConnectionFactory) {
         this.pushConnectionFactory = Objects.requireNonNull(
-            pushConnectionFactory, "Push connection factory must not be null"
-        );
+                pushConnectionFactory,
+                "Push connection factory must not be null");
     }
 }

@@ -1,0 +1,14 @@
+body.bg {
+  color: rgba(0, 255, 255, 1);
+}
+
+.parent-theme {
+  color: white;
+  background: blue;
+}
+
+/* This is the same rule that Lumo utilities define */
+.bg-contrast-50 {
+  color: white;
+  background-color: blue;
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,16 @@
  */
 package com.vaadin.flow.component;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
-
-import com.vaadin.flow.component.Text;
+import org.junit.rules.ExpectedException;
 
 public class TextTest {
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void elementAttached() {
@@ -29,9 +33,9 @@ public class TextTest {
         new Text("Foo").getParent();
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void nullText() {
-        new Text(null);
+    @Test
+    public void nullText_transformsToEmptyAndDoesNotThrowException() {
+        Assert.assertEquals("", new Text(null).getText());
     }
 
     @Test
@@ -40,8 +44,59 @@ public class TextTest {
     }
 
     @Test
+    public void setText_emptyTextCanBeChangedLater() {
+        Text text = new Text(null);
+        text.setText("Non Empty");
+        Assert.assertEquals("Non Empty", text.getText());
+    }
+
+    @Test
+    public void setText_nullIsChangedToEmptyAndDoesNotThrowException() {
+        Text text = new Text("Default");
+        text.setText(null);
+        Assert.assertEquals("", text.getText());
+    }
+
+    @Test
     public void setGetText() {
         Assert.assertEquals("Simple", new Text("Simple").getText());
         Assert.assertEquals("åäö €#%°#", new Text("åäö €#%°#").getText());
+    }
+
+    @Test
+    public void setId_throwsWithMeaningfulMessage() {
+        assertExceptionOnSetProperty("id");
+
+        new Text("").setId("foo");
+    }
+
+    @Test
+    public void setFooProperty_throwsWithMeaningfulMessage() {
+        assertExceptionOnSetProperty("foo");
+
+        new Text("").set(PropertyDescriptors.propertyWithDefault("foo", true),
+                false);
+    }
+
+    @Test
+    public void setVisibility_throwsWithMeaningfulMessage() {
+        exception.expect(UnsupportedOperationException.class);
+
+        exception.expectMessage(CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "Cannot change Text component visibility"),
+                CoreMatchers.containsString(
+                        "because it doesn't represent an HTML Element")));
+
+        new Text("").setVisible(false);
+    }
+
+    private void assertExceptionOnSetProperty(String property) {
+        exception.expect(UnsupportedOperationException.class);
+
+        exception.expectMessage(CoreMatchers.allOf(
+                CoreMatchers.containsString("Cannot set '" + property + "' "),
+                CoreMatchers.containsString(
+                        "component because it doesn't represent an HTML Element")));
     }
 }

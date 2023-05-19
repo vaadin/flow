@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;

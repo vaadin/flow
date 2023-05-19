@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -28,7 +28,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DebounceSynchronizePropertyView", layout = ViewTestLayout.class)
-public class DebounceSynchronizePropertyView extends AbstractDebounceSynchronizeView {
+public class DebounceSynchronizePropertyView
+        extends AbstractDebounceSynchronizeView {
     private final HtmlComponent input = new HtmlComponent("input");
     private final Element inputElement = input.getElement();
 
@@ -43,7 +44,8 @@ public class DebounceSynchronizePropertyView extends AbstractDebounceSynchronize
         Component debounceToggle = createModeToggle(
                 "Debounce (when typing pauses)", "debounce",
                 registration -> registration.debounce(CHANGE_TIMEOUT));
-        Component throttleToggle = createModeToggle("Throttle (while typing)", "throttle",
+        Component throttleToggle = createModeToggle("Throttle (while typing)",
+                "throttle",
                 registration -> registration.throttle(CHANGE_TIMEOUT));
 
         add(eagerToggle, filteredToggle, debounceToggle, throttleToggle, input);
@@ -66,7 +68,8 @@ public class DebounceSynchronizePropertyView extends AbstractDebounceSynchronize
 
                     registration = inputElement.addPropertyChangeListener(
                             "value", "input",
-                            propertyChange -> addChangeMessage(propertyChange.getValue()));
+                            propertyChange -> addChangeMessage(
+                                    propertyChange.getValue()));
 
                     configurator.accept(registration);
                 } else {
@@ -76,7 +79,7 @@ public class DebounceSynchronizePropertyView extends AbstractDebounceSynchronize
             }
         }).addEventData("element.checked");
 
-        Label label = new Label(caption);
+        NativeLabel label = new NativeLabel(caption);
         label.getElement().insertChild(0, checkbox);
         label.getElement().getStyle().set("display", "block");
         return label;

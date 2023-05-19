@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,63 +22,58 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLayout;
-
 /**
- * Defines that there is a theme to use and defines the theme handler
- * implementation.
+ * Defines the theme to use for the application. Should be present only once for
+ * an app, in the `AppShellConfiguration` class.
  * <p>
- * The theme allows to define a way to translate base component url to the
- * themed component url (@see {@link AbstractTheme}), which specifies components
- * styles.
+ * The {@code value} property defines the name of the application theme. When
+ * the theme is present inside the project, it maps to the {@code
+ * frontend/themes/&#60application-theme-name&#62}/ folder or alternatively to a
+ * folder inside the static resources of a jar file, like {@code
+ * src/main/resources/META-INF/resources/themes/&#60application-theme-name&#62/}
+ * . The application theme is always based on Lumo theme and this is the
+ * recommended way to theme applications starting from Flow 6.0 and Vaadin 19.
+ * <p>
+ * Alternatively , if instead of Lumo theme the Material theme or another "old
+ * style custom theme" is to be used, that can be specified with the {@code
+ * themeClass} property. This allows defining a way to translate base component
+ * url to the themed component url (@see {@link AbstractTheme}), which specifies
+ * components styles.
  * <p>
  * By default {@code com.vaadin.flow.theme.lumo.Lumo} theme is used if it's in
  * the classpath. You may disable theming with {@link NoTheme} annotation.
  * <p>
- * {@link Theme} annotation should be added to your root navigation level,
- * {@link RouterLayout} or to the top level @{@link Route}.
+ * {@link Theme} annotation should be added to the AppShellConfigurator
+ * implementation.
  *
  * <p>
- * Defining different Themes for different views will end throwing an exception.
+ * Only a single theme can be defined and having multiple instances will throw
+ * an exception.
  *
  * <p>
- * Here are examples:
- *
- * <ul>
- * <li>On the navigation root
+ * Here is some examples:
  *
  * <pre>
  * <code>
- * &#64;Route(value = "")
- * &#64;Theme(Lumo.class)
- * public class Main extends Div {
+ *
+ * &#64;Theme("my-theme")
+ * public class MyAppShell implements AppShellConfigurator {
  * }
  * </code>
  * </pre>
  *
- * <li>on the top level router layout
- *
  * <pre>
  * <code>
- * &#64;Theme(MyTheme.class)
- * public class MainLayout extends Div implements RouterLayout {
- * }
  *
- * &#64;Route(value = "editor", layout = MainLayout.class)
- * public class Editor extends Div {
+ * &#64;Theme(themeClass = Lumo.class)
+ * public class MyAppShell implements AppShellConfigurator {
  * }
  * </code>
  * </pre>
- *
- * </ul>
- *
- * @see AbstractTheme
- * @see NoTheme
- * @see RouterLayout
- * @see Route
  *
  * @author Vaadin Ltd
+ * @see AbstractTheme
+ * @see NoTheme
  * @since 1.0
  */
 @Target(ElementType.TYPE)
@@ -90,9 +85,11 @@ public @interface Theme {
     /**
      * The theme translation handler.
      *
+     * Defaults to Lumo, If not specified.
+     *
      * @return theme handler
      */
-    Class<? extends AbstractTheme> value();
+    Class<? extends AbstractTheme> themeClass() default AbstractTheme.class;
 
     /**
      * The theme variant, if any.
@@ -100,4 +97,11 @@ public @interface Theme {
      * @return the theme variant
      */
     String variant() default "";
+
+    /**
+     * The name of the theme to use.
+     *
+     * If this is not specified will default to Lumo.
+     */
+    String value() default "";
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,22 +21,26 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.flow.function.SerializableRunnable;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.PublicApiAnalyzer;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
-import org.mockito.Mockito;
 
 public class AbstractSinglePropertyFieldTest {
     @Rule
@@ -120,12 +124,15 @@ public class AbstractSinglePropertyFieldTest {
     @Test
     public void synchronizedEvent_redefined() {
         StringField stringField = new StringField();
-        DomListenerRegistration origReg = stringField.getSynchronizationRegistration();
-        SerializableRunnable unregisterListener = Mockito.mock(SerializableRunnable.class);
+        DomListenerRegistration origReg = stringField
+                .getSynchronizationRegistration();
+        SerializableRunnable unregisterListener = Mockito
+                .mock(SerializableRunnable.class);
         origReg.onUnregister(unregisterListener);
 
         stringField.setSynchronizedEvent("blur");
-        DomListenerRegistration recentReg = stringField.getSynchronizationRegistration();
+        DomListenerRegistration recentReg = stringField
+                .getSynchronizationRegistration();
         Mockito.verify(unregisterListener).run();
         Assert.assertNotSame(origReg, recentReg);
         Assert.assertEquals("blur", recentReg.getEventType());
@@ -134,8 +141,10 @@ public class AbstractSinglePropertyFieldTest {
     @Test
     public void synchronizedEvent_null_noSynchronization() {
         StringField stringField = new StringField();
-        SerializableRunnable unregisterListener = Mockito.mock(SerializableRunnable.class);
-        stringField.getSynchronizationRegistration().onUnregister(unregisterListener);
+        SerializableRunnable unregisterListener = Mockito
+                .mock(SerializableRunnable.class);
+        stringField.getSynchronizationRegistration()
+                .onUnregister(unregisterListener);
 
         stringField.setSynchronizedEvent(null);
         Assert.assertNull(stringField.getSynchronizationRegistration());
@@ -504,6 +513,30 @@ public class AbstractSinglePropertyFieldTest {
 
         StringField anotherField = SerializationUtils.roundtrip(field);
         Assert.assertEquals("foo", anotherField.getValue());
+    }
+
+    @Test
+    public void getValue_wrapExistingElement_elementHasProperty_valueIsThePropertyValue() {
+        Element element = new Element("tag");
+        element.setProperty("property", "foo");
+
+        UI ui = new UI();
+        UI.setCurrent(ui);
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        ui.getInternals().setSession(session);
+
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(session.getService()).thenReturn(service);
+
+        Instantiator instantiator = Mockito.mock(Instantiator.class);
+
+        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
+
+        Mockito.when(instantiator.createComponent(StringField.class))
+                .thenAnswer(a -> new StringField());
+
+        StringField field = Component.from(element, StringField.class);
+        Assert.assertEquals("foo", field.getValue());
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import com.googlecode.gentyref.GenericTypeReflector;
-import com.vaadin.flow.internal.ReflectTools;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -29,8 +26,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.googlecode.gentyref.GenericTypeReflector;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.internal.ReflectTools;
+
 /**
  * Parameter deserialization utility.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 1.0
  */
 public final class ParameterDeserializer {
 
@@ -64,7 +70,18 @@ public final class ParameterDeserializer {
         } else if (parameterType.isAssignableFrom(Integer.class)) {
             return (T) Integer.valueOf(parameter);
         } else if (parameterType.isAssignableFrom(Long.class)) {
-            return (T) Long.valueOf(parameter);
+            try {
+                return (T) Long.valueOf(parameter);
+            } catch (NumberFormatException nfe) {
+                // RouteParameterRegex.LONG accepts value outside Long.MAX and
+                // Long.MIN so inform this clearly in the exception.
+                final String error = String.format(
+                        "Received faulty Long value '%s' for class %s.",
+                        parameter, targetClass);
+                LoggerFactory.getLogger(ParameterDeserializer.class)
+                        .error(error);
+                throw new IllegalArgumentException(error);
+            }
         } else if (parameterType.isAssignableFrom(Boolean.class)) {
             return (T) Boolean.valueOf(parameter);
         } else {
@@ -81,22 +98,22 @@ public final class ParameterDeserializer {
      *
      * @param navigationTarget
      *            navigation target for which to deserialize parameters
-     * @param urlParameters
-     *            the list of url parameters to deserialize
+     * @param parameters
+     *            the list of route parameters to deserialize
      * @return the deserialized url parameter, can be {@code null}
      */
-    public static Object deserializeUrlParameters(Class<?> navigationTarget,
-            List<String> urlParameters) {
-        if (urlParameters.isEmpty()) {
+    public static Object deserializeRouteParameters(Class<?> navigationTarget,
+            List<String> parameters) {
+        if (parameters.isEmpty()) {
             return isAnnotatedParameter(navigationTarget,
                     WildcardParameter.class) ? "" : null;
         }
         Class<?> parameterType = getClassType(navigationTarget);
         if (isAnnotatedParameter(navigationTarget, WildcardParameter.class)) {
             validateWildcardType(navigationTarget, parameterType);
-            return urlParameters.stream().collect(Collectors.joining("/"));
+            return parameters.stream().collect(Collectors.joining("/"));
         }
-        String parameter = urlParameters.get(0);
+        String parameter = parameters.get(0);
         return ParameterDeserializer.deserializeParameter(parameterType,
                 parameter, navigationTarget.getName());
     }
@@ -120,17 +137,17 @@ public final class ParameterDeserializer {
     }
 
     /**
-     * Verifies that the list of url parameters is valid for the given
+     * Verifies that the list of route parameters is valid for the given
      * navigation target.
      *
      * @param navigationTarget
      *            the navigation target to verify against
-     * @param urlParameters
-     *            the list of url parameters to verify
+     * @param parameters
+     *            the list of route parameters to verify
      * @return {@code true} if the parameters are valid, otherwise {@code false}
      */
     public static boolean verifyParameters(Class<?> navigationTarget,
-            List<String> urlParameters) {
+            List<String> parameters) {
         if (!HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
             throw new IllegalArgumentException(String.format(
                     "Given navigationTarget '%s' does not implement HasUrlParameter.",
@@ -145,9 +162,9 @@ public final class ParameterDeserializer {
                 return true;
             } else if (isAnnotatedParameter(navigationTarget,
                     OptionalParameter.class)) {
-                return urlParameters.size() <= 1;
+                return parameters.size() <= 1;
             }
-            return urlParameters.size() == 1;
+            return parameters.size() == 1;
         }
         throw new UnsupportedOperationException(String.format(
                 "Currently HasUrlParameter only supports the following parameter types: %s.",
@@ -193,20 +210,36 @@ public final class ParameterDeserializer {
 
         // Raw method has no parameter annotations if compiled by Eclipse
         Type parameterType = GenericTypeReflector.getTypeParameter(
-                navigationTarget,
-                HasUrlParameter.class.getTypeParameters()[0]);
+                navigationTarget, HasUrlParameter.class.getTypeParameters()[0]);
+        if (parameterType == null) {
+            parameterType = GenericTypeReflector.getTypeParameter(
+                    navigationTarget.getGenericSuperclass(),
+                    HasUrlParameter.class.getTypeParameters()[0]);
+        }
+        if (parameterType == null) {
+            for (Type iface : navigationTarget.getGenericInterfaces()) {
+                parameterType = GenericTypeReflector.getTypeParameter(iface,
+                        HasUrlParameter.class.getTypeParameters()[0]);
+                if (parameterType != null) {
+                    break;
+                }
+            }
+        }
         Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
-
 
         return Stream.of(navigationTarget.getMethods())
                 .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> hasValidParameterTypes(method, parameterClass))
-                .anyMatch(method -> method.getParameters()[1].isAnnotationPresent(parameterAnnotation));
+                .filter(method -> hasValidParameterTypes(method,
+                        parameterClass))
+                .anyMatch(method -> method.getParameters()[1]
+                        .isAnnotationPresent(parameterAnnotation));
     }
 
-    private static boolean hasValidParameterTypes(Method method, Class<?> parameterClass) {
+    private static boolean hasValidParameterTypes(Method method,
+            Class<?> parameterClass) {
         return method.getParameterCount() == 2
                 && method.getParameterTypes()[0] == BeforeEvent.class
-                && method.getParameterTypes()[1].isAssignableFrom(parameterClass);
+                && method.getParameterTypes()[1]
+                        .isAssignableFrom(parameterClass);
     }
 }

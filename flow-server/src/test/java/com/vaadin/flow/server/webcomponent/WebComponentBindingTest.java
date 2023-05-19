@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,10 +22,9 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
-import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 
 import elemental.json.Json;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 public class WebComponentBindingTest {
@@ -37,14 +36,14 @@ public class WebComponentBindingTest {
     public void setUp() {
         component = new MyComponent();
         binding = new WebComponentBinding<>(component);
-        binding.bindProperty(
-                new PropertyConfigurationImpl<>(
-                        MyComponent.class, "int", Integer.class, 0), false,
-                null);
-        binding.bindProperty(
-                new PropertyConfigurationImpl<>(
-                        MyComponent.class, "json", JsonValue.class, null),
-                false, null);
+        PropertyConfigurationImpl<MyComponent, Integer> integerProperty = new PropertyConfigurationImpl<>(
+                MyComponent.class, "int", Integer.class, 0);
+        integerProperty.onChange(MyComponent::setInt);
+        PropertyConfigurationImpl<MyComponent, JsonValue> jsonProperty = new PropertyConfigurationImpl<>(
+                MyComponent.class, "json", JsonValue.class, null);
+        jsonProperty.onChange(MyComponent::setJson);
+        binding.bindProperty(integerProperty, false, null);
+        binding.bindProperty(jsonProperty, false, null);
     }
 
     @Test
@@ -68,8 +67,30 @@ public class WebComponentBindingTest {
         Assert.assertFalse(binding.hasProperty("not-a-property"));
     }
 
+    @Test
+    public void updateValue() {
+        binding.updateProperty("int", 5);
+        Assert.assertEquals(5, component.integer);
+
+        JsonObject obj = Json.createObject();
+        obj.put("String", "Value");
+
+        binding.updateProperty("json", obj);
+        Assert.assertEquals("{\"String\":\"Value\"}",
+                component.jsonValue.toJson());
+    }
+
     @Tag("tag")
     private static class MyComponent extends Component {
+        int integer;
+        JsonValue jsonValue;
 
+        public void setInt(int v) {
+            integer = v;
+        }
+
+        public void setJson(JsonValue v) {
+            jsonValue = v;
+        }
     }
 }

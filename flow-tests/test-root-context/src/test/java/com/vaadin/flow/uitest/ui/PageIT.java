@@ -4,10 +4,13 @@ import java.util.ArrayList;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -65,12 +68,13 @@ public class PageIT extends ChromeBrowserTest {
         InputTextElement input = $(InputTextElement.class).id("input");
         input.setValue("foo");
         Assert.assertEquals("foo", input.getPropertyString("value"));
-        findElement(By.id("reload")).click();
+        $(DivElement.class).id("reload").click();
         input = $(InputTextElement.class).id("input");
         Assert.assertEquals("", input.getValue());
     }
 
     @Test
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7575")
     public void testSetLocation() {
         open();
 
@@ -80,14 +84,76 @@ public class PageIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7575")
     public void testOpenUrlInNewTab() {
         open();
 
         findElement(By.id("open")).click();
-        ArrayList<String> tabs = new ArrayList<>(getDriver().getWindowHandles());
+        ArrayList<String> tabs = new ArrayList<>(
+                getDriver().getWindowHandles());
         Assert.assertThat(
                 getDriver().switchTo().window(tabs.get(1)).getCurrentUrl(),
-                Matchers.endsWith(BaseHrefView.class.getName())
-        );
+                Matchers.endsWith(BaseHrefView.class.getName()));
+    }
+
+    @Test
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7575")
+    public void testOpenUrlInIFrame() throws InterruptedException {
+        open();
+
+        findElement(By.id("openInIFrame")).click();
+
+        waitUntil(driver -> !getIframeUrl().equals("about:blank"));
+
+        Assert.assertThat(getIframeUrl(),
+                Matchers.endsWith(BaseHrefView.class.getName()));
+    }
+
+    @Test
+    public void fetchPageDirection_noDirectionSetExplicitly_leftToRightIsPassedToCallback() {
+        open();
+
+        Assert.assertEquals("",
+                findElement(By.id("direction-value")).getText());
+
+        findElement(By.id("fetch-direction")).click();
+
+        Assert.assertEquals("LEFT_TO_RIGHT",
+                findElement(By.id("direction-value")).getText());
+    }
+
+    @Test
+    public void fetchPageDirection_setRTLDirection_rightToLeftIsPassedToCallback() {
+        open();
+
+        Assert.assertEquals("",
+                findElement(By.id("direction-value")).getText());
+
+        findElement(By.id("set-RTL-direction")).click();
+
+        findElement(By.id("fetch-direction")).click();
+
+        Assert.assertEquals("RIGHT_TO_LEFT",
+                findElement(By.id("direction-value")).getText());
+    }
+
+    @Test
+    public void fetchPageDirection_setLTRDirection_leftToRightIsPassedToCallback() {
+        open();
+
+        Assert.assertEquals("",
+                findElement(By.id("direction-value")).getText());
+
+        findElement(By.id("set-LTR-direction")).click();
+
+        findElement(By.id("fetch-direction")).click();
+
+        Assert.assertEquals("LEFT_TO_RIGHT",
+                findElement(By.id("direction-value")).getText());
+    }
+
+    private String getIframeUrl() {
+        return (String) ((JavascriptExecutor) driver).executeScript(
+                "return document.getElementById('newWindow').contentWindow.location.href;");
     }
 }

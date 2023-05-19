@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,11 +19,14 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
+import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Router;
 
 /**
  * Handles navigation by redirecting the user to some location in the
  * application.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -47,8 +50,11 @@ public class InternalRedirectHandler implements NavigationHandler {
         UI ui = event.getUI();
         Router router = event.getSource();
 
-        ui.getPage().getHistory().replaceState(null, target);
+        if (NavigationTrigger.PAGE_LOAD.equals(event.getTrigger())) {
+            ui.getPage().getHistory().replaceState(null, target);
+        }
 
-        return router.navigate(ui, target, event.getTrigger());
+        return router.navigate(ui, target, event.getTrigger(),
+                event.getState().orElse(null));
     }
 }

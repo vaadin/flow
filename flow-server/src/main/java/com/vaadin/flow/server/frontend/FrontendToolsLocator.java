@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,25 +15,31 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.Pair;
+
 /**
  * Helps to locate the tools in the system by their names.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 1.2
  */
 public class FrontendToolsLocator implements Serializable {
+    private static final String FAILED_WITH_EXIT_CODE_MSG = "Command '{}' failed with exit code '{}'";
+
     private static class CommandResult implements Serializable {
         private final String command;
         private final int exitCode;
@@ -69,15 +75,13 @@ public class FrontendToolsLocator implements Serializable {
      *         such tools
      */
     public Optional<File> tryLocateTool(String toolName) {
-        List<String> candidateLocations = executeCommand(
+        List<String> candidateLocations = executeCommand(false,
                 isWindows() ? "where" : "which", toolName)
-                        .map(this::omitErrorResult)
-                        .map(CommandResult::getStdout)
-                        .orElseGet(() -> Arrays.asList(
-                                // Add most common paths in unix #5611
-                                "/usr/local/bin/" + toolName,
-                                "/opt/local/bin/" + toolName,
-                                "/opt/bin/" + toolName));
+                .map(this::omitErrorResult).map(CommandResult::getStdout)
+                .orElseGet(() -> Arrays.asList(
+                        // Add most common paths in unix #5611
+                        "/usr/local/bin/" + toolName,
+                        "/opt/local/bin/" + toolName, "/opt/bin/" + toolName));
 
         for (String candidateLocation : candidateLocations) {
             File candidate = new File(candidateLocation);
@@ -99,7 +103,7 @@ public class FrontendToolsLocator implements Serializable {
     public boolean verifyTool(File toolPath) {
         return Optional.ofNullable(toolPath).filter(File::isFile)
                 .map(File::getAbsolutePath)
-                .flatMap(path -> executeCommand(path, "-v"))
+                .flatMap(path -> executeCommand(true, path, "-v"))
                 .map(this::omitErrorResult).isPresent();
     }
 
@@ -108,55 +112,71 @@ public class FrontendToolsLocator implements Serializable {
         return osName != null && osName.toLowerCase().startsWith("windows");
     }
 
-    private Optional<CommandResult> executeCommand(String... commandParts) {
+    private Optional<CommandResult> executeCommand(boolean logErrorOnFail,
+            String... commandParts) {
         String commandString = Arrays.toString(commandParts);
         Process process;
         try {
             process = FrontendUtils
                     .createProcessBuilder(Arrays.asList(commandParts)).start();
         } catch (IOException e) {
-            log().error("Failed to execute the command '{}'", commandString, e);
+            if (logErrorOnFail) {
+                log().error("Failed to execute the command '{}'", commandString,
+                        e);
+            } else if (log().isDebugEnabled()) {
+                log().debug("Failed to execute the command '{}'", commandString,
+                        e);
+            }
             return Optional.empty();
         }
 
-        boolean commandExited = false;
+        int exitCode = -1;
+        long timeStamp = System.currentTimeMillis();
+        CompletableFuture<Pair<String, String>> streamConsumer = FrontendUtils
+                .consumeProcessStreams(process);
         try {
-            commandExited = process.waitFor(3, TimeUnit.SECONDS);
+            exitCode = process.waitFor();
         } catch (InterruptedException e) {
             log().error(
                     "Unexpected interruption happened during '{}' command execution",
                     commandString, e);
             return Optional.empty();
         } finally {
-            if (!commandExited) {
+            if (exitCode == -1) {
                 process.destroyForcibly();
             }
         }
 
-        if (!commandExited) {
-            log().error(
-                    "Could not get a response from '{}' command in 3 seconds",
+        long executionTime = System.currentTimeMillis() - timeStamp;
+        if (log().isDebugEnabled() && executionTime > 3000) {
+            log().debug("Command '{}' execution took over 3 seconds",
                     commandString);
+        }
+
+        if (exitCode > 0) {
+            if (logErrorOnFail) {
+                log().error(FAILED_WITH_EXIT_CODE_MSG, commandString, exitCode);
+            } else if (log().isDebugEnabled()) {
+                log().debug(FAILED_WITH_EXIT_CODE_MSG, commandString, exitCode);
+            }
             return Optional.empty();
         }
 
         List<String> stdout;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                process.getInputStream(), StandardCharsets.UTF_8))) {
-            stdout = br.lines().collect(Collectors.toList());
-        } catch (IOException e) {
-            log().error("Failed to read the command '{}' stdout", commandString,
-                    e);
-            return Optional.empty();
-        }
-
         List<String> stderr;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                process.getErrorStream(), StandardCharsets.UTF_8))) {
-            stderr = br.lines().collect(Collectors.toList());
-        } catch (IOException e) {
-            log().error("Failed to read the command '{}' stderr", commandString,
-                    e);
+        try {
+            Pair<String, String> outputs = streamConsumer.get();
+            stdout = new ArrayList<>(
+                    List.of(outputs.getFirst().split(System.lineSeparator())));
+            stderr = new ArrayList<>(
+                    List.of(outputs.getSecond().split(System.lineSeparator())));
+        } catch (ExecutionException | InterruptedException e) {
+            Throwable cause = e;
+            if (e instanceof ExecutionException) {
+                cause = e.getCause();
+            }
+            log().error("Failed to read the command '{}' stdout/stderr",
+                    commandString, cause);
             return Optional.empty();
         }
 
@@ -184,12 +204,14 @@ public class FrontendToolsLocator implements Serializable {
             return null;
         }
         if (!commandResult.stderr.isEmpty()) {
+            // "npm -v" can output deprecation warnings to stderr but it still
+            // works
             if (log().isDebugEnabled()) {
-                log().debug("Command '{}' has non-empty stderr:\n'{}'",
+                log().debug(
+                        "Command '{}' has non-empty stderr but assuming this is fine:\n'{}'",
                         commandResult.command,
                         String.join("\n", commandResult.stderr));
             }
-            return null;
         }
         return commandResult;
     }

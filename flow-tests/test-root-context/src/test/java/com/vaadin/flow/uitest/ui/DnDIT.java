@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,6 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -51,6 +50,32 @@ public class DnDIT extends ChromeBrowserTest {
 
         dragBoxToLanes(boxElement, getLaneElement("COPY"), true);
         dragBoxToLanes(boxElement, getLaneElement("deactivated"), false);
+    }
+
+    @Test
+    public void testCopyEffectElement_disableElement_draggedNotPresent() {
+        open();
+
+        TestBenchElement boxElement = getBoxElement("COPY");
+        clickElementWithJs("button-disable-enable-drag-sources");
+        Assert.assertTrue("Invalid enabled state found in drag source",
+                boxElement.hasAttribute("disabled"));
+        clearEvents();
+        drag(boxElement);
+        Assert.assertFalse(boxElement.hasClassName("v-dragged"));
+    }
+
+    @Test
+    public void testCopyEffectElement_disableTarget_dragOverTargetNotPresent() {
+        open();
+
+        TestBenchElement boxElement = getBoxElement("COPY");
+        TestBenchElement targetElement = getLaneElement("COPY");
+        clickElementWithJs("button-disable-enable-drop-targets");
+        Assert.assertTrue("Invalid enabled state found in drop target",
+                targetElement.hasAttribute("disabled"));
+        dragElementOver(boxElement, targetElement);
+        Assert.assertFalse(targetElement.hasClassName("v-drag-over-target"));
     }
 
     private void dragBoxToLanes(TestBenchElement boxElement,

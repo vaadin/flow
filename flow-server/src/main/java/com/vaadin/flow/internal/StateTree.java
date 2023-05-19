@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,10 +34,13 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.shared.Registration;
 
 /**
  * The state tree that is synchronized with the client-side.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -96,16 +99,37 @@ public class StateTree implements NodeOwner {
         private final SerializableConsumer<ExecutionContext> execution;
         private final StateNode stateNode;
         private final int index;
+        private final NodeOwner originalOwner;
 
         private BeforeClientResponseEntry(int index, StateNode stateNode,
                 SerializableConsumer<ExecutionContext> execution) {
             this.index = index;
             this.stateNode = stateNode;
             this.execution = execution;
+            originalOwner = stateNode.getOwner();
         }
 
         private int getIndex() {
             return index;
+        }
+
+        /**
+         * Checks whether the entry's execution consumer can be run with the
+         * given {@link UI}.
+         *
+         * @param ui
+         *            the given to execute the entry with
+         * @return whether the entry may be executed with the given {@code ui}
+         *         instance
+         */
+        private boolean canExecute(UI ui) {
+            if (originalOwner instanceof NullOwner) {
+                // the node has not been attached initially
+                return true;
+            }
+            // if node has been attached initially then it's tree has to be the
+            // same
+            return ui.getInternals().getStateTree() == originalOwner;
         }
 
         public StateNode getStateNode() {
@@ -245,6 +269,12 @@ public class StateTree implements NodeOwner {
     /**
      * Collects all changes made to this tree since the last time
      * {@link #collectChanges(Consumer)} has been called.
+     * <p>
+     *
+     * <b>WARNING</b>: This is an internal method which is not intended to be
+     * used outside. The only proper caller of this method is {@link UidlWriter}
+     * class (the {@code UidlWriter::encodeChanges} method). Any call of this
+     * method in any other place will break the expected {@link UI} state.
      *
      * @param collector
      *            a consumer accepting node changes
@@ -256,7 +286,7 @@ public class StateTree implements NodeOwner {
         // The updateActiveState method can create new dirty nodes, so they need
         // to be collected as well
         while (evaluateNewDirtyNodes) {
-            Set<StateNode> dirtyNodesSet = collectDirtyNodes();
+            Set<StateNode> dirtyNodesSet = doCollectDirtyNodes(true);
             dirtyNodesSet.forEach(StateNode::updateActiveState);
             evaluateNewDirtyNodes = allDirtyNodes.addAll(dirtyNodesSet);
         }
@@ -275,15 +305,12 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * Gets all the nodes that have been marked as dirty since the last time
-     * this method was invoked.
+     * Gets all the nodes that have been marked.
      *
      * @return a set of dirty nodes, in the order they were marked dirty
      */
     public Set<StateNode> collectDirtyNodes() {
-        Set<StateNode> collectedNodes = dirtyNodes;
-        dirtyNodes = new LinkedHashSet<>();
-        return collectedNodes;
+        return doCollectDirtyNodes(false);
     }
 
     /**
@@ -358,11 +385,12 @@ public class StateTree implements NodeOwner {
             if (callbacks.isEmpty()) {
                 return;
             }
-            callbacks.forEach(entry -> {
-                ExecutionContext context = new ExecutionContext(getUI(),
-                        entry.getStateNode().isClientSideInitialized());
-                entry.getExecution().accept(context);
-            });
+            callbacks.stream().filter(entry -> entry.canExecute(getUI()))
+                    .forEach(entry -> {
+                        ExecutionContext context = new ExecutionContext(getUI(),
+                                entry.getStateNode().isClientSideInitialized());
+                        entry.getExecution().accept(context);
+                    });
         }
     }
 
@@ -404,4 +432,32 @@ public class StateTree implements NodeOwner {
             session.checkHasLock();
         }
     }
+
+    /**
+     * Gets all the nodes that have been marked as dirty.
+     * <p>
+     * If {@code reset} is {@code true} then dirty nodes collection is reset.
+     *
+     * @return a set of dirty nodes, in the order they were marked dirty
+     */
+    private Set<StateNode> doCollectDirtyNodes(boolean reset) {
+        if (reset) {
+            Set<StateNode> collectedNodes = dirtyNodes;
+            dirtyNodes = new LinkedHashSet<>();
+            return collectedNodes;
+        } else {
+            return Collections.unmodifiableSet(dirtyNodes);
+        }
+
+    }
+
+    /**
+     * Prepares the tree for resynchronization, meaning that the client will
+     * receive the same changes as when the component tree was initially
+     * attached, so that it can build the DOM tree from scratch.
+     */
+    public void prepareForResync() {
+        rootNode.prepareForResync();
+    }
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,8 +20,12 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing a <code>&lt;label&gt;</code> element.
+ *
+ * @since 1.0
+ * @deprecated Use {@link NativeLabelElement} instead.
  */
 @Element("label")
+@Deprecated(since = "24.1", forRemoval = true)
 public class LabelElement extends TestBenchElement {
 
 }

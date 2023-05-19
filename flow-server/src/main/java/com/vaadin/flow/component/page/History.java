@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -182,10 +182,13 @@ public class History implements Serializable {
      *            to only change the JSON state
      */
     public void pushState(JsonValue state, Location location) {
+        final String pathWithQueryParameters = getPathWithQueryParameters(
+                location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        ui.getPage().executeJs("history.pushState($0, '', $1)", state,
-                location.getPathWithQueryParameters());
+        ui.getPage().executeJs(
+                "setTimeout(() => window.history.pushState($0, '', $1))", state,
+                pathWithQueryParameters);
     }
 
     /**
@@ -218,10 +221,13 @@ public class History implements Serializable {
      *            to only change the JSON state
      */
     public void replaceState(JsonValue state, Location location) {
+        final String pathWithQueryParameters = getPathWithQueryParameters(
+                location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        ui.getPage().executeJs("history.replaceState($0, '', $1)",
-                state, location.getPathWithQueryParameters());
+        ui.getPage().executeJs(
+                "setTimeout(() => window.history.replaceState($0, '', $1))",
+                state, pathWithQueryParameters);
     }
 
     /**
@@ -290,5 +296,14 @@ public class History implements Serializable {
      */
     public void go(int steps) {
         ui.getPage().executeJs("history.go($0)", steps);
+    }
+
+    private String getPathWithQueryParameters(Location location) {
+        // In the Location API, getPath() returning "" means document base URL.
+        // On FF and Safari, passing '' for the URL parameter does not update
+        // URL to the base, so we replace '' with '.' here.
+        return Optional.ofNullable(location)
+                .map(Location::getPathWithQueryParameters)
+                .map(path -> path.isEmpty() ? "." : path).orElse(null);
     }
 }

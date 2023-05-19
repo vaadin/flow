@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -95,7 +95,7 @@ public interface PropertyDefinition<T, V> extends Serializable {
      * Gets the parent property of this property if this is a sub-property of
      * the property set. If this property belongs directly to the property set,
      * it doesn't have a parent and this method returns {@code null}.
-     * 
+     *
      * @return the parent property, may be {@code null}
      */
     PropertyDefinition<T, ?> getParent();
@@ -103,7 +103,7 @@ public interface PropertyDefinition<T, V> extends Serializable {
     /**
      * Gets whether this property belongs to some other property in the property
      * set, or directly to the property set.
-     * 
+     *
      * @return {@code true} if this property is a sub-property of the property
      *         set it belongs to, {@code false} otherwise
      */

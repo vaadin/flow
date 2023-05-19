@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -51,39 +51,49 @@ public class TreeChangeProcessor {
      */
     public static JsSet<StateNode> processChanges(StateTree tree,
             JsonArray changes) {
-        assert !tree
-                .isUpdateInProgress() : "Previous tree change processing has not completed";
+        assert !tree.isUpdateInProgress()
+                : "Previous tree change processing has not completed";
         try {
             tree.setUpdateInProgress(true);
-            int length = changes.length();
-
-            JsSet<StateNode> nodes = JsCollections.set();
 
             // Attach all nodes before doing anything else
-            for (int i = 0; i < length; i++) {
-                JsonObject change = changes.getObject(i);
-                if (isAttach(change)) {
-                    int nodeId = (int) change
-                            .getNumber(JsonConstants.CHANGE_NODE);
-
-                    StateNode node = new StateNode(nodeId, tree);
-                    tree.registerNode(node);
-                    nodes.add(node);
-                }
-            }
+            JsSet<StateNode> nodes = processAttachChanges(tree, changes);
 
             // Then process all non-attach changes
+            int length = changes.length();
             for (int i = 0; i < length; i++) {
                 JsonObject change = changes.getObject(i);
                 if (!isAttach(change)) {
-                    nodes.add(processChange(tree, change));
+                    final StateNode value = processChange(tree, change);
+                    if (value != null) {
+                        nodes.add(value);
+                    }
                 }
             }
             return nodes;
         } finally {
             tree.setUpdateInProgress(false);
+            tree.setResync(false);
         }
+    }
 
+    private static JsSet<StateNode> processAttachChanges(StateTree tree,
+            JsonArray changes) {
+        JsSet<StateNode> nodes = JsCollections.set();
+        int length = changes.length();
+        for (int i = 0; i < length; i++) {
+            JsonObject change = changes.getObject(i);
+            if (isAttach(change)) {
+                int nodeId = (int) change.getNumber(JsonConstants.CHANGE_NODE);
+
+                if (nodeId != tree.getRootNode().getId()) {
+                    StateNode node = new StateNode(nodeId, tree);
+                    tree.registerNode(node);
+                    nodes.add(node);
+                }
+            }
+        }
+        return nodes;
     }
 
     private static boolean isAttach(JsonObject change) {
@@ -106,7 +116,11 @@ public class TreeChangeProcessor {
         int nodeId = (int) change.getNumber(JsonConstants.CHANGE_NODE);
 
         StateNode node = tree.getNode(nodeId);
-        assert node != null;
+        if (node == null && tree.isResync()) {
+            // Resync should not stop handling changes
+            return node;
+        }
+        assert node != null : "No attached node found";
 
         switch (type) {
         case JsonConstants.CHANGE_TYPE_NOOP:
@@ -139,8 +153,8 @@ public class TreeChangeProcessor {
     }
 
     private static void populateFeature(JsonObject change, StateNode node) {
-        assert change.hasKey(
-                JsonConstants.CHANGE_FEATURE_TYPE) : "Change doesn't contain feature type. Don't know how to populate feature";
+        assert change.hasKey(JsonConstants.CHANGE_FEATURE_TYPE)
+                : "Change doesn't contain feature type. Don't know how to populate feature";
         int featureId = (int) change.getNumber(JsonConstants.CHANGE_FEATURE);
         if (change.getBoolean(JsonConstants.CHANGE_FEATURE_TYPE)) {
             // list feature
@@ -166,8 +180,9 @@ public class TreeChangeProcessor {
 
             property.setValue(child);
         } else {
-            assert false : "Change should have either value or nodeValue property: "
-                    + WidgetUtil.stringify(change);
+            assert false
+                    : "Change should have either value or nodeValue property: "
+                            + WidgetUtil.stringify(change);
         }
     }
 

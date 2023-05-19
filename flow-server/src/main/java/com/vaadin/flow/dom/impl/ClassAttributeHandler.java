@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,6 +24,10 @@ import com.vaadin.flow.dom.Element;
 /**
  * Emulates the <code>class</code> attribute by delegating to
  * {@link Element#getClassList()}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 1.0
  */
 public class ClassAttributeHandler extends CustomAttribute {
     @Override
@@ -46,11 +50,13 @@ public class ClassAttributeHandler extends CustomAttribute {
         Set<String> classList = element.getClassList();
         classList.clear();
 
-        if (value.isEmpty()) {
+        String classValue = value.trim();
+
+        if (classValue.isEmpty()) {
             return;
         }
 
-        String[] parts = value.split("\\s+");
+        String[] parts = classValue.split("\\s+");
         classList.addAll(Arrays.asList(parts));
     }
 

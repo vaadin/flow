@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,11 +20,13 @@ import java.util.Optional;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Composite;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
 import com.vaadin.flow.internal.StateNode;
 
 /**
  * A server side only node feature for mapping a node to a component.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -54,18 +56,18 @@ public class ComponentMapping extends ServerSideFeature {
      */
     public void setComponent(Component component) {
         assert component != null : "Component must not be null";
-        assert this.component == null
-                || component instanceof Composite : "Only a Composite is allowed to remap a component";
+        assert this.component == null || component instanceof Composite
+                : "Only a Composite is allowed to remap a component";
         this.component = component;
 
         if (getNode().hasFeature(ClientCallableHandlers.class)) {
             getNode().getFeature(ClientCallableHandlers.class)
                     .componentSet(component);
         }
-        if (component instanceof PolymerTemplate<?>
+        if (component instanceof DeprecatedPolymerTemplate
                 && getNode().hasFeature(PolymerServerEventHandlers.class)) {
             getNode().getFeature(PolymerServerEventHandlers.class)
-                    .componentSet((PolymerTemplate<?>) component);
+                    .componentSet((DeprecatedPolymerTemplate) component);
         }
     }
 

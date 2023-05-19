@@ -1,5 +1,7 @@
 package com.vaadin.tests.util;
 
+import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -12,29 +14,33 @@ public class MockDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
 
     private boolean productionMode = false;
-    private boolean enableDevServer = true;
+    private boolean frontendHotdeploy = false;
     private boolean reuseDevServer = true;
-    private boolean compatibilityMode = false;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
+    private int maxMessageSuspendTimeout = 5000;
     private int webComponentDisconnect = 300;
     private boolean closeIdleSessions = false;
     private PushMode pushMode = PushMode.DISABLED;
-    private String pushURL = "";
+    private String pushServletMapping = "";
     private Properties initParameters = new Properties();
     private Map<String, String> applicationOrSystemProperty = new HashMap<>();
     private boolean syncIdCheckEnabled = true;
     private boolean sendUrlsAsParameters = true;
     private boolean brotli = false;
+    private boolean eagerServerLoad = false;
+    private boolean devModeLiveReloadEnabled = false;
+    private boolean devToolsEnabled = true;
+
+    private File projectFolder = null;
+
+    public MockDeploymentConfiguration() {
+        super(Collections.emptyMap());
+    }
 
     @Override
     public boolean isProductionMode() {
         return productionMode;
-    }
-
-    @Override
-    public boolean isBowerMode() {
-        return compatibilityMode;
     }
 
     @Override
@@ -46,13 +52,13 @@ public class MockDeploymentConfiguration
         this.productionMode = productionMode;
     }
 
-    public void setEnableDevServer(boolean enableDevServer) {
-        this.enableDevServer = enableDevServer;
+    public void setFrontendHotdeploy(boolean frontendHotdeploy) {
+        this.frontendHotdeploy = frontendHotdeploy;
     }
 
     @Override
-    public boolean enableDevServer() {
-        return enableDevServer;
+    public boolean frontendHotdeploy() {
+        return frontendHotdeploy;
     }
 
     public void setReuseDevServer(boolean reuseDevServer) {
@@ -88,6 +94,11 @@ public class MockDeploymentConfiguration
     }
 
     @Override
+    public int getMaxMessageSuspendTimeout() {
+        return maxMessageSuspendTimeout;
+    }
+
+    @Override
     public int getWebComponentDisconnect() {
         return webComponentDisconnect;
     }
@@ -99,6 +110,11 @@ public class MockDeploymentConfiguration
     @Override
     public boolean isCloseIdleSessions() {
         return closeIdleSessions;
+    }
+
+    @Override
+    public File getProjectFolder() {
+        return projectFolder;
     }
 
     public void setCloseIdleSessions(boolean closeIdleSessions) {
@@ -115,12 +131,12 @@ public class MockDeploymentConfiguration
     }
 
     @Override
-    public String getPushURL() {
-        return pushURL;
+    public String getPushServletMapping() {
+        return pushServletMapping;
     }
 
-    public void setPushURL(String pushURL) {
-        this.pushURL = pushURL;
+    public void setPushServletMapping(String pushServletMapping) {
+        this.pushServletMapping = pushServletMapping;
     }
 
     @Override
@@ -161,8 +177,34 @@ public class MockDeploymentConfiguration
         this.brotli = brotli;
     }
 
-    public void setCompatibilityMode(boolean compatibility) {
-        compatibilityMode = compatibility;
+    @Override
+    public boolean isEagerServerLoad() {
+        return this.eagerServerLoad;
     }
 
+    @Override
+    public boolean isDevModeLiveReloadEnabled() {
+        return isDevToolsEnabled() && devModeLiveReloadEnabled;
+    }
+
+    @Override
+    public boolean isDevToolsEnabled() {
+        return devToolsEnabled;
+    }
+
+    public void setEagerServerLoad(boolean includeBootsrapInitialUidl) {
+        this.eagerServerLoad = includeBootsrapInitialUidl;
+    }
+
+    public void setDevModeLiveReloadEnabled(boolean devModeLiveReloadEnabled) {
+        this.devModeLiveReloadEnabled = devModeLiveReloadEnabled;
+    }
+
+    public void setDevToolsEnabled(boolean devToolsEnabled) {
+        this.devToolsEnabled = devToolsEnabled;
+    }
+
+    public void setProjectFolder(File projectFolder) {
+        this.projectFolder = projectFolder;
+    }
 }

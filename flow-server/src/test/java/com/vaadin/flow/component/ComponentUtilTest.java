@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.Collection;
+
+import com.vaadin.flow.shared.Registration;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -70,5 +73,38 @@ public class ComponentUtilTest {
         Assert.assertNull(
                 "Storage should be cleared after removing the last attribute",
                 component.attributes);
+    }
+
+    @Test
+    public void addListenerToComponent_hasListener_returnsTrue() {
+        Assert.assertFalse(
+                ComponentUtil.hasEventListener(component, PollEvent.class));
+
+        Registration listener = ComponentUtil.addListener(component,
+                PollEvent.class, event -> {
+                });
+        Assert.assertTrue(
+                ComponentUtil.hasEventListener(component, PollEvent.class));
+
+        listener.remove();
+        Assert.assertFalse(
+                ComponentUtil.hasEventListener(component, PollEvent.class));
+    }
+
+    @Test
+    public void addListenerToComponent_getListeners_returnsCollection() {
+        Assert.assertFalse(
+                ComponentUtil.hasEventListener(component, PollEvent.class));
+
+        Registration listener = ComponentUtil.addListener(component,
+                PollEvent.class, event -> {
+                });
+        Collection<?> listeners = ComponentUtil.getListeners(component,
+                PollEvent.class);
+        Assert.assertEquals(1, listeners.size());
+
+        listener.remove();
+        Assert.assertTrue(ComponentUtil.getListeners(component, PollEvent.class)
+                .isEmpty());
     }
 }

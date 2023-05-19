@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.PropertyDescriptor;
@@ -34,8 +35,8 @@ import com.vaadin.flow.data.value.ValueChangeMode;
  * @since 1.0
  */
 @Tag(Tag.INPUT)
-public class Input extends AbstractSinglePropertyField<Input, String>
-        implements Focusable<Input>, HasSize, HasStyle, HasValueChangeMode {
+public class Input extends AbstractSinglePropertyField<Input, String> implements
+        Focusable<Input>, HasSize, HasStyle, HasValueChangeMode, HasAriaLabel {
 
     private static final PropertyDescriptor<String, Optional<String>> placeholderDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("placeholder", "");
@@ -48,8 +49,8 @@ public class Input extends AbstractSinglePropertyField<Input, String>
     private ValueChangeMode currentMode;
 
     /**
-     * Creates a new input without any specific type,
-     * with {@link ValueChangeMode#ON_CHANGE ON_CHANGE} value change mode.
+     * Creates a new input without any specific type, with
+     * {@link ValueChangeMode#ON_CHANGE ON_CHANGE} value change mode.
      */
     public Input() {
         this(ValueChangeMode.ON_CHANGE);
@@ -59,8 +60,8 @@ public class Input extends AbstractSinglePropertyField<Input, String>
      * Creates a new input without any specific type.
      *
      * @param valueChangeMode
-     *            initial value change mode, or <code>null</code>
-     *            to disable the value synchronization
+     *            initial value change mode, or <code>null</code> to disable the
+     *            value synchronization
      */
     public Input(ValueChangeMode valueChangeMode) {
         super("value", "", false);

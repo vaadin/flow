@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,7 @@ import java.io.Serializable;
  * @param <T>
  *            the type of the sorting information, usually a String (field id)
  *            or a {@link java.util.Comparator}.
+ * @since 1.0
  */
 public class SortOrder<T> implements Serializable {
 

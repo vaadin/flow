@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,12 +16,17 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
+
+@Category(IgnoreOSGi.class)
 public class RouteNotFoundDevModeIT extends RouteNotFoundIT {
 
     @Test
     public void notFoundDevMode() {
         getDriver().get(getRootURL() + "/view/notfound/" + INJECT_ATTACK);
+        waitForDevServer();
         assertPageHasRoutes(true);
     }
 }

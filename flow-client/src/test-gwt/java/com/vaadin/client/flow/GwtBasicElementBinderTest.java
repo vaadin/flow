@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -77,6 +77,21 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Reactive.flush();
 
         assertEquals("foo", element.getTitle());
+    }
+
+    public void testBindExistingPropertyWithDifferentType() {
+        // set number as a property value for DOM elememnt
+        double value = setNumberValue(element, "bar");
+
+        // set string as a StateTree property value
+        properties.getProperty("bar").setValue("" + value);
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        // the type should not be changed
+        assertEquals("number", getPropertyType(element, "bar"));
     }
 
     public void testBindNewProperty() {
@@ -803,11 +818,24 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES).getProperty("color")
                 .setValue("green");
 
-        Reactive.flush();
-        Binder.bind(node, element);
+        node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES)
+                .getProperty("display").setValue("none !important");
 
+        node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES)
+                .getProperty("background-color").setValue("!importantfoo");
+
+        Binder.bind(node, element);
         Reactive.flush();
+
         assertEquals("green", element.getStyle().getColor());
+
+        assertEquals("none", element.getStyle().getDisplay());
+        assertEquals("important",
+                element.getStyle().getPropertyPriority("display"));
+
+        assertEquals("!importantfoo", element.getStyle().getBackgroundColor());
+        assertEquals("",
+                element.getStyle().getPropertyPriority("background-color"));
     }
 
     public void testAddStylesAfterBind() {
@@ -816,8 +844,22 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES).getProperty("color")
                 .setValue("green");
 
+        node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES)
+                .getProperty("display").setValue("none !important");
+
+        node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES)
+                .getProperty("background-color").setValue("!importantfoo");
+
         Reactive.flush();
         assertEquals("green", element.getStyle().getColor());
+
+        assertEquals("none", element.getStyle().getDisplay());
+        assertEquals("important",
+                element.getStyle().getPropertyPriority("display"));
+
+        assertEquals("!importantfoo", element.getStyle().getBackgroundColor());
+        assertEquals("",
+                element.getStyle().getPropertyPriority("background-color"));
     }
 
     public void testRemoveStyles() {
@@ -829,19 +871,20 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         styleMap.getProperty("color").setValue("white");
 
         Reactive.flush();
-        assertEquals("background: blue;color: white;",
-                element.getAttribute("style"));
+        assertEquals("blue", element.getStyle().getPropertyValue("background"));
+        assertEquals("white", element.getStyle().getColor());
 
         styleMap.getProperty("color").removeValue();
 
         Reactive.flush();
-        assertEquals("background: blue;", element.getAttribute("style"));
+        assertEquals("blue", element.getStyle().getPropertyValue("background"));
+        assertEquals("", element.getStyle().getColor());
     }
 
     private native void polyfillStyleSetProperty(Element element)
     /*-{
          // This polyfills just enough to make the tests pass and nothing else
-         element.style.__proto__.setProperty = function(key,value) {
+         element.style.__proto__.setProperty = function(key,value, priority) {
              var newValue = element.getAttribute("style");
              if (!newValue) {
                  newValue = "";
@@ -849,7 +892,12 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
              else if (!newValue.endsWith(";")) {
                  newValue +=";"
              }
-             element.setAttribute("style", newValue + key+": "+value+";");
+             if ( priority ){
+                 element.setAttribute("style", newValue + key+": "+value+" !"+priority+";");
+             }
+             else {
+                 element.setAttribute("style", newValue + key+": "+value+";");
+             }
          };
      }-*/;
 
@@ -868,7 +916,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         styleMap.getProperty("font-size").setValue("12px");
 
         Reactive.flush();
-        assertEquals("color: red;", element.getAttribute("style"));
+        assertEquals("red", element.getStyle().getColor());
     }
 
     public void testAttachExistingElement() {
@@ -1246,8 +1294,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                NodeFeatures.ELEMENT_CHILDREN,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+                NodeFeatures.ELEMENT_CHILDREN);
 
         expectedAfterBindingFeatures.forEach(notExpectedFeature -> assertFalse(
                 "Child node should not have any features from list "
@@ -1298,8 +1345,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                NodeFeatures.ELEMENT_CHILDREN,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+                NodeFeatures.ELEMENT_CHILDREN);
 
         expectedAfterBindingFeatures.forEach(notExpectedFeature -> assertFalse(
                 "Child node should not have any features from list "
@@ -1343,14 +1389,11 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         addVirtualChild(node, childNode, NodeProperties.INJECT_BY_ID,
                 Json.create(childId));
 
-        Element shadowRoot = Browser.getDocument().createElement("div");
-
-        WidgetUtil.setJsProperty(element, "root", shadowRoot);
+        Element shadowRoot = addShadowRootElement(element);
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                NodeFeatures.ELEMENT_CHILDREN,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+                NodeFeatures.ELEMENT_CHILDREN);
 
         Binder.bind(node, element);
 
@@ -1424,8 +1467,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                NodeFeatures.ELEMENT_CHILDREN,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+                NodeFeatures.ELEMENT_CHILDREN);
 
         Reactive.flush();
 
@@ -1483,6 +1525,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Binder.bind(node, element);
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
     }
 
     public void testBindVisibleNode() {
@@ -1580,6 +1623,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Binder.bind(node, element);
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
     }
 
     /**
@@ -1605,12 +1649,56 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Reactive.flush();
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
+
+        element.setAttribute("hidden", null);
 
         setVisible(true);
 
         Reactive.flush();
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
+    }
+
+    /**
+     * The element is in shadowroot and state node is hidden. The element gets
+     * attribute "hidden" and "display: none".
+     */
+    public void testBindHiddenElement_elementInShadowRoot_elementHasDisplayNone() {
+        addShadowRootElement(element);
+        setTag();
+        node.setDomNode(element);
+        Binder.bind(node, element);
+        setVisible(false);
+        Reactive.flush();
+        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("none", element.getStyle().getDisplay());
+    }
+
+    /**
+     * The element is in shadowroot and has a custom display property. When
+     * hidden gets attribute "hidden" and "display:none". When unhidden
+     * "display" property is restored.
+     */
+    public void testBindHiddenElement_elementInShadowRootAndHasInitialDisplayProperty_displayPropertyRestoredWhenUnhidden() {
+        addShadowRootElement(element);
+        setTag();
+        node.setDomNode(element);
+        element.getStyle().setDisplay("inline-block");
+
+        Binder.bind(node, element);
+        setVisible(false);
+        Reactive.flush();
+
+        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("none", element.getStyle().getDisplay());
+
+        setVisible(true);
+        Reactive.flush();
+
+        assertNull(element.getAttribute("hidden"));
+        assertEquals("inline-block", element.getStyle().getDisplay());
     }
 
     /**
@@ -1633,12 +1721,14 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Reactive.flush();
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
 
         setVisible(true);
 
         Reactive.flush();
 
         assertNull(element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
     }
 
     /**
@@ -1647,9 +1737,9 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
      * The HTML element has no "hidden" attribute.
      *
      * Element changes its visibility. The "hidden" attribute should keep its
-     * value.
+     * initial value (ignores the attribute update after initial binding).
      */
-    public void testBindNotHiddenElement_stateNodeChangesVisibilityAndElementChangesHiddenValue_elementKeepsHiddenValue() {
+    public void testBindNotHiddenElement_stateNodeChangesVisibilityAndElementChangesHiddenValue_elementKeepsInitialNotHiddenValue() {
         setTag();
 
         node.setDomNode(element);
@@ -1677,7 +1767,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
 
-        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertNull(element.getAttribute("hidden"));
     }
 
     /**
@@ -1700,12 +1790,14 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
 
         setVisible(true);
 
         Reactive.flush();
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
     }
 
     public void testSimpleElementBindingStrategy_regularElement_needsBind() {
@@ -1842,6 +1934,13 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         var shadowRoot = $doc.createElement("div");
         element.shadowRoot = shadowRoot;
         element.root = shadowRoot;
+        shadowRoot.getElementById = function (id) {
+            return shadowRoot.querySelector("#"+id.replace("@","\\@"));
+        };
+        shadowRoot.toString = function() {
+            return '[object ShadowRoot]';
+        }
+        element.parentNode = shadowRoot;
         return shadowRoot;
     }-*/;
 
@@ -1856,11 +1955,9 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         $wnd.Polymer = null;
         $wnd.customElements = {
             whenDefined: function() {
-                return {
-                    then: function (callback) {
-                        element.callback = callback;
-                    }
-                }
+                return new Promise(function(resolve) {
+                    element.completeWhenDefinedPromise = resolve;
+                });
             }
         };
     }-*/;
@@ -1868,7 +1965,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     private native void runWhenDefined(Element element)
     /*-{
         $wnd.Polymer = $wnd.OldPolymer;
-        element.callback();
+        element.completeWhenDefinedPromise();
     }-*/;
 
     private native void initPolymer(Element element)
@@ -1903,6 +2000,17 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
             element.addEventListener = function(){
             }
         }
+    }-*/;
+
+    private native String getPropertyType(Object obj, String name)
+    /*-{
+       return typeof obj[name];
+    }-*/;
+
+    private native double setNumberValue(Object obj, String name)
+    /*-{
+       obj[name] =2;
+       return 2;
     }-*/;
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,6 +43,9 @@ import elemental.json.JsonValue;
  * <li>{@link Component} (encoded as a reference to the root element)
  * </ul>
  *
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -80,6 +83,8 @@ public class JsonCodec {
      * @return the value encoded as JSON
      */
     public static JsonValue encodeWithTypeInfo(Object value) {
+        assert value == null || canEncodeWithTypeInfo(value.getClass());
+
         if (value instanceof Component) {
             return encodeNode(((Component) value).getElement());
         } else if (value instanceof Node<?>) {
@@ -119,7 +124,7 @@ public class JsonCodec {
 
     /**
      * Helper for checking whether the type is supported by
-     * {@link #encodeWithoutTypeInfo(Object)}. Supported values types are
+     * {@link #encodeWithoutTypeInfo(Object)}. Supported value types are
      * {@link String}, {@link Integer}, {@link Double}, {@link Boolean},
      * {@link JsonValue}.
      *
@@ -132,6 +137,23 @@ public class JsonCodec {
         return String.class.equals(type) || Integer.class.equals(type)
                 || Double.class.equals(type) || Boolean.class.equals(type)
                 || JsonValue.class.isAssignableFrom(type);
+    }
+
+    /**
+     * Helper for checking whether the type is supported by
+     * {@link #encodeWithTypeInfo(Object)}. Supported values types are
+     * {@link Node}, {@link Component}, {@link ReturnChannelRegistration} and
+     * anything accepted by {@link #canEncodeWithoutTypeInfo(Class)}.
+     *
+     * @param type
+     *            the type to check
+     * @return whether the type can be encoded
+     */
+    public static boolean canEncodeWithTypeInfo(Class<?> type) {
+        return canEncodeWithoutTypeInfo(type)
+                || Node.class.isAssignableFrom(type)
+                || Component.class.isAssignableFrom(type)
+                || ReturnChannelRegistration.class.isAssignableFrom(type);
     }
 
     /**
@@ -168,6 +190,9 @@ public class JsonCodec {
         if (value == null) {
             return Json.createNull();
         }
+
+        assert canEncodeWithoutTypeInfo(value.getClass());
+
         Class<?> type = value.getClass();
         if (String.class.equals(value.getClass())) {
             return Json.create((String) value);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -92,7 +92,9 @@ public class BrowserDetails implements Serializable {
 
         isSafari = !isChrome && !isIE && userAgent.contains("safari");
         isFirefox = userAgent.contains(" firefox/");
-        if (userAgent.contains(" edge/")) {
+        if (userAgent.contains(" edge/") || userAgent.contains(" edg/")
+                || userAgent.contains(" edga/")
+                || userAgent.contains(" edgios/")) {
             isEdge = true;
             isChrome = false;
             isOpera = false;
@@ -176,8 +178,26 @@ public class BrowserDetails implements Serializable {
                     if (engineVersion >= 6010 && engineVersion < 6015) {
                         browserMajorVersion = 9;
                         browserMinorVersion = 0;
-                    } else if (engineVersion >= 6015) {
+                    } else if (engineVersion >= 6015 && engineVersion < 6018) {
                         browserMajorVersion = 9;
+                        browserMinorVersion = 1;
+                    } else if (engineVersion >= 6020 && engineVersion < 6030) {
+                        browserMajorVersion = 10;
+                        browserMinorVersion = 0;
+                    } else if (engineVersion >= 6030 && engineVersion < 6040) {
+                        browserMajorVersion = 10;
+                        browserMinorVersion = 1;
+                    } else if (engineVersion >= 6040 && engineVersion < 6050) {
+                        browserMajorVersion = 11;
+                        browserMinorVersion = 0;
+                    } else if (engineVersion >= 6050 && engineVersion < 6060) {
+                        browserMajorVersion = 11;
+                        browserMinorVersion = 1;
+                    } else if (engineVersion >= 6060 && engineVersion < 6070) {
+                        browserMajorVersion = 12;
+                        browserMinorVersion = 0;
+                    } else if (engineVersion >= 6070) {
+                        browserMajorVersion = 12;
                         browserMinorVersion = 1;
                     }
                 }
@@ -192,6 +212,14 @@ public class BrowserDetails implements Serializable {
                 parseVersionString(safeSubstring(userAgent, i, i + 5));
             } else if (isEdge) {
                 int i = userAgent.indexOf(" edge/") + 6;
+                if (userAgent.contains(" edg/")) {
+                    i = userAgent.indexOf(" edg/") + 5;
+                } else if (userAgent.contains(" edga/")) {
+                    i = userAgent.indexOf(" edga/") + 6;
+                } else if (userAgent.contains(" edgios/")) {
+                    i = userAgent.indexOf(" edgios/") + 8;
+                }
+
                 parseVersionString(safeSubstring(userAgent, i, i + 8));
             }
         } catch (Exception e) {
@@ -214,7 +242,7 @@ public class BrowserDetails implements Serializable {
                 || userAgent.contains("mac os x")) {
             isIPad = userAgent.contains("ipad");
             isIPhone = userAgent.contains("iphone");
-            if (isIPad || userAgent.contains("ipod") || isIPhone) {
+            if (isIPad || isIPhone) {
                 os = OperatingSystem.IOS;
                 parseIOSVersion(userAgent);
             } else {
@@ -260,7 +288,8 @@ public class BrowserDetails implements Serializable {
     }
 
     private void parseChromeVersion(String userAgent) {
-        int i = userAgent.indexOf(" crios/");
+        final String crios = " crios/";
+        int i = userAgent.indexOf(crios);
         if (i == -1) {
             i = userAgent.indexOf(CHROME);
             if (i == -1) {
@@ -268,12 +297,32 @@ public class BrowserDetails implements Serializable {
             } else {
                 i += CHROME.length();
             }
-
-            parseVersionString(safeSubstring(userAgent, i, i + 5));
+            int versionBreak = getVersionStringLength(userAgent, i);
+            parseVersionString(safeSubstring(userAgent, i, i + versionBreak));
         } else {
-            i += 7;
-            parseVersionString(safeSubstring(userAgent, i, i + 6));
+            i += crios.length(); // move index to version string start
+            int versionBreak = getVersionStringLength(userAgent, i);
+            parseVersionString(safeSubstring(userAgent, i, i + versionBreak));
         }
+    }
+
+    /**
+     * Get the full version string until space.
+     *
+     * @param userAgent
+     *            user agent string
+     * @param startIndex
+     *            index for version string start
+     * @return length of version number
+     */
+    private static int getVersionStringLength(String userAgent,
+            int startIndex) {
+        final String versionSubString = userAgent.substring(startIndex);
+        int versionBreak = versionSubString.indexOf(" ");
+        if (versionBreak == -1) {
+            versionBreak = versionSubString.length();
+        }
+        return versionBreak;
     }
 
     private void parseAndroidVersion(String userAgent) {
@@ -332,6 +381,11 @@ public class BrowserDetails implements Serializable {
 
         int idx2 = versionString.indexOf('.', idx + 1);
         if (idx2 < 0) {
+            // If string only contains major version, set minor to 0.
+            if (versionString.substring(idx).length() == 0) {
+                browserMinorVersion = 0;
+                return;
+            }
             idx2 = versionString.length();
         }
         String minorVersionPart = safeSubstring(versionString, idx + 1, idx2)
@@ -417,16 +471,6 @@ public class BrowserDetails implements Serializable {
      */
     public boolean isSafari() {
         return isSafari;
-    }
-
-    /**
-     * Tests if the browser is Safari or runs on IOS (covering also Chrome on
-     * iOS).
-     *
-     * @return true if it is Safari or running on IOS, false otherwise
-     */
-    public boolean isSafariOrIOS() {
-        return isSafari() || isIOS();
     }
 
     /**
@@ -546,15 +590,6 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
-     * Tests if the browser is run in iOS.
-     *
-     * @return true if run in iOS, false otherwise
-     */
-    public boolean isIOS() {
-        return os == OperatingSystem.IOS;
-    }
-
-    /**
      * Tests if the browser is run on iPhone.
      *
      * @return true if run on iPhone, false otherwise
@@ -570,15 +605,6 @@ public class BrowserDetails implements Serializable {
      */
     public boolean isChromeOS() {
         return isChromeOS;
-    }
-
-    /**
-     * Tests if the browser is run on iPad.
-     *
-     * @return true if run on iPad, false otherwise
-     */
-    public boolean isIPad() {
-        return isIPad;
     }
 
     /**
@@ -608,94 +634,34 @@ public class BrowserDetails implements Serializable {
      *         supported or might work
      */
     public boolean isTooOldToFunctionProperly() {
-        // Check Trident version to detect compatibility mode
-        if (isIE() && getBrowserMajorVersion() < 11) {
+        // IE is not supported
+        if (isIE()) {
             return true;
         }
-        // Safari 9+
-        if (isSafari() && getBrowserMajorVersion() < 9) {
+        // Only ChromeEdge is supported
+        if (isEdge() && getBrowserMajorVersion() < 79) {
             return true;
         }
-        // Firefox 43+ for now
-        if (isFirefox() && getBrowserMajorVersion() < 43) {
+        // Safari 14+
+        if (isSafari() && getBrowserMajorVersion() < 14) {
+            if (isIPhone() && (getOperatingSystemMajorVersion() > 14
+                    || (getOperatingSystemMajorVersion() == 14
+                            && getOperatingSystemMinorVersion() >= 7))) {
+                // #11654
+                return false;
+            }
             return true;
         }
-        // Opera 34+ for now
-        if (isOpera() && getBrowserMajorVersion() < 34) {
+        // Firefox 78+ for now
+        if (isFirefox() && getBrowserMajorVersion() < 78) {
             return true;
         }
-        // Chrome 47+ for now
-        if (isChrome() && getBrowserMajorVersion() < 47) {
+        // Opera 58+ for now
+        if (isOpera() && getBrowserMajorVersion() < 58) {
             return true;
         }
-        return false;
-    }
-
-    /**
-     * Checks if the browser supports ECMAScript 6, based on the user agent. The
-     * main features required to consider the browser ES6 compatible are ES6
-     * Classes, let/const support and arrow functions.
-     *
-     * @return <code>true</code> if the browser supports ES6, <code>false</code>
-     *         otherwise.
-     */
-    public boolean isEs6Supported() {
-
-        if (isEs5AdapterNeeded()) {
-            return false;
-        }
-
-        if (isWebKit() && getBrowserEngineVersion() >= 604) {
-            // Covers Safari 11+ and all kind of webkit views on iOS 11+
-            return true;
-        }
-
-        // Safari 10+.
-        if (isSafari() && getBrowserMajorVersion() >= 10) {
-            return true;
-        }
-        // Firefox 51+
-        if (isFirefox() && getBrowserMajorVersion() >= 51) {
-            return true;
-        }
-        // Opera 36+
-        if (isOpera() && getBrowserMajorVersion() >= 36) {
-            return true;
-        }
-        // Chrome 49+
-        if (isChrome() && getBrowserMajorVersion() >= 49) {
-            return true;
-        }
-        // Edge 15.15063+
-        if (isEdge() && (getBrowserMajorVersion() > 15
-                || (getBrowserMajorVersion() == 15
-                        && getBrowserMinorVersion() >= 15063))) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Checks if the browser needs `custom-elements-es5-adapter.js` to be
-     * loaded.
-     * <p>
-     * This adapter file is needed when the browser has some ES6 capabilities,
-     * but a ES5 files are served instead. This happens when the browser doesn't
-     * support all ES6 features needed for Flow to work properly, or when some
-     * ES6 features have bugs under conditions used by the application.
-     *
-     * @return <code>true</code> if the browser needs the adapter,
-     *         <code>false</code> otherwise.
-     */
-    public boolean isEs5AdapterNeeded() {
-        // Safari 10 / IOS 10 has a known issue on
-        // https://caniuse.com/#feat=let, which
-        // needs a separate Es5 adapter for production mode
-        if (isIOS() && getOperatingSystemMajorVersion() == 10) {
-            return true;
-        }
-        if (isSafari() && getBrowserMajorVersion() == 10) {
+        // Chrome 71+ for now
+        if (isChrome() && getBrowserMajorVersion() < 71) {
             return true;
         }
         return false;

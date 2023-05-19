@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,17 +16,25 @@
 package com.vaadin.flow.component;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
+import com.vaadin.flow.component.internal.KeyboardEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.tests.util.MockUI;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -84,6 +92,11 @@ public class ComponentEventBusTest {
             return eventHandlerCalled.get() == o.eventHandlerCalled.get()
                     && eventObject.equals(o.eventObject);
         }
+    }
+
+    @Tag("button")
+    private class TestButton extends Component implements ClickNotifier {
+
     }
 
     private void fireDomEvent(Component component, String domEvent,
@@ -169,6 +182,194 @@ public class ComponentEventBusTest {
         Assert.assertNull(eventListener.getEvent().getMoreData());
         Assert.assertFalse(eventListener.getEvent().getPrimitiveBoolean());
         Assert.assertNull(eventListener.getEvent().getObjectBoolean());
+    }
+
+    @Test
+    public void mappedDomEventWithElementEventData_clientReportsElement_mapsElement() {
+        final MockUI ui = new MockUI();
+        final TestComponent component = new TestComponent();
+        final TestComponent child = new TestComponent();
+        component.getElement().appendChild(child.getElement());
+        ui.add(component);
+
+        final EventTracker<MappedToDomEventWithElementData> listener = new EventTracker<>();
+        component.addListener(MappedToDomEventWithElementData.class, listener);
+
+        fireDomEvent(component, "dom-event", createStateNodeIdData("element",
+                child.getElement().getNode().getId()));
+        listener.assertEventCalled(component, true);
+        Assert.assertEquals(child.getElement(),
+                listener.getEvent().getElement());
+    }
+
+    @Test
+    public void mappedDomEventWithComponentEventData_clientReportsTypeComponent_mapsComponent() {
+        final MockUI ui = new MockUI();
+        final TestComponent component = new TestComponent();
+        final TestComponent child = new TestComponent();
+        component.getElement().appendChild(child.getElement());
+        ui.add(component);
+
+        final EventTracker<MappedDomEventWithComponentData> listener = new EventTracker<>();
+        component.addListener(MappedDomEventWithComponentData.class, listener);
+
+        fireDomEvent(component, "dom-event", createStateNodeIdData("component",
+                child.getElement().getNode().getId()));
+        listener.assertEventCalled(component, true);
+        Assert.assertEquals(child, listener.getEvent().getComponent());
+    }
+
+    @Test
+    public void mappedDomEventWithComponentEventData_clientReportsConcreteComponents_mapsComponents() {
+        final MockUI ui = new MockUI();
+        final TestComponent component = new TestComponent();
+        final TestComponent child = new TestComponent();
+        final RouterLink routerLink = new RouterLink();
+        component.getElement().appendChild(child.getElement());
+        child.getElement().appendChild(routerLink.getElement());
+        ui.add(component);
+
+        final EventTracker<MappedDomEventWithRouterLinkData> listener = new EventTracker<>();
+        component.addListener(MappedDomEventWithRouterLinkData.class, listener);
+
+        fireDomEvent(component, "dom-event",
+                createStateNodeIdData("component",
+                        child.getElement().getNode().getId(), "router.link",
+                        routerLink.getElement().getNode().getId()));
+        listener.assertEventCalled(component, true);
+        Assert.assertEquals(routerLink, listener.getEvent().getRouterLink());
+        Assert.assertEquals(child, listener.getEvent().getComponent());
+    }
+
+    @Test
+    public void mappedDomEventWithComponentEventData_clientReportsMissingComponent_mapsComponentAndNull() {
+        final MockUI ui = new MockUI();
+        final TestComponent component = new TestComponent();
+        final TestComponent child = new TestComponent();
+        final RouterLink routerLink = new RouterLink();
+        component.getElement().appendChild(child.getElement());
+        child.getElement().appendChild(routerLink.getElement());
+        ui.add(component);
+
+        final EventTracker<MappedDomEventWithRouterLinkData> listener = new EventTracker<>();
+        component.addListener(MappedDomEventWithRouterLinkData.class, listener);
+
+        // null data will be used if event data is missing
+        fireDomEvent(component, "dom-event", createStateNodeIdData("component",
+                routerLink.getElement().getNode().getId()));
+        listener.assertEventCalled(component, true);
+        Assert.assertNull(listener.getEvent().getRouterLink());
+        Assert.assertEquals(routerLink, listener.getEvent().getComponent());
+
+        listener.reset();
+
+        fireDomEvent(component, "dom-event", createStateNodeIdData(
+                "router.link", routerLink.getElement().getNode().getId()));
+        listener.assertEventCalled(component, true);
+        Assert.assertEquals(routerLink, listener.getEvent().getRouterLink());
+        Assert.assertNull(listener.getEvent().getComponent());
+
+        listener.reset();
+    }
+
+    @Test
+    public void mappedDomEventWithComponentEventData_clientReportsSiblingComponentToEventSource_mapsComponents() {
+        final MockUI ui = new MockUI();
+        final TestComponent component = new TestComponent();
+        final TestComponent child = new TestComponent();
+        final RouterLink routerLink = new RouterLink();
+        ui.add(component, child, routerLink);
+
+        final EventTracker<MappedDomEventWithRouterLinkData> listener = new EventTracker<>();
+        component.addListener(MappedDomEventWithRouterLinkData.class, listener);
+
+        fireDomEvent(component, "dom-event",
+                createStateNodeIdData("component",
+                        component.getElement().getNode().getId(), "router.link",
+                        routerLink.getElement().getNode().getId()));
+        listener.assertEventCalled(component, true);
+        Assert.assertEquals(routerLink, listener.getEvent().getRouterLink());
+        Assert.assertEquals(component, listener.getEvent().getComponent());
+    }
+
+    @Test
+    public void mappedDomEventWithComponentEventData_clientReportsElementMissing_returnsNull() {
+        final MockUI ui = new MockUI();
+        final TestComponent component = new TestComponent();
+        final TestComponent child = new TestComponent();
+        component.getElement().appendChild(child.getElement());
+        ui.add(component);
+
+        final EventTracker<MappedDomEventWithComponentData> listener = new EventTracker<>();
+        component.addListener(MappedDomEventWithComponentData.class, listener);
+
+        fireDomEvent(component, "dom-event",
+                createStateNodeIdData("component", -1));
+        listener.assertEventCalled(component, true);
+        Assert.assertNull(listener.getEvent().getComponent());
+    }
+
+    @Test
+    public void mappedDomEventWithComponentEventData_clientReportsMissingNodeIdReported_returnsNull() {
+        final MockUI ui = new MockUI();
+        final TestComponent component = new TestComponent();
+        final TestComponent child = new TestComponent();
+        component.getElement().appendChild(child.getElement());
+        ui.add(component);
+
+        final EventTracker<MappedDomEventWithComponentData> listener = new EventTracker<>();
+        component.addListener(MappedDomEventWithComponentData.class, listener);
+
+        fireDomEvent(component, "dom-event",
+                createStateNodeIdData("component", 999999999));
+        listener.assertEventCalled(component, true);
+        Assert.assertNull(listener.getEvent().getComponent());
+    }
+
+    @Test
+    public void mappedDomEventWithElementOrComponentEventData_clientReportsStateNodeForInvisibleComponent_returnsNull() {
+        final MockUI ui = new MockUI();
+        final TestComponent component = new TestComponent();
+        final TestComponent invisible = new TestComponent();
+        component.getElement().appendChild(invisible.getElement());
+        ui.add(component);
+
+        final EventTracker<MappedToDomEventWithElementData> listener = new EventTracker<>();
+        component.addListener(MappedToDomEventWithElementData.class, listener);
+
+        invisible.setVisible(false);
+
+        fireDomEvent(component, "dom-event", createStateNodeIdData("element",
+                invisible.getElement().getNode().getId()));
+        listener.assertEventCalled(component, true);
+        Assert.assertNull(
+                "Invisible elements/components should not be reported",
+                listener.getEvent().getElement());
+        listener.reset();
+
+        final EventTracker<MappedDomEventWithComponentData> second = new EventTracker<>();
+        component.addListener(MappedDomEventWithComponentData.class, second);
+
+        fireDomEvent(component, "dom-event", createStateNodeIdData("component",
+                invisible.getElement().getNode().getId()));
+        listener.assertEventCalled(component, true);
+        second.assertEventCalled(component, true);
+        Assert.assertNull(
+                "Invisible elements/components should not be reported",
+                listener.getEvent().getElement());
+        Assert.assertNull(
+                "Invisible elements/components should not be reported",
+                second.getEvent().getComponent());
+    }
+
+    private JsonObject createStateNodeIdData(String key, int value) {
+        return createData(JsonConstants.MAP_STATE_NODE_EVENT_DATA + key, value);
+    }
+
+    private JsonObject createStateNodeIdData(String key, int value, String key2,
+            int value2) {
+        return createData(JsonConstants.MAP_STATE_NODE_EVENT_DATA + key, value,
+                JsonConstants.MAP_STATE_NODE_EVENT_DATA + key2, value2);
     }
 
     private JsonObject createData(String key, Object value) {
@@ -436,6 +637,49 @@ public class ComponentEventBusTest {
         new ComponentEventBus(new TestComponent()).hasListener(null);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void getListeners_nullEventType_throws() {
+        new ComponentEventBus(new TestComponent()).getListeners(null);
+    }
+
+    @Test
+    public void getListeners_eventType_listenersCollection() {
+        TestComponent component = new TestComponent();
+        EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
+        Registration remover = component.addListener(MappedToDomEvent.class,
+                eventTracker);
+        Collection<?> listeners = component
+                .getListeners(MappedToDomEvent.class);
+        Assert.assertEquals(1, listeners.size());
+        remover.remove();
+    }
+
+    @Test
+    public void getListeners_subclassOfEventType_listenersCollection() {
+        TestComponent component = new TestComponent();
+        EventTracker<KeyPressEvent> eventTracker = new EventTracker<>();
+        EventTracker<KeyUpEvent> eventTracker2 = new EventTracker<>();
+        Registration remover = component.addListener(KeyPressEvent.class,
+                eventTracker);
+        Registration remover2 = component.addListener(KeyUpEvent.class,
+                eventTracker2);
+        Collection<?> listeners = component.getListeners(KeyboardEvent.class);
+        Assert.assertEquals(2, listeners.size());
+        remover.remove();
+        remover2.remove();
+    }
+
+    @Test
+    public void getListeners_notExistingEventType_emptyListenersCollection() {
+        TestComponent component = new TestComponent();
+        EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
+        Registration remover = component.addListener(MappedToDomEvent.class,
+                eventTracker);
+        Collection<?> listeners = component.getListeners(ServerEvent.class);
+        Assert.assertTrue(listeners.isEmpty());
+        remover.remove();
+    }
+
     @Test
     public void testFireEvent_noListeners_eventBusNotCreated() {
         AtomicInteger eventBusCreated = new AtomicInteger();
@@ -481,5 +725,19 @@ public class ComponentEventBusTest {
         });
         c.fireEvent(new ServerEvent(c, new BigDecimal(0)));
         storedEvent.get().unregisterListener();
+    }
+
+    @Test // #7826
+    public void addListener_eventDataExpressionsPresent_constantPoolKeyNotCreatedAfterEachExpression() {
+        final TestButton button = new TestButton();
+        try (MockedStatic<MessageDigestUtil> util = Mockito
+                .mockStatic(MessageDigestUtil.class)) {
+            util.when(() -> MessageDigestUtil.sha256(Mockito.anyString()))
+                    .thenReturn(
+                            new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, });
+            button.addClickListener(event -> {
+            });
+            util.verifyNoInteractions();
+        }
     }
 }

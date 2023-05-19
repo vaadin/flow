@@ -1,12 +1,17 @@
 package com.vaadin.client;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 import com.google.gwt.junit.tools.GWTTestSuite;
-import com.vaadin.client.communication.GwtDefaultReconnectDialogTest;
+
+import com.vaadin.client.communication.GwtAtmoshperePushConnectionTest;
+import com.vaadin.client.communication.GwtDefaultConnectionStateHandlerTest;
 import com.vaadin.client.flow.GwtBasicElementBinderTest;
+import com.vaadin.client.flow.GwtErrotHandlerTest;
 import com.vaadin.client.flow.GwtEventHandlerTest;
 import com.vaadin.client.flow.GwtMultipleBindingTest;
 import com.vaadin.client.flow.GwtPolymerModelTest;
-import com.vaadin.client.flow.GwtRouterLinkHandlerTest;
 import com.vaadin.client.flow.GwtStateNodeTest;
 import com.vaadin.client.flow.GwtStateTreeTest;
 import com.vaadin.client.flow.GwtTreeChangeProcessorTest;
@@ -17,9 +22,6 @@ import com.vaadin.client.flow.collection.GwtJsWeakMapTest;
 import com.vaadin.client.flow.dom.GwtDomApiTest;
 import com.vaadin.client.flow.dom.GwtPolymerApiImplTest;
 import com.vaadin.client.flow.util.GwtNativeFunctionTest;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 public class GwtSuite extends GWTTestSuite {
     public static Test suite() {
@@ -39,8 +41,6 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtEventHandlerTest.class);
         suite.addTestSuite(GwtTreeChangeProcessorTest.class);
         suite.addTestSuite(GwtNativeFunctionTest.class);
-        suite.addTestSuite(GwtRouterLinkHandlerTest.class);
-        suite.addTestSuite(GwtDefaultReconnectDialogTest.class);
         suite.addTestSuite(GwtStateNodeTest.class);
         suite.addTestSuite(GwtStateTreeTest.class);
         suite.addTestSuite(GwtDomApiTest.class);
@@ -48,7 +48,11 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtWidgetUtilTest.class);
         suite.addTestSuite(GwtExecuteJavaScriptElementUtilsTest.class);
         suite.addTestSuite(GwtDependencyLoaderTest.class);
+        suite.addTestSuite(GwtMessageHandlerTest.class);
         suite.addTestSuite(GwtMultipleBindingTest.class);
+        suite.addTestSuite(GwtDefaultConnectionStateHandlerTest.class);
+        suite.addTestSuite(GwtErrotHandlerTest.class);
+        suite.addTestSuite(GwtAtmoshperePushConnectionTest.class);
         return suite;
     }
 }

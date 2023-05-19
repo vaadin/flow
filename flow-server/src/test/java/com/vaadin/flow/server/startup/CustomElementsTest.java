@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,17 +24,12 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.jsoup.Jsoup;
-import org.junit.Assert;
+import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.component.polymertemplate.TemplateParser;
-import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
-import com.vaadin.flow.templatemodel.TemplateModel;
 
 /**
  * @author Vaadin Ltd
@@ -93,7 +88,7 @@ public class CustomElementsTest {
         elementsToAdd.forEach(
                 element -> customElements.addElement(getTag(element), element));
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 "Custom elements should contain only one class that we put into",
                 customElements.computeTagToElementRelation(),
                 is(expectedClasses.stream().collect(Collectors.toMap(
@@ -104,15 +99,8 @@ public class CustomElementsTest {
         return clazz.getAnnotation(Tag.class).value();
     }
 
-    private static final TemplateParser TEST_PARSER = (clazz, tag,
-            service) -> new TemplateData("",
-                    Jsoup.parse("<dom-module id='" + tag + "'></dom-module>"));
-
     @Tag("custom-element")
-    private static class CustomElement extends PolymerTemplate<TemplateModel> {
-        public CustomElement() {
-            super(TEST_PARSER);
-        }
+    private static class CustomElement extends Component {
     }
 
     @Tag("custom-element")

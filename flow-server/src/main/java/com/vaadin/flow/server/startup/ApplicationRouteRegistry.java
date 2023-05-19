@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,211 +15,108 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
+import java.io.Serializable;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.NotFoundException;
-import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.server.ErrorRouteRegistry;
 import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.osgi.OSGiAccess;
-import com.vaadin.flow.shared.Registration;
-import org.slf4j.LoggerFactory;
+import com.vaadin.flow.server.VaadinContext;
 
 /**
  * Registry for holding navigation target components found on servlet
  * initialization.
+ *
+ * @since 1.3
  */
-public class ApplicationRouteRegistry extends AbstractRouteRegistry {
-
-    private static class OSGiRouteRegistry extends ApplicationRouteRegistry {
-        private List<Registration> subscribingRegistrations = new CopyOnWriteArrayList<>();
-
-        @Override
-        public Class<?> getPwaConfigurationClass() {
-            initPwa();
-            return super.getPwaConfigurationClass();
-        }
-
-        @Override
-        public Optional<ErrorTargetEntry> getErrorNavigationTarget(
-                Exception exception) {
-            initErrorTargets();
-            return super.getErrorNavigationTarget(exception);
-        }
-
-        private void initErrorTargets() {
-            if (!getConfiguration().getExceptionHandlers().isEmpty()) {
-                return;
-            }
-
-            ServletContext osgiServletContext = OSGiAccess.getInstance()
-                    .getOsgiServletContext();
-            if (osgiServletContext == null
-                    || !OSGiAccess.getInstance().hasInitializers()) {
-                return;
-            }
-            OSGiDataCollector registry = (OSGiDataCollector) getInstance(
-                    osgiServletContext);
-            if (registry.errorNavigationTargets.get() != null) {
-                setErrorNavigationTargets(
-                        registry.errorNavigationTargets.get());
-            }
-        }
-
-        private void initPwa() {
-            if (getConfiguration().getRoutes().isEmpty()) {
-                return;
-            }
-            if (OSGiAccess.getInstance().hasInitializers()) {
-                OSGiDataCollector registry = (OSGiDataCollector) getInstance(
-                        OSGiAccess.getInstance().getOsgiServletContext());
-                setPwaConfigurationClass(registry.getPwaConfigurationClass());
-            }
-        }
-
-        private void subscribeToChanges(RouteRegistry routeRegistry) {
-            subscribingRegistrations.add(routeRegistry.addRoutesChangeListener(
-                    event -> update(() -> applyChange(event))));
-        }
-
-        private void applyChange(RoutesChangedEvent event) {
-            final RouteConfiguration routeConfiguration = RouteConfiguration
-                    .forRegistry(this);
-            event.getRemovedRoutes()
-                    .forEach(routeBaseData -> routeConfiguration.removeRoute(
-                            routeBaseData.getUrl(),
-                            routeBaseData.getNavigationTarget()));
-            event.getAddedRoutes()
-                    .forEach(routeBaseData -> routeConfiguration.setRoute(
-                            routeBaseData.getUrl(),
-                            routeBaseData.getNavigationTarget(),
-                            routeBaseData.getParentLayouts()));
-        }
-
-        private void setRoutes(List<RouteData> routes) {
-            routes.forEach(routeData -> {
-                setRoute(routeData.getUrl(), routeData.getNavigationTarget(),
-                        routeData.getParentLayouts());
-                routeData.getRouteAliases()
-                        .forEach(routeAliasData -> setRoute(
-                                routeAliasData.getUrl(),
-                                routeAliasData.getNavigationTarget(),
-                                routeAliasData.getParentLayouts()));
-            });
-        }
-    }
-
-    private static class OSGiDataCollector extends ApplicationRouteRegistry {
-
-        private static final String REMOVE_ROUTE_IS_NOT_SUPPORTED_MESSAGE = "removeRoute is not supported in OSGiDataCollector";
-        private AtomicReference<Set<Class<? extends Component>>> errorNavigationTargets = new AtomicReference<>();
-
-        @Override
-        protected void handleInitializedRegistry() {
-            // Don't do anything in this fake internal registry
-        }
-
-        @Override
-        public void setErrorNavigationTargets(
-                Set<Class<? extends Component>> errorNavigationTargets) {
-            if (errorNavigationTargets.isEmpty()
-                    && this.errorNavigationTargets.get() == null) {
-                // ignore initial empty targets avoiding error target
-                // initialization it they are not yet discovered
-                return;
-            }
-            this.errorNavigationTargets.set(errorNavigationTargets);
-        }
-
-        @Override
-        public void removeRoute(Class<? extends Component> routeTarget) {
-            throw new UnsupportedOperationException(
-                    REMOVE_ROUTE_IS_NOT_SUPPORTED_MESSAGE);
-        }
-
-        @Override
-        public void removeRoute(String path) {
-            throw new UnsupportedOperationException(
-                    REMOVE_ROUTE_IS_NOT_SUPPORTED_MESSAGE);
-        }
-
-        @Override
-        public void removeRoute(String path,
-                Class<? extends Component> navigationTarget) {
-            throw new UnsupportedOperationException(
-                    REMOVE_ROUTE_IS_NOT_SUPPORTED_MESSAGE);
-        }
-    }
+public class ApplicationRouteRegistry extends AbstractRouteRegistry
+        implements ErrorRouteRegistry {
 
     private AtomicReference<Class<?>> pwaConfigurationClass = new AtomicReference<>();
-    private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
-            .of(RouteNotFoundError.class, InternalServerError.class)
-            .collect(Collectors.toSet());
 
     private final ArrayList<NavigationTargetFilter> routeFilters = new ArrayList<>();
+
+    private final VaadinContext context;
 
     /**
      * Creates a new uninitialized route registry.
      */
-    protected ApplicationRouteRegistry() {
+    protected ApplicationRouteRegistry(VaadinContext context) {
+        this.context = context;
         ServiceLoader.load(NavigationTargetFilter.class)
                 .forEach(routeFilters::add);
     }
 
     /**
-     * Gets the route registry for the given servlet context. If the servlet
+     * RouteRegistry wrapper class for storing the ApplicationRouteRegistry.
+     */
+    protected static class ApplicationRouteRegistryWrapper
+            implements Serializable {
+        private final ApplicationRouteRegistry registry;
+
+        /**
+         * Create a application route registry wrapper.
+         *
+         * @param registry
+         *            application route registry to wrap
+         */
+        public ApplicationRouteRegistryWrapper(
+                ApplicationRouteRegistry registry) {
+            this.registry = registry;
+        }
+
+        /**
+         * Get the application route registry.
+         *
+         * @return wrapped application route registry
+         */
+        public ApplicationRouteRegistry getRegistry() {
+            return registry;
+        }
+    }
+
+    /**
+     * Gets the route registry for the given Vaadin context. If the Vaadin
      * context has no route registry, a new instance is created and assigned to
      * the context.
      *
-     * @param servletContext
-     *            the servlet context for which to get a route registry, not
+     * @param context
+     *            the vaadin context for which to get a route registry, not
      *            <code>null</code>
-     * @return a registry instance for the given servlet context, not
-     *         <code>null</code>
+     * @return a registry instance for the given context, not <code>null</code>
      */
-    public static ApplicationRouteRegistry getInstance(
-            ServletContext servletContext) {
-        assert servletContext != null;
+    public static ApplicationRouteRegistry getInstance(VaadinContext context) {
+        assert context != null;
 
-        Object attribute;
-        synchronized (servletContext) {
-            attribute = servletContext
-                    .getAttribute(RouteRegistry.class.getName());
+        ApplicationRouteRegistryWrapper attribute;
+        synchronized (context) {
+            attribute = context
+                    .getAttribute(ApplicationRouteRegistryWrapper.class);
 
             if (attribute == null) {
-                attribute = createRegistry(servletContext);
-                servletContext.setAttribute(RouteRegistry.class.getName(),
-                        attribute);
+                attribute = new ApplicationRouteRegistryWrapper(
+                        createRegistry(context));
+                context.setAttribute(attribute);
             }
         }
 
-        if (attribute instanceof ApplicationRouteRegistry) {
-            return (ApplicationRouteRegistry) attribute;
-        } else {
-            throw new IllegalStateException(
-                    "Unknown servlet context attribute value: " + attribute);
-        }
+        return attribute.getRegistry();
     }
 
     @Override
@@ -252,9 +149,8 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
         exceptionTargetsMap.putAll(getConfiguration().getExceptionHandlers());
 
-        errorNavigationTargets.stream()
-                .filter(target -> !defaultErrorHandlers.contains(target))
-                .filter(this::allErrorFiltersMatch)
+        errorNavigationTargets.stream().filter(this::allErrorFiltersMatch)
+                .filter(handler -> !Modifier.isAbstract(handler.getModifiers()))
                 .forEach(target -> addErrorTarget(target, exceptionTargetsMap));
 
         initErrorTargets(exceptionTargetsMap);
@@ -265,15 +161,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                 .allMatch(filter -> filter.testErrorNavigationTarget(target));
     }
 
-    /**
-     * Get a registered navigation target for given exception. First we will
-     * search for a matching cause for in the exception chain and if no match
-     * found search by extended type.
-     *
-     * @param exception
-     *            exception to search error view for
-     * @return optional error target entry corresponding to the given exception
-     */
+    @Override
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
         if (getConfiguration().getExceptionHandlers().isEmpty()) {
@@ -284,22 +172,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             result = searchBySuperType(exception);
         }
         return result;
-    }
-
-    @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(
-            String pathString) {
-        Objects.requireNonNull(pathString, "pathString must not be null.");
-        return getNavigationTarget(pathString, Collections.emptyList());
-    }
-
-    @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(
-            String pathString, List<String> segments) {
-        if (getConfiguration().hasRoute(pathString, segments)) {
-            return getConfiguration().getRoute(pathString, segments);
-        }
-        return Optional.empty();
     }
 
     /**
@@ -337,6 +209,11 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         }
     }
 
+    @Override
+    public VaadinContext getContext() {
+        return context;
+    }
+
     /**
      * Handles an attempt to initialize already initialized route registry.
      */
@@ -357,19 +234,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     }
 
     private static ApplicationRouteRegistry createRegistry(
-            ServletContext context) {
-        if (context != null && context == OSGiAccess.getInstance()
-                .getOsgiServletContext()) {
-            return new OSGiDataCollector();
-        } else if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
-            return new ApplicationRouteRegistry();
-        }
-
-        OSGiRouteRegistry osgiRouteRegistry = new OSGiRouteRegistry();
-        OSGiDataCollector osgiDataCollector = (OSGiDataCollector) getInstance(
-                OSGiAccess.getInstance().getOsgiServletContext());
-        osgiRouteRegistry.setRoutes(osgiDataCollector.getRegisteredRoutes());
-        osgiRouteRegistry.subscribeToChanges(osgiDataCollector);
-        return osgiRouteRegistry;
+            VaadinContext context) {
+        return new ApplicationRouteRegistry(context);
     }
 }

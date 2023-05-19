@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,8 @@ package com.vaadin.flow.internal.nodefeature;
 
 /**
  * Various node properties' ids.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -86,6 +88,23 @@ public final class NodeProperties {
      * {@link #VISIBLE}. Stores the client side value of "hidden" property.
      */
     public static final String VISIBILITY_HIDDEN_PROPERTY = "hidden";
+
+    /**
+     * The property used on the client side only in addition to
+     * {@link #VISIBLE}. It stores the client side value of the CSS "display"
+     * property to be able to restore when making a hidden element visible
+     * again. Used only when the element is inside a shadow root, and the CSS
+     * "display: none" is set in addition the "hidden" attribute.
+     */
+    public static final String VISIBILITY_STYLE_DISPLAY_PROPERTY = "styleDisplay";
+
+    /**
+     * The property in Json object which marks the object as special value
+     * transmitting URI (not just any string).
+     * <p>
+     * Used in the {@link ElementAttributeMap}.
+     */
+    public static final String URI_ATTRIBUTE = "uri";
 
     private NodeProperties() {
     }

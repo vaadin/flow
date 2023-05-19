@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
@@ -28,6 +29,10 @@ public class TestRouteRegistry extends ApplicationRouteRegistry {
      * Creates a new test route registry.
      */
     public TestRouteRegistry() {
-        super();
+        super(new MockVaadinContext(new DefaultRoutePathProvider()));
+    }
+
+    public TestRouteRegistry(RoutePathProvider provider) {
+        super(new MockVaadinContext(provider));
     }
 }

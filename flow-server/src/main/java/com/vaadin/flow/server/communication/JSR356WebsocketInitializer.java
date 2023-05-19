@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.server.communication;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.annotation.WebListener;
+
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletRegistration;
-import javax.servlet.annotation.WebListener;
 
 import org.atmosphere.cpr.AtmosphereFramework;
 import org.slf4j.Logger;
@@ -41,9 +41,11 @@ import com.vaadin.flow.server.VaadinServlet;
  * implement this strictly so that end points cannot be registered after the
  * context initialization phase.
  * <p>
- * Note that {@link WebListener} is Servlet 3.0 API so this will not be run for
+ * Note that {@link WebListener} is Servlet 5.0 API so this will not be run for
  * older servers (unless added to web.xml), but these servers do not support JSR
  * 356 websockets either.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -236,6 +238,13 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
                 // dynamically added
                 return false;
             }
+            if (servletClassName
+                    .equals("com.ibm.websphere.jaxrs.server.IBMRestServlet")) {
+                // Websphere servlet which implements websocket endpoints,
+                // dynamically added
+                return false;
+            }
+
             // Must use servletContext class loader to load servlet class to
             // work correctly in an OSGi environment (#20024)
             Class<?> servletClass = servletContext.getClassLoader()

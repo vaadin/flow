@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,14 +18,22 @@ package com.vaadin.flow.server.frontend.scanner;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.googlecode.gentyref.GenericTypeReflector;
+
 /**
  * Interface for annotated and subclass class searches.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 2.0
  */
 public interface ClassFinder extends Serializable {
 
@@ -34,7 +42,7 @@ public interface ClassFinder extends Serializable {
      * list of classes.
      */
     class DefaultClassFinder implements ClassFinder {
-        private final Set<Class<?>> classes;
+        private final LinkedHashSet<Class<?>> classes;
 
         private final transient ClassLoader classLoader;
 
@@ -45,10 +53,24 @@ public interface ClassFinder extends Serializable {
          *            The classes.
          */
         public DefaultClassFinder(Set<Class<?>> classes) {
-            this.classes = classes;
-            // take classLoader from the first class in the set, unless empty
-            classLoader = classes.isEmpty() ? getClass().getClassLoader()
-                    : classes.iterator().next().getClassLoader();
+            /*
+             * Order the classes to get deterministic behavior. It does not
+             * really matter HOW the classes are ordered as long as they are
+             * always in the same order
+             */
+            List<Class<?>> classList = new ArrayList<>(classes);
+            classList.sort(
+                    (cls1, cls2) -> cls1.getName().compareTo(cls2.getName()));
+            this.classes = new LinkedHashSet<>(classList);
+
+            // The classes might be loaded with different class loaders, e.g app
+            // class
+            // loader and restart class loader in Spring Boot applications. If
+            // we pick one
+            // of them and pick the parent, then it won't find classes and
+            // resources loaded
+            // by the child loader.
+            classLoader = Thread.currentThread().getContextClassLoader();
         }
 
         /**
@@ -64,7 +86,7 @@ public interface ClassFinder extends Serializable {
         public DefaultClassFinder(ClassLoader classLoader,
                 Class<?>... classes) {
             this.classLoader = classLoader;
-            this.classes = new HashSet<>();
+            this.classes = new LinkedHashSet<>();
             for (Class<?> clazz : classes) {
                 this.classes.add(clazz);
             }
@@ -75,7 +97,7 @@ public interface ClassFinder extends Serializable {
                 Class<? extends Annotation> annotation) {
             return classes.stream().filter(
                     cl -> cl.getAnnotationsByType(annotation).length > 0)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
         }
 
         @Override
@@ -94,8 +116,15 @@ public interface ClassFinder extends Serializable {
         @SuppressWarnings("unchecked")
         public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
             return this.classes.stream()
-                    .filter(cl -> type.isAssignableFrom(cl) && !type.equals(cl))
-                    .map(cl -> (Class<T>) cl).collect(Collectors.toSet());
+                    .filter(cl -> GenericTypeReflector.isSuperType(type, cl)
+                            && !type.equals(cl))
+                    .map(cl -> (Class<T>) cl)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+        }
+
+        @Override
+        public ClassLoader getClassLoader() {
+            return this.classLoader;
         }
     }
 
@@ -139,6 +168,11 @@ public interface ClassFinder extends Serializable {
         @Override
         public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
             return classFinder.getSubTypesOf(type);
+        }
+
+        @Override
+        public ClassLoader getClassLoader() {
+            return classFinder.getClassLoader();
         }
     }
 
@@ -197,8 +231,15 @@ public interface ClassFinder extends Serializable {
     <T> Set<Class<? extends T>> getSubTypesOf(final Class<T> type);
 
     /**
+     * Get class loader which is used to find classes.
+     *
+     * @return the class loader which is used to find classes..
+     */
+    ClassLoader getClassLoader();
+
+    /**
      * Gets all subtypes in hierarchy of a given type, using FQN string.
-     * 
+     *
      * @param name
      *            Fully qualified name of the type to search subtypes of
      * @param <T>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,13 +36,17 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateTree.BeforeClientResponseEntry;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.change.NodeDetachChange;
+import com.vaadin.flow.internal.nodefeature.ElementData;
+import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.server.Command;
@@ -52,6 +56,8 @@ import com.vaadin.flow.shared.Registration;
  * A node in the state tree that is synchronized with the client-side. Data
  * stored in nodes is structured into different features to provide isolation.
  * The features available for a node are defined when the node is created.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @see StateTree
  * @author Vaadin Ltd
@@ -76,10 +82,10 @@ public class StateNode implements Serializable {
                     .filter(type -> !reportableFeatureTypes.contains(type))
                     .collect(Collectors.toSet());
 
-            assert !nonReportableFeatures.removeAll(
-                    reportedFeatures) : "No reportable feature should also be non-reportable";
-            assert !reportedFeatures.removeAll(
-                    nonReportableFeatures) : "No non-reportable feature should also be reportable";
+            assert !nonReportableFeatures.removeAll(reportedFeatures)
+                    : "No reportable feature should also be non-reportable";
+            assert !reportedFeatures.removeAll(nonReportableFeatures)
+                    : "No non-reportable feature should also be reportable";
         }
 
         @Override
@@ -125,6 +131,11 @@ public class StateNode implements Serializable {
                             Integer.valueOf(mappings.size())));
         }
     }
+
+    private static class ReplacedViaPreserveOnRefresh implements Serializable {
+    }
+
+    private static final ReplacedViaPreserveOnRefresh REPLACED_MARKER = new ReplacedViaPreserveOnRefresh();
 
     /**
      * Cache of immutable node feature type set instances.
@@ -242,14 +253,15 @@ public class StateNode implements Serializable {
      */
     public void setParent(StateNode parent) {
         if (hasDetached()) {
+            this.parent = null;
             return;
         }
         boolean attachedBefore = isRegistered();
         boolean attachedAfter = false;
 
         if (parent != null) {
-            assert this.parent == null : "Node is already attached to a parent: "
-                    + this.parent;
+            assert this.parent == null
+                    : "Node is already attached to a parent: " + this.parent;
             assert parent.hasChildAssert(this);
 
             if (isAncestorOf(parent)) {
@@ -335,7 +347,13 @@ public class StateNode implements Serializable {
         }
     }
 
-    private void forEachChild(Consumer<StateNode> action) {
+    /**
+     * Executes the given action for each child node of this state node.
+     *
+     * @param action
+     *            the action to execute, not {@code null}
+     */
+    public void forEachChild(Consumer<StateNode> action) {
         forEachFeature(n -> n.forEachChild(action));
     }
 
@@ -369,6 +387,10 @@ public class StateNode implements Serializable {
      * the state tree.
      */
     public void removeFromTree() {
+        if (getOwner() instanceof StateTree) {
+            ComponentUtil.setData(((StateTree) getOwner()).getUI(),
+                    ReplacedViaPreserveOnRefresh.class, REPLACED_MARKER);
+        }
         visitNodeTree(StateNode::reset);
         setParent(null);
     }
@@ -383,6 +405,23 @@ public class StateNode implements Serializable {
         wasAttached = false;
         hasBeenAttached = false;
         hasBeenDetached = false;
+    }
+
+    /**
+     * Prepares the tree below this node for resynchronization by detaching all
+     * descendants, setting their internal state to not yet attached, and
+     * calling the attach listeners.
+     */
+    protected void prepareForResync() {
+        visitNodeTreeBottomUp(StateNode::fireDetachListeners);
+        visitNodeTree(stateNode -> {
+            getOwner().markAsDirty(stateNode);
+            stateNode.wasAttached = false;
+            stateNode.isInitialChanges = true;
+            stateNode.hasBeenAttached = false;
+            stateNode.hasBeenDetached = false;
+        });
+        visitNodeTreeBottomUp(sn -> sn.fireAttachListeners(true));
     }
 
     /**
@@ -538,7 +577,15 @@ public class StateNode implements Serializable {
      *         this node is not attached
      */
     public boolean isAttached() {
-        return parent != null && parent.isAttached();
+        if (getParent() == null) {
+            return false;
+        } else {
+            StateNode root = getParent();
+            while (root.getParent() != null) {
+                root = root.getParent();
+            }
+            return root.isAttached();
+        }
     }
 
     /**
@@ -559,6 +606,12 @@ public class StateNode implements Serializable {
      * {@link #collectChanges(Consumer)} has been called. If the node is
      * recently attached, then the reported changes will be relative to a newly
      * created node.
+     * <p>
+     * <b>WARNING:</b> this is in fact an internal (private method) which is
+     * expected to be called from {@link StateTree#collectChanges(Consumer)}
+     * method only (which is effectively private itself). Don't call this method
+     * from any other place because it will break the expected {@link UI} state.
+     *
      *
      * @param collector
      *            a consumer accepting node changes
@@ -581,16 +634,25 @@ public class StateNode implements Serializable {
         if (!isAttached()) {
             return;
         }
+
+        if (isInitialChanges && !isVisible()) {
+            if (hasFeature(ElementData.class)) {
+                doCollectChanges(collector,
+                        Stream.of(getFeature(ElementData.class)));
+            }
+            return;
+        }
+
         if (isInactive()) {
             if (isInitialChanges) {
                 // send only required (reported) features updates
                 Stream<NodeFeature> initialFeatures = Stream
                         .concat(featureSet.mappings.keySet().stream()
                                 .filter(this::isReportedFeature)
-                                .map(this::getFeature), getDisalowFeatures());
+                                .map(this::getFeature), getDisallowFeatures());
                 doCollectChanges(collector, initialFeatures);
             } else {
-                doCollectChanges(collector, getDisalowFeatures());
+                doCollectChanges(collector, getDisallowFeatures());
             }
         } else {
             doCollectChanges(collector, getInitializedFeatures());
@@ -655,6 +717,7 @@ public class StateNode implements Serializable {
         // not done inside loop to please Sonarcube
         forEachChild(stack::addFirst);
         StateNode previousParent = this;
+        Set<StateNode> childrenAdded = new HashSet<>();
 
         while (!stack.isEmpty()) {
             StateNode current = stack.getFirst();
@@ -662,24 +725,36 @@ public class StateNode implements Serializable {
             if (current == previousParent) {
                 visitor.accept(stack.removeFirst());
                 previousParent = current.getParent();
+            } else if (childrenAdded.contains(current)) {
+                previousParent = current;
             } else {
                 current.forEachChild(stack::addFirst);
+                childrenAdded.add(current);
                 previousParent = current;
             }
         }
     }
 
     private void doSetTree(StateTree tree) {
-        if (tree == owner) {
+        if (tree == getOwner()) {
             return;
         }
 
-        if (owner instanceof StateTree) {
-            throw new IllegalStateException(
-                    "Can't move a node from one state tree to another. "
-                            + "If this is intentional, first remove the "
-                            + "node from its current state tree by calling "
-                            + "removeFromTree");
+        if (getOwner() instanceof StateTree) {
+            boolean isOwnerAttached = ((StateTree) getOwner()).getRootNode()
+                    .isAttached();
+            boolean isNotReplaced = ComponentUtil.getData(
+                    ((StateTree) getOwner()).getUI(),
+                    ReplacedViaPreserveOnRefresh.class) == null;
+            if (isOwnerAttached || isNotReplaced) {
+                throw new IllegalStateException(
+                        "Can't move a node from one state tree to another. "
+                                + "If this is intentional, first remove the "
+                                + "node from its current state tree by calling "
+                                + "removeFromTree");
+            } else {
+                id = -1;
+            }
         }
         owner = tree;
     }
@@ -875,7 +950,7 @@ public class StateNode implements Serializable {
      * @see NodeFeature#allowsChanges()
      */
     public void updateActiveState() {
-        setInactive(getDisalowFeatures().count() != 0);
+        setInactive(getDisallowFeatures().count() != 0);
     }
 
     /**
@@ -892,7 +967,50 @@ public class StateNode implements Serializable {
         return getParent().isInactive();
     }
 
-    private Stream<NodeFeature> getDisalowFeatures() {
+    /**
+     * Checks (recursively towards the parent node) whether the node is
+     * effectively visible.
+     * <p>
+     * Non-visible node should not participate in any RPC communication.
+     *
+     * @return {@code true} if the node is effectively visible
+     */
+    public boolean isVisible() {
+        if (hasFeature(ElementData.class)) {
+            boolean isVisibleSelf = getFeature(ElementData.class).isVisible();
+            if (!isVisibleSelf || getParent() == null) {
+                return isVisibleSelf;
+            }
+            return parent.isVisible();
+        }
+        return getParent() == null || parent.isVisible();
+    }
+
+    /**
+     * Returns whether or not this state node is inert and it should not receive
+     * any updates from the client side. Inert state is inherited from parent,
+     * unless explicitly set to ignore parent inert state.
+     * <p>
+     * The inert state is only updated when the changes are written to the
+     * client side, but the inert state is not sent to the client side - it is a
+     * server side feature only.
+     *
+     * @return {@code true} if the node is inert, {@code false} if not
+     * @see InertData
+     */
+    public boolean isInert() {
+        if (hasFeature(InertData.class)) {
+            // the node has inert data, it will resolve state properly
+            Optional<InertData> featureIfInitialized = getFeatureIfInitialized(
+                    InertData.class);
+            if (featureIfInitialized.isPresent()) {
+                return featureIfInitialized.get().isInert();
+            }
+        }
+        return getParent() != null && getParent().isInert();
+    }
+
+    private Stream<NodeFeature> getDisallowFeatures() {
         return getInitializedFeatures()
                 .filter(feature -> !feature.allowsChanges());
     }
@@ -935,7 +1053,8 @@ public class StateNode implements Serializable {
      */
     private UI getUI() {
         assert isAttached();
-        assert getOwner() instanceof StateTree : "Attach should only be called when the node has been attached to the tree, not to a null owner";
+        assert getOwner() instanceof StateTree
+                : "Attach should only be called when the node has been attached to the tree, not to a null owner";
         return ((StateTree) getOwner()).getUI();
     }
 

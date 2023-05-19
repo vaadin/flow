@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,7 @@ public class FocusableTest {
 
     }
 
-    private final UI ui = new MockUI();
+    private final MockUI ui = new MockUI();
     private final FocusableTestComponent component = new FocusableTestComponent();
 
     @Test
@@ -74,9 +74,8 @@ public class FocusableTest {
     }
 
     private void assertPendingInvocationCount(String message, int expected) {
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        List<PendingJavaScriptInvocation> invocations = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
         Assert.assertEquals(message, expected, invocations.size());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,7 +21,7 @@ import java.util.Map;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -29,6 +29,8 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 /**
  * View for testing DOM changes inside attach listeners, based on
  * https://github.com/vaadin/flow/issues/4209
+ *
+ * @since 1.0
  */
 @Route(value = "com.vaadin.flow.uitest.ui.AttachListenerView", layout = ViewTestLayout.class)
 public class AttachListenerView extends AbstractDivView {
@@ -139,12 +141,12 @@ public class AttachListenerView extends AbstractDivView {
         Input input = new Input();
         input.getElement().setAttribute("type", "radio")
                 .setAttribute("name", group).setAttribute("value", text)
-                .addSynchronizedProperty("checked")
-                .addSynchronizedPropertyEvent("change");
+                .addPropertyChangeListener("checked", "change", event -> {
+                });
         input.setId(id);
         radioButtons.put(id, input);
 
-        Label label = new Label(text);
+        NativeLabel label = new NativeLabel(text);
         label.setFor(id);
 
         parent.add(input, label);

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright 2000-2018 Vaadin Ltd.
+  ~ Copyright 2000-2019 Vaadin Ltd.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License"); you may not
   ~ use this file except in compliance with the License. You may obtain a copy of
@@ -21,7 +21,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>2.0-SNAPSHOT</version>
+        <version>24.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -29,30 +29,13 @@
     <name>Flow npm-only feature tests</name>
     <packaging>pom</packaging>
     <modules>
-        <module>test-default-theme</module>
         <module>test-npm-general</module>
         <module>test-npm-no-buildmojo</module>
+        <module>test-npm-custom-frontend-directory</module>
+        <module>test-npm-bytecode-scanning/pom-devmode.xml</module>
+        <module>test-npm-bytecode-scanning/pom-production.xml</module>
+        <module>test-npm-performance-regression</module>
     </modules>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <version>${jetty.version}</version>
-                <configuration>
-                    <systemProperties>
-                        <systemProperty>
-                            <!-- make sure we do not leave webpack-dev-server running after IT -->
-                            <name>vaadin.reuseDevServer</name>
-                            <value>false</value>
-                        </systemProperty>
-                    </systemProperties>
-                </configuration>
-            </plugin>
-
-        </plugins>
-    </build>
 
     <profiles>
         <profile>

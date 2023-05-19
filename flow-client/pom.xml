@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>2.0-SNAPSHOT</version>
+        <version>24.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-client</artifactId>
     <name>Flow Client</name>
@@ -17,6 +17,13 @@
         <gwt.module.output>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/</gwt.module.output>
         <gwt.module.style>OBF</gwt.module.style>
         <gwt.sdm.bindAddress>0.0.0.0</gwt.sdm.bindAddress>
+        <skipTsTests>${skipTests}</skipTsTests>
+        <org.eclipse.equinox.common.version>3.14.100</org.eclipse.equinox.common.version>
+        <org.eclipse.core.runtime.version>3.20.100</org.eclipse.core.runtime.version>
+        <maven.compiler.release>8</maven.compiler.release>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <testListener></testListener>
     </properties>
 
     <dependencyManagement>
@@ -28,6 +35,18 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>org.eclipse.platform</groupId>
+                <artifactId>org.eclipse.equinox.common</artifactId>
+                <version>${org.eclipse.equinox.common.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.platform</groupId>
+                <artifactId>org.eclipse.core.runtime</artifactId>
+                <version>${org.eclipse.core.runtime.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -38,12 +57,12 @@
             <artifactId>flow-server</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-osgi</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin.servletdetector</groupId>
+                    <artifactId>throw-if-servlet3</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.google.gwt</groupId>
@@ -66,15 +85,52 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.prefs</artifactId>
+            <version>1.1.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.equinox.preferences</artifactId>
+            <version>3.10.200</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.core.resources</artifactId>
-            <version>3.12.0</version>
+            <version>3.17.0</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.platform</groupId>
+                    <artifactId>org.eclipse.equinox.preferences</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Force Java8 compatible package -->
+        <dependency>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.core.jobs</artifactId>
+            <version>3.11.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.core.contenttype</artifactId>
+            <version>3.8.200</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.platform</groupId>
+                    <artifactId>org.eclipse.equinox.preferences</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
+            <artifactId>osgi.core</artifactId>
             <version>${osgi.core.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -101,6 +157,13 @@
                 <directory>src/main/resources</directory>
             </resource>
             <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>version.txt</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+            <resource>
                 <directory>../flow-server/src/main/java</directory>
             </resource>
         </resources>
@@ -112,7 +175,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.0.2</version>
+                <version>3.3.0</version>
                 <configuration>
                     <!-- Exclude all source files and classes so only the
                         compile result ends up in the JAR -->
@@ -162,10 +225,17 @@
 
                 <executions>
                     <execution>
+                        <phase>compile</phase>
                         <goals>
                             <goal>compile</goal>
-                            <goal>test</goal>
                             <goal>generateAsync</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>gwt-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -187,31 +257,15 @@
                     <style>${gwt.module.style}</style>
                     <htmlunit>FF38</htmlunit>
                     <testTimeOut>300</testTimeOut>
+                    <extraJvmArgs>-Xmx512m -Dvaadin.frontend.hotdeploy=false</extraJvmArgs>
+                    <includes>${gwt.test.pattern}</includes>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>com.github.ryanholdren</groupId>
-                <artifactId>resourcecompressor</artifactId>
-                <version>2017-06-24</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compress</goal>
-                        </goals>
-                        <phase>prepare-package</phase>
-                        <configuration>
-                            <directory>${gwt.module.output}/client/</directory>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
 
             <!-- Include separate source dir for GWT tests -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.10</version>
                 <executions>
                     <execution>
                         <id>add-gwt-test-sources-as-test-sources</id>
@@ -226,15 +280,91 @@
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>vaadin-testbench-core</artifactId>
+                        <version>${testbench.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>npm-install</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>install</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>install-esbuild</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>node</executable>
+                            <arguments>
+                                <argument>node_modules/esbuild/install.js</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>typescript-compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>run</argument>
+                                <argument>compile</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>run-tests</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>test</argument>
+                            </arguments>
+                            <skip>${skipTsTests}</skip>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
-
     </build>
     <profiles>
         <profile>
             <id>sdm</id>
             <properties>
                 <gwt.module>com.vaadin.ClientEngineXSI</gwt.module>
+            </properties>
+        </profile>
+        <profile>
+            <id>slow-tests</id>
+            <properties>
+                <!-- There are no slowTests in this module, we disable surefire, gwt and Ts -->
+                <groups>none</groups>
+                <gwt.test.pattern>none</gwt.test.pattern>
+                <skipTsTests>true</skipTsTests>
             </properties>
         </profile>
     </profiles>

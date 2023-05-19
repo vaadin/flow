@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,9 +15,15 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -29,10 +35,39 @@ import com.vaadin.flow.router.RouterLayout;
 
 /**
  * Handles error navigation rendering in the target UI.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @see HasErrorParameter
+ * @since 1.0
  */
 public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
+
+    static class ExceptionsTrace extends RuntimeException {
+        private final Set<Class<? extends Exception>> trace = new HashSet<>();
+
+        private ExceptionsTrace(Exception cause) {
+            super(cause);
+        }
+
+        void addException(Exception exception) {
+            trace.add(exception.getClass());
+        }
+
+        boolean hasException(Exception exception) {
+            return trace.contains(exception.getClass());
+        }
+
+        @Override
+        public String getMessage() {
+            return "Exceptions handled by "
+                    + HasErrorParameter.class.getSimpleName() + " views are :"
+                    + trace.stream().filter(
+                            clazz -> !clazz.equals(ExceptionsTrace.class))
+                            .map(Class::getName)
+                            .collect(Collectors.joining(", "));
+        }
+    }
 
     /**
      * Constructs a new state renderer for the given navigation state.
@@ -46,9 +81,35 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
 
     @Override
     public int handle(NavigationEvent event) {
-        assert event instanceof ErrorNavigationEvent : "Error handling needs ErrorNavigationEvent";
-        return super.handle(event);
+        assert event instanceof ErrorNavigationEvent
+                : "Error handling needs ErrorNavigationEvent";
 
+        ExceptionsTrace trace = ComponentUtil.getData(event.getUI(),
+                ExceptionsTrace.class);
+        boolean isFirstCall = trace == null;
+        Exception exception = ((ErrorNavigationEvent) event).getErrorParameter()
+                .getCaughtException();
+        if (isFirstCall) {
+            trace = new ExceptionsTrace(exception);
+            ComponentUtil.setData(event.getUI(), ExceptionsTrace.class, trace);
+        } else if (trace.hasException(exception)) {
+            LoggerFactory.getLogger(ErrorStateRenderer.class)
+                    .error("The same exception {} "
+                            + "has been thrown several times during navigation. "
+                            + "Can't use any {} view for this error.",
+                            exception.getClass().getName(),
+                            HasErrorParameter.class.getSimpleName(), trace);
+            throw trace;
+        }
+        trace.addException(exception);
+        try {
+            return super.handle(event);
+        } finally {
+            if (isFirstCall) {
+                ComponentUtil.setData(event.getUI(), ExceptionsTrace.class,
+                        null);
+            }
+        }
     }
 
     @Override
@@ -57,7 +118,6 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
             LocationChangeEvent locationChangeEvent) {
         @SuppressWarnings({ "rawtypes", "unchecked" })
         int statusCode = ((HasErrorParameter) componentInstance)
-
                 .setErrorParameter(beforeEnterEvent,
                         ((ErrorNavigationEvent) navigationEvent)
                                 .getErrorParameter());
@@ -84,8 +144,4 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
         return RouteUtil.getParentLayoutsForNonRouteTarget(targetType);
     }
 
-    @Override
-    protected boolean eventActionsSupported() {
-        return false;
-    }
 }

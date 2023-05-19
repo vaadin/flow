@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,7 +23,9 @@ import com.vaadin.flow.component.UI;
  * Context of a callback execution when
  * {@link UI#beforeClientResponse(com.vaadin.flow.component.Component, com.vaadin.flow.function.SerializableConsumer)}
  * is invoked.
- * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  *
@@ -35,7 +37,7 @@ public class ExecutionContext implements Serializable {
 
     /**
      * Creates a new, immutable context.
-     * 
+     *
      * @param ui
      *            The UI associated with the execution
      * @param clientSideInitialized
@@ -51,7 +53,7 @@ public class ExecutionContext implements Serializable {
 
     /**
      * Gets the UI associated with the execution.
-     * 
+     *
      * @return the UI, not <code>null</code>
      */
     public UI getUI() {
@@ -61,7 +63,7 @@ public class ExecutionContext implements Serializable {
     /**
      * Gets whether the client side is being initialized as part of the server
      * response.
-     * 
+     *
      * @return <code>true</code> if the client side is already initialized,
      *         <code>false</code> if it is being initialized as part of the
      *         current response

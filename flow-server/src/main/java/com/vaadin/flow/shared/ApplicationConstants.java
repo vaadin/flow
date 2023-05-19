@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,8 @@ import com.vaadin.flow.component.internal.UIInternals;
 
 /**
  * A utility class providing static constants. Mostly for internal use.
+ * <p>
+ * Also available for the client side part of the framework.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -31,12 +33,6 @@ public class ApplicationConstants implements Serializable {
      * Protocol used for referencing the application context path.
      */
     public static final String CONTEXT_PROTOCOL_PREFIX = "context://";
-
-    /**
-     * Protocol used for referencing different files based on the browser
-     * capability of interpreting ECMAScript 6.
-     */
-    public static final String FRONTEND_PROTOCOL_PREFIX = "frontend://";
 
     /**
      * Protocol used for referencing resources relative the base URI of the
@@ -118,6 +114,12 @@ public class ApplicationConstants implements Serializable {
     public static final String CLIENT_TO_SERVER_ID = "clientId";
 
     /**
+     * The name of the parameter used to transmit the id of UI used in given
+     * request.
+     */
+    public static final String UI_ID = "uiId";
+
+    /**
      * Default value to use in case the security protection is disabled.
      */
     public static final String CSRF_TOKEN_DEFAULT_VALUE = "init";
@@ -150,9 +152,25 @@ public class ApplicationConstants implements Serializable {
             + "client";
 
     /**
+     * Parameter for the initial router location when JavaScript bootstrapping.
+     * It is optional when {@link ApplicationConstants#REQUEST_TYPE_PARAMETER}
+     * has the {@link ApplicationConstants#REQUEST_TYPE_INIT} value
+     */
+    public static final String REQUEST_LOCATION_PARAMETER = "location";
+    /**
+     * Parameter for the initial query string when JavaScript bootstrapping.
+     */
+    public static final String REQUEST_QUERY_PARAMETER = "query";
+
+    /**
      * Get parameter used in framework requests to identify the request type.
      */
     public static final String REQUEST_TYPE_PARAMETER = "v-r";
+
+    /**
+     * Request type parameter value indicating an init request.
+     */
+    public static final String REQUEST_TYPE_INIT = "init";
 
     /**
      * Request type parameter value indicating a UIDL request.
@@ -170,6 +188,12 @@ public class ApplicationConstants implements Serializable {
     public static final String REQUEST_TYPE_PUSH = "push";
 
     /**
+     * Request type parameter value indicating a WebComponent resynchronization
+     * request.
+     */
+    public static final String REQUEST_TYPE_WEBCOMPONENT_RESYNC = "webcomponent-resync";
+
+    /**
      * Attribute name for marking internal router link anchors.
      */
     public static final String ROUTER_LINK_ATTRIBUTE = "router-link";
@@ -180,8 +204,20 @@ public class ApplicationConstants implements Serializable {
     public static final String FRONTEND_URL_ES6 = "frontendUrlEs6";
 
     /**
-     * Configuration parameter for the build URL of ES5 web components.
+     * Web socket parameter which identifies connection as live reload
+     * connection.
      */
-    public static final String FRONTEND_URL_ES5 = "frontendUrlEs5";
+    public static final String DEBUG_WINDOW_CONNECTION = "debug_window";
+
+    /**
+     * Boolean client configuration parameter enabling the development tools.
+     */
+    public static final String DEV_TOOLS_ENABLED = "devToolsEnabled";
+
+    /**
+     * The name of the parameter used for notifying the server that user closed
+     * the tab/window or navigated away.
+     */
+    public static final String UNLOAD_BEACON = "UNLOAD";
 
 }

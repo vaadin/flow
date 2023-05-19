@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,7 +28,7 @@ public class MultipleAnchorsIT extends AbstractScrollIT {
 
     @Test
     public void numerousDifferentAnchorsShouldWorkAndHistoryShouldBePreserved() {
-        testBench().resizeViewPortTo(700, 800);
+        testBench().resizeViewPortTo(700, 600);
         open();
 
         final Long initialHistoryLength = getBrowserHistoryLength();
@@ -84,7 +84,7 @@ public class MultipleAnchorsIT extends AbstractScrollIT {
     private void verifyAnchor(int idNumber) {
         Point anchorElementLocation = findElement(
                 By.id(MultipleAnchorsView.ANCHOR_DIV_ID_BASE + idNumber))
-                        .getLocation();
+                .getLocation();
         assertThat("Expected url to change to anchor one",
                 driver.getCurrentUrl(),
                 endsWith(MultipleAnchorsView.ANCHOR_URL_BASE + idNumber));

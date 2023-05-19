@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -49,21 +49,21 @@ public @interface Inline {
 
     /**
      * Classpath file to inline into target element.
-     * 
+     *
      * @return file to inline
      */
     String value();
 
     /**
      * Target element to inline file contents to.
-     * 
+     *
      * @return inline target
      */
     TargetElement target() default TargetElement.HEAD;
 
     /**
      * Inline position of element. Default appends to target element.
-     * 
+     *
      * @return inline position
      */
     Position position() default Position.APPEND;
@@ -71,7 +71,7 @@ public @interface Inline {
     /**
      * The element type to inline as. Default is automatic which tries to figure
      * out the correct type by file ending.
-     * 
+     *
      * @return inline element type
      */
     Wrapping wrapping() default Wrapping.AUTOMATIC;

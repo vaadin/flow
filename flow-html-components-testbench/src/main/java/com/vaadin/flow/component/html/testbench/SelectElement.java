@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,13 +22,15 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing a <code>&lt;select&gt;</code> element.
+ *
+ * @since 1.0
  */
 @Element("select")
 public class SelectElement extends TestBenchElement {
 
     /**
      * Selects the first option matching the given text.
-     * 
+     *
      * @param text
      *            the text of the option to select
      */
@@ -50,7 +52,7 @@ public class SelectElement extends TestBenchElement {
      * Selects the option with the given value.
      * <p>
      * To select based on the visible text, use {@link #selectByText(String)}.
-     * 
+     *
      * @param value
      *            the value to select
      */
@@ -62,7 +64,7 @@ public class SelectElement extends TestBenchElement {
      * Gets the value of the currently selected option.
      * <p>
      * To get the visible text, use {@link #getSelectedText()}.
-     * 
+     *
      * @return the value of the current option
      */
     public String getValue() {

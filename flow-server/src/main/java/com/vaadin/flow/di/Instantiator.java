@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,12 +24,11 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.server.BootstrapListener;
-import com.vaadin.flow.server.BootstrapPageResponse;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.UidlWriter;
 
 /**
@@ -38,32 +37,14 @@ import com.vaadin.flow.server.communication.UidlWriter;
  * that manages instances according to the conventions of that framework.
  * <p>
  * {@link VaadinService} will by default use {@link ServiceLoader} for finding
- * an instantiator implementation. Deployment will fail if multiple candidates
- * are returning <code>true</code> from {@link #init(VaadinService)}. If no
- * candidate is found, {@link DefaultInstantiator} will be used. It is possible
- * to override this mechanism by overriding
+ * an instantiator implementation. If not found {@link DefaultInstantiator} will
+ * be used. It is possible to override this mechanism by overriding
  * {@link VaadinService#createInstantiator}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
 public interface Instantiator extends Serializable {
-    /**
-     * Initializes this instantiator. This method is run only once and before
-     * running any other method. An implementation can opt-out from being used
-     * by returning <code>false</code>. It is recommended that all
-     * implementations provide a way for application developers to disable an
-     * implementation so that it can be present on the classpath without
-     * preventing the application from being deployed in cases when multiple
-     * candidates are available.
-     *
-     * @param service
-     *            the Vaadin service for which this instance is initialized
-     * @return <code>true</code> if this instance should be considered as a
-     *         candidate for usage for the provided service; <code>false</code>
-     *         to opt-out from the selection process
-     */
-    boolean init(VaadinService service);
 
     /**
      * Gets all service init listeners to use. In addition to listeners defined
@@ -78,26 +59,23 @@ public interface Instantiator extends Serializable {
     Stream<VaadinServiceInitListener> getServiceInitListeners();
 
     /**
-     * Processes the available bootstrap listeners. This method can supplement
-     * the set of bootstrap listeners provided by
+     * Processes the available Index HTML request listeners. This method can
+     * supplement the set of Index HTML request listeners provided by
      * {@link VaadinServiceInitListener} implementations.
      * <p>
      * The default implementation returns the original listeners without
      * changes.
-     * <p>
-     * The order of the listeners inside the stream defines the order of the
-     * execution of those listeners by the
-     * {@link VaadinService#modifyBootstrapPage(BootstrapPageResponse)} method.
      *
-     * @param serviceInitListeners
-     *            a stream of bootstrap listeners provided by service init
-     *            listeners, not <code>null</code>
+     * @param indexHtmlRequestListeners
+     *            a stream of Index HTML request listeners provided by service
+     *            init listeners, not <code>null</code>
      *
-     * @return a stream of all bootstrap listeners to use, not <code>null</code>
+     * @return a stream of all Index HTML request listeners to use, not
+     *         <code>null</code>
      */
-    default Stream<BootstrapListener> getBootstrapListeners(
-            Stream<BootstrapListener> serviceInitListeners) {
-        return serviceInitListeners;
+    default Stream<IndexHtmlRequestListener> getIndexHtmlRequestListeners(
+            Stream<IndexHtmlRequestListener> indexHtmlRequestListeners) {
+        return indexHtmlRequestListeners;
     }
 
     /**
@@ -195,4 +173,5 @@ public interface Instantiator extends Serializable {
     default I18NProvider getI18NProvider() {
         return getOrCreate(I18NProvider.class);
     }
+
 }

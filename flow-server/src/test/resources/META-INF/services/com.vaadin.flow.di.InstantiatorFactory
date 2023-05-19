@@ -1,0 +1,2 @@
+com.vaadin.flow.server.startup.testdata.AnotherTestInstantiatorFactory
+com.vaadin.flow.server.startup.testdata.OneMoreTestInstantiatorFactory

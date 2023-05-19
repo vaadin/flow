@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,7 +25,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-
 
 /**
  * Base class for TestBench tests which use a UI/View matched to the test name
@@ -101,8 +100,8 @@ public class ViewOrUITest extends AbstractTestBenchTest {
             }
         } catch (Exception e) {
             // Here only to please Sonar...
-            getLogger().error(
-                    " for {} not found", getClass().getName(), e);
+            getLogger().debug("{} for {} not found", typeToFind.getSimpleName(),
+                    getClass().getName());
         }
         return null;
     }

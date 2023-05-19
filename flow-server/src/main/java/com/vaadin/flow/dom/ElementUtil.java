@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,16 +15,20 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.internal.nodefeature.InertData;
 
 /**
  * Provides utility methods for {@link Element}.
@@ -39,7 +43,8 @@ public class ElementUtil {
      * https://www.w3.org/TR/html-markup/syntax.html#tag-name "HTML elements all
      * have names that only use characters in the range 0–9, a–z, and A–Z."
      */
-    private static Pattern tagNamePattern = Pattern.compile("^[a-zA-Z0-9-]+$");
+    private static Pattern tagNamePattern = Pattern
+            .compile("^[a-zA-Z][a-zA-Z0-9-_\\.]*$");
 
     private ElementUtil() {
         // Util methods only
@@ -210,7 +215,7 @@ public class ElementUtil {
      */
     public static Node toJsoup(Document document, Element element) {
         if (element.isTextNode()) {
-            return new TextNode(element.getText(), document.baseUri());
+            return new TextNode(element.getText());
         }
 
         org.jsoup.nodes.Element target = document
@@ -232,6 +237,46 @@ public class ElementUtil {
                 .forEach(child -> target.appendChild(toJsoup(document, child)));
 
         return target;
+    }
+
+    /**
+     * Converts a given JSoup {@link org.jsoup.nodes.Node} and its children into
+     * a matching {@link com.vaadin.flow.dom.Element} hierarchy.
+     * <p>
+     * Only nodes of type {@link org.jsoup.nodes.TextNode} and
+     * {@link org.jsoup.nodes.Element} are converted - other node types return
+     * an empty optional.
+     *
+     * @param node
+     *            JSoup node to convert
+     * @return element with the matching hierarchy as the given node, or empty
+     */
+    public static Optional<Element> fromJsoup(Node node) {
+        Element ret;
+        if (node instanceof TextNode) {
+            return Optional.of(Element.createText(((TextNode) node).text()));
+        } else if (node instanceof DataNode) {
+            return Optional
+                    .of(Element.createText(((DataNode) node).getWholeData()));
+        } else if (node instanceof org.jsoup.nodes.Element) {
+            ret = new Element(((org.jsoup.nodes.Element) node).tagName());
+        } else {
+            LoggerFactory.getLogger(ElementUtil.class).error(
+                    "Could not convert a {}, '{}' into {}!",
+                    Node.class.getName(), node, Element.class.getName());
+            return Optional.empty();
+        }
+
+        node.attributes().asList().forEach(attribute -> ret
+                .setAttribute(attribute.getKey(), attribute.getValue()));
+
+        List<Node> childNodes = node.childNodes();
+        if (!childNodes.isEmpty()) {
+            childNodes.forEach(
+                    child -> fromJsoup(child).ifPresent(ret::appendChild));
+        }
+
+        return Optional.of(ret);
     }
 
     /**
@@ -258,6 +303,56 @@ public class ElementUtil {
     public static boolean isScript(Element element) {
         return !element.isTextNode()
                 && "script".equalsIgnoreCase(element.getTag());
+    }
+
+    /**
+     * Sets whether or not the element should inherit or not inherit its
+     * parent's inert state. Default value is {@code false}.
+     *
+     * @param element
+     *            the element to update
+     * @param ignoreParentInert
+     *            {@code true} for ignoring parent inert, {@code false} for not
+     *            ignoring
+     * @see #setInert(Element, boolean)
+     */
+    public static void setIgnoreParentInert(Element element,
+            boolean ignoreParentInert) {
+        final Optional<InertData> optionalInertData = element.getNode()
+                .getFeatureIfInitialized(InertData.class);
+        if (ignoreParentInert) {
+            optionalInertData
+                    .orElse(element.getNode().getFeature(InertData.class))
+                    .setIgnoreParentInert(true);
+        } else { // by default InertData not present
+            optionalInertData.ifPresent(
+                    inertData -> inertData.setIgnoreParentInert(false));
+        }
+    }
+
+    /**
+     * Sets whether or not the given element is inert. When an element is inert,
+     * it does not receive any updates or interaction from the client side. The
+     * inert state is inherited to all child elements, unless those are ignoring
+     * the inert state.
+     *
+     * @param element
+     *            the element to update
+     * @param inert
+     *            {@code true} for inert
+     * @see #setIgnoreParentInert(Element, boolean)
+     */
+    public static void setInert(Element element, boolean inert) {
+        final Optional<InertData> optionalInertData = element.getNode()
+                .getFeatureIfInitialized(InertData.class);
+        if (inert) {
+            optionalInertData
+                    .orElse(element.getNode().getFeature(InertData.class))
+                    .setInertSelf(true);
+        } else { // default when no inert data present
+            optionalInertData
+                    .ifPresent(inertData -> inertData.setInertSelf(false));
+        }
     }
 
 }

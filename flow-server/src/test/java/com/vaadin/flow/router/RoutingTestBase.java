@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,10 +16,16 @@
 package com.vaadin.flow.router;
 
 import org.junit.Before;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.tests.util.MockUI;
 
 public class RoutingTestBase {
 
@@ -64,17 +70,39 @@ public class RoutingTestBase {
         }
     }
 
+    public static class RouterTestMockUI extends MockUI {
+
+        public RouterTestMockUI(Router router) {
+            super(createMockSession(router));
+        }
+
+        private static VaadinSession createMockSession(Router router) {
+            MockVaadinServletService service = new MockVaadinServletService();
+            service.setRouter(router);
+            return new MockVaadinSession(service);
+        }
+
+    }
+
     public static class RouterTestUI extends UI {
-        final Router router;
 
         public RouterTestUI(Router router) {
-            this.router = router;
+            super();
+
+            getInternals().setSession(createMockSession(router));
         }
 
-        @Override
-        public Router getRouter() {
-            return router;
+        private static VaadinSession createMockSession(Router router) {
+
+            VaadinSession session = Mockito.mock(VaadinSession.class);
+            VaadinService service = Mockito.mock(VaadinService.class);
+
+            Mockito.when(session.getService()).thenReturn(service);
+            Mockito.when(service.getRouter()).thenReturn(router);
+
+            return session;
         }
+
     }
 
     protected Router router;

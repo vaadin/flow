@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -80,21 +80,6 @@ public class MultiSelectionEvent<C extends Component, T> extends
     }
 
     /**
-     * Gets the new selection.
-     * <p>
-     * The result is the current selection of the source listing. So it's always
-     * exactly the same as {@link #getValue()}.
-     *
-     * @see #getValue()
-     *
-     * @return an unmodifiable set of items selected after the selection was
-     *         changed
-     */
-    public Set<T> getNewSelection() {
-        return getValue();
-    }
-
-    /**
      * Gets the old selection.
      *
      * @return an unmodifiable set of items selected before the selection was
@@ -109,13 +94,13 @@ public class MultiSelectionEvent<C extends Component, T> extends
      * <p>
      * This is just a convenience method for checking what was previously
      * selected in {@link #getOldSelection()} but not selected anymore in
-     * {@link #getNewSelection()}.
+     * {@link #getValue()}.
      *
      * @return the items that were removed from selection
      */
     public Set<T> getRemovedSelection() {
         Set<T> copy = new LinkedHashSet<>(getOldValue());
-        copy.removeAll(getNewSelection());
+        copy.removeAll(getValue());
         return copy;
     }
 
@@ -123,8 +108,7 @@ public class MultiSelectionEvent<C extends Component, T> extends
      * Gets the items that were added to selection.
      * <p>
      * This is just a convenience method for checking what is new selected in
-     * {@link #getNewSelection()} and wasn't selected in
-     * {@link #getOldSelection()}.
+     * {@link #getValue()} and wasn't selected in {@link #getOldSelection()}.
      *
      * @return the items that were removed from selection
      */

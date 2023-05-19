@@ -1,16 +1,12 @@
 package com.vaadin.flow.test.scalability;
 
-import javax.servlet.annotation.WebServlet;
-
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletConfiguration;
+import com.vaadin.flow.router.Route;
 
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,22 +20,10 @@ import com.vaadin.flow.server.VaadinServletConfiguration;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+@Route("helloworld")
+public class HelloWorldUI extends Div {
 
-public class HelloWorldUI extends UI {
-
-    public static final String PATH = "/helloworld/";
-
-    /**
-     * The main servlet for the application.
-     */
-    @WebServlet(urlPatterns = PATH
-            + "*", name = "UIServlet", asyncSupported = true)
-    @VaadinServletConfiguration(ui = HelloWorldUI.class, productionMode = false)
-    public static class Servlet extends VaadinServlet {
-    }
-
-    @Override
-    protected void init(VaadinRequest request) {
+    public HelloWorldUI() {
         NativeButton b = new NativeButton("Hello", e -> {
             add(new Text("Hello!"));
         });

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.data.provider;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import com.vaadin.flow.shared.Registration;
@@ -29,7 +29,7 @@ import elemental.json.JsonObject;
  * <p>
  * It is used by components that need to add and remove DataGenerators
  * dynamically, or that support multiple layers of data generation.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  *
@@ -39,7 +39,7 @@ import elemental.json.JsonObject;
 public class CompositeDataGenerator<T>
         implements DataGenerator<T>, HasDataGenerators<T> {
 
-    private final Set<DataGenerator<T>> dataGenerators = new HashSet<>();
+    final Set<DataGenerator<T>> dataGenerators = new LinkedHashSet<>();
 
     @Override
     public void generateData(T item, JsonObject jsonObject) {
@@ -71,15 +71,12 @@ public class CompositeDataGenerator<T>
 
     /**
      * Removes the DataGenerator from the list, destroying its data.
-     * 
+     *
      * @param generator
      *            the data generator to remove
      */
-    @Override
-    public void removeDataGenerator(DataGenerator<T> generator) {
-        assert generator != null : "generator should not be null";
+    private void removeDataGenerator(DataGenerator<T> generator) {
         generator.destroyAllData();
         dataGenerators.remove(generator);
     }
-
 }

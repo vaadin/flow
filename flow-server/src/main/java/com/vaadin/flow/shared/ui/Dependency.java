@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,9 +18,6 @@ package com.vaadin.flow.shared.ui;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.Stream;
-
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -42,11 +39,11 @@ public class Dependency implements Serializable {
      * The type of a dependency.
      */
     public enum Type {
-        STYLESHEET, JAVASCRIPT, JS_MODULE, HTML_IMPORT;
+        STYLESHEET, JAVASCRIPT, JS_MODULE, DYNAMIC_IMPORT;
 
         /**
          * Check if the given value is contained as a enum value.
-         * 
+         *
          * @param value
          *            value to check
          * @return true if there is a matching enum value
@@ -65,10 +62,6 @@ public class Dependency implements Serializable {
      * Creates a new dependency of the given type, to be loaded from the given
      * URL.
      * <p>
-     * A relative URL is expanded to use the {@code frontend://} prefix. URLs
-     * with a defined protocol and absolute URLs without a protocol are used
-     * as-is.
-     * <p>
      * The URL is passed through the translation mechanism before loading, so
      * custom protocols, specified at
      * {@link com.vaadin.flow.shared.VaadinUriResolver} can be used.
@@ -85,16 +78,30 @@ public class Dependency implements Serializable {
         if (url == null) {
             throw new IllegalArgumentException("url cannot be null");
         }
-        assert type != null;
+        this.type = Objects.requireNonNull(type);
 
-        this.type = type;
-        if (type.equals(Type.JS_MODULE)) {
-            this.url = url;
-        } else {
-            this.url = SharedUtil.prefixIfRelative(url,
-                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-        }
+        this.url = url;
         this.loadMode = loadMode;
+    }
+
+    /**
+     * Creates a new dependency of the given type, to be loaded using JS
+     * expression which is supposed to return a {@code Promise}.
+     * <p>
+     * The created instance dependency mode is {@link LoadMode#LAZY}.
+     *
+     * @param type
+     *            the type of the dependency, not {@code null}
+     * @param expression
+     *            the JS expression to load the dependency, not {@code null}
+     */
+    public Dependency(Type type, String expression) {
+        // It's important that the load mode of the dependency is Lazy because
+        // any other mode is not sent to the client at all when it's added at
+        // the initial request: it's processed by the bootstrap handler via
+        // adding an element into the document head right away (no client side
+        // processing is involved).
+        this(type, expression, LoadMode.LAZY);
     }
 
     /**
@@ -154,6 +161,7 @@ public class Dependency implements Serializable {
         Dependency that = (Dependency) o;
         return type == that.type && loadMode == that.loadMode
                 && Objects.equals(url, that.url);
+
     }
 
     @Override

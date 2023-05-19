@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -64,8 +64,6 @@ public class InfoView extends Div {
         info("Address", webBrowser.getAddress());
 
         add(device, "Android", webBrowser.isAndroid());
-        add(device, "iOS", webBrowser.isIOS());
-        add(device, "iPad", webBrowser.isIPad());
         add(device, "iPhone", webBrowser.isIPhone());
         add(device, "Windows Phone", webBrowser.isWindowsPhone());
 
@@ -85,9 +83,6 @@ public class InfoView extends Div {
 
         info("Browser", browser.stream().collect(Collectors.joining(", ")));
 
-        if (webBrowser.isTooOldToFunctionProperly()) {
-            header("Browser is too old to function properly");
-        }
         info("User-agent", webBrowser.getBrowserApplication());
         info("Browser major", webBrowser.getBrowserMajorVersion());
         info("Browser minor", webBrowser.getBrowserMinorVersion());

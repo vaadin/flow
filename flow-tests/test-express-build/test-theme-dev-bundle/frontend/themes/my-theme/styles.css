@@ -1,0 +1,16 @@
+@import url('./imported.css');
+@import url('line-awesome/dist/line-awesome/css/line-awesome.min.css');
+
+@font-face {
+    font-family: "Ostrich";
+    src: url("./fonts/ostrich-sans-regular.ttf") format("TrueType");
+}
+
+html > body {
+    background: rgba(255, 0, 0, 1);
+    font-family: "Ostrich";
+}
+
+body {
+    --my-theme-marker: 1
+}

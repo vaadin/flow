@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,7 +20,7 @@ import com.vaadin.flow.component.HasValue.ValueChangeListener;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.NotFoundException;
@@ -44,7 +44,7 @@ public class RerouteView extends AbstractDivView {
         CheckBox checkbox = new CheckBox("RerouteToError");
         checkbox.setId("check");
         checkbox.addValueChangeListener(event -> {
-            reroute = checkbox.isChecked();
+            setReroute(checkbox.isChecked());
         });
         add(button);
         add(checkbox);
@@ -68,19 +68,20 @@ public class RerouteView extends AbstractDivView {
     public class CheckBox extends HtmlContainer {
 
         Input input;
-        Label captionLabel;
+        NativeLabel captionLabel;
 
         public CheckBox() {
             input = new Input();
             input.getElement().setAttribute("type", "checkbox");
-            input.getElement().addPropertyChangeListener("checked",
-                    "change", event -> {});
+            input.getElement().addPropertyChangeListener("checked", "change",
+                    event -> {
+                    });
             add(input);
         }
 
         public CheckBox(String caption) {
             this();
-            captionLabel = new Label(caption);
+            captionLabel = new NativeLabel(caption);
             add(captionLabel);
         }
 

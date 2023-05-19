@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -44,16 +44,18 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
 
         RouteConfiguration configuration = RouteConfiguration
                 .forApplicationScope();
-        if (!configuration.isPathRegistered(DYNAMICALLY_REGISTERED_ROUTE)) {
-            configuration.setRoute(DYNAMICALLY_REGISTERED_ROUTE,
-                    DynamicallyRegisteredRoute.class);
-        }
+        // lock registry from any other updates to get registrations correctly.
+        configuration.getHandledRegistry().update(() -> {
+            if (!configuration.isPathAvailable(DYNAMICALLY_REGISTERED_ROUTE)) {
+                configuration.setRoute(DYNAMICALLY_REGISTERED_ROUTE,
+                        DynamicallyRegisteredRoute.class);
+            }
+        });
 
         event.addRequestHandler((session, request, response) -> {
             requestCount.incrementAndGet();
             return false;
         });
-
     }
 
     public static int getInitCount() {

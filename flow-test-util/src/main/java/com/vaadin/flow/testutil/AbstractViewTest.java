@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,8 @@ import org.openqa.selenium.WebElement;
  * A base class for testing a view using TestBench. It opens the view and wait
  * for its root element to be present. It also checks errors in browser log at
  * both before and after phases of each test.
+ *
+ * @since 2.0
  */
 public abstract class AbstractViewTest extends ChromeBrowserTest {
     private final By rootElementSelector;

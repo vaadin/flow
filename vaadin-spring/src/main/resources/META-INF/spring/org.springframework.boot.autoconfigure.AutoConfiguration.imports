@@ -1,0 +1,3 @@
+com.vaadin.flow.spring.SpringBootAutoConfiguration
+com.vaadin.flow.spring.SpringSecurityAutoConfiguration
+com.vaadin.flow.spring.VaadinScopesConfig

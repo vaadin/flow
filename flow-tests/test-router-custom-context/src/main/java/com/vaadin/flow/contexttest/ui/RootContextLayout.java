@@ -25,17 +25,20 @@ public class RootContextLayout extends Div implements RouterLayout {
         }
 
     }
+
     @Route(value = "sub-context", layout = RootContextLayout.class)
-    public static class SubContextLayout extends DependencyLayout implements HasUrlParameter<String> {
+    public static class SubContextLayout extends DependencyLayout
+            implements HasUrlParameter<String> {
 
         public SubContextLayout() {
-            getElement().appendChild(ElementFactory.createDiv("Sub Context Layout")
-                    .setAttribute("id", "sub"));
+            getElement().appendChild(ElementFactory
+                    .createDiv("Sub Context Layout").setAttribute("id", "sub"));
         }
 
         @Override
-        public void setParameter(BeforeEvent event, @WildcardParameter String parameter) {
-            //ignored
+        public void setParameter(BeforeEvent event,
+                @WildcardParameter String parameter) {
+            // ignored
         }
     }
 

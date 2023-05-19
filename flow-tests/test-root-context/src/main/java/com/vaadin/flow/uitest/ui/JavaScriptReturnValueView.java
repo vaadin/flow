@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,7 +23,7 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.router.Route;
@@ -57,7 +57,7 @@ public class JavaScriptReturnValueView extends AbstractDivView {
         valueSelect.addOption("String", "'foo'");
         valueSelect.addOption("Number", "42");
         valueSelect.addOption("null", "null");
-        valueSelect.addOption("Error", "new Error('message')");
+        valueSelect.addOption("Error", "new Error('message')", "error-value");
 
         // Promise semantics to use
         NativeRadioButtonGroup<String> resolveRejectSelect = new NativeRadioButtonGroup<>(
@@ -78,8 +78,8 @@ public class JavaScriptReturnValueView extends AbstractDivView {
         executionSelect.addOption("Resolved promise",
                 (value, resolveOrReject) -> "return Promise." + resolveOrReject
                         + "(" + value + ")");
-        executionSelect.addOption("Timeout",
-                (value, resolveOrReject) -> "return new Promise((resolve, reject) => {setTimeout(() => "
+        executionSelect.addOption("Timeout", (value,
+                resolveOrReject) -> "return new Promise((resolve, reject) => {setTimeout(() => "
                         + resolveOrReject + "(" + value + "), 1000)})");
 
         NativeButton runButton = createButton("Run", "run", event -> {
@@ -113,8 +113,16 @@ public class JavaScriptReturnValueView extends AbstractDivView {
         }
 
         public Input addOption(String caption, T value) {
+            return addOption(caption, value, null);
+        }
+
+        public Input addOption(String caption, T value, String id) {
             Input input = new Input();
-            input.setId(caption.replaceAll("[ .]", "").toLowerCase());
+            if (id == null) {
+                input.setId(caption.replaceAll("[ .]", "").toLowerCase());
+            } else {
+                input.setId(id);
+            }
 
             input.getElement().setAttribute("name", group);
             input.getElement().setAttribute("type", "radio");
@@ -132,7 +140,7 @@ public class JavaScriptReturnValueView extends AbstractDivView {
                 input.getElement().setAttribute("checked", true);
             }
 
-            Label label = new Label(caption);
+            NativeLabel label = new NativeLabel(caption);
             label.setFor(input);
 
             getContent().add(new Div(input, label));

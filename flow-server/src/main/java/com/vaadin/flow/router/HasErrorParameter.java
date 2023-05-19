@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,14 +33,14 @@ public interface HasErrorParameter<T extends Exception> extends Serializable {
      * Callback executed before rendering the exception view.
      * <p>
      * Note! returned int should be a valid
-     * {@link javax.servlet.http.HttpServletResponse} code
+     * {@link com.vaadin.flow.server.HttpStatusCode} code
      *
      * @param event
      *            the before navigation event for this request
      * @param parameter
      *            error parameter containing custom exception and caught
      *            exception
-     * @return a valid {@link javax.servlet.http.HttpServletResponse} code
+     * @return a valid {@link com.vaadin.flow.server.HttpStatusCode} code
      */
     int setErrorParameter(BeforeEnterEvent event, ErrorParameter<T> parameter);
 }

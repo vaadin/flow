@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,12 +23,16 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests for handling internal errors and session expiration
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  */
@@ -37,25 +41,36 @@ public class InternalErrorIT extends ChromeBrowserTest {
     private static final String UPDATE = "update";
     private static final String CLOSE_SESSION = "close-session";
 
+    @Override
+    public void setup() throws Exception {
+        super.setup();
+        open();
+        // make sure system message provider is resets
+        clickButton("reset-system-messages");
+    }
+
     @Test
     public void sessionExpired_refreshByDefault() {
-        open();
+        // Put a flag in the current window
+        executeScript("window.foo = true");
+        assertTrue((boolean) executeScript("return !!window.foo;"));
 
+        // Click on a button that should update the UI
         clickButton(UPDATE);
+        waitUntil(driver -> isMessageUpdated());
+
+        // Expire the session
         clickButton(CLOSE_SESSION);
 
-        // Just click on any button to make a request after killing the session
-        clickButton(CLOSE_SESSION);
+        // Wait until the UI does not have the updated message
+        waitUntil(driver -> !isMessageUpdated());
 
-        try {
-            waitUntil(driver -> !isMessageUpdated());
-        } catch (TimeoutException e) {
-            Assert.fail(
-                    "After killing the session, the page should be refreshed, "
-                            + "resetting the state of the UI.");
-        }
+        // window has been reloaded, thus, the flag must not be
+        // in the new window
+        assertFalse((boolean) executeScript("return !!window.foo;"));
 
-        Assert.assertFalse(
+        // Check that there is no notification about session expired
+        assertFalse(
                 "By default, the 'Session Expired' notification "
                         + "should not be used",
                 isSessionExpiredNotificationPresent());
@@ -63,14 +78,13 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
     @Test
     public void enableSessionExpiredNotification_sessionExpired_notificationShown() {
-        open();
-
         clickButton("enable-notification");
 
         // Refresh to take the new config into use
         getDriver().navigate().refresh();
 
         clickButton(UPDATE);
+        waitUntil(driver -> isMessageUpdated());
         clickButton(CLOSE_SESSION);
 
         // Just click on any button to make a request after killing the session
@@ -86,8 +100,6 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
     @Test
     public void internalError_showNotification_clickNotification_refresh() {
-        open();
-
         clickButton(UPDATE);
 
         clickButton("cause-exception");
@@ -113,8 +125,6 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
     @Test
     public void internalError_showNotification_clickEsc_refresh() {
-        open();
-
         clickButton(UPDATE);
 
         clickButton("cause-exception");
@@ -141,6 +151,8 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
     @After
     public void resetSystemMessages() {
+        waitUntil(ExpectedConditions
+                .presenceOfElementLocated(By.id("reset-system-messages")));
         clickButton("reset-system-messages");
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,23 +16,13 @@
 
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
 
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.RequestHandler;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.ServletHelper;
-import com.vaadin.flow.server.ServletHelper.RequestType;
-import com.vaadin.flow.server.SessionExpiredHandler;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinServletResponse;
-import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.shared.communication.PushConstants;
 import java.io.IOException;
+import java.util.Optional;
+
+import jakarta.servlet.ServletRegistration;
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.client.TrackMessageSizeInterceptor;
 import org.atmosphere.cpr.ApplicationConfig;
@@ -42,16 +32,35 @@ import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereInterceptor;
 import org.atmosphere.cpr.AtmosphereRequestImpl;
 import org.atmosphere.cpr.AtmosphereResponseImpl;
+import org.atmosphere.cpr.BroadcasterConfig;
 import org.atmosphere.interceptor.HeartbeatInterceptor;
 import org.atmosphere.util.VoidAnnotationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.BootstrapHandlerHelper;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.RequestHandler;
+import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.SessionExpiredHandler;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletResponse;
+import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.communication.PushConstants;
+
 /**
  * Handles requests to open a push (bidirectional) communication channel between
  * the client and the server. After the initial request, communication through
  * the push channel is managed by {@link PushAtmosphereHandler} and
- * {@link PushHandler}
+ * {@link PushHandler}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -98,10 +107,13 @@ public class PushRequestHandler
             getLogger().debug("Using pre-initialized Atmosphere for servlet {}",
                     vaadinServletConfig.getServletName());
         }
-        pushHandler.setLongPollingSuspendTimeout(
-                atmosphere.getAtmosphereConfig().getInitParameter(
-                        Constants.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
-                        -1));
+        String timeout = service.getDeploymentConfiguration().getStringProperty(
+                InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
+                "-1");
+        atmosphere.addInitParameter(
+                InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
+                timeout);
+        pushHandler.setLongPollingSuspendTimeout(Integer.parseInt(timeout));
         for (AtmosphereHandlerWrapper handlerWrapper : atmosphere
                 .getAtmosphereHandlers().values()) {
             AtmosphereHandler handler = handlerWrapper.atmosphereHandler;
@@ -109,6 +121,11 @@ public class PushRequestHandler
                 // Map the (possibly pre-initialized) handler to the actual push
                 // handler
                 ((PushAtmosphereHandler) handler).setPushHandler(pushHandler);
+                BroadcasterConfig broadcasterConfig = handlerWrapper.broadcaster
+                        .getBroadcasterConfig();
+                broadcasterConfig.addFilter(new LongPollingCacheFilter());
+                broadcasterConfig.addFilter(
+                        new AtmospherePushConnection.PushMessageUnwrapFilter());
             }
 
         }
@@ -214,6 +231,34 @@ public class PushRequestHandler
         atmosphere.addInitParameter("org.atmosphere.cpr.showSupportMessage",
                 "false");
 
+        String pushServletMapping = BootstrapHandlerHelper
+                .getCleanedPushServletMapping(
+                        vaadinServletConfig.getInitParameter(
+                                InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING));
+
+        if (pushServletMapping != null) {
+            atmosphere.addInitParameter(ApplicationConfig.JSR356_MAPPING_PATH,
+                    pushServletMapping + Constants.PUSH_MAPPING);
+        } else {
+            Optional<ServletRegistration> servletRegistration = BootstrapHandlerHelper
+                    .getServletRegistration(vaadinServletConfig);
+            if (servletRegistration.isPresent()) {
+                atmosphere.addInitParameter(
+                        ApplicationConfig.JSR356_MAPPING_PATH,
+                        BootstrapHandlerHelper
+                                .findFirstUrlMapping(servletRegistration.get())
+                                + Constants.PUSH_MAPPING);
+            } else {
+                getLogger().debug(
+                        "Unable to determine servlet registration for {}. "
+                                + "Using root mapping for push",
+                        vaadinServletConfig.getServletName());
+            }
+        }
+
+        atmosphere.addInitParameter(
+                ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");
+
         try {
             atmosphere.init(vaadinServletConfig);
 
@@ -233,7 +278,7 @@ public class PushRequestHandler
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
 
-        if (!ServletHelper.isRequestType(request, RequestType.PUSH)) {
+        if (!HandlerHelper.isRequestType(request, RequestType.PUSH)) {
             return false;
         }
 

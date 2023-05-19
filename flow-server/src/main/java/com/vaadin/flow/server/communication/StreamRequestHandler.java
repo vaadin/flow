@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,19 +15,18 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.StreamReceiver;
 import com.vaadin.flow.server.StreamResource;
@@ -35,9 +34,15 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
+import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_COUNT_MAX;
+import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_SIZE_MAX;
+import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_SIZE_MAX;
+
 /**
  * Handles {@link StreamResource} and {@link StreamReceiver} instances
  * registered in {@link VaadinSession}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -49,10 +54,25 @@ public class StreamRequestHandler implements RequestHandler {
     /**
      * Dynamic resource URI prefix.
      */
-    static final String DYN_RES_PREFIX = "VAADIN/dynamic/resource/";
+    public static final String DYN_RES_PREFIX = "VAADIN/dynamic/resource/";
 
-    private StreamResourceHandler resourceHandler = new StreamResourceHandler();
-    private StreamReceiverHandler receiverHandler = new StreamReceiverHandler();
+    private final StreamResourceHandler resourceHandler = new StreamResourceHandler();
+    private final StreamReceiverHandler receiverHandler;
+
+    /**
+     * Create a new stream request handler with the default
+     * StreamReceiverHandler.
+     */
+    public StreamRequestHandler() {
+        this(new StreamReceiverHandler());
+    }
+
+    protected StreamRequestHandler(StreamReceiverHandler receiverHandler) {
+        receiverHandler.setRequestSizeMax(getRequestSizeMax());
+        receiverHandler.setFileSizeMax(getFileSizeMax());
+        receiverHandler.setFileCountMax(getFileCountMax());
+        this.receiverHandler = receiverHandler;
+    }
 
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
@@ -76,7 +96,7 @@ public class StreamRequestHandler implements RequestHandler {
             abstractStreamResource = StreamRequestHandler.getPathUri(pathInfo)
                     .flatMap(session.getResourceRegistry()::getResource);
             if (!abstractStreamResource.isPresent()) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
                         "Resource is not found for path=" + pathInfo);
                 return true;
             }
@@ -104,7 +124,7 @@ public class StreamRequestHandler implements RequestHandler {
 
     /**
      * Parse the pathInfo for id data.
-  s   * <p>
+     * <p>
      * URI pattern: VAADIN/dynamic/resource/[UIID]/[SECKEY]/[NAME]
      *
      * @see #generateURI
@@ -132,15 +152,9 @@ public class StreamRequestHandler implements RequestHandler {
     public static String generateURI(String name, String id) {
         StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
 
-        try {
-            builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
-            builder.append(id).append(PATH_SEPARATOR);
-            builder.append(
-                    URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
-        } catch (UnsupportedEncodingException e) {
-            // UTF8 has to be supported
-            throw new RuntimeException(e);
-        }
+        builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
+        builder.append(id).append(PATH_SEPARATOR);
+        builder.append(UrlUtil.encodeURIComponent(name));
         return builder.toString();
     }
 
@@ -153,19 +167,45 @@ public class StreamRequestHandler implements RequestHandler {
         }
         String prefix = path.substring(0, index + 1);
         String name = path.substring(prefix.length());
-        // path info returns decoded name but space ' ' remains encoded '+'
-        name = name.replace('+', ' ');
         try {
-            URI uri = new URI(prefix
-                    + URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
+            URI uri = new URI(prefix + UrlUtil.encodeURIComponent(name));
             return Optional.of(uri);
-        } catch (UnsupportedEncodingException e) {
-            // UTF8 has to be supported
-            throw new RuntimeException(e);
         } catch (URISyntaxException e) {
-            getLogger().info("Path '{}' is not correct URI (it violates RFC 2396)", path, e);
+            getLogger().info(
+                    "Path '{}' is not correct URI (it violates RFC 2396)", path,
+                    e);
             return Optional.empty();
         }
+    }
+
+    /**
+     * Returns maximum request size for upload. Override this to increase the
+     * default. Defaults to -1 (no limit).
+     *
+     * @return maximum request size for upload
+     */
+    protected long getRequestSizeMax() {
+        return DEFAULT_SIZE_MAX;
+    }
+
+    /**
+     * Returns maximum file size for upload. Override this to increase the
+     * default. Defaults to -1 (no limit).
+     *
+     * @return maximum file size for upload
+     */
+    protected long getFileSizeMax() {
+        return DEFAULT_FILE_SIZE_MAX;
+    }
+
+    /**
+     * Returns maximum file part count for upload. Override this to increase the
+     * default. Defaults to 10000.
+     *
+     * @return maximum file part count for upload
+     */
+    protected long getFileCountMax() {
+        return DEFAULT_FILE_COUNT_MAX;
     }
 
     private static Logger getLogger() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,11 +29,11 @@ import com.vaadin.client.bootstrap.ErrorMessage;
 public class ApplicationConfiguration {
     private String applicationId;
     private String contextRootUrl;
-    private String frontendRootUrl;
     private String serviceUrl;
     private int uiId;
     private ErrorMessage sessionExpiredError;
     private int heartbeatInterval;
+    private int maxMessageSuspendTimeout;
 
     private boolean productionMode;
     private boolean requestTiming;
@@ -42,6 +42,12 @@ public class ApplicationConfiguration {
     private String servletVersion;
     private String atmosphereVersion;
     private String atmosphereJSVersion;
+    private String[] exportedWebComponents;
+
+    private boolean devToolsEnabled;
+    private String liveReloadUrl;
+    private String liveReloadBackend;
+    private String springBootLiveReloadPort;
 
     /**
      * Gets the id generated for the application.
@@ -162,6 +168,27 @@ public class ApplicationConfiguration {
      */
     public void setHeartbeatInterval(int heartbeatInterval) {
         this.heartbeatInterval = heartbeatInterval;
+    }
+
+    /**
+     * Gets the maximum message suspension delay.
+     *
+     * @return The maximum time, in milliseconds, to suspend out-of-order
+     *         messages waiting for their predecessor before resynchronizing.
+     */
+    public int getMaxMessageSuspendTimeout() {
+        return maxMessageSuspendTimeout;
+    }
+
+    /**
+     * Sets the maximum message suspension delay.
+     *
+     * @param maxMessageSuspendTimeout
+     *            The maximum time, in milliseconds, to suspend out-of-order
+     *            messages waiting for their predecessor before resynchronizing.
+     */
+    public void setMaxMessageSuspendTimeout(int maxMessageSuspendTimeout) {
+        this.maxMessageSuspendTimeout = maxMessageSuspendTimeout;
     }
 
     /**
@@ -294,24 +321,98 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Gets the base URL of the frontend components on the server.
+     * Sets the exported web components.
      *
-     * @return the base URL on the server for the {@literal frontend://}
-     *         protocol.
+     * @param exportedWebComponents
+     *            the exported web components
      */
-    public String getFrontendRootUrl() {
-        return frontendRootUrl;
+    public void setExportedWebComponents(String[] exportedWebComponents) {
+        this.exportedWebComponents = exportedWebComponents;
     }
 
     /**
-     * Sets the base URL of the frontend components on the server.
+     * Gets the exported web components.
      *
-     * @param frontendRootUrl
-     *            the base URL on the server for the {@literal frontend://}
-     *            protocol.
+     * @return the exported web components
      */
-    public void setFrontendRootUrl(String frontendRootUrl) {
-        this.frontendRootUrl = frontendRootUrl;
+    public String[] getExportedWebComponents() {
+        return exportedWebComponents;
     }
 
+    /**
+     * Gets if development tools should be added to the page.
+     *
+     * @return whether development tools should be added
+     */
+    public boolean isDevToolsEnabled() {
+        return devToolsEnabled;
+    }
+
+    /**
+     *
+     * Sets if development tools should be added to the page.
+     *
+     * @param devToolsEnabled
+     *            whether development tools should be added
+     */
+    public void setDevToolsEnabled(boolean devToolsEnabled) {
+        this.devToolsEnabled = devToolsEnabled;
+    }
+
+    /**
+     * Gets the URL for the live reload websocket connection.
+     *
+     * @return URL for the live reload websocket connection
+     */
+    public String getLiveReloadUrl() {
+        return liveReloadUrl;
+    }
+
+    /**
+     * Sets the URL for the live reload websocket connection.
+     *
+     * @param liveReloadUrl
+     *            URL for the live reload websocket connection
+     */
+    public void setLiveReloadUrl(String liveReloadUrl) {
+        this.liveReloadUrl = liveReloadUrl;
+    }
+
+    /**
+     * Gets the the live reload backend technology identifier.
+     *
+     * @return the live reload backend technology identifier
+     */
+    public String getLiveReloadBackend() {
+        return liveReloadBackend;
+    }
+
+    /**
+     * Sets the live reload backend technology identifier.
+     *
+     * @param liveReloadBackend
+     *            the live reload backend technology identifier
+     */
+    public void setLiveReloadBackend(String liveReloadBackend) {
+        this.liveReloadBackend = liveReloadBackend;
+    }
+
+    /**
+     * Gets the Spring boot live reload port.
+     *
+     * @return the Spring boot live reload port
+     */
+    public String getSpringBootLiveReloadPort() {
+        return springBootLiveReloadPort;
+    }
+
+    /**
+     * Sets the Spring boot live reload port.
+     *
+     * @param springBootLiveReloadPort
+     *            the Spring boot live reload port
+     */
+    public void setSpringBootLiveReloadPort(String springBootLiveReloadPort) {
+        this.springBootLiveReloadPort = springBootLiveReloadPort;
+    }
 }

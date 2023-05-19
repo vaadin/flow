@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -48,6 +48,8 @@ import elemental.json.JsonValue;
  * Map of DOM events with server-side listeners. The key set of this map
  * describes the event types for which listeners are present. The values
  * associated with the keys are currently not used.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -58,8 +60,8 @@ public class ElementListenerMap extends NodeMap {
      */
     public static final String ALWAYS_TRUE_FILTER = "1";
 
-    private static final EnumSet<DebouncePhase> NO_TIMEOUT_PHASES
-            = EnumSet.of(DebouncePhase.LEADING);
+    private static final EnumSet<DebouncePhase> NO_TIMEOUT_PHASES = EnumSet
+            .of(DebouncePhase.LEADING);
 
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
@@ -86,12 +88,12 @@ public class ElementListenerMap extends NodeMap {
             } else {
                 // [[timeout1, phase1, phase2, ...], [timeout2, phase1, ...]]
                 return debounceSettings.entrySet().stream()
-                        .map(entry -> Stream
-                                .concat(Stream.of(
+                        .map(entry -> Stream.concat(
+                                Stream.of(
                                         Json.create(entry.getKey().intValue())),
-                                        entry.getValue().stream()
-                                                .map(DebouncePhase::getIdentifier)
-                                                .map(Json::create))
+                                entry.getValue().stream()
+                                        .map(DebouncePhase::getIdentifier)
+                                        .map(Json::create))
                                 .collect(JsonUtils.asArray()))
                         .collect(JsonUtils.asArray());
             }
@@ -130,7 +132,17 @@ public class ElementListenerMap extends NodeMap {
             if (unregisterHandlers != null) {
                 unregisterHandlers.forEach(SerializableRunnable::run);
             }
+
             listenerMap.removeListener(type, this);
+
+            // update settings after removal. If we have listeners of the
+            // same type registered, we want to remove settings set by this
+            // particular listener from the overall set
+            // fixes #5090
+            if (listenerMap.listeners != null
+                    && listenerMap.listeners.containsKey(type)) {
+                listenerMap.updateEventSettings(type);
+            }
         }
 
         @Override
@@ -163,7 +175,7 @@ public class ElementListenerMap extends NodeMap {
                 DisabledUpdateMode disabledUpdateMode) {
             if (disabledUpdateMode == null) {
                 throw new IllegalArgumentException(
-                        "RPC comunication control mode for disabled element must not be null");
+                        "RPC communication control mode for disabled element must not be null");
             }
 
             mode = disabledUpdateMode;
@@ -195,7 +207,11 @@ public class ElementListenerMap extends NodeMap {
                 return false;
             }
 
-            return eventData.getBoolean(filter);
+            if (eventData.hasKey(filter)) {
+                return eventData.getBoolean(filter);
+            } else {
+                return false;
+            }
         }
 
         @Override
@@ -435,14 +451,14 @@ public class ElementListenerMap extends NodeMap {
      * Gets the event data expressions defined for the given event name. This
      * method is currently only provided to facilitate unit testing.
      *
-     * @param name
+     * @param eventName
      *            the name of the event, not <code>null</code>
      * @return an unmodifiable set of event data expressions, not
      *         <code>null</code>
      */
-    Set<String> getExpressions(String name) {
-        assert name != null;
-        return collectEventExpressions(name).keySet();
+    public Set<String> getExpressions(String eventName) {
+        assert eventName != null;
+        return collectEventExpressions(eventName).keySet();
     }
 
     /**

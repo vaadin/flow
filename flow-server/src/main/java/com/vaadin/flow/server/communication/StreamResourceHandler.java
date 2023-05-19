@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,8 +15,13 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceWriter;
 import com.vaadin.flow.server.VaadinRequest;
@@ -24,12 +29,10 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
-
 /**
  * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -39,7 +42,7 @@ public class StreamResourceHandler implements Serializable {
 
     /**
      * Handle sending for a stream resource request.
-     * 
+     *
      * @param session
      *            session for the request
      * @param request
@@ -64,17 +67,29 @@ public class StreamResourceHandler implements Serializable {
             response.setContentType(streamResource.getContentTypeResolver()
                     .apply(streamResource, context));
             response.setCacheTime(streamResource.getCacheTime());
+            streamResource.getHeaders()
+                    .forEach((name, value) -> response.setHeader(name, value));
             writer = streamResource.getWriter();
             if (writer == null) {
                 throw new IOException(
                         "Stream resource produces null input stream");
             }
+        } catch (Exception exception) {
+            response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+            throw exception;
+
         } finally {
             session.unlock();
         }
         try (OutputStream outputStream = response.getOutputStream()) {
-            writer.accept(outputStream, session);
+            try {
+                writer.accept(outputStream, session);
+            } catch (Exception exception) {
+                // Set status before output is closed (see #8740)
+                response.setStatus(
+                        HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+                throw exception;
+            }
         }
     }
-
 }

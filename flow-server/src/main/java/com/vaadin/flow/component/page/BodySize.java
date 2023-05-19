@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  * Defines the body size that will be added to the HTML of the host pages.
  * <p>
  * If no {@code @BodySize} has been applied, the default values
- * {@code height:100vh} and {@code width:100vw} will be used, so the body will
+ * {@code height:100vh} and {@code width:100%} will be used, so the body will
  * fill the entire viewport. If you don't want to set any size for the body, you
  * must apply an empty {@code @BodySize} annotation to disable the default
  * values.

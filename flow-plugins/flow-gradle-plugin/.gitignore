@@ -1,0 +1,6 @@
+.idea
+*.iml
+build
+.gradle
+out
+yarn-cache

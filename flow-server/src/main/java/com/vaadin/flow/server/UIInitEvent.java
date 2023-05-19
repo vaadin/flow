@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,8 @@ import com.vaadin.flow.component.UI;
 
 /**
  * Event fired to {@link UIInitListener} when a {@link UI} has been initialized.
+ *
+ * @since 1.0
  */
 public class UIInitEvent extends EventObject {
 
@@ -46,7 +48,7 @@ public class UIInitEvent extends EventObject {
 
     /**
      * Get the initialized UI for this initialization event.
-     * 
+     *
      * @return initialized UI
      */
     public UI getUI() {

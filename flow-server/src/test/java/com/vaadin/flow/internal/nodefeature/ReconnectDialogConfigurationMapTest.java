@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,7 +19,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 
 public class ReconnectDialogConfigurationMapTest
         extends AbstractMapFeatureTest<ReconnectDialogConfigurationMap> {
@@ -42,12 +41,6 @@ public class ReconnectDialogConfigurationMapTest
         Assert.assertEquals(
                 ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT,
                 map.getReconnectInterval());
-        Assert.assertEquals(
-                ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_DEFAULT,
-                map.getDialogGracePeriod());
-        Assert.assertEquals(
-                ReconnectDialogConfigurationMap.DIALOG_MODAL_DEFAULT,
-                map.isDialogModal());
     }
 
     @Test
@@ -73,19 +66,4 @@ public class ReconnectDialogConfigurationMapTest
         testInt(map, ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY,
                 map::setReconnectInterval, map::getReconnectInterval);
     }
-
-    @Test
-    public void setGetDialogGracePeriod() {
-        testInt(map, ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_KEY,
-                map::setDialogGracePeriod, map::getDialogGracePeriod);
-
-    }
-
-    @Test
-    public void setGetDialogModal() {
-        testBoolean(map, ReconnectDialogConfigurationMap.DIALOG_MODAL_KEY,
-                map::setDialogModal, map::isDialogModal);
-
-    }
-
 }

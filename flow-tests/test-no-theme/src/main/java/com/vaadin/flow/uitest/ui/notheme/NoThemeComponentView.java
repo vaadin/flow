@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,15 +18,13 @@ package com.vaadin.flow.uitest.ui.notheme;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.NoTheme;
 
 @Route("com.vaadin.flow.uitest.ui.notheme.NoThemeComponentView")
-@NoTheme
 public class NoThemeComponentView extends Div {
 
     public NoThemeComponentView() {
         Anchor anchor = new Anchor();
-        anchor.setText("link");
+        anchor.setText("Hello notheme");
         add(anchor);
     }
 }

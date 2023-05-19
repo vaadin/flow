@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,10 +16,11 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
 
 public class RouterSessionExpirationIT extends ChromeBrowserTest {
 
@@ -29,17 +30,32 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void navigationAfterSessionExpired() {
+    public void should_HaveANewSessionId_when_NavigationAfterSessionExpired() {
         openUrl("/new-router-session/NormalView");
 
         navigateToAnotherView();
         String sessionId = getSessionId();
         navigateToFirstView();
         Assert.assertEquals(sessionId, getSessionId());
+
         navigateToSesssionExpireView();
-        Assert.assertEquals("No session", getSessionId());
-        navigateToFirstView();
+        // expired session causes page reload, after the page reload there will
+        // be a new session
         Assert.assertNotEquals(sessionId, getSessionId());
+        sessionId = getSessionId();
+        navigateToAnotherView();
+        // session is preserved
+        Assert.assertEquals(sessionId, getSessionId());
+    }
+
+    @Test
+    @Ignore("Ignored because of fusion issue : https://github.com/vaadin/flow/issues/7581")
+    public void should_StayOnSessionExpirationView_when_NavigationAfterSessionExpired() {
+        openUrl("/new-router-session/NormalView");
+
+        navigateToSesssionExpireView();
+
+        assertTextAvailableInView("ViewWhichInvalidatesSession");
     }
 
     @Test
@@ -69,7 +85,7 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
     }
 
     private void navigateToSesssionExpireView() {
-        navigateTo("ViewWhichInvalidatesSession");
+        findElement(By.linkText("ViewWhichInvalidatesSession")).click();
     }
 
     private void navigateToInternalErrorView() {
@@ -79,8 +95,12 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
 
     private void navigateTo(String linkText) {
         findElement(By.linkText(linkText)).click();
+        assertTextAvailableInView(linkText);
+
+    }
+
+    private void assertTextAvailableInView(String linkText) {
         Assert.assertNotNull(
                 findElement(By.xpath("//strong[text()='" + linkText + "']")));
-
     }
 }

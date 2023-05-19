@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,6 +39,8 @@ import com.vaadin.flow.internal.StateNode;
 /**
  * Abstract class for collecting Methods which are published as
  * <code>serverObject.&lt;name&gt;</code> on the client side.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            Component type for setComponent(T component)
@@ -147,13 +149,25 @@ public abstract class AbstractServerHandlers<T>
      */
     protected void collectHandlerMethods(Class<?> clazz,
             Collection<Method> methods) {
+        if (clazz == null || clazz.equals(Object.class)) {
+            return;
+        }
         if (clazz.equals(getType())) {
             return;
         }
         Stream.of(clazz.getDeclaredMethods()).filter(
-                method -> method.isAnnotationPresent(getHandlerAnnotation()))
+                method -> hasAnnotation(method, getHandlerAnnotationFqn()))
                 .forEach(method -> addHandlerMethod(method, methods));
         collectHandlerMethods(clazz.getSuperclass(), methods);
+    }
+
+    private boolean hasAnnotation(Method method, String fqn) {
+        for (Annotation annotation : method.getAnnotations()) {
+            if (annotation.annotationType().getName().equals(fqn)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -166,15 +180,7 @@ public abstract class AbstractServerHandlers<T>
      */
     protected void addHandlerMethod(Method method, Collection<Method> methods) {
         ensureSupportedParameterTypes(method);
-        if (!void.class.equals(method.getReturnType())) {
-            String msg = String.format(Locale.ENGLISH,
-                    "Only void handler methods are supported. "
-                            + "Component '%s' has method '%s' annotated with '%s' whose return type is not void but %s",
-                    method.getDeclaringClass().getName(), method.getName(),
-                    getHandlerAnnotation().getName(),
-                    method.getReturnType().getSimpleName());
-            throw new IllegalStateException(msg);
-        }
+        ensureSupportedReturnType(method);
         Optional<Class<?>> checkedException = Stream
                 .of(method.getExceptionTypes())
                 .filter(ReflectTools::isCheckedException).findFirst();
@@ -185,18 +191,36 @@ public abstract class AbstractServerHandlers<T>
                             + " and annotated with '%s'",
                     method.getDeclaringClass().getName(), method.getName(),
                     checkedException.get().getName(),
-                    getHandlerAnnotation().getName());
+                    getHandlerAnnotationFqn());
             throw new IllegalStateException(msg);
         }
         methods.add(method);
     }
 
     /**
-     * Gets the annotation which is used to mark methods as handlers.
+     * Validate return type support for given method.
+     *
+     * @param method
+     *            method to check return type for
+     */
+    protected void ensureSupportedReturnType(Method method) {
+        if (!void.class.equals(method.getReturnType())) {
+            String msg = String.format(Locale.ENGLISH,
+                    "Only void handler methods are supported. "
+                            + "Component '%s' has method '%s' annotated with '%s' whose return type is not void but \"%s\"",
+                    method.getDeclaringClass().getName(), method.getName(),
+                    getHandlerAnnotationFqn(),
+                    method.getReturnType().getSimpleName());
+            throw new IllegalStateException(msg);
+        }
+    }
+
+    /**
+     * Gets the annotation FQN which is used to mark methods as handlers.
      *
      * @return the handler marker annotation
      */
-    protected abstract Class<? extends Annotation> getHandlerAnnotation();
+    protected abstract String getHandlerAnnotationFqn();
 
     /**
      * Returns method's RPC communication mode from the client side to the

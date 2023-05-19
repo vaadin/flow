@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,17 +15,16 @@
  */
 package com.vaadin.flow.dom.impl;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.ClassList;
-import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
@@ -45,14 +44,13 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
+import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.PolymerEventListenerMap;
 import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ShadowRootData;
-import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
-import com.vaadin.flow.internal.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
@@ -69,6 +67,8 @@ import elemental.json.JsonValue;
  * <p>
  * The data is stored directly in the state node but this should be considered
  * an implementation detail which can change.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -82,12 +82,11 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             ElementData.class, ElementAttributeMap.class,
             ElementChildrenList.class, ElementPropertyMap.class,
             ElementListenerMap.class, ElementClassList.class,
-            ElementStylePropertyMap.class, SynchronizedPropertiesList.class,
-            SynchronizedPropertyEventsList.class, ComponentMapping.class,
+            ElementStylePropertyMap.class, ComponentMapping.class,
             PolymerServerEventHandlers.class, ClientCallableHandlers.class,
             PolymerEventListenerMap.class, ShadowRootData.class,
             AttachExistingElementFeature.class, VirtualChildrenList.class,
-            ReturnChannelMap.class };
+            ReturnChannelMap.class, InertData.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -325,18 +324,6 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public Set<String> getSynchronizedProperties(StateNode node) {
-        return node.getFeature(SynchronizedPropertiesList.class)
-                .getSynchronizedProperties();
-    }
-
-    @Override
-    public Set<String> getSynchronizedPropertyEvents(StateNode node) {
-        return node.getFeature(SynchronizedPropertyEventsList.class)
-                .getSynchronizedPropertyEvents();
-    }
-
-    @Override
     public void setAttribute(StateNode node, String attribute,
             AbstractStreamResource receiver) {
         assert node != null;
@@ -413,12 +400,6 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void addSynchronizedProperty(StateNode node, String property,
-            DisabledUpdateMode mode) {
-        node.getFeature(SynchronizedPropertiesList.class).add(property, mode);
-    }
-
-    @Override
     protected Node<?> getNode(StateNode node) {
         assert supports(node);
         return Element.get(node);
@@ -429,4 +410,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         return features;
     }
 
+    protected Object readResolve() throws ObjectStreamException {
+        return instance;
+    }
 }

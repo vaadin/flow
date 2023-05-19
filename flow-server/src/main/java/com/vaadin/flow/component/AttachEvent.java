@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,8 @@ import com.vaadin.flow.component.internal.AbstractAttachDetachEvent;
  * <p>
  * When a hierarchy of components is being attached, this event is fired
  * child-first.
+ *
+ * @since 1.0
  */
 public class AttachEvent extends AbstractAttachDetachEvent {
 

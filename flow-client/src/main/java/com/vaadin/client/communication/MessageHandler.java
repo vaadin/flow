@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.client.communication;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Timer;
+
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.DependencyLoader;
@@ -26,6 +27,7 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.communication.MessageSender.ResynchronizationState;
 import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
@@ -56,9 +58,6 @@ public class MessageHandler {
 
     public static final String JSON_COMMUNICATION_PREFIX = "for(;;);[";
     public static final String JSON_COMMUNICATION_SUFFIX = "]";
-
-    /** The max timeout that response handling may be suspended. */
-    private static final int MAX_SUSPENDED_TIMEOUT = 5000;
 
     /**
      * The value of an undefined sync id.
@@ -190,8 +189,15 @@ public class MessageHandler {
                     "The json to handle cannot be null");
         }
         if (getServerId(json) == -1) {
-            Console.error("Response didn't contain a server id. "
-                    + "Please verify that the server is up-to-date and that the response data has not been modified in transmission.");
+
+            ValueMap meta = json.getValueMap("meta");
+
+            // Log the error only if session didn't expire.
+            if (meta == null
+                    || !meta.containsKey(JsonConstants.META_SESSION_EXPIRED)) {
+                Console.error("Response didn't contain a server id. "
+                        + "Please verify that the server is up-to-date and that the response data has not been modified in transmission.");
+            }
         }
 
         UIState state = registry.getUILifecycle().getState();
@@ -212,7 +218,18 @@ public class MessageHandler {
     protected void handleJSON(final ValueMap valueMap) {
         final int serverId = getServerId(valueMap);
 
-        if (isResynchronize(valueMap) && !isNextExpectedMessage(serverId)) {
+        boolean hasResynchronize = isResynchronize(valueMap);
+
+        if (!hasResynchronize && registry.getMessageSender()
+                .getResynchronizationState() == ResynchronizationState.WAITING_FOR_RESPONSE) {
+            Console.warn(
+                    "Ignoring message from the server as a resync request is ongoing.");
+            return;
+        }
+
+        registry.getMessageSender().clearResynchronizationState();
+
+        if (hasResynchronize && !isNextExpectedMessage(serverId)) {
             // Resynchronize request. We must remove any old pending
             // messages and ensure this is handled next. Otherwise we
             // would keep waiting for an older message forever (if this
@@ -252,9 +269,27 @@ public class MessageHandler {
             }
             pendingUIDLMessages.push(new PendingUIDLMessage(valueMap));
             if (!forceHandleMessage.isRunning()) {
-                forceHandleMessage.schedule(MAX_SUSPENDED_TIMEOUT);
+                int timeout = registry.getApplicationConfiguration()
+                        .getMaxMessageSuspendTimeout();
+                forceHandleMessage.schedule(timeout);
             }
             return;
+        }
+
+        /**
+         * Should only prepare resync after the if (locked ||
+         * !isNextExpectedMessage(serverId)) {...} since
+         * stateTree.repareForResync() will remove the nodes, and if locked is
+         * true, it will return without handling the message, thus won't adding
+         * nodes back.
+         *
+         * This is related to https://github.com/vaadin/flow/issues/8699 It
+         * seems that the reason is that `connectClient` is removed from the
+         * rootNode(<body> element) during a resync and not added back.
+         */
+        if (isResynchronize(valueMap)) {
+            // Unregister all nodes and rebuild the state tree
+            registry.getStateTree().prepareForResync();
         }
 
         double start = Duration.currentTimeMillis();
@@ -392,32 +427,36 @@ public class MessageHandler {
                     + (Duration.currentTimeMillis() - processUidlStart)
                     + " ms");
 
+            Reactive.flush();
+
             ValueMap meta = valueMap.getValueMap("meta");
 
             if (meta != null) {
                 Profiler.enter("Error handling");
+                final UIState uiState = registry.getUILifecycle().getState();
                 if (meta.containsKey(JsonConstants.META_SESSION_EXPIRED)) {
                     if (nextResponseSessionExpiredHandler != null) {
                         nextResponseSessionExpiredHandler.execute();
-                    } else {
+                    } else if (uiState != UIState.TERMINATED) {
                         registry.getSystemErrorHandler()
                                 .handleSessionExpiredError(null);
                         registry.getUILifecycle().setState(UIState.TERMINATED);
                     }
-                } else if (meta.containsKey("appError")) {
+                } else if (meta.containsKey("appError")
+                        && uiState != UIState.TERMINATED) {
                     ValueMap error = meta.getValueMap("appError");
 
                     registry.getSystemErrorHandler().handleUnrecoverableError(
                             error.getString("caption"),
                             error.getString("message"),
-                            error.getString("details"), error.getString("url"));
+                            error.getString("details"), error.getString("url"),
+                            error.getString("querySelector"));
 
                     registry.getUILifecycle().setState(UIState.TERMINATED);
                 }
                 Profiler.leave("Error handling");
             }
             nextResponseSessionExpiredHandler = null;
-            Reactive.flush();
 
             lastProcessingTime = (int) (Duration.currentTimeMillis() - start);
             totalProcessingTime += lastProcessingTime;
@@ -502,7 +541,7 @@ public class MessageHandler {
 
     private boolean isResponse(ValueMap json) {
         ValueMap meta = json.getValueMap("meta");
-        if (meta == null || !meta.containsKey("async")) {
+        if (meta == null || !meta.containsKey(JsonConstants.META_ASYNC)) {
             return true;
         }
         return false;
@@ -559,6 +598,19 @@ public class MessageHandler {
             // has been lost
             // Drop pending messages and resynchronize
             pendingUIDLMessages.clear();
+
+            // Inform the message sender that resynchronize is desired already
+            // since endRequest may already send out a next request
+            registry.getMessageSender().requestResynchronize();
+
+            // Clear previous request if it exists.
+            if (registry.getRequestResponseTracker().hasActiveRequest()) {
+                registry.getRequestResponseTracker().endRequest();
+            }
+
+            // Call resynchronize to make sure a resynchronize request is sent
+            // in
+            // case endRequest did not already do this.
             registry.getMessageSender().resynchronize();
         }
     }
@@ -671,8 +723,8 @@ public class MessageHandler {
     }
 
     /**
-     * Gets the token (aka double submit cookie) that the server uses to protect
-     * against Cross Site Request Forgery attacks.
+     * Gets the token (synchronizer token pattern) that the server uses to
+     * protect against CSRF (Cross Site Request Forgery) attacks.
      *
      * @return the CSRF token string
      */
@@ -785,5 +837,4 @@ public class MessageHandler {
             Command nextResponseSessionExpiredHandler) {
         this.nextResponseSessionExpiredHandler = nextResponseSessionExpiredHandler;
     }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -183,7 +183,8 @@ public class JsCollections {
                     "This is not a JUnit compilation even though compiler.stackMode check has the expected value");
         }
 
-        assert !isNativeMapConstructor() : "ES6 collection cannot be created before gwtSetUp has set up the polyfill";
+        assert !isNativeMapConstructor()
+                : "ES6 collection cannot be created before gwtSetUp has set up the polyfill";
     }
 
     private static native boolean isNativeMapConstructor()

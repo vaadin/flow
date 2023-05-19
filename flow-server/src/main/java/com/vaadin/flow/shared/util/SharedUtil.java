@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -313,7 +313,7 @@ public class SharedUtil implements Serializable {
     /**
      * Prepend the given url with the prefix if it is not absolute and doesn't
      * have a protocol.
-     * 
+     *
      * @param url
      *            url to check
      * @param prefix

@@ -1,0 +1,18 @@
+{
+  "description": "build-status-plugin",
+  "keywords": [
+    "plugin"
+  ],
+  "repository": "vaadin/flow",
+  "name": "@vaadin/build-status-plugin",
+  "version": "1.0.0",
+  "main": "build-status-plugin.js",
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow/issues"
+  },
+  "files": [
+    "build-status-plugin.js"
+  ]
+}

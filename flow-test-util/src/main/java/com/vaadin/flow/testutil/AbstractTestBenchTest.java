@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,20 +20,27 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
+import com.vaadin.testbench.TestBenchTestCase;
 import com.vaadin.testbench.annotations.BrowserConfiguration;
 import com.vaadin.testbench.annotations.BrowserFactory;
 import com.vaadin.testbench.annotations.RunOnHub;
@@ -42,11 +49,31 @@ import com.vaadin.testbench.parallel.DefaultBrowserFactory;
 
 /**
  * Abstract base class for flow TestBench tests.
+ *
+ * @since 1.0
  */
 @RunOnHub
 @BrowserFactory(DefaultBrowserFactory.class)
 @LocalExecution
 public abstract class AbstractTestBenchTest extends TestBenchHelpers {
+
+    public static abstract class ClientChecker {
+        private static Boolean hasClientRouter;
+
+        /**
+         * Returns true when using clientSide routing
+         *
+         * @return true when client-side route
+         */
+        private static boolean isClientRouter(TestBenchTestCase test) {
+            if (hasClientRouter == null) {
+                hasClientRouter = (boolean) ((JavascriptExecutor) test
+                        .getDriver()).executeScript(
+                                "return !!window.Vaadin.Flow.clients.TypeScript");
+            }
+            return hasClientRouter;
+        }
+    }
 
     /**
      * Default port for test server, possibly overridden with system property.
@@ -99,9 +126,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
             }
             serverAvailabilityChecked = true;
         }
-
-        getDesiredCapabilities().setCapability("name", String.format("%s.%s",
-                getClass().getCanonicalName(), testName.getMethodName()));
     }
 
     protected void open() {
@@ -110,16 +134,8 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
     protected void open(String... parameters) {
         String url = getTestURL(parameters);
-
         getDriver().get(url);
-    }
-
-    protected void openProduction(String... parameters) {
-        openUrl("view-production", parameters);
-    }
-
-    protected void openProductionWithTiming(String... parameters) {
-        openUrl("view-production-timing", parameters);
+        waitForDevServer();
     }
 
     protected void openForEs6Url(String... parameters) {
@@ -141,6 +157,25 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         }
         url = url.replace("/view/", builder.toString());
         getDriver().get(url);
+        waitForDevServer();
+    }
+
+    /**
+     * Returns true when using clientSide routing
+     *
+     * @return true when client-side route
+     */
+    protected final boolean isClientRouter() {
+        return ClientChecker.isClientRouter(this);
+    }
+
+    /**
+     * Waits until clientSide route renders the view.
+     */
+    protected void waitForClientRouter() {
+        if (isClientRouter()) {
+            waitForElementPresent(By.cssSelector("#outlet > *"));
+        }
     }
 
     /**
@@ -221,8 +256,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      * @return the browsers capabilities list to execute test on the tests Hub
      */
     protected List<DesiredCapabilities> getHubBrowsersToTest() {
-        return getBrowserCapabilities(Browser.IE11, Browser.FIREFOX,
-                Browser.CHROME);
+        return getBrowserCapabilities(Browser.FIREFOX, Browser.CHROME);
     }
 
     /**
@@ -239,9 +273,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
             DesiredCapabilities caps = browser.getDesiredCapabilities();
 
             if (USE_BROWSERSTACK) {
-                if (browser.equals(Browser.IE11)) {
-                    caps.setVersion("11");
-                }
                 caps.setCapability("os", "Windows");
                 caps.setCapability("os_version", "7");
                 caps.setPlatform(Platform.WINDOWS);
@@ -258,7 +289,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
                 caps.setCapability("resolution", "1680x1050");
             }
 
-            caps.setCapability("project", "Flow");
             capabilities.add(caps);
         }
         return capabilities;
@@ -409,4 +439,39 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
         return rootUrl;
     }
+
+    protected void assertImageEquals(Path pathToExpectedImage, String imageUrl)
+            throws IOException {
+        byte[] expectedImage = Files.readAllBytes(pathToExpectedImage);
+        if (imageUrl.startsWith("url(\"data")) {
+            String expectedUrl = "url(\"data:image/png;base64,"
+                    + Base64.getEncoder().encodeToString(expectedImage) + "\")";
+            Assert.assertEquals(expectedUrl, imageUrl);
+        } else if (imageUrl.startsWith("url(")) {
+            imageUrl = imageUrl.replaceFirst("url\\(['\"](.*)['\"]\\)", "$1");
+            byte[] actualImage = IOUtils.toByteArray(new URL(imageUrl));
+            Assert.assertArrayEquals(expectedImage, actualImage);
+        }
+    }
+
+    protected void waitForFont(String fontSizeAndName) {
+        waitUntil(d -> (boolean) executeScript(
+                "return document.fonts.check(arguments[0])", fontSizeAndName));
+    }
+
+    protected void assertRuleOnce(String style) {
+
+        List<String> adoptedStyleSheetsWithString = (List<String>) executeScript(
+                "return document.adoptedStyleSheets.map(sheet => sheet.cssRules).flatMap(rules => Array.from(rules).map(rule => rule.cssText)).filter(rule => rule.includes(arguments[0]))",
+                style);
+        List<String> styleAndLinkTagsWithString = (List<String>) executeScript(
+                "return Array.from(document.styleSheets).map(style => {try { return style.cssRules; } catch (e) {}}).filter(f => f).flatMap(rules => Array.from(rules).map(rule => rule.cssText)).filter(text => text.includes(arguments[0]))",
+                style);
+
+        Assert.assertEquals("Theme rule should have been added once", 1,
+                adoptedStyleSheetsWithString.size()
+                        + styleAndLinkTagsWithString.size());
+
+    }
+
 }

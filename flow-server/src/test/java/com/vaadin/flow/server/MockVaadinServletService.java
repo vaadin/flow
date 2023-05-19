@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,16 +15,15 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
+
 import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.RequestHandler;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.router.Router;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 /**
@@ -36,24 +35,53 @@ public class MockVaadinServletService extends VaadinServletService {
 
     private Instantiator instantiator;
 
+    private Router router;
+
+    private ResourceProvider resourceProvider;
+
+    private static class MockVaadinServlet extends VaadinServlet {
+
+        private final DeploymentConfiguration configuration;
+
+        private VaadinServletService service;
+
+        private MockVaadinServlet(DeploymentConfiguration configuration) {
+            this.configuration = configuration;
+        }
+
+        @Override
+        protected DeploymentConfiguration createDeploymentConfiguration()
+                throws ServletException {
+            return configuration;
+        }
+
+        @Override
+        protected VaadinServletService createServletService(
+                DeploymentConfiguration deploymentConfiguration)
+                throws ServiceException {
+            return service;
+        }
+
+    }
+
     public MockVaadinServletService() {
         this(new MockDeploymentConfiguration());
     }
 
     public MockVaadinServletService(
             DeploymentConfiguration deploymentConfiguration) {
-        this(new VaadinServlet(), deploymentConfiguration);
+        super(new MockVaadinServlet(deploymentConfiguration),
+                deploymentConfiguration);
+        init();
     }
 
-    public MockVaadinServletService(VaadinServlet servlet,
-            DeploymentConfiguration deploymentConfiguration) {
-        super(servlet, deploymentConfiguration);
+    public void setRouter(Router router) {
+        this.router = router;
+    }
 
-        try {
-            servlet.init(new MockServletConfig());
-        } catch (ServletException e) {
-            throw new RuntimeException(e);
-        }
+    @Override
+    public Router getRouter() {
+        return router != null ? router : super.getRouter();
     }
 
     @Override
@@ -79,8 +107,13 @@ public class MockVaadinServletService extends VaadinServletService {
     @Override
     public void init() {
         try {
+            MockVaadinServlet servlet = (MockVaadinServlet) getServlet();
+            servlet.service = this;
+            if (getServlet().getServletConfig() == null) {
+                getServlet().init(new MockServletConfig());
+            }
             super.init();
-        } catch (ServiceException e) {
+        } catch (ServiceException | ServletException e) {
             throw new RuntimeException(e);
         }
     }

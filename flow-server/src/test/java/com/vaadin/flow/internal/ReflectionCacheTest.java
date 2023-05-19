@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -91,6 +91,20 @@ public class ReflectionCacheTest {
 
         cache1 = null;
         Assert.assertTrue(TestUtil.isGarbageCollected(ref));
+    }
+
+    @Test
+    public void cacheIsClearedAfterGc() throws InterruptedException {
+        ReflectionCache<Object, Object> cache = new ReflectionCache<>(
+                type -> type);
+        cache.get(Object.class);
+
+        // Ensure garbage is collected before clearing
+        TestUtil.isGarbageCollected(new WeakReference<>(new Object()));
+
+        ReflectionCache.clearAll();
+
+        Assert.assertFalse(cache.contains(Object.class));
     }
 
     @Test

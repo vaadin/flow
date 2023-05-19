@@ -1,0 +1,13 @@
+# Specifies which previous versions should be kept in Dependency-Track when 
+# a new version is uploaded.
+# Possible values: NONE/MAJOR/MINOR/PATCH/SUFFIX/BUILD
+#
+# Also available as dtrack.keepPreviousVersions property/environment variable
+keepPreviousVersions: MAJOR
+
+npmDependencies:
+
+  # Extract additional NPM dependencies from annotations
+  - annotationClassName: com.vaadin.flow.component.dependency.NpmPackage
+    annotationPackageNameField: value
+    annotationVersionField: version

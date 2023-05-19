@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,6 @@
  */
 package com.vaadin.client.flow.binding;
 
-
 import jsinterop.annotations.JsFunction;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -28,6 +27,7 @@ import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -45,6 +45,8 @@ import elemental.json.JsonObject;
 public final class ServerEventObject extends JavaScriptObject {
     private static final String NODE_ID = "nodeId";
     private static final String EVENT_PREFIX = "event";
+
+    private static final String PROMISE_CALLBACK_NAME = JsonConstants.RPC_PROMISE_CALLBACK_NAME;
 
     /**
      * Callback interface for an event data expression parsed using new
@@ -76,6 +78,31 @@ public final class ServerEventObject extends JavaScriptObject {
     protected ServerEventObject() {
     }
 
+    private native void initPromiseHandler()
+    /*-{
+        var name = @ServerEventObject::PROMISE_CALLBACK_NAME
+        // Use defineProperty to make it non-enumerable
+        Object.defineProperty(this, name, {
+            value: function(promiseId, success, value) {
+                var promise = this[name].promises[promiseId];
+
+                // undefined if client-side node was recreated after execution was scheduled
+                if (promise !== undefined) {
+                    delete this[name].promises[promiseId];
+
+                    if (success) {
+                        // Resolve
+                        promise[0](value);
+                    } else {
+                        // Reject
+                        promise[1](Error("Something went wrong. Check server-side logs for more information."));
+                    }
+                }
+            }
+        });
+        this[name].promises = [];
+    }-*/;
+
     /**
      * Defines a method with the given name to be a callback to the server for
      * the given state node.
@@ -88,8 +115,13 @@ public final class ServerEventObject extends JavaScriptObject {
      * @param node
      *            the node to use as an identifier when sending an event to the
      *            server
+     * @param returnPromise
+     *            <code>true</code> if the handler should return a promise that
+     *            will reflect the server-side result; <code>false</code> to not
+     *            return any value
      */
-    public native void defineMethod(String methodName, StateNode node)
+    public native void defineMethod(String methodName, StateNode node,
+            boolean returnPromise)
     /*-{
         this[methodName] = $entry(function(eventParameter) {
             var prototype = Object.getPrototypeOf(this);
@@ -102,7 +134,24 @@ public final class ServerEventObject extends JavaScriptObject {
             if(args === null) {
                 args = Array.prototype.slice.call(arguments);
             }
-            tree.@com.vaadin.client.flow.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
+
+            var returnValue;
+            var promiseId = -1;
+
+            if (returnPromise) {
+                var promises = this[@ServerEventObject::PROMISE_CALLBACK_NAME].promises;
+
+                promiseId = promises.length;
+
+                returnValue = new Promise(function(resolve, reject) {
+                    // Store each callback for later use
+                    promises[promiseId] = [resolve, reject];
+                });
+            }
+
+            tree.@com.vaadin.client.flow.StateTree::sendTemplateEventToServer(*)(node, methodName, args, promiseId);
+
+            return returnValue;
         });
     }-*/;
 
@@ -226,13 +275,27 @@ public final class ServerEventObject extends JavaScriptObject {
      * @return a reference to the <code>$server</code> object in the element
      */
     public static ServerEventObject get(Element element) {
-        ServerEventObject serverObject = WidgetUtil
-                .crazyJsoCast(WidgetUtil.getJsProperty(element, "$server"));
+        ServerEventObject serverObject = getIfPresent(element);
         if (serverObject == null) {
             serverObject = (ServerEventObject) JavaScriptObject.createObject();
+            serverObject.initPromiseHandler();
             WidgetUtil.setJsProperty(element, "$server", serverObject);
         }
         return serverObject;
+    }
+
+    /**
+     * Gets or creates <code>element.$server</code> for the given element, if
+     * present.
+     *
+     * @param node
+     *            the element to use
+     * @return a reference to the <code>$server</code> object in the element, or
+     *         <code>null</code> if note present.
+     */
+    public static ServerEventObject getIfPresent(Node node) {
+        return WidgetUtil
+                .crazyJsoCast(WidgetUtil.getJsProperty(node, "$server"));
     }
 
     protected static ServerEventDataExpression getOrCreateExpression(
@@ -248,4 +311,20 @@ public final class ServerEventObject extends JavaScriptObject {
 
         return expression;
     }
+
+    /**
+     * Reject all promises pending on this server object. Called during client
+     * resynchronization to free consumers of promises that are never delivered
+     * by the server.
+     */
+    public native void rejectPromises()
+    /*-{
+        var promises = this[@ServerEventObject::PROMISE_CALLBACK_NAME].promises;
+        if (promises !== undefined ) {
+            promises.forEach(function (item) {
+                item[1](Error("Client is resynchronizing"));
+            });
+        }
+    }-*/;
+
 }

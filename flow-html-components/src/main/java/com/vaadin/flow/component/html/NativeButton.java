@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 
@@ -29,8 +30,8 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.BUTTON)
-public class NativeButton extends HtmlContainer
-        implements ClickNotifier<NativeButton>, Focusable<NativeButton> {
+public class NativeButton extends HtmlContainer implements
+        ClickNotifier<NativeButton>, Focusable<NativeButton>, HasAriaLabel {
     /**
      * Creates a new empty button.
      */

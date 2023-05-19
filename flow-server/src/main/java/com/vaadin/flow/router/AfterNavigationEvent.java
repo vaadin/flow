@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,7 @@ import java.util.List;
 import com.vaadin.flow.component.HasElement;
 
 /**
- * Event created before navigation happens.
+ * Event created after navigation completed.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -52,6 +52,15 @@ public class AfterNavigationEvent extends EventObject {
     }
 
     /**
+     * Get the {@link LocationChangeEvent}.
+     *
+     * @return the {@link LocationChangeEvent}, not {@code null}
+     */
+    public LocationChangeEvent getLocationChangeEvent() {
+        return event;
+    }
+
+    /**
      * Get the active chain that we have after navigation.
      *
      * @return unmodifiable list of active view chain
@@ -63,5 +72,14 @@ public class AfterNavigationEvent extends EventObject {
     @Override
     public Router getSource() {
         return (Router) super.getSource();
+    }
+
+    /**
+     * Check if event is for a refresh of a preserveOnRefresh view.
+     *
+     * @return true if refresh of a preserve on refresh view
+     */
+    public boolean isRefreshEvent() {
+        return event.getTrigger().equals(NavigationTrigger.REFRESH);
     }
 }

@@ -1,0 +1,3 @@
+// Project from https://start.vaadin.com/test/4
+rootProject.name = 'GradleProjectName2'
+version = '0.1'

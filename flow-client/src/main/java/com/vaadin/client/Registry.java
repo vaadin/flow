@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,13 +15,15 @@
  */
 package com.vaadin.client;
 
+import java.util.function.Supplier;
+
 import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.PushConfiguration;
-import com.vaadin.client.communication.ReconnectDialogConfiguration;
+import com.vaadin.client.communication.ReconnectConfiguration;
 import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.communication.ServerRpcQueue;
@@ -43,6 +45,8 @@ public class Registry {
 
     private JsMap<Class<?>, Object> lookupTable = JsCollections.map();
 
+    private JsMap<Class<?>, Supplier<?>> resettable = JsCollections.map();
+
     /**
      * Creates a new empty registry.
      * <p>
@@ -55,8 +59,9 @@ public class Registry {
     /**
      * Stores an instance of the given type.
      * <p>
-     * Note that all instances are considered final and you are not allowed to
-     * update an instance of any given type.
+     * Note that instances by default are considered final, and you are not
+     * allowed to update an instance of any given type manually. In case
+     * instance is allowed to be recreated use {@link #set(Class, Supplier)}.
      *
      * @param type
      *            the type to store
@@ -69,6 +74,25 @@ public class Registry {
         assert !lookupTable.has(type) : "Registry already has a class of type "
                 + type.getName() + " registered";
         lookupTable.set(type, instance);
+    }
+
+    /**
+     * Stores an instance of the given type.
+     * <p>
+     * Note that instances by default are considered final, and you are not
+     * allowed to update an instance of any given type manually. Uses resettable
+     * supplier to allow Registry to recreate given instances.
+     *
+     * @param type
+     *            the type to store
+     * @param instanceSupplier
+     *            new instances supplier if given registry entry can be reset
+     * @param <T>
+     *            the type
+     */
+    protected final <T> void set(Class<T> type, Supplier<T> instanceSupplier) {
+        set(type, instanceSupplier.get());
+        resettable.set(type, instanceSupplier);
     }
 
     /**
@@ -103,15 +127,6 @@ public class Registry {
      */
     public MessageHandler getMessageHandler() {
         return get(MessageHandler.class);
-    }
-
-    /**
-     * Gets the {@link LoadingIndicator} singleton.
-     *
-     * @return the {@link LoadingIndicator} singleton
-     */
-    public LoadingIndicator getLoadingIndicator() {
-        return get(LoadingIndicator.class);
     }
 
     /**
@@ -232,12 +247,12 @@ public class Registry {
     }
 
     /**
-     * Gets the {@link ReconnectDialogConfiguration} singleton.
+     * Gets the {@link ReconnectConfiguration} singleton.
      *
-     * @return the {@link ReconnectDialogConfiguration} singleton
+     * @return the {@link ReconnectConfiguration} singleton
      */
-    public ReconnectDialogConfiguration getReconnectDialogConfiguration() {
-        return get(ReconnectDialogConfiguration.class);
+    public ReconnectConfiguration getReconnectConfiguration() {
+        return get(ReconnectConfiguration.class);
     }
 
     /**
@@ -278,15 +293,6 @@ public class Registry {
     }
 
     /**
-     * Gets the {@link ScrollPositionHandler} singleton.
-     *
-     * @return the {@link ScrollPositionHandler} singleton
-     */
-    public ScrollPositionHandler getScrollPositionHandler() {
-        return get(ScrollPositionHandler.class);
-    }
-
-    /**
      * Gets the {@link ExistingElementMap} singleton.
      *
      * @return the {@link ExistingElementMap} singleton
@@ -313,4 +319,13 @@ public class Registry {
         return get(Poller.class);
     }
 
+    /**
+     * Deletes and recreates resettable instances of registry singletons.
+     */
+    public void reset() {
+        resettable.forEach((v, k) -> {
+            lookupTable.delete(k);
+            lookupTable.set(k, v.get());
+        });
+    }
 }

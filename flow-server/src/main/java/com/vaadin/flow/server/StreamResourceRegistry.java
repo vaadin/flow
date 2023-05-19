@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -125,6 +125,18 @@ public class StreamResourceRegistry implements Serializable {
      */
     public static URI getURI(AbstractStreamResource resource) {
         return getURI(resource.getName(), resource.getId());
+    }
+
+    /**
+     * Returns the URI path to the given resource in the context of this
+     * registry (relevant in portlet context).
+     *
+     * @param resource
+     *            stream resource
+     * @return resource URI
+     */
+    public URI getTargetURI(AbstractStreamResource resource) {
+        return StreamResourceRegistry.getURI(resource);
     }
 
     private static URI getURI(String name, String id) {

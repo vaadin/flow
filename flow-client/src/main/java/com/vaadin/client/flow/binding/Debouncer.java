@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,14 @@
  */
 package com.vaadin.client.flow.binding;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
+import com.vaadin.client.flow.collection.JsMap.ForEachCallback;
 import com.vaadin.client.flow.collection.JsSet;
-import com.vaadin.client.flow.collection.JsWeakMap;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.dom.Node;
@@ -36,8 +38,7 @@ import elemental.util.Timer;
  */
 public class Debouncer {
 
-    private static final JsWeakMap<Node, JsMap<String, JsMap<Double, Debouncer>>> debouncers = JsCollections
-            .weakMap();
+    private static final JsMap<Node, JsMap<String, JsMap<Double, Debouncer>>> debouncers = new JsMap<>();
 
     private final double timeout;
     private final Node element;
@@ -69,11 +70,9 @@ public class Debouncer {
      */
     public boolean trigger(JsSet<String> phases, Consumer<String> command) {
         lastCommand = command;
-
         boolean triggerImmediately = false;
         if (idleTimer == null) {
             triggerImmediately = phases.has(JsonConstants.EVENT_PHASE_LEADING);
-
             idleTimer = new Timer() {
                 @Override
                 public void run() {
@@ -105,7 +104,6 @@ public class Debouncer {
         }
 
         fireTrailing |= phases.has(JsonConstants.EVENT_PHASE_TRAILING);
-
         return triggerImmediately;
     }
 
@@ -167,5 +165,40 @@ public class Debouncer {
         }
 
         return debouncer;
+    }
+
+    /**
+     * Flushes all pending changes.
+     *
+     * After command execution, Debouncer idle timers are rescheduled.
+     *
+     * @return the list command executed during flush operation.
+     */
+    public static List<Consumer<String>> flushAll() {
+        ArrayList<Consumer<String>> executedCommands = new ArrayList<>();
+        ForEachCallback<Node, JsMap<String, JsMap<Double, Debouncer>>> flusher = new ForEachCallback<Node, JsMap<String, JsMap<Double, Debouncer>>>() {
+
+            @Override
+            public void accept(JsMap<String, JsMap<Double, Debouncer>> jsmap,
+                    Node key) {
+                jsmap.mapValues().forEach(value -> {
+                    value.mapValues().forEach(debouncer -> {
+                        debouncer.lastCommand.accept(null);
+                        executedCommands.add(debouncer.lastCommand);
+                        // Reschedule the idleTimer so as if an event has been
+                        // triggered
+                        // and let the intermediateTimer continue to work as
+                        // expected
+                        if (debouncer.idleTimer != null) {
+                            debouncer.idleTimer.cancel();
+                            debouncer.idleTimer
+                                    .schedule((int) debouncer.timeout);
+                        }
+                    });
+                });
+            }
+        };
+        debouncers.forEach(flusher);
+        return executedCommands;
     }
 }

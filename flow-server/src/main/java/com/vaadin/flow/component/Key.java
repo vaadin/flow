@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,9 +17,10 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -33,8 +34,8 @@ import java.util.stream.Stream;
  * other {@code Key} values contain values for both {@code event.key} and
  * {@code event.code}, and some only contain a {@code event.code} value. In
  * cases where a {@code Key} containing only {@code event.code} value is a
- * subset of a {@code Key} based on {@code event.key} value, the {@code event.code}
- * is included in the latter {@code Key} only.
+ * subset of a {@code Key} based on {@code event.key} value, the
+ * {@code event.code} is included in the latter {@code Key} only.
  * <p>
  * For example, {@code Key ALT} consists of values {@code [Alt, AltLeft]} and
  * {@code ALT_LEFT} is a key itself. See the documentation of the {@code Key}
@@ -43,10 +44,11 @@ import java.util.stream.Stream;
  * <p>
  * See
  * https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
- * for event.key values and https://w3c.github.io/uievents-code/ for
- * event.code values.
+ * for event.key values and https://w3c.github.io/uievents-code/ for event.code
+ * values.
  *
  * @author Vaadin Ltd.
+ * @since 1.0
  */
 @FunctionalInterface
 public interface Key extends Serializable {
@@ -189,8 +191,8 @@ public interface Key extends Serializable {
     Key SYMBOL_LOCK = Key.of("SymbolLock");
 
     /**
-     * The <code>Enter</code> or <code>↵</code> key. Labelled <code>Return</code>
-     * on Apple keyboards.
+     * The <code>Enter</code> or <code>↵</code> key. Labelled
+     * <code>Return</code> on Apple keyboards.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -241,9 +243,9 @@ public interface Key extends Serializable {
     /**
      * The <code>End</code> key. Moves to the end of content.
      * <p>
-     * In case of a <code>event.code</code> in the case of <code>event.key</code>
-     * the name may be <code>Page Down</code> , <code>End</code> or
-     * <code>↘</code>.
+     * In case of a <code>event.code</code> in the case of
+     * <code>event.key</code> the name may be <code>Page Down</code> ,
+     * <code>End</code> or <code>↘</code>.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -306,10 +308,9 @@ public interface Key extends Serializable {
     Key CUT = Key.of("Cut");
 
     /**
-     * The Delete key, <code>Del</code>, and <code>⌦</code> .
-     * The forward delete key. Note that on Apple keyboards, the key labelled
-     * <code>Delete</code> on the main part of the keyboard should be encoded
-     * as " Backspace " .
+     * The Delete key, <code>Del</code>, and <code>⌦</code> . The forward delete
+     * key. Note that on Apple keyboards, the key labelled <code>Delete</code>
+     * on the main part of the keyboard should be encoded as " Backspace " .
      * <p>
      * This first value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -388,10 +389,10 @@ public interface Key extends Serializable {
     Key CONTEXT_MENU = Key.of("ContextMenu");
 
     /**
-     * The <code>Esc</code> (Escape) or <code>⎋</code> key. Typically used as
-     * an exit, cancel, or "escape this operation" button. Historically, the
-     * Escape character was used to signal the start of a special control
-     * sequence of characters called an "escape sequence."
+     * The <code>Esc</code> (Escape) or <code>⎋</code> key. Typically used as an
+     * exit, cancel, or "escape this operation" button. Historically, the Escape
+     * character was used to signal the start of a special control sequence of
+     * characters called an "escape sequence."
      * <p>
      * The first value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -1974,8 +1975,8 @@ public interface Key extends Serializable {
     /**
      * Used for both the US <code>\|</code> (on the 101-key layout) and also for
      * the keylocated between the <code>"</code> and <code>Enter</code> keys on
-     * row C of the 102-, 104- and 106-key layouts. Labelled <code>#~</code> on a
-     * UK (102) keyboard.
+     * row C of the 102-, 104- and 106-key layouts. Labelled <code>#~</code> on
+     * a UK (102) keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2276,8 +2277,8 @@ public interface Key extends Serializable {
     Key KEY_X = Key.of("KeyX");
 
     /**
-     * <code>y</code> on a US keyboard.Labelled <code>z</code> on a QWERTZ (e.g.,
-     * German) keyboard.
+     * <code>y</code> on a US keyboard.Labelled <code>z</code> on a QWERTZ
+     * (e.g., German) keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2335,8 +2336,8 @@ public interface Key extends Serializable {
     Key ALT_LEFT = Key.of("AltLeft");
 
     /**
-     * <code>Alt</code> , <code>Option</code> or <code>⌥</code> .This is labelled
-     * <code>AltGr</code> key on many keyboard layouts.
+     * <code>Alt</code> , <code>Option</code> or <code>⌥</code> .This is
+     * labelled <code>AltGr</code> key on many keyboard layouts.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2357,14 +2358,16 @@ public interface Key extends Serializable {
     Key CONTROL_RIGHT = Key.of("ControlRight");
 
     /**
-     * The Windows, <code>⌘</code> , <code>Command</code> or other OS symbol key.
+     * The Windows, <code>⌘</code> , <code>Command</code> or other OS symbol
+     * key.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key META_LEFT = Key.of("MetaLeft");
 
     /**
-     * The Windows, <code>⌘</code> , <code>Command</code> or other OS symbol key.
+     * The Windows, <code>⌘</code> , <code>Command</code> or other OS symbol
+     * key.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2385,8 +2388,8 @@ public interface Key extends Serializable {
     Key SHIFT_RIGHT = Key.of("ShiftRight");
 
     /**
-     * Korean: HangulMode <code>한/영</code> ( han/yeong ) Japanese (Mac keyboard):
-     * <code>かな</code> ( kana )
+     * Korean: HangulMode <code>한/영</code> ( han/yeong ) Japanese (Mac
+     * keyboard): <code>かな</code> ( kana )
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2518,7 +2521,7 @@ public interface Key extends Serializable {
     /**
      * <code>C</code> or <code>AC</code> (All Clear). Also for use with numpads
      * that have a <code>Clear</code> key that is separate from the
-     * <code>NumLock</code> key. On the Mac, the numpad  <code>Clear</code> key
+     * <code>NumLock</code> key. On the Mac, the numpad <code>Clear</code> key
      * should always be encoded as " NumLock " .
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
@@ -2534,7 +2537,8 @@ public interface Key extends Serializable {
 
     /**
      * <code>,</code> (thousands separator). For locales where the thousands
-     * separatoris a "." (e.g., Brazil), this key may generate a <code>.</code> .
+     * separatoris a "." (e.g., Brazil), this key may generate a <code>.</code>
+     * .
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2591,14 +2595,16 @@ public interface Key extends Serializable {
     Key NUMPAD_MEMORY_CLEAR = Key.of("NumpadMemoryClear");
 
     /**
-     * <code>MR</code> Replace the current entry with the value stored in memory.
+     * <code>MR</code> Replace the current entry with the value stored in
+     * memory.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key NUMPAD_MEMORY_RECALL = Key.of("NumpadMemoryRecall");
 
     /**
-     * <code>MS</code> Replace the value stored in memory with the current entry.
+     * <code>MS</code> Replace the value stored in memory with the current
+     * entry.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2638,7 +2644,8 @@ public interface Key extends Serializable {
     /**
      * <code>*</code> on a phone or remote control device.This key is typically
      * found below the <code>7</code> key and to the left of the <code>0</code>
-     * key. Use " NumpadMultiply " for the <code>*</code> key on numeric keypads.
+     * key. Use " NumpadMultiply " for the <code>*</code> key on numeric
+     * keypads.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2696,6 +2703,12 @@ public interface Key extends Serializable {
     Key SUSPEND = Key.of("Suspend");
 
     /**
+     * This value is reserved for corner cases of no key value present in event
+     * e.g. when browser autosuggest is used.
+     */
+    Key NONE = Key.of("None");
+
+    /**
      * Returns a {@link Key} instance for a printable representation of the key.
      * <p>
      * The optional {@code additionalKeys} parameter can be used to create an
@@ -2712,14 +2725,48 @@ public interface Key extends Serializable {
      * @return the {@link Key} instance
      */
     static Key of(String key, String... additionalKeys) {
-        Objects.requireNonNull(key);
-        if ("".equals(key)) {
-            throw new IllegalArgumentException("'key' cannot be empty");
+        if (key == null || "".equals(key)) {
+            return NONE;
         }
-        List<String> keys = new ArrayList<>();
+        List<String> keys = new ArrayList<>(additionalKeys.length + 1);
         keys.add(key);
-        keys.addAll(Arrays.asList(additionalKeys));
-        return () -> keys;
+        Collections.addAll(keys, additionalKeys);
+        return new Key() {
+
+            @Override
+            public List<String> getKeys() {
+                return Collections.unmodifiableList(keys);
+            }
+
+            @Override
+            public String toString() {
+                List<String> keys = getKeys();
+                if (keys.size() == 1) {
+                    return keys.get(0);
+                }
+                return keys.get(0) + ",  additional keys : [" + keys.stream()
+                        .skip(1).collect(Collectors.joining(", ")) + "]";
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (obj == this) {
+                    return true;
+                }
+                if (!obj.getClass().equals(getClass())) {
+                    return false;
+                }
+                return getKeys().equals(((Key) obj).getKeys());
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(getKeys());
+            }
+        };
     }
 
     /**
@@ -2751,8 +2798,9 @@ public interface Key extends Serializable {
      *
      * @see KeyModifier
      *
-     * @param key   a {@link Key} instance.
-     * @return  true if the key argument is a modifier, otherwise false.
+     * @param key
+     *            a {@link Key} instance.
+     * @return true if the key argument is a modifier, otherwise false.
      */
     static boolean isModifier(Key key) {
         return Stream.of(KeyModifier.values())

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,20 +16,20 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.JsApiGetByIdView", layout = ViewTestLayout.class)
-@JavaScript("frontend://js-get-by-id.js")
+@JavaScript("./js-get-by-id.js")
 public class JsApiGetByIdView extends AbstractDivView {
 
     public JsApiGetByIdView() {
-        Label label = new Label("Original label");
+        NativeLabel label = new NativeLabel("Original label");
         label.setId("source");
         add(label);
 
-        Label target = new Label();
+        NativeLabel target = new NativeLabel();
         target.setId("target");
         add(target);
 

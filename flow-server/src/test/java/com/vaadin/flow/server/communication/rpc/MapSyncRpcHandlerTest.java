@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,13 +16,18 @@
 package com.vaadin.flow.server.communication.rpc;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-import com.vaadin.flow.component.ComponentTest.TestComponent;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
@@ -38,12 +43,31 @@ import com.vaadin.flow.shared.JsonConstants;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class MapSyncRpcHandlerTest {
 
     private static final String NEW_VALUE = "newValue";
     private static final String DUMMY_EVENT = "dummy-event";
     private static final String TEST_PROPERTY = "test-property";
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
+    @Tag(Tag.A)
+    public static class TestComponent extends Component {
+
+    }
 
     @Test
     public void testSynchronizeProperty() throws Exception {
@@ -180,8 +204,8 @@ public class MapSyncRpcHandlerTest {
         ui.getElement().appendChild(element);
 
         element.setEnabled(false);
-        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT,
-                DisabledUpdateMode.ONLY_WHEN_ENABLED);
+        element.addPropertyChangeListener(TEST_PROPERTY, DUMMY_EVENT, event -> {
+        }).setDisabledUpdateMode(DisabledUpdateMode.ONLY_WHEN_ENABLED);
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
@@ -197,8 +221,8 @@ public class MapSyncRpcHandlerTest {
         ui.getElement().appendChild(element);
 
         element.setEnabled(false);
-        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT,
-                DisabledUpdateMode.ALWAYS);
+        element.addPropertyChangeListener(TEST_PROPERTY, DUMMY_EVENT, event -> {
+        }).setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
@@ -230,8 +254,8 @@ public class MapSyncRpcHandlerTest {
         ui.getElement().appendChild(element);
 
         ui.setEnabled(false);
-        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT,
-                DisabledUpdateMode.ALWAYS);
+        element.addPropertyChangeListener(TEST_PROPERTY, DUMMY_EVENT, event -> {
+        }).setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
@@ -270,6 +294,54 @@ public class MapSyncRpcHandlerTest {
     }
 
     @Test
+    public void propertyIsNotExplicitlyAllowed_throwsWithElementTagInfo() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(CoreMatchers.allOf(
+                CoreMatchers.containsString("Element with tag 'foo'"),
+                CoreMatchers.containsString("'" + TEST_PROPERTY + "'")));
+        Element element = new Element("foo");
+
+        new MapSyncRpcHandler().handleNode(element.getNode(),
+                createSyncPropertyInvocation(element.getNode(), TEST_PROPERTY,
+                        NEW_VALUE));
+    }
+
+    @Test
+    public void propertyIsNotExplicitlyAllowed_throwsWithComponentInfo() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "Component " + TestComponent.class.getName()),
+                CoreMatchers.containsString("'" + TEST_PROPERTY + "'")));
+        TestComponent component = new TestComponent();
+        Element element = component.getElement();
+
+        new MapSyncRpcHandler().handleNode(element.getNode(),
+                createSyncPropertyInvocation(element.getNode(), TEST_PROPERTY,
+                        NEW_VALUE));
+    }
+
+    @Test
+    public void propertyIsNotExplicitlyAllowed_subproperty_throwsWithComponentInfo() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "Component " + TestComponent.class.getName()),
+                CoreMatchers.containsString("'" + TEST_PROPERTY + "'")));
+        TestComponent component = new TestComponent();
+        Element element = component.getElement();
+
+        StateNode node = element.getNode();
+        ElementPropertyMap propertyMap = node
+                .getFeature(ElementPropertyMap.class)
+                .resolveModelMap("foo.bar");
+
+        new MapSyncRpcHandler().handleNode(propertyMap.getNode(),
+                createSyncPropertyInvocation(propertyMap.getNode(),
+                        TEST_PROPERTY, NEW_VALUE));
+    }
+
+    @Test
     public void handleNode_callsElementPropertyMapDeferredUpdateFromClient() {
         AtomicInteger deferredUpdateInvocations = new AtomicInteger();
         AtomicReference<String> deferredKey = new AtomicReference<>();
@@ -301,6 +373,58 @@ public class MapSyncRpcHandlerTest {
 
         Assert.assertEquals(1, deferredUpdateInvocations.get());
         Assert.assertEquals(TEST_PROPERTY, deferredKey.get());
+    }
+
+    @Test
+    public void handleNode_stateNodePropertyDefaultValueNotSet_doesNotWarnForUnsetDisabledPropertyChange() {
+
+        ElementPropertyMap map = mock(ElementPropertyMap.class);
+        when(map.getProperty(anyString())).thenReturn(null);
+        StateNode disabledNode = mock(StateNode.class);
+        when(disabledNode.getFeatureIfInitialized(ElementPropertyMap.class))
+                .thenReturn(Optional.of(map));
+        when(disabledNode.isEnabled()).thenReturn(false);
+
+        Logger logger = spy(Logger.class);
+        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            mockedLoggerFactory.when(
+                    () -> LoggerFactory.getLogger(MapSyncRpcHandler.class))
+                    .thenReturn(logger);
+
+            new MapSyncRpcHandler().handleNode(disabledNode,
+                    createSyncPropertyInvocation(disabledNode, TEST_PROPERTY,
+                            NEW_VALUE));
+
+            verify(logger, times(0)).warn(anyString(), anyString());
+            verify(logger, times(1)).debug(anyString(), anyString());
+        }
+    }
+
+    @Test
+    public void handleNode_stateNodePropertyDefaultValueSet_warnsForSetDisabledPropertyChange() {
+
+        ElementPropertyMap map = mock(ElementPropertyMap.class);
+        when(map.getProperty(anyString())).thenReturn(NEW_VALUE);
+        StateNode disabledNode = mock(StateNode.class);
+        when(disabledNode.getFeatureIfInitialized(ElementPropertyMap.class))
+                .thenReturn(Optional.of(map));
+        when(disabledNode.isEnabled()).thenReturn(false);
+
+        Logger logger = spy(Logger.class);
+        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            mockedLoggerFactory.when(
+                    () -> LoggerFactory.getLogger(MapSyncRpcHandler.class))
+                    .thenReturn(logger);
+
+            new MapSyncRpcHandler().handleNode(disabledNode,
+                    createSyncPropertyInvocation(disabledNode, TEST_PROPERTY,
+                            NEW_VALUE));
+
+            verify(logger, times(1)).warn(anyString(), anyString());
+            verify(logger, times(0)).debug(anyString(), anyString());
+        }
     }
 
     private static void sendSynchronizePropertyEvent(Element element, UI ui,

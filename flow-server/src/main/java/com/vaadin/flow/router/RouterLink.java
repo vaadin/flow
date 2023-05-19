@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,17 +18,17 @@ package com.vaadin.flow.router;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -42,8 +42,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * @since 1.0
  */
 @Tag(Tag.A)
-public class RouterLink extends Component
-        implements HasText, HasComponents, HasStyle, AfterNavigationObserver {
+public class RouterLink extends Component implements HasText, HasComponents,
+        HasStyle, AfterNavigationObserver, Focusable<RouterLink> {
 
     private static final PropertyDescriptor<String, String> HREF = PropertyDescriptors
             .attributeWithDefault("href", "", false);
@@ -60,8 +60,18 @@ public class RouterLink extends Component
      * Creates a new empty router link.
      */
     public RouterLink() {
-        getElement()
-                .setAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE, "");
+        getElement().setAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE,
+                "");
+    }
+
+    /**
+     * Creates a new router link for the given navigation target.
+     *
+     * @param navigationTarget
+     *            navigation target
+     */
+    public RouterLink(Class<? extends Component> navigationTarget) {
+        this(navigationTarget, RouteParameters.empty());
     }
 
     /**
@@ -69,15 +79,31 @@ public class RouterLink extends Component
      * text.
      *
      * @param text
-     *         link text
+     *            link text
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      */
     public RouterLink(String text,
             Class<? extends Component> navigationTarget) {
-        this();
-        setText(text);
-        setRoute(getRouter(), navigationTarget);
+        this(text, navigationTarget, RouteParameters.empty());
+    }
+
+    /**
+     * Creates a new router link for the given navigation target using the given
+     * parameter.
+     *
+     * @param navigationTarget
+     *            navigation target
+     * @param parameter
+     *            url parameter for navigation target
+     * @param <T>
+     *            url parameter type
+     * @param <C>
+     *            navigation target type
+     */
+    public <T, C extends Component & HasUrlParameter<T>> RouterLink(
+            Class<? extends C> navigationTarget, T parameter) {
+        this(navigationTarget, HasUrlParameterFormat.getParameters(parameter));
     }
 
     /**
@@ -85,21 +111,69 @@ public class RouterLink extends Component
      * text and parameter.
      *
      * @param text
-     *         link text
+     *            link text
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      * @param parameter
-     *         url parameter for navigation target
+     *            url parameter for navigation target
      * @param <T>
-     *         url parameter type
+     *            url parameter type
      * @param <C>
-     *         navigation target type
+     *            navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(String text,
             Class<? extends C> navigationTarget, T parameter) {
+        this(text, navigationTarget,
+                HasUrlParameterFormat.getParameters(parameter));
+    }
+
+    /**
+     * Creates a new router link for the given navigation target using the given
+     * parameters.
+     *
+     * @param navigationTarget
+     *            navigation target
+     * @param parameters
+     *            route parameters for navigation target
+     */
+    public RouterLink(Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        this();
+        setRoute(getRouter(), navigationTarget, parameters);
+    }
+
+    /**
+     * Creates a new router link for the given navigation target using the given
+     * text and parameters.
+     *
+     * @param text
+     *            link text
+     * @param navigationTarget
+     *            navigation target
+     * @param parameters
+     *            route parameters for navigation target
+     */
+    public RouterLink(String text, Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
         this();
         setText(text);
-        setRoute(getRouter(), navigationTarget, parameter);
+        setRoute(getRouter(), navigationTarget, parameters);
+    }
+
+    /**
+     * Creates a new router link for the given navigation target.
+     *
+     * @param router
+     *            router used for navigation
+     * @param navigationTarget
+     *            navigation target
+     * @throws IllegalArgumentException
+     *             if navigation target requires parameters
+     */
+    public RouterLink(Router router,
+            Class<? extends Component> navigationTarget)
+            throws IllegalArgumentException {
+        this(router, navigationTarget, RouteParameters.empty());
     }
 
     /**
@@ -107,17 +181,39 @@ public class RouterLink extends Component
      * text.
      *
      * @param router
-     *         router used for navigation
+     *            router used for navigation
      * @param text
-     *         link text
+     *            link text
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
+     * @throws IllegalArgumentException
+     *             if navigation target requires parameters
      */
     public RouterLink(Router router, String text,
-            Class<? extends Component> navigationTarget) {
-        this();
-        setText(text);
-        setRoute(router, navigationTarget);
+            Class<? extends Component> navigationTarget)
+            throws IllegalArgumentException {
+        this(router, text, navigationTarget, RouteParameters.empty());
+    }
+
+    /**
+     * Creates a new router link for the given navigation target using the given
+     * parameter.
+     *
+     * @param router
+     *            router used for navigation
+     * @param navigationTarget
+     *            navigation target
+     * @param parameter
+     *            url parameter for navigation target
+     * @param <T>
+     *            url parameter type
+     * @param <C>
+     *            navigation target type
+     */
+    public <T, C extends Component & HasUrlParameter<T>> RouterLink(
+            Router router, Class<? extends C> navigationTarget, T parameter) {
+        this(router, navigationTarget,
+                HasUrlParameterFormat.getParameters(parameter));
     }
 
     /**
@@ -125,74 +221,169 @@ public class RouterLink extends Component
      * text and parameter.
      *
      * @param router
-     *         router used for navigation
+     *            router used for navigation
      * @param text
-     *         link text
+     *            link text
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      * @param parameter
-     *         url parameter for navigation target
+     *            url parameter for navigation target
      * @param <T>
-     *         url parameter type
+     *            url parameter type
      * @param <C>
-     *         navigation target type
+     *            navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(
             Router router, String text, Class<? extends C> navigationTarget,
             T parameter) {
+        this(router, text, navigationTarget,
+                HasUrlParameterFormat.getParameters(parameter));
+    }
+
+    /**
+     * Creates a new router link for the given navigation target using the given
+     * parameters.
+     *
+     * @param router
+     *            router used for navigation
+     * @param navigationTarget
+     *            navigation target
+     * @param parameters
+     *            route parameters for navigation target
+     */
+    public RouterLink(Router router,
+            Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        this();
+        setRoute(router, navigationTarget, parameters);
+    }
+
+    /**
+     * Creates a new router link for the given navigation target using the given
+     * text and parameters.
+     *
+     * @param router
+     *            router used for navigation
+     * @param text
+     *            link text
+     * @param navigationTarget
+     *            navigation target
+     * @param parameters
+     *            route parameters for navigation target
+     */
+    public RouterLink(Router router, String text,
+            Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
         this();
         setText(text);
-        setRoute(router, navigationTarget, parameter);
+        setRoute(router, navigationTarget, parameters);
     }
 
     /**
      * Set the navigation target for this link.
      *
      * @param router
-     *         router used for navigation
+     *            router used for navigation
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
+     * @throws IllegalArgumentException
+     *             if navigation target requires parameters
      */
     public void setRoute(Router router,
             Class<? extends Component> navigationTarget) {
-        validateRouteParameters(router, navigationTarget);
-        String url = RouteConfiguration.forRegistry(router.getRegistry())
-                .getUrl(navigationTarget);
-        updateHref(url);
+        setRoute(router, navigationTarget, RouteParameters.empty());
     }
 
     /**
      * Set the navigation target for this link.
      *
      * @param router
-     *         router used for navigation
+     *            router used for navigation
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      * @param parameter
-     *         url parameter for navigation target
+     *            url parameter for navigation target
      * @param <T>
-     *         url parameter type
+     *            url parameter type
      * @param <C>
-     *         navigation target type
+     *            navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> void setRoute(
             Router router, Class<? extends C> navigationTarget, T parameter) {
-        validateRouteParameters(router, navigationTarget);
-        String url = RouteConfiguration.forRegistry(router.getRegistry())
-                .getUrl(navigationTarget, parameter);
-        updateHref(url);
+        setRoute(router, navigationTarget,
+                HasUrlParameterFormat.getParameters(parameter));
     }
 
-    private void validateRouteParameters(Router router,
-            Class<? extends Component> navigationTarget) {
+    /**
+     * Set the navigation target for this link.
+     *
+     * @param router
+     *            router used for navigation
+     * @param navigationTarget
+     *            navigation target
+     * @param parameters
+     *            route parameters for navigation target
+     */
+    public void setRoute(Router router,
+            Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        validateRouter(router);
+        try {
+            String url = RouteConfiguration.forRegistry(router.getRegistry())
+                    .getUrl(navigationTarget, parameters);
+            updateHref(url);
+        } catch (NotFoundException exception) {
+            throw new IllegalArgumentException(
+                    "Cannot set route for non registered " + navigationTarget,
+                    exception);
+        }
+    }
+
+    /**
+     * Set the navigation target for this link.
+     *
+     * @param navigationTarget
+     *            navigation target
+     * @throws IllegalArgumentException
+     *             if navigation target requires parameters
+     */
+    public void setRoute(Class<? extends Component> navigationTarget) {
+        setRoute(getRouter(), navigationTarget);
+    }
+
+    /**
+     * Set the navigation target for this link.
+     *
+     * @param navigationTarget
+     *            navigation target
+     * @param parameter
+     *            url parameter for navigation target
+     * @param <T>
+     *            url parameter type
+     * @param <C>
+     *            navigation target type
+     */
+    public <T, C extends Component & HasUrlParameter<T>> void setRoute(
+            Class<? extends C> navigationTarget, T parameter) {
+        setRoute(getRouter(), navigationTarget, parameter);
+    }
+
+    /**
+     * Set the navigation target for this link.
+     *
+     * @param navigationTarget
+     *            navigation target
+     * @param parameters
+     *            route parameters for navigation target
+     */
+    public void setRoute(Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        setRoute(getRouter(), navigationTarget, parameters);
+    }
+
+    private void validateRouter(Router router) {
         if (router == null) {
             throw new IllegalArgumentException("Router must not be null");
-        } else if (!router.getRegistry().getTargetUrl(navigationTarget)
-                .isPresent()) {
-            LoggerFactory.getLogger(RouterLink.class)
-                    .warn("Creating link for non registered navigationTarget '"
-                            + navigationTarget.getName()
-                            + "'. If target is not registered when link is used, navigation will fail on a 404 not found.");
         }
     }
 
@@ -209,7 +400,7 @@ public class RouterLink extends Component
      * Gets the {@link QueryParameters} of this link.
      *
      * @return an optional of {@link QueryParameters}, or an empty optional if
-     * there are no query parameters set
+     *         there are no query parameters set
      * @see #setQueryParameters(QueryParameters)
      */
     public Optional<QueryParameters> getQueryParameters() {
@@ -224,8 +415,8 @@ public class RouterLink extends Component
      * {@code href} attribute of this link.
      *
      * @param queryParameters
-     *         the query parameters object, or {@code null} to remove
-     *         existing query parameters
+     *            the query parameters object, or {@code null} to remove
+     *            existing query parameters
      */
     public void setQueryParameters(QueryParameters queryParameters) {
         this.queryParameters = queryParameters;
@@ -237,6 +428,7 @@ public class RouterLink extends Component
         if (startOfQuery >= 0) {
             url = url.substring(0, startOfQuery);
         }
+        url = UrlUtil.encodeURI(url);
         if (queryParameters != null) {
             url += '?' + queryParameters.getQueryString();
         }
@@ -244,20 +436,7 @@ public class RouterLink extends Component
     }
 
     private Router getRouter() {
-        Router router = null;
-        if (getElement().getNode().isAttached()) {
-            StateTree tree = (StateTree) getElement().getNode().getOwner();
-            router = tree.getUI().getRouter();
-        }
-        if (router == null) {
-            router = VaadinService.getCurrent().getRouter();
-        }
-        if (router == null) {
-            throw new IllegalStateException(
-                    "Implicit router instance is not available. "
-                            + "Use overloaded method with explicit router parameter.");
-        }
-        return router;
+        return ComponentUtil.getRouter(this);
     }
 
     /**
@@ -282,7 +461,7 @@ public class RouterLink extends Component
      * {@link HighlightAction}.
      *
      * @param highlightCondition
-     *         the highlight condition, not {@code null}
+     *            the highlight condition, not {@code null}
      * @see #setHighlightAction(HighlightAction)
      * @see HighlightConditions
      */
@@ -316,7 +495,7 @@ public class RouterLink extends Component
      * highlight state.
      *
      * @param highlightAction
-     *         the highlight action, not {@code null}
+     *            the highlight action, not {@code null}
      * @see #setHighlightCondition(HighlightCondition)
      * @see HighlightActions
      */

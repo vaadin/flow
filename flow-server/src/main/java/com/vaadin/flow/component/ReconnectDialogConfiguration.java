@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -104,48 +104,4 @@ public interface ReconnectDialogConfiguration extends Serializable {
      *            the interval (in ms) between reconnect attempts
      */
     void setReconnectInterval(int reconnectInterval);
-
-    /**
-     * Gets the timeout (in milliseconds) between noticing a loss of connection
-     * and showing the dialog.
-     * <p>
-     * The default is
-     * {@value ReconnectDialogConfigurationMap#DIALOG_GRACE_PERIOD_DEFAULT}
-     *
-     * @return the time to wait before showing a dialog
-     */
-    int getDialogGracePeriod();
-
-    /**
-     * Sets the timeout (in milliseconds) between noticing a loss of connection
-     * and showing the dialog.
-     *
-     * @param dialogGracePeriod
-     *            the time to wait before showing a dialog
-     */
-    void setDialogGracePeriod(int dialogGracePeriod);
-
-    /**
-     * Sets the modality of the dialog.
-     * <p>
-     * If the dialog is set to modal, it will prevent the usage of the
-     * application while the dialog is being shown. If not modal, the user can
-     * continue to use the application as normally and all server events will be
-     * queued until connection has been re-established.
-     *
-     * @param dialogModal
-     *            true to make the dialog modal, false otherwise
-     */
-    void setDialogModal(boolean dialogModal);
-
-    /**
-     * Checks the modality of the dialog.
-     * <p>
-     * The default is
-     * {@value ReconnectDialogConfigurationMap#DIALOG_MODAL_DEFAULT}
-     *
-     * @see #setDialogModal(boolean)
-     * @return true if the dialog is modal, false otherwise
-     */
-    boolean isDialogModal();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,8 @@
 
 package com.vaadin.client;
 
+import java.util.function.Supplier;
+
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -25,6 +27,8 @@ import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.collection.JsSet;
+import com.vaadin.client.flow.util.NativeFunction;
+
 import elemental.client.Browser;
 import elemental.dom.Document;
 import elemental.dom.Element;
@@ -127,19 +131,20 @@ public class ResourceLoader {
      */
     public static class ResourceLoadEvent {
         private final ResourceLoader loader;
-        private final String resourceUrl;
+        private final String resourceData;
 
         /**
          * Creates a new event.
          *
          * @param loader
          *            the resource loader that has loaded the resource
-         * @param resourceUrl
-         *            the url of the loaded resource
+         * @param resourceData
+         *            the url or content of the loaded resource or the JS
+         *            expression that imports the resource
          */
-        public ResourceLoadEvent(ResourceLoader loader, String resourceUrl) {
+        public ResourceLoadEvent(ResourceLoader loader, String resourceData) {
             this.loader = loader;
-            this.resourceUrl = resourceUrl;
+            this.resourceData = resourceData;
         }
 
         /**
@@ -152,12 +157,14 @@ public class ResourceLoader {
         }
 
         /**
-         * Gets the absolute url of the loaded resource.
+         * Gets the absolute url or content of the loaded resource or the JS
+         * expression that imports the resource.
          *
-         * @return the absolute url of the loaded resource
+         * @return the absolute url or content of the loaded resource or the JS
+         *         expression that imports the resource
          */
-        public String getResourceUrl() {
-            return resourceUrl;
+        public String getResourceData() {
+            return resourceData;
         }
 
     }
@@ -356,7 +363,7 @@ public class ResourceLoader {
      *            listener to notify when script is loaded
      */
     public void inlineScript(String scriptContents,
-                             final ResourceLoadListener resourceLoadListener) {
+            final ResourceLoadListener resourceLoadListener) {
         ResourceLoadEvent event = new ResourceLoadEvent(this, scriptContents);
         if (loadedResources.has(scriptContents)) {
             if (resourceLoadListener != null) {
@@ -596,7 +603,7 @@ public class ResourceLoader {
                 }
             }
 
-            getHead().appendChild(linkElement);
+            addInHeadBeforeComment(linkElement, "Stylesheet end");
         }
     }
 
@@ -631,8 +638,50 @@ public class ResourceLoader {
 
             addCssLoadHandler(styleSheetContents, event, styleSheetElement);
 
-            getHead().appendChild(styleSheetElement);
+            addInHeadBeforeComment(styleSheetElement, "Stylesheet end");
         }
+    }
+
+    private void addInHeadBeforeComment(Element element, String comment) {
+        elemental.dom.Node commentNode = findCommentInHead(comment);
+        if (commentNode == null) {
+            Console.error("Expected to find a '" + comment
+                    + "' comment inside <head> but none was found. Appending instead.");
+        }
+        getHead().insertBefore(element, commentNode);
+    }
+
+    private elemental.dom.Node findCommentInHead(String comment) {
+        NodeList childNodes = getHead().getChildNodes();
+        int count = childNodes.getLength();
+        for (int i = 0; i < count; i++) {
+            elemental.dom.Node childNode = childNodes.item(i);
+            if (childNode.getNodeType() == elemental.dom.Node.COMMENT_NODE
+                    && comment.equals(childNode.getNodeValue())) {
+                return childNode;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Loads a dynamic import via the provided JS {@code expression} and reports
+     * the result via the {@code resourceLoadListener}.
+     *
+     * @param expression
+     *            the JS expression which returns a Promise
+     * @param resourceLoadListener
+     *            a listener to report the Promise result exection
+     */
+    public void loadDynamicImport(String expression,
+            ResourceLoadListener resourceLoadListener) {
+
+        ResourceLoadEvent event = new ResourceLoadEvent(this, expression);
+        NativeFunction function = new NativeFunction(expression);
+        runPromiseExpression(expression, () -> function.call(null),
+                () -> resourceLoadListener.onLoad(event),
+                () -> resourceLoadListener.onError(event));
     }
 
     private void addCssLoadHandler(String styleSheetContents,
@@ -707,8 +756,8 @@ public class ResourceLoader {
 
     private void fireError(ResourceLoadEvent event) {
         registry.getSystemErrorHandler()
-                .handleError("Error loading " + event.getResourceUrl());
-        String resource = event.getResourceUrl();
+                .handleError("Error loading " + event.getResourceData());
+        String resource = event.getResourceData();
 
         JsArray<ResourceLoadListener> listeners = loadListeners.get(resource);
         loadListeners.delete(resource);
@@ -723,8 +772,8 @@ public class ResourceLoader {
     }
 
     private void fireLoad(ResourceLoadEvent event) {
-        Console.log("Loaded " + event.getResourceUrl());
-        String resource = event.getResourceUrl();
+        Console.log("Loaded " + event.getResourceData());
+        String resource = event.getResourceData();
         JsArray<ResourceLoadListener> listeners = loadListeners.get(resource);
         loadedResources.add(resource);
         loadListeners.delete(resource);
@@ -737,4 +786,23 @@ public class ResourceLoader {
             }
         }
     }
+
+    private static native void runPromiseExpression(String expression,
+            Supplier<Object> promiseSupplier, Runnable onSuccess,
+            Runnable onError)
+    /*-{
+          try {
+            var promise = promiseSupplier.@java.util.function.Supplier::get(*)();
+            if ( !(promise instanceof $wnd.Promise )){
+                throw new Error('The expression "'+expression+'" result is not a Promise.');
+            }
+            promise.then( function(result) { onSuccess.@java.lang.Runnable::run(*)(); } ,
+                          function(error) { console.error(error); onError.@java.lang.Runnable::run(*)(); } );
+          }
+          catch(error) {
+               console.error(error);
+               onError.@java.lang.Runnable::run(*)();
+          }
+    }-*/;
+
 }

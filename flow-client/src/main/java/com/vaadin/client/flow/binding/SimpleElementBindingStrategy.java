@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,16 +15,20 @@
  */
 package com.vaadin.client.flow.binding;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import jsinterop.annotations.JsFunction;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
+import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
+import com.vaadin.client.ElementUtil;
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.InitialPropertiesHandler;
+import com.vaadin.client.LitUtils;
 import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
@@ -39,6 +43,7 @@ import com.vaadin.client.flow.collection.JsWeakMap;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.dom.DomElement;
 import com.vaadin.client.flow.dom.DomElement.DomTokenList;
+import com.vaadin.client.flow.dom.DomNode;
 import com.vaadin.client.flow.model.UpdatableModelProperties;
 import com.vaadin.client.flow.nodefeature.ListSpliceEvent;
 import com.vaadin.client.flow.nodefeature.MapProperty;
@@ -57,19 +62,18 @@ import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.events.Event;
 import elemental.events.EventRemover;
+import elemental.events.EventTarget;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
-import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
  *
  * @author Vaadin Ltd
  * @since 1.0
- *
  */
 public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
@@ -120,7 +124,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
      * <p>
      * It's used to avoid having methods with a long numbers of parameters and
      * because the strategy instance is stateless.
-     *
      */
     private static class BindingContext {
 
@@ -132,9 +135,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 .map();
         private final JsMap<String, EventRemover> listenerRemovers = JsCollections
                 .map();
-
-        private final JsSet<EventRemover> synchronizedPropertyEventListeners = JsCollections
-                .set();
 
         private BindingContext(StateNode node, Node htmlNode,
                 BinderContext binderContext) {
@@ -215,7 +215,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             // Flow's own event listeners
             listeners.push(bindDomEventListeners(context));
-            listeners.push(bindSynchronizedPropertyEvents(context));
 
             // Dom structure, shouldn't trigger observers synchronously
             listeners.push(bindVirtualChildren(context));
@@ -257,8 +256,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
          * command execution
          */
         Reactive.addPostFlushListener(
-                () -> Scheduler.get().scheduleDeferred(() -> stateNode
-                        .getNodeData(InitialPropertyUpdate.class).execute()));
+                () -> Scheduler.get().scheduleDeferred(() -> {
+                    InitialPropertyUpdate propertyUpdate = stateNode
+                            .getNodeData(InitialPropertyUpdate.class);
+                    // cleared if handlePropertiesChanged has already happened
+                    if (propertyUpdate != null) {
+                        propertyUpdate.execute();
+                    }
+                }));
     }
 
     private native void bindPolymerModelProperties(StateNode node,
@@ -269,7 +274,15 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
       } else if ( @com.vaadin.client.PolymerUtils::mayBePolymerElement(*)(element) ) {
           var self = this;
           try {
-              $wnd.customElements.whenDefined(element.localName).then( function () {
+              var whenDefinedPromise = $wnd.customElements.whenDefined(element.localName);
+              var promiseTimeout = new Promise(function(r) { setTimeout(r, 1000); });
+              // if element is not a web component, the promise returned by
+              // whenDefined may never complete, causing memory leaks because of
+              // closures in chained function.
+              // Using `Promise.race` with a secondary promise that resolves after
+              // a defined interval and chaining on this one, will always resolve,
+              // execute the function and allow the garbage collector to free resources
+              Promise.race([whenDefinedPromise, promiseTimeout]).then( function () {
                   if ( @com.vaadin.client.PolymerUtils::isPolymerElement(*)(element) ) {
                       self.@SimpleElementBindingStrategy::hookUpPolymerElement(*)(node, element);
                   }
@@ -284,9 +297,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private native void hookUpPolymerElement(StateNode node, Element element)
     /*-{
         var self = this;
-    
+
         var originalPropertiesChanged = element._propertiesChanged;
-    
+
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
                 $entry(function () {
@@ -295,16 +308,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-    
-    
+
+
         var tree = node.@com.vaadin.client.flow.StateNode::getTree()();
-    
+
         var originalReady = element.ready;
-    
+
         element.ready = function (){
             originalReady.apply(this, arguments);
             @com.vaadin.client.PolymerUtils::fireReadyEvent(*)(element);
-    
+
             // The  _propertiesChanged method which is replaced above for the element
             // doesn't do anything for items in dom-repeat.
             // Instead it's called with some meaningful info for the <code>dom-repeat</code> element.
@@ -313,7 +326,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // which changes this method for any dom-repeat instance.
             var replaceDomRepeatPropertyChange = function(){
                 var domRepeat = element.root.querySelector('dom-repeat');
-    
+
                 if ( domRepeat ){
                  // If the <code>dom-repeat</code> element is in the DOM then
                  // this method should not be executed anymore. The logic below will replace
@@ -327,14 +340,15 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 // if dom-repeat is found => replace _propertiesChanged method in the prototype and mark it as replaced.
                 if ( !domRepeat.constructor.prototype.$propChangedModified){
                     domRepeat.constructor.prototype.$propChangedModified = true;
-    
+
                     var changed = domRepeat.constructor.prototype._propertiesChanged;
-    
+
                     domRepeat.constructor.prototype._propertiesChanged = function(currentProps, changedProps, oldProps){
                         changed.apply(this, arguments);
-    
+
                         var props = Object.getOwnPropertyNames(changedProps);
                         var items = "items.";
+                        var i;
                         for(i=0; i<props.length; i++){
                             // There should be a property which starts with "items."
                             // and the next token is the index of changed item
@@ -352,7 +366,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                                     if( currentPropsItem && currentPropsItem.nodeId ){
                                         var nodeId = currentPropsItem.nodeId;
                                         var value = currentPropsItem[propertyName];
-    
+
                                         // this is an attempt to find the template element
                                         // which is not available as a context in the protype method
                                         var host = this.__dataHost;
@@ -363,7 +377,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                                         while( !host.localName || host.__dataHost ){
                                             host = host.__dataHost;
                                         }
-    
+
                                         $entry(function () {
                                             @SimpleElementBindingStrategy::handleListItemPropertyChange(*)(nodeId, host, propertyName, value, tree);
                                         })();
@@ -374,7 +388,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     };
                 }
             };
-    
+
             // dom-repeat doesn't have to be in DOM even if template has it
             //  such situation happens if there is dom-if e.g. which evaluates to <code>false</code> initially.
             // in this case dom-repeat is not yet in the DOM tree until dom-if becomes <code>true</code>
@@ -382,14 +396,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 replaceDomRepeatPropertyChange();
             }
             else {
-                // if there is no dom-repat at the moment just add a dom-change
+                // if there is no dom-repeat at the moment just add a dom-change
                 // listener which will be notified once local DOM is changed
                 // and the  <code>replaceDomRepeatPropertyChange</code> will get a chance
                 // to execute its logic if there is dom-repeat.
                 element.addEventListener('dom-change',replaceDomRepeatPropertyChange);
             }
         }
-    
+
     }-*/;
 
     private static void handleListItemPropertyChange(double nodeId,
@@ -405,8 +419,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return;
         }
 
-        assert checkParent(node,
-                host) : "Host element is not a parent of the node whose property has changed. "
+        assert checkParent(node, host)
+                : "Host element is not a parent of the node whose property has changed. "
                         + "This is an implementation error. "
                         + "Most likely it means that there are several StateTrees on the same page "
                         + "(might be possible with portlets) and the target StateTree should not be passed "
@@ -520,7 +534,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private EventRemover bindShadowRoot(BindingContext context) {
-        assert context.htmlNode instanceof Element : "Cannot bind shadow root to a Node";
+        assert context.htmlNode instanceof Element
+                : "Cannot bind shadow root to a Node";
         NodeMap map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
 
         attachShadow(context);
@@ -576,16 +591,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             BindingContext context,
             JsArray<JsMap<String, Computation>> computationsCollection,
             BinderContext nodeFactory) {
-        assert context.htmlNode instanceof Element : "The HTML node for the StateNode with id="
-                + context.node.getId() + " is not an Element";
-        Element element = (Element) context.htmlNode;
-
+        assert context.htmlNode instanceof Element
+                : "The HTML node for the StateNode with id="
+                        + context.node.getId() + " is not an Element";
         NodeMap visibilityData = context.node.getMap(NodeFeatures.ELEMENT_DATA);
-        // Store the current "hidden" value to restore it when the element
-        // becomes visible
-
-        visibilityData.getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
-                .setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
 
         visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                 .setValue(isVisible(context.node));
@@ -605,9 +614,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             BindingContext context,
             JsArray<JsMap<String, Computation>> computationsCollection,
             BinderContext nodeFactory) {
-        assert context.htmlNode instanceof Element : "The HTML node for the StateNode with id="
-                + context.node.getId() + " is not an Element";
-
+        assert context.htmlNode instanceof Element
+                : "The HTML node for the StateNode with id="
+                        + context.node.getId() + " is not an Element";
         NodeMap visibilityData = context.node.getMap(NodeFeatures.ELEMENT_DATA);
 
         Element element = (Element) context.htmlNode;
@@ -615,6 +624,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (needsRebind(context.node) && isVisible(context.node)) {
             remove(listeners, context, computationsCollection);
             Reactive.addFlushListener(() -> {
+
                 restoreInitialHiddenAttribute(element, visibilityData);
                 doBind(context.node, nodeFactory);
             });
@@ -623,21 +633,55 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     .setValue(true);
             restoreInitialHiddenAttribute(element, visibilityData);
         } else {
-            visibilityData
-                    .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
-                    .setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
+            setElementInvisible(element, visibilityData);
+        }
+    }
 
-            WidgetUtil.updateAttribute(element, HIDDEN_ATTRIBUTE,
-                    Boolean.TRUE.toString());
+    private void setElementInvisible(Element element, NodeMap visibilityData) {
+        storeInitialHiddenAttribute(element, visibilityData);
+        updateAttributeValue(
+                visibilityData.getNode().getTree().getRegistry()
+                        .getApplicationConfiguration(),
+                element, HIDDEN_ATTRIBUTE, Boolean.TRUE);
+        if (PolymerUtils.isInShadowRoot(element)) {
+            element.getStyle().setDisplay("none");
         }
     }
 
     private void restoreInitialHiddenAttribute(Element element,
             NodeMap visibilityData) {
-        WidgetUtil.updateAttribute(element, HIDDEN_ATTRIBUTE,
-                visibilityData
-                        .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
-                        .getValue());
+        storeInitialHiddenAttribute(element, visibilityData);
+        MapProperty initialVisibility = visibilityData
+                .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
+        if (initialVisibility.hasValue()) {
+            updateAttributeValue(
+                    visibilityData.getNode().getTree().getRegistry()
+                            .getApplicationConfiguration(),
+                    element, HIDDEN_ATTRIBUTE, initialVisibility.getValue());
+        }
+
+        MapProperty initialDisplay = visibilityData
+                .getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
+        if (initialDisplay.hasValue()) {
+            final String initialValue = initialDisplay.getValue().toString();
+            element.getStyle().setDisplay(initialValue);
+        }
+    }
+
+    private void storeInitialHiddenAttribute(Element element,
+            NodeMap visibilityData) {
+        MapProperty initialVisibility = visibilityData
+                .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
+        if (!initialVisibility.hasValue()) {
+            initialVisibility.setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
+        }
+
+        MapProperty initialDisplay = visibilityData
+                .getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
+        if (PolymerUtils.isInShadowRoot(element) && !initialDisplay.hasValue()
+                && element.getStyle() != null) {
+            initialDisplay.setValue(element.getStyle().getDisplay());
+        }
     }
 
     private void doBind(StateNode node, BinderContext nodeFactory) {
@@ -695,7 +739,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // which are updated on the client side, e.g. when synchronizing
             // properties to the server (won't work for readonly properties).
             if (WidgetUtil.isUndefined(domValue)
-                    || !Objects.equals(domValue, treeValue)) {
+                    || !WidgetUtil.equals(domValue, treeValue)) {
                 Reactive.runWithComputation(null,
                         () -> WidgetUtil.setJsProperty(element, name,
                                 PolymerUtils.createModelTree(treeValue)));
@@ -713,7 +757,24 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         String name = mapProperty.getName();
         CSSStyleDeclaration styleElement = element.getStyle();
         if (mapProperty.hasValue()) {
-            styleElement.setProperty(name, (String) mapProperty.getValue());
+            String value = (String) mapProperty.getValue();
+            boolean styleIsSet = false;
+            if (value.contains("!important")) {
+                Element temp = Browser.getDocument()
+                        .createElement(element.getTagName());
+                CSSStyleDeclaration tmpStyle = temp.getStyle();
+                tmpStyle.setCssText(name + ": " + value + ";");
+                String priority = "important";
+                if (priority
+                        .equals(temp.getStyle().getPropertyPriority(name))) {
+                    styleElement.setProperty(name,
+                            temp.getStyle().getPropertyValue(name), priority);
+                    styleIsSet = true;
+                }
+            }
+            if (!styleIsSet) {
+                styleElement.setProperty(name, value);
+            }
         } else {
             styleElement.removeProperty(name);
         }
@@ -721,62 +782,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void updateAttribute(MapProperty mapProperty, Element element) {
         String name = mapProperty.getName();
-        WidgetUtil.updateAttribute(element, name, mapProperty.getValue());
-    }
-
-    private EventRemover bindSynchronizedPropertyEvents(
-            BindingContext context) {
-        synchronizeEventTypesChanged(context);
-
-        NodeList propertyEvents = context.node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
-        return propertyEvents
-                .addSpliceListener(e -> synchronizeEventTypesChanged(context));
-    }
-
-    private void synchronizeEventTypesChanged(BindingContext context) {
-        NodeList propertyEvents = context.node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
-
-        // Remove all old listeners and add new ones
-        context.synchronizedPropertyEventListeners
-                .forEach(EventRemover::remove);
-        context.synchronizedPropertyEventListeners.clear();
-
-        for (int i = 0; i < propertyEvents.length(); i++) {
-            String eventType = propertyEvents.get(i).toString();
-            EventRemover remover = context.htmlNode.addEventListener(eventType,
-                    event -> handlePropertySyncDomEvent(context), false);
-            context.synchronizedPropertyEventListeners.add(remover);
-        }
-    }
-
-    private void handlePropertySyncDomEvent(BindingContext context) {
-        NodeList propertiesList = context.node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
-        for (int i = 0; i < propertiesList.length(); i++) {
-            syncPropertyIfNeeded(propertiesList.get(i).toString(), context);
-        }
-    }
-
-    /**
-     * Synchronizes the given property if the value in the DOM does not match
-     * the value in the StateTree.
-     * <p>
-     * Updates the StateTree with the new property value as a side effect.
-     *
-     * @param propertyName
-     *            the name of the property
-     * @param context
-     *            operation context
-     */
-    private void syncPropertyIfNeeded(String propertyName,
-            BindingContext context) {
-        Object currentValue = WidgetUtil.getJsProperty(context.htmlNode,
-                propertyName);
-
-        context.node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .getProperty(propertyName).syncToServer(currentValue);
+        updateAttributeValue(
+                mapProperty.getMap().getNode().getTree().getRegistry()
+                        .getApplicationConfiguration(),
+                element, name, mapProperty.getValue());
     }
 
     private EventRemover bindChildren(BindingContext context) {
@@ -846,69 +855,83 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return;
         }
 
-        InitialPropertiesHandler initialPropertiesHandler = node.getTree()
-                .getRegistry().getInitialPropertiesHandler();
-
-        assert context.htmlNode instanceof Element : "Unexpected html node. The node is supposed to be a custom element";
+        assert context.htmlNode instanceof Element
+                : "Unexpected html node. The node is supposed to be a custom element";
         if (NodeProperties.INJECT_BY_ID.equals(type)) {
-            String id = object.getString(NodeProperties.PAYLOAD);
-            String address = "id='" + id + "'";
-
-            if (!verifyAttachRequest(context.node, node, id, address)) {
+            if (LitUtils.isLitElement(context.htmlNode)) {
+                LitUtils.whenRendered((Element) context.htmlNode,
+                        () -> handleInjectId(context, node, object, false));
                 return;
-            }
-            if (!PolymerUtils.isReady(context.htmlNode)) {
+            } else if (!PolymerUtils.isReady(context.htmlNode)) {
                 PolymerUtils.addReadyListener((Element) context.htmlNode,
-                        () -> appendVirtualChild(context, node, false));
+                        () -> handleInjectId(context, node, object, false));
                 return;
             }
 
-            Element existingElement = PolymerUtils
-                    .getDomElementById(context.htmlNode, id);
-            if (verifyAttachedElement(existingElement, node, id, address,
-                    context)) {
-                if (!reactivePhase) {
-                    initialPropertiesHandler.nodeRegistered(node);
-                    initialPropertiesHandler.flushPropertyUpdates();
-                }
-                node.setDomNode(existingElement);
-                context.binderContext.createAndBind(node);
-            }
+            handleInjectId(context, node, object, reactivePhase);
         } else if (NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
-            JsonArray path = object.getArray(NodeProperties.PAYLOAD);
-            String address = "path='" + path.toString() + "'";
-
-            if (!verifyAttachRequest(context.node, node, null, address)) {
-                return;
-            }
-
             if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
                 PolymerUtils.addReadyListener((Element) context.htmlNode,
-                        () -> appendVirtualChild(context, node, false));
+                        () -> handleTemplateInTemplate(context, node, object,
+                                false));
                 return;
             }
-
-            Element customElement = PolymerUtils.getCustomElement(
-                    PolymerUtils.getDomRoot(context.htmlNode), path);
-
-            if (verifyAttachedElement(customElement, node, null, address,
-                    context)) {
-                if (!reactivePhase) {
-                    initialPropertiesHandler.nodeRegistered(node);
-                    initialPropertiesHandler.flushPropertyUpdates();
-                }
-                node.setDomNode(customElement);
-                context.binderContext.createAndBind(node);
-            }
+            handleTemplateInTemplate(context, node, object, reactivePhase);
         } else {
             assert false : "Unexpected payload type " + type;
         }
+    }
+
+    private void doAppendVirtualChild(BindingContext context, StateNode node,
+            boolean reactivePhase, Supplier<Element> elementLookup, String id,
+            String address) {
+        if (!verifyAttachRequest(context.node, node, id, address)) {
+            return;
+        }
+        Element element = elementLookup.get();
+        if (verifyAttachedElement(element, node, id, address, context)) {
+            if (!reactivePhase) {
+                InitialPropertiesHandler initialPropertiesHandler = node
+                        .getTree().getRegistry().getInitialPropertiesHandler();
+
+                initialPropertiesHandler.nodeRegistered(node);
+                initialPropertiesHandler.flushPropertyUpdates();
+            }
+            node.setDomNode(element);
+            context.binderContext.createAndBind(node);
+        }
         if (!reactivePhase) {
             // Correct binding requires reactive involvement which doesn't
-            // happen automatically when we are out of the phase. So we should
+            // happen automatically when we are out of the phase. So we
+            // should
             // call <code>flush()</code> explicitly.
             Reactive.flush();
         }
+
+    }
+
+    private void handleTemplateInTemplate(BindingContext context,
+            StateNode node, JsonObject object, boolean reactivePhase) {
+        JsonArray path = object.getArray(NodeProperties.PAYLOAD);
+        String address = "path='" + path.toString() + "'";
+
+        Supplier<Element> elementLookup = () -> PolymerUtils.getCustomElement(
+                PolymerUtils.getDomRoot(context.htmlNode), path);
+
+        doAppendVirtualChild(context, node, reactivePhase, elementLookup, null,
+                address);
+
+    }
+
+    private void handleInjectId(BindingContext context, StateNode node,
+            JsonObject object, boolean reactivePhase) {
+        String id = object.getString(NodeProperties.PAYLOAD);
+        String address = "id='" + id + "'";
+        Supplier<Element> elementLookup = () -> ElementUtil
+                .getElementById(context.htmlNode, id);
+
+        doAppendVirtualChild(context, node, reactivePhase, elementLookup, id,
+                address);
     }
 
     private boolean verifyAttachedElement(Element element, StateNode attachNode,
@@ -921,7 +944,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             failure = true;
             Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
                     + " is not found. The requested tag name is '" + tag + "'");
-        } else if (!PolymerUtils.hasTag(element, tag)) {
+        } else if (!ElementUtil.hasTag(element, tag)) {
             failure = true;
             Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
                     + " has the wrong tag name '" + element.getTagName()
@@ -1144,8 +1167,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         context.listenerRemovers.forEach((remover, name) -> remover.remove());
         listeners.forEach(EventRemover::remove);
-        context.synchronizedPropertyEventListeners
-                .forEach(EventRemover::remove);
 
         assert boundNodes != null;
         boundNodes.delete(context.node);
@@ -1215,7 +1236,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         Node element = context.htmlNode;
         StateNode node = context.node;
-        assert element instanceof Element : "Cannot handle DOM event for a Node";
+        assert element instanceof Element
+                : "Cannot handle DOM event for a Node";
 
         String type = event.getType();
 
@@ -1239,28 +1261,50 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             eventData = null;
         } else {
             eventData = Json.createObject();
+        }
+        for (String expressionString : expressions) {
+            if (expressionString
+                    .startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)) {
+                String property = expressionString.substring(
+                        JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN.length());
+                synchronizeProperties.add(property);
+            } else if (expressionString
+                    .equals(JsonConstants.MAP_STATE_NODE_EVENT_DATA)) {
+                // map event.target to the closest state node
+                int targetNodeId = getClosestStateNodeIdToEventTarget(node,
+                        event.getTarget());
+                eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
+                        targetNodeId);
+            } else if (expressionString
+                    .startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA)) {
+                // map element returned by JS to the closest state node
+                String jsEvaluation = expressionString.substring(
+                        JsonConstants.MAP_STATE_NODE_EVENT_DATA.length());
+                EventExpression expression = getOrCreateExpression(
+                        jsEvaluation);
+                JsonValue expressionValue = expression.evaluate(event,
+                        (Element) element);
+                // find the closest state node matching the expression value
+                int targetNodeId = getClosestStateNodeIdToDomNode(
+                        node.getTree(), expressionValue, jsEvaluation);
+                eventData.put(expressionString, targetNodeId);
+            } else {
+                EventExpression expression = getOrCreateExpression(
+                        expressionString);
 
-            for (String expressionString : expressions) {
-                if (expressionString
-                        .startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)) {
-                    String property = expressionString.substring(
-                            JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN.length());
-                    synchronizeProperties.add(property);
-                } else {
-                    EventExpression expression = getOrCreateExpression(
-                            expressionString);
+                JsonValue expressionValue = expression.evaluate(event,
+                        (Element) element);
 
-                    JsonValue expressionValue = expression.evaluate(event,
-                            (Element) element);
-
-                    eventData.put(expressionString, expressionValue);
-                }
+                eventData.put(expressionString, expressionValue);
             }
         }
 
+        JsArray<Runnable> commands = JsCollections.array();
+        synchronizeProperties.forEach(
+                name -> commands.push(getSyncPropertyCommand(name, context)));
+
         Consumer<String> sendCommand = debouncePhase -> {
-            synchronizeProperties
-                    .forEach(name -> syncPropertyIfNeeded(name, context));
+            commands.forEach(Runnable::run);
 
             sendEventToServer(node, type, eventData, debouncePhase);
         };
@@ -1270,8 +1314,28 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         if (sendNow) {
             // Send if there were not filters or at least one matched
-            sendCommand.accept(null);
+
+            boolean commandAlreadyExecuted = false;
+            boolean flushPendingChanges = synchronizeProperties.isEmpty();
+
+            if (flushPendingChanges) {
+                // Flush all debounced events so that they don't happen
+                // in wrong order in the server-side
+                commandAlreadyExecuted = Debouncer.flushAll()
+                        .contains(sendCommand);
+            }
+
+            if (!commandAlreadyExecuted) {
+                sendCommand.accept(null);
+            }
         }
+    }
+
+    private Runnable getSyncPropertyCommand(String propertyName,
+            BindingContext context) {
+        return context.node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty(propertyName).getSyncToServerCommand(WidgetUtil
+                        .getJsProperty(context.htmlNode, propertyName));
     }
 
     private static void sendEventToServer(StateNode node, String type,
@@ -1378,13 +1442,44 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private EventRemover bindPolymerEventHandlerNames(BindingContext context) {
         return ServerEventHandlerBinder.bindServerEventHandlerNames(
                 () -> WidgetUtil.crazyJsoCast(context.htmlNode), context.node,
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
+                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS, false);
     }
 
     private EventRemover bindClientCallableMethods(BindingContext context) {
-        assert context.htmlNode instanceof Element : "Cannot bind client delegate methods to a Node";
+        assert context.htmlNode instanceof Element
+                : "Cannot bind client delegate methods to a Node";
         return ServerEventHandlerBinder.bindServerEventHandlerNames(
                 (Element) context.htmlNode, context.node);
+    }
+
+    private static void updateAttributeValue(
+            ApplicationConfiguration configuration, Element element,
+            String attribute, Object value) {
+        if (value == null || value instanceof String) {
+            WidgetUtil.updateAttribute(element, attribute, (String) value);
+        } else {
+            JsonValue jsonValue = WidgetUtil.crazyJsoCast(value);
+            if (JsonType.OBJECT.equals(jsonValue.getType())) {
+                JsonObject object = (JsonObject) jsonValue;
+                assert object.hasKey(NodeProperties.URI_ATTRIBUTE)
+                        : "Implementation error: JsonObject is recieved as an attribute value for '"
+                                + attribute + "' but it has no "
+                                + NodeProperties.URI_ATTRIBUTE + " key";
+                String uri = object.getString(NodeProperties.URI_ATTRIBUTE);
+                if (configuration.isWebComponentMode()
+                        && !WidgetUtil.isAbsoluteUrl(uri)) {
+                    String baseUri = configuration.getServiceUrl();
+                    baseUri = baseUri.endsWith("/") ? baseUri : baseUri + "/";
+                    WidgetUtil.updateAttribute(element, attribute,
+                            baseUri + uri);
+                } else {
+                    WidgetUtil.updateAttribute(element, attribute, uri);
+                }
+            } else {
+                WidgetUtil.updateAttribute(element, attribute,
+                        value.toString());
+            }
+        }
     }
 
     private static EventExpression getOrCreateExpression(
@@ -1401,6 +1496,84 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
 
         return expression;
+    }
+
+    // This method could be moved somewhere to be reusable
+    private int getClosestStateNodeIdToEventTarget(StateNode topNode,
+            EventTarget target) {
+        if (target == null) {
+            return -1;
+        }
+        try {
+            DomNode targetNode = DomApi.wrap(WidgetUtil.crazyJsCast(target));
+            JsArray<StateNode> stack = JsCollections.array();
+            stack.push(topNode);
+
+            // collect children and test eagerly for direct match
+            for (int i = 0; i < stack.length(); i++) {
+                final StateNode stateNode = stack.get(i);
+                if (targetNode.isSameNode(stateNode.getDomNode())) {
+                    return stateNode.getId();
+                }
+                // NOTE: for now not looking at virtual children on purpose.
+                // If needed (?), those can be included here to the search stack
+                stateNode.getList(NodeFeatures.ELEMENT_CHILDREN)
+                        .forEach(child -> stack.push((StateNode) child));
+            }
+            // no direct match, all child element state nodes collected.
+            // bottom-up search elements until matching state node found
+            targetNode = DomApi.wrap(targetNode.getParentNode());
+            return getStateNodeForElement(stack, targetNode);
+        } catch (Exception e) {
+            // not going to let event handling fail; just report nothing found
+            Console.debug(
+                    "An error occurred when Flow tried to find a state node matching the element "
+                            + target + ", which was the event.target. Error: "
+                            + e.getMessage());
+        }
+        return -1; // no match / error;
+    }
+
+    private static int getStateNodeForElement(JsArray<StateNode> searchStack,
+            DomNode targetNode) {
+        while (targetNode != null) {
+            for (int i = searchStack.length() - 1; i > -1; i--) {
+                final StateNode stateNode = searchStack.get(i);
+                if (targetNode.isSameNode(stateNode.getDomNode())) {
+                    return stateNode.getId();
+                }
+            }
+            targetNode = DomApi.wrap(targetNode.getParentNode());
+        }
+        return -1;
+    }
+
+    private int getClosestStateNodeIdToDomNode(StateTree stateTree,
+            Object domNodeReference, String eventDataExpression) {
+        if (domNodeReference == null) {
+            return -1;
+        }
+        try {
+            DomNode targetNode = DomApi
+                    .wrap(WidgetUtil.crazyJsCast(domNodeReference));
+            while (targetNode != null) {
+                StateNode stateNodeForDomNode = stateTree
+                        .getStateNodeForDomNode(targetNode);
+                if (stateNodeForDomNode != null) {
+                    return stateNodeForDomNode.getId();
+                }
+                targetNode = DomApi.wrap(targetNode.getParentNode());
+            }
+        } catch (Exception e) {
+            // not going to let event handling fail; just report nothing found
+            Console.debug(
+                    "An error occurred when Flow tried to find a state node matching the element "
+                            + domNodeReference
+                            + ", returned by an event data expression "
+                            + eventDataExpression + ". Error: "
+                            + e.getMessage());
+        }
+        return -1; // no match / error;
     }
 
 }

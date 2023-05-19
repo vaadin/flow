@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,15 +20,18 @@ package com.vaadin.flow.server.webcomponent;
  * {@code UnsupportedPropertyTypeException} is throw when
  * {@link com.vaadin.flow.component.WebComponentExporter} tries to register a
  * property encasing an unsupported value type.
+ *
+ * @since 2.0
  */
 public class UnsupportedPropertyTypeException extends RuntimeException {
     /**
-     * Constructs a new runtime exception with the specified detail message.
-     * The cause is not initialized, and may subsequently be initialized by a
-     * call to {@link #initCause}.
+     * Constructs a new runtime exception with the specified detail message. The
+     * cause is not initialized, and may subsequently be initialized by a call
+     * to {@link #initCause}.
      *
-     * @param   message   the detail message. The detail message is saved for
-     *          later retrieval by the {@link #getMessage()} method.
+     * @param message
+     *            the detail message. The detail message is saved for later
+     *            retrieval by the {@link #getMessage()} method.
      */
     public UnsupportedPropertyTypeException(String message) {
         super(message);

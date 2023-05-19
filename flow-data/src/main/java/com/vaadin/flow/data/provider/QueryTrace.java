@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,8 +19,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Allows to trace {@link Query#getOffset()} and {@link Query#getLimit()} method
- * calls.
+ * Allows to trace {@link Query#getOffset()}, {@link Query#getLimit()},
+ * {@link Query#getPage()} and {@link Query#getPageSize()} method calls.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -59,4 +59,5 @@ class QueryTrace<T, F> extends Query<T, F> {
     boolean isLimitCalled() {
         return isLimitCalled;
     }
+
 }

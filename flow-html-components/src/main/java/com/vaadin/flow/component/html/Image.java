@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.flow.component.html;
 import java.util.Optional;
 
 import com.vaadin.flow.component.ClickNotifier;
+import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
@@ -32,13 +33,12 @@ import com.vaadin.flow.server.StreamResource;
  * @since 1.0
  */
 @Tag(Tag.IMG)
-public class Image extends HtmlContainer implements ClickNotifier<Image> {
+public class Image extends HtmlContainer
+        implements ClickNotifier<Image>, HasAriaLabel {
 
+    private static final String ALT_ATTRIBUTE = "alt";
     private static final PropertyDescriptor<String, String> srcDescriptor = PropertyDescriptors
             .attributeWithDefault("src", "");
-
-    private static final PropertyDescriptor<String, Optional<String>> altDescriptor = PropertyDescriptors
-            .optionalAttributeWithDefault("alt", "");
 
     /**
      * Creates a new empty image.
@@ -49,6 +49,9 @@ public class Image extends HtmlContainer implements ClickNotifier<Image> {
 
     /**
      * Creates an image with the given URL and an alternative text.
+     * <p>
+     * The alternative text given to constructor is always set even if it is the
+     * default empty string which is not retained with {@link #setAlt(String)}.
      *
      * @param src
      *            the image URL
@@ -65,6 +68,9 @@ public class Image extends HtmlContainer implements ClickNotifier<Image> {
 
     /**
      * Creates an image with the given stream resource and an alternative text.
+     * <p>
+     * The alternative text given to constructor is always set even if it is the
+     * default empty string which is not retained with {@link #setAlt(String)}.
      *
      * @param src
      *            the resource value, not null
@@ -115,7 +121,12 @@ public class Image extends HtmlContainer implements ClickNotifier<Image> {
      *            the alternate text
      */
     public void setAlt(String alt) {
-        set(altDescriptor, alt);
+        if (alt == null) {
+            getElement().removeAttribute(ALT_ATTRIBUTE);
+        } else {
+            // Also an empty string should be set as alt
+            getElement().setAttribute(ALT_ATTRIBUTE, alt);
+        }
     }
 
     /**
@@ -125,6 +136,6 @@ public class Image extends HtmlContainer implements ClickNotifier<Image> {
      *         text has been set
      */
     public Optional<String> getAlt() {
-        return get(altDescriptor);
+        return Optional.ofNullable(getElement().getAttribute(ALT_ATTRIBUTE));
     }
 }

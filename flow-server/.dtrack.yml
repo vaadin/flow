@@ -1,0 +1,8 @@
+npmDependencies:
+  # Extract additional npm dependencies by calling static method without arguments,
+  # returning Map<String,String>      
+  - staticMethodClassName: com.vaadin.flow.server.frontend.NodeUpdater
+    staticMethodName: getDefaultDependencies
+
+  - staticMethodClassName: com.vaadin.flow.server.frontend.NodeUpdater
+    staticMethodName: getDefaultDevDependencies

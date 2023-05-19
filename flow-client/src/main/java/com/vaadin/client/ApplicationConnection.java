@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,13 +17,17 @@
 package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.communication.LoadingIndicatorConfigurator;
 import com.vaadin.client.communication.PollConfigurator;
-import com.vaadin.client.communication.ReconnectDialogConfiguration;
-import com.vaadin.client.flow.RouterLinkHandler;
+import com.vaadin.client.communication.ReconnectConfiguration;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.binding.Binder;
+import com.vaadin.client.flow.dom.DomApi;
+import com.vaadin.client.flow.util.NativeFunction;
+
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -32,6 +36,8 @@ import elemental.dom.Node;
  * Main class for an application / UI.
  * <p>
  * Initializes the registry and starts the application.
+ *
+ * @since 1.0
  */
 public class ApplicationConnection {
 
@@ -54,22 +60,13 @@ public class ApplicationConnection {
 
         // Bind UI configuration objects
         PollConfigurator.observe(rootNode, registry.getPoller());
-        ReconnectDialogConfiguration.bind(registry.getConnectionStateHandler());
-        LoadingIndicatorConfigurator.observe(rootNode, registry.getLoadingIndicator());
-
-
+        ReconnectConfiguration.bind(registry.getConnectionStateHandler());
+        LoadingIndicatorConfigurator.observe(rootNode);
 
         Element body = Browser.getDocument().getBody();
 
         rootNode.setDomNode(body);
         Binder.bind(rootNode, body);
-
-        // When app is run as a WC do not add listener for routing events.
-        // Routing is responsability of the hosting application (#6108)
-        if (!applicationConfiguration.isWebComponentMode()) {
-            new PopStateHandler(registry).bind();
-            RouterLinkHandler.bind(registry, body);
-        }
 
         Console.log("Starting application "
                 + applicationConfiguration.getApplicationId());
@@ -80,8 +77,9 @@ public class ApplicationConnection {
 
         boolean productionMode = applicationConfiguration.isProductionMode();
         boolean requestTiming = applicationConfiguration.isRequestTiming();
-        publishProductionModeJavascriptMethods(appRootPanelName, productionMode,
-                requestTiming);
+        publishJavascriptMethods(appRootPanelName, productionMode,
+                requestTiming,
+                applicationConfiguration.getExportedWebComponents());
         if (!productionMode) {
             String servletVersion = applicationConfiguration
                     .getServletVersion();
@@ -89,9 +87,28 @@ public class ApplicationConnection {
                     servletVersion);
             Console.log(
                     "Vaadin application servlet version: " + servletVersion);
+
+            if (applicationConfiguration.isDevToolsEnabled()
+                    && applicationConfiguration.getLiveReloadUrl() != null) {
+                Element devTools = Browser.getDocument()
+                        .createElement("vaadin-dev-tools");
+                DomApi.wrap(devTools).setAttribute("url",
+                        applicationConfiguration.getLiveReloadUrl());
+                if (applicationConfiguration.getLiveReloadBackend() != null) {
+                    DomApi.wrap(devTools).setAttribute("backend",
+                            applicationConfiguration.getLiveReloadBackend());
+                }
+                if (applicationConfiguration
+                        .getSpringBootLiveReloadPort() != null) {
+                    DomApi.wrap(devTools).setAttribute(
+                            "springbootlivereloadport", applicationConfiguration
+                                    .getSpringBootLiveReloadPort());
+                }
+                DomApi.wrap(body).appendChild(devTools);
+            }
         }
 
-        registry.getLoadingIndicator().show();
+        ConnectionIndicator.setState(ConnectionIndicator.LOADING);
     }
 
     /**
@@ -114,6 +131,21 @@ public class ApplicationConnection {
             registry.getRequestResponseTracker().startRequest();
             registry.getMessageHandler().handleMessage(initialUidl);
         }
+
+        Browser.getWindow().addEventListener("pagehide", e -> {
+            registry.getMessageSender().sendUnloadBeacon();
+        });
+
+        Browser.getWindow().addEventListener("pageshow", e -> {
+            // Currently only Safari gets here, sometimes when going back/foward
+            // with browser buttons
+            // Chrome discards our state as beforeunload is used
+            // As state is most likely cleared on the server already (especially
+            // now with Beacon API request, it is probably
+            // better resyncronize the state (would happen on first server
+            // visit)
+            Browser.getWindow().getLocation().reload();
+        });
     }
 
     /**
@@ -128,7 +160,7 @@ public class ApplicationConnection {
     }
 
     /**
-     * Methods ALWAYS published to JavaScript, regardless of production mode.
+     * Methods published to JavaScript.
      *
      * @param applicationId
      *            the application id provided by the server
@@ -138,22 +170,42 @@ public class ApplicationConnection {
      * @param requestTiming
      *            <code>true</code> if request timing info should be made
      *            available, <code>false</code> otherwise
+     * @param exportedWebComponents
+     *            a list of web component tags exported by this UI
      */
-    private native void publishProductionModeJavascriptMethods(
-            String applicationId, boolean productionMode, boolean requestTiming)
+    private native void publishJavascriptMethods(String applicationId,
+            boolean productionMode, boolean requestTiming,
+            String[] exportedWebComponents)
     /*-{
         var ap = this;
         var client = {};
         client.isActive = $entry(function() {
-            return ap.@com.vaadin.client.ApplicationConnection::isActive()();
+            return ap.@ApplicationConnection::isActive()();
         });
         client.getByNodeId = $entry(function(nodeId) {
             return ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId);
+        });
+        client.getNodeId = $entry(function(element) {
+            return ap.@ApplicationConnection::getNodeId(*)(element);
+        });
+        client.getUIId = $entry(function() {
+            var appConfiguration = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getApplicationConfiguration()();
+            return appConfiguration.@ApplicationConfiguration::getUIId(*)();
+        });
+        client.addDomBindingListener = $entry(function(nodeId, callback) {
+            ap.@ApplicationConnection::addDomSetListener(*)(nodeId, callback);
         });
         client.productionMode = productionMode;
         client.poll = $entry(function() {
                 var poller = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getPoller()();
                 poller.@com.vaadin.client.communication.Poller::poll()();
+        });
+        client.connectWebComponent = $entry(function(eventData) {
+            // Connects the web component described by eventData with the server
+            var registry = ap.@ApplicationConnection::registry;
+            var sc = registry.@com.vaadin.client.Registry::getServerConnector()();
+            var nodeId = registry.@com.vaadin.client.Registry::getStateTree()().@com.vaadin.client.flow.StateTree::getRootNode()().@com.vaadin.client.flow.StateNode::id;
+            sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId, 'connect-web-component', eventData);
         });
         if (requestTiming) {
            client.getProfilingData = $entry(function() {
@@ -171,24 +223,42 @@ public class ApplicationConnection {
             return pd;
         });
         }
-        $wnd.Vaadin.Flow.resolveUri = $entry(function(uriToResolve) {
+        client.resolveUri = $entry(function(uriToResolve) {
             var ur = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
             return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
         });
 
-        $wnd.Vaadin.Flow.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
+        client.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
             var sc = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
             sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
         });
 
         client.initializing = false;
-
+        client.exportedWebComponents = exportedWebComponents;
         $wnd.Vaadin.Flow.clients[applicationId] = client;
     }-*/;
 
     private Node getDomElementByNodeId(int id) {
         StateNode node = registry.getStateTree().getNode(id);
         return node == null ? null : node.getDomNode();
+    }
+
+    private int getNodeId(Element element) {
+        StateNode node = registry.getStateTree()
+                .getStateNodeForDomNode(DomApi.wrap(element));
+        return node == null ? -1 : node.getId();
+    }
+
+    private void addDomSetListener(int nodeId, JavaScriptObject callback) {
+        registry.getStateTree().getNode(nodeId).addDomNodeSetListener(node -> {
+            if (nodeId == node.getId()) {
+                NativeFunction function = NativeFunction.create("callback",
+                        "callback();");
+                function.call(null, callback);
+                return true;
+            }
+            return false;
+        });
     }
 
     /**
@@ -207,6 +277,10 @@ public class ApplicationConnection {
         });
         client.getVersionInfo = $entry(function(parameter) {
             return { "flow": servletVersion};
+        });
+        client.debug = $entry(function() {
+            var registry = ap.@ApplicationConnection::registry;
+            return registry.@com.vaadin.client.Registry::getStateTree()().@com.vaadin.client.flow.StateTree::getRootNode()().@com.vaadin.client.flow.StateNode::getDebugJson()();
         });
 
     }-*/;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,22 +15,17 @@
  */
 package com.vaadin.flow.data.binder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -40,9 +35,15 @@ import org.junit.Test;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.BeanBinderTest.RequiredConstraints.SubConstraint;
 import com.vaadin.flow.data.binder.BeanBinderTest.RequiredConstraints.SubSubConstraint;
+import com.vaadin.flow.data.binder.testcomponents.TestSelectComponent;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class BeanBinderTest
         extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
@@ -51,6 +52,7 @@ public class BeanBinderTest
     }
 
     private class TestClass {
+        private TestSelectComponent<TestEnum> enums;
         private TestTextField number = new TestTextField();
     }
 
@@ -202,6 +204,34 @@ public class BeanBinderTest
         UI.setCurrent(null);
     }
 
+    @Test
+    public void bindInstanceFields_parameters_type_erased() {
+        Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
+        TestClass testClass = new TestClass();
+        otherBinder.forField(testClass.number)
+                .withConverter(new StringToIntegerConverter("")).bind("number");
+
+        // Should correctly bind the enum field without throwing
+        otherBinder.bindInstanceFields(testClass);
+        testSerialization(otherBinder);
+    }
+
+    @Test
+    public void bindInstanceFields_automatically_binds_incomplete_forMemberField_bindings() {
+        Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
+        TestClass testClass = new TestClass();
+
+        otherBinder.forMemberField(testClass.number)
+                .withConverter(new StringToIntegerConverter(""));
+        otherBinder.bindInstanceFields(testClass);
+
+        TestBean bean = new TestBean();
+        otherBinder.setBean(bean);
+        testClass.number.setValue("50");
+        assertEquals(50, bean.number);
+        testSerialization(otherBinder);
+    }
+
     @Test(expected = IllegalStateException.class)
     public void bindInstanceFields_does_not_automatically_bind_incomplete_forField_bindings() {
         Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
@@ -210,9 +240,12 @@ public class BeanBinderTest
         otherBinder.forField(testClass.number)
                 .withConverter(new StringToIntegerConverter(""));
 
+        // bindInstanceFields does not throw exceptions for incomplete bindings
+        // because bindings they can be completed after the call.
+        otherBinder.bindInstanceFields(testClass);
         // Should throw an IllegalStateException since the binding for number is
         // not completed with bind
-        otherBinder.bindInstanceFields(testClass);
+        otherBinder.setBean(new TestBean());
     }
 
     @Test(expected = IllegalStateException.class)

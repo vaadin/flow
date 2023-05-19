@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,70 +16,121 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.FallibleCommand;
-
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-
 /**
  * Copies JavaScript files from the given local frontend folder.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 2.0
  */
 public class TaskCopyLocalFrontendFiles implements FallibleCommand {
 
-    private final File targetDirectory;
-    private final File frontendResourcesDirectory;
+    private final Options options;
 
     /**
      * Copy project local frontend files from defined frontendResourcesDirectory
      * (by default 'src/main/resources/META-INF/resources/frontend'). This
      * enables running jar projects locally.
      *
-     * @param npmFolder
-     *            target directory for the discovered files
      */
-    TaskCopyLocalFrontendFiles(File npmFolder,
-            File frontendResourcesDirectory) {
-        this.targetDirectory = new File(npmFolder,
-                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
-        this.frontendResourcesDirectory = frontendResourcesDirectory;
+    TaskCopyLocalFrontendFiles(Options options) {
+        this.options = options;
     }
 
     @Override
     public void execute() {
-        createTargetFolder();
+        File target = options.getJarFrontendResourcesFolder();
+        File localResourcesFolder = options.getLocalResourcesFolder();
+        createTargetFolder(target);
 
-        if (frontendResourcesDirectory != null
-                && frontendResourcesDirectory.isDirectory()) {
+        if (localResourcesFolder != null
+                && localResourcesFolder.isDirectory()) {
             log().info("Copying project local frontend resources.");
-            try {
-                FileUtils.copyDirectory(frontendResourcesDirectory,
-                        targetDirectory);
-            } catch (IOException e) {
-                throw new UncheckedIOException(String.format(
-                        "Failed to copy project frontend resources from '%s' to '%s'",
-                        frontendResourcesDirectory, targetDirectory), e);
-            }
+            copyLocalResources(localResourcesFolder, target);
             log().info("Copying frontend directory completed.");
         } else {
             log().debug("Found no local frontend resources for the project");
         }
     }
 
-    private void createTargetFolder() {
+    /**
+     * Copies the local resources from specified source directory to within the
+     * specified target directory ignoring the file exclusions defined as a
+     * relative paths to source directory.
+     *
+     * @param source
+     *            directory to copy the files from
+     * @param target
+     *            directory to copy the files to
+     * @param relativePathExclusions
+     *            files or directories that shouldn't be copied, relative to
+     *            source directory
+     * @return set of copied files
+     */
+    static Set<String> copyLocalResources(File source, File target,
+            String... relativePathExclusions) {
+        if (!source.isDirectory() || !target.isDirectory()) {
+            return Collections.emptySet();
+        }
         try {
-            FileUtils.forceMkdir(Objects.requireNonNull(targetDirectory));
+            Set<String> handledFiles = new HashSet<>(TaskCopyFrontendFiles
+                    .getFilesInDirectory(source, relativePathExclusions));
+            FileUtils.copyDirectory(source, target,
+                    withoutExclusions(source, relativePathExclusions));
+            try (Stream<Path> fileStream = Files
+                    .walk(Paths.get(target.getPath()))) {
+                // used with try-with-resources as defined in walk API note
+                fileStream.filter(file -> !Files.isWritable(file)).forEach(
+                        filePath -> filePath.toFile().setWritable(true));
+            }
+            return handledFiles;
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
-                    "Failed to create directory '%s'", targetDirectory), e);
+                    "Failed to copy project frontend resources from '%s' to '%s'",
+                    source, target), e);
         }
+    }
+
+    static void createTargetFolder(File target) {
+        try {
+            FileUtils.forceMkdir(Objects.requireNonNull(target));
+        } catch (IOException e) {
+            throw new UncheckedIOException(
+                    String.format("Failed to create directory '%s'", target),
+                    e);
+        }
+    }
+
+    static boolean keepFile(File source, String[] relativePathExclusions,
+            File fileToCheck) {
+        for (String exclusion : relativePathExclusions) {
+            File basePath = new File(source, exclusion);
+            if (fileToCheck.getPath().startsWith(basePath.getPath())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static FileFilter withoutExclusions(File source,
+            String[] relativePathExclusions) {
+        return file -> keepFile(source, relativePathExclusions, file);
     }
 
     private static Logger log() {

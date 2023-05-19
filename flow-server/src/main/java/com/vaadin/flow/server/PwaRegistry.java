@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server;
 
+import javax.imageio.ImageIO;
+import jakarta.servlet.ServletContext;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -25,16 +28,21 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.imageio.ImageIO;
-import javax.servlet.ServletContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.communication.PwaHandler;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import elemental.json.Json;
@@ -53,24 +61,38 @@ import elemental.json.JsonObject;
  * <li>Manifest json
  * <li>Service worker
  * </ul>
+ *
+ * @since 1.2
  */
 public class PwaRegistry implements Serializable {
+
+    private static final String META_INF_RESOURCES = "/META-INF/resources";
     private static final String HEADLESS_PROPERTY = "java.awt.headless";
     private static final String APPLE_STARTUP_IMAGE = "apple-touch-startup-image";
-    private static final String APPLE_IMAGE_MEDIA = "(device-width: %dpx) and (device-height: %dpx) "
-            + "and (-webkit-device-pixel-ratio: %d)";
-    public static final String WORKBOX_FOLDER = "VAADIN/static/server/workbox/";
+    private static final String APPLE_IMAGE_MEDIA = "screen and (device-width: %dpx) and (device-height: %dpx)"
+            + " and (-webkit-device-pixel-ratio: %d) and (orientation: %s)";
+    private static final String ORIENTATION_PORTRAIT = "portrait";
+    private static final String ORIENTATION_LANDSCAPE = "landscape";
     private static final String WORKBOX_CACHE_FORMAT = "{ url: '%s', revision: '%s' }";
 
     private String offlineHtml = "";
     private String manifestJson = "";
-    private String serviceWorkerJs = "";
-    private String installPrompt = "";
+    private String runtimeServiceWorkerJs = "";
     private long offlineHash;
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
 
-    private PwaRegistry(PWA pwa, ServletContext servletContext)
+    /**
+     * Creates a new PwaRegistry instance.
+     *
+     * @param pwa
+     *            the pwa annotation
+     * @param servletContext
+     *            the context
+     * @throws IOException
+     *             when icon or offline resources are not found.
+     */
+    public PwaRegistry(PWA pwa, ServletContext servletContext)
             throws IOException {
         if (System.getProperty(HEADLESS_PROPERTY) == null) {
             // set headless mode if the property is not explicitly set
@@ -79,38 +101,73 @@ public class PwaRegistry implements Serializable {
 
         // set basic configuration by given PWA annotation
         // fall back to defaults if unavailable
-        pwaConfiguration = new PwaConfiguration(pwa, servletContext);
+        pwaConfiguration = pwa == null ? new PwaConfiguration()
+                : new PwaConfiguration(pwa);
 
         // Build pwa elements only if they are enabled
-        if (pwaConfiguration.isEnabled()) {
-            URL logo = servletContext
-                    .getResource(pwaConfiguration.relIconPath());
-            URL offlinePage = servletContext
-                    .getResource(pwaConfiguration.relOfflinePath());
-            // Load base logo from servlet context if available
-            // fall back to local image if unavailable
-            BufferedImage baseImage = getBaseImage(logo);
+        initializeResources(servletContext);
+    }
 
-            // Pick top-left pixel as fill color if needed for image resizing
+    private void initializeResources(ServletContext servletContext)
+            throws MalformedURLException, IOException {
+        if (!pwaConfiguration.isEnabled()) {
+            return;
+        }
+        long start = System.currentTimeMillis();
+
+        URL logo = getResourceUrl(servletContext,
+                pwaConfiguration.relIconPath());
+
+        URL offlinePage = pwaConfiguration.isOfflinePathEnabled()
+                ? getResourceUrl(servletContext,
+                        pwaConfiguration.relOfflinePath())
+                : null;
+
+        // Load base logo from servlet context if available
+        // fall back to local image if unavailable
+        BufferedImage baseImage = getBaseImage(logo);
+
+        if (baseImage == null) {
+            getLogger().error("Image is not found or can't be loaded: " + logo);
+        } else {
+            // Pick top-left pixel as fill color if needed for image
+            // resizing
             int bgColor = baseImage.getRGB(0, 0);
 
             // initialize icons
             icons = initializeIcons(baseImage, bgColor);
-
-            // Load offline page as string, from servlet context if
-            // available, fall back to default page
-            offlineHtml = initializeOfflinePage(pwaConfiguration, offlinePage);
-            offlineHash = offlineHtml.hashCode();
-
-            // Initialize manifest.webmanifest
-            manifestJson = initializeManifest().toJson();
-
-            // Initialize sw.js
-            serviceWorkerJs = initializeServiceWorker(servletContext);
-
-            // Initialize service worker install prompt html/js
-            installPrompt = initializeInstallPrompt(pwaConfiguration);
         }
+
+        // Load offline page as string, from servlet context if
+        // available, fall back to default page
+        offlineHtml = initializeOfflinePage(pwaConfiguration, offlinePage);
+        offlineHash = offlineHtml.hashCode();
+
+        // Initialize manifest.webmanifest
+        manifestJson = initializeManifest().toJson();
+
+        // Initialize sw-runtime.js
+        runtimeServiceWorkerJs = initializeRuntimeServiceWorker(servletContext);
+        getLogger().debug(
+                getClass().getSimpleName() + " initialization took {}ms",
+                System.currentTimeMillis() - start);
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(PwaRegistry.class);
+    }
+
+    private URL getResourceUrl(ServletContext context, String path)
+            throws MalformedURLException {
+        URL resourceUrl = context.getResource(path);
+        if (resourceUrl == null) {
+            // this is a workaround specific for Spring default static resources
+            // location: see #8705
+            String cpPath = path.startsWith("/") ? META_INF_RESOURCES + path
+                    : META_INF_RESOURCES + "/" + path;
+            resourceUrl = PwaRegistry.class.getResource(cpPath);
+        }
+        return resourceUrl;
     }
 
     private List<PwaIcon> initializeIcons(BufferedImage baseImage,
@@ -179,7 +236,6 @@ public class PwaRegistry implements Serializable {
                 pwaConfiguration.getBackgroundColor());
         manifestData.put("theme_color", pwaConfiguration.getThemeColor());
         manifestData.put("start_url", pwaConfiguration.getStartUrl());
-        manifestData.put("scope", pwaConfiguration.getRootUrl());
 
         // Add icons
         JsonArray iconList = Json.createArray();
@@ -195,50 +251,44 @@ public class PwaRegistry implements Serializable {
         return manifestData;
     }
 
-    private String initializeServiceWorker(ServletContext servletContext) {
+    private String initializeRuntimeServiceWorker(
+            ServletContext servletContext) {
         StringBuilder stringBuilder = new StringBuilder();
 
-        // List of icons for precache
-        List<String> filesToCahe = getIcons().stream()
+        // List of files to precache
+        Collection<String> filesToCache = getIcons().stream()
                 .filter(PwaIcon::shouldBeCached).map(PwaIcon::getCacheFormat)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        // Add offline page to precache
-        filesToCahe.add(offlinePageCache());
+        // When custom offlinePath is in use, it is also an offline resource to
+        // precache
+        if (pwaConfiguration.isOfflinePathEnabled()) {
+            filesToCache
+                    .add(offlinePageCache(pwaConfiguration.getOfflinePath()));
+        } else if (shouldCacheRoot()) {
+            // No offlinePath configured, cache the root (#13987):
+            filesToCache.add(offlinePageCache("."));
+        }
+
+        // Offline stub to be shown within an <iframe> in the app shell
+        filesToCache
+                .add(offlinePageCache(PwaHandler.DEFAULT_OFFLINE_STUB_PATH));
+
         // Add manifest to precache
-        filesToCahe.add(manifestCache());
+        filesToCache.add(manifestCache());
 
-        // Add user defined resources
+        // Add user defined resources. Do not serve these via Webpack, as the
+        // file system location from which a resource is served depends on
+        // the (configurable) web app logic (#8996).
         for (String resource : pwaConfiguration.getOfflineResources()) {
-            filesToCahe.add(String.format(WORKBOX_CACHE_FORMAT,
+            filesToCache.add(String.format(WORKBOX_CACHE_FORMAT,
                     resource.replaceAll("'", ""), servletContext.hashCode()));
         }
 
-        String workBoxAbsolutePath = servletContext.getContextPath() + "/"
-                + WORKBOX_FOLDER;
-        // Google Workbox import
-        stringBuilder.append("importScripts('").append(workBoxAbsolutePath)
-                .append("workbox-sw.js").append("');\n\n");
-
-        stringBuilder.append("workbox.setConfig({\n")
-                .append("  modulePathPrefix: '").append(workBoxAbsolutePath)
-                .append("'\n").append("});\n");
-
         // Precaching
-        stringBuilder.append("workbox.precaching.precacheAndRoute([\n");
-        stringBuilder.append(String.join(",\n", filesToCahe));
-        stringBuilder.append("\n]);\n");
-
-        // Offline fallback
-        stringBuilder
-                .append("self.addEventListener('fetch', function(event) {\n")
-                .append("  var request = event.request;\n")
-                .append("  if (request.mode === 'navigate') {\n")
-                .append("    event.respondWith(\n      fetch(request)\n")
-                .append("        .catch(function() {\n")
-                .append(String.format("          return caches.match('%s');%n",
-                        getPwaConfiguration().getOfflinePath()))
-                .append("        })\n    );\n  }\n });");
+        stringBuilder.append("self.additionalManifestEntries = [\n");
+        stringBuilder.append(String.join(",\n", filesToCache));
+        stringBuilder.append("\n];\n");
 
         return stringBuilder.toString();
     }
@@ -264,12 +314,22 @@ public class PwaRegistry implements Serializable {
                     .getAttribute(PwaRegistry.class.getName());
 
             if (attribute == null) {
-                ApplicationRouteRegistry reg = ApplicationRouteRegistry.getInstance(servletContext);
+                VaadinServletContext context = new VaadinServletContext(
+                        servletContext);
+
+                // Try first if there is an AppShell for the project
+                Class<?> clazz = AppShellRegistry.getInstance(context)
+                        .getShell();
+
+                // Otherwise use the class reported by router
+                if (clazz == null) {
+                    clazz = ApplicationRouteRegistry.getInstance(context)
+                            .getPwaConfigurationClass();
+                }
 
                 // Initialize PwaRegistry with found PWA settings
-                PWA pwa = reg.getPwaConfigurationClass() != null ? reg
-                        .getPwaConfigurationClass().getAnnotation(PWA.class)
-                        : null;
+                PWA pwa = clazz != null ? clazz.getAnnotation(PWA.class) : null;
+
                 // will fall back to defaults, if no PWA annotation available
                 try {
                     attribute = new PwaRegistry(pwa, servletContext);
@@ -279,7 +339,6 @@ public class PwaRegistry implements Serializable {
                     throw new UncheckedIOException(
                             "Failed to initialize the PWA registry", ioe);
                 }
-
             }
         }
 
@@ -319,25 +378,9 @@ public class PwaRegistry implements Serializable {
         return offlinePage.replace("%%%PROJECT_NAME%%%", config.getAppName())
                 .replace("%%%BACKGROUND_COLOR%%%", config.getBackgroundColor())
                 .replace("%%%LOGO_PATH%%%",
-                        largest != null
-                                ? pwaConfiguration.getRootUrl()
-                                        + largest.getHref()
-                                : "")
+                        largest != null ? largest.getHref() : "")
                 .replace("%%%META_ICONS%%%", iconHead);
 
-    }
-
-    private String initializeInstallPrompt(PwaConfiguration pwaConfiguration) {
-        PwaIcon largest = getIcons().stream().filter(PwaIcon::shouldBeCached)
-                .min((icon1, icon2) -> icon2.getWidth() - icon1.getWidth())
-                .orElse(null);
-        return BootstrapHandler.readResource("default-pwa-prompt.html")
-                .replace("%%%INSTALL%%%", "Install")
-                .replace("%%%LOGO_PATH%%%",
-                        largest == null ? ""
-                                : pwaConfiguration.getRootUrl()
-                                        + largest.getHref())
-                .replace("%%%PROJECT_NAME%%%", pwaConfiguration.getAppName());
     }
 
     private String getOfflinePageFromContext(URLConnection connection) {
@@ -380,37 +423,22 @@ public class PwaRegistry implements Serializable {
     }
 
     /**
-     * sw.js (service worker javascript) as String.
+     * sw-runtime.js (service worker JavaScript for precaching runtime generated
+     * resources) as a String.
      *
-     * @return contents of sw.js
+     * @return contents of sw-runtime.js
      */
-    public String getServiceWorkerJs() {
-        return serviceWorkerJs;
+    public String getRuntimeServiceWorkerJs() {
+        return runtimeServiceWorkerJs;
     }
 
-    /**
-     * Google Workbox cache resource String of offline page. example:
-     * {@code {url: 'offline.html', revision: '1234567'}}
-     *
-     * @return Google Workbox cache resource String of offline page
-     */
-    public String offlinePageCache() {
-        return String.format(WORKBOX_CACHE_FORMAT,
-                pwaConfiguration.getOfflinePath(), offlineHash);
+    private String offlinePageCache(String offlinePath) {
+        return String.format(WORKBOX_CACHE_FORMAT, offlinePath, offlineHash);
     }
 
     private String manifestCache() {
         return String.format(WORKBOX_CACHE_FORMAT,
                 pwaConfiguration.getManifestPath(), manifestJson.hashCode());
-    }
-
-    /**
-     * Html and js needed for pwa install prompt as a plain string.
-     *
-     * @return Html and js needed for pwa install prompt
-     */
-    public String getInstallPrompt() {
-        return installPrompt;
     }
 
     /**
@@ -450,7 +478,7 @@ public class PwaRegistry implements Serializable {
         return pwaConfiguration;
     }
 
-    private static List<PwaIcon> getIconTemplates(String baseName) {
+    static List<PwaIcon> getIconTemplates(String baseName) {
         List<PwaIcon> icons = new ArrayList<>();
         // Basic manifest icons for android support
         icons.add(
@@ -463,7 +491,7 @@ public class PwaRegistry implements Serializable {
         // Basic icons
         icons.add(new PwaIcon(16, 16, baseName, PwaIcon.Domain.HEADER, true,
                 "shortcut icon", ""));
-        icons.add(new PwaIcon(32, 32, baseName));
+        icons.add(new PwaIcon(32, 32, baseName, PwaIcon.Domain.HEADER, true));
         icons.add(new PwaIcon(96, 96, baseName));
 
         // IOS basic icon
@@ -471,27 +499,132 @@ public class PwaRegistry implements Serializable {
                 "apple-touch-icon", ""));
 
         // IOS device specific splash screens
-        // iPhone X (1125px x 2436px)
+        // iPad Pro 12.9 Portrait:
+        icons.add(new PwaIcon(2048, 2732, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        1024, 1366, 2, ORIENTATION_PORTRAIT)));
+        // iPad Pro 12.9 Landscape:
+        icons.add(new PwaIcon(2732, 2048, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        1024, 1366, 2, ORIENTATION_LANDSCAPE)));
+
+        // iPad Pro 11, 10.5 Portrait:
+        icons.add(new PwaIcon(1668, 2388, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        834, 1194, 2, ORIENTATION_PORTRAIT)));
+        // iPad Pro 11, 10.5 Landscape:
+        icons.add(new PwaIcon(2388, 1668, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        834, 1194, 2, ORIENTATION_LANDSCAPE)));
+
+        // iPad Air 10.5 Portrait:
+        icons.add(new PwaIcon(1668, 2224, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        834, 1112, 2, ORIENTATION_PORTRAIT)));
+        // iPad Air 10.5 Landscape:
+        icons.add(new PwaIcon(2224, 1668, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        834, 1112, 2, ORIENTATION_LANDSCAPE)));
+
+        // iPad 10.2 Portrait:
+        icons.add(new PwaIcon(1620, 2160, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        768, 1024, 2, ORIENTATION_PORTRAIT)));
+        // iPad 10.2 Landscape:
+        icons.add(new PwaIcon(2160, 1620, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        768, 1024, 2, ORIENTATION_LANDSCAPE)));
+
+        // iPad Pro 9.7, iPad Air 9.7, iPad 9.7, iPad mini 7.9 portrait
+        icons.add(new PwaIcon(1536, 2048, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        768, 1024, 2, ORIENTATION_PORTRAIT)));
+        // iPad Pro 9.7, iPad Air 9.7, iPad 9.7, iPad mini 7.9 landscape
+        icons.add(new PwaIcon(2048, 1536, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        768, 1024, 2, ORIENTATION_LANDSCAPE)));
+
+        // iPhone 13 Pro Max, iPhone 12 Pro Max portrait
+        icons.add(new PwaIcon(1284, 2778, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        428, 926, 3, ORIENTATION_PORTRAIT)));
+        // iPhone 13 Pro Max, iPhone 12 Pro Max landscape
+        icons.add(new PwaIcon(2778, 1284, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        428, 926, 3, ORIENTATION_LANDSCAPE)));
+
+        // iPhone 13 Pro, iPhone 13, iPhone 12 Pro, iPhone 12 portrait
+        icons.add(new PwaIcon(1170, 2532, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        390, 844, 3, ORIENTATION_PORTRAIT)));
+        // iPhone 13 Pro, iPhone 13, iPhone 12 Pro, iPhone 12 landscape
+        icons.add(new PwaIcon(2532, 1170, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        390, 844, 3, ORIENTATION_LANDSCAPE)));
+
+        // iPhone 13 Mini, iPhone 12 Mini, iPhone 11 Pro, iPhone XS, iPhone X
+        // portrait
         icons.add(new PwaIcon(1125, 2436, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE,
-                String.format(APPLE_IMAGE_MEDIA, 375, 812, 3)));
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        375, 812, 3, ORIENTATION_PORTRAIT)));
+        // iPhone 13 Mini, iPhone 12 Mini, iPhone 11 Pro, iPhone XS, iPhone X
+        // landscape
+        icons.add(new PwaIcon(2436, 1125, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        375, 812, 3, ORIENTATION_LANDSCAPE)));
 
-        // iPhone 8, 7, 6s, 6 (750px x 1334px)
-        icons.add(new PwaIcon(750, 1334, baseName, PwaIcon.Domain.HEADER, false,
-                APPLE_STARTUP_IMAGE,
-                String.format(APPLE_IMAGE_MEDIA, 375, 667, 2)));
+        // iPhone 11 Pro Max, iPhone XS Max portrait
+        icons.add(new PwaIcon(1242, 2688, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        414, 896, 3, ORIENTATION_PORTRAIT)));
+        // iPhone 11 Pro Max, iPhone XS Max landscape
+        icons.add(new PwaIcon(2688, 1242, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        414, 896, 3, ORIENTATION_LANDSCAPE)));
 
-        // iPhone 8 Plus, 7 Plus, 6s Plus, 6 Plus (1242px x 2208px)
+        // iPhone 11, iPhone XR portrait
+        icons.add(new PwaIcon(828, 1792, baseName, PwaIcon.Domain.HEADER, false,
+                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 414, 896,
+                        2, ORIENTATION_PORTRAIT)));
+        // iPhone 11, iPhone XR landscape
+        icons.add(new PwaIcon(1792, 828, baseName, PwaIcon.Domain.HEADER, false,
+                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 414, 896,
+                        2, ORIENTATION_LANDSCAPE)));
+
+        // iPhone 8 Plus, 7 Plus, 6s Plus, 6 Plus portrait
         icons.add(new PwaIcon(1242, 2208, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE,
-                String.format(APPLE_IMAGE_MEDIA, 414, 763, 3)));
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        414, 736, 3, ORIENTATION_PORTRAIT)));
+        // iPhone 8 Plus, 7 Plus, 6s Plus, 6 Plus landscape
+        icons.add(new PwaIcon(2208, 1242, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        414, 736, 3, ORIENTATION_LANDSCAPE)));
 
-        // iPhone 5 (640px x 1136px)
+        // iPhone 8, 7, 6s, 6, SE 4.7 portrait
+        icons.add(new PwaIcon(750, 1334, baseName, PwaIcon.Domain.HEADER, false,
+                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 375, 667,
+                        2, ORIENTATION_PORTRAIT)));
+        // iPhone 8, 7, 6s, 6, SE 4.7 landscape
+        icons.add(new PwaIcon(1334, 750, baseName, PwaIcon.Domain.HEADER, false,
+                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 375, 667,
+                        2, ORIENTATION_LANDSCAPE)));
+
+        // iPhone 5, SE 4, iPod touch 5th Gen and later portrait
         icons.add(new PwaIcon(640, 1136, baseName, PwaIcon.Domain.HEADER, false,
-                APPLE_STARTUP_IMAGE,
-                String.format(APPLE_IMAGE_MEDIA, 320, 568, 2)));
+                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 320, 568,
+                        2, ORIENTATION_PORTRAIT)));
+        // iPhone 5, SE 4, iPod touch 5th Gen and later landscape
+        icons.add(new PwaIcon(1136, 640, baseName, PwaIcon.Domain.HEADER, false,
+                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 320, 568,
+                        2, ORIENTATION_LANDSCAPE)));
 
         return icons;
     }
 
+    private boolean shouldCacheRoot() {
+        VaadinContext context = VaadinService.getCurrent().getContext();
+        ApplicationConfiguration configuration = ApplicationConfiguration
+                .get(context);
+        return configuration != null && !configuration.isProductionMode();
+    }
 }

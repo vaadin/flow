@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,23 +22,23 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import javax.servlet.http.HttpServletResponse;
-
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
+import com.vaadin.flow.server.HttpStatusCode;
 
 /**
  * Event created when the location changes by any of the reasons defined at
  * {@link NavigationTrigger}.
  *
+ * @since 1.0
  */
 public class LocationChangeEvent extends EventObject {
     private final UI ui;
     private final NavigationTrigger trigger;
     private final Location location;
 
-    private int statusCode = HttpServletResponse.SC_OK;
+    private int statusCode = HttpStatusCode.OK.getCode();
     private NavigationHandler rerouteTarget;
 
     private List<HasElement> routeTargetChain;
@@ -178,6 +178,8 @@ public class LocationChangeEvent extends EventObject {
     /**
      * Reroutes the navigation to use the provided navigation handler instead of
      * the currently used handler.
+     * <p>
+     * This function doesn't change the browser URL.
      *
      * @param rerouteTarget
      *            the navigation handler to use, or {@code null} to clear a
@@ -190,6 +192,8 @@ public class LocationChangeEvent extends EventObject {
     /**
      * Reroutes the navigation to show the given component instead of the
      * component that is currently about to be displayed.
+     * <p>
+     * This function doesn't change the browser URL.
      *
      * @param rerouteTargetState
      *            the target navigation state of the rerouting, not {@code null}

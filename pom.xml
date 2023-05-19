@@ -1,46 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>2.0-SNAPSHOT</version>
+    <version>24.2-SNAPSHOT</version>
 
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-parent</artifactId>
-        <version>2.0.1</version>
+        <version>2.1.0</version>
     </parent>
 
     <modules>
         <module>flow</module>
         <module>flow-server</module>
+        <module>flow-polymer-template</module>
+        <module>flow-lit-template</module>
         <module>flow-push</module>
         <module>flow-data</module>
-        <module>flow-osgi</module>
         <module>flow-client</module>
         <module>flow-html-components</module>
         <module>flow-html-components-testbench</module>
-        <module>flow-theme-integrations</module>
         <module>flow-dnd</module>
         <module>flow-test-util</module>
+        <module>flow-tests</module>
         <module>flow-server-production-mode</module>
-        <module>flow-server-compatibility-mode</module>
-        <module>flow-components-parent</module>
-        <module>flow-maven-plugin</module>
+        <module>flow-plugins</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>
-        <module>build-tools</module>
+        <module>vaadin-dev-server</module>
+        <module>flow-jandex</module>
+        <module>vaadin-spring</module>
+        <module>flow-commons-upload</module>
+        <module>flow-polymer2lit</module>
     </modules>
 
     <organization>
         <name>Vaadin Ltd</name>
         <url>https://vaadin.com</url>
     </organization>
-    <url>https://vaadin.com</url>
+    <url>https://vaadin.com/flow</url>
     <licenses>
         <license>
             <name>Apache License Version 2.0</name>
@@ -57,79 +59,96 @@
     </scm>
 
     <properties>
-        <flow.snapshot.repo.id>vaadin-snapshots</flow.snapshot.repo.id>
-        <flow.snapshot.repo.url>
-            https://oss.sonatype.org/content/repositories/vaadin-snapshots/
-        </flow.snapshot.repo.url>
         <flow.release.repo.id>vaadin-prereleases</flow.release.repo.id>
         <flow.release.repo.url>
             https://maven.vaadin.com/vaadin-prereleases/
         </flow.release.repo.url>
-        <flow.deployment.repo.id>${flow.snapshot.repo.id}</flow.deployment.repo.id>
-        <flow.deployment.repo.url>
-            ${flow.snapshot.repo.url}
-        </flow.deployment.repo.url>
+
         <flow.addons.repo.id>vaadin-addons</flow.addons.repo.id>
         <flow.addons.repo.url>
             https://maven.vaadin.com/vaadin-addons
         </flow.addons.repo.url>
 
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
+        <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8
-        </project.reporting.outputEncoding>
-        <jsinterop.version>1.0.1</jsinterop.version>
-        <sonar.java.source>8</sonar.java.source>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <jsinterop.version>1.0.2</jsinterop.version>
+        <sonar.java.source>17</sonar.java.source>
         <sonar.analysis.mode>preview</sonar.analysis.mode>
-        <sonar.issuesReport.console.enable>true
-        </sonar.issuesReport.console.enable>
+        <sonar.issuesReport.console.enable>true</sonar.issuesReport.console.enable>
         <sonar.issuesReport.html.enable>true</sonar.issuesReport.html.enable>
+
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <gwt.version>2.8.2</gwt.version>
-        <hibernate.validator.version>6.0.1.Final</hibernate.validator.version>
-        <slf4j.version>1.7.25</slf4j.version>
+        <spring.boot.version>3.1.0</spring.boot.version>
+        <gwt.version>2.9.0</gwt.version>
+        <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
+        <slf4j.version>2.0.7</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
+        <jackson.version>2.15.1</jackson.version>
+        <jackson.databind.version>2.15.1</jackson.databind.version>
+        <jakarta.validation.version>3.0.2</jakarta.validation.version>
+        <jakarta.annotation.api.version>2.1.1</jakarta.annotation.api.version>
+        <jaxb.version>4.0.2</jaxb.version>
 
         <!-- Plugins -->
-        <driver.binary.downloader.maven.plugin.version>1.0.17
-        </driver.binary.downloader.maven.plugin.version>
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
-        <maven.surefire.plugin.version>2.22.0</maven.surefire.plugin.version>
-        <maven.failsafe.plugin.version>2.22.0</maven.failsafe.plugin.version>
-        <maven.war.plugin.version>3.1.0</maven.war.plugin.version>
+        <maven.surefire.plugin.version>3.1.0</maven.surefire.plugin.version>
+        <maven.failsafe.plugin.version>3.1.0</maven.failsafe.plugin.version>
+        <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
-        <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
+        <maven.clean.plugin.version>3.2.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>6.2.0</testbench.version>
-        <jetty.version>9.4.11.v20180605</jetty.version>
+        <testbench.version>9.0.4</testbench.version>
+        <jetty.version>11.0.15</jetty.version>
+        <properties-maven-plugin.version>1.1.0</properties-maven-plugin.version>
+        <build-helper-maven-plugin.version>3.4.0</build-helper-maven-plugin.version>
+        <maven.version>3.9.2</maven.version>
 
         <!-- Frontend -->
-        <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
-        <node.version>v8.11.1</node.version>
-        <npm.version>6.1.0</npm.version>
+        <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
+        <flow.dev.dependencies.file>devDependencies.json</flow.dev.dependencies.file>
 
         <!-- Used in OSGi manifests -->
-        <jsoup.version>1.11.3</jsoup.version>
+        <jsoup.version>1.16.1</jsoup.version>
         <!-- Note that this should be kept in sync with the class Constants -->
-        <atmosphere.runtime.version>2.4.30.slf4jvaadin1</atmosphere.runtime.version>
+        <atmosphere.runtime.version>3.0.3.slf4jvaadin1</atmosphere.runtime.version>
+        <atmosphere.client.version>3.1.3</atmosphere.client.version>
 
         <!-- OSGi -->
-        <!-- Note: the parserVersion value is set by build-helper-maven-plugin  -->
-        <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
-        <bnd.version>3.3.0</bnd.version>
-        <osgi.core.version>6.0.0</osgi.core.version>
-        <osgi.compendium.version>6.0.0</osgi.compendium.version>
+        <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
+        <osgi.bundle.version>
+            ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}
+        </osgi.bundle.version>
+        <bnd.version>6.4.0</bnd.version>
+        <osgi.core.version>7.0.0</osgi.core.version>
+        <osgi.compendium.version>7.0.0</osgi.compendium.version>
+        <osgi.annotation.version>8.1.0</osgi.annotation.version>
 
         <maven.test.skip>false</maven.test.skip>
+
+        <!-- This property is needed to allow some Win-specific unit tests -->
+        <!-- to be disabled via system property in CI until they got fixed -->
+        <exclude.windows.failed.tests/>
+
+        <testListener>com.vaadin.flow.testutil.CurrentInstanceCleaner</testListener>
+
+        <!-- Skip these categories in validation, use -Pslow-tests to run them
+            and override slow-tests profile to add more categories -->
+        <excludedGroups>com.vaadin.flow.testcategory.SlowTests</excludedGroups>
+        <failsafe.parallel>all</failsafe.parallel>
+        <failsafe.threadCount>2</failsafe.threadCount>
+        <failsafe.perCoreThreadCount>true</failsafe.perCoreThreadCount>
     </properties>
 
     <repositories>
-        <!-- The order of definitions matters. Explicitly defining central here to make sure it has the highest priority. -->
+        <!-- The order of definitions matters. Explicitly defining central
+            here to make sure it has the highest priority. -->
         <repository>
             <id>central</id>
             <url>https://repo.maven.apache.org/maven2</url>
@@ -140,13 +159,6 @@
         <repository>
             <id>${flow.release.repo.id}</id>
             <url>${flow.release.repo.url}</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>${flow.snapshot.repo.id}</id>
-            <url>${flow.snapshot.repo.url}</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -161,7 +173,8 @@
     </repositories>
 
     <pluginRepositories>
-        <!-- The order of definitions matters. Explicitly defining central here to make sure it has the highest priority. -->
+        <!-- The order of definitions matters. Explicitly defining central
+            here to make sure it has the highest priority. -->
         <pluginRepository>
             <id>central</id>
             <url>https://repo.maven.apache.org/maven2</url>
@@ -172,13 +185,6 @@
         <pluginRepository>
             <id>${flow.release.repo.id}</id>
             <url>${flow.release.repo.url}</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>${flow.snapshot.repo.id}</id>
-            <url>${flow.snapshot.repo.url}</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -204,12 +210,12 @@
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.5</version>
+                <version>2.12.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.9</version>
+                <version>3.12.0</version>
             </dependency>
 
             <dependency>
@@ -219,30 +225,31 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>3.1.0</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.portlet</groupId>
-                <artifactId>portlet-api</artifactId>
-                <version>2.0</version>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>6.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>org.webjars.bowergithub.webcomponents</groupId>
-                <artifactId>webcomponentsjs</artifactId>
-                <version>1.2.6</version>
+                <groupId>jakarta.platform</groupId>
+                <artifactId>jakarta.jakartaee-web-api</artifactId>
+                <version>10.0.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>1.14.4</version>
             </dependency>
             <dependency>
-                <groupId>org.webjars.bowergithub.webcomponents</groupId>
-                <artifactId>shadycss</artifactId>
-                <version>1.8.0</version>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm</artifactId>
+                <version>9.5</version>
             </dependency>
             <dependency>
-                <groupId>org.webjars.bowergithub.polymer</groupId>
-                <artifactId>polymer</artifactId>
-                <version>${polymer.version}</version>
+                <groupId>com.vaadin</groupId>
+                <artifactId>license-checker</artifactId>
+                <version>1.12.3</version>
             </dependency>
 
             <!-- Test dependencies -->
@@ -254,22 +261,22 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.12</version>
+                <version>4.13.2</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
-                <artifactId>mockito-all</artifactId>
-                <version>1.10.19</version>
+                <artifactId>mockito-core</artifactId>
+                <version>5.3.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-inline</artifactId>
+                <version>5.2.0</version>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest-all</artifactId>
                 <version>1.3</version>
-            </dependency>
-            <dependency>
-                <groupId>org.easymock</groupId>
-                <artifactId>easymock</artifactId>
-                <version>3.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -281,16 +288,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymock</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
+            <artifactId>mockito-inline</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
@@ -304,41 +305,33 @@
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ssh-external</artifactId>
-                <version>2.9</version>
+                <version>3.5.3</version>
             </extension>
         </extensions>
 
         <plugins>
             <plugin>
-                <groupId>com.marvinformatics.formatter</groupId>
+                <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
-                <version>1.8.1</version>
+                <version>2.22.0</version>
                 <configuration>
-                    <configFile>classpath:/eclipse/VaadinJavaConventions.xml
-                    </configFile>
+                    <configFile>https://raw.githubusercontent.com/vaadin/flow/main/eclipse/VaadinJavaConventions.xml</configFile>
                     <!-- Provide a dummy JS config file to avoid errors -->
-                    <configJsFile>classpath:/eclipse/VaadinJavaConventions.xml
-                    </configJsFile>
+                    <configJsFile>https://raw.githubusercontent.com/vaadin/flow/main/eclipse/VaadinJavaConventions.xml</configJsFile>
+                    <lineEnding>LF</lineEnding>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>${project.groupId}</groupId>
-                        <artifactId>flow-buildtools</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>3.11.0</version>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -353,7 +346,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -371,12 +364,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.3.0</version>
             </plugin>
 
             <plugin>
                 <groupId>org.commonjava.maven.plugins</groupId>
                 <artifactId>directory-maven-plugin</artifactId>
-                <version>0.1</version>
+                <version>1.0</version>
                 <executions>
                     <execution>
                         <id>set-root-dir-for-common-lifecycle</id>
@@ -423,7 +417,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>parse-version</id>
@@ -449,14 +442,35 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>${build-helper-maven-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.karaf.tooling</groupId>
+                    <artifactId>karaf-maven-plugin</artifactId>
+                    <version>4.3.2</version>
+                    <extensions>true</extensions>
+                    <executions>
+                        <execution>
+                            <id>generate-features-file</id>
+                            <phase>generate-resources</phase>
+                            <goals>
+                                <goal>features-generate-descriptor</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>1.4.1</version>
+                    <version>3.3.0</version>
                     <dependencies>
                         <dependency>
                             <groupId>de.skuzzle.enforcer</groupId>
-                            <artifactId>restrict-imports-enforcer-rule</artifactId>
-                            <version>0.8.0</version>
+                            <artifactId>restrict-imports-enforcer-rule
+                            </artifactId>
+                            <version>2.2.0</version>
                         </dependency>
                     </dependencies>
                     <executions>
@@ -468,20 +482,31 @@
                             </goals>
                             <configuration>
                                 <rules>
-                                    <restrictImports
-                                        implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                                    <RestrictImports>
                                         <reason>Use SLF4j for logging</reason>
-                                        <bannedImport>java.util.logging.**</bannedImport>
-                                    </restrictImports>
+                                        <bannedImport>java.util.logging.**
+                                        </bannedImport>
+                                    </RestrictImports>
                                 </rules>
                             </configuration>
+                        </execution>
+                        <execution>
+                            <id>default-cli</id>
+                            <configuration>
+                                <rules>
+                                    <dependencyConvergence/>
+                                </rules>
+                            </configuration>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
                         </execution>
                     </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -504,19 +529,74 @@
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
-                        <reuseForks>false</reuseForks>
+                        <excludes>
+                            <exclude>${exclude.windows.failed.tests}</exclude>
+                        </excludes>
+                        <argLine>${surefire.argLine}</argLine>
+                        <properties>
+                            <property>
+                                <name>listener</name>
+                                <value>${testListener}</value>
+                            </property>
+                        </properties>
+                        <enableAssertions>true</enableAssertions>
+                        <classpathDependencyExcludes>
+                            <classpathDependencyExclude>org.osgi:org.osgi.core</classpathDependencyExclude>
+                        </classpathDependencyExcludes>
+<!--
+                        <parallel>classes</parallel>
+                        <threadCount>4</threadCount>
+-->
+                        <failIfNoTests>false</failIfNoTests>
                     </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>${maven.failsafe.plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                     <configuration>
+                        <argLine>${failsafe.argLine}</argLine>
                         <trimStackTrace>false</trimStackTrace>
                         <enableAssertions>true</enableAssertions>
-                        <parallel>all</parallel>
-                        <threadCount>2</threadCount>
+                        <parallel>${failsafe.parallel}</parallel>
+                        <threadCount>${failsafe.threadCount}</threadCount>
+                        <perCoreThreadCount>${failsafe.perCoreThreadCount}</perCoreThreadCount>
+                        <!-- export test server port to integration tests -->
+                        <systemPropertyVariables>
+                            <serverPort>${server.port}</serverPort>
+                        </systemPropertyVariables>
+                        <excludes>
+                            <exclude>**/*$*</exclude>
+                            <exclude>${exclude.it.tests}</exclude>
+                            <exclude>${exclude.windows.failed.it.tests}</exclude>
+                        </excludes>
                     </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.sun.xml.bind</groupId>
+                            <artifactId>jaxb-impl</artifactId>
+                            <version>${jaxb.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.siom79.japicmp</groupId>
+                    <artifactId>japicmp-maven-plugin</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>javax.activation</groupId>
+                            <artifactId>javax.activation-api</artifactId>
+                            <version>1.2.0</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <!--This plugin's configuration is used to store Eclipse
                     m2e settings only. It has no influence on the Maven build itself. -->
@@ -529,59 +609,42 @@
                             <pluginExecutions>
                                 <pluginExecution>
                                     <pluginExecutionFilter>
-                                        <groupId>
-                                            org.commonjava.maven.plugins
-                                        </groupId>
-                                        <artifactId>
-                                            directory-maven-plugin
+                                        <groupId>org.commonjava.maven.plugins</groupId>
+                                        <artifactId>directory-maven-plugin
                                         </artifactId>
-                                        <versionRange>
-                                            [0.1,)
-                                        </versionRange>
+                                        <versionRange>[0.1,)</versionRange>
                                         <goals>
                                             <goal>highest-basedir</goal>
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
                                     <pluginExecutionFilter>
-                                        <groupId>
-                                            org.apache.maven.plugins
-                                        </groupId>
-                                        <artifactId>
-                                            maven-plugin-plugin
-                                        </artifactId>
-                                        <versionRange>
-                                            [3.2,)
-                                        </versionRange>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-plugin-plugin</artifactId>
+                                        <versionRange>[3.2,)</versionRange>
                                         <goals>
                                             <goal>descriptor</goal>
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
                                     <pluginExecutionFilter>
-                                        <groupId>
-                                            org.apache.maven.plugins
-                                        </groupId>
-                                        <artifactId>
-                                            maven-antrun-plugin
-                                        </artifactId>
-                                        <versionRange>
-                                            [1.7,)
-                                        </versionRange>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-antrun-plugin</artifactId>
+                                        <versionRange>[1.7,)</versionRange>
                                         <goals>
                                             <goal>run</goal>
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
@@ -591,12 +654,17 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>license-maven-plugin</artifactId>
-                    <version>1.13</version>
+                    <version>2.0.1</version>
                     <configuration>
                         <!-- Default is system -->
                         <excludedScopes>system,test</excludedScopes>
                     </configuration>
                 </plugin>
+    			<plugin>
+					<groupId>org.jboss.bridger</groupId>
+					<artifactId>bridger</artifactId>
+					<version>1.6.Final</version>
+				</plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -608,102 +676,30 @@
             </properties>
         </profile>
         <profile>
-            <id>java11</id>
-            <activation>
-                <jdk>11</jdk>
-            </activation>
+            <id>all-tests</id>
             <properties>
-                <maven.compiler.release>8</maven.compiler.release>
+                <groups/>
+                <excludedGroups/>
             </properties>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <artifactId>maven-surefire-plugin</artifactId>
-                        </plugin>
-                        <plugin>
-                            <artifactId>maven-failsafe-plugin</artifactId>
-                            <dependencies>
-                                <dependency>
-                                    <groupId>javax.xml.bind</groupId>
-                                    <artifactId>jaxb-api</artifactId>
-                                    <version>2.2.11</version>
-                                </dependency>
-                                <dependency>
-                                    <groupId>com.sun.xml.bind</groupId>
-                                    <artifactId>jaxb-core</artifactId>
-                                    <version>2.2.11</version>
-                                </dependency>
-                                <dependency>
-                                    <groupId>com.sun.xml.bind</groupId>
-                                    <artifactId>jaxb-impl</artifactId>
-                                    <version>2.2.11</version>
-                                </dependency>
-                                <dependency>
-                                    <groupId>com.sun.activation</groupId>
-                                    <artifactId>javax.activation</artifactId>
-                                    <version>1.2.0</version>
-                                </dependency>
-                            </dependencies>
-                        </plugin>
-                        <plugin>
-                            <groupId>com.lazerycode.selenium</groupId>
-                            <artifactId>driver-binary-downloader-maven-plugin</artifactId>
-                            <version>${driver.binary.downloader.maven.plugin.version}</version>
-                            <dependencies>
-                                <dependency>
-                                    <groupId>javax.xml.bind</groupId>
-                                    <artifactId>jaxb-api</artifactId>
-                                    <version>2.2.11</version>
-                                </dependency>
-                                <dependency>
-                                    <groupId>com.sun.xml.bind</groupId>
-                                    <artifactId>jaxb-core</artifactId>
-                                    <version>2.2.11</version>
-                                </dependency>
-                                <dependency>
-                                    <groupId>com.sun.xml.bind</groupId>
-                                    <artifactId>jaxb-impl</artifactId>
-                                    <version>2.2.11</version>
-                                </dependency>
-                                <dependency>
-                                    <groupId>com.sun.activation</groupId>
-                                    <artifactId>javax.activation</artifactId>
-                                    <version>1.2.0</version>
-                                </dependency>
-                            </dependencies>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-
-            </build>
         </profile>
         <profile>
-            <id>release</id>
-            <modules>
-                <module>flow</module>
-                <module>flow-server</module>
-                <module>flow-push</module>
-                <module>flow-data</module>
-                <module>flow-client</module>
-                <module>flow-html-components</module>
-                <module>flow-test-util</module>
-                <module>flow-tests</module>
-                <module>flow-server-production-mode</module>
-                <module>flow-components-parent</module>
-                <module>build-tools</module>
-            </modules>
+            <id>slow-tests</id>
+            <properties>
+                <groups>com.vaadin.flow.testcategory.SlowTests</groups>
+                <excludedGroups/>
+            </properties>
         </profile>
         <profile>
-            <id>run-tests</id>
-            <activation>
-                <property>
-                    <name>!skipTests</name>
-                </property>
-            </activation>
-            <modules>
-                <module>flow-tests</module>
-            </modules>
+            <id>sonar-cloud</id>
+            <properties>
+                <sonar.java.source>${maven.compiler.source}</sonar.java.source>
+                <sonar.organization>vaadin</sonar.organization>
+                <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+                <!-- override properties for legacy sonar instance -->
+                <sonar.analysis.mode/>
+                <sonar.issuesReport.console.enable/>
+                <sonar.issuesReport.html.enable/>
+            </properties>
         </profile>
     </profiles>
 </project>

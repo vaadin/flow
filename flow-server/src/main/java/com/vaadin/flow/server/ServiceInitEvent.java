@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,15 +21,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
+
 /**
  * Event fired to {@link VaadinServiceInitListener} when a {@link VaadinService}
  * is being initialized.
  * <p>
  * This event can also be used to add {@link RequestHandler}s that will be used
  * by the {@code VaadinService} for handling all requests.
- * <p>
- * {@link BootstrapListener}s can also be registered, that are used to modify
- * the initial HTML of the application.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -37,7 +36,7 @@ import java.util.stream.Stream;
 public class ServiceInitEvent extends EventObject {
 
     private List<RequestHandler> addedRequestHandlers = new ArrayList<>();
-    private List<BootstrapListener> addedBootstrapListeners = new ArrayList<>();
+    private List<IndexHtmlRequestListener> addedIndexHtmlRequestListeners = new ArrayList<>();
     private List<DependencyFilter> addedDependencyFilters = new ArrayList<>();
 
     /**
@@ -67,17 +66,17 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
-     * Adds a new bootstrap listener that will be used by this service. The
-     * ordering of multiple added bootstrap listeners is not guaranteed.
+     * Adds a new Index HTML request listener that will be used by this service.
+     * The ordering of multiple added bootstrap listeners is not guaranteed.
      *
-     * @param bootstrapListener
-     *            the bootstrap listener to add, not <code>null</code>
+     * @param indexHtmlRequestListener
+     *            the Index HTML request listener to be added.
      */
-    public void addBootstrapListener(BootstrapListener bootstrapListener) {
-        Objects.requireNonNull(bootstrapListener,
-                "Bootstrap listener cannot be null");
-
-        addedBootstrapListeners.add(bootstrapListener);
+    public void addIndexHtmlRequestListener(
+            IndexHtmlRequestListener indexHtmlRequestListener) {
+        Objects.requireNonNull(indexHtmlRequestListener,
+                "Index HTML request listener cannot be null");
+        addedIndexHtmlRequestListeners.add(indexHtmlRequestListener);
     }
 
     /**
@@ -104,13 +103,13 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
-     * Gets a stream of all bootstrap listeners that have been added for the
-     * service.
+     * Gets a stream of all Index HTML request listeners that have been added
+     * for the service.
      *
-     * @return the stream of added bootstrap listeners
+     * @return the stream of added Index HTML request listeners
      */
-    public Stream<BootstrapListener> getAddedBootstrapListeners() {
-        return addedBootstrapListeners.stream();
+    public Stream<IndexHtmlRequestListener> getAddedIndexHtmlRequestListeners() {
+        return addedIndexHtmlRequestListeners.stream();
     }
 
     /**

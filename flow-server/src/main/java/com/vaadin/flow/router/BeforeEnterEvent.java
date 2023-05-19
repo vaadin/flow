@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,29 +28,14 @@ import com.vaadin.flow.component.UI;
 public class BeforeEnterEvent extends BeforeEvent {
 
     /**
-     * Construct event from a NavigationEvent.
+     * Constructs event from a NavigationEvent.
      *
      * @param event
-     *            NavigationEvent that is on-going
+     *            NavigationEvent that is on-going, not <code>null</code>
      * @param navigationTarget
-     *            Navigation target
-     * @deprecated Use {@link #BeforeEnterEvent(NavigationEvent, Class, List)}
-     *             instead.
-     */
-    @Deprecated
-    public BeforeEnterEvent(NavigationEvent event, Class<?> navigationTarget) {
-        super(event, navigationTarget);
-    }
-
-    /**
-     * Construct event from a NavigationEvent.
-     *
-     * @param event
-     *            NavigationEvent that is on-going
-     * @param navigationTarget
-     *            Navigation target
+     *            navigation target, not <code>null</code>
      * @param layouts
-     *            Navigation layout chain
+     *            navigation layout chain, not <code>null</code>
      */
     public BeforeEnterEvent(NavigationEvent event, Class<?> navigationTarget,
             List<Class<? extends RouterLayout>> layouts) {
@@ -58,49 +43,81 @@ public class BeforeEnterEvent extends BeforeEvent {
     }
 
     /**
-     * Constructs a new BeforeNavigation Event.
+     * Constructs event from a NavigationEvent.
      *
-     * @param router
-     *            the router that triggered the change, not {@code null}
-     * @param trigger
-     *            the type of user action that triggered this location change,
-     *            not <code>null</code>
-     * @param location
-     *            the new location, not {@code null}
+     * @param event
+     *            NavigationEvent that is on-going, not <code>null</code>
      * @param navigationTarget
-     *            navigation target class
-     * @param ui
-     *            the UI related to the navigation
-     * @deprecated Use
-     *             {@link #BeforeEnterEvent(Router, NavigationTrigger, Location, Class, UI, List)}
-     *             instead.
+     *            navigation target, not <code>null</code>
+     * @param parameters
+     *            route parameters, not <code>null</code>
+     * @param layouts
+     *            navigation layout chain, not <code>null</code>
      */
-    @Deprecated
-    public BeforeEnterEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget, UI ui) {
-        super(router, trigger, location, navigationTarget, ui);
+    public BeforeEnterEvent(NavigationEvent event, Class<?> navigationTarget,
+            RouteParameters parameters,
+            List<Class<? extends RouterLayout>> layouts) {
+        super(event, navigationTarget, parameters, layouts);
     }
 
     /**
-     * Constructs a new BeforeNavigation Event.
+     * Constructs a new BeforeEnterEvent.
      *
      * @param router
-     *            the router that triggered the change, not {@code null}
+     *            the router that triggered the change, not <code>null</code>
      * @param trigger
      *            the type of user action that triggered this location change,
      *            not <code>null</code>
      * @param location
-     *            the new location, not {@code null}
+     *            the new location, not <code>null</code>
      * @param navigationTarget
-     *            navigation target class
+     *            navigation target class, not <code>null</code>
      * @param ui
-     *            the UI related to the navigation
+     *            the UI related to the navigation, not <code>null</code>
      * @param layouts
-     *            the layout chain for the navigation target
+     *            the layout chain for the navigation target, not
+     *            <code>null</code>
      */
     public BeforeEnterEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget, UI ui,
             List<Class<? extends RouterLayout>> layouts) {
         super(router, trigger, location, navigationTarget, ui, layouts);
+    }
+
+    /**
+     * Constructs a new BeforeEnterEvent.
+     *
+     * @param router
+     *            the router that triggered the change, not <code>null</code>
+     * @param trigger
+     *            the type of user action that triggered this location change,
+     *            not <code>null</code>
+     * @param location
+     *            the new location, not <code>null</code>
+     * @param navigationTarget
+     *            navigation target class, not <code>null</code>
+     * @param parameters
+     *            route parameters, not <code>null</code>
+     * @param ui
+     *            the UI related to the navigation, not <code>null</code>
+     * @param layouts
+     *            the layout chain for the navigation target, not
+     *            <code>null</code>
+     */
+    public BeforeEnterEvent(Router router, NavigationTrigger trigger,
+            Location location, Class<?> navigationTarget,
+            RouteParameters parameters, UI ui,
+            List<Class<? extends RouterLayout>> layouts) {
+        super(router, trigger, location, navigationTarget, parameters, ui,
+                layouts);
+    }
+
+    /**
+     * Check if event is for a refresh of a preserveOnRefresh view.
+     *
+     * @return true if refresh of a preserve on refresh view
+     */
+    public boolean isRefreshEvent() {
+        return getTrigger().equals(NavigationTrigger.REFRESH);
     }
 }

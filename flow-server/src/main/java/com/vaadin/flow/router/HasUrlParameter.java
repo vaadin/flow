@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,7 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 
 /**
- * Defines url parameters for navigation targets for use in routing.
+ * Defines route parameters for navigation targets for use in routing.
  *
  * @author Vaadin Ltd
  * @since 1.0.

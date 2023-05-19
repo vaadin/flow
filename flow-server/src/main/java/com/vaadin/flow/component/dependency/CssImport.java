@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,13 +17,14 @@ package com.vaadin.flow.component.dependency;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Instructs flow to import a CSS file into the application bundle.
+ * Imports a CSS file into the application bundle.
  * <p>
  * The CSS files should be located in the place as JS module files:
  * <ul>
@@ -44,82 +45,69 @@ import java.lang.annotation.Target;
  * <ul>
  *
  * <li>When specifying only the 'value', it will be appended to the
- * 'document.head' inside a '&lt;custom-style&gt;' block.
+ * 'document.head' as a `style` element:
  *
  *
  *
  * <pre>
- *  &lt;custom-style&gt;
- *    &lt;style&gt;
- *      CSS-CONTENT
- *    &lt;/style&gt;
- *  &lt;/custom-style&gt;
+ *  &lt;style&gt;
+ *    CSS-CONTENT
+ *  &lt;/style&gt;
  *
  * </pre>
  *
  *
  *
- * <li>When specifying 'value' and 'include', it is appended inside a
- * '&lt;custom-style&gt;' block, but 'include' value is used for including a
- * defined module. Multiple modules are allowed by passing a space separated
- * list.
+ * <li>When specifying 'value' and 'include', the 'include' value is used for
+ * including a defined module. Multiple modules are allowed by passing a space
+ * separated list.
  *
  *
  *
  * <pre>
- *  &lt;custom-style&gt;
- *    &lt;style include="INCLUDE-VALUE"&gt;
- *      CSS-CONTENT
- *    &lt;/style&gt;
- *  &lt;/custom-style&gt;
+ *  &lt;style include="INCLUDE-VALUE"&gt;
+ *    CSS-CONTENT
+ *  &lt;/style&gt;
  *
  * </pre>
- *
  *
  *
  * <li>When 'value' and 'id' are given, a new 'dom-module' with the provided
- * 'id' is created, the 'include' parameter is allowed and is added to the
- * &lt;style&gt; tag inside the module template.
- *
- *
- *
- * <pre>
- * &lt;dom-module id="ID-VALUE"&gt;
- *   &lt;template&gt;
- *     &lt;style include="INCLUDE-VALUE"&gt;
- *       CSS-CONTENT
- *     &lt;/style&gt;
- *   &lt;/template&gt;
- * &lt;/dom-module&gt;
- *
- * </pre>
- *
+ * 'id' is registered using the {@code registerStyles} function from
+ * {@code vaadin-themable-mixin}. The 'include' parameter is allowed and is
+ * added to the &lt;style&gt; element inside the module template.
  *
  *
  * <li>When 'value' and 'themeFor' are given, a new 'dom-module' for customizing
- * a themable element is created, the 'include' parameter is allowed and is
- * added to the &lt;style&gt; tag inside the module template.
- *
- *
- *
- * <pre>
- * &lt;dom-module id="RANDOM-ID" theme-for="THEME-FOR-VALUE"&gt;
- *   &lt;template&gt;
- *     &lt;style include="INCLUDE-VALUE"&gt;
- *       CSS-CONTENT
- *     &lt;/style&gt;
- *   &lt;/template&gt;
- * &lt;/dom-module&gt;
- *
- * </pre>
- *
+ * a themable element is registered using the {@code registerStyles} function
+ * from {@code vaadin-themable-mixin}. The 'include' parameter is allowed and is
+ * added to the &lt;style&gt; element inside the module template.*
  *
  * </ul>
+ * <p>
+ * It is guaranteed that dependencies will be loaded only once. The files loaded
+ * will be in the same order as the annotations were on the class. However,
+ * loading order is only guaranteed on a class level; Annotations from different
+ * classes may appear in different order, grouped by the annotated class. Also,
+ * files identified by {@code @CssImport} will be loaded after
+ * {@link com.vaadin.flow.component.dependency.JsModule} and
+ * {@link com.vaadin.flow.component.dependency.JavaScript}.
+ * <p>
+ * NOTE: Currently all frontend resources are bundled together into one big
+ * bundle. This means, that CSS files loaded by one class will be present on a
+ * view constructed by another class. For example, if there are two classes
+ * {@code RootRoute} annotated with {@code @Route("")}, and another class
+ * {@code RouteA} annotated with {@code @Route("route-a")} and
+ * {@code @CssImport("./styles/custom-style.css")}, the {@code custom-style.css}
+ * will be present on the root route as well.
+ *
+ * @since 2.0
  *
  * @see JsModule
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Inherited
 @Documented
 @Repeatable(CssImport.Container.class)
 public @interface CssImport {
@@ -158,6 +146,7 @@ public @interface CssImport {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
+    @Inherited
     @Documented
     @interface Container {
         /**

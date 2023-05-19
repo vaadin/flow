@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,7 +25,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
-import com.vaadin.flow.component.html.testbench.LabelElement;
+import com.vaadin.flow.component.html.testbench.NativeLabelElement;
 import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -87,8 +87,8 @@ public class AttachExistingElementIT extends ChromeBrowserTest {
         // attach a child in the shadow root of the div
 
         findElement(By.id("attach-label-inshadow")).click();
-        LabelElement labelInShadow = $(DivElement.class)
-                .id("element-with-shadow").$(LabelElement.class)
+        NativeLabelElement labelInShadow = $(DivElement.class)
+                .id("element-with-shadow").$(NativeLabelElement.class)
                 .id("label-in-shadow");
         Assert.assertEquals("label",
                 labelInShadow.getTagName().toLowerCase(Locale.ENGLISH));

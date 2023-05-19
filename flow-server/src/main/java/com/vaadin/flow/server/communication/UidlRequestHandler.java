@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,19 +16,20 @@
 
 package com.vaadin.flow.server.communication;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.ServletHelper;
-import com.vaadin.flow.server.ServletHelper.RequestType;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
@@ -36,10 +37,21 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
+import com.vaadin.flow.server.communication.ServerRpcHandler.ResynchronizationRequiredException;
 import com.vaadin.flow.shared.JsonConstants;
 
+import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
+import elemental.json.impl.JsonUtil;
+
+import static com.vaadin.flow.shared.ApplicationConstants.RPC_INVOCATIONS;
+import static com.vaadin.flow.shared.ApplicationConstants.SERVER_SYNC_ID;
+import static com.vaadin.flow.shared.JsonConstants.RPC_NAVIGATION_LOCATION;
+import static com.vaadin.flow.shared.JsonConstants.UIDL_KEY_EXECUTE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Processes a UIDL request from the client.
@@ -47,6 +59,8 @@ import elemental.json.JsonObject;
  * Uses {@link ServerRpcHandler} to execute client-to-server RPC invocations and
  * {@link UidlWriter} to write state changes and client RPC calls back to the
  * client.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -54,11 +68,23 @@ import elemental.json.JsonObject;
 public class UidlRequestHandler extends SynchronizedRequestHandler
         implements SessionExpiredHandler {
 
-    private ServerRpcHandler rpcHandler;
+    private AtomicReference<ServerRpcHandler> rpcHandler = new AtomicReference<>();
+
+    public static final Pattern HASH_PATTERN = Pattern
+            .compile("window.location.hash ?= ?'(.*?)'");
+    public static final Pattern URL_PATTERN = Pattern.compile("^(.*)#(.+)$");
+    public static final String PUSH_STATE_HASH = "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#%s'));";
+    public static final String PUSH_STATE_LOCATION = "setTimeout(() => history.pushState(null, null, '%s'));";
+
+    private static final String SYNC_ID = '"' + SERVER_SYNC_ID + '"';
+    private static final String RPC = RPC_INVOCATIONS;
+    private static final String LOCATION = RPC_NAVIGATION_LOCATION;
+    private static final String CHANGES = "changes";
+    private static final String EXECUTE = UIDL_KEY_EXECUTE;
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return ServletHelper.isRequestType(request, RequestType.UIDL);
+        return HandlerHelper.isRequestType(request, RequestType.UIDL);
     }
 
     /**
@@ -77,7 +103,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         if (uI == null) {
             // This should not happen but it will if the UI has been closed. We
             // really don't want to see it in the server logs though
-            commitJsonResponse(response, VaadinService.createUINotFoundJSON());
+            commitJsonResponse(response,
+                    VaadinService.createUINotFoundJSON(false));
             return true;
         }
 
@@ -85,8 +112,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
         try {
             getRpcHandler(session).handleRpc(uI, request.getReader(), request);
-
-            writeUidl(uI, stringWriter);
+            writeUidl(uI, stringWriter, false);
         } catch (JsonException e) {
             getLogger().error("Error writing JSON to response", e);
             // Refresh on client side
@@ -98,6 +124,9 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             // Refresh on client side
             writeRefresh(response);
             return true;
+        } catch (ResynchronizationRequiredException e) { // NOSONAR
+            // Resync on the client side
+            writeUidl(uI, stringWriter, true);
         } finally {
             stringWriter.close();
         }
@@ -112,15 +141,21 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         commitJsonResponse(response, json);
     }
 
-    private static void writeUidl(UI ui, Writer writer) throws IOException {
-        JsonObject uidl = new UidlWriter().createUidl(ui, false);
+    void writeUidl(UI ui, Writer writer, boolean resync) throws IOException {
+        JsonObject uidl = createUidl(ui, resync);
+
+        removeOffendingMprHashFragment(uidl);
 
         // some dirt to prevent cross site scripting
         String responseString = "for(;;);[" + uidl.toJson() + "]";
         writer.write(responseString);
     }
 
-    private static final Logger getLogger() {
+    JsonObject createUidl(UI ui, boolean resync) {
+        return new UidlWriter().createUidl(ui, false, resync);
+    }
+
+    private static Logger getLogger() {
         return LoggerFactory.getLogger(UidlRequestHandler.class.getName());
     }
 
@@ -134,23 +169,24 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     @Override
     public boolean handleSessionExpired(VaadinRequest request,
             VaadinResponse response) throws IOException {
-        if (!ServletHelper.isRequestType(request, RequestType.UIDL)) {
+        if (!HandlerHelper.isRequestType(request, RequestType.UIDL)) {
             return false;
         }
         VaadinService service = request.getService();
         service.writeUncachedStringResponse(response,
                 JsonConstants.JSON_CONTENT_TYPE,
-                VaadinService.createSessionExpiredJSON());
+                VaadinService.createSessionExpiredJSON(false));
 
         return true;
     }
 
     private ServerRpcHandler getRpcHandler(VaadinSession session) {
-        session.checkHasLock();
-        if (rpcHandler == null) {
-            rpcHandler = createRpcHandler();
+        ServerRpcHandler handler = rpcHandler.get();
+        if (handler == null) {
+            rpcHandler.compareAndSet(null, createRpcHandler());
+            handler = rpcHandler.get();
         }
-        return rpcHandler;
+        return handler;
     }
 
     /**
@@ -180,5 +216,116 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         outputStream.write(b);
         // NOTE GateIn requires the buffers to be flushed to work
         outputStream.flush();
+    }
+
+    private void removeOffendingMprHashFragment(JsonObject uidl) {
+        if (!uidl.hasKey(EXECUTE)) {
+            return;
+        }
+
+        JsonArray exec = uidl.getArray(EXECUTE);
+        String location = null;
+        int idx = -1;
+        for (int i = 0; i < exec.length(); i++) {
+            JsonArray arr = exec.get(i);
+            for (int j = 0; j < arr.length(); j++) {
+                if (!arr.get(j).getType().equals(JsonType.STRING)) {
+                    continue;
+                }
+                String script = arr.getString(j);
+                if (script.contains("history.pushState")) {
+                    idx = i;
+                    continue;
+                }
+                if (!script.startsWith(SYNC_ID)) {
+                    continue;
+                }
+
+                JsonObject json = JsonUtil.parse("{" + script + "}");
+                location = removeHashInV7Uidl(json);
+                if (location != null) {
+                    script = JsonUtil.stringify(json);
+                    // remove curly brackets
+                    script = script.substring(1, script.length() - 1);
+                    arr.set(j, script);
+                }
+            }
+        }
+
+        if (location != null) {
+            idx = idx >= 0 ? idx : exec.length();
+            JsonArray arr = Json.createArray();
+            arr.set(0, "");
+            arr.set(1,
+                    String.format(
+                            location.startsWith("http") ? PUSH_STATE_LOCATION
+                                    : PUSH_STATE_HASH,
+                            location));
+            exec.set(idx, arr);
+        }
+    }
+
+    private String removeHashInV7Uidl(JsonObject json) {
+        String removed = null;
+        JsonArray changes = json.getArray(CHANGES);
+        for (int i = 0; i < changes.length(); i++) {
+            String hash = removeHashInChange(changes.getArray(i));
+            if (hash != null) {
+                removed = hash;
+            }
+        }
+        JsonArray rpcs = json.getArray(RPC);
+        for (int i = 0; i < rpcs.length(); i++) {
+            String hash = removeHashInRpc(rpcs.getArray(i));
+            if (removed == null && hash != null) {
+                removed = hash;
+            }
+        }
+        return removed;
+    }
+
+    private String removeHashInChange(JsonArray change) {
+        if (change.length() < 3
+                || !change.get(2).getType().equals(JsonType.ARRAY)) {
+            return null;
+        }
+        JsonArray value = change.getArray(2);
+        if (value.length() < 2
+                || !value.get(1).getType().equals(JsonType.OBJECT)) {
+            return null;
+        }
+        JsonObject location = value.getObject(1);
+        if (!location.hasKey(LOCATION)) {
+            return null;
+        }
+        String url = location.getString(LOCATION);
+        Matcher match = URL_PATTERN.matcher(url);
+        if (match.find()) {
+            location.put(LOCATION, match.group(1));
+            return url;
+        }
+        return null;
+    }
+
+    private String removeHashInRpc(JsonArray rpc) {
+        if (rpc.length() != 4 || !rpc.get(1).getType().equals(JsonType.STRING)
+                || !rpc.get(2).getType().equals(JsonType.STRING)
+                || !rpc.get(3).getType().equals(JsonType.ARRAY)
+                || !"com.vaadin.shared.extension.javascriptmanager.ExecuteJavaScriptRpc"
+                        .equals(rpc.getString(1))
+                || !"executeJavaScript".equals(rpc.getString(2))) {
+            return null;
+        }
+        JsonArray scripts = rpc.getArray(3);
+        for (int j = 0; j < scripts.length(); j++) {
+            String exec = scripts.getString(j);
+            Matcher match = HASH_PATTERN.matcher(exec);
+            if (match.find()) {
+                // replace JS with a noop
+                scripts.set(j, ";");
+                return match.group(1);
+            }
+        }
+        return null;
     }
 }

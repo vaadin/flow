@@ -6,11 +6,10 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 
-
 @JsModule("@polymer/paper-input/paper-input.js")
 @JsModule("@polymer/paper-checkbox/paper-checkbox.js")
-@Route(value = "com.vaadin.flow.testnpmonlyfeatures.nobuildmojo" +
-        ".MultipleNpmPackageAnnotationsView", layout = NpmPackageLayout.class)
+@Route(value = "com.vaadin.flow.testnpmonlyfeatures.nobuildmojo"
+        + ".MultipleNpmPackageAnnotationsView", layout = NpmPackageLayout.class)
 @JsModule("./connector.js")
 public class MultipleNpmPackageAnnotationsView extends Div {
 

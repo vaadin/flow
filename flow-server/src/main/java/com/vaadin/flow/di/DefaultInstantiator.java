@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,7 +24,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.InvalidI18NConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -52,18 +52,15 @@ public class DefaultInstantiator implements Instantiator {
     }
 
     @Override
-    public boolean init(VaadinService service) {
-        return service == this.service;
-    }
-
-    @Override
     public Stream<VaadinServiceInitListener> getServiceInitListeners() {
         return getServiceLoaderListeners(service.getClassLoader());
     }
 
     @Override
     public <T> T getOrCreate(Class<T> type) {
-        return create(type);
+        Lookup lookup = service.getContext().getAttribute(Lookup.class);
+        T result = lookup == null ? null : lookup.lookup(type);
+        return result == null ? create(type) : result;
     }
 
     @Override
@@ -130,7 +127,7 @@ public class DefaultInstantiator implements Instantiator {
             return null;
         }
         return deploymentConfiguration
-                .getStringProperty(Constants.I18N_PROVIDER, null);
+                .getStringProperty(InitParameters.I18N_PROVIDER, null);
     }
 
     private <T> T create(Class<T> type) {

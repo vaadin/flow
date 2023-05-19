@@ -1,0 +1,75 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <style>
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        padding: 1rem;
+        min-height: 100vh;
+        box-sizing: border-box;
+      }
+
+      .message {
+        background-color: rgba(50, 50, 50, 1);
+        color: white;
+        border-radius: 2rem;
+        box-sizing: border-box;
+        padding: 0.75em 1.5em 0.75em 0.75em;
+        font: 0.875rem/1.2 system-ui, ui-sans-serif, sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 0.75em;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 3px 8px -3px rgba(0, 0, 0, 0.6);
+      }
+
+      /* Spinner */
+      .message::before {
+        content: '';
+        flex: none;
+        width: 1em;
+        height: 1em;
+        border-radius: 50%;
+        border: 2px solid #2ca6ff;
+        border-top-color: transparent;
+        animation: spinner 0.5s linear infinite;
+        -webkit-mask-image: radial-gradient(circle at 50% 2px, transparent 40%, #000 70%);
+        mask-image: radial-gradient(circle at 50% 2px, transparent 40%, #000 70%);
+      }
+
+      @keyframes spinner {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+    <script type="text/javascript">
+      // Set specific flag for TB and make sure that there are no any clients.
+      // It allows to work correct waitForVaadin in TB
+      window.Vaadin = { Flow: { devServerIsNotLoaded: true } };
+
+      const delay = 200;
+      const poll = async () => {
+        try {
+          const response = await fetch(window.location.href, { headers: { 'X-DevModePoll': 'true' } });
+          if (response.headers.has('X-DevModePending')) {
+            setTimeout(poll, delay);
+          } else {
+            // App ready
+            document.location.reload();
+          }
+        } catch (e) {
+          setTimeout(poll, delay);
+        }
+      };
+
+      setTimeout(poll, delay);
+    </script>
+  </head>
+  <body>
+    <div class="message">Building front-end development bundle</div>
+  </body>
+</html>

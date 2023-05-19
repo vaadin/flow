@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.flow;
 
+import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.Registry;
@@ -91,13 +92,15 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
             {
                 set(ConstantPool.class, new ConstantPool());
                 set(ExistingElementMap.class, new ExistingElementMap());
+                set(ApplicationConfiguration.class,
+                        new ApplicationConfiguration());
             }
         };
 
         tree = new StateTree(registry) {
             @Override
             public void sendTemplateEventToServer(StateNode node,
-                    String methodName, JsArray<?> argValues) {
+                    String methodName, JsArray<?> argValues, int promiseId) {
             }
         };
 
@@ -134,22 +137,6 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
         Binder.bind(node, element);
     }
 
-    public void testSynchronizedPropertyDoubleBind() {
-        NodeList synchronizedPropertyList = node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
-        NodeList synchronizedPropertyEventsList = node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
-
-        Binder.bind(node, element);
-
-        synchronizedPropertyEventsList.add(0, "event");
-        synchronizedPropertyList.add(0, "tagName");
-        Reactive.flush();
-
-        node.setBound();
-        Binder.bind(node, element);
-    }
-
     public void testDomEventHandlerDoubleBind() {
         Binder.bind(node, element);
 
@@ -176,11 +163,6 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
 
     public void testClientCallableMethodDoubleBind() {
         assertListPropertiesDoubleBind(NodeFeatures.CLIENT_DELEGATE_HANDLERS);
-    }
-
-    public void testEventHandlerMethodDoubleBind() {
-        assertListPropertiesDoubleBind(
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
     }
 
     public void testBindShadowRootDoubleBind() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
@@ -26,25 +27,49 @@ import com.vaadin.flow.component.Component;
  * resolved for this path, but the parent layouts may differ.
  * <p>
  * Only for read as data is immutable.
+ *
+ * @since 1.3
  */
 public class RouteAliasData extends RouteBaseData<RouteAliasData> {
+
+    /**
+     * AliasData constructor. This constructor doesn't support parameters. When
+     * a non empty List is provided {@link IllegalArgumentException} is raised.
+     *
+     * @param parentLayouts
+     *            route parent layout class chain
+     * @param template
+     *            full route template
+     * @param parameters
+     *            supports only null or empty list. If a non empty list is
+     *            passed and {@link IllegalArgumentException} is raised.
+     * @param navigationTarget
+     *            route navigation target
+     * @throws IllegalArgumentException
+     *             if parameters is not empty.
+     */
+    public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,
+            String template, List<Class<?>> parameters,
+            Class<? extends Component> navigationTarget) {
+        super(parentLayouts, template, parameters, navigationTarget);
+    }
 
     /**
      * AliasData constructor.
      *
      * @param parentLayouts
-     *         route parent layout class chain
-     * @param url
-     *         full route url
+     *            route parent layout class chain
+     * @param template
+     *            full route template
      * @param parameters
-     *         navigation target path parameters
+     *            navigation target path parameters
      * @param navigationTarget
-     *         route navigation target
+     *            route navigation target
      */
     public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,
-            String url, List<Class<?>> parameters,
+            String template, Map<String, RouteParameterData> parameters,
             Class<? extends Component> navigationTarget) {
-        super(parentLayouts, url, parameters, navigationTarget);
+        super(parentLayouts, template, parameters, navigationTarget);
     }
 
     @Override
@@ -52,8 +77,9 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
         if (obj instanceof RouteAliasData) {
             RouteAliasData other = (RouteAliasData) obj;
             return other.getParentLayouts().equals(this.getParentLayouts())
-                    && other.getUrl().equals(this.getUrl()) && other
-                    .getNavigationTarget().equals(getNavigationTarget());
+                    && other.getTemplate().equals(this.getTemplate())
+                    && other.getNavigationTarget()
+                            .equals(getNavigationTarget());
         }
         return false;
     }
@@ -61,13 +87,13 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
     @Override
     public String toString() {
         return "RouteData{" + "parentLayout=" + getParentLayout() + ", url='"
-                + getUrl() + '\'' + ", parameters=" + getParameters()
+                + getTemplate() + '\'' + ", parameters=" + getRouteParameters()
                 + ", navigationTarget=" + getNavigationTarget() + '}';
     }
 
     @Override
     public int hashCode() {
-        return Objects
-                .hash(getParentLayouts(), getUrl(), getNavigationTarget());
+        return Objects.hash(getParentLayouts(), getTemplate(),
+                getNavigationTarget());
     }
 }

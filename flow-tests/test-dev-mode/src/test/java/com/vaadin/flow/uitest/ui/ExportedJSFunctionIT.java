@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.server.Version;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
@@ -22,25 +21,10 @@ public class ExportedJSFunctionIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void versionInfoNotAvailableInProductionMode() {
-        openProduction();
-        WebElement version = findElement(By.id("version"));
-        Assert.assertEquals("versionInfoMethod not published",
-                version.getText());
-    }
-
-    @Test
     public void productionModeFalseInDevelopmentMode() {
         open();
         WebElement productionMode = findElement(By.id("productionMode"));
         Assert.assertEquals("Production mode: false", productionMode.getText());
-    }
-
-    @Test
-    public void productionModeTrueInProductionMode() {
-        openProduction();
-        WebElement productionMode = findElement(By.id("productionMode"));
-        Assert.assertEquals("Production mode: true", productionMode.getText());
     }
 
     @Test
@@ -59,30 +43,11 @@ public class ExportedJSFunctionIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void pollUsingJSProduction() {
-        openProduction();
-        poll();
-    }
-
-    @Test
     public void profilingInfoAvailableInDevelopmentMode() {
         open();
         $(TestBenchElement.class).id("poll").click();
         List<Long> profilingData = getProfilingData();
         assertProfilingDataSensible(profilingData);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void profilingInfoNotAvailableInProduction() {
-        openProduction();
-        getProfilingData();
-    }
-
-    @Test
-    public void profilingInfoAvailableWhenRequestedInProduction() {
-        openProductionWithTiming();
-        $(TestBenchElement.class).id("poll").click();
-        assertProfilingDataSensible(getProfilingData());
     }
 
     private void assertProfilingDataSensible(List<Long> profilingData) {
@@ -94,10 +59,9 @@ public class ExportedJSFunctionIT extends ChromeBrowserTest {
     }
 
     private List<Long> getProfilingData() {
-        Object data = executeScript("var clients = window.Vaadin.Flow.clients;"
-                + "var client = clients[Object.keys(clients)[0]];"
-                + "if (!client.getProfilingData) return null;" //
-                + "return client.getProfilingData();");
+        Object data = executeScript(
+                "var key = Object.keys(Vaadin.Flow.clients).filter(k => k !== 'TypeScript')[0];"
+                        + "return Vaadin.Flow.clients[key].getProfilingData();");
         if (data == null) {
             throw new IllegalStateException("No profiling data available");
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,7 +35,9 @@ public class ExceptionStacktraceIT extends ChromeBrowserTest {
 
         Assert.assertFalse(
                 "There should be no warning about SLF4J absence because the test project should have slf4j bindings",
-                isElementPresent(By.cssSelector("body > div > div")));
+                findElements(By.cssSelector("body > div > div")).stream()
+                        .anyMatch(div -> div.getText().toUpperCase()
+                                .contains("SLF4J")));
 
         WebElement stacktrace = main.findElement(By.tagName("pre"));
 

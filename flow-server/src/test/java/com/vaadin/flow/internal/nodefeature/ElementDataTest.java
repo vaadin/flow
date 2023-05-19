@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,7 +34,7 @@ import elemental.json.JsonObject;
 public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
     private final ElementData elementData = new StateNode(
             Collections.singletonList(ElementData.class))
-                    .getFeature(ElementData.class);
+            .getFeature(ElementData.class);
 
     @Test
     public void setGetTag() {

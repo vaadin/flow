@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,11 +19,19 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.Supplier;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * Utility class for locale handling.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 1.0
  */
 public final class LocaleUtil {
 
@@ -32,7 +40,7 @@ public final class LocaleUtil {
 
     /**
      * Get the exact locale match for the given request in the provided locales.
-     * 
+     *
      * @param request
      *            request to get locale for
      * @param providedLocales
@@ -56,15 +64,15 @@ public final class LocaleUtil {
     /**
      * Get the locale matching the language of the request locale in the
      * provided locales.
-     * 
+     *
      * @param request
      *            request to get locale for
      * @param providedLocales
      *            application provided locales
      * @return found locale or null if no matches by language
      */
-    public static Optional<Locale> getLocaleMatchByLanguage(VaadinRequest request,
-            List<Locale> providedLocales) {
+    public static Optional<Locale> getLocaleMatchByLanguage(
+            VaadinRequest request, List<Locale> providedLocales) {
         Locale foundLocale = null;
         Enumeration<Locale> locales = request.getLocales();
         while (locales.hasMoreElements()) {
@@ -79,5 +87,36 @@ public final class LocaleUtil {
             }
         }
         return Optional.ofNullable(foundLocale);
+    }
+
+    /**
+     * Get the I18nProvider from the current VaadinService.
+     * <p>
+     *
+     * @return the optional value of I18nProvider
+     */
+    public static Optional<I18NProvider> getI18NProvider() {
+        return Optional.ofNullable(
+                VaadinService.getCurrent().getInstantiator().getI18NProvider());
+    }
+
+    /**
+     * Get the locale for the given UI.
+     * <p>
+     * -> If UI is not null, then it is used to get the locale, -> if UI is
+     * null, then the I18NProvider providedLocales first match will be returned,
+     * -> if I18NProvider is null, then default locale is returned.
+     *
+     * @param i18NProvider
+     *            - supplier for the i18n provider
+     * @return the locale for the UI
+     */
+    public static Locale getLocale(
+            Supplier<Optional<I18NProvider>> i18NProvider) {
+        return Optional.ofNullable(UI.getCurrent()).map(UI::getLocale)
+                .or(() -> i18NProvider.get()
+                        .map(I18NProvider::getProvidedLocales)
+                        .flatMap(locales -> locales.stream().findFirst()))
+                .orElseGet(Locale::getDefault);
     }
 }

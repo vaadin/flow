@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,15 @@
  */
 package com.vaadin.flow.internal;
 
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
  * Utility class for common {@link MessageDigest} operations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -41,7 +44,20 @@ public class MessageDigestUtil {
      * @return 32 bytes making up the hash
      */
     public static byte[] sha256(String string) {
-        return getSha256().digest(string.getBytes(StandardCharsets.UTF_16));
+        return sha256(string, StandardCharsets.UTF_16);
+    }
+
+    /**
+     * Calculates the SHA-256 hash of the given string representation using the
+     * supplied charset.
+     *
+     * @param string
+     *            the string to hash
+     *
+     * @return 32 bytes making up the hash
+     */
+    public static byte[] sha256(String string, Charset charset) {
+        return getSha256().digest(string.getBytes(charset));
     }
 
     private static MessageDigest getSha256() {

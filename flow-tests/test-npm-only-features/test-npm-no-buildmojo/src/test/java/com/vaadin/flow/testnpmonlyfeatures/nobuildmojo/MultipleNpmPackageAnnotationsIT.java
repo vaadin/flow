@@ -35,6 +35,7 @@ public class MultipleNpmPackageAnnotationsIT extends ChromeBrowserTest {
         waitForElementPresent(By.id("lazy-element"));
         WebElement element = findElement(By.id("lazy-element"));
 
-        Assert.assertTrue("Lazy created element should be displayed", element.isDisplayed());
+        Assert.assertTrue("Lazy created element should be displayed",
+                element.isDisplayed());
     }
 }

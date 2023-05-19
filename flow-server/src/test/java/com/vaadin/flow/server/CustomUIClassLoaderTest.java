@@ -1,18 +1,21 @@
 package com.vaadin.flow.server;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.easymock.EasyMock;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.mockito.Mockito;
 
-public class CustomUIClassLoaderTest extends TestCase {
+public class CustomUIClassLoaderTest {
 
     /**
      * Stub root
@@ -47,6 +50,7 @@ public class CustomUIClassLoaderTest extends TestCase {
      * @throws Exception
      *             if thrown
      */
+    @Test
     public void testWithDefaultClassLoader() throws Exception {
         VaadinSession application = createStubApplication();
         application.setConfiguration(createConfigurationMock());
@@ -59,29 +63,33 @@ public class CustomUIClassLoaderTest extends TestCase {
 
     private static DeploymentConfiguration createConfigurationMock() {
         Properties properties = new Properties();
-        properties.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
-        properties.put(VaadinSession.UI_PARAMETER, MyUI.class.getName());
-        return new DefaultDeploymentConfiguration(CustomUIClassLoaderTest.class,
-                properties);
+        properties.put(InitParameters.UI_PARAMETER, MyUI.class.getName());
+        VaadinContext context = new MockVaadinContext();
+        ApplicationConfiguration config = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(config.getPropertyNames())
+                .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(config.getBuildFolder()).thenReturn(".");
+        Mockito.when(config.getContext()).thenReturn(context);
+        return new DefaultDeploymentConfiguration(config,
+                CustomUIClassLoaderTest.class, properties);
     }
 
     private static VaadinRequest createRequestMock(ClassLoader classloader) {
         // Mock a VaadinService to give the passed classloader
-        VaadinService configurationMock = EasyMock
-                .createMock(VaadinService.class);
-        EasyMock.expect(configurationMock.getDeploymentConfiguration())
-                .andReturn(createConfigurationMock());
-        EasyMock.expect(configurationMock.getClassLoader())
-                .andReturn(classloader);
+        VaadinService configurationMock = Mockito.mock(VaadinService.class);
+        DeploymentConfiguration deploymentConfiguration = createConfigurationMock();
+        Mockito.when(configurationMock.getDeploymentConfiguration())
+                .thenReturn(deploymentConfiguration);
+        Mockito.when(configurationMock.getClassLoader())
+                .thenReturn(classloader);
 
         // Mock a VaadinRequest to give the mocked vaadin service
-        VaadinRequest requestMock = EasyMock.createMock(VaadinRequest.class);
-        EasyMock.expect(requestMock.getService()).andReturn(configurationMock);
-        EasyMock.expect(requestMock.getService()).andReturn(configurationMock);
-        EasyMock.expect(requestMock.getService()).andReturn(configurationMock);
+        VaadinRequest requestMock = Mockito.mock(VaadinRequest.class);
+        Mockito.when(requestMock.getService()).thenReturn(configurationMock);
+        Mockito.when(requestMock.getService()).thenReturn(configurationMock);
+        Mockito.when(requestMock.getService()).thenReturn(configurationMock);
 
-        EasyMock.replay(configurationMock, requestMock);
         return requestMock;
     }
 
@@ -92,6 +100,7 @@ public class CustomUIClassLoaderTest extends TestCase {
      * @throws Exception
      *             if thrown
      */
+    @Test
     public void testWithClassLoader() throws Exception {
         LoggingClassLoader loggingClassLoader = new LoggingClassLoader();
 

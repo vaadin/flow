@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.junit.Test;
+
 public class ListItemTest extends ComponentTest {
     // Actual test methods in super class
 
@@ -23,4 +25,12 @@ public class ListItemTest extends ComponentTest {
         // Component defines no new properties
     }
 
+    @Test
+    @Override
+    public void testHasAriaLabelIsNotImplemented() {
+        // Don't use aria-label or aria-labelledby on any other non-interactive
+        // content such as p, legend, li, or ul, because it is ignored.
+        // Source: https://www.w3.org/TR/using-aria/#label-support
+        super.testHasAriaLabelIsNotImplemented();
+    }
 }

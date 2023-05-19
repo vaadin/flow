@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,9 +30,11 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.router.QueryParameters;
-
 public class QueryParametersTest {
+
+    private final String simpleInputQueryString = "one=1&two=2&three=3&four&five=4%2F5%266%2B7&six=one+%2B+one%20%3D%20two";
+
+    private final String complexInputQueryString = "one=1&one=11&two=2&two=22&three=3&four&five=4%2F5%266%2B7&six=one+%2B+one%20%3D%20two";
 
     private Map<String, String> getSimpleInputParameters() {
         Map<String, String> inputParameters = new HashMap<>();
@@ -94,6 +96,22 @@ public class QueryParametersTest {
     }
 
     @Test
+    public void simpleParametersFromQueryString() {
+        QueryParameters simpleParams = QueryParameters
+                .fromString(simpleInputQueryString);
+
+        Map<String, List<String>> expectedFullParams = new HashMap<>();
+        expectedFullParams.put("one", Collections.singletonList("1"));
+        expectedFullParams.put("two", Collections.singletonList("2"));
+        expectedFullParams.put("three", Collections.singletonList("3"));
+        expectedFullParams.put("four", Collections.singletonList(""));
+        expectedFullParams.put("five", Collections.singletonList("4/5&6+7"));
+        expectedFullParams.put("six",
+                Collections.singletonList("one + one = two"));
+        assertEquals(expectedFullParams, simpleParams.getParameters());
+    }
+
+    @Test
     public void simpleParametersToQueryString() {
         QueryParameters simpleParams = QueryParameters
                 .simple(getSimpleInputParameters());
@@ -128,6 +146,22 @@ public class QueryParametersTest {
         expectedFullParams.put("one", Arrays.asList("1", "11"));
         expectedFullParams.put("two", Arrays.asList("2", "22"));
         expectedFullParams.put("three", Collections.singletonList("3"));
+        assertEquals(expectedFullParams, fullParams.getParameters());
+    }
+
+    @Test
+    public void complexParametersFromQueryString() {
+        QueryParameters fullParams = QueryParameters
+                .fromString(complexInputQueryString);
+
+        Map<String, List<String>> expectedFullParams = new HashMap<>();
+        expectedFullParams.put("one", Arrays.asList("1", "11"));
+        expectedFullParams.put("two", Arrays.asList("2", "22"));
+        expectedFullParams.put("three", Collections.singletonList("3"));
+        expectedFullParams.put("four", Collections.singletonList(""));
+        expectedFullParams.put("five", Collections.singletonList("4/5&6+7"));
+        expectedFullParams.put("six",
+                Collections.singletonList("one + one = two"));
         assertEquals(expectedFullParams, fullParams.getParameters());
     }
 
@@ -168,15 +202,15 @@ public class QueryParametersTest {
     @Test
     public void parameterWithoutValue() {
         QueryParameters params = new QueryParameters(
-                Collections.singletonMap("foo", Collections.emptyList()));
+                Collections.singletonMap("foo", Collections.singletonList("")));
         Assert.assertEquals("foo", params.getQueryString());
 
         params = new QueryParameters(
-                Collections.singletonMap("foo", Arrays.asList(null, "bar")));
+                Collections.singletonMap("foo", Arrays.asList("", "bar")));
         Assert.assertEquals("foo&foo=bar", params.getQueryString());
 
         params = new QueryParameters(
-                Collections.singletonMap("foo", Arrays.asList("bar", null)));
+                Collections.singletonMap("foo", Arrays.asList("bar", "")));
         Assert.assertEquals("foo=bar&foo", params.getQueryString());
     }
 
@@ -184,6 +218,23 @@ public class QueryParametersTest {
     public void parameterWithEmptyValue() {
         QueryParameters fullParams = new QueryParameters(
                 Collections.singletonMap("foo", Collections.singletonList("")));
-        Assert.assertEquals("foo=", fullParams.getQueryString());
+        Assert.assertEquals("foo", fullParams.getQueryString());
     }
+
+    @Test
+    public void toStringValidation() {
+        String toString = QueryParameters.of("foo", "bar").toString();
+        Assert.assertEquals("QueryParameters(foo=bar)", toString);
+    }
+
+    @Test
+    public void equalsAndHashCode() {
+        QueryParameters qp1 = QueryParameters.of("foo", "bar");
+        QueryParameters qp2 = QueryParameters.fromString("foo=bar");
+        QueryParameters qp3 = QueryParameters.fromString("bar=foo");
+        Assert.assertEquals(qp1, qp2);
+        Assert.assertNotEquals(qp3, qp2);
+        Assert.assertEquals(qp1.hashCode(), qp2.hashCode());
+    }
+
 }

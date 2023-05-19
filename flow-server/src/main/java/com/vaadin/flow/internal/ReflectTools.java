@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,8 @@ package com.vaadin.flow.internal;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -44,7 +46,10 @@ import com.vaadin.flow.shared.util.SharedUtil;
  * An util class with helpers for reflection operations. Used internally by
  * Vaadin and should not be used by application developers. Subject to change at
  * any time.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
+ * @since 1.0
  */
 public class ReflectTools implements Serializable {
 
@@ -401,9 +406,8 @@ public class ReflectTools implements Serializable {
      */
     public static String getPropertyName(Method method) {
         String methodName = method.getName();
-        assert isGetter(method)
-                || isSetter(method) : "Method is not a valid getter or setter: "
-                        + methodName;
+        assert isGetter(method) || isSetter(method)
+                : "Method is not a valid getter or setter: " + methodName;
 
         String propertyName = SETTER_GETTER_STARTS.matcher(methodName)
                 .replaceFirst("");
@@ -588,6 +592,30 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Finds the Class type for all parameters defined by the generic interface
+     * class extended by given class if exists.
+     *
+     * @param clazz
+     *            class that should extend interface
+     * @param interfaceType
+     *            class type of interface to get generic for
+     * @return List of Class if found else empty List, never {@literal null}
+     */
+    public static List<Class<?>> getGenericInterfaceTypes(Class<?> clazz,
+            Class<?> interfaceType) {
+        return Stream.of(interfaceType.getTypeParameters())
+                .map(typeParam -> GenericTypeReflector.getTypeParameter(clazz,
+                        typeParam))
+                .map(type -> {
+                    if (type instanceof Class
+                            || type instanceof ParameterizedType) {
+                        return GenericTypeReflector.erase(type);
+                    }
+                    return null;
+                }).collect(Collectors.toList());
+    }
+
+    /**
      * Finds a getter for a property in a bean type.
      *
      * @param beanClass
@@ -719,11 +747,10 @@ public class ReflectTools implements Serializable {
     /**
      * Finds the common ancestor of the two {@code ClassLoaders}. The class
      * loaders themselves are acceptable ancestors; If they are equal, {@code
-     * classLoaderA} is returned.
-     * An empty optional is returned if the two class loaders aren't equal,
-     * no shared ancestor is found, or the implementation of the class loader
-     * treats bootstrap class loader as {@code null} when it is the parent of
-     * a class loaders (see {@link ClassLoader#getParent()}.
+     * classLoaderA} is returned. An empty optional is returned if the two class
+     * loaders aren't equal, no shared ancestor is found, or the implementation
+     * of the class loader treats bootstrap class loader as {@code null} when it
+     * is the parent of a class loaders (see {@link ClassLoader#getParent()}.
      *
      * @param classLoaderA
      *            class loader A
@@ -760,6 +787,119 @@ public class ReflectTools implements Serializable {
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * Checks whether the {@code element} has annotation whose FQN is
+     * {@code annotationFqn}.
+     *
+     * @param element
+     *            annotated element (field, method, etc.)
+     * @param annotationFqn
+     *            annotation FQN
+     * @return {@code true} is {@code element} has annotation whose FQN is
+     *         {@code annotationFqn}, {@code false} otherwise
+     */
+    public static boolean hasAnnotation(AnnotatedElement element,
+            String annotationFqn) {
+        return getAnnotation(element, annotationFqn).isPresent();
+    }
+
+    /**
+     * Checks whether the {@code element} has annotation whose simple name is
+     * {@code simpleName}.
+     *
+     * @param element
+     *            annotated element (field, method, etc.)
+     * @param simpleName
+     *            annotation simple name
+     * @return {@code true} is {@code element} has annotation whose simple name
+     *         is {@code simpleName}, {@code false} otherwise
+     */
+    public static boolean hasAnnotationWithSimpleName(AnnotatedElement element,
+            String simpleName) {
+        return Stream.of(element.getAnnotations()).anyMatch(anno -> simpleName
+                .equals(anno.annotationType().getSimpleName()));
+    }
+
+    /**
+     * Gets the annotation method return value.
+     *
+     * @param annotation
+     *            the annotation
+     * @param methodName
+     *            the method name
+     * @return an optional value, or an empty optional if element has no
+     *         annotation with required {@code annotationFqn}
+     */
+    public static Object getAnnotationMethodValue(Annotation annotation,
+            String methodName) {
+        try {
+            Method method = annotation.annotationType()
+                    .getDeclaredMethod(methodName);
+            return method.invoke(annotation);
+        } catch (NoSuchMethodException | SecurityException
+                | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
+            throw new IllegalArgumentException("Couldn't invoke the method "
+                    + methodName + " on the annotation "
+                    + annotation.annotationType(), e);
+        }
+    }
+
+    /**
+     * Gets annotation of {@code element} whose FQN is {@code annotationFqn}.
+     *
+     * @param element
+     *            annotated element (field, method, etc.)
+     * @param annotationFqn
+     *            annotation FQN
+     * @return an optional annotation, or an empty optional if element has no
+     *         annotation with required {@code annotationFqn}
+     */
+    public static Optional<Annotation> getAnnotation(AnnotatedElement element,
+            String annotationFqn) {
+        for (Annotation annotation : element.getAnnotations()) {
+            if (annotation.annotationType().getName().equals(annotationFqn)) {
+                return Optional.of(annotation);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Check if a class can be instantiated via its default constructor via
+     * reflection.
+     *
+     * @param clazz
+     *            the class to check
+     * @return true if the class can be instantiated, otherwise false
+     */
+    public static boolean isInstantiableService(Class<?> clazz) {
+        if (clazz.isInterface()) {
+            return false;
+        }
+        if (clazz.isSynthetic()) {
+            return false;
+        }
+        if (Modifier.isAbstract(clazz.getModifiers())) {
+            return false;
+        }
+        if (!Modifier.isPublic(clazz.getModifiers())) {
+            return false;
+        }
+        Optional<Constructor<?>> constructor = Stream
+                .of(clazz.getConstructors())
+                .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
+        if (!constructor.isPresent()
+                || !Modifier.isPublic(constructor.get().getModifiers())) {
+            return false;
+        }
+        if (clazz.getEnclosingClass() != null
+                && !Modifier.isStatic(clazz.getModifiers())) {
+            return false;
+        }
+        return true;
     }
 
     private static List<Field> getConstants(Class<?> staticFields) {

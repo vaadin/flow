@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,17 +18,16 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletResponse;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
-import com.vaadin.flow.server.ServletHelper;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -38,6 +37,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * no UIDL requests for a prolonged period of time. UIs that do not receive
  * either heartbeat or UIDL requests are eventually removed from the session and
  * garbage collected.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -47,7 +48,7 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return ServletHelper.isRequestType(request, RequestType.HEARTBEAT);
+        return HandlerHelper.isRequestType(request, RequestType.HEARTBEAT);
     }
 
     /**
@@ -66,13 +67,15 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
             ui.getInternals()
                     .setLastHeartbeatTimestamp(System.currentTimeMillis());
             // Ensure that the browser does not cache heartbeat responses.
-            // iOS 6 Safari requires this (#10370)
+            // iOS 6 Safari requires this
+            // (https://github.com/vaadin/framework/issues/3226)
             response.setHeader("Cache-Control", "no-cache");
             // If Content-Type is not set, browsers assume text/html and may
-            // complain about the empty response body (#12182)
+            // complain about the empty response body
+            // (https://github.com/vaadin/framework/issues/4167)
             response.setHeader("Content-Type", "text/plain");
         } else {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND,
+            response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
                     "UI not found");
         }
 
@@ -89,11 +92,12 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
     @Override
     public boolean handleSessionExpired(VaadinRequest request,
             VaadinResponse response) throws IOException {
-        if (!ServletHelper.isRequestType(request, RequestType.HEARTBEAT)) {
+        if (!HandlerHelper.isRequestType(request, RequestType.HEARTBEAT)) {
             return false;
         }
 
-        response.sendError(HttpServletResponse.SC_GONE, "Session expired");
+        response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
+                "Session expired");
         return true;
     }
 }

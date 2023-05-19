@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -192,8 +192,8 @@ public class StateNode {
      * @see #addUnregisterListener(NodeUnregisterListener)
      */
     public void unregister() {
-        assert tree.getNode(
-                id) == null : "Node should no longer be findable from the tree";
+        assert tree.getNode(id) == null
+                : "Node should no longer be findable from the tree";
 
         assert !unregistered : "Node is already unregistered";
 
@@ -238,8 +238,8 @@ public class StateNode {
      *            the associated DOM node
      */
     public void setDomNode(Node node) {
-        assert domNode == null
-                || node == null : "StateNode already has a DOM node";
+        assert domNode == null || node == null
+                : "StateNode already has a DOM node";
 
         domNode = node;
         JsSet<Function<StateNode, Boolean>> copy = JsCollections
@@ -325,7 +325,7 @@ public class StateNode {
 
     /**
      * Removes the {@code object} from the stored data.
-     * 
+     *
      * @param object
      *            the object to remove
      * @param <T>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,46 +18,56 @@ package com.vaadin.flow.component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
+import com.vaadin.flow.i18n.I18NProvider;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.ScrollOptions.Alignment;
+import com.vaadin.flow.component.ScrollOptions.Behavior;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.internal.DependencyList;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
-import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
 
-@NotThreadSafe
 public class ComponentTest {
+
+    private UI ui;
 
     @After
     public void checkThreadLocal() {
@@ -257,7 +267,7 @@ public class ComponentTest {
 
     }
 
-    private static class TestComponentContainer extends TestComponent {
+    static class TestComponentContainer extends TestComponent {
 
         public TestComponentContainer() {
         }
@@ -286,7 +296,7 @@ public class ComponentTest {
         mocks = new MockServletServiceSessionSetup();
 
         VaadinSession session = mocks.getSession();
-        UI ui = new UI() {
+        ui = new UI() {
             @Override
             public VaadinSession getSession() {
                 return session;
@@ -301,6 +311,78 @@ public class ComponentTest {
     public void tearDown() {
         UI.setCurrent(null);
         mocks.cleanup();
+    }
+
+    @Test
+    public void getComponentLocale_noCurrentUI_returnsDefaultLocale() {
+        UI.setCurrent(null);
+        Instantiator instantiator = mocks.getService().getInstantiator();
+        Mockito.when(instantiator.getI18NProvider()).thenReturn(null);
+        Component test = new TestButton();
+        final Locale locale = test.getLocale();
+        Assert.assertEquals("System default locale should be returned",
+                Locale.getDefault(), locale);
+    }
+
+    @Test
+    public void getComponentLocale_hasCurrentUI_returnsUILocale() {
+        UI ui = new UI();
+        ui.setLocale(Locale.CANADA_FRENCH);
+        UI.setCurrent(ui);
+        Component test = new TestButton();
+        final Locale locale = test.getLocale();
+        Assert.assertEquals("Component getLocale returns the UI locale",
+                Locale.CANADA_FRENCH, locale);
+    }
+
+    @Test
+    public void getComponentLocale_noCurrentUI_returnsFirstLocaleFromProvidedLocales() {
+        UI.setCurrent(null);
+        Instantiator instantiator = mocks.getService().getInstantiator();
+        List<Locale> providedLocales = new ArrayList<>(
+                List.of(Locale.US, Locale.CANADA_FRENCH, Locale.FRANCE));
+        providedLocales.remove(Locale.getDefault());
+
+        Mockito.when(instantiator.getI18NProvider())
+                .thenReturn(new I18NProvider() {
+                    @Override
+                    public List<Locale> getProvidedLocales() {
+                        return providedLocales;
+                    }
+
+                    @Override
+                    public String getTranslation(String key, Locale locale,
+                            Object... params) {
+                        return null;
+                    }
+                });
+        Component test = new TestButton();
+        final Locale locale = test.getLocale();
+        Assert.assertEquals("First provided locale should be returned",
+                providedLocales.get(0), locale);
+    }
+
+    @Test
+    public void getComponentLocale_noCurrentUI_returnsDefaultLocale_ifNoProvidedLocale() {
+        UI.setCurrent(null);
+        Instantiator instantiator = mocks.getService().getInstantiator();
+        Mockito.when(instantiator.getI18NProvider())
+                .thenReturn(new I18NProvider() {
+                    @Override
+                    public List<Locale> getProvidedLocales() {
+                        return List.of();
+                    }
+
+                    @Override
+                    public String getTranslation(String key, Locale locale,
+                            Object... params) {
+                        return null;
+                    }
+                });
+        Component test = new TestButton();
+        final Locale locale = test.getLocale();
+        Assert.assertEquals("System default locale should be returned",
+                Locale.getDefault(), locale);
     }
 
     @Test
@@ -723,8 +805,10 @@ public class ComponentTest {
         ui.addAttachListener(e -> {
             initialAttach.set(e.isInitialAttach());
         });
-        ui.getInternals()
-                .setSession(new VaadinSession(new MockVaadinServletService()));
+
+        MockDeploymentConfiguration config = new MockDeploymentConfiguration();
+        ui.getInternals().setSession(
+                new VaadinSession(new MockVaadinServletService(config)));
         Assert.assertTrue(initialAttach.get());
         // UI is never detached and reattached
     }
@@ -753,6 +837,56 @@ public class ComponentTest {
         ui.remove(c);
         ui.add(c);
         Assert.assertFalse(initialAttach.get());
+    }
+
+    /**
+     * Tests {@link Component#isAttached}.
+     */
+    @Test
+    public void testIsAttached() {
+        UI ui = new UI();
+        // ui is initially attached
+        Assert.assertTrue(ui.isAttached());
+
+        TestComponentContainer parent = new TestComponentContainer();
+        TestComponentContainer child = new TestComponentContainer();
+        TestComponent grandChild = new TestComponent();
+        child.track();
+        grandChild.addAttachListener(
+                event -> Assert.assertTrue(grandChild.isAttached()));
+        grandChild.addDetachListener(
+                event -> grandChild.getDetachEvents().incrementAndGet());
+
+        parent.add(child);
+        child.add(grandChild);
+        Assert.assertFalse(parent.isAttached());
+        Assert.assertFalse(child.isAttached());
+        Assert.assertFalse(grandChild.isAttached());
+
+        ui.add(parent);
+        Assert.assertTrue(parent.isAttached());
+        Assert.assertTrue(child.isAttached());
+        Assert.assertTrue(grandChild.isAttached());
+
+        ui.remove(parent);
+        Assert.assertFalse(parent.isAttached());
+        Assert.assertFalse(child.isAttached());
+        Assert.assertFalse(grandChild.isAttached());
+
+        ui.add(parent);
+        Assert.assertTrue(parent.isAttached());
+        Assert.assertTrue(child.isAttached());
+        Assert.assertTrue(grandChild.isAttached());
+
+        // Mock closing of UI after request handled
+        ui.getInternals().setSession(Mockito.mock(VaadinSession.class));
+        ui.close();
+        ui.getInternals().setSession(null);
+
+        Assert.assertFalse(parent.isAttached());
+        Assert.assertFalse(child.isAttached());
+        Assert.assertFalse(grandChild.isAttached());
+        Assert.assertFalse(ui.isAttached());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -942,31 +1076,23 @@ public class ComponentTest {
         }
     }
 
-    private void assertSynchronizedProperties(Element element,
-            String... properties) {
+    private void assertSynchronizedProperties(String domEventName,
+            Element element, String... properties) {
         Set<String> expected = Stream.of(properties)
                 .collect(Collectors.toSet());
-        Set<String> actual = element.getSynchronizedProperties()
-                .collect(Collectors.toSet());
-        Assert.assertEquals(expected, actual);
 
-    }
+        Set<String> expressions = element.getNode()
+                .getFeature(ElementListenerMap.class)
+                .getExpressions(domEventName);
 
-    private void assertSynchronizedPropertiesEvents(Element element,
-            String... events) {
-        Set<String> expected = Stream.of(events).collect(Collectors.toSet());
-        Set<String> actual = element.getSynchronizedPropertyEvents()
-                .collect(Collectors.toSet());
-        Assert.assertEquals(expected, actual);
-
+        Assert.assertEquals(expected, expressions);
     }
 
     @Test
     public void synchronizePropertyBasedOnGetterName() {
         SynchronizePropertyOnChangeComponent component = new SynchronizePropertyOnChangeComponent();
         Element element = component.getElement();
-        assertSynchronizedProperties(element, "foo");
-        assertSynchronizedPropertiesEvents(element, "change");
+        assertSynchronizedProperties("change", element, "}foo");
     }
 
     @Test
@@ -974,8 +1100,7 @@ public class ComponentTest {
         SynchronizePropertyUsingElementConstructor component = new SynchronizePropertyUsingElementConstructor();
         component.customInit();
         Element element = component.getElement();
-        assertSynchronizedProperties(element, "foo");
-        assertSynchronizedPropertiesEvents(element, "change");
+        assertSynchronizedProperties("change", element, "}foo");
     }
 
     @Test
@@ -992,26 +1117,15 @@ public class ComponentTest {
     public void synchronizePropertyWithPropertyName() {
         SynchronizePropertyOnChangeGivenPropertyComponent component = new SynchronizePropertyOnChangeGivenPropertyComponent();
         Element element = component.getElement();
-        assertSynchronizedProperties(element, "bar");
-        assertSynchronizedPropertiesEvents(element, "change");
+        assertSynchronizedProperties("change", element, "}bar");
     }
 
     @Test
     public void synchronizePropertyWithMultipleEvents() {
         SynchronizePropertyOnMultipleEventsComponent component = new SynchronizePropertyOnMultipleEventsComponent();
         Element element = component.getElement();
-        assertSynchronizedProperties(element, "foo");
-        assertSynchronizedPropertiesEvents(element, "blur", "input");
-    }
-
-    @Test
-    public void synchronizePropertyOverride() {
-        SynchronizePropertyOnChangeComponent component = new SynchronizePropertyOnChangeComponent();
-        component.getElement().removeSynchronizedProperty("foo");
-        component.getElement().removeSynchronizedPropertyEvent("change");
-        Element element = component.getElement();
-        assertSynchronizedProperties(element);
-        assertSynchronizedPropertiesEvents(element);
+        assertSynchronizedProperties("input", element, "}foo");
+        assertSynchronizedProperties("blur", element, "}foo");
     }
 
     @Test(expected = IllegalStateException.class)
@@ -1020,7 +1134,6 @@ public class ComponentTest {
     }
 
     @Tag("div")
-    @HtmlImport("html.html")
     @JavaScript("js.js")
     @StyleSheet("css.css")
     public static class ComponentWithDependencies extends Component {
@@ -1036,20 +1149,19 @@ public class ComponentTest {
 
     @Tag("span")
     @Uses(UsesComponentWithDependencies.class)
-    @HtmlImport("usesuses.html")
     public static class UsesUsesComponentWithDependencies extends Component {
 
     }
 
     @Tag("div")
-    @JavaScript("dep1.js")
+    @StyleSheet("css1.css")
     @Uses(CircularDependencies2.class)
     public static class CircularDependencies1 extends Component {
 
     }
 
     @Tag("div")
-    @JavaScript("dep2.js")
+    @StyleSheet("css2.css")
     @Uses(CircularDependencies1.class)
     public static class CircularDependencies2 extends Component {
 
@@ -1058,21 +1170,14 @@ public class ComponentTest {
     @Test
     public void usesComponent() {
         UI ui = UI.getCurrent();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         ui.getInternals()
                 .addComponentDependencies(UsesComponentWithDependencies.class);
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 ui.getInternals().getDependencyList().getPendingSendToClient());
-        Assert.assertEquals(4, pendingDependencies.size());
+        Assert.assertEquals(1, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "uses.js",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "js.js",
-                pendingDependencies);
         assertDependency(Dependency.Type.STYLESHEET, "css.css",
                 pendingDependencies);
     }
@@ -1080,23 +1185,14 @@ public class ComponentTest {
     @Test
     public void usesChain() {
         UIInternals internals = UI.getCurrent().getInternals();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         internals.addComponentDependencies(
                 UsesUsesComponentWithDependencies.class);
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 internals.getDependencyList().getPendingSendToClient());
-        Assert.assertEquals(5, pendingDependencies.size());
+        Assert.assertEquals(1, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.HTML_IMPORT, "usesuses.html",
-                pendingDependencies);
-        assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "uses.js",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "js.js",
-                pendingDependencies);
         assertDependency(Dependency.Type.STYLESHEET, "css.css",
                 pendingDependencies);
     }
@@ -1105,16 +1201,15 @@ public class ComponentTest {
     public void circularDependencies() {
         UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         internals.addComponentDependencies(CircularDependencies1.class);
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
         Assert.assertEquals(2, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",
+        assertDependency(Dependency.Type.STYLESHEET, "css1.css",
                 pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep2.js",
+        assertDependency(Dependency.Type.STYLESHEET, "css2.css",
                 pendingDependencies);
 
         internals = new MockUI().getInternals();
@@ -1123,40 +1218,52 @@ public class ComponentTest {
         pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
         Assert.assertEquals(2, pendingDependencies.size());
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep2.js",
+        assertDependency(Dependency.Type.STYLESHEET, "css1.css",
                 pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",
+        assertDependency(Dependency.Type.STYLESHEET, "css2.css",
                 pendingDependencies);
 
     }
 
+    public static <T> Map<String, T> filterLazyLoading(
+            Map<String, T> dependenciesMap) {
+        dependenciesMap.entrySet().removeIf(
+                entry -> entry.getKey().contains("Flow.loadOnDemand"));
+        return dependenciesMap;
+    }
+
     @Test
-    public void inNpmModeNoJsDependenciesAreAdded() {
-        mocks.getDeploymentConfiguration().setCompatibilityMode(false);
+    public void noJsDependenciesAreAdded() {
         UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();
 
-        internals.addComponentDependencies(CircularDependencies1.class);
+        internals.addComponentDependencies(ComponentWithDependencies.class);
 
-        Assert.assertTrue(dependencyList.getPendingSendToClient().isEmpty());
+        Map<String, Dependency> pendingDependencies = getDependenciesMap(
+                dependencyList.getPendingSendToClient());
+        Assert.assertEquals(1, pendingDependencies.size());
+        assertDependency(Dependency.Type.STYLESHEET, "css.css",
+                pendingDependencies);
     }
 
     @Test
     public void declarativeSyncProperties_propertiesAreRegisteredWithProperDisabledUpdateMode() {
         TestDiv div = new TestDiv();
-        SynchronizedPropertiesList list = div.getElement().getNode()
-                .getFeature(SynchronizedPropertiesList.class);
 
-        Set<String> props = list.getSynchronizedProperties();
+        ElementListenerMap feature = div.getElement().getNode()
+                .getFeature(ElementListenerMap.class);
 
-        Assert.assertTrue(props.contains("bar"));
-        Assert.assertTrue(props.contains("baz"));
-        Assert.assertEquals(2, props.size());
-
-        Assert.assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
-                list.getDisabledUpdateMode("bar"));
+        Set<String> props = feature.getExpressions("bar");
+        Assert.assertEquals(1, props.size());
+        Assert.assertTrue(props.contains("}baz"));
         Assert.assertEquals(DisabledUpdateMode.ALWAYS,
-                list.getDisabledUpdateMode("baz"));
+                feature.getPropertySynchronizationMode("baz"));
+
+        props = feature.getExpressions("foo");
+        Assert.assertEquals(1, props.size());
+        Assert.assertTrue(props.contains("}bar"));
+        Assert.assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
+                feature.getPropertySynchronizationMode("bar"));
     }
 
     @Test
@@ -1215,55 +1322,72 @@ public class ComponentTest {
         Assert.assertEquals(1, count.get());
     }
 
+    @Test
+    public void removeOnRegistration_registrationIsIdempotent() {
+        TestDiv div = new TestDiv();
+        Registration registration = div.addListener(ComponentEvent.class,
+                (ComponentEventListener) event -> {
+                });
+
+        registration.remove();
+        // It's still possible to call the same method one more time
+        registration.remove();
+    }
+
     private DomEvent createEvent(String type, Component component) {
         return new DomEvent(component.getElement(), type, Json.createObject());
     }
 
     private void assertDependency(Dependency.Type type, String url,
             Map<String, Dependency> pendingDependencies) {
-        Dependency dependency = pendingDependencies.get("frontend://" + url);
+        Dependency dependency = pendingDependencies.get(url);
         Assert.assertNotNull(
                 "Could not locate a dependency object for url=" + url,
                 dependency);
         Assert.assertEquals(type, dependency.getType());
-        Assert.assertEquals("frontend://" + url, dependency.getUrl());
+        Assert.assertEquals(url, dependency.getUrl());
     }
 
     private Map<String, Dependency> getDependenciesMap(
             Collection<Dependency> dependencies) {
-        return dependencies.stream().collect(
-                Collectors.toMap(Dependency::getUrl, Function.identity()));
+        return filterLazyLoading(dependencies.stream().collect(
+                Collectors.toMap(Dependency::getUrl, Function.identity())));
     }
 
     @Test // 3818
     public void enabledStateChangeOnAttachCalledForParentState() {
-        UI ui = new UI();
+        enabledStateChangeOnAttachCalledForParentState(false,
+                (parent, child) -> parent.add(child));
+    }
 
-        EnabledDiv parent = new EnabledDiv();
-        parent.setEnabled(false);
-        ui.add(parent);
+    @Test // 7085
+    public void enabledStateChangeOnDisableParent() {
+        enabledStateChangeOnAttachCalledForParentState(true,
+                (parent, child) -> {
+                    parent.add(child);
+                    parent.setEnabled(false);
+                });
+    }
 
-        AtomicReference<Boolean> stateChange = new AtomicReference<>();
-        EnabledDiv child = new EnabledDiv() {
-            @Override
-            public void onEnabledStateChanged(boolean enabled) {
-                super.onEnabledStateChanged(enabled);
-                Assert.assertTrue("Expected empty state for enabled change",
-                        stateChange.compareAndSet(null, enabled));
-            }
-        };
+    @Test
+    public void enabledStateChangeOnAttachCalledForParentOfVirtualChildState() {
+        enabledStateChangeOnAttachCalledForParentState(false,
+                (parent, child) -> {
+                    Element wrapper = ElementFactory.createAnchor();
+                    parent.getElement().appendVirtualChild(wrapper);
+                    wrapper.appendChild(child.getElement());
+                });
+    }
 
-        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
-        Assert.assertTrue("Child should be enabled.", child.isEnabled());
-        Assert.assertNull(child.getElement().getAttribute("disabled"));
-
-        parent.add(child);
-
-        Assert.assertFalse("After attach child should be disabled",
-                child.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered",
-                stateChange.get());
-        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+    @Test
+    public void enabledStateChangeOnDisableParentOfVirtualChild() {
+        enabledStateChangeOnAttachCalledForParentState(true,
+                (parent, child) -> {
+                    Element wrapper = ElementFactory.createAnchor();
+                    parent.getElement().appendVirtualChild(wrapper);
+                    wrapper.appendChild(child.getElement());
+                    parent.setEnabled(false);
+                });
     }
 
     @Test // 3818
@@ -1303,6 +1427,21 @@ public class ComponentTest {
         Assert.assertTrue("Enable event should have triggered",
                 stateChange.get());
         Assert.assertNull(child.getElement().getAttribute("disabled"));
+    }
+
+    @Test
+    public void enabledStateChangeOnParentDetachReturnsOldState() {
+        enabledStateChangeOnParentDetachReturnsOldState(
+                (parent, child) -> parent.add(child));
+    }
+
+    @Test
+    public void enabledStateChangeOnParentOfVirtualChildDetachReturnsOldState() {
+        enabledStateChangeOnParentDetachReturnsOldState((parent, child) -> {
+            Element wrapper = ElementFactory.createAnchor();
+            parent.getElement().appendVirtualChild(wrapper);
+            wrapper.appendChild(child.getElement());
+        });
     }
 
     @Test // 3818
@@ -1599,4 +1738,171 @@ public class ComponentTest {
         // then
         ui2.add(child);
     }
+
+    @Test
+    public void getTranslation_delegateToDeprecated() {
+        Component component = Mockito.mock(Component.class);
+        Mockito.doCallRealMethod().when(component).getTranslation(
+                Mockito.any(Locale.class), Mockito.anyString(),
+                Mockito.any(Object[].class));
+
+        component.getTranslation(Locale.GERMAN, "foo");
+
+        Mockito.verify(component).getTranslation("foo", Locale.GERMAN);
+    }
+
+    @Test
+    public void findAncestorTest() {
+        UI ui = new UI();
+        TestComponentContainer componentContainer = new TestComponentContainer();
+        TestComponent component = new TestComponent();
+        componentContainer.add(component);
+        ui.add(componentContainer);
+
+        Assert.assertEquals(componentContainer,
+                component.findAncestor(TestComponentContainer.class));
+        Assert.assertEquals(ui, component.findAncestor(UI.class));
+        Assert.assertEquals(ui, component.findAncestor(PollNotifier.class));
+        Assert.assertNull(component.findAncestor(TestButton.class));
+    }
+
+    @Test
+    public void removeFromParentTest() {
+        UI ui = new UI();
+        TestComponentContainer componentContainer = new TestComponentContainer();
+        TestComponent component = new TestComponent();
+        componentContainer.add(component);
+        ui.add(componentContainer);
+
+        Assert.assertEquals(componentContainer, component.getParent().get());
+        Assert.assertEquals(1, componentContainer.getChildren().count());
+        Assert.assertEquals(ui, componentContainer.getParent().get());
+        Assert.assertEquals(1, ui.getChildren().count());
+
+        component.removeFromParent();
+        Assert.assertTrue(component.getParent().isEmpty());
+        Assert.assertEquals(0, componentContainer.getChildren().count());
+
+        componentContainer.removeFromParent();
+        Assert.assertTrue(componentContainer.getParent().isEmpty());
+        Assert.assertEquals(0, ui.getChildren().count());
+
+    }
+
+    private void enabledStateChangeOnAttachCalledForParentState(
+            boolean initiallyEnabled,
+            BiConsumer<EnabledDiv, Component> modificationStartegy) {
+        UI ui = new UI();
+
+        EnabledDiv parent = new EnabledDiv();
+        parent.setEnabled(initiallyEnabled);
+        ui.add(parent);
+
+        AtomicReference<Boolean> stateChange = new AtomicReference<>();
+        EnabledDiv child = new EnabledDiv() {
+            @Override
+            public void onEnabledStateChanged(boolean enabled) {
+                super.onEnabledStateChanged(enabled);
+                Assert.assertTrue("Expected empty state for enabled change",
+                        stateChange.compareAndSet(null, enabled));
+            }
+        };
+
+        Assert.assertEquals("Parent should be disabled", initiallyEnabled,
+                parent.isEnabled());
+        Assert.assertTrue("Child should be enabled.", child.isEnabled());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
+
+        modificationStartegy.accept(parent, child);
+
+        Assert.assertFalse("After attach child should be disabled",
+                child.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+    }
+
+    private void enabledStateChangeOnParentDetachReturnsOldState(
+            BiConsumer<EnabledDiv, Component> modificationStartegy) {
+        UI ui = new UI();
+
+        EnabledDiv grandParent = new EnabledDiv();
+        grandParent.setEnabled(false);
+        ui.add(grandParent);
+
+        EnabledDiv parent = new EnabledDiv();
+
+        AtomicReference<Boolean> stateChange = new AtomicReference<>();
+        EnabledDiv child = new EnabledDiv() {
+            @Override
+            public void onEnabledStateChanged(boolean enabled) {
+                super.onEnabledStateChanged(enabled);
+
+                stateChange.set(enabled);
+            }
+        };
+
+        Assert.assertTrue("Parent should be enabled", parent.isEnabled());
+        Assert.assertTrue("Child should be enabled.", child.isEnabled());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
+
+        modificationStartegy.accept(parent, child);
+
+        grandParent.add(parent);
+
+        Assert.assertFalse("After attach child should be disabled",
+                child.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+
+        grandParent.remove(parent);
+
+        Assert.assertTrue("After detach child should be enabled",
+                child.isEnabled());
+        Assert.assertTrue("Enable event should have triggered",
+                stateChange.get());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
+    }
+
+    @Test
+    public void scrollIntoView() {
+        EnabledDiv div = new EnabledDiv();
+        ui.add(div);
+        div.scrollIntoView();
+
+        assertPendingJs("scrollIntoView()");
+    }
+
+    private void assertPendingJs(String expectedJs) {
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        Assert.assertEquals(1, pendingJs.size());
+        JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
+        MatcherAssert.assertThat(inv.getExpression(),
+                CoreMatchers.containsString(expectedJs));
+    }
+
+    @Test
+    public void scrollIntoViewSmooth() {
+        EnabledDiv div = new EnabledDiv();
+        ui.add(div);
+        div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH));
+
+        assertPendingJs("scrollIntoView({\"behavior\":\"smooth\"})");
+    }
+
+    @Test
+    public void scrollIntoViewAllParams() {
+        EnabledDiv div = new EnabledDiv();
+        ui.add(div);
+        div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH, Alignment.END,
+                Alignment.CENTER));
+
+        assertPendingJs(
+                "scrollIntoView({\"behavior\":\"smooth\",\"block\":\"end\",\"inline\":\"center\"})");
+    }
+
 }

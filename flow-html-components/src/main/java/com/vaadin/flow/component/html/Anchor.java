@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,15 +15,20 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.io.Serializable;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
 
 /**
  * Component representing an <code>&lt;a&gt;</code> element.
@@ -32,13 +37,18 @@ import com.vaadin.flow.server.StreamResource;
  * @since 1.0
  */
 @Tag(Tag.A)
-public class Anchor extends HtmlContainer {
+public class Anchor extends HtmlContainer
+        implements Focusable<Anchor>, HasAriaLabel {
 
     private static final PropertyDescriptor<String, String> hrefDescriptor = PropertyDescriptors
             .attributeWithDefault("href", "", false);
 
     private static final PropertyDescriptor<String, Optional<String>> targetDescriptor = PropertyDescriptors
-            .optionalAttributeWithDefault("target", "");
+            .optionalAttributeWithDefault("target",
+                    AnchorTarget.DEFAULT.getValue());
+
+    private static final String ROUTER_IGNORE_ATTRIBUTE = "router-ignore";
+    private Serializable href;
 
     /**
      * Creates a new empty anchor component.
@@ -64,6 +74,26 @@ public class Anchor extends HtmlContainer {
     }
 
     /**
+     * Creates an anchor component with the given target, text content and href.
+     *
+     * @see #setHref(String)
+     * @see #setText(String)
+     * @see #setTarget(AnchorTargetValue)
+     *
+     * @param href
+     *            the href to set
+     * @param text
+     *            the text content to set
+     * @param target
+     *            the target window, tab or frame
+     */
+    public Anchor(String href, String text, AnchorTarget target) {
+        setHref(href);
+        setText(text);
+        setTarget(target);
+    }
+
+    /**
      * Creates an anchor component with the given text content and stream
      * resource.
      *
@@ -81,8 +111,8 @@ public class Anchor extends HtmlContainer {
     }
 
     /**
-     * Creates an anchor component with the given href and components
-     * as children of this component.
+     * Creates an anchor component with the given href and components as
+     * children of this component.
      *
      * @see #setHref(AbstractStreamResource)
      * @see #add(Component...)
@@ -100,6 +130,9 @@ public class Anchor extends HtmlContainer {
     /**
      * Sets the URL that this anchor links to.
      * <p>
+     * A disabled Anchor removes the attribute from the HTML element, but it is
+     * stored (and reused when enabled again) in the server-side component.
+     * <p>
      * Use the method {@link #removeHref()} to remove the <b>href</b> attribute
      * instead of setting it to an empty string.
      *
@@ -110,7 +143,11 @@ public class Anchor extends HtmlContainer {
      *            the href to set
      */
     public void setHref(String href) {
-        set(hrefDescriptor, href);
+        if (href == null) {
+            throw new IllegalArgumentException("Href must not be null");
+        }
+        this.href = href;
+        assignHrefAttribute();
     }
 
     /**
@@ -121,6 +158,7 @@ public class Anchor extends HtmlContainer {
      */
     public void removeHref() {
         getElement().removeAttribute("href");
+        href = null;
     }
 
     /**
@@ -131,7 +169,9 @@ public class Anchor extends HtmlContainer {
      *            the resource value, not null
      */
     public void setHref(AbstractStreamResource href) {
-        getElement().setAttribute("href", href);
+        this.href = href;
+        getElement().setAttribute(ROUTER_IGNORE_ATTRIBUTE, true);
+        assignHrefAttribute();
     }
 
     /**
@@ -142,7 +182,35 @@ public class Anchor extends HtmlContainer {
      * @return the href value, or <code>""</code> if no href has been set
      */
     public String getHref() {
+        if (href instanceof String) {
+            // let the method return the actual href string even if disabled
+            return (String) href;
+        } else if (href instanceof AbstractStreamResource) {
+            return StreamResourceRegistry.getURI((AbstractStreamResource) href)
+                    .toString();
+        }
         return get(hrefDescriptor);
+    }
+
+    @Override
+    public void onEnabledStateChanged(boolean enabled) {
+        super.onEnabledStateChanged(enabled);
+        assignHrefAttribute();
+    }
+
+    private void assignHrefAttribute() {
+        if (isEnabled()) {
+            if (href != null) {
+                if (href instanceof AbstractStreamResource) {
+                    getElement().setAttribute("href",
+                            (AbstractStreamResource) href);
+                } else {
+                    set(hrefDescriptor, (String) href);
+                }
+            }
+        } else {
+            getElement().removeAttribute("href");
+        }
     }
 
     /**
@@ -177,6 +245,49 @@ public class Anchor extends HtmlContainer {
      */
     public Optional<String> getTarget() {
         return get(targetDescriptor);
+    }
+
+    /**
+     * Sets the target window, tab or frame for this anchor. The target may be
+     * the one of these special values:
+     * <ul>
+     * <li><code>AnchorTarget.DEFAULT</code>: Removes the target value. This has
+     * the same effect as setting the target to <code>AnchorTarget.SELF</code>.
+     * <li><code>AnchorTarget.SELF</code>: Opens the link in the current
+     * context.
+     * <li><code>AnchorTarget.BLANK</code>: Opens the link in a new unnamed
+     * context.
+     * <li><code>AnchorTarget.PARENT</code>: Opens the link in the parent
+     * context, or the current context if there is no parent context.
+     * <li><code>AnchorTarget.TOP</code>: Opens the link in the top most
+     * grandparent context, or the current context if there is no parent
+     * context.
+     * </ul>
+     *
+     * @param target
+     *            the target value, not null
+     */
+    public void setTarget(AnchorTargetValue target) {
+        Objects.requireNonNull(target, "target cannot be null.");
+        setTarget(target.getValue());
+    }
+
+    /**
+     * Gets the target window, tab or frame value for this anchor.
+     *
+     * @see #setTarget(AnchorTargetValue)
+     * @see #getTarget()
+     *
+     * @return the target window value , or {@link AnchorTarget#DEFAULT} if no
+     *         target has been set
+     */
+    public AnchorTargetValue getTargetValue() {
+        Optional<String> target = getTarget();
+
+        if (target.isPresent()) {
+            return AnchorTargetValue.forString(target.get());
+        }
+        return AnchorTarget.DEFAULT;
     }
 
 }

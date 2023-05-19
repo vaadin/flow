@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,12 +19,11 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
-import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -57,8 +56,7 @@ public class TemplateMappingDetectorView extends AbstractDivView {
     }
 
     @Tag("template-mapping-detector")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TemplateMappingDetector.html")
-    @JsModule("TemplateMappingDetector.js")
+    @JsModule("./TemplateMappingDetector.js")
     public static class TemplateMappingDetectorContainer
             extends PolymerTemplate<TemplateModel> {
         @Id
@@ -85,8 +83,7 @@ public class TemplateMappingDetectorView extends AbstractDivView {
     }
 
     @Tag("template-mapping-detector-parent")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TemplateMappingDetectorParent.html")
-    @JsModule("TemplateMappingDetectorParent.js")
+    @JsModule("./TemplateMappingDetectorParent.js")
     public static class TemplateMappingDetectorContainerParent
             extends PolymerTemplate<TemplateModel> {
         @Id

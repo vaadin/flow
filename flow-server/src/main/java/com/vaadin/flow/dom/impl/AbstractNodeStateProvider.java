@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.flow.dom.impl;
 
 import java.util.Optional;
 
+import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
@@ -33,6 +34,8 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 /**
  * Abstract implementation of the {@link ElementStateProvider} related to the
  * composition essence of the provider.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -100,6 +103,9 @@ public abstract class AbstractNodeStateProvider
         assert index <= getChildCount(node); // == if adding as last
 
         getChildrenFeature(node).add(index, child.getNode());
+        if (child.getComponent().isPresent()) {
+            ComponentTracker.trackAttach(child.getComponent().get());
+        }
     }
 
     @Override
@@ -120,10 +126,10 @@ public abstract class AbstractNodeStateProvider
         ElementChildrenList childrenFeature = getChildrenFeature(node);
         int pos = childrenFeature.indexOf(child.getNode());
         if (pos == -1) {
-            throw new IllegalArgumentException("Not in the list");
+            throw new IllegalArgumentException(
+                    "Trying to detach an element from parent that does not have it.");
         }
         childrenFeature.remove(pos);
-
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,7 +28,9 @@ import elemental.json.JsonObject;
  * Each instance must return unique rpc type (see {@link #getRpcType()} and
  * handle a {@link JsonObject} RPC data using {@link #handle(UI, JsonObject)}
  * method.
- * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
  * @author Vaadin Ltd
  * @since 1.0
  *
@@ -37,14 +39,14 @@ public interface RpcInvocationHandler extends Serializable {
 
     /**
      * Gets unique RPC type which this handler is applicable for.
-     * 
+     *
      * @return the unique rpc type
      */
     String getRpcType();
 
     /**
      * Handles RPC data {@code invocationJson} using {@code ui} as a context.
-     * 
+     *
      * @param ui
      *            the UI to handle against, not {@code null}
      * @param invocationJson

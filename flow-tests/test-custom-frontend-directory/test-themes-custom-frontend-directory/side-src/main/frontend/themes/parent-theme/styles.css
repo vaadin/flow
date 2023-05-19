@@ -1,0 +1,10 @@
+#font-awesome {
+    color: rgba(0, 255, 255, 1); /* aqua */
+    margin: 15px;
+}
+
+html, :host {
+    --lumo-primary-text-color: rgba(255, 165, 0, 1); /* orange */
+    --lumo-border-radius: 0;
+}
+

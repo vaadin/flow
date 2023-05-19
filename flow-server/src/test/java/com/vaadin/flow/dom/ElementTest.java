@@ -10,8 +10,10 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -19,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import org.easymock.EasyMock;
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -29,18 +31,17 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.change.ListAddChange;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
-import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
-import com.vaadin.flow.internal.nodefeature.SynchronizedPropertyEventsList;
+import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
@@ -51,9 +52,10 @@ import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JreJsonObject;
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class ElementTest extends AbstractNodeTest {
@@ -528,6 +530,29 @@ public class ElementTest extends AbstractNodeTest {
                 element.getProperty("property", defaultValue));
     }
 
+    public static class SimpleBean {
+        private String string = "value";
+        private int number = 1;
+        private float flt = 2.3f;
+        private double dbl = 4.56;
+
+        public String getString() {
+            return string;
+        }
+
+        public int getNumber() {
+            return number;
+        }
+
+        public float getFlt() {
+            return flt;
+        }
+
+        public double getDbl() {
+            return dbl;
+        }
+    }
+
     @Test
     public void propertyRawValues() {
         Element element = ElementFactory.createDiv();
@@ -544,6 +569,37 @@ public class ElementTest extends AbstractNodeTest {
         element.setPropertyJson("p", Json.createObject());
         Assert.assertEquals(JreJsonObject.class,
                 element.getPropertyRaw("p").getClass());
+
+        element.setPropertyBean("p", new SimpleBean());
+        JsonObject json = (JsonObject) element.getPropertyRaw("p");
+        Assert.assertEquals("value", json.getString("string"));
+        Assert.assertEquals(1.0, json.getNumber("number"), 0.0);
+        Assert.assertEquals(2.3, json.getNumber("flt"), 0.0);
+        Assert.assertEquals(4.56, json.getNumber("dbl"), 0.0);
+
+        List<SimpleBean> list = new ArrayList<>();
+        SimpleBean bean1 = new SimpleBean();
+        bean1.string = "bean1";
+        SimpleBean bean2 = new SimpleBean();
+        bean2.string = "bean2";
+        list.add(bean1);
+        list.add(bean2);
+        element.setPropertyList("p", list);
+        JsonArray jsonArray = (JsonArray) element.getPropertyRaw("p");
+        Assert.assertEquals("bean1",
+                jsonArray.getObject(0).getString("string"));
+        Assert.assertEquals("bean2",
+                jsonArray.getObject(1).getString("string"));
+
+        Map<String, SimpleBean> map = new HashMap<>();
+        map.put("one", bean1);
+        map.put("two", bean2);
+        element.setPropertyMap("p", map);
+        JsonObject jsonObject = (JsonObject) element.getPropertyRaw("p");
+        Assert.assertEquals("bean1",
+                jsonObject.getObject("one").getString("string"));
+        Assert.assertEquals("bean2",
+                jsonObject.getObject("two").getString("string"));
     }
 
     @Test
@@ -727,7 +783,7 @@ public class ElementTest extends AbstractNodeTest {
         // Get instance right away to see that changes are live
         Set<String> classList = element.getClassList();
 
-        element.setAttribute("class", "foo bar");
+        element.setAttribute("class", "       foo bar ");
 
         Assert.assertEquals(2, classList.size());
         Assert.assertTrue(classList.contains("foo"));
@@ -912,7 +968,7 @@ public class ElementTest extends AbstractNodeTest {
     public void getSingleStyleAsAttribute() {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
-        s.set("border", "1px solid black");
+        s.setBorder("1px solid black");
         Assert.assertTrue(e.hasAttribute("style"));
         Assert.assertEquals("border:1px solid black", e.getAttribute("style"));
     }
@@ -922,7 +978,7 @@ public class ElementTest extends AbstractNodeTest {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("border", "1px solid black");
-        s.set("margin", "1em");
+        s.setMargin("1em");
         Assert.assertTrue(e.hasAttribute("style"));
         assertEqualsOne(
                 new String[] { "border:1px solid black;margin:1em",
@@ -1049,7 +1105,7 @@ public class ElementTest extends AbstractNodeTest {
     @Test
     public void setStyleValueExtraWhitespace() {
         Element e = ElementFactory.createDiv();
-        e.getStyle().set("color", "red   ");
+        e.getStyle().setColor("red   ");
         Assert.assertEquals("color:red", e.getAttribute("style"));
         Assert.assertEquals("red", e.getStyle().get("color"));
     }
@@ -1058,14 +1114,14 @@ public class ElementTest extends AbstractNodeTest {
     public void removeStyles() {
         Element element = ElementFactory.createDiv();
 
-        element.getStyle().set("zIndex", "12");
+        element.getStyle().setZIndex(12);
         element.getStyle().set("background", "blue");
 
         element.getStyle().remove("background");
 
         Assert.assertEquals("z-index:12", element.getAttribute("style"));
 
-        element.getStyle().remove("zIndex");
+        element.getStyle().setZIndex(null);
 
         Assert.assertNull(element.getAttribute("style"));
         Assert.assertFalse(element.hasAttribute("style"));
@@ -1079,7 +1135,7 @@ public class ElementTest extends AbstractNodeTest {
 
         Style style = element.getStyle();
 
-        style.set("border", "1px solid green");
+        style.setBorder("1px solid green");
 
         element.removeAttribute("style");
 
@@ -1091,7 +1147,7 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         String validStyle = "background: url('foo;bar')";
         Style style = element.getStyle();
-        style.set("background", validStyle);
+        style.setBackground(validStyle);
         Assert.assertEquals(validStyle, style.get("background"));
     }
 
@@ -1204,7 +1260,7 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
 
         Style style = element.getStyle();
-        style.set("color", "var(--some-var)");
+        style.setColor("var(--some-var)");
         Assert.assertEquals("var(--some-var)", style.get("color"));
     }
 
@@ -1244,124 +1300,6 @@ public class ElementTest extends AbstractNodeTest {
         fireEvent(element, "click");
 
         Assert.assertEquals(2, invocations.get());
-    }
-
-    @Test
-    public void getSetSynchronizedProperty() {
-        Element e = ElementFactory.createDiv();
-        e.addSynchronizedProperty("foo").addSynchronizedProperty("bar");
-
-        Set<String> expected = new HashSet<>(Arrays.asList("bar", "foo"));
-
-        List<String> list = e.getSynchronizedProperties()
-                .collect(Collectors.toList());
-        Assert.assertEquals(expected.size(), list.size());
-        expected.removeAll(list);
-        Assert.assertEquals(0, expected.size());
-    }
-
-    @Test
-    public void setSameSynchronizedPropertyManyTimes() {
-        Element e = ElementFactory.createDiv();
-        e.addSynchronizedProperty("foo").addSynchronizedProperty("foo");
-        String[] expected = new String[] { "foo" };
-
-        Assert.assertArrayEquals(expected,
-                e.getSynchronizedProperties().toArray());
-
-        AtomicInteger i = new AtomicInteger(0);
-        e.getNode().getFeature(SynchronizedPropertiesList.class)
-                .collectChanges(change -> i.addAndGet(
-                        ((ListAddChange<?>) change).getNewItems().size()));
-        Assert.assertEquals(1, i.get());
-    }
-
-    @Test
-    public void synchronizeProperty() {
-        Element element = ElementFactory.createDiv();
-        element.synchronizeProperty("foo", "event");
-
-        Assert.assertTrue(element.getSynchronizedProperties()
-                .allMatch(prop -> prop.equals("foo")));
-        Assert.assertTrue(element.getSynchronizedPropertyEvents()
-                .allMatch(event -> event.equals("event")));
-    }
-
-    @Test
-    public void removeSynchronizedProperty() {
-        Element element = ElementFactory.createDiv();
-        element.addSynchronizedProperty("foo");
-        element.addSynchronizedProperty("bar");
-
-        element.removeSynchronizedProperty("foo");
-        Assert.assertTrue(element.getSynchronizedProperties()
-                .allMatch(prop -> prop.equals("bar")));
-    }
-
-    @Test
-    public void removeSynchronizedPropertyEvent() {
-        Element element = ElementFactory.createDiv();
-        element.addSynchronizedPropertyEvent("foo");
-        element.addSynchronizedPropertyEvent("bar");
-
-        element.removeSynchronizedPropertyEvent("foo");
-        Assert.assertTrue(element.getSynchronizedPropertyEvents()
-                .allMatch(event -> event.equals("bar")));
-    }
-
-    @Test
-    public void setSameSynchronizedEventManyTimes() {
-        Element e = ElementFactory.createDiv();
-        e.addSynchronizedPropertyEvent("foo")
-                .addSynchronizedPropertyEvent("foo");
-        String[] expected = new String[] { "foo" };
-
-        Assert.assertArrayEquals(expected,
-                e.getSynchronizedPropertyEvents().toArray());
-
-        AtomicInteger i = new AtomicInteger(0);
-        e.getNode().getFeature(SynchronizedPropertyEventsList.class)
-                .collectChanges(change -> i.addAndGet(
-                        ((ListAddChange<?>) change).getNewItems().size()));
-        Assert.assertEquals(1, i.get());
-    }
-
-    @Test
-    public void getDefaultSynchronizedProperties() {
-        Element e = ElementFactory.createDiv();
-        Assert.assertEquals(0, e.getSynchronizedProperties().count());
-    }
-
-    @Test
-    public void getDefaultSynchronizedPropertiesEvent() {
-        Element e = ElementFactory.createDiv();
-        Assert.assertEquals(0, e.getSynchronizedPropertyEvents().count());
-    }
-
-    @Test
-    public void getSetSynchronizedEvent() {
-        Element e = ElementFactory.createDiv();
-        e.addSynchronizedPropertyEvent("foo")
-                .addSynchronizedPropertyEvent("bar");
-        Set<String> expected = new HashSet<>(Arrays.asList("bar", "foo"));
-
-        List<String> list = e.getSynchronizedPropertyEvents()
-                .collect(Collectors.toList());
-        Assert.assertEquals(expected.size(), list.size());
-        expected.removeAll(list);
-        Assert.assertEquals(0, expected.size());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void setNullSynchronizedEvent() {
-        Element e = ElementFactory.createDiv();
-        e.addSynchronizedPropertyEvent(null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void setNullSynchronizedProperty() {
-        Element e = ElementFactory.createDiv();
-        e.addSynchronizedProperty(null);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -1415,6 +1353,7 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void setResourceAttribute_elementIsNotAttachedAndHasAttribute_elementHasAttribute() {
+        UI.setCurrent(createUI());
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", "bar");
 
@@ -1455,14 +1394,13 @@ public class ElementTest extends AbstractNodeTest {
     @Test(expected = IllegalArgumentException.class)
     public void setResourceAttribute_classAttribute() {
         Element element = ElementFactory.createDiv();
-        element.setAttribute("class",
-                EasyMock.createMock(StreamResource.class));
+        element.setAttribute("class", Mockito.mock(StreamResource.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setResourceAttribute_nullAttribute() {
         Element element = ElementFactory.createDiv();
-        element.setAttribute(null, EasyMock.createMock(StreamResource.class));
+        element.setAttribute(null, Mockito.mock(StreamResource.class));
     }
 
     @Test
@@ -1843,7 +1781,7 @@ public class ElementTest extends AbstractNodeTest {
     @Test(expected = UnsupportedOperationException.class)
     public void setResourceAttribute_elementIsText_operationIsNotSupported() {
         Element.createText("").setAttribute("foo",
-                EasyMock.createMock(StreamResource.class));
+                Mockito.mock(StreamResource.class));
     }
 
     @Test
@@ -2068,6 +2006,23 @@ public class ElementTest extends AbstractNodeTest {
         Assert.assertEquals(null, child.getParent());
     }
 
+    @Test
+    public void testRemoveFromTree_isVirtualChild_removedFromParent() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+
+        body.getNode().getFeature(VirtualChildrenList.class)
+                .append(child.getNode(), "");
+
+        Assert.assertTrue(child.isVirtualChild());
+
+        child.removeFromTree();
+
+        Assert.assertFalse(child.isVirtualChild());
+        Assert.assertEquals(0,
+                body.getNode().getFeature(VirtualChildrenList.class).size());
+    }
+
     private StreamResource createEmptyResource(String resName) {
         return new StreamResource(resName,
                 () -> new ByteArrayInputStream(new byte[0]));
@@ -2101,6 +2056,12 @@ public class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    public void textNodeTransformsNullToEmptyAndDoesNotThrowException() {
+        Element e = Element.createText(null);
+        Assert.assertEquals("", e.getText());
+    }
+
+    @Test
     public void textNodeOuterHtml() {
         Element e = Element.createText("foobar");
         Assert.assertEquals("foobar", e.getOuterHTML());
@@ -2130,7 +2091,7 @@ public class ElementTest extends AbstractNodeTest {
     public void elementAttributesOuterHtml() {
         Element div = ElementFactory.createDiv();
         div.setAttribute("foo", "bar");
-        div.getStyle().set("width", "20px");
+        div.getStyle().setWidth("20px");
         div.getClassList().add("cls");
         div.setAttribute("pin", "");
 
@@ -2275,7 +2236,7 @@ public class ElementTest extends AbstractNodeTest {
     @Test
     public void getShadowRoot_shadowRootIsEmpty() {
         Element element = ElementFactory.createDiv();
-        Assert.assertTrue(!element.getShadowRoot().isPresent());
+        Assert.assertFalse(element.getShadowRoot().isPresent());
     }
 
     @Test
@@ -2383,29 +2344,6 @@ public class ElementTest extends AbstractNodeTest {
                         .isPresent());
     }
 
-    public void syncProperty_delegateTo3ArgsMethod() {
-        Element element = Mockito.mock(Element.class);
-
-        Mockito.doCallRealMethod().when(element)
-                .synchronizeProperty(Mockito.anyString(), Mockito.anyString());
-        element.synchronizeProperty("foo", "bar");
-
-        Mockito.verify(element).synchronizeProperty("foo", "bar",
-                DisabledUpdateMode.ONLY_WHEN_ENABLED);
-    }
-
-    @Test
-    public void addSyncProperty_delegateTo2ArgsMethod() {
-        Element element = Mockito.mock(Element.class);
-
-        Mockito.doCallRealMethod().when(element)
-                .addSynchronizedProperty(Mockito.anyString());
-        element.addSynchronizedProperty("foo");
-
-        Mockito.verify(element).addSynchronizedProperty("foo",
-                DisabledUpdateMode.ONLY_WHEN_ENABLED);
-    }
-
     @Test
     public void virtualChildren_areIdentifiedAsSuch() {
         Element parent = ElementFactory.createDiv();
@@ -2439,10 +2377,6 @@ public class ElementTest extends AbstractNodeTest {
                 DisabledUpdateMode.ONLY_WHEN_ENABLED,
                 element.getNode().getFeature(ElementListenerMap.class)
                         .getPropertySynchronizationMode("property"));
-
-        Assert.assertEquals(
-                "There should not be any 'conventional' property sync events",
-                0, element.getSynchronizedPropertyEvents().count());
 
         ElementListenerMap listenerMap = element.getNode()
                 .getFeature(ElementListenerMap.class);
@@ -2480,6 +2414,97 @@ public class ElementTest extends AbstractNodeTest {
 
         // Should not trigger assert in the listener
         element.setProperty("property", "value");
+    }
+
+    @Test
+    public void removingVirtualChildrenIsPossible() {
+        Element parent = new Element("root");
+        Element child1 = new Element("main");
+        Element child2 = new Element("menu");
+
+        parent.appendVirtualChild(child1, child2);
+
+        parent.removeVirtualChild(child2, child1);
+
+        Assert.assertNull(child1.getParent());
+        Assert.assertFalse(child1.isVirtualChild());
+
+        Assert.assertNull(child2.getParent());
+        Assert.assertFalse(child2.isVirtualChild());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeVirtualChildren_notVirtualChild_fails() {
+        Element parent = new Element("root");
+        Element child1 = new Element("main");
+
+        parent.appendChild(child1);
+
+        parent.removeVirtualChild(child1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeFromParent_virtualChild_fails() {
+        Element parent = new Element("root");
+        Element child1 = new Element("main");
+
+        parent.appendVirtualChild(child1);
+
+        child1.removeFromParent();
+    }
+
+    @Test
+    public void executeJavaScript_delegatesToExecJs() {
+        AtomicReference<String> invokedExpression = new AtomicReference<>();
+        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+
+        Element element = new Element("div") {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Serializable... parameters) {
+                String oldExpression = invokedExpression.getAndSet(expression);
+                Assert.assertNull("There should be no old expression",
+                        oldExpression);
+
+                Serializable[] oldParams = invokedParams.getAndSet(parameters);
+                Assert.assertNull("There should be no old params", oldParams);
+
+                return null;
+            }
+        };
+
+        element.executeJs("foo", 1, true);
+
+        Assert.assertEquals("foo", invokedExpression.get());
+        Assert.assertEquals(Integer.valueOf(1), invokedParams.get()[0]);
+        Assert.assertEquals(Boolean.TRUE, invokedParams.get()[1]);
+    }
+
+    @Test
+    public void callFunction_delegatesToCallJsFunction() {
+        AtomicReference<String> invokedFuction = new AtomicReference<>();
+        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+
+        Element element = new Element("div") {
+            @Override
+            public PendingJavaScriptResult callJsFunction(String functionName,
+                    Serializable... arguments) {
+                String oldExpression = invokedFuction.getAndSet(functionName);
+                Assert.assertNull("There should be no old function name",
+                        oldExpression);
+
+                Serializable[] oldParams = invokedParams.getAndSet(arguments);
+                Assert.assertNull("There should be no old params", oldParams);
+
+                return null;
+            }
+        };
+
+        element.callJsFunction("foo", 1, true);
+
+        Assert.assertEquals("foo", invokedFuction.get());
+        Assert.assertEquals(Integer.valueOf(1), invokedParams.get()[0]);
+        Assert.assertEquals(Boolean.TRUE, invokedParams.get()[1]);
     }
 
     @Override

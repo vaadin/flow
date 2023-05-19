@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,22 +17,56 @@ package com.vaadin.flow.component.html;
 
 import java.util.Optional;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.shared.Registration;
+import org.slf4j.LoggerFactory;
 
 /**
- * Component representing a <code>&lt;label&gt;</code> element.
+ * Component for a <code>&lt;label&gt;</code> element, which represents a
+ * caption for an item in a user interface.
+ * <p>
+ * Clicking on a label automatically transfers the focus to the associated
+ * component. This is especially helpful when building forms with
+ * {@link Input}s.
+ * <p>
+ * For adding texts to the page without linking them to other components,
+ * consider using a {@link Span} or a {@link Div} instead. If the text should be
+ * interpreted as HTML, use a {@link Html} (but remember to guard against
+ * cross-site scripting attacks).
  *
  * @author Vaadin Ltd
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label">https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label</a>
  * @since 1.0
+ * @deprecated Use {@link NativeLabel} instead, if you need the HTML
+ *             <code>&lt;label&gt;</code> element, which is normally not needed
+ *             within a Vaadin Flow application's high-level components. This
+ *             component was deprecated because it was confusing users of
+ *             earlier Vaadin Versions and users migrating from Swing to the
+ *             modern Vaadin Flow Framework. The {@link Label} component /
+ *             <code>&lt;label&gt;</code> element is not meant for loose text in
+ *             the page - it should only be coupled with another component by
+ *             using the {@link #setFor(Component)} or by adding them to it with
+ *             the {@link #add(Component...)} method, for example if you use
+ *             {@link Input}.
+ *
  */
 @Tag(Tag.LABEL)
+@Deprecated(since = "24.1", forRemoval = true)
 public class Label extends HtmlContainer {
     private static final PropertyDescriptor<String, Optional<String>> forDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("for", "");
+
+    private static Boolean productionMode = null;
+
+    private Registration checkForAttributeOnAttach;
 
     /**
      * Creates a new empty label.
@@ -99,5 +133,58 @@ public class Label extends HtmlContainer {
      */
     public Optional<String> getFor() {
         return get(forDescriptor);
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        if (skipForAttributeCheck() || !attachEvent.isInitialAttach()) {
+            return; // skip check in production so that customer / clients /
+            // ops-teams are not complaining about this warning to the
+            // devs. This should be dealt with by devs in development
+            // mode.
+        }
+        if (checkForAttributeOnAttach == null) {
+            checkForAttributeOnAttach = attachEvent.getUI()
+                    .beforeClientResponse(this, ctx -> {
+                        // Label was not associated with a for-attribute
+                        // AND
+                        // Label was not associated by adding a nested component
+                        if (getFor().isEmpty()
+                                && getChildren().findAny().isEmpty()) {
+                            LoggerFactory.getLogger(Label.class.getName()).warn(
+                                    "The Label '{}' was not associated with a component. "
+                                            + "Labels should not be used for loose text on the page. "
+                                            + "Consider alternatives like Text, Paragraph, Span or Div. "
+                                            + "See the JavaDocs and Deprecation Warning for more Information.",
+                                    getText());
+                        }
+                        checkForAttributeOnAttach.remove();
+                    });
+        }
+    }
+
+    /**
+     * Checks if the application is running in production mode.
+     * <p>
+     * When unsure, reports that production mode is true so spam-like logging
+     * does not take place in production.
+     *
+     * @return true if in production mode or the mode is unclear, false if in
+     *         development mode
+     **/
+    private static boolean skipForAttributeCheck() {
+        if (productionMode != null) {
+            return productionMode;
+        }
+
+        var service = VaadinService.getCurrent();
+        if (service == null) {
+            return true;
+        }
+
+        productionMode = service.getDeploymentConfiguration()
+                .isProductionMode();
+        return productionMode;
     }
 }

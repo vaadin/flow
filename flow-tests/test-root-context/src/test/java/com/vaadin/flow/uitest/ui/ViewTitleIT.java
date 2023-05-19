@@ -14,6 +14,7 @@ public class ViewTitleIT extends ChromeBrowserTest {
     @Override
     protected void open() {
         getDriver().get(getRootURL() + "/view/");
+        waitForDevServer();
     }
 
     @Test
@@ -22,6 +23,14 @@ public class ViewTitleIT extends ChromeBrowserTest {
         openView("BasicElementView");
 
         verifyTitle("");
+    }
+
+    @Test
+    public void testSetTitleAfterNavigationEvent() {
+        open();
+        openView("SetTitleAfterNavigationEventView");
+
+        verifyTitle("my-changed-title-after-AfterNavigationEvent");
     }
 
     @Test

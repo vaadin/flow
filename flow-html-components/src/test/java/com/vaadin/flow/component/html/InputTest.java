@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,17 +15,16 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.data.value.HasValueChangeMode;
-import com.vaadin.flow.data.value.ValueChangeMode;
-
 import java.beans.IntrospectionException;
+import org.junit.Test;
 
 public class InputTest extends ComponentTest {
 
     // Actual test methods in super class
 
     @Override
-    public void setup() throws IntrospectionException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public void setup() throws IntrospectionException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException {
         whitelistProperty("valueChangeMode");
         whitelistProperty("valueChangeTimeout");
         super.setup();
@@ -39,4 +38,9 @@ public class InputTest extends ComponentTest {
         addOptionalStringProperty("placeholder");
     }
 
+    @Test
+    @Override
+    public void testHasAriaLabelIsImplemented() {
+        super.testHasAriaLabelIsImplemented();
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,8 @@ import java.util.EventObject;
 
 /**
  * An event fired when the value of a property changes.
+ *
+ * @since 1.0
  */
 public class PropertyChangeEvent extends EventObject {
 
@@ -55,7 +57,7 @@ public class PropertyChangeEvent extends EventObject {
 
     /**
      * Returns the value of the source before this value change event occurred.
-     * 
+     *
      * @return the value previously held by the source of this event
      */
     public Serializable getOldValue() {
@@ -84,7 +86,7 @@ public class PropertyChangeEvent extends EventObject {
 
     /**
      * Returns the property name.
-     * 
+     *
      * @return the property name
      */
     public String getPropertyName() {

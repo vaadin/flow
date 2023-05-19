@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,28 +27,6 @@ import elemental.json.JsonObject;
  * Gwt unit tests for the ApplicationConnection class.
  */
 public class GwtApplicationConnectionTest extends ClientEngineTestBase {
-
-    public void test_should_addNavigationEvents_byDefault() {
-        mockFlowBootstrapScript(false);
-
-        JsonObject windowEvents = Json.createObject();
-        addEventsObserver(Browser.getWindow(), windowEvents);
-
-        JsonObject bodyEvents = Json.createObject();
-        addEventsObserver(Browser.getDocument().getBody(), bodyEvents);
-
-        new Bootstrapper().onModuleLoad();
-
-        delayTestFinish(500);
-        new Timer() {
-            @Override
-            public void run() {
-                assertTrue(windowEvents.hasKey("popstate"));
-                assertTrue(bodyEvents.hasKey("click"));
-                finishTest();
-            }
-        }.schedule(100);
-    }
 
     public void test_should_not_addNavigationEvents_forWebComponents() {
         mockFlowBootstrapScript(true);
@@ -87,6 +65,7 @@ public class GwtApplicationConnectionTest extends ClientEngineTestBase {
     private native void mockFlowBootstrapScript(boolean webComponentMode) /*-{
         var mockCfg = {
             'heartbeatInterval' : 300,
+            'maxMessageSuspendTimeout': 5000,
             'contextRootUrl' : '../',
             'debug' : true,
             'v-uiId' : 0,
@@ -105,6 +84,11 @@ public class GwtApplicationConnectionTest extends ClientEngineTestBase {
                             return mockCfg[key];
                         }
                     }
+                }
+            },
+            connectionState: {
+                setState: function(state) {
+                    // NOP
                 }
             }
         };

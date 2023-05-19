@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,27 +26,19 @@ public enum SortDirection {
     /**
      * Ascending (e.g. A-Z, 1..9) sort order
      */
-    ASCENDING {
-        @Override
-        public SortDirection getOpposite() {
-            return DESCENDING;
-        }
-    },
+    ASCENDING,
 
     /**
      * Descending (e.g. Z-A, 9..1) sort order
      */
-    DESCENDING {
-        @Override
-        public SortDirection getOpposite() {
-            return ASCENDING;
-        }
-    };
+    DESCENDING;
 
     /**
      * Get the sort direction that is the direct opposite to this one.
      *
      * @return a sort direction value
      */
-    public abstract SortDirection getOpposite();
+    public SortDirection getOpposite() {
+        return ASCENDING.equals(this) ? DESCENDING : ASCENDING;
+    }
 }

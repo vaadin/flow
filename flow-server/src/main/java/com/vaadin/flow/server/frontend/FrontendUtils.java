@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,36 +15,60 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.BufferedReader;
+import jakarta.servlet.ServletContext;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
-import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import elemental.json.JsonObject;
+
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
+import static java.lang.String.format;
 
 /**
  * A class for static methods and definitions that might be used in different
  * locations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 2.0
  */
 public class FrontendUtils {
 
@@ -52,8 +76,7 @@ public class FrontendUtils {
 
     /**
      * Default folder for the node related content. It's the base directory for
-     * {@link Constants#PACKAGE_JSON}, {@link FrontendUtils#WEBPACK_CONFIG},
-     * {@link FrontendUtils#NODE_MODULES}.
+     * {@link Constants#PACKAGE_JSON} and {@link FrontendUtils#NODE_MODULES}.
      *
      * By default it's the project root folder.
      */
@@ -72,6 +95,12 @@ public class FrontendUtils {
     public static final String FRONTEND = "frontend/";
 
     /**
+     * Default folder for client-side generated files inside the project root
+     * frontend folder.
+     */
+    public static final String GENERATED = "generated/";
+
+    /**
      * Path of the folder containing application frontend source files, it needs
      * to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
      *
@@ -81,44 +110,118 @@ public class FrontendUtils {
             + FRONTEND;
 
     /**
-     * The name of the webpack configuration file.
+     * The name of the vite configuration file.
      */
-    public static final String WEBPACK_CONFIG = "webpack.config.js";
-    /**
-     * The name of the webpack generated configuration file.
-     */
-    public static final String WEBPACK_GENERATED = "webpack.generated.js";
+    public static final String VITE_CONFIG = "vite.config.ts";
 
     /**
-     * The NPM package name that will be used for the javascript files present
-     * in jar resources that will to be copied to the npm folder so as they are
-     * accessible to webpack.
+     * The name of the generated vite configuration file.
      */
-    public static final String FLOW_NPM_PACKAGE_NAME = "@vaadin/flow-frontend/";
+    public static final String VITE_GENERATED_CONFIG = "vite.generated.ts";
 
     /**
-     * Default target folder for the java project.
+     * The name of the service worker source file for InjectManifest method of
+     * the workbox plugin.
      */
-    public static final String TARGET = "target/";
+    public static final String SERVICE_WORKER_SRC = "sw.ts";
 
     /**
-     * Default folder name for flow generated stuff relative to the
-     * {@link FrontendUtils#TARGET}.
+     * The JavaScript version of the service worker file, for checking if a user
+     * has a JavaScript version of a custom service worker file already.
      */
-    public static final String DEFAULT_GENERATED_DIR = TARGET + FRONTEND;
+    public static final String SERVICE_WORKER_SRC_JS = "sw.js";
+
+    /**
+     * The folder inside the 'generated' folder where frontend resources from
+     * jars are copied.
+     */
+    public static final String JAR_RESOURCES_FOLDER = "jar-resources";
+
+    /**
+     * The location where javascript files present in jar resources are copied
+     * and can be imported from.
+     */
+    public static final String JAR_RESOURCES_IMPORT = "Frontend/generated/"
+            + JAR_RESOURCES_FOLDER + "/";
+    /**
+     * The location where javascript files present in jar resources are copied
+     * and can be imported from, relative to the frontend folder.
+     */
+    public static final String JAR_RESOURCES_IMPORT_FRONTEND_RELATIVE = JAR_RESOURCES_IMPORT
+            .replace("Frontend/", "./");
 
     /**
      * Name of the file that contains application imports, javascript, theme and
-     * style annotations. It is also the entry-point for webpack. It is always
-     * generated in the {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
+     * style annotations.
      */
     public static final String IMPORTS_NAME = "generated-flow-imports.js";
 
     /**
-     * A parameter for overriding the
-     * {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
+     * The TypeScript definitions for the {@link FrontendUtils#IMPORTS_NAME}
+     * file.
      */
-    public static final String PARAM_GENERATED_DIR = "vaadin.frontend.generated.folder";
+    public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
+
+    public static final String THEME_IMPORTS_D_TS_NAME = "theme.d.ts";
+    public static final String THEME_IMPORTS_NAME = "theme.js";
+
+    /**
+     * File name of the bootstrap file that is generated in frontend
+     * {@link #GENERATED} folder. The bootstrap file is always executed in a
+     * Vaadin app.
+     */
+    public static final String BOOTSTRAP_FILE_NAME = "vaadin.ts";
+
+    /**
+     * File name of the web component bootstrap file that is generated in
+     * frontend {@link #GENERATED} folder. The bootstrap file is always executed
+     * in an exported web component.
+     */
+    public static final String WEB_COMPONENT_BOOTSTRAP_FILE_NAME = "vaadin-web-component.ts";
+
+    /**
+     * File name of the feature flags file that is generated in frontend
+     * {@link #GENERATED} folder. The feature flags file contains code to define
+     * feature flags as globals that might be used by Vaadin web components or
+     * application code.
+     */
+    public static final String FEATURE_FLAGS_FILE_NAME = "vaadin-featureflags.js";
+
+    /**
+     * File name of the index.html in client side.
+     */
+    public static final String INDEX_HTML = "index.html";
+
+    /**
+     * File name of the web-component.html in client side.
+     */
+    public static final String WEB_COMPONENT_HTML = "web-component.html";
+
+    /**
+     * File name of the index.ts in client side.
+     */
+    public static final String INDEX_TS = "index.ts";
+
+    /**
+     * File name of the index.js in client side.
+     */
+    public static final String INDEX_JS = "index.js";
+
+    /**
+     * File name of the index.tsx in client side.
+     */
+    public static final String INDEX_TSX = "index.tsx";
+
+    /**
+     * File name of Vite helper used in development mode.
+     */
+    public static final String VITE_DEVMODE_TS = "vite-devmode.ts";
+
+    /**
+     * Default generated path for generated frontend files.
+     */
+    public static final String DEFAULT_PROJECT_FRONTEND_GENERATED_DIR = DEFAULT_FRONTEND_DIR
+            + GENERATED;
 
     /**
      * A parameter for overriding the {@link FrontendUtils#DEFAULT_FRONTEND_DIR}
@@ -132,12 +235,18 @@ public class FrontendUtils {
     public static final String PARAM_IGNORE_VERSION_CHECKS = "vaadin.ignoreVersionChecks";
 
     /**
-     * A special prefix used by webpack to map imports placed in the
+     * A special prefix used to map imports placed in the
      * {@link FrontendUtils#DEFAULT_FRONTEND_DIR}. e.g.
      * <code>import 'Frontend/foo.js';</code> references the
      * file<code>frontend/foo.js</code>.
      */
-    public static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
+    public static final String FRONTEND_FOLDER_ALIAS = "Frontend/";
+
+    /**
+     * The prefix used to import files generated by Flow.
+     */
+    public static final String FRONTEND_GENERATED_FLOW_IMPORT_PATH = FRONTEND_FOLDER_ALIAS
+            + "generated/flow/";
 
     /**
      * File used to enable npm mode.
@@ -146,41 +255,55 @@ public class FrontendUtils {
             + "flow-build-info.json";
 
     /**
+     * A key in a Json object for chunks list.
+     */
+    public static final String CHUNKS = "chunks";
+
+    /**
+     * The entry-point key used for the exported bundle.
+     */
+    public static final String EXPORT_CHUNK = "export";
+
+    /**
+     * A key in a Json object for css imports data.
+     */
+    public static final String CSS_IMPORTS = "cssImports";
+
+    /**
+     * A key in a Json object for js modules data.
+     */
+    public static final String JS_MODULES = "jsModules";
+
+    /**
      * A parameter informing about the location of the
      * {@link FrontendUtils#TOKEN_FILE}.
      */
     public static final String PARAM_TOKEN_FILE = "vaadin.frontend.token.file";
 
-    private static final String NOT_FOUND = "%n%n======================================================================================================"
-            + "%nFailed to determine '%s' tool." + "%nPlease install it either:"
-            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
-            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v10.16.0\" "
-            + "%n======================================================================================================%n";
-
-    private static final String SHOULD_WORK = "%n%n======================================================================================================"
-            + "%nYour installed '%s' version (%s) is not supported but should still work. Supported versions are %d.%d+" //
-            + "%nYou can install a new one:"
-            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
-            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v10.16.0\" "
-            + "%n" //
-            + "%nYou can disable the version check using -D%s=true" //
-            + "%n======================================================================================================%n";
+    public static final String DISABLE_CHECK = "%nYou can disable the version check using -D%s=true";
 
     private static final String TOO_OLD = "%n%n======================================================================================================"
             + "%nYour installed '%s' version (%s) is too old. Supported versions are %d.%d+" //
             + "%nPlease install a new one either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v11.6.0\" "
-            + "%n" //
-            + "%nYou can disable the version check using -D%s=true" //
+            + INSTALL_NODE_LOCALLY + "%n" //
+            + DISABLE_CHECK //
             + "%n======================================================================================================%n";
 
-    private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
+    // Proxy config properties keys (for both system properties and environment
+    // variables) can be either fully upper case or fully lower case
+    static final String SYSTEM_NOPROXY_PROPERTY_KEY = "NOPROXY";
+    static final String SYSTEM_HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
+    static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
 
-    private static String operatingSystem = null;
+    public static final String YELLOW = "\u001b[38;5;111m%s\u001b[0m";
+
+    public static final String RED = "\u001b[38;5;196m%s\u001b[0m";
+
+    public static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
+
+    public static final String BRIGHT_BLUE = "\u001b[94m%s\u001b[0m";
 
     /**
      * Only static stuff here.
@@ -194,10 +317,7 @@ public class FrontendUtils {
      * @return operating system name
      */
     public static String getOsName() {
-        if (operatingSystem == null) {
-            operatingSystem = System.getProperty("os.name");
-        }
-        return operatingSystem;
+        return System.getProperty("os.name");
     }
 
     /**
@@ -210,91 +330,8 @@ public class FrontendUtils {
     }
 
     /**
-     * Locate <code>node</code> executable.
-     *
-     * @param baseDir
-     *            project root folder.
-     *
-     * @return the full path to the executable
-     */
-    public static String getNodeExecutable(String baseDir) {
-        String command = isWindows() ? "node.exe" : "node";
-        String defaultNode = FrontendUtils.isWindows() ? "node/node.exe"
-                : "node/node";
-        return getExecutable(baseDir, command, defaultNode).getAbsolutePath();
-    }
-
-    /**
-     * Locate <code>npm</code> executable.
-     *
-     * @param baseDir
-     *            project root folder.
-     *
-     * @return the list of all commands in sequence that need to be executed to
-     *         have npm running
-     */
-    public static List<String> getNpmExecutable(String baseDir) {
-        // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will
-        // not work because it's a shell or windows script that looks for node
-        // and will fail. Thus we look for the `mpn-cli` node script instead
-        File file = new File(baseDir, "node/node_modules/npm/bin/npm-cli.js");
-        if (file.canRead()) {
-            // We return a two element list with node binary and npm-cli script
-            return Arrays.asList(getNodeExecutable(baseDir),
-                    file.getAbsolutePath());
-        }
-        // Otherwise look for regulan `npm`
-        String command = isWindows() ? "npm.cmd" : "npm";
-        return Arrays.asList(
-                getExecutable(baseDir, command, null).getAbsolutePath());
-    }
-
-    /**
-     * Locate <code>bower</code> executable.
-     * <p>
-     * An empty list is returned if bower is not found
-     *
-     * @param baseDir
-     *            project root folder.
-     *
-     * @return the list of all commands in sequence that need to be executed to
-     *         have bower running, an empty list if bower is not found
-     */
-    public static List<String> getBowerExecutable(String baseDir) {
-        File file = new File(baseDir, "node_modules/bower/bin/bower");
-        if (file.canRead()) {
-            // We return a two element list with node binary and bower script
-            return Arrays.asList(getNodeExecutable(baseDir),
-                    file.getAbsolutePath());
-        }
-        // Otherwise look for a regular `bower`
-        String command = isWindows() ? "bower.cmd" : "bower";
-        return frontendToolsLocator.tryLocateTool(command).map(File::getPath)
-                .map(Collections::singletonList)
-                .orElse(Collections.emptyList());
-    }
-
-    private static File getExecutable(String baseDir, String cmd,
-            String defaultLocation) {
-        File file = null;
-        try {
-            file = defaultLocation == null
-                    ? frontendToolsLocator.tryLocateTool(cmd).orElse(null)
-                    : Optional.of(new File(baseDir, defaultLocation))
-                            .filter(frontendToolsLocator::verifyTool)
-                            .orElseGet(() -> frontendToolsLocator
-                                    .tryLocateTool(cmd).orElse(null));
-        } catch (Exception e) { // NOSONAR
-            // There are IOException coming from process fork
-        }
-        if (file == null) {
-            throw new IllegalStateException(String.format(NOT_FOUND, cmd));
-        }
-        return file;
-    }
-
-    /**
-     * Read a stream and copy the content in a String.
+     * Read a stream and copy the content into a String using system line
+     * separators for all 'carriage return' characters.
      *
      * @param inputStream
      *            the input stream
@@ -302,15 +339,12 @@ public class FrontendUtils {
      */
     public static String streamToString(InputStream inputStream) {
         String ret = "";
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                inputStream, StandardCharsets.UTF_8.name()))) {
-
-            ret = br.lines()
-                    .collect(Collectors.joining(System.lineSeparator()));
+        try (InputStream handledStream = inputStream) {
+            return IOUtils.toString(handledStream, StandardCharsets.UTF_8)
+                    .replaceAll("\\R", System.lineSeparator());
         } catch (IOException exception) {
             // ignore exception on close()
-            LoggerFactory.getLogger(FrontendUtils.class)
-                    .warn("Couldn't close template input stream", exception);
+            getLogger().warn("Couldn't close template input stream", exception);
         }
         return ret;
     }
@@ -335,141 +369,324 @@ public class FrontendUtils {
         File commandFile = new File(command.get(0));
         if (commandFile.isAbsolute()) {
             String commandPath = commandFile.getParent();
-
             Map<String, String> environment = processBuilder.environment();
-            String path = environment.get("PATH");
+
+            String pathEnvVar;
+            if (isWindows()) {
+                /*
+                 * Determine the name of the PATH environment variable on
+                 * Windows, as variables names are not case-sensitive (the
+                 * common name is "Path").
+                 */
+                pathEnvVar = environment.keySet().stream()
+                        .filter("PATH"::equalsIgnoreCase).findFirst()
+                        .orElse("Path");
+            } else {
+                pathEnvVar = "PATH";
+            }
+
+            String path = environment.get(pathEnvVar);
             if (path == null || path.isEmpty()) {
                 path = commandPath;
-            } else if (!path.contains(commandPath)) {
-                path += File.pathSeparatorChar + commandPath;
+            } else {
+                // Ensure that a custom node is first in the path so it is used
+                // e.g. for postinstall scripts that run "node something"
+                path = commandPath + File.pathSeparatorChar + path;
             }
-            environment.put("PATH", path);
+            environment.put(pathEnvVar, path);
         }
 
         return processBuilder;
     }
 
     /**
-     * Gets the content of the <code>stats.json</code> file produced by webpack.
+     * Gets the content of the <code>frontend/index.html</code> file which is
+     * served by vite in dev-mode and read from classpath in production mode.
+     * <p>
+     * NOTE: In dev mode, the file content is fetched using an http request so
+     * that we don't need to have a separate index.html's content watcher.
+     * Auto-reloading will work automatically, like other files in the
+     * `frontend/` folder.
      *
      * @param service
-     *            the vaadin service.
-     * @return the content of the file as a string, null if not found.
+     *            the vaadin service
+     * @return the content of the index html file as a string, null if not
+     *         found.
      * @throws IOException
-     *             on error reading stats file.
+     *             on error when reading file
+     *
      */
-    public static String getStatsContent(VaadinService service)
+    public static String getIndexHtmlContent(VaadinService service)
+            throws IOException {
+        return getFileContent(service, INDEX_HTML);
+    }
+
+    /**
+     * Gets the content of the <code>frontend/web-component.html</code> file
+     * which is served by vite in dev-mode and read from classpath in production
+     * mode.
+     * <p>
+     * NOTE: In dev mode, the file content is fetched using an http request so
+     * that we don't need to have a separate web-component.html's content
+     * watcher. Auto-reloading will work automatically, like other files in the
+     * `frontend/` folder.
+     *
+     * @param service
+     *            the vaadin service
+     * @return the content of the web-component.html file as a string, null if
+     *         not found.
+     * @throws IOException
+     *             on error when reading file
+     *
+     */
+    public static String getWebComponentHtmlContent(VaadinService service)
+            throws IOException {
+        return getFileContent(service, WEB_COMPONENT_HTML);
+    }
+
+    private static String getFileContent(VaadinService service, String path)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         InputStream content = null;
 
-        if (!config.isProductionMode() && config.enableDevServer()) {
-            content = getStatsFromWebpack();
-        }
+        try {
+            Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                    .getDevModeHandler(service);
+            if (config.isProductionMode()) {
+                // In production mode, this is on the class path
+                content = getFileFromClassPath(service, path);
+            } else if (devModeHandler.isPresent()) {
+                content = getFileFromDevModeHandler(devModeHandler.get(), path);
+            } else {
+                // Get directly from the frontend folder in the project
+                content = getFileFromFrontendDir(config, path);
+            }
 
-        if (content == null) {
-            content = getStatsFromClassPath(service);
+            return content != null ? streamToString(content) : null;
+        } finally {
+            IOUtils.closeQuietly(content);
         }
-        return content != null ? streamToString(content) : null;
     }
 
-    private static InputStream getStatsFromWebpack() throws IOException {
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        return handler.prepareConnection("/stats.json", "GET").getInputStream();
+    private static InputStream getFileFromFrontendDir(
+            AbstractConfiguration config, String path) {
+        File file = new File(new File(config.getProjectFolder(), "frontend"),
+                path);
+        if (file.exists()) {
+            try {
+                return Files.newInputStream(file.toPath());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+        return null;
     }
 
-    private static InputStream getStatsFromClassPath(VaadinService service) {
-        String stats = service.getDeploymentConfiguration()
-                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
-                // Remove absolute
-                .replaceFirst("^/", "");
-        InputStream stream = service.getClassLoader()
-                .getResourceAsStream(stats);
-        if (stream == null) {
-            getLogger().error(
-                    "Cannot get the 'stats.json' from the classpath '{}'",
-                    stats);
+    private static InputStream getFileFromClassPath(VaadinService service,
+            String filePath) {
+        final URL resource = service.getContext().getAttribute(Lookup.class)
+                .lookup(ResourceProvider.class)
+                .getApplicationResource(VAADIN_WEBAPP_RESOURCES + filePath);
+        if (resource == null) {
+            getLogger().error("Cannot get the '{}' from the classpath",
+                    filePath);
+            return null;
         }
-        return stream;
+        try {
+            return resource.openStream();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static InputStream getFileFromDevModeHandler(
+            DevModeHandler devModeHandler, String filePath) throws IOException {
+        return devModeHandler.prepareConnection("/" + filePath, "GET")
+                .getInputStream();
     }
 
     /**
-     * Validate that the found node and npm versions are new enough. Throws an
-     * exception with a descriptive message if a version is too old.
+     * Get the contents of a frontend file from the running dev server.
      *
-     * @param baseDir
-     *            project root folder.
+     * @param service
+     *            the Vaadin service.
+     * @param path
+     *            the file path.
+     * @return an input stream for reading the file contents; null if there is
+     *         no such file or the dev server is not running.
      */
-    public static void validateNodeAndNpmVersion(String baseDir) {
-        try {
-            List<String> nodeVersionCommand = new ArrayList<>();
-            nodeVersionCommand.add(FrontendUtils.getNodeExecutable(baseDir));
-            nodeVersionCommand.add("--version");
-            String[] nodeVersion = getVersion("node", nodeVersionCommand);
-            validateToolVersion("node", nodeVersion,
-                    Constants.SUPPORTED_NODE_MAJOR_VERSION,
-                    Constants.SUPPORTED_NODE_MINOR_VERSION,
-                    Constants.SHOULD_WORK_NODE_MAJOR_VERSION,
-                    Constants.SHOULD_WORK_NODE_MINOR_VERSION);
-        } catch (UnknownVersionException e) {
-            getLogger().warn("Error checking if node is new enough", e);
+    public static InputStream getFrontendFileFromDevModeHandler(
+            VaadinService service, String path) {
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                .getDevModeHandler(service);
+        if (devModeHandler.isPresent()) {
+            try {
+                File frontendFile = resolveFrontendPath(
+                        devModeHandler.get().getProjectRoot(), path);
+                return frontendFile == null ? null
+                        : new FileInputStream(frontendFile);
+            } catch (IOException e) {
+                throw new UncheckedIOException("Error reading file " + path, e);
+            }
         }
-
-        try {
-            List<String> npmVersionCommand = new ArrayList<>();
-            npmVersionCommand.addAll(FrontendUtils.getNpmExecutable(baseDir));
-            npmVersionCommand.add("--version");
-            String[] npmVersion = getVersion("npm", npmVersionCommand);
-            validateToolVersion("npm", npmVersion,
-                    Constants.SUPPORTED_NPM_MAJOR_VERSION,
-                    Constants.SUPPORTED_NPM_MINOR_VERSION,
-                    Constants.SHOULD_WORK_NPM_MAJOR_VERSION,
-                    Constants.SHOULD_WORK_NPM_MINOR_VERSION);
-        } catch (UnknownVersionException e) {
-            getLogger().warn("Error checking if npm is new enough", e);
-        }
-
+        return null;
     }
 
-    static void validateToolVersion(String tool, String[] toolVersion,
-            int supportedMajor, int supportedMinor, int shouldWorkMajor,
-            int shouldWorkMinor) throws UnknownVersionException {
-        if ("true".equalsIgnoreCase(
-                System.getProperty(PARAM_IGNORE_VERSION_CHECKS))) {
-            return;
-        }
-
-        if (isVersionAtLeast(tool, toolVersion, supportedMajor,
-                supportedMinor)) {
-            return;
-        }
-        if (isVersionAtLeast(tool, toolVersion, shouldWorkMajor,
-                shouldWorkMinor)) {
-            getLogger().warn(String.format(SHOULD_WORK, tool,
-                    String.join(".", toolVersion), supportedMajor,
-                    supportedMinor, PARAM_IGNORE_VERSION_CHECKS));
-            return;
-        }
-
-        throw new IllegalStateException(String.format(TOO_OLD, tool,
-                String.join(".", toolVersion), supportedMajor, supportedMinor,
-                PARAM_IGNORE_VERSION_CHECKS));
+    /**
+     * Looks up the frontend resource at the given path. If the path starts with
+     * {@code ./}, first look in {@code frontend}, then in
+     * {@value FrontendUtils#JAR_RESOURCES_FOLDER}. If the path does not start
+     * with {@code ./}, look in {@code node_modules} instead.
+     *
+     * @param projectRoot
+     *            the project root folder.
+     * @param path
+     *            the file path.
+     * @return an existing {@link File} , or null if the file doesn't exist.
+     */
+    public static File resolveFrontendPath(File projectRoot, String path) {
+        return resolveFrontendPath(projectRoot, path,
+                new File(projectRoot, FrontendUtils.FRONTEND));
     }
 
-    static boolean isVersionAtLeast(String tool, String[] toolVersion,
-            int requiredMajor, int requiredMinor)
-            throws UnknownVersionException {
-        try {
-            int major = Integer.parseInt(toolVersion[0]);
-            int minor = Integer.parseInt(toolVersion[1]);
-            return (major > requiredMajor
-                    || (major == requiredMajor && minor >= requiredMinor));
-        } catch (NumberFormatException e) {
-            throw new UnknownVersionException(tool, "Reported version "
-                    + String.join(".", toolVersion) + " could not be parsed",
-                    e);
+    /**
+     * Looks up the fronted resource at the given path. If the path starts with
+     * {@code ./}, first look in {@code frontend}, then in
+     * {@value FrontendUtils#JAR_RESOURCES_FOLDER}. If the path does not start
+     * with {@code ./}, look in {@code node_modules} instead.
+     *
+     * @param projectRoot
+     *            the project root folder.
+     * @param path
+     *            the file path.
+     * @param frontendDirectory
+     *            the frontend directory.
+     * @return an existing {@link File} , or null if the file doesn't exist.
+     */
+    public static File resolveFrontendPath(File projectRoot, String path,
+            File frontendDirectory) {
+        File nodeModulesFolder = new File(projectRoot, NODE_MODULES);
+        File addonsFolder = getJarResourcesFolder(frontendDirectory);
+        List<File> candidateParents = path.startsWith("./")
+                ? Arrays.asList(frontendDirectory, addonsFolder)
+                : Arrays.asList(nodeModulesFolder, frontendDirectory,
+                        addonsFolder);
+        return candidateParents.stream().map(parent -> new File(parent, path))
+                .filter(File::exists).findFirst().orElse(null);
+    }
+
+    /**
+     * Get resource from JAR package.
+     *
+     * @param jarImport
+     *            jar file to get (no resource folder should be added)
+     * @return resource as String or {@code null} if not found
+     */
+    public static String getJarResourceString(String jarImport,
+            ClassFinder finder) {
+        URL resource = finder
+                .getResource(RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
+        if (resource == null) {
+            resource = finder.getResource(
+                    COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
         }
+
+        if (resource == null) {
+            return null;
+        }
+        try (InputStream frontendContent = resource.openStream()) {
+            return FrontendUtils.streamToString(frontendContent);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Get the front-end resources folder. This is where the contents of JAR
+     * dependencies are copied to.
+     *
+     * @param frontendDirectory
+     *            project's frontend directory
+     * @return a {@link File} representing a folder with copied resources
+     */
+    public static File getJarResourcesFolder(File frontendDirectory) {
+        return new File(getFrontendGeneratedFolder(frontendDirectory),
+                JAR_RESOURCES_FOLDER);
+    }
+
+    public static File getFrontendGeneratedFolder(File frontendDirectory) {
+        return new File(frontendDirectory, GENERATED);
+    }
+
+    private static String buildTooOldString(String tool, String version,
+            int supportedMajor, int supportedMinor) {
+        return String.format(TOO_OLD, tool, version, supportedMajor,
+                supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
+    }
+
+    /**
+     * Get directory where project's frontend files are located.
+     *
+     * @param configuration
+     *            the current deployment configuration
+     *
+     * @return {@link #DEFAULT_FRONTEND_DIR} or value of
+     *         {@link #PARAM_FRONTEND_DIR} if it is set.
+     */
+    public static File getProjectFrontendDir(
+            AbstractConfiguration configuration) {
+        String propertyValue = configuration
+                .getStringProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
+        File f = new File(propertyValue);
+        if (f.isAbsolute()) {
+            return f;
+        }
+        return new File(configuration.getProjectFolder(), propertyValue);
+    }
+
+    /**
+     * Get relative path from a source path to a target path in Unix form. All
+     * the Windows' path separator will be replaced.
+     *
+     * @param source
+     *            the source path
+     * @param target
+     *            the target path
+     * @return unix relative path from source to target
+     */
+    public static String getUnixRelativePath(Path source, Path target) {
+        return getUnixPath(source.relativize(target));
+    }
+
+    /**
+     * Get path as a String in Unix form.
+     *
+     * @param source
+     *            path to get
+     * @return path as a String in Unix form.
+     */
+    public static String getUnixPath(Path source) {
+        return source.toString().replaceAll("\\\\", "/");
+    }
+
+    static void validateToolVersion(String tool, FrontendVersion toolVersion,
+            FrontendVersion supported) {
+        if (isVersionAtLeast(toolVersion, supported)) {
+            return;
+        }
+
+        throw new IllegalStateException(buildTooOldString(tool,
+                toolVersion.getFullVersion(), supported.getMajorVersion(),
+                supported.getMinorVersion()));
+    }
+
+    static boolean isVersionAtLeast(FrontendVersion toolVersion,
+            FrontendVersion required) {
+        int major = toolVersion.getMajorVersion();
+        int minor = toolVersion.getMinorVersion();
+        return (major > required.getMajorVersion()
+                || (major == required.getMajorVersion()
+                        && minor >= required.getMinorVersion()));
     }
 
     /**
@@ -508,21 +725,186 @@ public class FrontendUtils {
         }
     }
 
-    private static String[] getVersion(String tool, List<String> versionCommand)
-            throws UnknownVersionException {
+    /**
+     * Thrown when the command execution fails.
+     */
+    public static class CommandExecutionException extends Exception {
+        /**
+         * Constructs an exception telling what code the command execution
+         * process was exited with.
+         *
+         * @param processExitCode
+         *            process exit code
+         */
+        public CommandExecutionException(int processExitCode) {
+            super("Process execution failed with exit code " + processExitCode);
+        }
+
+        /**
+         * Constructs an exception telling what code the command execution
+         * process was exited with and the output that it produced.
+         *
+         * @param processExitCode
+         *            process exit code
+         * @param output
+         *            the output from the command
+         * @param errorOutput
+         *            the error output from the command
+         */
+        public CommandExecutionException(int processExitCode, String output,
+                String errorOutput) {
+            super("Process execution failed with exit code " + processExitCode
+                    + "\nOutput: " + output + "\nError output: " + errorOutput);
+        }
+
+        /**
+         * Constructs an exception telling what was the original exception the
+         * command execution process failed with.
+         *
+         * @param cause
+         *            the cause exception of process failure.
+         */
+        public CommandExecutionException(Throwable cause) {
+            super("Process execution failed", cause);
+        }
+    }
+
+    protected static FrontendVersion getVersion(String tool,
+            List<String> versionCommand) throws UnknownVersionException {
+        String output;
         try {
-            Process process = FrontendUtils.createProcessBuilder(versionCommand)
-                    .start();
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                throw new UnknownVersionException(tool,
-                        "Using command " + String.join(" ", versionCommand));
-            }
-            String output = streamToString(process.getInputStream());
-            return parseVersion(output);
-        } catch (InterruptedException | IOException e) {
+            output = executeCommand(versionCommand);
+        } catch (CommandExecutionException e) {
             throw new UnknownVersionException(tool,
                     "Using command " + String.join(" ", versionCommand), e);
+        }
+
+        try {
+            return new FrontendVersion(parseVersionString(output));
+        } catch (IOException e) {
+            throw new UnknownVersionException(tool,
+                    "Expected a version number as output but got '" + output
+                            + "'" + " when using command "
+                            + String.join(" ", versionCommand),
+                    e);
+        }
+    }
+
+    /**
+     * Executes a given command as a native process.
+     *
+     * @param command
+     *            the command to be executed and it's arguments.
+     * @return process output string.
+     * @throws CommandExecutionException
+     *             if the process completes exceptionally.
+     */
+    public static String executeCommand(List<String> command)
+            throws CommandExecutionException {
+        try {
+            Process process = FrontendUtils.createProcessBuilder(command)
+                    .start();
+
+            CompletableFuture<Pair<String, String>> streamConsumer = consumeProcessStreams(
+                    process);
+            int exitCode = process.waitFor();
+            Pair<String, String> outputs = streamConsumer.get();
+            if (exitCode != 0) {
+                throw new CommandExecutionException(exitCode,
+                        outputs.getFirst(), outputs.getSecond());
+            }
+            return outputs.getFirst();
+        } catch (ExecutionException e) {
+            throw new CommandExecutionException(e.getCause());
+        } catch (IOException | InterruptedException e) {
+            throw new CommandExecutionException(e);
+        }
+    }
+
+    /**
+     * Reads input and error stream from the give process asynchronously.
+     *
+     * The method returns a {@link CompletableFuture} that is completed when
+     * both the streams are consumed.
+     *
+     * Streams are converted into strings and wrapped into a {@link Pair},
+     * mapping input stream into {@link Pair#getFirst()} and error stream into
+     * {@link Pair#getSecond()}.
+     *
+     * This method should be mainly used to avoid that {@link Process#waitFor()}
+     * hangs indefinitely on some operating systems because process streams are
+     * not consumed. See https://github.com/vaadin/flow/issues/15339 for an
+     * example case.
+     *
+     * @param process
+     *            the process whose streams should be read
+     * @return a {@link CompletableFuture} that return the string contents of
+     *         the process input and error streams when both are consumed,
+     *         wrapped into a {@link Pair}.
+     */
+    public static CompletableFuture<Pair<String, String>> consumeProcessStreams(
+            Process process) {
+        CompletableFuture<String> stdOut = CompletableFuture
+                .supplyAsync(() -> streamToString(process.getInputStream()));
+        CompletableFuture<String> stdErr = CompletableFuture
+                .supplyAsync(() -> streamToString(process.getErrorStream()));
+        return CompletableFuture.allOf(stdOut, stdErr).thenApply(
+                unused -> new Pair<>(stdOut.getNow(""), stdErr.getNow("")));
+    }
+
+    /**
+     * Parse the version number of node/npm from version output string.
+     *
+     * @param versionString
+     *            string containing version output, typically produced by
+     *            <code>tool --version</code>
+     * @return FrontendVersion of versionString
+     * @throws IOException
+     *             if parsing fails
+     */
+    public static FrontendVersion parseFrontendVersion(String versionString)
+            throws IOException {
+        return new FrontendVersion((parseVersionString(versionString)));
+    }
+
+    /**
+     * Gets vaadin home directory ({@code ".vaadin"} folder in the user home
+     * dir).
+     * <p>
+     * The directory is created if it's doesn't exist.
+     *
+     * @return a vaadin home directory
+     */
+    public static File getVaadinHomeDirectory() {
+        File home = FileUtils.getUserDirectory();
+        if (!home.exists()) {
+            throw new IllegalStateException("The user directory '"
+                    + home.getAbsolutePath() + "' doesn't exist");
+        }
+        if (!home.isDirectory()) {
+            throw new IllegalStateException("The path '"
+                    + home.getAbsolutePath() + "' is not a directory");
+        }
+        File vaadinFolder = new File(home, ".vaadin");
+        if (vaadinFolder.exists()) {
+            if (vaadinFolder.isDirectory()) {
+                return vaadinFolder;
+            } else {
+                throw new IllegalStateException("The path '"
+                        + vaadinFolder.getAbsolutePath()
+                        + "' is not a directory. "
+                        + "This path is used to store vaadin related data. "
+                        + "Please either remove the file or create a directory");
+            }
+        }
+        try {
+            FileUtils.forceMkdir(vaadinFolder);
+            return vaadinFolder;
+        } catch (IOException exception) {
+            throw new UncheckedIOException(
+                    "Couldn't create '.vaadin' folder inside home directory '"
+                            + home.getAbsolutePath() + "'",
+                    exception);
         }
     }
 
@@ -531,20 +913,267 @@ public class FrontendUtils {
      *
      * @param output
      *            The output, typically produced by <code>tool --version</code>
-     * @return the parsed version as an array with 3 elements
+     * @return the parsed version as an array with 3-4 elements
      * @throws IOException
      *             if parsing fails
      */
-    static String[] parseVersion(String output) throws IOException {
+    static String parseVersionString(String output) throws IOException {
         Optional<String> lastOuput = Stream.of(output.split("\n"))
                 .filter(line -> !line.matches("^[ ]*$"))
                 .reduce((first, second) -> second);
-        return lastOuput
-                .map(line -> line.replaceFirst("^v", "").split("\\.", 3))
+        return lastOuput.map(line -> line.replaceFirst("^v", ""))
                 .orElseThrow(() -> new IOException("No output"));
     }
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(FrontendUtils.class);
     }
+
+    /**
+     * Pretty prints a command line order. It split in lines adapting to 80
+     * columns, and allowing copy and paste in console. It also removes the
+     * current directory to avoid security issues in log files.
+     *
+     * @param baseDir
+     *            the current directory
+     * @param command
+     *            the command and it's arguments
+     * @return the string for printing in logs
+     */
+    public static String commandToString(String baseDir, List<String> command) {
+        StringBuilder retval = new StringBuilder("\n");
+        StringBuilder curLine = new StringBuilder();
+        for (String fragment : command) {
+            if (curLine.length() + fragment.length() > 55) {
+                retval.append(curLine.toString());
+                retval.append("\\ \n");
+                curLine = new StringBuilder("    ");
+            }
+            curLine.append(fragment.replace(baseDir, "."));
+            curLine.append(" ");
+        }
+        retval.append(curLine.toString());
+        retval.append("\n");
+        return retval.toString();
+    }
+
+    /**
+     * Tries to parse the given package's frontend version or if it doesn't
+     * exist, returns {@code null}. In case the value cannot be parsed, logs an
+     * error and returns {@code null}.
+     *
+     * @param sourceJson
+     *            json object that has the package
+     * @param pkg
+     *            the package name
+     * @param versionOrigin
+     *            origin of the version (like a file), used in error message
+     * @return the frontend version the package or {@code null}
+     */
+    public static FrontendVersion getPackageVersionFromJson(
+            JsonObject sourceJson, String pkg, String versionOrigin) {
+        if (!sourceJson.hasKey(pkg)) {
+            return null;
+        }
+        try {
+            final String versionString = sourceJson.getString(pkg);
+            return new FrontendVersion(pkg, versionString);
+        } catch (ClassCastException classCastException) { // NOSONAR
+            LoggerFactory.getLogger(FrontendVersion.class).warn(
+                    "Ignoring error while parsing frontend dependency version for package '{}' in '{}'",
+                    pkg, versionOrigin);
+        } catch (NumberFormatException nfe) {
+            // intentionally not failing the build at this point
+            LoggerFactory.getLogger(FrontendVersion.class).warn(
+                    "Ignoring error while parsing frontend dependency version in {}: {}",
+                    versionOrigin, nfe.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Intentionally send to console instead to log, useful when executing
+     * external processes.
+     *
+     * @param format
+     *            Format of the line to send to console, it must contain a `%s`
+     *            outlet for the message
+     * @param message
+     *            the string to show
+     */
+    @SuppressWarnings("squid:S106")
+    public static void console(String format, Object message) {
+        System.out.print(format(format, message));
+    }
+
+    /**
+     * Try to remove the {@code node_modules} directory, if it exists inside the
+     * given base directory. Note that pnpm uses symlinks internally, so delete
+     * utilities that follow symlinks when deleting and/or modifying permissions
+     * may not work as intended.
+     *
+     * @param nodeModules
+     *            the {@code node_modules} directory
+     * @throws IOException
+     *             on failure to delete any one file, or if the directory name
+     *             is not {@code node_modules}
+     */
+    public static void deleteNodeModules(File nodeModules) throws IOException {
+        if (!nodeModules.exists()) {
+            return;
+        }
+
+        if (!nodeModules.isDirectory()
+                || !nodeModules.getName().equals("node_modules")) {
+            throw new IOException(nodeModules.getAbsolutePath()
+                    + " does not look like a node_modules directory");
+        }
+
+        deleteDirectory(nodeModules);
+    }
+
+    /**
+     * Recursively delete given directory and contents.
+     * <p>
+     * Will not delete contents of symlink or junction directories, only the
+     * link file.
+     *
+     * @param directory
+     *            directory to delete
+     * @throws IOException
+     *             on failure to delete or read any one file
+     */
+    public static void deleteDirectory(File directory) throws IOException {
+        if (!directory.exists() || !directory.isDirectory()) {
+            return;
+        }
+
+        if (!(Files.isSymbolicLink(directory.toPath())
+                || isJunction(directory.toPath()))) {
+            cleanDirectory(directory);
+        }
+
+        if (!directory.delete()) {
+            String message = "Unable to delete directory " + directory + ".";
+            throw new IOException(message);
+        }
+    }
+
+    /**
+     * Check that directory is not a windows junction which is basically a
+     * symlink.
+     *
+     * @param directory
+     *            directory path to check
+     * @return true if directory is a windows junction
+     * @throws IOException
+     *             if an I/O error occurs
+     */
+    private static boolean isJunction(Path directory) throws IOException {
+        boolean isWindows = System.getProperty("os.name").toLowerCase()
+                .contains("windows");
+        BasicFileAttributes attrs = Files.readAttributes(directory,
+                BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        return isWindows && attrs.isDirectory() && attrs.isOther();
+    }
+
+    private static void cleanDirectory(File directory) throws IOException {
+        if (!directory.exists()) {
+            String message = directory + " does not exist";
+            throw new IllegalArgumentException(message);
+        }
+
+        if (!directory.isDirectory()) {
+            String message = directory + " is not a directory";
+            throw new IllegalArgumentException(message);
+        }
+
+        File[] files = directory.listFiles();
+        if (files == null) { // null if security restricted
+            throw new IOException("Failed to list contents of " + directory);
+        }
+
+        IOException exception = null;
+        for (File file : files) {
+            try {
+                forceDelete(file);
+            } catch (IOException ioe) {
+                exception = ioe;
+            }
+        }
+
+        if (exception != null) {
+            throw exception;
+        }
+    }
+
+    private static void forceDelete(File file) throws IOException {
+        if (file.isDirectory()) {
+            deleteDirectory(file);
+        } else {
+            boolean filePresent = file.exists();
+            if (!file.delete()) {
+                if (!filePresent) {
+                    throw new FileNotFoundException(
+                            "File does not exist: " + file);
+                }
+                String message = "Unable to delete file: " + file;
+                throw new IOException(message);
+            }
+        }
+    }
+
+    /**
+     * Gets the servlet path (excluding the context path) for the servlet used
+     * for serving the VAADIN frontend bundle.
+     *
+     * @return the path to the servlet used for the frontend bundle. Empty for a
+     *         /* mapping, otherwise always starts with a slash but never ends
+     *         with a slash
+     */
+    public static String getFrontendServletPath(ServletContext servletContext) {
+        String mapping = VaadinServlet.getFrontendMapping();
+        if (mapping.endsWith("/*")) {
+            mapping = mapping.replace("/*", "");
+        }
+
+        return mapping;
+    }
+
+    /**
+     * Gets the folder where Flow generated frontend files are placed.
+     *
+     * @param frontendFolder
+     *            the project frontend folder
+     * @return the folder for Flow generated files
+     */
+    public static File getFlowGeneratedFolder(File frontendFolder) {
+        return new File(getFrontendGeneratedFolder(frontendFolder), "flow");
+
+    }
+
+    /**
+     * Gets the location of the generated import file for Flow.
+     *
+     * @param frontendFolder
+     *            the project frontend folder
+     * @return the location of the generated import JS file
+     */
+    public static File getFlowGeneratedImports(File frontendFolder) {
+        return new File(getFlowGeneratedFolder(frontendFolder), IMPORTS_NAME);
+    }
+
+    /**
+     * Gets the folder where exported web components are generated.
+     *
+     * @param frontendFolder
+     *            the project frontend folder
+     * @return the exported web components folder
+     */
+    public static File getFlowGeneratedWebComponentsFolder(
+            File frontendFolder) {
+        return new File(getFlowGeneratedFolder(frontendFolder),
+                "web-components");
+    }
+
 }

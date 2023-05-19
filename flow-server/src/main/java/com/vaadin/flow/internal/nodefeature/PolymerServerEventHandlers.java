@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,30 +15,44 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.EventData;
-import com.vaadin.flow.component.polymertemplate.EventHandler;
-import com.vaadin.flow.component.polymertemplate.ModelItem;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.component.polymertemplate.RepeatIndex;
+import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
 import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 
 /**
  * Methods which are published as event-handlers on the client side.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
  *
+ * @deprecated Polymer template support is deprecated - we recommend you to use
+ *             {@code LitTemplate} instead. Read more details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
+ *
  */
+@Deprecated
 public class PolymerServerEventHandlers
-        extends AbstractServerHandlers<PolymerTemplate<?>> {
+        extends AbstractServerHandlers<DeprecatedPolymerTemplate> {
+    private static final String VALUE = "value";
+
     private static final String REPEAT_INDEX_VALUE = "event.model.index";
+
+    private static final String MODEL_ITEM_FQN = "com.vaadin.flow.component.polymertemplate.ModelItem";
+    private static final String REPEAT_INDEX_FQN = "com.vaadin.flow.component.polymertemplate.RepeatIndex";
 
     /**
      * Creates a new meta information list for the given state node.
@@ -65,22 +79,27 @@ public class PolymerServerEventHandlers
     }
 
     @Override
-    protected Class<? extends EventHandler> getHandlerAnnotation() {
-        return EventHandler.class;
+    protected String getHandlerAnnotationFqn() {
+        return "com.vaadin.flow.component.polymertemplate.EventHandler";
     }
 
     @Override
     protected DisabledUpdateMode getUpdateMode(Method method) {
-        return method.getAnnotation(getHandlerAnnotation()).value();
+        Optional<Annotation> annotation = ReflectTools.getAnnotation(method,
+                getHandlerAnnotationFqn());
+        assert annotation.isPresent();
+        Object value = ReflectTools.getAnnotationMethodValue(annotation.get(),
+                VALUE);
+        return DisabledUpdateMode.valueOf(value.toString());
     }
 
     private void checkParameterTypeAndAnnotation(Method method,
             Parameter parameter) {
         boolean hasEventDataAnnotation = parameter
                 .isAnnotationPresent(EventData.class)
-                || parameter.isAnnotationPresent(ModelItem.class);
-        boolean hasRepeatIndexAnnotation = parameter
-                .isAnnotationPresent(RepeatIndex.class);
+                || ReflectTools.hasAnnotation(parameter, MODEL_ITEM_FQN);
+        boolean hasRepeatIndexAnnotation = ReflectTools.hasAnnotation(parameter,
+                REPEAT_INDEX_FQN);
 
         if (!Boolean.logicalXor(hasEventDataAnnotation,
                 hasRepeatIndexAnnotation)) {
@@ -110,15 +129,24 @@ public class PolymerServerEventHandlers
     }
 
     private String[] getParameters(Method method) {
-        return Stream.of(method.getParameters()).flatMap(parameter -> Stream.of(
-                Optional.ofNullable(parameter.getAnnotation(EventData.class))
-                        .map(EventData::value),
-                Optional.ofNullable(parameter.getAnnotation(RepeatIndex.class))
-                        .map(annotation -> REPEAT_INDEX_VALUE),
-                Optional.ofNullable(parameter.getAnnotation(ModelItem.class))
-                        .map(ModelItem::value)))
-                .filter(Optional::isPresent).map(Optional::get)
-                .toArray(String[]::new);
+        List<String> result = new ArrayList<>();
+        for (Parameter parameter : method.getParameters()) {
+            EventData eventData = parameter.getAnnotation(EventData.class);
+            if (eventData != null) {
+                result.add(eventData.value());
+            }
+            if (ReflectTools.hasAnnotation(parameter, REPEAT_INDEX_FQN)) {
+                result.add(REPEAT_INDEX_VALUE);
+            }
+            Optional<Annotation> annotation = ReflectTools
+                    .getAnnotation(parameter, MODEL_ITEM_FQN);
+            if (annotation.isPresent()) {
+                result.add(ReflectTools
+                        .getAnnotationMethodValue(annotation.get(), VALUE)
+                        .toString());
+            }
+        }
+        return result.toArray(new String[result.size()]);
     }
 
 }

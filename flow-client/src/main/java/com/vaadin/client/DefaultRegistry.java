@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,8 @@
  */
 package com.vaadin.client;
 
+import java.util.function.Supplier;
+
 import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.DefaultConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
@@ -22,7 +24,7 @@ import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.PushConfiguration;
-import com.vaadin.client.communication.ReconnectDialogConfiguration;
+import com.vaadin.client.communication.ReconnectConfiguration;
 import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.communication.ServerRpcQueue;
@@ -62,9 +64,8 @@ public class DefaultRegistry extends Registry {
         set(URIResolver.class, new URIResolver(this));
         set(DependencyLoader.class, new DependencyLoader(this));
         set(SystemErrorHandler.class, new SystemErrorHandler(this));
-        set(UILifecycle.class, new UILifecycle());
+        set(UILifecycle.class, (Supplier<UILifecycle>) UILifecycle::new);
         set(StateTree.class, new StateTree(this));
-        set(LoadingIndicator.class, new LoadingIndicator());
         set(RequestResponseTracker.class, new RequestResponseTracker(this));
         set(MessageHandler.class, new MessageHandler(this));
         set(MessageSender.class, new MessageSender(this));
@@ -72,8 +73,9 @@ public class DefaultRegistry extends Registry {
         set(ServerConnector.class, new ServerConnector(this));
         set(ExecuteJavaScriptProcessor.class,
                 new ExecuteJavaScriptProcessor(this));
-        set(ConstantPool.class, new ConstantPool());
-        set(ExistingElementMap.class, new ExistingElementMap());
+        set(ConstantPool.class, (Supplier<ConstantPool>) ConstantPool::new);
+        set(ExistingElementMap.class,
+                (Supplier<ExistingElementMap>) ExistingElementMap::new);
         set(InitialPropertiesHandler.class, new InitialPropertiesHandler(this));
 
         // Classes with dependencies, in correct order
@@ -82,9 +84,8 @@ public class DefaultRegistry extends Registry {
                 new DefaultConnectionStateHandler(this));
         set(XhrConnection.class, new XhrConnection(this));
         set(PushConfiguration.class, new PushConfiguration(this));
-        set(ReconnectDialogConfiguration.class,
-                new ReconnectDialogConfiguration(this));
-        set(ScrollPositionHandler.class, new ScrollPositionHandler(this));
+        set(ReconnectConfiguration.class, new ReconnectConfiguration(this));
         set(Poller.class, new Poller(this));
     }
+
 }

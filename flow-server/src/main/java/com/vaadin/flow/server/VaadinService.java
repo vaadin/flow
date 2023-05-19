@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,45 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.DependencyTreeCache;
-import com.vaadin.flow.component.internal.HtmlImportParser;
-import com.vaadin.flow.di.DefaultInstantiator;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.LocaleUtil;
-import com.vaadin.flow.internal.ReflectionCache;
-import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.server.ServletHelper.RequestType;
-import com.vaadin.flow.server.communication.AtmospherePushConnection;
-import com.vaadin.flow.server.communication.HeartbeatHandler;
-import com.vaadin.flow.server.communication.PwaHandler;
-import com.vaadin.flow.server.communication.SessionRequestHandler;
-import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.server.communication.UidlRequestHandler;
-import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
-import com.vaadin.flow.server.communication.WebComponentProvider;
-import com.vaadin.flow.server.startup.BundleFilterFactory;
-import com.vaadin.flow.server.startup.FakeBrowser;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.theme.AbstractTheme;
-import elemental.json.Json;
-import elemental.json.JsonException;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,7 +25,10 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -74,6 +38,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
@@ -81,8 +46,44 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.InstantiatorFactory;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.LocaleUtil;
+import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.communication.AtmospherePushConnection;
+import com.vaadin.flow.server.communication.HeartbeatHandler;
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
+import com.vaadin.flow.server.communication.IndexHtmlResponse;
+import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
+import com.vaadin.flow.server.communication.PwaHandler;
+import com.vaadin.flow.server.communication.SessionRequestHandler;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.communication.UidlRequestHandler;
+import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
+import com.vaadin.flow.server.communication.WebComponentProvider;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.shared.communication.PushMode;
+
+import elemental.json.Json;
+import elemental.json.JsonException;
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -122,7 +123,7 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Attribute name for telling
-     * {@link VaadinSession#valueUnbound(javax.servlet.http.HttpSessionBindingEvent)}
+     * {@link VaadinSession#valueUnbound(jakarta.servlet.http.HttpSessionBindingEvent)}
      * that it should not close a {@link VaadinSession} even though it gets
      * unbound. If a {@code VaadinSession} has an attribute with this name and
      * the attribute value is {@link Boolean#TRUE}, that session will not be
@@ -131,18 +132,6 @@ public abstract class VaadinService implements Serializable {
     // Use the old name.reinitializing value for backwards compatibility
     static final String PRESERVE_UNBOUND_SESSION_ATTRIBUTE = VaadinService.class
             .getName() + ".reinitializing";
-
-    /**
-     * @deprecated As of 7.0.
-     */
-    @Deprecated
-    public static final String URL_PARAMETER_RESTART_APPLICATION = "restartApplication";
-
-    /**
-     * @deprecated As of 7.0.
-     */
-    @Deprecated
-    public static final String URL_PARAMETER_CLOSE_APPLICATION = "closeApplication";
 
     private static final String REQUEST_START_TIME_ATTRIBUTE = "requestStartTime";
 
@@ -172,11 +161,14 @@ public abstract class VaadinService implements Serializable {
 
     private Iterable<RequestHandler> requestHandlers;
 
-    private Iterable<BootstrapListener> bootstrapListeners;
+    private transient Iterable<IndexHtmlRequestListener> indexHtmlRequestListeners;
 
     private Iterable<DependencyFilter> dependencyFilters;
 
     private boolean atmosphereAvailable = checkAtmosphereSupport();
+
+    private BootstrapInitialPredicate bootstrapInitialPredicate;
+    private BootstrapUrlPredicate bootstrapUrlPredicate;
 
     /**
      * Keeps track of whether a warning about missing push support has already
@@ -194,10 +186,6 @@ public abstract class VaadinService implements Serializable {
 
     private Instantiator instantiator;
 
-    private DependencyTreeCache<String> htmlImportDependencyCache;
-
-    private Registration htmlImportDependencyCacheClearRegistration;
-
     private VaadinContext vaadinContext;
 
     /**
@@ -208,37 +196,15 @@ public abstract class VaadinService implements Serializable {
      */
     public VaadinService(DeploymentConfiguration deploymentConfiguration) {
         this.deploymentConfiguration = deploymentConfiguration;
-
-        final String classLoaderName = getDeploymentConfiguration()
-                .getClassLoaderName();
-        if (classLoaderName != null) {
-            try {
-                final Class<?> classLoaderClass = getClass().getClassLoader()
-                        .loadClass(classLoaderName);
-                final Constructor<?> c = classLoaderClass
-                        .getConstructor(ClassLoader.class);
-                setClassLoader((ClassLoader) c.newInstance(
-                        new Object[] { getClass().getClassLoader() }));
-            } catch (final Exception e) {
-                throw new RuntimeException(
-                        "Could not find specified class loader: "
-                                + classLoaderName,
-                        e);
-            }
-        }
-
-        if (getClassLoader() == null) {
-            setDefaultClassLoader();
-        }
     }
 
     /**
      * Creates a service. This method is for use by dependency injection
      * frameworks etc. and must be followed by a call to
      * {@link #setClassLoader(ClassLoader)} or {@link #setDefaultClassLoader()}
-     * before use. Furthermore {@link #getDeploymentConfiguration()} and {@link #getContext()} should be
-     * overridden (or otherwise intercepted) not to return
-     * <code>null</code>.
+     * before use. Furthermore {@link #getDeploymentConfiguration()} and
+     * {@link #getContext()} should be overridden (or otherwise intercepted) not
+     * to return <code>null</code>.
      */
     protected VaadinService() {
         deploymentConfiguration = null;
@@ -253,6 +219,7 @@ public abstract class VaadinService implements Serializable {
      *             if a problem occurs when creating the service
      */
     public void init() throws ServiceException {
+        doSetClassLoader();
         instantiator = createInstantiator();
 
         // init the router now so that registry will be available for
@@ -275,13 +242,12 @@ public abstract class VaadinService implements Serializable {
 
             requestHandlers = Collections.unmodifiableCollection(handlers);
 
-            dependencyFilters = Stream
-                    .concat(instantiator.getDependencyFilters(
-                            event.getAddedDependencyFilters()),
-                            new BundleFilterFactory().createFilters(this))
-                    .collect(Collectors.toList());
-            bootstrapListeners = instantiator
-                    .getBootstrapListeners(event.getAddedBootstrapListeners())
+            dependencyFilters = Collections.unmodifiableCollection(instantiator
+                    .getDependencyFilters(event.getAddedDependencyFilters())
+                    .collect(Collectors.toList()));
+            indexHtmlRequestListeners = instantiator
+                    .getIndexHtmlRequestListeners(
+                            event.getAddedIndexHtmlRequestListeners())
                     .collect(Collectors.toList());
         });
 
@@ -289,42 +255,32 @@ public abstract class VaadinService implements Serializable {
         if (!configuration.isProductionMode()) {
             Logger logger = getLogger();
             logger.debug("The application has the following routes: ");
-            getRouteRegistry().getRegisteredRoutes().stream()
-                    .map(Object::toString).forEach(logger::debug);
-
-            if (configuration.isCompatibilityMode()) {
-                UsageStatistics.markAsUsed("flow/Bower", null);
-            } else {
-                UsageStatistics.markAsUsed("flow/npm", null);
+            List<RouteData> routeDataList = getRouteRegistry()
+                    .getRegisteredRoutes();
+            if (!routeDataList.isEmpty()) {
+                addRouterUsageStatistics();
             }
+            routeDataList.stream().map(Object::toString).forEach(logger::debug);
+        }
+        if (getDeploymentConfiguration().isPnpmEnabled()) {
+            UsageStatistics.markAsUsed("flow/pnpm", null);
         }
 
-        htmlImportDependencyCache = new DependencyTreeCache<>(path -> {
-            List<String> dependencies = new ArrayList<>();
-            WebBrowser browser = FakeBrowser.getEs6();
-            HtmlImportParser.parseImports(path,
-                    resourcePath -> getResourceAsStream(resourcePath, browser,
-                            null),
-                    resourcePath -> resolveResource(resourcePath, browser),
-                    dependency -> {
-                        if (!dependency.startsWith(
-                                "frontend://bower_components/polymer/")) {
-                            dependencies.add(dependency);
-                        }
-                    });
-
-            return dependencies;
-        });
-
-        /*
-         * When all reflection caches are cleared, we also clear the HMTL
-         * dependnecy cache so that the reflection caches managed by
-         * ComponentMetaData won't keep using previously parsed data.
-         */
-        htmlImportDependencyCacheClearRegistration = ReflectionCache
-                .addClearAllAction(htmlImportDependencyCache::clear);
-
         initialized = true;
+    }
+
+    private void addRouterUsageStatistics() {
+        if (UsageStatistics.getEntries().anyMatch(
+                e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName()))) {
+            UsageStatistics.removeEntry(Constants.STATISTIC_ROUTING_CLIENT);
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_HYBRID,
+                    Version.getFullVersion());
+        } else if (UsageStatistics.getEntries()
+                .noneMatch(e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER
+                        .equals(e.getName()))) {
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER,
+                    Version.getFullVersion());
+        }
     }
 
     /**
@@ -337,10 +293,11 @@ public abstract class VaadinService implements Serializable {
     protected abstract PwaRegistry getPwaRegistry();
 
     /**
-     * Returns relative context path for given request.
-     * Override this method in subclasses.
+     * Returns relative context path for given request. Override this method in
+     * subclasses.
      *
-     * @param request Request.
+     * @param request
+     *            Request.
      * @return Relative context root path for that request.
      */
     public abstract String getContextRootRelativePath(VaadinRequest request);
@@ -359,29 +316,18 @@ public abstract class VaadinService implements Serializable {
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
         List<RequestHandler> handlers = new ArrayList<>();
+        handlers.add(new JavaScriptBootstrapHandler());
         handlers.add(new SessionRequestHandler());
         handlers.add(new HeartbeatHandler());
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
         handlers.add(new StreamRequestHandler());
-        PwaRegistry pwaRegistry = getPwaRegistry();
-        if (pwaRegistry != null
-                && pwaRegistry.getPwaConfiguration().isEnabled()) {
-            handlers.add(new PwaHandler(pwaRegistry));
-        }
+        handlers.add(new PwaHandler(() -> getPwaRegistry()));
 
-        if (hasWebComponentConfigurations()) {
-            handlers.add(new WebComponentProvider());
-            handlers.add(new WebComponentBootstrapHandler());
-        }
+        handlers.add(new WebComponentProvider());
+        handlers.add(new WebComponentBootstrapHandler());
 
         return handlers;
-    }
-
-    private boolean hasWebComponentConfigurations() {
-            WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(this.getContext());
-            return registry.hasConfigurations();
     }
 
     /**
@@ -400,12 +346,8 @@ public abstract class VaadinService implements Serializable {
      * @see Instantiator
      */
     protected Instantiator createInstantiator() throws ServiceException {
-        return loadInstantiators().orElseGet(() -> {
-            DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
-                    this);
-            defaultInstantiator.init(this);
-            return defaultInstantiator;
-        });
+        return loadInstantiators()
+                .orElseGet(() -> new DefaultInstantiator(this));
     }
 
     /**
@@ -427,11 +369,32 @@ public abstract class VaadinService implements Serializable {
      */
     protected Optional<Instantiator> loadInstantiators()
             throws ServiceException {
-        List<Instantiator> instantiators = StreamSupport
+        Lookup lookup = getContext().getAttribute(Lookup.class);
+        List<Instantiator> instantiators = null;
+        if (lookup != null) {
+            // lookup may be null in tests
+            Collection<InstantiatorFactory> factories = lookup
+                    .lookupAll(InstantiatorFactory.class);
+            instantiators = new ArrayList<>(factories.size());
+            for (InstantiatorFactory factory : factories) {
+                Instantiator instantiator = factory.createInstantitor(this);
+                // if the existing instantiator is converted to new API then
+                // let's respect its deprecated method
+                if (instantiator != null) {
+                    instantiators.add(instantiator);
+                }
+            }
+        }
+
+        if (instantiators == null) {
+            instantiators = new ArrayList<>();
+        }
+
+        // the code to support previous way of loading instantiators
+        StreamSupport
                 .stream(ServiceLoader.load(Instantiator.class, getClassLoader())
                         .spliterator(), false)
-                .filter(iterator -> iterator.init(this))
-                .collect(Collectors.toList());
+                .forEach(instantiators::add);
         if (instantiators.size() > 1) {
             throw new ServiceException(
                     "Cannot init VaadinService because there are multiple eligible instantiator implementations: "
@@ -492,7 +455,7 @@ public abstract class VaadinService implements Serializable {
      * @param resourceName
      *            a String specifying the name of a file
      * @return a String specifying the file's MIME type
-     * @see ServletContext#getMimeType(String)
+     * @see jakarta.servlet.ServletContext#getMimeType(String)
      */
     public abstract String getMimeType(String resourceName);
 
@@ -575,8 +538,7 @@ public abstract class VaadinService implements Serializable {
      * @see SessionInitListener
      */
     public Registration addSessionInitListener(SessionInitListener listener) {
-        sessionInitListeners.add(listener);
-        return () -> sessionInitListeners.remove(listener);
+        return Registration.addAndRemove(sessionInitListeners, listener);
     }
 
     /**
@@ -588,8 +550,7 @@ public abstract class VaadinService implements Serializable {
      * @see UIInitListener
      */
     public Registration addUIInitListener(UIInitListener listener) {
-        uiInitListeners.add(listener);
-        return () -> uiInitListeners.remove(listener);
+        return Registration.addAndRemove(uiInitListeners, listener);
     }
 
     /**
@@ -606,24 +567,23 @@ public abstract class VaadinService implements Serializable {
      */
     public Registration addSessionDestroyListener(
             SessionDestroyListener listener) {
-        sessionDestroyListeners.add(listener);
-        return () -> sessionDestroyListeners.remove(listener);
+        return Registration.addAndRemove(sessionDestroyListeners, listener);
     }
 
     /**
      * Fires the
-     * {@link BootstrapListener#modifyBootstrapPage(BootstrapPageResponse)}
-     * event to all registered {@link BootstrapListener}. This is called
-     * internally when the bootstrap page is created, so listeners can intercept
-     * the creation and change the result HTML.
+     * {@link IndexHtmlRequestListener#modifyIndexHtmlResponse(IndexHtmlResponse)}
+     * event to all registered {@link IndexHtmlRequestListener}. This is called
+     * internally when the Index HTML response is created, so listeners can
+     * intercept the creation and change the result HTML.
      *
      * @param response
      *            The object containing all relevant info needed by listeners to
-     *            change the bootstrap page.
+     *            change the Index HTML response.
      */
-    public void modifyBootstrapPage(BootstrapPageResponse response) {
-        bootstrapListeners
-                .forEach(listener -> listener.modifyBootstrapPage(response));
+    public void modifyIndexHtmlResponse(IndexHtmlResponse response) {
+        indexHtmlRequestListeners.forEach(
+                listener -> listener.modifyIndexHtmlResponse(response));
     }
 
     /**
@@ -723,8 +683,8 @@ public abstract class VaadinService implements Serializable {
         }
         Object currentSessionLock = wrappedSession
                 .getAttribute(getLockAttributeName());
-        assert (currentSessionLock == null
-                || currentSessionLock == lock) : "Changing the lock for a session is not allowed";
+        assert (currentSessionLock == null || currentSessionLock == lock)
+                : "Changing the lock for a session is not allowed";
 
         wrappedSession.setAttribute(getLockAttributeName(), lock);
     }
@@ -769,13 +729,22 @@ public abstract class VaadinService implements Serializable {
     /**
      * Locks the given session for this service instance. Typically you want to
      * call {@link VaadinSession#lock()} instead of this method.
+     * <p>
+     * Note: The method and its signature has been changed to return lock
+     * instance in Vaadin X.X.X. If you have overriden this method, you need to
+     * update your implementation.
+     * <p>
+     * Note: Overriding this method is not recommended, for custom lock storage
+     * strategy override {@link #getSessionLock(WrappedSession)} and
+     * {@link #setSessionLock(WrappedSession,Lock)} instead.
      *
      * @param wrappedSession
      *            The session to lock
+     * @return Lock instance
      * @throws IllegalStateException
      *             if the session is invalidated before it can be locked
      */
-    protected void lockSession(WrappedSession wrappedSession) {
+    protected Lock lockSession(WrappedSession wrappedSession) {
         Lock lock = getSessionLock(wrappedSession);
         if (lock == null) {
             /*
@@ -805,21 +774,31 @@ public abstract class VaadinService implements Serializable {
             lock.unlock();
             throw e;
         }
+        return lock;
     }
 
     /**
      * Releases the lock for the given session for this service instance.
-     * Typically you want to call {@link VaadinSession#unlock()} instead of this
-     * method.
+     * Typically, you want to call {@link VaadinSession#unlock()} instead of
+     * this method.
+     * <p>
+     * Note: The method and its signature has been changed to get lock instance
+     * as parameter in Vaadin X.X.0. If you have overriden this method, you need
+     * to update your implementation.
+     * <p>
+     * Note: Overriding this method is not recommended, for custom lock storage
+     * strategy override {@link #getSessionLock(WrappedSession)} and
+     * {@link #setSessionLock(WrappedSession,Lock)} instead.
      *
      * @param wrappedSession
      *            The session to unlock
+     * @param lock
+     *            Lock instance to unlock
      */
-    protected void unlockSession(WrappedSession wrappedSession) {
-        assert getSessionLock(wrappedSession) != null;
-        assert ((ReentrantLock) getSessionLock(wrappedSession))
-                .isHeldByCurrentThread() : "Trying to unlock the session but it has not been locked by this thread";
-        getSessionLock(wrappedSession).unlock();
+    protected void unlockSession(WrappedSession wrappedSession, Lock lock) {
+        assert ((ReentrantLock) lock).isHeldByCurrentThread()
+                : "Trying to unlock the session but it has not been locked by this thread";
+        lock.unlock();
     }
 
     private VaadinSession findOrCreateVaadinSession(VaadinRequest request)
@@ -828,8 +807,9 @@ public abstract class VaadinService implements Serializable {
         WrappedSession wrappedSession = getWrappedSession(request,
                 requestCanCreateSession);
 
+        final Lock lock;
         try {
-            lockSession(wrappedSession);
+            lock = lockSession(wrappedSession);
         } catch (IllegalStateException e) {
             throw new SessionExpiredException();
         }
@@ -838,7 +818,7 @@ public abstract class VaadinService implements Serializable {
             return doFindOrCreateVaadinSession(request,
                     requestCanCreateSession);
         } finally {
-            unlockSession(wrappedSession);
+            unlockSession(wrappedSession, lock);
         }
 
     }
@@ -857,7 +837,8 @@ public abstract class VaadinService implements Serializable {
     private VaadinSession doFindOrCreateVaadinSession(VaadinRequest request,
             boolean requestCanCreateSession) throws SessionExpiredException {
         assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
-                .isHeldByCurrentThread() : "Session has not been locked by this thread";
+                .isHeldByCurrentThread()
+                : "Session has not been locked by this thread";
 
         /* Find an existing session for this request. */
         VaadinSession session = getExistingSession(request,
@@ -870,9 +851,9 @@ public abstract class VaadinService implements Serializable {
              */
 
             final boolean restartApplication = hasParameter(request,
-                    URL_PARAMETER_RESTART_APPLICATION);
+                    Constants.URL_PARAMETER_RESTART_APPLICATION);
             final boolean closeApplication = hasParameter(request,
-                    URL_PARAMETER_CLOSE_APPLICATION);
+                    Constants.URL_PARAMETER_CLOSE_APPLICATION);
 
             if (closeApplication) {
                 closeSession(session, request.getWrappedSession(false));
@@ -918,7 +899,8 @@ public abstract class VaadinService implements Serializable {
      */
     private VaadinSession createAndRegisterSession(VaadinRequest request) {
         assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
-                .isHeldByCurrentThread() : "Session has not been locked by this thread";
+                .isHeldByCurrentThread()
+                : "Session has not been locked by this thread";
 
         VaadinSession session = createVaadinSession(request);
 
@@ -927,7 +909,7 @@ public abstract class VaadinService implements Serializable {
         storeSession(session, request.getWrappedSession());
 
         // Initial WebBrowser data comes from the request
-        session.getBrowser().updateRequestDetails(request);
+        session.setBrowser(new WebBrowser(request));
 
         session.setConfiguration(getDeploymentConfiguration());
 
@@ -944,6 +926,7 @@ public abstract class VaadinService implements Serializable {
     private void setLocale(VaadinRequest request, VaadinSession session) {
         I18NProvider provider = getInstantiator().getI18NProvider();
         List<Locale> providedLocales = provider.getProvidedLocales();
+
         if (providedLocales.size() == 1) {
             session.setLocale(providedLocales.get(0));
         } else {
@@ -1010,13 +993,7 @@ public abstract class VaadinService implements Serializable {
         final WrappedSession session = getWrappedSession(request,
                 allowSessionCreation);
 
-        VaadinSession vaadinSession = loadSession(session);
-
-        if (vaadinSession == null) {
-            return null;
-        }
-
-        return vaadinSession;
+        return loadSession(session);
     }
 
     /**
@@ -1197,8 +1174,13 @@ public abstract class VaadinService implements Serializable {
             if (value instanceof VaadinSession) {
                 // set flag to avoid cleanup
                 VaadinSession serviceSession = (VaadinSession) value;
-                serviceSession.setAttribute(PRESERVE_UNBOUND_SESSION_ATTRIBUTE,
-                        Boolean.TRUE);
+                serviceSession.lock();
+                try {
+                    serviceSession.setAttribute(
+                            PRESERVE_UNBOUND_SESSION_ATTRIBUTE, Boolean.TRUE);
+                } finally {
+                    serviceSession.unlock();
+                }
             }
             attrs.put(name, value);
         }
@@ -1225,8 +1207,13 @@ public abstract class VaadinService implements Serializable {
                         serviceSession.getLockInstance());
 
                 service.storeSession(serviceSession, newSession);
-                serviceSession.setAttribute(PRESERVE_UNBOUND_SESSION_ATTRIBUTE,
-                        null);
+                serviceSession.lock();
+                try {
+                    serviceSession.setAttribute(
+                            PRESERVE_UNBOUND_SESSION_ATTRIBUTE, null);
+                } finally {
+                    serviceSession.unlock();
+                }
             }
         }
 
@@ -1277,7 +1264,8 @@ public abstract class VaadinService implements Serializable {
             if (session.getState() == VaadinSessionState.OPEN) {
                 closeSession(session);
                 if (session.getSession() != null) {
-                    getLogger().debug("Closing inactive session {}",
+                    getLogger().debug(
+                            "Closing inactive Vaadin session bound to HTTP session {}",
                             session.getSession().getId());
                 }
             }
@@ -1368,7 +1356,8 @@ public abstract class VaadinService implements Serializable {
      */
     private int getUidlRequestTimeout(VaadinSession session) {
         return getDeploymentConfiguration().isCloseIdleSessions()
-                ? session.getSession().getMaxInactiveInterval() : -1;
+                ? session.getSession().getMaxInactiveInterval()
+                : -1;
     }
 
     /**
@@ -1543,7 +1532,7 @@ public abstract class VaadinService implements Serializable {
             }
 
             // Request not handled by any RequestHandler
-            response.sendError(HttpServletResponse.SC_NOT_FOUND,
+            response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
                     "Request was not handled by any registered handler.");
 
         } catch (final SessionExpiredException e) {
@@ -1566,9 +1555,9 @@ public abstract class VaadinService implements Serializable {
                 vaadinSession.getErrorHandler().error(new ErrorEvent(t));
             }
             // if this was an UIDL request, send UIDL back to the client
-            if (ServletHelper.isRequestType(request, RequestType.UIDL)) {
+            if (HandlerHelper.isRequestType(request, RequestType.UIDL)) {
                 SystemMessages ci = getSystemMessages(
-                        ServletHelper.findLocale(vaadinSession, request),
+                        HandlerHelper.findLocale(vaadinSession, request),
                         request);
                 try {
                     writeUncachedStringResponse(response,
@@ -1675,7 +1664,7 @@ public abstract class VaadinService implements Serializable {
         try {
             // If there is a URL, try to redirect there
             SystemMessages systemMessages = getSystemMessages(
-                    ServletHelper.findLocale(null, request), request);
+                    HandlerHelper.findLocale(null, request), request);
             String sessionExpiredURL = systemMessages.getSessionExpiredURL();
             if (sessionExpiredURL != null
                     && (response instanceof VaadinServletResponse)) {
@@ -1688,7 +1677,17 @@ public abstract class VaadinService implements Serializable {
                  * endless loop. This can at least happen if refreshing a
                  * resource when the session has expired.
                  */
-                response.sendError(HttpServletResponse.SC_GONE,
+
+                // Ensure that the browser does not cache expired responses.
+                // iOS 6 Safari requires this
+                // (https://github.com/vaadin/framework/issues/3226)
+                response.setHeader("Cache-Control", "no-cache");
+                // If Content-Type is not set, browsers assume text/html and may
+                // complain about the empty response body
+                // (https://github.com/vaadin/framework/issues/4167)
+                response.setHeader("Content-Type", "text/plain");
+
+                response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
                         "Session expired");
             }
         } catch (IOException e) {
@@ -1716,12 +1715,42 @@ public abstract class VaadinService implements Serializable {
      */
     public static String createCriticalNotificationJSON(String caption,
             String message, String details, String url) {
+        return createCriticalNotificationJSON(caption, message, details, url,
+                null);
+    }
+
+    /**
+     * Creates a JSON message which, when sent to client as-is, will cause a
+     * critical error to be shown with the given details.
+     *
+     * @param caption
+     *            The caption of the error or null to omit
+     * @param message
+     *            The error message or null to omit
+     * @param details
+     *            Additional error details or null to omit
+     * @param url
+     *            A url to redirect to. If no other details are given then the
+     *            user will be immediately redirected to this URL. Otherwise the
+     *            message will be shown and the browser will redirect to the
+     *            given URL only after the user acknowledges the message. If
+     *            null then the browser will refresh the current page.
+     * @param querySelector
+     *            Query selector to find the element under which the error will
+     *            be added. If the element is not found the message is not
+     *            shown. If the selector is {@code null}, the body element is
+     *            used.
+     * @return A JSON string to be sent to the client
+     */
+    public static String createCriticalNotificationJSON(String caption,
+            String message, String details, String url, String querySelector) {
         try {
             JsonObject appError = Json.createObject();
             putValueOrJsonNull(appError, "caption", caption);
             putValueOrJsonNull(appError, "url", url);
             putValueOrJsonNull(appError, "message", message);
             putValueOrJsonNull(appError, "details", details);
+            putValueOrJsonNull(appError, "querySelector", querySelector);
 
             JsonObject meta = Json.createObject();
             meta.put("appError", appError);
@@ -1748,13 +1777,20 @@ public abstract class VaadinService implements Serializable {
     /**
      * Creates the JSON to send to the client when the session has expired.
      *
+     * @param async
+     *            a boolean indicating whether the message is sent synchronously
+     *            or asynchronously.
      * @return the JSON used to inform the client about a session expiration, as
      *         a string
      */
-    public static String createSessionExpiredJSON() {
+    public static String createSessionExpiredJSON(boolean async) {
         JsonObject json = Json.createObject();
         JsonObject meta = Json.createObject();
         json.put("meta", meta);
+
+        if (async) {
+            meta.put(JsonConstants.META_ASYNC, true);
+        }
 
         meta.put(JsonConstants.META_SESSION_EXPIRED, true);
         return wrapJsonForClient(json);
@@ -1763,14 +1799,17 @@ public abstract class VaadinService implements Serializable {
     /**
      * Creates the JSON to send to the client when the UI cannot be found.
      *
+     * @param async
+     *            a boolean indicating whether the message is sent synchronously
+     *            or asynchronously.
      * @return the JSON used to inform the client that the UI cannot be found,
      *         as a string
      */
-    public static String createUINotFoundJSON() {
+    public static String createUINotFoundJSON(boolean async) {
         // Session Expired is technically not really the correct thing as
         // the session exists but the requested UI does not. Still we want
         // to handle it the same way on the client side.
-        return createSessionExpiredJSON();
+        return createSessionExpiredJSON(async);
     }
 
     private static void putValueOrJsonNull(JsonObject json, String key,
@@ -1865,7 +1904,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Verifies that the given CSRF token (aka double submit cookie) is valid
+     * Verifies that the given CSRF token (synchronizer token pattern) is valid
      * for the given UI. This is used to protect against Cross Site Request
      * Forgery attacks.
      * <p>
@@ -1889,7 +1928,9 @@ public abstract class VaadinService implements Serializable {
                 .isXsrfProtectionEnabled()) {
             String uiToken = ui.getCsrfToken();
 
-            if (uiToken == null || !uiToken.equals(requestToken)) {
+            if (uiToken == null || !MessageDigest.isEqual(
+                    uiToken.getBytes(StandardCharsets.UTF_8),
+                    requestToken.getBytes(StandardCharsets.UTF_8))) {
                 return false;
             }
         }
@@ -1949,7 +1990,8 @@ public abstract class VaadinService implements Serializable {
                 session.unlock();
             }
         } catch (InterruptedException e) {
-            // Just ignore
+            // Restore the interrupted flag
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -1985,6 +2027,10 @@ public abstract class VaadinService implements Serializable {
                     try {
                         pendingAccess.get();
 
+                    } catch (CancellationException ignored) { // NOSONAR
+                        // Ignore canceled UI access tasks exceptions and don't
+                        // let it to be processed by the error handler and shown
+                        // on the UI
                     } catch (Exception exception) {
                         pendingAccess.handleError(exception);
                     }
@@ -2012,8 +2058,7 @@ public abstract class VaadinService implements Serializable {
      */
     public Registration addServiceDestroyListener(
             ServiceDestroyListener listener) {
-        serviceDestroyListeners.add(listener);
-        return () -> serviceDestroyListeners.remove(listener);
+        return Registration.addAndRemove(serviceDestroyListeners, listener);
     }
 
     /**
@@ -2022,11 +2067,9 @@ public abstract class VaadinService implements Serializable {
      * this service.
      *
      * @see #addServiceDestroyListener(ServiceDestroyListener)
-     * @see Servlet#destroy()
+     * @see jakarta.servlet.Servlet#destroy()
      */
     public void destroy() {
-        htmlImportDependencyCacheClearRegistration.remove();
-
         ServiceDestroyEvent event = new ServiceDestroyEvent(this);
         serviceDestroyListeners
                 .forEach(listener -> listener.serviceDestroy(event));
@@ -2107,6 +2150,10 @@ public abstract class VaadinService implements Serializable {
      * Performs the actual read of the VaadinSession from the underlying HTTP
      * session after sanity checks have been performed.
      * <p>
+     * If a VaadinSession that was ignored during serialization is found, it is
+     * removed from the session and {@code null} is returned so a new, proper
+     * session can be created.
+     * <p>
      * Called by {@link #loadSession(WrappedSession)}.
      *
      * @param wrappedSession
@@ -2114,8 +2161,9 @@ public abstract class VaadinService implements Serializable {
      * @return the VaadinSession or null if no session was found
      */
     protected VaadinSession readFromHttpSession(WrappedSession wrappedSession) {
-        return (VaadinSession) wrappedSession
+        VaadinSession session = (VaadinSession) wrappedSession
                 .getAttribute(getSessionAttributeName());
+        return session;
     }
 
     /**
@@ -2138,6 +2186,12 @@ public abstract class VaadinService implements Serializable {
      *            the underlying HTTP session
      */
     protected void removeFromHttpSession(WrappedSession wrappedSession) {
+        VaadinSession vaadinSession = readFromHttpSession(wrappedSession);
+        if (vaadinSession != null) {
+            // mark Vaadin session as closed explicitly (opposite to closing as
+            // a result of invalidated HTTP session)
+            vaadinSession.sessionClosedExplicitly = true;
+        }
         wrappedSession.removeAttribute(getSessionAttributeName());
 
     }
@@ -2188,114 +2242,67 @@ public abstract class VaadinService implements Serializable {
      *
      * @param url
      *            the untranslated Vaadin URL for the resource
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
-     * @param theme
-     *            the theme to use for translating the URL or <code>null</code>
-     *            if no theme is used
      * @return the resource located at the named path, or <code>null</code> if
      *         there is no resource at that path
      */
-    public abstract URL getResource(String url, WebBrowser browser,
-            AbstractTheme theme);
+    public abstract URL getResource(String url);
 
     /**
      * Opens a stream to to the resource at the given Vaadin URI.
      *
      * @param url
      *            the untranslated Vaadin URL for the resource
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
-     * @param theme
-     *            the theme to use for translating the URL or <code>null</code>
-     *            if no theme is used
      * @return a stream for the resource or <code>null</code> if no resource
      *         exists at the specified path
      */
-    public abstract InputStream getResourceAsStream(String url,
-            WebBrowser browser, AbstractTheme theme);
+    public abstract InputStream getResourceAsStream(String url);
 
     /**
      * Checks if a resource is available at the given Vaadin URI.
      *
      * @param url
      *            the untranslated Vaadin URL for the resource
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
-     * @param theme
-     *            the theme to use for translating the URL or <code>null</code>
-     *            if no theme is used
      * @return <code>true</code> if a resource is found and can be read using
-     *         {@link #getResourceAsStream(String, WebBrowser, AbstractTheme)},
-     *         <code>false</code> if it is not found
+     *         {@link #getResourceAsStream(String)}, <code>false</code> if it is
+     *         not found
      */
-    public boolean isResourceAvailable(String url, WebBrowser browser,
-            AbstractTheme theme) {
-        return getResource(url, browser, theme) != null;
+    public boolean isResourceAvailable(String url) {
+        return getResource(url) != null;
     }
 
     /**
      * Resolves the given {@code url} resource to be useful for
-     * {@link #getResource(String, WebBrowser, AbstractTheme)} and
-     * {@link #getResourceAsStream(String, WebBrowser, AbstractTheme)}.
+     * {@link #getResource(String)} and {@link #getResourceAsStream(String )}.
      *
      * @param url
      *            the resource to resolve, not <code>null</code>
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
      * @return the resolved URL or the same as the input url if no translation
      *         was performed
      */
-    public abstract String resolveResource(String url, WebBrowser browser);
-
-    /**
-     * Checks if the given URL has a themed version. If it does, returns the
-     * untranslated URL for the themed resource.
-     *
-     * @param url
-     *            the URL to lookup
-     * @param browser
-     *            the browser to use for lookup
-     * @param theme
-     *            the theme to check
-     * @return an optional containing the untranslated (containing vaadin
-     *         protocols) URL to the themed resource if such exists, an empty
-     *         optional if the given resource has no themed version
-     */
-    public abstract Optional<String> getThemedUrl(String url,
-            WebBrowser browser, AbstractTheme theme);
-
-    /**
-     * Gets the HTML import dependency cache that is used by this service.
-     *
-     * @return the HTML dependency cache
-     */
-    public DependencyTreeCache<String> getHtmlImportDependencyCache() {
-        return htmlImportDependencyCache;
-    }
+    public abstract String resolveResource(String url);
 
     /**
      * Constructs {@link VaadinContext} for this service.
      *
-     * This method will be called only once, upon first call to {@link #getContext()}.
+     * This method will be called only once, upon first call to
+     * {@link #getContext()}.
+     *
      * @return Context. This may never be {@code null}.
      */
     protected abstract VaadinContext constructVaadinContext();
 
     /**
      * Returns {@link VaadinContext} for this service.
+     *
      * @return A non-null context instance.
      */
     public VaadinContext getContext() {
-        if(vaadinContext == null) {
+        if (vaadinContext == null) {
             vaadinContext = constructVaadinContext();
         }
         return vaadinContext;
     }
+
     /**
      *
      * Executes a {@code runnable} with a {@link VaadinService} available in the
@@ -2311,6 +2318,97 @@ public abstract class VaadinService implements Serializable {
             runnable.run();
         } finally {
             setCurrent(null);
+        }
+    }
+
+    /**
+     * Get the predicate for including the initial Uidl fragment in the
+     * bootstrap page.
+     * <p>
+     * By default it returns an instance that instruct to include the fragment
+     * in the case
+     *
+     * @return a non-null instance.
+     */
+    public BootstrapInitialPredicate getBootstrapInitialPredicate() {
+        if (bootstrapInitialPredicate == null) {
+            bootstrapInitialPredicate = request -> getDeploymentConfiguration()
+                    .isEagerServerLoad();
+        }
+        return bootstrapInitialPredicate;
+    }
+
+    /**
+     * Set the predicate that decides whether to include the initial Uidl
+     * fragment in the bootstrap page.
+     *
+     * @param bootstrapInitialPredicate
+     *            the predicate.
+     */
+    public void setBootstrapInitialPredicate(
+            BootstrapInitialPredicate bootstrapInitialPredicate) {
+        this.bootstrapInitialPredicate = bootstrapInitialPredicate;
+    }
+
+    /**
+     * Get the predicate for testing whether the request has a valid URL for
+     * rendering the bootstrap page.
+     * <p>
+     * By default it returns an instance that returns true for all requests.
+     *
+     * @return a non-null instance.
+     */
+    public BootstrapUrlPredicate getBootstrapUrlPredicate() {
+        if (bootstrapUrlPredicate == null) {
+            bootstrapUrlPredicate = request -> true;
+        }
+        return bootstrapUrlPredicate;
+    }
+
+    /**
+     * Set the predicate that decides whether the request has a valid URL for
+     * rendering the bootstrap page.
+     *
+     * @param bootstrapUrlPredicate
+     *            the predicate.
+     */
+    public void setBootstrapUrlPredicate(
+            BootstrapUrlPredicate bootstrapUrlPredicate) {
+        this.bootstrapUrlPredicate = bootstrapUrlPredicate;
+    }
+
+    /**
+     * Get the name of the CSRF Token attribute in HTTP session.
+     *
+     * @return the attribute name string
+     */
+    public static String getCsrfTokenAttributeName() {
+        return VaadinSession.class.getName() + "."
+                + ApplicationConstants.CSRF_TOKEN;
+    }
+
+    private void doSetClassLoader() {
+        final String classLoaderName = getDeploymentConfiguration() == null
+                ? null
+                : getDeploymentConfiguration().getClassLoaderName();
+        if (classLoaderName != null) {
+            try {
+                final Class<?> classLoaderClass = getClass().getClassLoader()
+                        .loadClass(classLoaderName);
+                final Constructor<?> c = classLoaderClass
+                        .getConstructor(ClassLoader.class);
+                setClassLoader((ClassLoader) c.newInstance(
+                        new Object[] { getClass().getClassLoader() }));
+            } catch (final Exception e) {
+                throw new RuntimeException(
+                        "Could not find specified class loader: "
+                                + classLoaderName,
+                        e);
+            }
+        }
+
+        if (getClassLoader() == null) {
+            setDefaultClassLoader();
         }
     }
 }

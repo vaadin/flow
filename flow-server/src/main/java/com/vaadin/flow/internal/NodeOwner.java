@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,8 @@ import java.io.Serializable;
 /**
  * Abstract root of a state node tree. A node always belongs to one specific
  * owner. The owner keeps track of metadata for its nodes.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -57,7 +59,7 @@ public interface NodeOwner extends Serializable {
 
     /**
      * Check if given node is registered to this node owner.
-     * 
+     *
      * @param node
      *            node to check registration status for
      * @return true if node is registered

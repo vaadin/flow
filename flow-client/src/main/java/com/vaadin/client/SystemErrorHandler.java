@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,19 @@
  */
 package com.vaadin.client;
 
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
 
 import com.google.web.bindery.event.shared.UmbrellaException;
+
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.vaadin.client.bootstrap.ErrorMessage;
+import com.vaadin.client.communication.MessageHandler;
+import com.vaadin.client.gwt.elemental.js.util.Xhr;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.client.Browser;
 import elemental.dom.Document;
@@ -69,7 +78,7 @@ public class SystemErrorHandler {
     protected void handleUnrecoverableError(String details,
             ErrorMessage message) {
         handleUnrecoverableError(message.getCaption(), message.getMessage(),
-                details, message.getUrl());
+                details, message.getUrl(), null);
     }
 
     /**
@@ -88,22 +97,103 @@ public class SystemErrorHandler {
      */
     public void handleUnrecoverableError(String caption, String message,
             String details, String url) {
+        handleUnrecoverableError(caption, message, details, url, null);
+    }
+
+    /**
+     * Shows an error notification for an error which is unrecoverable, using
+     * the given parameters.
+     *
+     * @param caption
+     *            the caption of the message
+     * @param message
+     *            the message body
+     * @param details
+     *            message details or {@code null} if there are no details
+     * @param url
+     *            a URL to redirect to when the user clicks the message or
+     *            {@code null} to refresh on click
+     * @param querySelector
+     *            query selector to find the element under which the error will
+     *            be added . If element is not found or the selector is
+     *            {@code null}, body will be used
+     */
+    public void handleUnrecoverableError(String caption, String message,
+            String details, String url, String querySelector) {
         if (caption == null && message == null && details == null) {
-            WidgetUtil.redirect(url);
+            if (!isWebComponentMode()) {
+                WidgetUtil.redirect(url);
+            } else {
+                resynchronizeSession();
+            }
             return;
         }
 
-        Element systemErrorContainer = handleError(caption, message, details);
-        systemErrorContainer.addEventListener("click",
-                e -> WidgetUtil.redirect(url), false);
-
-        Browser.getDocument().addEventListener(Event.KEYDOWN, e -> {
-            int keyCode = ((KeyboardEvent) e).getKeyCode();
-            if (keyCode == KeyCode.ESC) {
-                WidgetUtil.redirect(url);
-            }
-        }, false);
+        Element systemErrorContainer = handleError(caption, message, details,
+                querySelector);
+        if (!isWebComponentMode()) {
+            systemErrorContainer.addEventListener("click",
+                    e -> WidgetUtil.redirect(url), false);
+            Browser.getDocument().addEventListener(Event.KEYDOWN, e -> {
+                int keyCode = ((KeyboardEvent) e).getKeyCode();
+                if (keyCode == KeyCode.ESC) {
+                    e.preventDefault();
+                    WidgetUtil.redirect(url);
+                }
+            }, false);
+        }
     }
+
+    /**
+     * Send GET async request to acquire new JSESSIONID, browser will set cookie
+     * automatically based on Set-Cookie response header.
+     */
+    private void resynchronizeSession() {
+        String serviceUrl = registry.getApplicationConfiguration()
+                .getServiceUrl() + "web-component/web-component-bootstrap.js";
+        String sessionResyncUri = SharedUtil.addGetParameter(serviceUrl,
+                ApplicationConstants.REQUEST_TYPE_PARAMETER,
+                ApplicationConstants.REQUEST_TYPE_WEBCOMPONENT_RESYNC);
+
+        Xhr.get(sessionResyncUri, new Xhr.Callback() {
+            @Override
+            public void onFail(XMLHttpRequest xhr, Exception exception) {
+                handleError(exception);
+            }
+
+            @Override
+            public void onSuccess(XMLHttpRequest xhr) {
+
+                Console.log(
+                        "Received xhr HTTP session resynchronization message: "
+                                + xhr.getResponseText());
+
+                registry.reset();
+                registry.getUILifecycle().setState(UILifecycle.UIState.RUNNING);
+
+                ValueMap json = MessageHandler
+                        .parseWrappedJson(xhr.getResponseText());
+                registry.getMessageHandler().handleMessage(json);
+                registry.getApplicationConfiguration()
+                        .setUIId(json.getInt(ApplicationConstants.UI_ID));
+
+                Scheduler.get().scheduleDeferred(() -> Arrays
+                        .stream(registry.getApplicationConfiguration()
+                                .getExportedWebComponents())
+                        .forEach(SystemErrorHandler.this::recreateNodes));
+            }
+        });
+    }
+
+    private native void recreateNodes(String elementName)
+    /*-{
+        var elements = document.getElementsByTagName(elementName);
+        for (var i = 0 ; i < elements.length ; ++i) {
+            var elem = elements[i];
+            elem.$server.disconnected = function(){} // mock disconnected callback not to throw TypeError
+            elem.parentNode.replaceChild(elem.cloneNode(false), elem);
+        }
+    }-*/;
 
     /**
      * Shows the given error message if not running in production mode and logs
@@ -113,16 +203,7 @@ public class SystemErrorHandler {
      *            the error message to show
      */
     public void handleError(String errorMessage) {
-        if (registry.getApplicationConfiguration().isProductionMode()) {
-            Console.error(errorMessage);
-            return;
-        }
-
-        Element errorContainer = handleError(null, errorMessage, null);
-        errorContainer.addEventListener("click", e -> {
-            // Allow user to dismiss the error by clicking it.
-            errorContainer.getParentElement().removeChild(errorContainer);
-        });
+        Console.error(errorMessage);
     }
 
     /**
@@ -141,8 +222,8 @@ public class SystemErrorHandler {
         }
     }
 
-    private Element handleError(String caption, String message,
-            String details) {
+    private Element handleError(String caption, String message, String details,
+            String querySelector) {
         Document document = Browser.getDocument();
         Element systemErrorContainer = document.createDivElement();
         systemErrorContainer.setClassName("v-system-error");
@@ -150,26 +231,38 @@ public class SystemErrorHandler {
         if (caption != null) {
             Element captionDiv = document.createDivElement();
             captionDiv.setClassName("caption");
-            captionDiv.setInnerHTML(caption);
+            captionDiv.setTextContent(caption);
             systemErrorContainer.appendChild(captionDiv);
             Console.error(caption);
         }
         if (message != null) {
             Element messageDiv = document.createDivElement();
             messageDiv.setClassName("message");
-            messageDiv.setInnerHTML(message);
+            messageDiv.setTextContent(message);
             systemErrorContainer.appendChild(messageDiv);
             Console.error(message);
         }
         if (details != null) {
             Element detailsDiv = document.createDivElement();
             detailsDiv.setClassName("details");
-            detailsDiv.setInnerHTML(details);
+            detailsDiv.setTextContent(details);
             systemErrorContainer.appendChild(detailsDiv);
             Console.error(details);
         }
+        if (querySelector != null) {
+            Element baseElement = document.querySelector(querySelector);
+            // if querySelector does not match an element on the page, the
+            // error will not be displayed
+            if (baseElement != null) {
+                // if the baseElement has a shadow root, add the warning to
+                // the shadow - otherwise add it to the baseElement
+                findShadowRoot(baseElement).orElse(baseElement)
+                        .appendChild(systemErrorContainer);
+            }
+        } else {
+            document.getBody().appendChild(systemErrorContainer);
+        }
 
-        document.getBody().appendChild(systemErrorContainer);
         return systemErrorContainer;
     }
 
@@ -182,5 +275,18 @@ public class SystemErrorHandler {
         }
         return e;
     }
+
+    private Optional<Element> findShadowRoot(Element host) {
+        return Optional.ofNullable(getShadowRootElement(host));
+    }
+
+    private boolean isWebComponentMode() {
+        return registry.getApplicationConfiguration().isWebComponentMode();
+    }
+
+    private native Element getShadowRootElement(Element host)
+    /*-{
+        return host.shadowRoot;
+    }-*/;
 
 }

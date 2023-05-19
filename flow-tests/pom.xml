@@ -1,58 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>2.0-SNAPSHOT</version>
+        <version>24.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
     <description>Test modules for Flow</description>
     <packaging>pom</packaging>
-
-    <modules>
-        <module>test-resources</module>
-        <module>test-common</module>
-        <module>test-pwa</module>
-
-        <module>test-dev-mode</module>
-        <module>test-root-ui-context</module>
-        <module>test-frontend-production-custom-context</module>
-        <module>test-router-custom-context</module>
-        <module>test-subcontext</module>
-        <module>test-scalability</module>
-        <module>test-memory-leaks</module>
-        <module>test-servlet</module>
-        <module>test-themes</module>
-        <module>test-themes/pom-npm.xml</module>
-        <module>test-lumo-theme</module>
-        <module>test-material-theme</module>
-        <module>servlet-containers</module>
-        <module>test-web-components</module>
-        <module>test-web-components-production</module>
-        <module>test-web-components-theme-variant</module>
-
-        <!-- tests migrated to NPM -->
-        <module>web-component-test-assets</module>
-
-        <!-- tests running in both modes -->
-        <module>test-misc</module>
-        <module>test-misc/pom-bower.xml</module>
-
-        <!--   Temporary disabled because the test is not stable. Will be investigated and enabled back.
-        <module>test-mixed</module>
-        <module>test-mixed/pom-npm-production.xml</module>
-        <module>test-mixed/pom-bower-devmode.xml</module>
-        <module>test-mixed/pom-bower-production.xml</module-->
-        <module>test-npm-only-features</module>
-        <module>test-npm-web-components</module>
-        <module>test-multi-war</module>
-
-        <!-- This test fails in local -->
-        <module>test-root-context</module>
-    </modules>
 
     <properties>
         <!-- Don't care about coding style or licenses for tests -->
@@ -64,6 +23,29 @@
             concurrent running of test modules. -->
         <server.port>8888</server.port>
         <server.stop.port>8889</server.stop.port>
+        <!-- This property is needed to allow some Win-specific IT tests -->
+        <!-- to be disabled via system property in CI until they got fixed-->
+        <exclude.windows.failed.it.tests></exclude.windows.failed.it.tests>
+        <testListener></testListener>
+
+        <!-- Skip these categories in validation, use -Pslow-tests to run them -->
+        <excludedGroups>
+            com.vaadin.flow.testcategory.SlowTests,
+            com.vaadin.flow.testcategory.ScreenshotTests,
+            com.vaadin.flow.testcategory.PushTests,
+        </excludedGroups>
+
+        <jetty.scantrigger></jetty.scantrigger>
+
+        <vaadin.devmode.liveReload.enabled>false</vaadin.devmode.liveReload.enabled>
+        <vaadin.pnpm.enable>true</vaadin.pnpm.enable>
+        <vaadin.allow.appshell.annotations>false</vaadin.allow.appshell.annotations>
+        <vaadin.devmode.vite.options>--host</vaadin.devmode.vite.options>
+        <vaadin.eagerServerLoad>false</vaadin.eagerServerLoad>
+        <!-- make sure we do not leave webpack-dev-server running after IT -->
+        <vaadin.reuseDevServer>false</vaadin.reuseDevServer>
+        <vaadin.devServerPort>0</vaadin.devServerPort>
+        <vaadin.frontend.hotdeploy>true</vaadin.frontend.hotdeploy>
     </properties>
 
     <dependencies>
@@ -94,45 +76,70 @@
             <artifactId>slf4j-simple</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <version>${bnd.version}</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
+                            <goal>bnd-process</goal>
                         </goals>
+                        <configuration>
+                            <bnd><![CDATA[-fixupmessages: "Classes found in the wrong directory";is:=warning]]>
+                            </bnd>
+                        </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
                 <configuration>
-                    <!-- export test server port to integration tests -->
-                    <systemPropertyVariables>
-                        <serverPort>${server.port}</serverPort>
-                        <webdriver.chrome.driver>${webdriver.chrome.driver}</webdriver.chrome.driver>
-                    </systemPropertyVariables>
-                    <excludedGroups>${test.excludegroup}</excludedGroups>
-                    <excludes>
-                        <exclude>**/*$*</exclude>
-                        <exclude>${exclude.it.tests}</exclude>
-                    </excludes>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        <index>false</index>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
             </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>flow-maven-plugin</artifactId>
+                    <version>${project.version}</version>
+                    <configuration>
+                        <pnpmEnable>${vaadin.pnpm.enable}</pnpmEnable>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>prepare-frontend</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
                 <!-- Remove libs before ITs to avoid scan complaining about classes in multiple locations -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.8</version>
+                    <version>3.1.0</version>
                     <executions>
                         <execution>
                             <id>delete-lib-folder</id>
@@ -141,11 +148,13 @@
                                 <goal>run</goal>
                             </goals>
                             <configuration>
-                                <tasks>
+                                <target>
                                     <delete>
-                                        <fileset dir="${project.build.directory}/${project.build.finalName}/WEB-INF/lib" includes="*.jar" />
+                                        <fileset
+                                                dir="${project.build.directory}/${project.build.finalName}/WEB-INF/lib"
+                                                includes="*.jar"/>
                                     </delete>
-                                </tasks>
+                                </target>
                             </configuration>
                         </execution>
                     </executions>
@@ -162,49 +171,17 @@
                                 <directory>${project.basedir}</directory>
                                 <includes>
                                     <include>package*.json</include>
-                                    <include>webpack*.js</include>
                                 </includes>
                             </fileset>
                         </filesets>
-                    </configuration>
-                </plugin>
-                <!--This plugin's configuration is used to store Eclipse
-                    m2e settings only. It has no influence on the Maven build itself. -->
-                <plugin>
-                    <groupId>org.eclipse.m2e</groupId>
-                    <artifactId>lifecycle-mapping</artifactId>
-                    <version>1.0.0</version>
-                    <configuration>
-                        <lifecycleMappingMetadata>
-                            <pluginExecutions>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>
-                                            com.lazerycode.selenium
-                                        </groupId>
-                                        <artifactId>
-                                            driver-binary-downloader-maven-plugin
-                                        </artifactId>
-                                        <versionRange>
-                                            [${driver.binary.downloader.maven.plugin.version},)
-                                        </versionRange>
-                                        <goals>
-                                            <goal>selenium</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore></ignore>
-                                    </action>
-                                </pluginExecution>
-                            </pluginExecutions>
-                        </lifecycleMappingMetadata>
                     </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
                     <configuration>
-                        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+                        <skipNexusStagingDeployMojo>true
+                        </skipNexusStagingDeployMojo>
                     </configuration>
                 </plugin>
                 <!-- jetty plugin for those child modules that need it -->
@@ -229,23 +206,129 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <webAppConfig>
-                            <containerIncludeJarPattern>^$</containerIncludeJarPattern>
-                        </webAppConfig>
-                        <scanIntervalSeconds>-1</scanIntervalSeconds>
+                        <webApp>
+                            <containerIncludeJarPattern>^$
+                            </containerIncludeJarPattern>
+                        </webApp>
                         <httpConnector>
                             <port>${server.port}</port>
                         </httpConnector>
                         <stopPort>${server.stop.port}</stopPort>
                         <stopKey>foo</stopKey>
                         <stopWait>5</stopWait>
+                        <systemProperties>
+                            <!-- All system props are defined here as they need to be overridden
+                                 in all modules so no non-standard value leaks to another module -->
+                            <vaadin.reuseDevServer>${vaadin.reuseDevServer}</vaadin.reuseDevServer>
+                            <vaadin.devmode.liveReload.enabled>${vaadin.devmode.liveReload.enabled}</vaadin.devmode.liveReload.enabled>
+                            <vaadin.allow.appshell.annotations>${vaadin.allow.appshell.annotations}</vaadin.allow.appshell.annotations>
+			    <vaadin.eagerServerLoad>${vaadin.eagerServerLoad}</vaadin.eagerServerLoad>
+			    <vaadin.devServerPort>${vaadin.devServerPort}</vaadin.devServerPort>
+                            <jetty.scantrigger>${jetty.scantrigger}</jetty.scantrigger>
+                            <!-- Allow test clients not on localhost to connect to Vite-->
+                            <vaadin.devmode.vite.options>${vaadin.devmode.vite.options}</vaadin.devmode.vite.options>
+                            <vaadin.frontend.hotdeploy>${vaadin.frontend.hotdeploy}</vaadin.frontend.hotdeploy>
+                        </systemProperties>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>properties-maven-plugin</artifactId>
+                    <version>${properties-maven-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
     </build>
 
+    <!-- these modules should be build, regardless of `skipTests` -->
+    <modules>
+        <module>test-resources</module>
+        <module>test-common</module>
+        <module>test-lumo</module>
+        <module>test-express-build</module>
+    </modules>
+
     <profiles>
+        <profile>
+            <!-- Modules that have shared stuff used in other modules -->
+            <id>it-shared-modules</id>
+            <activation>
+                <property>
+                    <!-- usind -DsharedModules -DskipTests we can install these modules and run tests later (GH actions) -->
+                    <name>sharedModules</name>
+                </property>
+            </activation>
+            <modules>
+                <module>test-root-context</module>
+                <module>test-embedding</module>
+                <module>test-frontend</module>
+                <module>test-application-theme</module>
+                <module>test-multi-war</module>
+                <module>vaadin-spring-tests</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>it-shared-spring-modules</id>
+            <modules>
+                <module>vaadin-spring-tests</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>it-test-modules</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <modules>
+                <module>test-dev-mode</module>
+                <module>test-pwa</module>
+                <module>test-pwa/pom-production.xml</module>
+                <module>test-pwa-disabled-offline</module>
+                <module>test-pwa-disabled-offline/pom-production.xml</module>
+                <module>test-router-custom-context</module>
+                <module>test-live-reload</module>
+                <module>test-live-reload-multimodule</module>
+                <module>test-live-reload-multimodule/pom-devbundle.xml</module>
+                <module>test-redeployment</module>
+
+                <module>test-scalability</module>
+                <module>test-servlet</module>
+                <module>test-themes</module>
+                <module>test-themes/pom-production.xml</module>
+                <module>test-themes/pom-devbundle.xml</module>
+                <module>servlet-containers</module>
+
+                <!-- web component embedding -->
+                <module>test-embedding</module>
+
+                <!-- tests running in both modes -->
+                <module>test-misc</module>
+
+                <module>test-npm-only-features</module>
+                <module>test-multi-war</module>
+                <module>test-ccdm</module>
+                <module>test-ccdm/pom-production.xml</module>
+                <module>test-ccdm-flow-navigation</module>
+                <module>test-ccdm-flow-navigation/pom-production.xml</module>
+
+                <module>test-root-context</module>
+
+                <module>test-eager-bootstrap</module>
+
+                <module>test-custom-route-registry</module>
+                <!-- tests are disabled in this module, this reference is for maven version plugin -->
+                <module>test-no-theme</module>
+                <!-- move theme tests to the end, because theme switch live reload-->
+                <!-- test impacts startup test-->
+                <module>test-application-theme</module>
+                <module>test-theme-no-polymer</module>
+                <module>test-frontend</module>
+                <module>test-custom-frontend-directory</module>
+
+                <module>vaadin-spring-tests</module>
+            </modules>
+        </profile>
         <profile>
             <id>eclipse</id>
             <build>
@@ -263,10 +346,18 @@
                                 <resourceBases>
                                     <!-- these paths are relative to the
                                         project where the profile is triggered -->
-                                    <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
-                                    <resourceBase>${project.basedir}/../../flow-client/target/classes/META-INF/resources</resourceBase>
-                                    <resourceBase>${project.basedir}/../../flow-push/src/main/resources/META-INF/resources</resourceBase>
-                                    <resourceBase>${project.basedir}/../test-resources/src/main/resources/META-INF/resources</resourceBase>
+                                    <resourceBase>
+                                        ${project.basedir}/src/main/webapp
+                                    </resourceBase>
+                                    <resourceBase>
+                                        ${project.basedir}/../../flow-client/target/classes/META-INF/resources
+                                    </resourceBase>
+                                    <resourceBase>
+                                        ${project.basedir}/../../flow-push/src/main/resources/META-INF/resources
+                                    </resourceBase>
+                                    <resourceBase>
+                                        ${project.basedir}/../test-resources/src/main/resources/META-INF/resources
+                                    </resourceBase>
                                 </resourceBases>
                             </webAppConfig>
                             <!-- force default ports so that running IT tests
@@ -274,7 +365,7 @@
                             <httpConnector>
                                 <port>${server.port}</port>
                             </httpConnector>
-                            <stopPort>8889</stopPort>
+                            <stopPort>${server.stop.port}</stopPort>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -287,24 +378,6 @@
             </properties>
         </profile>
         <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <test.excludegroup>com.vaadin.flow.testcategory.ScreenshotTests</test.excludegroup>
-            </properties>
-        </profile>
-        <profile>
-            <id>all-tests</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <test.excludegroup></test.excludegroup>
-            </properties>
-        </profile>
-        <profile>
             <id>ie11</id>
             <activation>
                 <property>
@@ -314,14 +387,53 @@
                 </property>
             </activation>
             <properties>
-                <test.excludegroup>com.vaadin.flow.testcategory.IgnoreIE11</test.excludegroup>
+                <groups></groups>
+                <excludedGroups>
+                    com.vaadin.flow.testcategory.SlowTests,
+                    com.vaadin.flow.testcategory.ScreenshotTests,
+                    com.vaadin.flow.testcategory.PushTests,
+                    com.vaadin.flow.testcategory.IgnoreIE11,
+                </excludedGroups>
             </properties>
         </profile>
         <profile>
-            <id>npm</id>
-            <modules>
-                <module>test-root-context/pom-npm.xml</module>
-            </modules>
+            <id>all-tests</id>
+            <properties>
+                <groups></groups>
+                <excludedGroups></excludedGroups>
+            </properties>
+        </profile>
+        <profile>
+            <id>slow-tests</id>
+            <properties>
+                <groups>${excludedGroups}</groups>
+                <excludedGroups></excludedGroups>
+            </properties>
+        </profile>
+        <profile>
+            <id>deepClean</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <configuration>
+                            <filesets>
+                                <fileset>
+                                    <directory>${project.basedir}</directory>
+                                    <includes>
+                                        <include>package*.json</include>
+                                        <include>types.d.ts</include>
+                                        <include>tsconfig.json</include>
+                                        <include>pnpm-lock.yaml</include>
+                                        <include>node_modules/**</include>
+                                    </includes>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 

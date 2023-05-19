@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,8 @@ import com.vaadin.flow.server.StreamVariable.StreamingErrorEvent;
 
 /**
  * Implementation for {@link StreamingErrorEvent}.
+ *
+ * @since 1.0
  */
 public final class StreamingErrorEventImpl extends AbstractStreamingEvent
         implements StreamingErrorEvent {
@@ -27,7 +29,7 @@ public final class StreamingErrorEventImpl extends AbstractStreamingEvent
 
     /**
      * Streaming error event constructor.
-     * 
+     *
      * @param filename
      *            filename
      * @param type

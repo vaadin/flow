@@ -22,7 +22,7 @@ public class SelectView extends Div {
         select.addEventListener("change", e -> {
             log.setText("Value is '"
                     + e.getEventData().getString("element.value") + "'");
-        }, "element.value");
+        }).synchronizeProperty("element.value");
         add(log);
         getElement().appendChild(select);
     }

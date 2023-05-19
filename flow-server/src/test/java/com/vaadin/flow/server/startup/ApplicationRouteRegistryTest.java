@@ -1,8 +1,13 @@
 package com.vaadin.flow.server.startup;
 
+import jakarta.servlet.ServletContext;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -10,18 +15,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import javax.servlet.ServletContext;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.router.RouteBaseData;
+import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinServletContext;
 
 /**
- * Tests for {@link ApplicationRouteRegistry} instance inside OSGi container.
+ * Tests for {@link ApplicationRouteRegistry} instance .
  */
 public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
 
@@ -29,8 +34,8 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
 
     @Before
     public void init() {
-        registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
+        registry = ApplicationRouteRegistry.getInstance(
+                new VaadinServletContext(Mockito.mock(ServletContext.class)));
     }
 
     @Test
@@ -244,7 +249,7 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
                 removed.isEmpty());
 
         Assert.assertEquals(MyRoute.class, added.get(0).getNavigationTarget());
-        Assert.assertEquals("", added.get(0).getUrl());
+        Assert.assertEquals("", added.get(0).getTemplate());
 
         getTestedRegistry().setRoute("home", Secondary.class,
                 Collections.emptyList());
@@ -258,7 +263,7 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
 
         Assert.assertEquals(Secondary.class,
                 added.get(0).getNavigationTarget());
-        Assert.assertEquals("home", added.get(0).getUrl());
+        Assert.assertEquals("home", added.get(0).getTemplate());
 
         getTestedRegistry().removeRoute("home");
 
@@ -269,7 +274,7 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
         Assert.assertEquals(Secondary.class,
                 removed.get(0).getNavigationTarget());
         Assert.assertEquals("The 'home' route should have been removed", "home",
-                removed.get(0).getUrl());
+                removed.get(0).getTemplate());
     }
 
     @Test
@@ -300,7 +305,7 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
         Assert.assertFalse("", removed.isEmpty());
 
         for (RouteBaseData data : added) {
-            if (data.getUrl().equals("")) {
+            if (data.getTemplate().equals("")) {
                 Assert.assertEquals("MyRoute should have been added",
                         MyRoute.class, data.getNavigationTarget());
                 Assert.assertEquals(
@@ -351,6 +356,21 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
         Assert.assertEquals(
                 "Removing the alias route should be seen in the event", 1,
                 removed.size());
+    }
+
+    @Test
+    public void setErrorNavigationTargets_abstractClassesAreIgnored() {
+        registry.setErrorNavigationTargets(new HashSet<>(
+                Arrays.asList(ErrorView.class, AbstractErrorView.class)));
+
+        Optional<ErrorTargetEntry> errorNavigationTarget = registry
+                .getErrorNavigationTarget(new NullPointerException());
+
+        Assert.assertTrue("Error navigation target was not registered",
+                errorNavigationTarget.isPresent());
+        Assert.assertEquals("Wrong errorNavigationTarget was registered",
+                ErrorView.class,
+                errorNavigationTarget.get().getNavigationTarget());
     }
 
     @Override

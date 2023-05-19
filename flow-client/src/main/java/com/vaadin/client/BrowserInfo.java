@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,6 +24,7 @@ import com.vaadin.flow.shared.BrowserDetails;
  * Browser details are detected only once and those are stored in this singleton
  * class.
  *
+ * @since 1.0
  */
 public class BrowserInfo {
 
@@ -42,7 +43,6 @@ public class BrowserInfo {
     private static final String OS_LINUX = "lin";
     private static final String OS_MACOSX = "mac";
     private static final String OS_ANDROID = "android";
-    private static final String OS_IOS = "ios";
 
     // Common CSS class for all touch devices
     private static final String UI_TOUCH = "touch";
@@ -137,7 +137,7 @@ public class BrowserInfo {
      * @return true if the browser is Safari or running on IOS, false otherwise
      */
     public boolean isSafariOrIOS() {
-        return browserDetails.isSafariOrIOS();
+        return isSafari() || isIos();
     }
 
     /**
@@ -209,6 +209,12 @@ public class BrowserInfo {
         return $wnd.navigator.userAgent;
     }-*/;
 
+    private static native boolean isIos()
+    /*-{
+        return (/iPad|iPhone|iPod/.test(navigator.platform) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+    }-*/;
+
     /**
      * Checks if the browser runs on a touch capable device.
      *
@@ -216,15 +222,6 @@ public class BrowserInfo {
      */
     public boolean isTouchDevice() {
         return touchDevice;
-    }
-
-    /**
-     * Checks if the browser is run on iOS.
-     *
-     * @return true if the browser is run on iOS, false otherwise
-     */
-    public boolean isIOS() {
-        return browserDetails.isIOS();
     }
 
     /**
@@ -275,18 +272,6 @@ public class BrowserInfo {
      */
     public int getBrowserMinorVersion() {
         return browserDetails.getBrowserMinorVersion();
-    }
-
-    /**
-     * Checks if the browser supports ECMAScript 6, based on the user agent.
-     *
-     * @see com.vaadin.flow.shared.BrowserDetails#isEs6Supported()
-     *
-     * @return <code>true</code> if the browser supports ES6, <code>false</code>
-     *         otherwise.
-     */
-    public boolean isEs6Supported() {
-        return browserDetails.isEs6Supported();
     }
 
 }

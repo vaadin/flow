@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
@@ -106,6 +107,24 @@ public interface DataProvider<T, F> extends Serializable {
      *            the item to refresh
      */
     void refreshItem(T item);
+
+    /**
+     * Refreshes the given item and all of the children of the item as well.
+     *
+     * @see #refreshItem(Object)
+     *
+     *      By default it just does a standard refreshItem, in a hierarchical
+     *      DataProvider it is supposed to refresh all of the children as well
+     *      in case 'refreshChildren' is true.
+     *
+     * @param item
+     *            the item to refresh
+     * @param refreshChildren
+     *            whether or not to refresh child items
+     */
+    default void refreshItem(T item, boolean refreshChildren) {
+        refreshItem(item);
+    }
 
     /**
      * Refreshes all data based on currently available data in the underlying
@@ -273,7 +292,7 @@ public interface DataProvider<T, F> extends Serializable {
      */
     @SafeVarargs
     static <T> ListDataProvider<T> ofItems(T... items) {
-        return new ListDataProvider<>(Arrays.asList(items));
+        return new ListDataProvider<>(new ArrayList<>(Arrays.asList(items)));
     }
 
     /**

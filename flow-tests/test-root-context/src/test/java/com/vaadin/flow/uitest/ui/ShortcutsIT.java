@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,12 +35,13 @@ public class ShortcutsIT extends ChromeBrowserTest {
             .of(Keys.SHIFT, Keys.ALT, Keys.CONTROL, Keys.META)
             .collect(Collectors.toSet());
 
+    private static final String DEFAULT_VALUE = "testing...";
+
     @Before
     public void before() {
         open();
         resetKeys();
     }
-
 
     @Test
     public void clickShortcutWorks() {
@@ -86,16 +87,16 @@ public class ShortcutsIT extends ChromeBrowserTest {
         assertActualEquals("DISABLED CLICKED");
 
         resetActual();
-        assertActualEquals("testing...");
+        assertActualEquals(DEFAULT_VALUE);
 
         sendKeys(Keys.CONTROL, "U"); // ctrl+shift+u
-        assertActualEquals("testing...");
+        assertActualEquals(DEFAULT_VALUE);
     }
 
     @Test
     public void listenOnScopesTheShortcut() {
         sendKeys(Keys.ALT, "s");
-        assertActualEquals("testing..."); // nothing happened
+        assertActualEquals(DEFAULT_VALUE); // nothing happened
 
         WebElement innerInput = findElement(By.id("focusTarget"));
         innerInput.sendKeys(Keys.ALT, "s");
@@ -106,9 +107,29 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void multipleListenOnScopesTheShortcut() {
+        sendKeys(Keys.ALT, "h");
+        assertActualEquals(DEFAULT_VALUE); // nothing happened
+
+        sendAltHKeysAndVerify("listenOn1");
+        sendAltHKeysAndVerify("listenOn2");
+        sendAltHKeysAndVerify("listenOn3");
+    }
+
+    private void sendAltHKeysAndVerify(String listenOnInputId) {
+        resetActual();
+        WebElement listenOn = findElement(By.id(listenOnInputId));
+        listenOn.sendKeys(Keys.ALT, "h");
+        assertActualEquals("Alt+H triggered on one of the listenOns");
+
+        // using the shortcut prevented "h" from being written
+        Assert.assertEquals("", listenOn.getText());
+    }
+
+    @Test
     public void shortcutsOnlyWorkWhenComponentIsAttached() {
         sendKeys(Keys.ALT, "a");
-        assertActualEquals("testing..."); // nothing happens
+        assertActualEquals(DEFAULT_VALUE); // nothing happens
 
         // attaches the component
         sendKeys(Keys.ALT, "y");
@@ -158,6 +179,87 @@ public class ShortcutsIT extends ChromeBrowserTest {
         sendKeys(Keys.ENTER);
 
         assertActualEquals("click: ");
+    }
+
+    @Test
+    public void clickShortcutWithMultipleListenOnAllowsKeyDefaults() {
+        WebElement textField3 = findElement(By.id("click-input-3"));
+        WebElement textField4 = findElement(By.id("click-input-4"));
+        WebElement textField5 = findElement(By.id("click-input-5"));
+        WebElement textField6 = findElement(By.id("click-input-6"));
+
+        // ClickButton3: allows browser's default behavior
+        textField3.sendKeys("value 3");
+        // using sendKeys(...) to send the ENTER instead of textField3
+        // .sendKeys(...) since that causes the test to become flaky for some
+        // reason
+        sendKeys(Keys.ENTER);
+
+        assertActualEquals("click3: value 3,");
+
+        textField4.sendKeys("value 4");
+        sendKeys(Keys.ENTER);
+
+        assertActualEquals("click3: value 3,value 4");
+
+        // ClickButton4: prevents browser's default behavior
+        textField5.sendKeys("value 5");
+        sendKeys(Keys.ENTER);
+
+        assertActualEquals("click4: ,");
+
+        textField6.sendKeys("value 6");
+        sendKeys(Keys.ENTER);
+
+        assertActualEquals("click4: value 5,");
+    }
+
+    @Test
+    public void removingShortcutCleansJavascriptEventSettingsItUsed() {
+        WebElement removalInput = findElement(By.id("removal-input"));
+
+        Assert.assertEquals("removalInput should be empty", "",
+                removalInput.getAttribute("value"));
+
+        // the removalInput has a shortcut bound on 'd'. When 'd' is typed,
+        // instead of printing the letter, the contents are capitalized instead.
+        // The shortcut is removed at the same time, so another 'd' should be
+        // printed out.
+
+        removalInput.sendKeys("abcd");
+        Assert.assertEquals("removalInput should have 'ABC' and no 'd'", "ABC",
+                removalInput.getAttribute("value"));
+
+        removalInput.sendKeys("abcd");
+        Assert.assertEquals(
+                "removalInput 'ABCabcd'. Since shortcut was removed, 'd' can "
+                        + "be typed.",
+                "ABCabcd", removalInput.getAttribute("value"));
+    }
+
+    @Test
+    public void bindingShortcutToSameKeyWithDifferentModifiers_shouldNot_triggerTwice() {
+        // they bindings are "o", "shift+o", and "alt+o"
+
+        assertActualEquals(DEFAULT_VALUE);
+
+        // bug #5454:
+        // if the shortcut is without modifiers, bindings on that
+        // key with modifiers also trigger
+
+        // each shortcut has its own counter. each shortcut increments its
+        // respective counter and then all the counters are concatenated into
+        // "actual" text field. Should shortcuts cross-trigger, number two
+        // will be part of the string
+        // string order: [o][shift+o][alt+o]
+        sendKeys("o");
+        assertActualEquals("100");
+
+        sendKeys("O"); // shift+o
+        assertActualEquals("110");
+
+        sendKeys(Keys.ALT, "o");
+        assertActualEquals("111");
     }
 
     private void assertActualEquals(String expected) {

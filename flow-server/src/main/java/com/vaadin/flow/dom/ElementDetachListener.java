@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,8 @@ import java.io.Serializable;
 /**
  * Listener for element detach events. It is invoked when the element is
  * detached from the UI.
+ *
+ * @since 1.0
  */
 @FunctionalInterface
 public interface ElementDetachListener extends Serializable {

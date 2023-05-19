@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,6 +36,8 @@ import com.vaadin.flow.shared.util.UniqueSerializable;
 
 /**
  * A state node feature that structures data as a map.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -188,7 +190,7 @@ public abstract class NodeMap extends NodeFeature {
     protected Serializable put(String key, Serializable value,
             boolean emitChange) {
         Serializable oldValue = get(key);
-        if (contains(key) && Objects.equals(oldValue, value)) {
+        if (!producePutChange(key, contains(key), value)) {
             return oldValue;
         }
         if (emitChange) {
@@ -419,13 +421,12 @@ public abstract class NodeMap extends NodeFeature {
             if (containedEarlier && !containsNow) {
                 collector.accept(new MapRemoveChange(this, key));
                 hasChanges = true;
-            } else if (containsNow) {
+            } else if (containsNow
+                    && producePutChange(key, containedEarlier, value)) {
                 Object currentValue = values.get(key);
-                if (!containedEarlier || !Objects.equals(value, currentValue)) {
-                    // New or changed value
-                    collector.accept(new MapPutChange(this, key, currentValue));
-                    hasChanges = true;
-                }
+                // New or changed value
+                collector.accept(new MapPutChange(this, key, currentValue));
+                hasChanges = true;
             }
         }
         if (!isPopulated) {
@@ -499,6 +500,22 @@ public abstract class NodeMap extends NodeFeature {
      */
     protected boolean mayUpdateFromClient(String key, Serializable value) {
         return false;
+    }
+
+    /**
+     * Checks whether a {@link MapPutChange} should be produced.
+     *
+     * @param key
+     *            a key to produce a change
+     * @param hadValueEarlier
+     *            whether the value was already earlier in the map
+     * @param newValue
+     *            the new value for the {@code key}
+     * @return
+     */
+    protected boolean producePutChange(String key, boolean hadValueEarlier,
+            Serializable newValue) {
+        return !hadValueEarlier || !Objects.equals(newValue, values.get(key));
     }
 
     // Exposed for testing purposes

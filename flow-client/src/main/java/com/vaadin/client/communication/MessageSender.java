@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.GWT;
 import com.vaadin.client.Console;
+import com.vaadin.client.ConnectionIndicator;
 import com.vaadin.client.Registry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -36,6 +37,22 @@ import elemental.json.JsonValue;
  */
 public class MessageSender {
 
+    public void sendUnloadBeacon() {
+        JsonArray dummyEmptyJson = Json.createArray();
+        JsonObject extraJson = Json.createObject();
+        extraJson.put(ApplicationConstants.UNLOAD_BEACON, true);
+        JsonObject payload = preparePayload(dummyEmptyJson, extraJson);
+        sendBeacon(registry.getXhrConnection().getUri(), payload.toJson());
+    }
+
+    public static native void sendBeacon(String url, String payload) /*-{
+        $wnd.navigator.sendBeacon(url, payload);
+    }-*/;
+
+    public enum ResynchronizationState {
+        NOT_ACTIVE, SEND_TO_SERVER, WAITING_FOR_RESPONSE
+    }
+
     /**
      * Counter for the messages send to the server. First sent message has id 0.
      */
@@ -44,6 +61,8 @@ public class MessageSender {
 
     private final Registry registry;
     private final PushConnectionFactory pushConnectionFactory;
+
+    private ResynchronizationState resynchronizationState = ResynchronizationState.NOT_ACTIVE;
 
     /**
      * Creates a new instance connected to the given registry.
@@ -87,7 +106,8 @@ public class MessageSender {
     private void doSendInvocationsToServer() {
 
         ServerRpcQueue serverRpcQueue = registry.getServerRpcQueue();
-        if (serverRpcQueue.isEmpty()) {
+        if (serverRpcQueue.isEmpty()
+                && resynchronizationState != ResynchronizationState.SEND_TO_SERVER) {
             return;
         }
 
@@ -95,7 +115,8 @@ public class MessageSender {
         JsonArray reqJson = serverRpcQueue.toJson();
         serverRpcQueue.clear();
 
-        if (reqJson.length() == 0) {
+        if (reqJson.length() == 0
+                && resynchronizationState != ResynchronizationState.SEND_TO_SERVER) {
             // Nothing to send, all invocations were filtered out (for
             // non-existing connectors)
             Console.warn(
@@ -104,8 +125,13 @@ public class MessageSender {
         }
 
         JsonObject extraJson = Json.createObject();
+        if (resynchronizationState == ResynchronizationState.SEND_TO_SERVER) {
+            resynchronizationState = ResynchronizationState.WAITING_FOR_RESPONSE;
+            Console.log("Resynchronizing from server");
+            extraJson.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
+        }
         if (showLoadingIndicator) {
-            registry.getLoadingIndicator().trigger();
+            ConnectionIndicator.setState(ConnectionIndicator.LOADING);
         }
         send(reqJson, extraJson);
     }
@@ -121,7 +147,12 @@ public class MessageSender {
     protected void send(final JsonArray reqInvocations,
             final JsonObject extraJson) {
         registry.getRequestResponseTracker().startRequest();
+        send(preparePayload(reqInvocations, extraJson));
 
+    }
+
+    private JsonObject preparePayload(final JsonArray reqInvocations,
+            final JsonObject extraJson) {
         JsonObject payload = Json.createObject();
         String csrfToken = registry.getMessageHandler().getCsrfToken();
         if (!csrfToken.equals(ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE)) {
@@ -132,16 +163,13 @@ public class MessageSender {
                 registry.getMessageHandler().getLastSeenServerSyncId());
         payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
                 clientToServerMessageId++);
-
         if (extraJson != null) {
             for (String key : extraJson.keys()) {
                 JsonValue value = extraJson.get(key);
                 payload.put(key, value);
             }
         }
-
-        send(payload);
-
+        return payload;
     }
 
     /**
@@ -217,10 +245,9 @@ public class MessageSender {
      * state from the server
      */
     public void resynchronize() {
-        Console.log("Resynchronizing from server");
-        JsonObject resyncParam = Json.createObject();
-        resyncParam.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
-        send(Json.createArray(), resyncParam);
+        if (requestResynchronize()) {
+            sendInvocationsToServer();
+        }
     }
 
     /**
@@ -261,5 +288,38 @@ public class MessageSender {
             // Server has not yet seen all our messages
             // Do nothing as they will arrive eventually
         }
+    }
+
+    /**
+     * Modifies the resynchronize state to indicate that resynchronization is
+     * desired
+     *
+     * @return true if the resynchronize request still needs to be sent; false
+     *         otherwise
+     */
+    boolean requestResynchronize() {
+        switch (resynchronizationState) {
+        case NOT_ACTIVE:
+            Console.log("Resynchronize from server requested");
+            resynchronizationState = ResynchronizationState.SEND_TO_SERVER;
+            return true;
+        case SEND_TO_SERVER:
+            // Resynchronize has already been requested, but hasn't been sent
+            // yet
+            return true;
+        case WAITING_FOR_RESPONSE:
+        default:
+            // Resynchronize has already been requested, but response hasn't
+            // been received yet
+            return false;
+        }
+    }
+
+    void clearResynchronizationState() {
+        resynchronizationState = ResynchronizationState.NOT_ACTIVE;
+    }
+
+    ResynchronizationState getResynchronizationState() {
+        return resynchronizationState;
     }
 }

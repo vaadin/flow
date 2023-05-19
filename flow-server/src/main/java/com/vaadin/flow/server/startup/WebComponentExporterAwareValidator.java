@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,8 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HandlesTypes;
+import jakarta.servlet.annotation.HandlesTypes;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -28,23 +26,27 @@ import com.googlecode.gentyref.GenericTypeReflector;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.server.VaadinContext;
 
 /**
  * Checks that specific annotations are not configured wrong.
  * <p>
  * The validation is run during servlet container initialization.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
+ * @since 2.0
  */
-@HandlesTypes({Theme.class, Push.class})
-public class WebComponentExporterAwareValidator extends
-        AbstractAnnotationValidator implements ServletContainerInitializer {
+@HandlesTypes(Push.class)
+public class WebComponentExporterAwareValidator
+        extends AbstractAnnotationValidator
+        implements VaadinServletContextStartupInitializer {
 
     @Override
-    public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
-            throws ServletException {
-        validateClasses(classSet);
+    public void initialize(Set<Class<?>> classSet, VaadinContext context) {
+        validateClasses(AbstractAnnotationValidator
+                .removeHandleTypesSelfReferences(classSet, this));
     }
 
     @Override

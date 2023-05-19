@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,7 @@ package com.vaadin.client.communication;
 
 import java.util.function.Consumer;
 
-import com.vaadin.client.LoadingIndicator;
+import com.vaadin.client.ConnectionIndicator;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
@@ -43,27 +43,27 @@ public class LoadingIndicatorConfigurator {
      *
      * @param node
      *            the node containing the loading indicator configuration
-     * @param loadingIndicator
-     *            the loading indicator to configure
      */
-    public static void observe(StateNode node,
-            LoadingIndicator loadingIndicator) {
+    public static void observe(StateNode node) {
         NodeMap configMap = node
                 .getMap(NodeFeatures.LOADING_INDICATOR_CONFIGURATION);
 
         bindInteger(configMap, LoadingIndicatorConfigurationMap.FIRST_DELAY_KEY,
-                loadingIndicator::setFirstDelay,
+                LoadingIndicatorConfigurator::setFirstDelay,
                 LoadingIndicatorConfigurationMap.FIRST_DELAY_DEFAULT);
         bindInteger(configMap,
                 LoadingIndicatorConfigurationMap.SECOND_DELAY_KEY,
-                loadingIndicator::setSecondDelay,
+                LoadingIndicatorConfigurator::setSecondDelay,
                 LoadingIndicatorConfigurationMap.SECOND_DELAY_DEFAULT);
         bindInteger(configMap, LoadingIndicatorConfigurationMap.THIRD_DELAY_KEY,
-                loadingIndicator::setThirdDelay,
+                LoadingIndicatorConfigurator::setThirdDelay,
                 LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT);
 
-        MapProperty defaultThemeProperty = configMap.getProperty(LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY);
-        defaultThemeProperty.addChangeListener(event -> loadingIndicator.setApplyDefaultTheme(event.getSource().getValueOrDefault(LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT)));
+        MapProperty defaultThemeProperty = configMap.getProperty(
+                LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY);
+        defaultThemeProperty.addChangeListener(event -> setApplyDefaultTheme(
+                event.getSource().getValueOrDefault(
+                        LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT)));
     }
 
     /**
@@ -86,4 +86,19 @@ public class LoadingIndicatorConfigurator {
                 .accept(e.getSource().getValueOrDefault(defaultValue)));
     }
 
+    private static void setFirstDelay(int delay) {
+        ConnectionIndicator.setProperty("firstDelay", delay);
+    }
+
+    private static void setSecondDelay(int delay) {
+        ConnectionIndicator.setProperty("secondDelay", delay);
+    }
+
+    private static void setThirdDelay(int delay) {
+        ConnectionIndicator.setProperty("thirdDelay", delay);
+    }
+
+    private static void setApplyDefaultTheme(boolean apply) {
+        ConnectionIndicator.setProperty("applyDefaultTheme", apply);
+    }
 }

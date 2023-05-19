@@ -11,7 +11,8 @@ fi
 scriptdir=`dirname $0`
 basedir=$scriptdir"/.."
 
-sincefiles=`find $basedir -name "*.java"|xargs egrep -Hi "(@since$|@since $)"|grep -v "./work/"|grep -v "./uitest/"|grep -v "/tests/"|cut -d: -f 1|sort|uniq`
+
+sincefiles=`find $basedir -name '*.java'|xargs grep -HE '@since\W*$'|grep -v "./work/"|grep -v "./uitest/"|grep -v "/tests/"|cut -d: -f 1|sort|uniq`
 
 # Stupid feature detection using an invalid parameter.
 # Mac requires a parameter for the -i option (creates a backup file with that suffix)

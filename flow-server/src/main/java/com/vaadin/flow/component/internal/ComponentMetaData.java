@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.internal;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,16 +23,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Synchronize;
-import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -42,13 +38,11 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * Immutable meta data related to a component class.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -61,14 +55,10 @@ public class ComponentMetaData {
      * Framework internal class, thus package-private.
      */
     public static class DependencyInfo {
-        private final List<HtmlImportDependency> htmlImports = new ArrayList<>();
         private final List<JavaScript> javaScripts = new ArrayList<>();
         private final List<JsModule> jsModules = new ArrayList<>();
         private final List<StyleSheet> styleSheets = new ArrayList<>();
-
-        List<HtmlImportDependency> getHtmlImports() {
-            return Collections.unmodifiableList(htmlImports);
-        }
+        private final List<CssImport> cssImports = new ArrayList<>();
 
         List<JavaScript> getJavaScripts() {
             return Collections.unmodifiableList(javaScripts);
@@ -82,26 +72,13 @@ public class ComponentMetaData {
             return Collections.unmodifiableList(styleSheets);
         }
 
-    }
-
-    public static class HtmlImportDependency {
-
-        private final Collection<String> uris;
-
-        private final LoadMode loadMode;
-
-        private HtmlImportDependency(Collection<String> uris,
-                LoadMode loadMode) {
-            this.uris = Collections.unmodifiableCollection(uris);
-            this.loadMode = loadMode;
+        List<CssImport> getCssImports() {
+            return Collections.unmodifiableList(cssImports);
         }
 
-        public Collection<String> getUris() {
-            return uris;
-        }
-
-        public LoadMode getLoadMode() {
-            return loadMode;
+        public boolean isEmpty() {
+            return javaScripts.isEmpty() && jsModules.isEmpty()
+                    && styleSheets.isEmpty() && cssImports.isEmpty();
         }
     }
 
@@ -152,19 +129,14 @@ public class ComponentMetaData {
     }
 
     /**
-     * Finds all dependencies (JsModule, HTML, JavaScript, StyleSheet) for the
-     * class. Includes dependencies for all classes referred by an {@link Uses}
-     * annotation.
+     * Finds all dependencies (JsModule, HTML, JavaScript, StyleSheet,
+     * CssImport) for the class. Includes dependencies for all classes referred
+     * by a {@link Uses} annotation.
      *
      * @return an information object containing all the dependencies
      */
     private static DependencyInfo findDependencies(VaadinService service,
             Class<? extends Component> componentClass) {
-        Optional.ofNullable(
-                service.getContext().getAttribute(VisitedClasses.class))
-                .ifPresent(visitedClasses -> visitedClasses
-                        .ensureAllDependenciesVisited(componentClass));
-
         DependencyInfo dependencyInfo = new DependencyInfo();
 
         findDependencies(service, componentClass, dependencyInfo,
@@ -180,27 +152,17 @@ public class ComponentMetaData {
 
         scannedClasses.add(componentClass);
 
-        if (service.getDeploymentConfiguration().isCompatibilityMode()) {
-            dependencyInfo.htmlImports
-                    .addAll(getHtmlImportDependencies(service, componentClass));
+        List<JsModule> jsModules = AnnotationReader
+                .getJsModuleAnnotations(componentClass);
 
-        } else {
-            List<JsModule> jsModules = AnnotationReader
-                    .getJsModuleAnnotations(componentClass);
-
-            // Ignore @HtmlImport(s) when @JsModule(s) present.
-            if (!jsModules.isEmpty()) {
-                dependencyInfo.jsModules.addAll(jsModules);
-            } else {
-                dependencyInfo.jsModules.addAll(
-                        getHtmlImportAsJsModuleAnnotations(componentClass));
-            }
-        }
+        dependencyInfo.jsModules.addAll(jsModules);
 
         dependencyInfo.javaScripts.addAll(
                 AnnotationReader.getJavaScriptAnnotations(componentClass));
         dependencyInfo.styleSheets.addAll(
                 AnnotationReader.getStyleSheetAnnotations(componentClass));
+        dependencyInfo.cssImports.addAll(
+                AnnotationReader.getCssImportAnnotations(componentClass));
 
         List<Uses> usesList = AnnotationReader.getAnnotationsFor(componentClass,
                 Uses.class);
@@ -229,8 +191,7 @@ public class ComponentMetaData {
 
     /**
      * Gets the dependencies, defined using annotations ({@link JsModule},
-     * {@link HtmlImport}, {@link JavaScript}, {@link StyleSheet} and
-     * {@link Uses}).
+     * {@link JavaScript}, {@link StyleSheet} and {@link Uses}).
      * <p>
      * Framework internal data, thus package-private.
      *
@@ -245,27 +206,6 @@ public class ComponentMetaData {
                     event -> dependencyInfo.remove(service));
             return findDependencies(service, componentClass);
         });
-    }
-
-    private static Collection<HtmlImportDependency> getHtmlImportDependencies(
-            VaadinService service, Class<? extends Component> componentClass) {
-        return AnnotationReader.getHtmlImportAnnotations(componentClass)
-                .stream().map(htmlImport -> getHtmlImportDependencies(service,
-                        htmlImport))
-                .collect(Collectors.toList());
-    }
-
-    private static HtmlImportDependency getHtmlImportDependencies(
-            VaadinService service, HtmlImport htmlImport) {
-        String importPath = SharedUtil.prefixIfRelative(htmlImport.value(),
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-
-        DependencyTreeCache<String> cache = service
-                .getHtmlImportDependencyCache();
-
-        Set<String> dependencies = cache.getDependencies(importPath);
-
-        return new HtmlImportDependency(dependencies, htmlImport.loadMode());
     }
 
     /**
@@ -326,50 +266,4 @@ public class ComponentMetaData {
                     propertyName, eventNames, annotation.allowUpdates()));
         }
     }
-
-    private static Collection<JsModule> getHtmlImportAsJsModuleAnnotations(
-            Class<? extends Component> componentClass) {
-        return AnnotationReader.getHtmlImportAnnotations(componentClass)
-                .stream()
-                .map(ComponentMetaData::getHtmlImportAsJsModuleAnnotation)
-                .filter(Objects::nonNull).collect(Collectors.toList());
-    }
-
-    private static JsModule getHtmlImportAsJsModuleAnnotation(
-            HtmlImport htmlImport) {
-
-        String value = SharedUtil.prefixIfRelative(htmlImport.value(),
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-
-        String module = value
-                .replaceFirst("^.*bower_components/(vaadin-.*)\\.html",
-                        "@vaadin/$1.js")
-                .replaceFirst("^.*bower_components/((iron|paper)-.*)\\.html",
-                        "@polymer/$1.js");
-
-        return jsModule(module, htmlImport.loadMode());
-    }
-
-    private static JsModule jsModule(final String value,
-            final LoadMode loadMode) {
-
-        return new JsModule() {
-
-            @Override
-            public String value() {
-                return value;
-            }
-
-            @Override
-            public LoadMode loadMode() {
-                return loadMode;
-            }
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return JsModule.class;
-            }
-        };
-    }
-
 }

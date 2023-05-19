@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "jsx": "react-jsx",
+    "inlineSources": true,
+    "module": "esNext",
+    "target": "es2020",
+    "moduleResolution": "node",
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "*", "../../../../flow-client/node_modules/*"
+      ]
+    }
+  }
+}

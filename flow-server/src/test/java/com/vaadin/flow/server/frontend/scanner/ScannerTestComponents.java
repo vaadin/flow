@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -57,8 +57,10 @@ public class ScannerTestComponents {
 
     static class Theme1 extends Theme0 {
     }
+
     static class Theme2 extends Theme0 {
     }
+
     @JsModule("./theme-4.js")
     static class Theme4 extends Theme0 {
     }
@@ -72,7 +74,7 @@ public class ScannerTestComponents {
     @JavaScript("frontend://component-0.js")
     @Tag("component-0")
     @NpmPackage(value = "@vaadin/component-0", version = "^1.1.0")
-    @NpmPackage(value="@vaadin/vaadin-foo", version="1.23.114-alpha1")
+    @NpmPackage(value = "@vaadin/vaadin-foo", version = "1.23.114-alpha1")
     static class Component0 extends Component {
     }
 
@@ -107,8 +109,7 @@ public class ScannerTestComponents {
 
     }
 
-
-    @Theme(value = Theme1.class, variant = Theme0.DARK)
+    @Theme(themeClass = Theme1.class, variant = Theme0.DARK)
     @JsModule("./router-layout-1.js")
     public class RouterLayout1 implements RouterLayout {
         @Override
@@ -117,7 +118,7 @@ public class ScannerTestComponents {
         }
     }
 
-    @Theme(value = Theme1.class, variant = Theme0.DARK)
+    @Theme(themeClass = Theme1.class, variant = Theme0.DARK)
     @JsModule("./router-layout-2.js")
     public class RouterLayout2 extends RouterLayout1 {
     }
@@ -127,7 +128,7 @@ public class ScannerTestComponents {
     }
 
     @Route(value = "")
-    @Theme(Theme4.class)
+    @Theme(themeClass = Theme4.class)
     public static class RootViewWithTheme extends Component {
     }
 
@@ -151,12 +152,12 @@ public class ScannerTestComponents {
     }
 
     @Route(value = "", layout = RouterLayout2.class)
-    @Theme(value = Theme2.class, variant = Theme2.FOO)
+    @Theme(themeClass = Theme2.class, variant = Theme2.FOO)
     @JsModule("./view-2.js")
     public static class RootViewWithMultipleTheme extends Component {
 
         public RootViewWithMultipleTheme() {
-           createView();
+            createView();
         }
 
         private void createView() {
@@ -169,10 +170,9 @@ public class ScannerTestComponents {
     @NpmPackage(value = "@foo/first-view", version = "0.0.1")
     public static class FirstView extends View0 {
         Component1 component1;
-        RootViewWithMultipleTheme second;
 
         public FirstView() {
-           createView();
+            createView();
         }
 
         private void createView() {
@@ -197,13 +197,14 @@ public class ScannerTestComponents {
             new ComponentFactory().createMyComponent();
             this.add(StaticComponentsFactory.createAnotherComponent(null));
         }
+
         private void add(Object o) {
         }
     }
 
     @JsModule("./my-component.js")
     public static class ComponentFactory {
-        public MyComponent createMyComponent()  {
+        public MyComponent createMyComponent() {
             return new MyComponent();
         }
     }
@@ -217,30 +218,36 @@ public class ScannerTestComponents {
 
     @JsModule("./my-another-component.js")
     public static class AnotherComponent {
-        public static AnotherComponent createMyComponent(String label)  {
+        public static AnotherComponent createMyComponent(String label) {
             return new AnotherComponent();
         }
     }
 
-    public static class NoThemeExporter extends WebComponentExporter<RootViewWithTheme> {
+    public static class NoThemeExporter
+            extends WebComponentExporter<RootViewWithTheme> {
         public NoThemeExporter() {
             super("root-view");
         }
 
         @Override
-        public void configureInstance(WebComponent<RootViewWithTheme> webComponent, RootViewWithTheme component) {
+        public void configureInstance(
+                WebComponent<RootViewWithTheme> webComponent,
+                RootViewWithTheme component) {
 
         }
     }
 
-    @Theme(Theme2.class)
-    public static class ThemeExporter extends WebComponentExporter<RootViewWithTheme> {
+    @Theme(themeClass = Theme2.class)
+    public static class ThemeExporter
+            extends WebComponentExporter<RootViewWithoutThemeAnnotation> {
         public ThemeExporter() {
             super("root-view");
         }
 
         @Override
-        public void configureInstance(WebComponent<RootViewWithTheme> webComponent, RootViewWithTheme component) {
+        public void configureInstance(
+                WebComponent<RootViewWithoutThemeAnnotation> webComponent,
+                RootViewWithoutThemeAnnotation component) {
 
         }
     }
@@ -255,7 +262,8 @@ public class ScannerTestComponents {
     @Route("route-1")
     @NoTheme
     @JsModule("./foo")
-    public static class RoutedClassWithAnnotations extends RoutedClassWithoutAnnotations {
+    public static class RoutedClassWithAnnotations
+            extends RoutedClassWithoutAnnotations {
     }
 
     public static class BridgeClass extends RoutedClassWithAnnotations {
@@ -284,6 +292,7 @@ public class ScannerTestComponents {
     @JsModule("dynamic-component.js")
     public static class DynamicComponentClass extends Component {
     }
+
     @JsModule("dynamic-layout.js")
     public static class DynamicLayoutClass implements RouterLayout {
         @Override
@@ -302,15 +311,15 @@ public class ScannerTestComponents {
         @SuppressWarnings("unchecked")
         private void registerRoute() {
             RouteConfiguration.forSessionScope().setRoute("foo",
-                    DynamicComponentClass.class,
-                    DynamicLayoutClass.class);
+                    DynamicComponentClass.class, DynamicLayoutClass.class);
         }
     }
 
     @Route()
     public static class RouteWithViewBean {
         public RouteWithViewBean() {
-            UI.getCurrent().add(BeanFactory.getBean(DynamicComponentClass.class));
+            UI.getCurrent()
+                    .add(BeanFactory.getBean(DynamicComponentClass.class));
         }
     }
 
@@ -320,18 +329,20 @@ public class ScannerTestComponents {
         }
     }
 
-
     @Route()
     public static class RouteWithService {
         public RouteWithService() {
-            UserRouteService.registerUserRoute(RouteConfiguration.forSessionScope(), "donald");
+            UserRouteService.registerUserRoute(
+                    RouteConfiguration.forSessionScope(), "donald");
         }
     }
 
     public static class UserRouteService {
         @SuppressWarnings("unchecked")
-        public static void registerUserRoute(RouteConfiguration config, String userId) {
-            config.setRoute(userId, DynamicComponentClass.class, DynamicLayoutClass.class);
+        public static void registerUserRoute(RouteConfiguration config,
+                String userId) {
+            config.setRoute(userId, DynamicComponentClass.class,
+                    DynamicLayoutClass.class);
         }
     }
 }

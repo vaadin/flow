@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,11 +20,18 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.annotation.HandlesTypes;
+
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -34,6 +41,10 @@ import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 /**
  * Validation class that contains common logic to checks that specific
  * annotations are not configured wrong.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 1.0
  */
 public abstract class AbstractAnnotationValidator implements Serializable {
 
@@ -105,10 +116,30 @@ public abstract class AbstractAnnotationValidator implements Serializable {
      *         {@code clazz}
      */
     protected String getClassAnnotations(Class<?> clazz) {
-        return getAnnotations().stream()
+        return getClassAnnotations(clazz, getAnnotations());
+    }
+
+    /**
+     * Returns annotations declared for the {@code clazz}.
+     *
+     * @param clazz
+     *            the type
+     * @param annotations
+     *            the annotation list
+     * @return a comma separated string with the annotation names
+     */
+    @SuppressWarnings("unchecked")
+    public static String getClassAnnotations(Class<?> clazz,
+            List<Class<?>> annotations) {
+        return annotations.stream()
                 .filter(ann -> clazz
                         .isAnnotationPresent((Class<? extends Annotation>) ann))
-                .map(Class::getSimpleName).collect(Collectors.joining(", "));
+                .map(ann ->
+                // Prepend annotation name with '@'
+                "@" + ann.getName()
+                        // Replace `$Container` ending when multiple annotations
+                        .replaceFirst("^.*\\.([^$\\.]+).*$", "$1"))
+                .collect(Collectors.joining(", "));
     }
 
     private List<String> validateAnnotatedClasses(
@@ -128,6 +159,9 @@ public abstract class AbstractAnnotationValidator implements Serializable {
                     offendingAnnotations.add(String.format(NON_PARENT_ALIAS,
                             clazz.getName(), getClassAnnotations(clazz)));
                 }
+            } else if (AppShellConfigurator.class.isAssignableFrom(clazz)) {
+                // Annotations on the app shell classes are validated in
+                // VaadinAppShellInitializer
             } else if (!RouterLayout.class.isAssignableFrom(clazz)) {
                 if (!Modifier.isAbstract(clazz.getModifiers())) {
                     handleNonRouterLayout(clazz)
@@ -139,8 +173,43 @@ public abstract class AbstractAnnotationValidator implements Serializable {
                         clazz.getName(), getClassAnnotations(clazz)));
             }
         }
-
         return offendingAnnotations;
+    }
+
+    /**
+     * Filters the given set and removes classes (interfaces) which are
+     * mentioned in a {@code @HandlesTypes} annotation on the given object.
+     *
+     * @param classSet
+     *            the classes to filter
+     * @param handlesTypesAnnotated
+     *            the object with a @HandlesTypes annotation
+     *
+     * @return a filtered set of classes
+     */
+    public static Set<Class<?>> removeHandleTypesSelfReferences(
+            Set<Class<?>> classSet, Object handlesTypesAnnotated) {
+        if (classSet == null) {
+            return new HashSet<>();
+        }
+
+        Optional<HandlesTypes> handlesTypesAnnotation = AnnotationReader
+                .getAnnotationFor(handlesTypesAnnotated.getClass(),
+                        HandlesTypes.class);
+        if (!handlesTypesAnnotation.isPresent()) {
+            throw new IllegalArgumentException("Neither class "
+                    + handlesTypesAnnotated.getClass()
+                    + " nor its parents have a @"
+                    + HandlesTypes.class.getSimpleName() + " annotation");
+        }
+
+        Set<Class<?>> handlesTypesInterfaces = new HashSet<>();
+        Collections.addAll(handlesTypesInterfaces,
+                handlesTypesAnnotation.get().value());
+
+        return classSet.stream()
+                .filter(cls -> !handlesTypesInterfaces.contains(cls))
+                .collect(Collectors.toSet());
     }
 
 }

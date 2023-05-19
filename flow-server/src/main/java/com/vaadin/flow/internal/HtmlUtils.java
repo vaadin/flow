@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,9 @@ import org.jsoup.nodes.TextNode;
 /**
  * Helpers for HTML related aspects.
  *
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
  * @author Vaadin Ltd
  * @since 1.0
  *
@@ -38,6 +41,6 @@ public final class HtmlUtils {
      * @return escaped string
      */
     public static String escape(String maybeHtml) {
-        return new TextNode(maybeHtml, null).outerHtml();
+        return new TextNode(maybeHtml).outerHtml();
     }
 }

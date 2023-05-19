@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,7 @@ import com.vaadin.flow.function.SerializableFunction;
  * Internal filter related utilities for data provider.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.3
  */
 public final class FilterUtils {
 
@@ -69,10 +69,13 @@ public final class FilterUtils {
      *            a query with a filter to convert
      * @return a converted filter, may be {@code null} if the query has no
      *         filter
-     *
+     * @param <T>
+     *            data type
      * @param <C>
      *            the filter type that the wrapped data provider accepts;
      *            typically provided by a Component
+     * @param <F>
+     *            the filter type of data provider
      */
     public static <T, C, F> F convertFilter(
             SerializableFunction<C, F> filterConverter, Query<T, C> query) {

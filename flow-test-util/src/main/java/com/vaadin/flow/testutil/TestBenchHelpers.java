@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,7 @@ import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.internal.WrapsElement;
+import org.openqa.selenium.WrapsElement;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -41,8 +41,17 @@ import com.vaadin.testbench.parallel.ParallelTest;
 
 /**
  * Helpers for running testbench tests.
+ *
+ * @since 1.0
  */
 public class TestBenchHelpers extends ParallelTest {
+
+    /**
+     * When an error occurs during establishing a WebSocket connection, a severe
+     * error is added to the console by the browser. We can't prevent it, so we
+     * have to ignore it for now until we figure out a way to supress it.
+     */
+    private static final String WEB_SOCKET_CONNECTION_ERROR_PREFIX = "WebSocket connection to ";
 
     /**
      * Waits up to 10s for the given condition to become false. Use e.g. as
@@ -82,7 +91,29 @@ public class TestBenchHelpers extends ParallelTest {
      */
     public void dragAndDrop(WebElement source, WebElement target) {
         getCommandExecutor().executeScript(LazyDndSimulationLoad.DND_SCRIPT,
-                source, target);
+                source, target, "DND");
+    }
+
+    /**
+     * Simulate only a drag of {@code source}.
+     *
+     * @param source
+     */
+    public void drag(WebElement source) {
+        getCommandExecutor().executeScript(LazyDndSimulationLoad.DND_SCRIPT,
+                source, null, "DRAG");
+    }
+
+    /**
+     * Simulate a drag of {@code source} element and over the {@code target}
+     * element.
+     *
+     * @param source
+     * @param target
+     */
+    public void dragElementOver(WebElement source, WebElement target) {
+        getCommandExecutor().executeScript(LazyDndSimulationLoad.DND_SCRIPT,
+                source, target, "DRAG_OVER");
     }
 
     /**
@@ -159,52 +190,6 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     /**
-     * Returns <code>true</code> if a component can be found with given By
-     * selector in the shadow DOM of the {@code webComponent}.
-     *
-     * @param webComponent
-     *            the web component owning shadow DOM to start search from
-     * @param by
-     *            the selector used to find element
-     * @return <code>true</code> if the component can be found
-     */
-    protected boolean isPresentInShadowRoot(WebElement webComponent, By by) {
-        return !findInShadowRoot(webComponent, by).isEmpty();
-    }
-
-    /**
-     * Find the first {@link WebElement} using the given {@link By} selector.
-     *
-     * @param shadowRootOwner
-     *            the web component owning shadow DOM to start search from
-     * @param by
-     *            the selector used to find element
-     * @return an element from shadow root, if located
-     * @throws AssertionError
-     *             if shadow root is not present or element is not found in the
-     *             shadow root
-     */
-    protected WebElement getInShadowRoot(WebElement shadowRootOwner, By by) {
-        return getShadowRoot(shadowRootOwner).findElements(by).stream()
-                .findFirst().orElseThrow(() -> new AssertionError(
-                        "Could not find required element in the shadowRoot"));
-    }
-
-    /**
-     * Find all {@link WebElement}s using the given {@link By} selector.
-     *
-     * @param webComponent
-     *            the web component owning shadow DOM to start search from
-     * @param by
-     *            the selector used to find elements
-     * @return a list of found elements
-     */
-    protected List<WebElement> findInShadowRoot(WebElement webComponent,
-            By by) {
-        return getShadowRoot(webComponent).findElements(by);
-    }
-
-    /**
      * Executes the given JavaScript.
      * <p>
      * To send arguments to the script, you can use the <code>arguments</code>
@@ -276,7 +261,7 @@ public class TestBenchHelpers extends ParallelTest {
      * @return current scroll position on x axis.
      */
     protected int getScrollX() {
-        return ((Long) executeScript("return window.pageXOffset")).intValue();
+        return ((Number) executeScript("return window.pageXOffset")).intValue();
     }
 
     /**
@@ -285,7 +270,7 @@ public class TestBenchHelpers extends ParallelTest {
      * @return current scroll position on y axis.
      */
     protected int getScrollY() {
-        return ((Long) executeScript("return window.pageYOffset")).intValue();
+        return ((Number) executeScript("return window.pageYOffset")).intValue();
     }
 
     /**
@@ -322,6 +307,9 @@ public class TestBenchHelpers extends ParallelTest {
      * @return log entries from the browser
      */
     protected List<LogEntry> getLogEntries(Level level) {
+        // https://github.com/vaadin/testbench/issues/1233
+        getCommandExecutor().waitForVaadin();
+
         return driver.manage().logs().get(LogType.BROWSER).getAll().stream()
                 .filter(logEntry -> logEntry.getLevel().intValue() >= level
                         .intValue())
@@ -344,13 +332,18 @@ public class TestBenchHelpers extends ParallelTest {
     protected void checkLogsForErrors(
             Predicate<String> acceptableMessagePredicate) {
         getLogEntries(Level.WARNING).forEach(logEntry -> {
+            if (logEntry.getMessage().contains(
+                    "Lit is in dev mode. Not recommended for production")) {
+                return;
+            }
             if ((Objects.equals(logEntry.getLevel(), Level.SEVERE)
-                    || logEntry.getMessage().contains("404"))
+                    || logEntry.getMessage().contains(" 404 "))
+                    && !logEntry.getMessage()
+                            .contains(WEB_SOCKET_CONNECTION_ERROR_PREFIX)
                     && !acceptableMessagePredicate
                             .test(logEntry.getMessage())) {
-                throw new AssertionError(String.format(
-                        "Received error message in browser log console right after opening the page, message: %s",
-                        logEntry));
+                throw new AssertionError(String
+                        .format("Error message in browser log: %s", logEntry));
             } else {
                 LoggerFactory.getLogger(TestBenchHelpers.class.getName()).warn(
                         "This message in browser log console may be a potential error: '{}'",
@@ -370,14 +363,17 @@ public class TestBenchHelpers extends ParallelTest {
         checkLogsForErrors(msg -> false);
     }
 
-    private WebElement getShadowRoot(WebElement webComponent) {
-        waitUntil(driver -> getCommandExecutor().executeScript(
-                "return arguments[0].shadowRoot", webComponent) != null);
-        WebElement shadowRoot = (WebElement) getCommandExecutor()
-                .executeScript("return arguments[0].shadowRoot", webComponent);
-        Assert.assertNotNull("Could not locate shadowRoot in the element",
-                shadowRoot);
-        return shadowRoot;
+    /**
+     * If dev server start in progress wait until it's started. Otherwise return
+     * immidiately.
+     */
+    protected void waitForDevServer() {
+        Object result;
+        do {
+            getCommandExecutor().waitForVaadin();
+            result = getCommandExecutor().executeScript(
+                    "return window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.devServerIsNotLoaded;");
+        } while (Boolean.TRUE.equals(result));
     }
 
     /**
@@ -390,17 +386,14 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     private static class LazyDndSimulationLoad {
-        private static final String DND_SCRIPT = loadDnDEmulation();
+        private static final String DND_SCRIPT = loadDndScript(
+                "/dnd-simulation.js");
 
-        private static String loadDnDEmulation() {
+        private static String loadDndScript(String scriptLocation) {
             InputStream stream = TestBenchHelpers.class
-                    .getResourceAsStream("/dnd-simulation.js");
-            try {
-                return IOUtils.readLines(stream, StandardCharsets.UTF_8)
-                        .stream().collect(Collectors.joining("\n"));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+                    .getResourceAsStream(scriptLocation);
+            return IOUtils.readLines(stream, StandardCharsets.UTF_8).stream()
+                    .collect(Collectors.joining("\n"));
         }
     }
 }

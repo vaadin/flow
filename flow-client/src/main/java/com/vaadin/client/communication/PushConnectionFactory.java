@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,14 +21,18 @@ import com.vaadin.client.Registry;
  * Factory for {@link PushConnection}.
  *
  * Produces a {@link PushConnection} for the provided {@link Registry}
+ *
+ * @since 1.0
  */
 @FunctionalInterface
 public interface PushConnectionFactory {
 
     /**
-     * Creates a new {@link PushConnection} instance for the given {@code registry}.
+     * Creates a new {@link PushConnection} instance for the given
+     * {@code registry}.
      *
-     * @param registry the global registry
+     * @param registry
+     *            the global registry
      * @return the push connection instance
      */
     PushConnection create(Registry registry);

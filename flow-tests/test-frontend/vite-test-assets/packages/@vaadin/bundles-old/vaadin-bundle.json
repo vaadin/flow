@@ -1,0 +1,72 @@
+{
+  "packages": {
+    "@testscope/all": {
+      "version": "0.1.0",
+      "exposes": {
+        "./all.js": {
+          "exports": []
+        },
+        ".": {
+          "exports": [
+            {
+              "source": "@testscope/all/all.js"
+            }
+          ]
+        }
+      }
+    },
+    "@testscope/button": {
+      "version": "1.0.0-alpha1",
+      "exposes": {
+        "./testscope-button.js": {
+          "exports": [
+            {
+              "source": "@testscope/button/src/testscope-button.js"
+            }
+          ]
+        },
+        "./src/testscope-button.js": {
+          "exports": [
+            "Button"
+          ]
+        },
+        ".": {
+          "exports": [
+            {
+              "source": "@testscope/button/testscope-button.js"
+            }
+          ]
+        }
+      }
+    },
+    "@testscope/map": {
+      "version": "1.0.0-alpha1",
+      "exposes": {
+        "./testscope-map.js": {
+          "exports": [
+            {
+              "source": "@testscope/map/src/testscope-map.js"
+            }
+          ]
+        },
+        "./src/testscope-map.js": {
+          "exports": [
+            "Map"
+          ]
+        },
+        "./src/lib.js": {
+          "exports": [
+            "default"
+          ]
+        },
+        ".": {
+          "exports": [
+            {
+              "source": "@testscope/map/testscope-map.js"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

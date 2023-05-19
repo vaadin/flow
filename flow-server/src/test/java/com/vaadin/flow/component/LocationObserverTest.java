@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -52,6 +52,7 @@ public class LocationObserverTest {
         public void localeChange(LocaleChangeEvent event) {
             eventCollector.add("Received locale change event for locale: "
                     + event.getLocale().getDisplayName());
+            Assert.assertNotNull(event.getUI());
         }
     }
 
@@ -60,25 +61,19 @@ public class LocationObserverTest {
     public static class RootComponent extends Component {
     }
 
-    public static class RouterTestUI extends MockUI {
-        final Router router;
+    public static class RouterTestMockUI extends MockUI {
 
-        public RouterTestUI(Router router) {
-            super(createMockSession());
-            this.router = router;
+        public RouterTestMockUI(Router router) {
+            super(createMockSession(router));
         }
 
-        private static VaadinSession createMockSession() {
+        private static VaadinSession createMockSession(Router router) {
             MockVaadinServletService service = new MockVaadinServletService();
-            service.init();
+            service.setRouter(router);
+
             VaadinSession session = new AlwaysLockedVaadinSession(service);
             session.setConfiguration(service.getDeploymentConfiguration());
             return session;
-        }
-
-        @Override
-        public Router getRouter() {
-            return router;
         }
 
         @Override
@@ -99,9 +94,10 @@ public class LocationObserverTest {
     public void navigation_and_locale_change_should_fire_locale_change_observer()
             throws InvalidRouteConfigurationException {
         router = new Router(new TestRouteRegistry());
-        ui = new RouterTestUI(router);
+        ui = new RouterTestMockUI(router);
 
-        RouteConfiguration.forRegistry(router.getRegistry()).setAnnotatedRoute(Translations.class);
+        RouteConfiguration.forRegistry(router.getRegistry())
+                .setAnnotatedRoute(Translations.class);
 
         ui.navigate("");
 

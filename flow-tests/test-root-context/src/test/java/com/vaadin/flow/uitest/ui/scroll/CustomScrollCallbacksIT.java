@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,11 +16,13 @@
 package com.vaadin.flow.uitest.ui.scroll;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
 public class CustomScrollCallbacksIT extends AbstractScrollIT {
     @Test
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7584")
     public void customCallbacks_customResults() throws InterruptedException {
         open();
         assertView("null");
@@ -34,6 +36,7 @@ public class CustomScrollCallbacksIT extends AbstractScrollIT {
         findElement(By.id("navigate")).click();
 
         assertView("navigated");
+
         assertLog("[0,0]");
         /*
          * Scroll position should not be reset, but might have changed slightly

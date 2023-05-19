@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.component.dependency;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
@@ -27,18 +24,25 @@ import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Marks that an annotated component implicitly uses another component. This
- * will ensure that any dependencies of the used component are also loaded. For
- * {@link PolymerTemplate} implementations, used components will also be
- * instantiated if an element with the corresponding {@link Tag @Tag} value is
- * defined in the template.
+ * will ensure that any dependencies of the used component are also loaded.
  * <p>
  * Marking class A with <code>@Uses(B.class)</code> will ensure all
- * {@link StyleSheet}, {@link HtmlImport}, {@link JavaScript} dependencies for
- * class <code>B</code> are loaded when class <code>A</code> is used.
+ * {@link StyleSheet}, {@link JavaScript} dependencies for class <code>B</code>
+ * are loaded when class <code>A</code> is used.
+ * <p>
+ * For {@code PolymerTemplate} implementations, used components will also be
+ * instantiated if an element with the corresponding {@link Tag @Tag} value is
+ * defined in the template. Note that Polymer template support is deprecated -
+ * we recommend you to use {@code LitTemplate} instead. Read more details from
+ * <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ * Vaadin blog.</a>
+ *
  *
  * @author Vaadin Ltd
  * @since 1.0

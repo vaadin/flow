@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,23 +34,26 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
-import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.component.HasValue.ValueChangeListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.converter.Converter;
+import com.vaadin.flow.data.converter.ConverterFactory;
+import com.vaadin.flow.data.converter.DefaultConverterFactory;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.BeanValidator;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
@@ -211,6 +214,74 @@ public class Binder<BEAN> implements Serializable {
          * @return the setter
          */
         Setter<BEAN, TARGET> getSetter();
+
+        /**
+         * Enable or disable asRequired validator. The validator is enabled by
+         * default.
+         *
+         * @see BindingBuilder#asRequired(String)
+         * @see BindingBuilder#asRequired(ErrorMessageProvider)
+         *
+         * @param asRequiredEnabled
+         *            {@code false} if asRequired validator should be disabled,
+         *            {@code true} otherwise (default)
+         */
+        public void setAsRequiredEnabled(boolean asRequiredEnabled);
+
+        /**
+         * Returns whether asRequired validator is currently enabled or not.
+         *
+         * @see BindingBuilder#asRequired(String)
+         * @see BindingBuilder#asRequired(ErrorMessageProvider)
+         *
+         * @return {@code false} if asRequired validator is disabled
+         *         {@code true} otherwise (default)
+         */
+        public boolean isAsRequiredEnabled();
+
+        /**
+         * Define whether validators are disabled or enabled for this specific
+         * binding.
+         *
+         * @param validatorsDisabled
+         *            A boolean value.
+         */
+        public void setValidatorsDisabled(boolean validatorsDisabled);
+
+        /**
+         * Returns if validators are currently disabled or not.
+         *
+         * @return A boolean value.
+         */
+        public boolean isValidatorsDisabled();
+
+        /**
+         * Define whether the value should be converted back to the presentation
+         * in the field when a converter is used in binding.
+         * <p>
+         * As of version 6.0, when a converter is used on a binding and the user
+         * input value is modified by the converter, the value from the
+         * converter is applied back to the input. It is possible to control
+         * this behavior with this API.
+         *
+         * @see BindingBuilder#withConverter(Converter)
+         * @see BindingBuilder#withConverter(SerializableFunction,
+         *      SerializableFunction)
+         * @see BindingBuilder#withConverter(SerializableFunction,
+         *      SerializableFunction, String)
+         *
+         * @param convertBackToPresentation
+         *            A boolean value
+         */
+        void setConvertBackToPresentation(boolean convertBackToPresentation);
+
+        /**
+         * Returns whether the value is converted back to the presentation in
+         * the field when a converter is used in binding.
+         *
+         * @return A boolean value
+         */
+        boolean isConvertBackToPresentation();
     }
 
     /**
@@ -248,6 +319,11 @@ public class Binder<BEAN> implements Serializable {
          * If the Binder is already bound to some bean, the newly bound field is
          * associated with the corresponding bean property as described above.
          * <p>
+         * If the bound field implements {@link HasValidator}, then the binding
+         * instance returned by this method will subscribe for field's
+         * {@code ValidationStatusChangeEvent}s and will {@code validate} itself
+         * upon receiving them.
+         * <p>
          * The getter and setter can be arbitrary functions, for instance
          * implementing user-defined conversion or validation. However, in the
          * most basic use case you can simply pass a pair of method references
@@ -281,6 +357,48 @@ public class Binder<BEAN> implements Serializable {
                 Setter<BEAN, TARGET> setter);
 
         /**
+         * Completes this binding using the given getter function representing a
+         * backing bean property. The function is used to update the field value
+         * from the property. The field value is not written back to the bean so
+         * the binding is read-only.
+         * <p>
+         * When a bean is bound with {@link Binder#setBean(Object)}, the field
+         * value is set to the return value of the given getter.
+         * <p>
+         * If the Binder is already bound to some bean, the newly bound field is
+         * associated with the corresponding bean property as described above.
+         * <p>
+         * The getter can be arbitrary functions, for instance implementing
+         * user-defined conversion or validation. However, in the most basic use
+         * case you can simply a method references to this method as follows:
+         *
+         * <pre>
+         * class Person {
+         *     public String getName() { ... }
+         * }
+         *
+         * TextField nameField = new TextField();
+         * binder.forField(nameField).bindReadOnly(Person::getName);
+         * </pre>
+         *
+         * <strong>Note:</strong> the field will be marked as readonly by
+         * invoking {@link HasValue#setReadOnly}.
+         * <p>
+         * This is a shorthand for {@link #bind(ValueProvider, Setter)} method
+         * called with {@code null} setter.
+         *
+         * @see #bind(ValueProvider, Setter)
+         *
+         * @param getter
+         *            the function to get the value of the property to the
+         *            field, not null
+         * @return the newly created binding
+         * @throws IllegalStateException
+         *             if {@code bind} has already been called on this binding
+         */
+        Binding<BEAN, TARGET> bindReadOnly(ValueProvider<BEAN, TARGET> getter);
+
+        /**
          * Completes this binding by connecting the field to the property with
          * the given name. The getter and setter of the property are looked up
          * using a {@link PropertySet}.
@@ -294,6 +412,11 @@ public class Binder<BEAN> implements Serializable {
          * The property must have an accessible getter method. It need not have
          * an accessible setter; in that case the property value is never
          * updated and the binding is said to be <i>read-only</i>.
+         *
+         * Nested property, when supported, can be referenced using the bean
+         * path, starting from the root class, for example 'address.streetName'.
+         * All intermediate getters must exist (e.g. {@code getAddress()}), and
+         * should never return {@literal null}, otherwise binding will fail.
          *
          * <p>
          * <strong>Note:</strong> when the binding is <i>read-only</i> the field
@@ -314,6 +437,47 @@ public class Binder<BEAN> implements Serializable {
          * @see BindingBuilder#bind(ValueProvider, Setter)
          */
         Binding<BEAN, TARGET> bind(String propertyName);
+
+        /**
+         * Completes this binding by connecting the field to the property with
+         * the given name. The getter of the property is looked up using a
+         * {@link PropertySet}. The field value is not written back to the bean
+         * so the binding is read-only.
+         * <p>
+         * For a <code>Binder</code> created using the
+         * {@link Binder#Binder(Class)} constructor, introspection will be used
+         * to find a Java Bean property. If a JSR-303 bean validation
+         * implementation is present on the classpath, a {@link BeanValidator}
+         * is also added to the binding.
+         * <p>
+         * The property must have an accessible getter method.
+         *
+         * Nested property, when supported, can be referenced using the bean
+         * path, starting from the root class, for example 'address.streetName'.
+         * All intermediate getters must exist (e.g. {@code getAddress()}), and
+         * should never return {@literal null}, otherwise binding will fail.
+         *
+         * <p>
+         * <strong>Note:</strong> the field will be marked as readonly by
+         * invoking {@link HasValue#setReadOnly}.
+         *
+         * @see #bind(String)
+         *
+         * @param propertyName
+         *            the name of the property to bind, not null
+         * @return the newly created binding
+         *
+         * @throws IllegalArgumentException
+         *             if the property name is invalid
+         * @throws IllegalArgumentException
+         *             if the property has no accessible getter
+         * @throws IllegalStateException
+         *             if the binder is not configured with an appropriate
+         *             {@link PropertySet}
+         *
+         * @see BindingBuilder#bind(ValueProvider, Setter)
+         */
+        Binding<BEAN, TARGET> bindReadOnly(String propertyName);
 
         /**
          * Adds a validator to this binding. Validators are applied, in
@@ -469,6 +633,12 @@ public class Binder<BEAN> implements Serializable {
          * For instance, a {@code TextField} can be bound to an integer-typed
          * property using an appropriate converter such as a
          * {@link StringToIntegerConverter}.
+         * <p>
+         * The converted value is applied back to the field by default, this can
+         * be controlled with the method
+         * {@link Binding#setConvertBackToPresentation(boolean)}.
+         *
+         * @see Binding#setConvertBackToPresentation(boolean)
          *
          * @param <NEWTARGET>
          *            the type to convert to
@@ -495,6 +665,12 @@ public class Binder<BEAN> implements Serializable {
          * For instance, a {@code TextField} can be bound to an integer-typed
          * property using appropriate functions such as:
          * <code>withConverter(Integer::valueOf, String::valueOf);</code>
+         * <p>
+         * The converted value is applied back to the field by default, this can
+         * be controlled with the method
+         * {@link Binding#setConvertBackToPresentation(boolean)}.
+         *
+         * @see Binding#setConvertBackToPresentation(boolean)
          *
          * @param <NEWTARGET>
          *            the type to convert to
@@ -530,6 +706,12 @@ public class Binder<BEAN> implements Serializable {
          * For instance, a {@code TextField} can be bound to an integer-typed
          * property using appropriate functions such as:
          * <code>withConverter(Integer::valueOf, String::valueOf);</code>
+         * <p>
+         * The converted value is applied back to the field by default, this can
+         * be controlled with the method
+         * {@link Binding#setConvertBackToPresentation(boolean)}.
+         *
+         * @see Binding#setConvertBackToPresentation(boolean)
          *
          * @param <NEWTARGET>
          *            the type to convert to
@@ -566,9 +748,11 @@ public class Binder<BEAN> implements Serializable {
                 TARGET nullRepresentation) {
             return withConverter(
                     fieldValue -> Objects.equals(fieldValue, nullRepresentation)
-                            ? null : fieldValue,
+                            ? null
+                            : fieldValue,
                     modelValue -> Objects.isNull(modelValue)
-                            ? nullRepresentation : modelValue);
+                            ? nullRepresentation
+                            : modelValue);
         }
 
         /**
@@ -730,6 +914,7 @@ public class Binder<BEAN> implements Serializable {
         private final HasValue<?, FIELDVALUE> field;
         private BindingValidationStatusHandler statusHandler;
         private boolean isStatusHandlerChanged;
+        private Binding<BEAN, TARGET> binding;
 
         private boolean bound;
 
@@ -738,6 +923,8 @@ public class Binder<BEAN> implements Serializable {
          * correct order.
          */
         private Converter<FIELDVALUE, ?> converterValidatorChain;
+
+        private boolean asRequiredSet;
 
         /**
          * Creates a new binding builder associated with the given field.
@@ -776,6 +963,10 @@ public class Binder<BEAN> implements Serializable {
             BindingImpl<BEAN, FIELDVALUE, TARGET> binding = new BindingImpl<>(
                     this, getter, setter);
 
+            // Remove existing binding for same field to avoid potential
+            // multiple application of converter
+            getBinder().bindings.removeIf(
+                    registeredBinding -> registeredBinding.getField() == field);
             getBinder().bindings.add(binding);
             if (getBinder().getBean() != null) {
                 binding.initFieldValue(getBinder().getBean(), true);
@@ -789,13 +980,38 @@ public class Binder<BEAN> implements Serializable {
             if (getBinder().incompleteBindings != null) {
                 getBinder().incompleteBindings.remove(getField());
             }
+            this.binding = binding;
 
             return binding;
         }
 
         @Override
-        @SuppressWarnings({ "unchecked", "rawtypes" })
+        public Binding<BEAN, TARGET> bindReadOnly(
+                ValueProvider<BEAN, TARGET> getter) {
+            return bind(getter, null);
+        }
+
+        @Override
         public Binding<BEAN, TARGET> bind(String propertyName) {
+            return bind(propertyName, false);
+        }
+
+        @Override
+        public Binding<BEAN, TARGET> bindReadOnly(String propertyName) {
+            return bind(propertyName, true);
+        }
+
+        @SuppressWarnings("unchecked")
+        private Converter<TARGET, Object> createConverter(Class<?> getterType) {
+            return Converter.from(getterType::cast,
+                    propertyValue -> (TARGET) propertyValue, exception -> {
+                        throw new RuntimeException(exception);
+                    });
+        }
+
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        private Binding<BEAN, TARGET> bind(String propertyName,
+                boolean readOnly) {
             Objects.requireNonNull(propertyName,
                     "Property name cannot be null");
             checkUnbound();
@@ -807,8 +1023,9 @@ public class Binder<BEAN> implements Serializable {
                                     + " from " + getBinder().propertySet));
 
             ValueProvider<BEAN, ?> getter = definition.getGetter();
-            Setter<BEAN, ?> setter = definition.getSetter().orElse(null);
-            if (setter == null) {
+            Setter<BEAN, ?> setter = readOnly ? null
+                    : definition.getSetter().orElse(null);
+            if (!readOnly && setter == null) {
                 getLogger().info(
                         propertyName + " does not have an accessible setter");
             }
@@ -823,6 +1040,7 @@ public class Binder<BEAN> implements Serializable {
                 Binding binding = ((BindingBuilder) finalBinding).bind(getter,
                         setter);
                 getBinder().boundProperties.put(propertyName, binding);
+                this.binding = binding;
                 return binding;
             } finally {
                 if (getBinder().incompleteMemberFieldBindings != null) {
@@ -832,22 +1050,23 @@ public class Binder<BEAN> implements Serializable {
             }
         }
 
-        @SuppressWarnings("unchecked")
-        private Converter<TARGET, Object> createConverter(Class<?> getterType) {
-            return Converter.from(getterType::cast,
-                    propertyValue -> (TARGET) propertyValue, exception -> {
-                        throw new RuntimeException(exception);
-                    });
-        }
-
         @Override
         public BindingBuilder<BEAN, TARGET> withValidator(
                 Validator<? super TARGET> validator) {
             checkUnbound();
             Objects.requireNonNull(validator, "validator cannot be null");
 
+            Validator<? super TARGET> wrappedValidator = ((value, context) -> {
+                if (getBinder().isValidatorsDisabled() || (binding != null
+                        && binding.isValidatorsDisabled())) {
+                    return ValidationResult.ok();
+                } else {
+                    return validator.apply(value, context);
+                }
+            });
+
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) converterValidatorChain)
-                    .chain(new ValidatorAsConverter<>(validator));
+                    .chain(new ValidatorAsConverter<>(wrappedValidator));
             return this;
         }
 
@@ -884,8 +1103,15 @@ public class Binder<BEAN> implements Serializable {
         public BindingBuilder<BEAN, TARGET> asRequired(
                 Validator<TARGET> customRequiredValidator) {
             checkUnbound();
+            this.asRequiredSet = true;
             field.setRequiredIndicatorVisible(true);
-            return withValidator(customRequiredValidator);
+            return withValidator((value, context) -> {
+                if (!field.isRequiredIndicatorVisible()) {
+                    return ValidationResult.ok();
+                } else {
+                    return customRequiredValidator.apply(value, context);
+                }
+            });
         }
 
         /**
@@ -984,6 +1210,7 @@ public class Binder<BEAN> implements Serializable {
 
         private Registration onValueChange;
         private boolean valueInit = false;
+        private boolean convertedBack = false;
 
         /**
          * Contains all converters and validators chained together in the
@@ -991,16 +1218,33 @@ public class Binder<BEAN> implements Serializable {
          */
         private final Converter<FIELDVALUE, TARGET> converterValidatorChain;
 
+        private final boolean asRequiredSet;
+
+        private boolean validatorsDisabled = false;
+
+        private boolean convertBackToPresentation = true;
+
+        private Registration onValidationStatusChange;
+
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
                 Setter<BEAN, TARGET> setter) {
             binder = builder.getBinder();
             field = builder.field;
             statusHandler = builder.statusHandler;
+            this.asRequiredSet = builder.asRequiredSet;
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) builder.converterValidatorChain);
 
             onValueChange = getField().addValueChangeListener(
                     event -> handleFieldValueChange(event));
+
+            if (getBinder().isFieldsValidationStatusChangeListenerEnabled()
+                    && getField() instanceof HasValidator) {
+                HasValidator<FIELDVALUE> hasValidatorField = (HasValidator<FIELDVALUE>) getField();
+                onValidationStatusChange = hasValidatorField
+                        .addValidationStatusChangeListener(
+                                event -> this.validate());
+            }
 
             this.getter = getter;
             this.setter = setter;
@@ -1045,8 +1289,10 @@ public class Binder<BEAN> implements Serializable {
 
         /**
          * Removes this binding from its binder and unregisters the
-         * {@code ValueChangeListener} from any bound {@code HasValue}.
-         * It does nothing if it is called for an already unbound binding.
+         * {@code ValueChangeListener} from any bound {@code HasValue}, and
+         * {@code ValidationStatusChangeListener} from any bound
+         * {@code HasValidator}. It does nothing if it is called for an already
+         * unbound binding.
          */
         @Override
         public void unbind() {
@@ -1055,7 +1301,12 @@ public class Binder<BEAN> implements Serializable {
                 onValueChange = null;
             }
 
-            if(binder != null) {
+            if (onValidationStatusChange != null) {
+                onValidationStatusChange.remove();
+                onValidationStatusChange = null;
+            }
+
+            if (binder != null) {
                 binder.removeBindingInternal(this);
                 binder = null;
             }
@@ -1071,9 +1322,11 @@ public class Binder<BEAN> implements Serializable {
          * @return the result of the conversion
          */
         private Result<TARGET> doConversion() {
-            FIELDVALUE fieldValue = field.getValue();
-            return converterValidatorChain.convertToModel(fieldValue,
-                    createValueContext());
+            return execute(() -> {
+                FIELDVALUE fieldValue = field.getValue();
+                return converterValidatorChain.convertToModel(fieldValue,
+                        createValueContext());
+            });
         }
 
         private BindingValidationStatus<TARGET> toValidationStatus(
@@ -1111,8 +1364,7 @@ public class Binder<BEAN> implements Serializable {
 
         /**
          * Sets the field value by invoking the getter function on the given
-         * bean. The default listener attached to the field will be removed for
-         * the duration of this update.
+         * bean.
          *
          * @param bean
          *            the bean to fetch the property value from
@@ -1124,28 +1376,33 @@ public class Binder<BEAN> implements Serializable {
          */
         private void initFieldValue(BEAN bean, boolean writeBackChangedValues) {
             assert bean != null;
-            assert onValueChange != null;
             valueInit = true;
             try {
-                TARGET originalValue = getter.apply(bean);
-                field.setValue(convertToFieldType(originalValue));
+                execute(() -> {
+                    TARGET originalValue = getter.apply(bean);
+                    convertAndSetFieldValue(originalValue);
 
-                if (writeBackChangedValues && setter != null) {
-                    doConversion().ifOk(convertedValue -> {
-                        if (!Objects.equals(originalValue, convertedValue)) {
-                            setter.accept(bean, convertedValue);
-                        }
-                    });
-                }
+                    if (writeBackChangedValues && setter != null && !readOnly) {
+                        doConversion().ifOk(convertedValue -> {
+                            if (!Objects.equals(originalValue,
+                                    convertedValue)) {
+                                setter.accept(bean, convertedValue);
+                            }
+                        });
+                    }
+                    return null;
+                });
             } finally {
                 valueInit = false;
             }
         }
 
         private FIELDVALUE convertToFieldType(TARGET target) {
-            ValueContext valueContext = createValueContext();
-            return converterValidatorChain.convertToPresentation(target,
-                    valueContext);
+            return execute(() -> {
+                ValueContext valueContext = createValueContext();
+                return converterValidatorChain.convertToPresentation(target,
+                        valueContext);
+            });
         }
 
         /**
@@ -1156,7 +1413,8 @@ public class Binder<BEAN> implements Serializable {
         private void handleFieldValueChange(
                 ValueChangeEvent<FIELDVALUE> event) {
             // Don't handle change events when setting initial value
-            if (valueInit) {
+            if (valueInit || convertedBack) {
+                convertedBack = false;
                 return;
             }
 
@@ -1177,11 +1435,22 @@ public class Binder<BEAN> implements Serializable {
         private BindingValidationStatus<TARGET> writeFieldValue(BEAN bean) {
             assert bean != null;
 
-            Result<TARGET> result = doConversion();
-            if (!isReadOnly()) {
-                result.ifOk(value -> setter.accept(bean, value));
-            }
-            return toValidationStatus(result);
+            return execute(() -> {
+                Result<TARGET> result = doConversion();
+                if (!isReadOnly()) {
+                    result.ifOk(value -> {
+                        setter.accept(bean, value);
+                        if (convertBackToPresentation && value != null) {
+                            FIELDVALUE converted = convertToFieldType(value);
+                            if (!Objects.equals(field.getValue(), converted)) {
+                                convertedBack = true;
+                                getField().setValue(converted);
+                            }
+                        }
+                    });
+                }
+                return toValidationStatus(result);
+            });
         }
 
         /**
@@ -1201,7 +1470,36 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public void read(BEAN bean) {
-            field.setValue(convertToFieldType(getter.apply(bean)));
+            convertAndSetFieldValue(getter.apply(bean));
+        }
+
+        private void convertAndSetFieldValue(TARGET modelValue) {
+            execute(() -> {
+                FIELDVALUE convertedValue = convertToFieldType(modelValue);
+                try {
+                    field.setValue(convertedValue);
+                } catch (RuntimeException e) {
+                    /*
+                     * Add an additional hint to the exception for the typical
+                     * case with a field that doesn't accept null values. The
+                     * non-null empty value is used as a heuristic to determine
+                     * that the field doesn't accept null rather than throwing
+                     * for some other reason.
+                     */
+                    if (convertedValue == null
+                            && field.getEmptyValue() != null) {
+                        throw new IllegalStateException(String.format(
+                                "A field of type %s didn't accept a null value."
+                                        + " If null values are expected, then configure a null representation for the binding.",
+                                field.getClass().getName()), e);
+                    } else {
+                        // Otherwise, let the original exception speak for
+                        // itself
+                        throw e;
+                    }
+                }
+                return null;
+            });
         }
 
         @Override
@@ -1227,6 +1525,65 @@ public class Binder<BEAN> implements Serializable {
         @Override
         public Setter<BEAN, TARGET> getSetter() {
             return setter;
+        }
+
+        @Override
+        public void setAsRequiredEnabled(boolean asRequiredEnabled) {
+            if (!asRequiredSet) {
+                throw new IllegalStateException(
+                        "Unable to toggle asRequired validation since "
+                                + "asRequired has not been set.");
+            }
+            if (asRequiredEnabled != isAsRequiredEnabled()) {
+                field.setRequiredIndicatorVisible(asRequiredEnabled);
+                validate();
+            }
+        }
+
+        @Override
+        public boolean isAsRequiredEnabled() {
+            return field.isRequiredIndicatorVisible();
+        }
+
+        @Override
+        public void setValidatorsDisabled(boolean validatorsDisabled) {
+            this.validatorsDisabled = validatorsDisabled;
+        }
+
+        @Override
+        public boolean isValidatorsDisabled() {
+            return validatorsDisabled;
+        }
+
+        @Override
+        public void setConvertBackToPresentation(
+                boolean convertBackToPresentation) {
+            this.convertBackToPresentation = convertBackToPresentation;
+        }
+
+        @Override
+        public boolean isConvertBackToPresentation() {
+            return convertBackToPresentation;
+        }
+
+        private <T> T execute(Supplier<T> supplier) {
+            try {
+                return supplier.get();
+            } catch (BindingException exception) {
+                throw exception;
+            } catch (Exception exception) {
+                BindingExceptionHandler handler = binder
+                        .getBindingExceptionHandler();
+                Optional<BindingException> bindingException = handler
+                        .handleException(field, exception);
+                if (bindingException.isPresent()) {
+                    BindingException toThrow = bindingException.get();
+                    toThrow.fillInStackTrace();
+                    throw toThrow;
+                } else {
+                    throw exception;
+                }
+            }
         }
     }
 
@@ -1332,7 +1689,15 @@ public class Binder<BEAN> implements Serializable {
 
     private BinderValidationStatusHandler<BEAN> statusHandler;
 
+    private BinderValidationErrorHandler errorHandler = new DefaultBinderValidationErrorHandler();
+
+    private BindingExceptionHandler exceptionHandler = new DefaultBindingExceptionHandler();
+
     private Set<Binding<BEAN, ?>> changedBindings = new LinkedHashSet<>();
+
+    private boolean validatorsDisabled = false;
+
+    private boolean fieldsValidationStatusChangeListenerEnabled = true;
 
     /**
      * Creates a binder using a custom {@link PropertySet} implementation for
@@ -1351,6 +1716,8 @@ public class Binder<BEAN> implements Serializable {
     /**
      * Creates a new binder that uses reflection based on the provided bean type
      * to resolve bean properties.
+     *
+     * Nested properties are resolved lazily, when bound to a field.
      *
      * @param beanType
      *            the bean type to use, not <code>null</code>
@@ -1384,6 +1751,24 @@ public class Binder<BEAN> implements Serializable {
                                 + "To be able to use property names and bind to instance fields, create the binder using the Binder(Class<BEAN> beanType) constructor instead.");
             }
         });
+    }
+
+    /**
+     * Creates a new binder that uses reflection based on the provided bean type
+     * to resolve bean properties.
+     *
+     * If {@code scanNestedDefinitions} is true, nested properties are detected
+     * eagerly. Otherwise, they will be discovered lazily when the property is
+     * bound to a field.
+     *
+     * @param beanType
+     *            the bean type to use, not {@code null}
+     * @param scanNestedDefinitions
+     *            if {@code true}, scan for nested property definitions as well
+     */
+    public Binder(Class<BEAN> beanType, boolean scanNestedDefinitions) {
+        this(BeanPropertySet.get(beanType, scanNestedDefinitions,
+                PropertyFilterDefinition.getDefaultFilter()));
     }
 
     /**
@@ -1431,20 +1816,6 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Creates a new binder that uses reflection based on the provided bean type
-     * to resolve bean properties.
-     *
-     * @param beanType
-     *            the bean type to use, not {@code null}
-     * @param scanNestedDefinitions
-     *            if {@code true}, scan for nested property definitions as well
-     */
-    public Binder(Class<BEAN> beanType, boolean scanNestedDefinitions) {
-        this(BeanPropertySet.get(beanType, scanNestedDefinitions,
-                PropertyFilterDefinition.getDefaultFilter()));
-    }
-
-    /**
      * Returns the bean that has been bound with {@link #bind}, or null if a
      * bean is not currently bound.
      *
@@ -1484,9 +1855,9 @@ public class Binder<BEAN> implements Serializable {
 
         return createBinding(field, createNullRepresentationAdapter(field),
                 this::handleValidationStatus)
-                        .withValidator(field instanceof HasValidator
-                                ? ((HasValidator) field).getDefaultValidator()
-                                : Validator.alwaysPass());
+                .withValidator(field instanceof HasValidator
+                        ? ((HasValidator) field).getDefaultValidator()
+                        : Validator.alwaysPass());
     }
 
     /**
@@ -1580,6 +1951,61 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
+     * Binds a field to a bean property represented by the given getter. The
+     * function is used to update the field value from the property. The field
+     * value is not written back to the bean so the binding is read-only.
+     * <p>
+     * Use the {@link #forField(HasValue)} overload instead if you want to
+     * further configure the new binding.
+     * <p>
+     * <strong>Note:</strong> Not all {@link HasValue} implementations support
+     * passing {@code null} as the value. For these the Binder will
+     * automatically change {@code null} to a null representation provided by
+     * {@link HasValue#getEmptyValue()}. This conversion is one-way only, if you
+     * want to have a two-way mapping back to {@code null}, use
+     * {@link #forField(HasValue)} and
+     * {@link BindingBuilder#withNullRepresentation(Object)}.
+     * <p>
+     * When a bean is bound with {@link Binder#setBean(Object)}, the field value
+     * is set to the return value of the given getter.
+     * <p>
+     * If the Binder is already bound to some bean, the newly bound field is
+     * associated with the corresponding bean property as described above.
+     * <p>
+     * The getter can be arbitrary function, for instance implementing
+     * user-defined conversion or validation. However, in the most basic use
+     * case you can simply pass a pair of method references to this method as
+     * follows:
+     *
+     * <pre>
+     * class Person {
+     *     public String getName() { ... }
+     * }
+     *
+     * TextField nameField = new TextField();
+     * binder.bindReadOnly(nameField, Person::getName);
+     * </pre>
+     *
+     * <p>
+     * <strong>Note:</strong> the field will be marked as read-only by invoking
+     * ({@link HasValue#setReadOnly(boolean)}.
+     *
+     * @param <FIELDVALUE>
+     *            the value type of the field
+     * @param field
+     *            the field to bind, not null
+     * @param getter
+     *            the function to get the value of the property to the field,
+     *            not null
+     * @return the newly created binding
+     */
+    public <FIELDVALUE> Binding<BEAN, FIELDVALUE> bindReadOnly(
+            HasValue<?, FIELDVALUE> field,
+            ValueProvider<BEAN, FIELDVALUE> getter) {
+        return forField(field).bindReadOnly(getter);
+    }
+
+    /**
      * Binds the given field to the property with the given name. The getter and
      * setter of the property are looked up using a {@link PropertySet}.
      * <p>
@@ -1591,6 +2017,14 @@ public class Binder<BEAN> implements Serializable {
      * The property must have an accessible getter method. It need not have an
      * accessible setter; in that case the property value is never updated and
      * the binding is said to be <i>read-only</i>.
+     *
+     * Nested properties support depends on the {@link PropertySet} type used to
+     * build the {@code Binder}. If support is available, for example using the
+     * default {@link BeanPropertySet}, nested property are supported and can be
+     * referenced using the bean path, starting from the root class, for example
+     * 'address.streetName'. All intermediate getters must exist (e.g.
+     * {@code getAddress()}), and should never return {@literal null}, otherwise
+     * binding will fail.
      *
      * @param <FIELDVALUE>
      *            the value type of the field to bind
@@ -1616,6 +2050,49 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
+     * Binds the given field to the property with the given name. The getter of
+     * the property is looked up using a {@link PropertySet}. The field value is
+     * not written back to the bean so the binding is read-only.
+     * <p>
+     * For a <code>Binder</code> created using the {@link Binder#Binder(Class)}
+     * constructor, introspection will be used to find a Java Bean property. If
+     * a JSR-303 bean validation implementation is present on the classpath, a
+     * {@link BeanValidator} is also added to the binding.
+     * <p>
+     * The property must have an accessible getter method.
+     *
+     * Nested properties support depends on the {@link PropertySet} type used to
+     * build the {@code Binder}. If support is available, for example using the
+     * default {@link BeanPropertySet}, nested property are supported and can be
+     * referenced using the bean path, starting from the root class, for example
+     * 'address.streetName'. All intermediate getters must exist (e.g.
+     * {@code getAddress()}), and should never return {@literal null}, otherwise
+     * binding will fail.
+     *
+     * @param <FIELDVALUE>
+     *            the value type of the field to bind
+     * @param field
+     *            the field to bind, not null
+     * @param propertyName
+     *            the name of the property to bind, not null
+     * @return the newly created binding
+     *
+     * @throws IllegalArgumentException
+     *             if the property name is invalid
+     * @throws IllegalArgumentException
+     *             if the property has no accessible getter
+     * @throws IllegalStateException
+     *             if the binder is not configured with an appropriate
+     *             {@link PropertySet}
+     *
+     * @see #bind(HasValue, ValueProvider, Setter)
+     */
+    public <FIELDVALUE> Binding<BEAN, FIELDVALUE> bindReadOnly(
+            HasValue<?, FIELDVALUE> field, String propertyName) {
+        return forField(field).bindReadOnly(propertyName);
+    }
+
+    /**
      * Binds the given bean to all the fields added to this Binder. A
      * {@code null} value removes a currently bound bean.
      * <p>
@@ -1635,6 +2112,7 @@ public class Binder<BEAN> implements Serializable {
      * @see #readBean(Object)
      * @see #writeBean(Object)
      * @see #writeBeanIfValid(Object)
+     * @see #refreshFields()
      *
      * @param bean
      *            the bean to edit, or {@code null} to remove a currently bound
@@ -1690,21 +2168,40 @@ public class Binder<BEAN> implements Serializable {
         if (bean == null) {
             clearFields();
         } else {
+            getBindings().forEach(binding -> {
+                /*
+                 * Some bindings may have been removed from binder during
+                 * readBean. We should skip those bindings to avoid NPE inside
+                 * initFieldValue. It happens e.g. when we unbind a binding in
+                 * valueChangeListener of another field.
+                 */
+                if (binding.getField() != null) {
+                    binding.initFieldValue(bean, false);
+                }
+            });
             changedBindings.clear();
-            getBindings()
-                    .forEach(binding -> {
-                        // Some bindings may have been removed from binder
-                        // during readBean. We should skip those bindings to
-                        // avoid NPE inside initFieldValue. It happens e.g. when
-                        // we unbind a binding in valueChangeListener of another
-                        // field.
-                        if(binding.getField() != null)
-                            binding.initFieldValue(bean, false);
-                    });
             getValidationStatusHandler().statusChange(
                     BinderValidationStatus.createUnresolvedStatus(this));
             fireStatusChangeEvent(false);
         }
+    }
+
+    /**
+     * Refreshes the fields values by reading them again from the currently
+     * associated bean via invoking their corresponding value provider methods.
+     * <p>
+     * If no bean is currently associated with this binder
+     * ({@link #setBean(Object)} has not been called before invoking this
+     * method), the bound fields will be cleared.
+     * <p>
+     *
+     * @see #setBean(Object)
+     * @see #readBean(Object)
+     * @see #writeBean(Object)
+     * @see #writeBeanIfValid(Object)
+     */
+    public void refreshFields() {
+        readBean(bean);
     }
 
     /**
@@ -1730,12 +2227,48 @@ public class Binder<BEAN> implements Serializable {
      *             if some of the bound field values fail to validate
      */
     public void writeBean(BEAN bean) throws ValidationException {
-        BinderValidationStatus<BEAN> status = doWriteIfValid(bean,
-                new ArrayList<>(bindings));
+        BinderValidationStatus<BEAN> status = doWriteIfValid(bean, bindings);
         if (status.hasErrors()) {
             throw new ValidationException(status.getFieldValidationErrors(),
                     status.getBeanValidationErrors());
         }
+    }
+
+    /**
+     * Writes successfully converted and validated changes from the bound fields
+     * to the bean even if there are other fields with non-validated changes.
+     *
+     * @see #writeBean(Object)
+     * @see #writeBeanIfValid(Object)
+     * @see #readBean(Object)
+     * @see #setBean(Object)
+     *
+     * @param bean
+     *            the object to which to write the field values, not
+     *            {@code null}
+     */
+    public void writeBeanAsDraft(BEAN bean) {
+        doWriteDraft(bean, new ArrayList<>(bindings), false);
+    }
+
+    /**
+     * Writes successfully converted changes from the bound fields bypassing all
+     * the Validation or all fields passing conversion if forced = true. If the
+     * conversion fails, the value written to the bean will be null.
+     *
+     * @see #writeBean(Object)
+     * @see #writeBeanIfValid(Object)
+     * @see #readBean(Object)
+     * @see #setBean(Object)
+     *
+     * @param bean
+     *            the object to which to write the field values, not
+     *            {@code null}
+     * @param forced
+     *            disable all Validators during write
+     */
+    public void writeBeanAsDraft(BEAN bean, boolean forced) {
+        doWriteDraft(bean, new ArrayList<>(bindings), forced);
     }
 
     /**
@@ -1760,7 +2293,7 @@ public class Binder<BEAN> implements Serializable {
      *         updated, {@code false} otherwise
      */
     public boolean writeBeanIfValid(BEAN bean) {
-        return doWriteIfValid(bean, new ArrayList<>(bindings)).isOk();
+        return doWriteIfValid(bean, bindings).isOk();
     }
 
     /**
@@ -1783,19 +2316,31 @@ public class Binder<BEAN> implements Serializable {
         Objects.requireNonNull(bean, "bean cannot be null");
         List<ValidationResult> binderResults = Collections.emptyList();
 
+        // make a copy of the incoming bindings to avoid their modifications
+        // during validation
+        Collection<Binding<BEAN, ?>> currentBindings = new ArrayList<>(
+                bindings);
+
         // First run fields level validation, if no validation errors then
         // update bean
-        List<BindingValidationStatus<?>> bindingResults = bindings.stream()
-                .map(b -> b.validate(false)).collect(Collectors.toList());
+        List<BindingValidationStatus<?>> bindingResults = currentBindings
+                .stream().map(b -> b.validate(false))
+                .collect(Collectors.toList());
 
         if (bindingResults.stream()
                 .noneMatch(BindingValidationStatus::isError)) {
             // Store old bean values so we can restore them if validators fail
             Map<Binding<BEAN, ?>, Object> oldValues = getBeanState(bean,
-                    bindings);
+                    currentBindings);
 
-            bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
-                    .writeFieldValue(bean));
+            // Field level validation can be skipped as it was done already
+            boolean validatorsDisabledStatus = isValidatorsDisabled();
+            setValidatorsDisabled(true);
+            currentBindings
+                    .forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
+                            .writeFieldValue(bean));
+            setValidatorsDisabled(validatorsDisabledStatus);
+
             // Now run bean level validation against the updated bean
             binderResults = validateBean(bean);
             if (binderResults.stream().anyMatch(ValidationResult::isError)) {
@@ -1806,7 +2351,7 @@ public class Binder<BEAN> implements Serializable {
                  * Changes have been successfully saved. The set is only cleared
                  * when the changes are stored in the currently set bean.
                  */
-                bindings.clear();
+                changedBindings.clear();
             } else if (getBean() == null) {
                 /*
                  * When using readBean and writeBean there is no knowledge of
@@ -1823,6 +2368,34 @@ public class Binder<BEAN> implements Serializable {
         getValidationStatusHandler().statusChange(status);
         fireStatusChangeEvent(!status.isOk());
         return status;
+    }
+
+    /**
+     * Writes the successfully converted and validated field values into the
+     * given bean.
+     *
+     * @param bean
+     *            the bean to write field values into
+     * @param bindings
+     *            the set of bindings to write to the bean
+     * @param forced
+     *            disable validators during write if true
+     */
+    @SuppressWarnings({ "unchecked" })
+    private void doWriteDraft(BEAN bean, Collection<Binding<BEAN, ?>> bindings,
+            boolean forced) {
+        Objects.requireNonNull(bean, "bean cannot be null");
+
+        if (!forced) {
+            bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
+                    .writeFieldValue(bean));
+        } else {
+            boolean isDisabled = isValidatorsDisabled();
+            setValidatorsDisabled(true);
+            bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
+                    .writeFieldValue(bean));
+            setValidatorsDisabled(isDisabled);
+        }
     }
 
     /**
@@ -1884,7 +2457,14 @@ public class Binder<BEAN> implements Serializable {
      */
     public Binder<BEAN> withValidator(Validator<? super BEAN> validator) {
         Objects.requireNonNull(validator, "validator cannot be null");
-        validators.add(validator);
+        Validator<? super BEAN> wrappedValidator = ((value, context) -> {
+            if (isValidatorsDisabled()) {
+                return ValidationResult.ok();
+            } else {
+                return validator.apply(value, context);
+            }
+        });
+        validators.add(wrappedValidator);
         return this;
     }
 
@@ -2155,6 +2735,47 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
+     * Gets the validation error of this form.
+     * <p>
+     * If none has been set with
+     * {@link #setValidationErrorHandler(BinderValidationErrorHandler)}, the
+     * default implementation is returned.
+     *
+     * @return the error handler used, never <code>null</code>
+     * @see #handleError(HasValue, ValidationResult)
+     * @see #clearError(HasValue)
+     * @see DefaultBinderValidationErrorHandler
+     */
+    public BinderValidationErrorHandler getValidationErrorHandler() {
+        return errorHandler;
+    }
+
+    /**
+     * Sets the validation error handler to update error status for fields when
+     * the user input is validated.
+     * <p>
+     * The error handler is invoked by methods
+     * {@link #handleError(HasValue, ValidationResult)} and
+     * {@link #clearError(HasValue)}.
+     * <p>
+     * {@link DefaultBinderValidationErrorHandler} instance is used if the
+     * handler is not explicitly set.
+     *
+     * @param handler
+     *            the status handler to set, not <code>null</code>
+     * @throws NullPointerException
+     *             for <code>null</code> status handler
+     * @see #handleError(HasValue, ValidationResult)
+     * @see #clearError(HasValue)
+     */
+    public void setValidationErrorHandler(
+            BinderValidationErrorHandler handler) {
+        Objects.requireNonNull(handler, "Cannot set a null "
+                + BinderValidationErrorHandler.class.getSimpleName());
+        errorHandler = handler;
+    }
+
+    /**
      * Adds status change listener to the binder.
      * <p>
      * The {@link Binder} status is changed whenever any of the following
@@ -2202,16 +2823,16 @@ public class Binder<BEAN> implements Serializable {
             SerializableConsumer<T> method) {
         List<SerializableConsumer<?>> list = listeners
                 .computeIfAbsent(eventType, key -> new ArrayList<>());
-        list.add(method);
-        return () -> list.remove(method);
+        return Registration.addAndRemove(list, method);
     }
 
     /**
      * Adds field value change listener to all the fields in the binder.
      * <p>
-     * Added listener is notified every time whenever any bound field value is
-     * changed, i.e. the UI component value was changed, passed all the
-     * conversions and validations then propagated to the bound bean field. The
+     * Added listener is notified every time after any bound field value is
+     * changed, i.e. the UI component value was changed and passed or failed any
+     * conversions and validations. If conversions and validations passed, the
+     * value in the bean will be updated before the listener is executed. The
      * same functionality can be achieved by adding a
      * {@link ValueChangeListener} to all fields in the {@link Binder}.
      * <p>
@@ -2273,6 +2894,8 @@ public class Binder<BEAN> implements Serializable {
     /**
      * Handles a validation error emitted when trying to write the value of the
      * given field.
+     * <p>
+     * TODO:
      *
      * @param field
      *            the field with the invalid value
@@ -2280,24 +2903,19 @@ public class Binder<BEAN> implements Serializable {
      *            the validation error result
      */
     protected void handleError(HasValue<?, ?> field, ValidationResult result) {
-        if (field instanceof HasValidation) {
-            HasValidation fieldWithValidation = (HasValidation) field;
-            fieldWithValidation.setInvalid(true);
-            fieldWithValidation.setErrorMessage(result.getErrorMessage());
-        }
+        getValidationErrorHandler().handleError(field, result);
     }
 
     /**
      * Clears the error condition of the given field, if any.
+     * <p>
+     * TODO
      *
      * @param field
      *            the field with an invalid value
      */
     protected void clearError(HasValue<?, ?> field) {
-        if (field instanceof HasValidation) {
-            HasValidation fieldWithValidation = (HasValidation) field;
-            fieldWithValidation.setInvalid(false);
-        }
+        getValidationErrorHandler().clearError(field);
     }
 
     /**
@@ -2377,7 +2995,8 @@ public class Binder<BEAN> implements Serializable {
      * this method with it seldom makes sense and almost always returns false.
      *
      * Return values for each case are compiled into the following table:
-     * <table summary="Return values">
+     * <table>
+     * <caption>Return values</caption>
      * <tr>
      * <td></td>
      * <td>After readBean, setBean or removeBean</td>
@@ -2464,10 +3083,11 @@ public class Binder<BEAN> implements Serializable {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void fireEvent(Object event) {
-        listeners.entrySet().stream().filter(
+        new HashMap<>(listeners).entrySet().stream().filter(
                 entry -> entry.getKey().isAssignableFrom(event.getClass()))
                 .forEach(entry -> {
-                    for (Consumer consumer : entry.getValue()) {
+                    for (Consumer consumer : new ArrayList<>(
+                            entry.getValue())) {
                         consumer.accept(event);
                     }
                 });
@@ -2478,7 +3098,8 @@ public class Binder<BEAN> implements Serializable {
         Converter<FIELDVALUE, FIELDVALUE> nullRepresentationConverter = Converter
                 .from(fieldValue -> fieldValue,
                         modelValue -> Objects.isNull(modelValue)
-                                ? field.getEmptyValue() : modelValue,
+                                ? field.getEmptyValue()
+                                : modelValue,
                         Throwable::getMessage);
         ConverterDelegate<FIELDVALUE> converter = new ConverterDelegate<>(
                 nullRepresentationConverter);
@@ -2539,9 +3160,11 @@ public class Binder<BEAN> implements Serializable {
      * It's not always possible to bind a field to a property because their
      * types are incompatible. E.g. custom converter is required to bind
      * {@code HasValue<String>} and {@code Integer} property (that would be a
-     * case of "age" property). In such case {@link IllegalStateException} will
-     * be thrown unless the field has been configured manually before calling
-     * the {@link #bindInstanceFields(Object)} method.
+     * case of "age" property). In such case, an attempt is made to get a
+     * suitable converter from a {@link ConverterFactory} but, if there is no
+     * match, an {@link IllegalStateException} will be thrown, unless the field
+     * has been configured manually before calling the
+     * {@link #bindInstanceFields(Object)} method.
      * <p>
      * It's always possible to do custom binding for any field: the
      * {@link #bindInstanceFields(Object)} method doesn't override existing
@@ -2552,6 +3175,7 @@ public class Binder<BEAN> implements Serializable {
      * @throws IllegalStateException
      *             if there are incompatible HasValue&lt;T&gt; and property
      *             types
+     * @see #getConverterFactory()
      */
     public void bindInstanceFields(Object objectWithMemberFields) {
         Class<?> objectClass = objectWithMemberFields.getClass();
@@ -2644,7 +3268,13 @@ public class Binder<BEAN> implements Serializable {
                     memberField.getName(),
                     objectWithMemberFields.getClass().getName()));
         }
-        if (propertyType.equals(GenericTypeReflector.erase(valueType))) {
+        Class<?> erasedValueType = GenericTypeReflector.erase(valueType);
+        boolean compatibleTypes = propertyType.equals(erasedValueType);
+        Converter automaticConverter = compatibleTypes ? null
+                : getConverterFactory()
+                        .newInstance(erasedValueType, propertyType)
+                        .orElse(null);
+        if (compatibleTypes || automaticConverter != null) {
             HasValue<?, ?> field;
             // Get the field from the object
             try {
@@ -2660,8 +3290,32 @@ public class Binder<BEAN> implements Serializable {
                         (Class<? extends HasValue<?, ?>>) memberField
                                 .getType());
                 initializeField(objectWithMemberFields, memberField, field);
+            } else if (incompleteBindings != null
+                    && incompleteBindings.get(field) != null) {
+                // A manual binding is ongoing for this field, so we should not
+                // automatically bind it, otherwise we may silently overwrite
+                // current configuration.
+                // 'bindInstanceFields' states that it doesn't override existing
+                // bindings and that incomplete bindings may be completed also
+                // after method call
+                LoggerFactory.getLogger(Binder.class.getName()).debug(
+                        "Binding for member '{}' of class '{}' will not be automatically "
+                                + "created because a custom binding has been started "
+                                + "but not yet finalized with 'bind()' invocation.",
+                        memberField.getName(),
+                        objectWithMemberFields.getClass().getName());
+                return false;
             }
-            forField(field).bind(property);
+            BindingBuilder<BEAN, ?> bindingBuilder = forField(field);
+            if (automaticConverter != null) {
+                // Forcing a converter will overwrite null handling set by
+                // forField() using createNullRepresentationAdapter()
+                // so we need to add a null representation based on same logics.
+                bindingBuilder = ((BindingBuilder) bindingBuilder)
+                        .withNullRepresentation(field.getEmptyValue())
+                        .withConverter(automaticConverter);
+            }
+            bindingBuilder.bind(property);
             return true;
         } else {
             throw new IllegalStateException(String.format(
@@ -2670,6 +3324,23 @@ public class Binder<BEAN> implements Serializable {
                             + "Binding should be configured manually using converter.",
                     propertyType.getName(), valueType.getTypeName()));
         }
+    }
+
+    /**
+     * Gets an instance of {@link ConverterFactory} that can be used to detect a
+     * suitable converter for bindings when presentation and model types are not
+     * compatible and a converter has not been explicitly configured.
+     *
+     * By default, returns a factory capable of handling standard converters.
+     *
+     * Subclasses can override this method to provide additional or customized
+     * conversion rules by creating a completely new factory implementation or
+     * composing with the default one.
+     *
+     * @return an instance of {@link ConverterFactory}, never {@literal null}.
+     */
+    protected ConverterFactory getConverterFactory() {
+        return DefaultConverterFactory.INSTANCE;
     }
 
     /**
@@ -2755,7 +3426,6 @@ public class Binder<BEAN> implements Serializable {
 
         Boolean isPropertyBound = propertyHandler.apply(propertyName,
                 descriptor.get().getType());
-        assert boundProperties.containsKey(propertyName);
         return isPropertyBound;
     }
 
@@ -2807,11 +3477,8 @@ public class Binder<BEAN> implements Serializable {
     }
 
     private static void setVisible(HasText label, boolean visible) {
-        if (visible) {
-            label.getElement().getStyle().remove("display");
-        } else {
-            label.getElement().getStyle().set("display", "none");
-        }
+        label.getElement().getStyle()
+                .setDisplay((visible ? null : Style.Display.NONE));
     }
 
     /**
@@ -2857,6 +3524,7 @@ public class Binder<BEAN> implements Serializable {
         if (bindings.remove(binding)) {
             boundProperties.entrySet()
                     .removeIf(entry -> entry.getValue().equals(binding));
+            changedBindings.remove(binding);
         }
     }
 
@@ -2870,5 +3538,87 @@ public class Binder<BEAN> implements Serializable {
         Objects.requireNonNull(propertyName, "Property name may not be null");
         Optional.ofNullable(boundProperties.get(propertyName))
                 .ifPresent(Binding::unbind);
+    }
+
+    /**
+     * Control whether validators including bean level validators are disabled
+     * or enabled globally for this Binder.
+     *
+     * @param validatorsDisabled
+     *            Boolean value.
+     */
+    public void setValidatorsDisabled(boolean validatorsDisabled) {
+        this.validatorsDisabled = validatorsDisabled;
+    }
+
+    /**
+     * Returns if the validators including bean level validators are disabled or
+     * enabled for this Binder.
+     *
+     * @return Boolean value
+     */
+    public boolean isValidatorsDisabled() {
+        return validatorsDisabled;
+    }
+
+    /**
+     * Control whether bound fields implementing {@link HasValidator} subscribe
+     * for field's {@code ValidationStatusChangeEvent}s and will
+     * {@code validate} upon receiving them.
+     *
+     * @param fieldsValidationStatusChangeListenerEnabled
+     *            Boolean value.
+     */
+    public void setFieldsValidationStatusChangeListenerEnabled(
+            boolean fieldsValidationStatusChangeListenerEnabled) {
+        this.fieldsValidationStatusChangeListenerEnabled = fieldsValidationStatusChangeListenerEnabled;
+    }
+
+    /**
+     * Returns if the bound fields implementing {@link HasValidator} subscribe
+     * for field's {@code ValidationStatusChangeEvent}s and will
+     * {@code validate} upon receiving them.
+     *
+     * @return Boolean value
+     */
+    public boolean isFieldsValidationStatusChangeListenerEnabled() {
+        return fieldsValidationStatusChangeListenerEnabled;
+    }
+
+    /**
+     * Sets a {@code handler} to customize the {@link RuntimeException} thrown
+     * by delegates (like {@link Setter}, {@link ValueProvider},
+     * {@link HasValue}) used inside {@link Binder} to be able to identify the
+     * bound field.
+     * <p>
+     * It allows to set a custom binding exception handler in case of exception
+     * details provided be the default handler are not enough, or, in other way
+     * around, it should be reduced.
+     * <p>
+     * {@link DefaultBindingExceptionHandler} instance is used if the handler is
+     * not explicitly set.
+     *
+     *
+     * @see BindingExceptionHandler
+     * @see DefaultBindingExceptionHandler
+     *
+     * @param handler
+     *            the exception handler, not {@code null}
+     */
+    public void setBindingExceptionHandler(BindingExceptionHandler handler) {
+        exceptionHandler = Objects.requireNonNull(handler);
+    }
+
+    /**
+     * Gets the current exception handler.
+     * <p>
+     * If none has been set with
+     * {@link #setBindingExceptionHandler(BindingExceptionHandler)}, the default
+     * implementation is returned.
+     *
+     * @return the exception handler, not {@code null}
+     */
+    public BindingExceptionHandler getBindingExceptionHandler() {
+        return exceptionHandler;
     }
 }

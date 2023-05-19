@@ -1,0 +1,52 @@
+{
+  "name": "@vaadin/flow-deps",
+  "description": "Flow client package",
+  "version": "0.0.1",
+  "main": "src/main/resources/META-INF/frontend/Flow",
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow/issues"
+  },
+  "scripts": {
+    "lint": "eslint \"src/main/frontend\"",
+    "client": "node scripts/client.js",
+    "webpack": "webpack --config=webpack.tests.config.js",
+    "build": "npm run client && tsc",
+    "compile": "npm run build && npm run lint",
+    "install-deps": "node node_modules/esbuild/install.js && playwright install",
+    "test": "npm run install-deps && web-test-runner --node-resolve --playwright",
+    "test-watch": "npm run install-deps && web-test-runner --node-resolve --playwright --watch"
+  },
+  "homepage": "https://vaadin.com",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/vaadin/flow.git"
+  },
+  "files": [
+    "src/main/frontend"
+  ],
+  "devDependencies": {
+    "@open-wc/testing": "^3.1.7",
+    "@types/chai": "^4.3.4",
+    "@types/sinon": "^10.0.13",
+    "@typescript-eslint/eslint-plugin": "^3.10.1",
+    "@web/dev-server-esbuild": "^0.3.3",
+    "@web/test-runner": "^0.15.0",
+    "@web/test-runner-playwright": "^0.9.0",
+    "eslint": "7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-vaadin": "0.4.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-lit": "1.4.1",
+    "eslint-plugin-prettier": "^3.4.1",
+    "mock-xmlhttprequest": "^8.1.0",
+    "prettier": "^2.8.4",
+    "sinon": "^15.0.1",
+    "typescript": "^4.5.3"
+  },
+  "dependencies": {
+    "@vaadin/common-frontend": "0.0.18",
+    "lit": "2.6.1"
+  }
+}

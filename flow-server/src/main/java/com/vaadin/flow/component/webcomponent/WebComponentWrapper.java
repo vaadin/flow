@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -32,12 +33,14 @@ import elemental.json.JsonValue;
 /**
  * Wrapper component for a web component that exposes {@link ClientCallable}
  * methods that the client-side components expect to be available.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 public class WebComponentWrapper extends Component {
 
-    private Component child;
     private WebComponentBinding<?> webComponentBinding;
 
     // Disconnect timeout
@@ -48,21 +51,46 @@ public class WebComponentWrapper extends Component {
      * Wrapper class for the server side WebComponent.
      *
      * @param rootElement
-     *         {@link Element} to which the {@code WebComponentWrapper} is bound
-     *         to.
+     *            {@link Element} to which the {@code WebComponentWrapper} is
+     *            bound to.
      * @param binding
-     *         binding that offers methods for delivering property updates to
-     *         the {@code component} being wrapped by {@code
-     *         WebComponentWrapper}
+     *            binding that offers methods for delivering property updates to
+     *            the {@code component} being wrapped by
+     *            {@code WebComponentWrapper}
      */
     public WebComponentWrapper(Element rootElement,
-                               WebComponentBinding<?> binding) {
+            WebComponentBinding<?> binding) {
         super(rootElement);
-        Objects.requireNonNull(binding, "Parameter 'binding' must not be null!");
+        Objects.requireNonNull(binding,
+                "Parameter 'binding' must not be null!");
 
-        this.webComponentBinding = binding;
-        this.child = webComponentBinding.getComponent();
-        getElement().appendChild(child.getElement());
+        webComponentBinding = binding;
+        getElement().attachShadow()
+                .appendChild(webComponentBinding.getComponent().getElement());
+    }
+
+    /**
+     * Wrapper class for the server side WebComponent.
+     *
+     * @param rootElement
+     *            {@link Element} to which the {@code WebComponentWrapper} is
+     *            bound to.
+     * @param binding
+     *            binding that offers methods for delivering property updates to
+     *            the {@code component} being wrapped by
+     *            {@code WebComponentWrapper}
+     * @param bootstrapElements
+     *            elements that should be added to the shadow dom of the
+     *            {@code rootElement}. These are copies of the original elements
+     *            and the copies are created by
+     *            {@link com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry}
+     */
+    protected WebComponentWrapper(Element rootElement,
+            WebComponentBinding<?> binding, List<Element> bootstrapElements) {
+        this(rootElement, binding);
+        // shadow root is attached in this(...)
+        getElement().getShadowRoot().ifPresent(shadow -> shadow
+                .appendChild(bootstrapElements.toArray(new Element[0])));
     }
 
     /**
@@ -79,7 +107,8 @@ public class WebComponentWrapper extends Component {
         try {
             webComponentBinding.updateProperty(property, newValue);
         } catch (IllegalArgumentException e) {
-            LoggerFactory.getLogger(child.getClass())
+            LoggerFactory
+                    .getLogger(webComponentBinding.getComponent().getClass())
                     .error("Failed to synchronise property '{}'", property, e);
         }
     }
@@ -94,7 +123,7 @@ public class WebComponentWrapper extends Component {
         } else {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
                     "Received reconnect request for non disconnected WebComponent '{}'",
-                    this.child.getClass().getName());
+                    webComponentBinding.getComponent().getClass().getName());
         }
     }
 
@@ -118,7 +147,9 @@ public class WebComponentWrapper extends Component {
                         if (event.getSource().getInternals()
                                 .getLastHeartbeatTimestamp()
                                 - disconnect > timeout) {
-                            this.getElement().removeFromParent();
+                            Element element = getElement();
+                            element.getParent().removeVirtualChild(element);
+                            disconnectRegistration.remove();
                         }
                     });
         }

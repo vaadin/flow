@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.server;
 
+import jakarta.servlet.http.Cookie;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,10 +26,6 @@ import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.internal.CurrentInstance;
 
@@ -44,7 +42,7 @@ public interface VaadinRequest {
      * parameter, though other request types might have other ways of
      * representing parameters.
      *
-     * @see javax.servlet.ServletRequest#getParameter(String)
+     * @see jakarta.servlet.ServletRequest#getParameter(String)
      *
      * @param parameter
      *            the name of the parameter
@@ -58,7 +56,7 @@ public interface VaadinRequest {
      *
      * @see #getParameter(String)
      *
-     * @see javax.servlet.ServletRequest#getParameterMap()
+     * @see jakarta.servlet.ServletRequest#getParameterMap()
      *
      * @return A mapping of parameter names to arrays of parameter values
      */
@@ -68,18 +66,31 @@ public interface VaadinRequest {
      * Returns the length of the request content that can be read from the input
      * stream returned by {@link #getInputStream()}.
      *
-     * @see javax.servlet.ServletRequest#getContentLength()
+     * @see jakarta.servlet.ServletRequest#getContentLength()
      *
      * @return content length in bytes
      */
     int getContentLength();
 
     /**
+     * Returns the length of the request content that can be read from the input
+     * stream returned by {@link #getInputStream()}.
+     *
+     * @see jakarta.servlet.ServletRequest#getContentLengthLong()
+     *
+     * @return a long containing the length of the request body or -1L if the
+     *         length is not known
+     */
+    default long getContentLengthLong() {
+        return getContentLength();
+    }
+
+    /**
      * Returns an input stream from which the request content can be read. The
      * request content length can be obtained with {@link #getContentLength()}
      * without reading the full stream contents.
      *
-     * @see javax.servlet.ServletRequest#getInputStream()
+     * @see jakarta.servlet.ServletRequest#getInputStream()
      *
      * @return the input stream from which the contents of the request can be
      *         read
@@ -96,7 +107,7 @@ public interface VaadinRequest {
      * @return the value of the attribute, or <code>null</code> if there is no
      *         attribute with the given name
      *
-     * @see javax.servlet.ServletRequest#getAttribute(String)
+     * @see jakarta.servlet.ServletRequest#getAttribute(String)
      */
     Object getAttribute(String name);
 
@@ -108,7 +119,7 @@ public interface VaadinRequest {
      * @param value
      *            the attribute value
      *
-     * @see javax.servlet.ServletRequest#setAttribute(String, Object)
+     * @see jakarta.servlet.ServletRequest#setAttribute(String, Object)
      */
     void setAttribute(String name, Object value);
 
@@ -119,7 +130,7 @@ public interface VaadinRequest {
      *
      * @return a string with the path relative to the application.
      *
-     * @see javax.servlet.http.HttpServletRequest#getPathInfo()
+     * @see jakarta.servlet.http.HttpServletRequest#getPathInfo()
      */
     String getPathInfo();
 
@@ -127,7 +138,7 @@ public interface VaadinRequest {
      * Returns the portion of the request URI that indicates the context of the
      * request. The context path always comes first in a request URI.
      *
-     * @see HttpServletRequest#getContextPath()
+     * @see jakarta.servlet.http.HttpServletRequest#getContextPath()
      *
      * @return a String specifying the portion of the request URI that indicates
      *         the context of the request
@@ -139,7 +150,7 @@ public interface VaadinRequest {
      * no session.
      *
      * @see WrappedSession
-     * @see HttpServletRequest#getSession()
+     * @see jakarta.servlet.http.HttpServletRequest#getSession()
      *
      * @return the wrapped session for this request
      */
@@ -155,7 +166,7 @@ public interface VaadinRequest {
      *            there's no current session
      *
      * @see WrappedSession
-     * @see HttpServletRequest#getSession(boolean)
+     * @see jakarta.servlet.http.HttpServletRequest#getSession(boolean)
      *
      * @return the wrapped session for this request
      */
@@ -168,7 +179,7 @@ public interface VaadinRequest {
      * @return a string containing the name of the MIME type of the request, or
      *         null if the type is not known
      *
-     * @see javax.servlet.ServletRequest#getContentType()
+     * @see jakarta.servlet.ServletRequest#getContentType()
      *
      */
     String getContentType();
@@ -179,7 +190,7 @@ public interface VaadinRequest {
      *
      * @return the preferred Locale
      *
-     * @see ServletRequest#getLocale()
+     * @see jakarta.servlet.ServletRequest#getLocale()
      */
     Locale getLocale();
 
@@ -190,7 +201,7 @@ public interface VaadinRequest {
      * @return a string containing the IP address, or <code>null</code> if the
      *         address is not available
      *
-     * @see ServletRequest#getRemoteAddr()
+     * @see jakarta.servlet.ServletRequest#getRemoteAddr()
      */
     String getRemoteAddr();
 
@@ -200,20 +211,20 @@ public interface VaadinRequest {
      *
      * @return a boolean indicating if the request is secure
      *
-     * @see ServletRequest#isSecure()
+     * @see jakarta.servlet.ServletRequest#isSecure()
      */
     boolean isSecure();
 
     /**
      * Gets the value of a request header, e.g. a http header for a
-     * {@link HttpServletRequest}.
+     * {@link jakarta.servlet.http.HttpServletRequest}.
      *
      * @param headerName
      *            the name of the header
      * @return the header value, or <code>null</code> if the header is not
      *         present in the request
      *
-     * @see HttpServletRequest#getHeader(String)
+     * @see jakarta.servlet.http.HttpServletRequest#getHeader(String)
      */
     String getHeader(String headerName);
 
@@ -234,7 +245,7 @@ public interface VaadinRequest {
      * @return an array of all the <code>Cookies</code> included with this
      *         request, or <code>null</code> if the request has no cookies
      *
-     * @see HttpServletRequest#getCookies()
+     * @see jakarta.servlet.http.HttpServletRequest#getCookies()
      */
     Cookie[] getCookies();
 
@@ -247,7 +258,7 @@ public interface VaadinRequest {
      * @return a string indicating the authentication scheme, or
      *         <code>null</code> if the request was not authenticated.
      *
-     * @see HttpServletRequest#getAuthType()
+     * @see jakarta.servlet.http.HttpServletRequest#getAuthType()
      */
     String getAuthType();
 
@@ -260,7 +271,7 @@ public interface VaadinRequest {
      * @return a String specifying the login of the user making this request, or
      *         <code>null</code> if the user login is not known.
      *
-     * @see HttpServletRequest#getRemoteUser()
+     * @see jakarta.servlet.http.HttpServletRequest#getRemoteUser()
      */
     String getRemoteUser();
 
@@ -273,7 +284,7 @@ public interface VaadinRequest {
      *         user making this request; <code>null</code> if the user has not
      *         been authenticated
      *
-     * @see HttpServletRequest#getUserPrincipal()
+     * @see jakarta.servlet.http.HttpServletRequest#getUserPrincipal()
      */
     Principal getUserPrincipal();
 
@@ -289,7 +300,7 @@ public interface VaadinRequest {
      *         to a given role; <code>false</code> if the user has not been
      *         authenticated
      *
-     * @see HttpServletRequest#isUserInRole(String)
+     * @see jakarta.servlet.http.HttpServletRequest#isUserInRole(String)
      */
     boolean isUserInRole(String role);
 
@@ -301,7 +312,7 @@ public interface VaadinRequest {
      * @param name
      *            a String specifying the name of the attribute to remove
      *
-     * @see ServletRequest#removeAttribute(String)
+     * @see jakarta.servlet.ServletRequest#removeAttribute(String)
      */
     void removeAttribute(String name);
 
@@ -313,7 +324,7 @@ public interface VaadinRequest {
      * @return an Enumeration of strings containing the names of the request's
      *         attributes
      *
-     * @see ServletRequest#getAttributeNames()
+     * @see jakarta.servlet.ServletRequest#getAttributeNames()
      */
     Enumeration<String> getAttributeNames();
 
@@ -326,7 +337,7 @@ public interface VaadinRequest {
      *
      * @return an Enumeration of preferred Locale objects for the client
      *
-     * @see HttpServletRequest#getLocales()
+     * @see jakarta.servlet.http.HttpServletRequest#getLocales()
      */
     Enumeration<Locale> getLocales();
 
@@ -339,7 +350,7 @@ public interface VaadinRequest {
      * @return a String containing the fully qualified name of the client, or
      *         <code>null</code> if the information is not available.
      *
-     * @see HttpServletRequest#getRemoteHost()
+     * @see jakarta.servlet.http.HttpServletRequest#getRemoteHost()
      */
     String getRemoteHost();
 
@@ -350,7 +361,7 @@ public interface VaadinRequest {
      * @return an integer specifying the port number, or -1 if the information
      *         is not available.
      *
-     * @see ServletRequest#getRemotePort()
+     * @see jakarta.servlet.ServletRequest#getRemotePort()
      */
     int getRemotePort();
 
@@ -362,7 +373,7 @@ public interface VaadinRequest {
      * @return a String containing the name of the character encoding, or null
      *         if the request does not specify a character encoding
      *
-     * @see ServletRequest#getCharacterEncoding()
+     * @see jakarta.servlet.ServletRequest#getCharacterEncoding()
      */
     String getCharacterEncoding();
 
@@ -383,7 +394,7 @@ public interface VaadinRequest {
      * @throws IOException
      *             if an input or output exception occurred
      *
-     * @see ServletRequest#getReader()
+     * @see jakarta.servlet.ServletRequest#getReader()
      */
     BufferedReader getReader() throws IOException;
 
@@ -394,7 +405,7 @@ public interface VaadinRequest {
      * @return a String specifying the name of the method with which this
      *         request was made
      *
-     * @see HttpServletRequest#getMethod()
+     * @see jakarta.servlet.http.HttpServletRequest#getMethod()
      */
     String getMethod();
 
@@ -417,7 +428,7 @@ public interface VaadinRequest {
      *         GMT, or -1 if the named header was not included with the request
      * @throws IllegalArgumentException
      *             If the header value can't be converted to a date
-     * @see HttpServletRequest#getDateHeader(String)
+     * @see jakarta.servlet.http.HttpServletRequest#getDateHeader(String)
      */
     long getDateHeader(String name);
 
@@ -431,7 +442,7 @@ public interface VaadinRequest {
      * @return an enumeration of all the header names sent with this request; if
      *         the request has no headers, an empty enumeration; if the
      *         implementation does not allow this method, <code>null</code>
-     * @see HttpServletRequest#getHeaderNames()
+     * @see jakarta.servlet.http.HttpServletRequest#getHeaderNames()
      */
     Enumeration<String> getHeaderNames();
 
@@ -457,10 +468,9 @@ public interface VaadinRequest {
      *         the request does not have any headers of that name return an
      *         empty enumeration. If the header information is not available,
      *         return <code>null</code>
-     * @see HttpServletRequest#getHeaders(String)
+     * @see jakarta.servlet.http.HttpServletRequest#getHeaders(String)
      */
     Enumeration<String> getHeaders(String name);
-
 
     /**
      * Gets the currently processed Vaadin request. The current request is

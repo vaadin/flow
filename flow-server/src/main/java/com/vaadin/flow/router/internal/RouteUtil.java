@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,19 +19,35 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinContext;
 
 /**
  * Utility class with methods for route handling.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 1.3
  */
 public class RouteUtil {
 
@@ -42,6 +58,8 @@ public class RouteUtil {
      * Get parent layouts for navigation target according to the {@link Route}
      * or {@link RouteAlias} annotation.
      *
+     * @param context
+     *            a Vaadin context
      * @param component
      *            navigation target to get parents for
      * @param path
@@ -50,19 +68,18 @@ public class RouteUtil {
      * @return parent layouts for target
      */
     public static List<Class<? extends RouterLayout>> getParentLayouts(
-            Class<?> component, String path) {
+            VaadinContext context, Class<?> component, String path) {
         final List<Class<? extends RouterLayout>> list = new ArrayList<>();
 
         Optional<Route> route = AnnotationReader.getAnnotationFor(component,
                 Route.class);
         List<RouteAlias> routeAliases = AnnotationReader
                 .getAnnotationsFor(component, RouteAlias.class);
-        if (route.isPresent()
-                && path.equals(getRoutePath(component, route.get()))
+
+        if (route.isPresent() && path.equals(getRoutePath(context, component))
                 && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
         } else {
-
             Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
                     component, path, routeAliases);
             if (matchingRoute.isPresent()) {
@@ -78,18 +95,21 @@ public class RouteUtil {
      * Get the actual route path including all parent layout
      * {@link RoutePrefix}.
      *
+     * @param context
+     *            a Vaadin context
      * @param component
      *            navigation target component to get route path for
-     * @param route
-     *            route annotation to check
      * @return actual path for given route target
      */
-    public static String getRoutePath(Class<?> component, Route route) {
+    public static String getRoutePath(VaadinContext context,
+            Class<?> component) {
+        Route route = component.getAnnotation(Route.class);
+        String routePath = resolve(context, component);
         if (route.absolute()) {
-            return resolve(component, route);
+            return routePath;
         }
         List<String> parentRoutePrefixes = getRoutePrefixes(component,
-                route.layout(), resolve(component, route));
+                route.layout(), routePath);
         return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
     }
 
@@ -152,8 +172,8 @@ public class RouteUtil {
         return list;
     }
 
-    static Optional<RouteAlias> getMatchingRouteAlias(
-            Class<?> component, String path, List<RouteAlias> routeAliases) {
+    static Optional<RouteAlias> getMatchingRouteAlias(Class<?> component,
+            String path, List<RouteAlias> routeAliases) {
         return routeAliases.stream().filter(
                 alias -> path.equals(getRouteAliasPath(component, alias))
                         && !alias.layout().equals(UI.class))
@@ -209,7 +229,8 @@ public class RouteUtil {
      * @return top parent layout for target or null if none found
      */
     public static Class<? extends RouterLayout> getTopParentLayout(
-            final Class<?> component, final String path) {
+            VaadinContext context, final Class<?> component,
+            final String path) {
         if (path == null) {
             Optional<ParentLayout> parentLayout = AnnotationReader
                     .getAnnotationFor(component, ParentLayout.class);
@@ -224,8 +245,7 @@ public class RouteUtil {
                 Route.class);
         List<RouteAlias> routeAliases = AnnotationReader
                 .getAnnotationsFor(component, RouteAlias.class);
-        if (route.isPresent()
-                && path.equals(getRoutePath(component, route.get()))
+        if (route.isPresent() && path.equals(getRoutePath(context, component))
                 && !route.get().layout().equals(UI.class)) {
             return recurseToTopLayout(route.get().layout());
         } else {
@@ -253,26 +273,73 @@ public class RouteUtil {
     /**
      * Gets the effective route path value of the annotated class.
      *
+     * @param context
+     *            a Vaadin context
      * @param component
      *            the component where the route points to
-     * @param route
-     *            the annotation
      * @return The value of the annotation or naming convention based value if
      *         no explicit value is given.
      */
-    public static String resolve(Class<?> component, Route route) {
-        if (route.value().equals(Route.NAMING_CONVENTION)) {
-            String simpleName = component.getSimpleName();
-            if ("MainView".equals(simpleName) || "Main".equals(simpleName)) {
-                return "";
-            }
-            if (simpleName.endsWith("View")) {
-                return simpleName
-                        .substring(0, simpleName.length() - "View".length())
-                        .toLowerCase();
-            }
-            return simpleName.toLowerCase();
+    public static String resolve(VaadinContext context, Class<?> component) {
+        RoutePathProvider provider = null;
+        Lookup lookup = context.getAttribute(Lookup.class);
+        if (lookup != null) {
+            provider = lookup.lookup(RoutePathProvider.class);
+            assert provider != null;
         }
-        return route.value();
+        if (provider == null) {
+            // This is needed especially in unit tests when no Lookup instance
+            // is available
+            provider = new DefaultRoutePathProvider();
+        }
+        return provider.getRoutePath(component);
+    }
+
+    /**
+     * Updates route registry as necessary when classes have been added /
+     * modified / deleted.
+     *
+     * @param registry
+     *            route registry
+     * @param addedClasses
+     *            added classes
+     * @param modifiedClasses
+     *            modified classes
+     * @param deletedClasses
+     *            deleted classes
+     */
+    public static void updateRouteRegistry(RouteRegistry registry,
+            Set<Class<?>> addedClasses, Set<Class<?>> modifiedClasses,
+            Set<Class<?>> deletedClasses) {
+        RouteConfiguration routeConf = RouteConfiguration.forRegistry(registry);
+
+        Logger logger = LoggerFactory.getLogger(RouteUtil.class);
+
+        registry.update(() -> {
+            // remove deleted classes and classes that lost the annotation from
+            // registry
+            Stream.concat(deletedClasses.stream(),
+                    modifiedClasses.stream().filter(
+                            clazz -> !clazz.isAnnotationPresent(Route.class)))
+                    .filter(Component.class::isAssignableFrom)
+                    .forEach(clazz -> {
+                        Class<? extends Component> componentClass = (Class<? extends Component>) clazz;
+                        logger.debug("Removing route to {}", componentClass);
+                        routeConf.removeRoute(componentClass);
+                    });
+            // add new routes to registry
+            Stream.concat(addedClasses.stream(), modifiedClasses.stream())
+                    .distinct().filter(Component.class::isAssignableFrom)
+                    .filter(clazz -> clazz.isAnnotationPresent(Route.class))
+                    .forEach(clazz -> {
+                        Class<? extends Component> componentClass = (Class<? extends Component>) clazz;
+                        logger.debug(
+                                "Updating route {} to {}", componentClass
+                                        .getAnnotation(Route.class).value(),
+                                clazz);
+                        routeConf.removeRoute(componentClass);
+                        routeConf.setAnnotatedRoute(componentClass);
+                    });
+        });
     }
 }

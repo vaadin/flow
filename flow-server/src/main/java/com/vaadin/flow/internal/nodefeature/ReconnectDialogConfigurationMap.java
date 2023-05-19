@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,8 @@ import com.vaadin.flow.internal.StateNode;
 
 /**
  * Map for storing the reconnect dialog configuration for a UI.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -28,17 +30,13 @@ public class ReconnectDialogConfigurationMap extends NodeMap
         implements ReconnectDialogConfiguration {
 
     public static final String DIALOG_TEXT_KEY = "dialogText";
-    public static final String DIALOG_TEXT_DEFAULT = "Server connection lost, trying to reconnect...";
+    public static final String DIALOG_TEXT_DEFAULT = "Connection lost, trying to reconnect...";
     public static final String DIALOG_TEXT_GAVE_UP_KEY = "dialogTextGaveUp";
-    public static final String DIALOG_TEXT_GAVE_UP_DEFAULT = "Server connection lost.";
+    public static final String DIALOG_TEXT_GAVE_UP_DEFAULT = "Connection lost";
     public static final String RECONNECT_ATTEMPTS_KEY = "reconnectAttempts";
     public static final int RECONNECT_ATTEMPTS_DEFAULT = 10000;
     public static final String RECONNECT_INTERVAL_KEY = "reconnectInterval";
     public static final int RECONNECT_INTERVAL_DEFAULT = 5000;
-    public static final String DIALOG_GRACE_PERIOD_KEY = "dialogGracePeriod";
-    public static final int DIALOG_GRACE_PERIOD_DEFAULT = 400;
-    public static final String DIALOG_MODAL_KEY = "dialogModal";
-    public static final boolean DIALOG_MODAL_DEFAULT = false;
 
     /**
      * Creates a new map for the given node.
@@ -91,26 +89,4 @@ public class ReconnectDialogConfigurationMap extends NodeMap
     public void setReconnectInterval(int reconnectInterval) {
         put(RECONNECT_INTERVAL_KEY, reconnectInterval);
     }
-
-    @Override
-    public int getDialogGracePeriod() {
-        return getOrDefault(DIALOG_GRACE_PERIOD_KEY,
-                DIALOG_GRACE_PERIOD_DEFAULT);
-    }
-
-    @Override
-    public void setDialogGracePeriod(int dialogGracePeriod) {
-        put(DIALOG_GRACE_PERIOD_KEY, dialogGracePeriod);
-    }
-
-    @Override
-    public boolean isDialogModal() {
-        return getOrDefault(DIALOG_MODAL_KEY, DIALOG_MODAL_DEFAULT);
-    }
-
-    @Override
-    public void setDialogModal(boolean dialogModal) {
-        put(DIALOG_MODAL_KEY, dialogModal);
-    }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,25 +20,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ModelList;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.internal.nodefeature.NodeMap;
-import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
+import com.vaadin.flow.internal.nodefeature.PropertyChangeDeniedException;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonObject;
 
 /**
  * Model map synchronization RPC handler.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @see JsonConstants#RPC_TYPE_MAP_SYNC
  *
@@ -73,15 +79,6 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
 
         String property = invocationJson.getString(JsonConstants.RPC_PROPERTY);
 
-        if (node.hasFeature(SynchronizedPropertiesList.class)) {
-            DisabledUpdateMode syncMode = node
-                    .getFeature(SynchronizedPropertiesList.class)
-                    .getDisabledUpdateMode(property);
-
-            if (syncMode != null) {
-                seenUpdateModes.add(syncMode);
-            }
-        }
         if (node.hasFeature(ElementListenerMap.class)) {
             DisabledUpdateMode eventMode = node
                     .getFeature(ElementListenerMap.class)
@@ -99,17 +96,29 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
             return enqueuePropertyUpdate(node, invocationJson, feature,
                     property);
         } else if (DisabledUpdateMode.ALWAYS.equals(updateMode)) {
-            LoggerFactory.getLogger(MapSyncRpcHandler.class)
-                    .trace("Property update request for disabled element is received from the client side. "
+            LoggerFactory.getLogger(MapSyncRpcHandler.class).trace(
+                    "Property update request for disabled element is received from the client side. "
                             + "Change will be applied since the property '{}' always allows its update.",
-                            property);
+                    property);
             return enqueuePropertyUpdate(node, invocationJson, feature,
                     property);
         } else {
-            LoggerFactory.getLogger(MapSyncRpcHandler.class)
-                    .warn("Property update request for disabled element is received from the client side. "
-                            + "The property is '{}'. Request is ignored.",
-                            property);
+            final Logger logger = LoggerFactory
+                    .getLogger(MapSyncRpcHandler.class);
+            Optional<Serializable> featureProperty = node
+                    .getFeatureIfInitialized(ElementPropertyMap.class)
+                    .map(feat -> feat.getProperty(property));
+            if (featureProperty.isPresent()) {
+                logger.warn(
+                        "Property update request for disabled element is received from the client side. "
+                                + "The property is '{}'. Request is ignored.",
+                        property);
+            } else {
+                logger.debug(
+                        "Ignored property '{}' change for disabled element. Most likely client sent the "
+                                + "default value as no value has been set for the property.",
+                        property);
+            }
         }
         return Optional.empty();
     }
@@ -122,8 +131,39 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
 
         value = tryConvert(value, node);
 
-        return Optional.of(node.getFeature(ElementPropertyMap.class)
-                .deferredUpdateFromClient(property, value));
+        try {
+            return Optional.of(node.getFeature(ElementPropertyMap.class)
+                    .deferredUpdateFromClient(property, value));
+        } catch (PropertyChangeDeniedException exception) {
+            throw new IllegalArgumentException(
+                    getVetoPropertyUpdateMessage(node, property), exception);
+        }
+    }
+
+    private boolean hasElement(StateNode node) {
+        return node != null && node.hasFeature(ElementData.class);
+    }
+
+    private String getVetoPropertyUpdateMessage(StateNode node,
+            String property) {
+        if (hasElement(node)) {
+            Element element = Element.get(node);
+            String tag = element.getTag();
+            Optional<Component> component = element.getComponent();
+            String prefix;
+            if (component.isPresent()) {
+                prefix = "Component " + component.get().getClass().getName();
+            } else {
+                prefix = "Element with tag '" + tag + "'";
+            }
+            return String.format(
+                    "%s tries to update (sub)property '%s' whose update is not allowed. "
+                            + "For security reasons, the property must be defined as synchronized through the Element's API.",
+                    prefix, property);
+        } else if (node != null) {
+            return getVetoPropertyUpdateMessage(node.getParent(), property);
+        }
+        return "";
     }
 
     private Serializable tryConvert(Serializable value, StateNode context) {

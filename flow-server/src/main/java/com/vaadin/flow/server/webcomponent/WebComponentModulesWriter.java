@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,7 +21,6 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,15 +35,19 @@ import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * Writes web components generated from
  * {@link com.vaadin.flow.component.WebComponentExporter} implementation classes
  * to a target directory.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 2.0
  */
 public final class WebComponentModulesWriter implements Serializable {
 
@@ -58,13 +61,14 @@ public final class WebComponentModulesWriter implements Serializable {
      * file is {@code [web component's tag].js}.
      *
      * @param exporterClasses
-     *            set of {@link com.vaadin.flow.component.WebComponentExporter}
+     *            set of
+     *            {@link WebComponentExporter}/{@link WebComponentExporterFactory}
      *            classes
      * @param outputDirectory
      *            target directory for the generated web component module files
-     * @param compatibilityMode
-     *            {@code true} to generated html modules, {@code false} to
-     *            generate JavaScript modules
+     * @param themeName
+     *            the theme defined using {@link Theme} or {@code null} if not
+     *            defined
      * @return generated files
      * @throws java.lang.NullPointerException
      *             if {@code exportedClasses} or {@code outputDirectory} is null
@@ -72,13 +76,17 @@ public final class WebComponentModulesWriter implements Serializable {
      *             if {@code outputDirectory} is not a directory
      */
     private static Set<File> writeWebComponentsToDirectory( // NOSONAR
-            Set<Class<? extends WebComponentExporter<? extends Component>>> exporterClasses,
-            File outputDirectory, boolean compatibilityMode) {
+            Set<Class<?>> exporterClasses, File outputDirectory,
+            String themeName) {
         // this method is used via reflection by DirectoryWriter
         Objects.requireNonNull(exporterClasses,
                 "Parameter 'exporterClasses' must not be null");
         Objects.requireNonNull(outputDirectory,
                 "Parameter 'outputDirectory' must not be null");
+
+        if (!outputDirectory.exists()) {
+            outputDirectory.mkdirs();
+        }
 
         if (!outputDirectory.isDirectory()) {
             throw new IllegalArgumentException(String.format("Path provided "
@@ -86,42 +94,37 @@ public final class WebComponentModulesWriter implements Serializable {
                     outputDirectory.getPath()));
         }
 
-        return filterConcreteExporters(exporterClasses)
-                .map(clazz -> writeWebComponentToDirectory(clazz,
-                        outputDirectory, compatibilityMode))
+        return WebComponentExporterUtils.getFactories(exporterClasses).stream()
+                .map(factory -> writeWebComponentToDirectory(factory,
+                        outputDirectory, themeName))
                 .collect(Collectors.toSet());
-    }
-
-    private static Stream<Class<? extends WebComponentExporter<? extends Component>>> filterConcreteExporters(
-            Set<Class<? extends WebComponentExporter<? extends Component>>> exporterClasses) {
-        return exporterClasses.stream()
-                .filter(clazz -> WebComponentExporter.class
-                        .isAssignableFrom(clazz) && !clazz.isInterface()
-                        && !Modifier.isAbstract(clazz.getModifiers()));
     }
 
     /**
      * Generate a file with web component html/JS content for given exporter
      * class in the given {@code outputFolder}.
      *
-     * @param clazz
-     *            web component exporter class
+     * @param factory
+     *            web component exporter factory
      * @param outputDirectory
      *            folder into which the generate file is written
+     * @param themeName
+     *            the theme defined using {@link Theme} or {@code null} if not
+     *            defined
      * @return the generated module content
      */
     private static File writeWebComponentToDirectory(
-            Class<? extends WebComponentExporter<? extends Component>> clazz,
-            File outputDirectory, boolean compatibilityMode) {
-        String tag = getTag(clazz);
+            WebComponentExporterFactory<?> factory, File outputDirectory,
+            String themeName) {
+        String tag = getTag(factory);
 
-        String fileName = compatibilityMode ? tag + ".html" : tag + ".js";
+        String fileName = tag + ".js";
         Path generatedFile = outputDirectory.toPath().resolve(fileName);
         try {
             FileUtils.forceMkdir(generatedFile.getParent().toFile());
             Files.write(generatedFile,
-                    Collections.singletonList(
-                            generateModule(clazz, compatibilityMode)),
+                    Collections
+                            .singletonList(generateModule(factory, themeName)),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
@@ -132,16 +135,15 @@ public final class WebComponentModulesWriter implements Serializable {
     }
 
     private static String generateModule(
-            Class<? extends WebComponentExporter<? extends Component>> exporterClass,
-            boolean compatibilityMode) {
-        return WebComponentGenerator.generateModule(exporterClass, "../",
-                compatibilityMode);
+            WebComponentExporterFactory<? extends Component> factory,
+            String themeName) {
+        return WebComponentGenerator.generateModule(factory, "../", themeName);
     }
 
     private static String getTag(
-            Class<? extends WebComponentExporter<? extends Component>> exporterClass) {
+            WebComponentExporterFactory<? extends Component> factory) {
         WebComponentExporterTagExtractor exporterTagExtractor = new WebComponentExporterTagExtractor();
-        return exporterTagExtractor.apply(exporterClass);
+        return exporterTagExtractor.apply(factory);
     }
 
     /**
@@ -156,7 +158,7 @@ public final class WebComponentModulesWriter implements Serializable {
 
         /**
          * Calls
-         * {@link #writeWebComponentsToDirectory(java.util.Set, java.io.File, boolean)}
+         * {@link #writeWebComponentsToDirectory(java.util.Set, java.io.File, java.lang.String)}
          * via reflection on the supplied {@code writer}. The {@code writer} and
          * {@code exporterClasses} must be loaded with the same class loader.
          *
@@ -164,15 +166,15 @@ public final class WebComponentModulesWriter implements Serializable {
          *            {@code WebComponentModulesWriter} class
          * @param exporterClasses
          *            set of
-         *            {@link com.vaadin.flow.component.WebComponentExporter}
+         *            {@link WebComponentExporter}/{@link WebComponentExporterFactory}
          *            classes, loaded with the same class loader as
          *            {@code writer}
          * @param outputDirectory
          *            target directory for the generated web component module
          *            files
-         * @param compatibilityMode
-         *            {@code true} to generated html modules, {@code false} to *
-         *            generate JavaScript modules
+         * @param themeName
+         *            the theme defined using {@link Theme} or {@code null} if
+         *            not defined
          * @return generated files
          * @throws java.lang.NullPointerException
          *             if {@code writerClassSupplier},
@@ -186,20 +188,20 @@ public final class WebComponentModulesWriter implements Serializable {
          *             share a class loader
          * @throws java.lang.IllegalStateException
          *             if the received {@code writer} does not have method
-         *             {@link #writeWebComponentsToDirectory(java.util.Set, java.io.File, boolean)}
+         *             {@link #writeWebComponentsToDirectory(java.util.Set, java.io.File, java.lang.String)}
          * @throws java.lang.RuntimeException
          *             if reflective method invocation fails
          * @see #writeWebComponentsToDirectory(java.util.Set, java.io.File,
-         *      boolean)
+         *      java.lang.String)
          */
         @SuppressWarnings("unchecked")
         public static Set<File> generateWebComponentsToDirectory(
                 Class<?> writerClass, Set<Class<?>> exporterClasses,
-                File outputDirectory, boolean compatibilityMode) {
+                File outputDirectory, String themeName) {
             Objects.requireNonNull(writerClass,
                     "Parameter 'writerClassSupplier' must not null");
             Objects.requireNonNull(exporterClasses,
-                    "Parameter 'exporterClassSupplier' must not be null");
+                    "Parameter 'exporterClasses' must not be null");
             Objects.requireNonNull(outputDirectory,
                     "Parameter 'outputDirectory' must not be null");
 
@@ -242,13 +244,19 @@ public final class WebComponentModulesWriter implements Serializable {
                 final boolean accessible = writeMethod.isAccessible();
                 writeMethod.setAccessible(true);
                 Set<File> files = ((Set<File>) writeMethod.invoke(null,
-                        exporterClasses, outputDirectory, compatibilityMode));
+                        exporterClasses, outputDirectory, themeName));
                 writeMethod.setAccessible(accessible);
                 return files;
-            } catch (IllegalAccessException | InvocationTargetException
-                    | NullPointerException e) {
+            } catch (IllegalAccessException exception) {
+                throw new RuntimeException("Failed to call '"
+                        + WRITE_MODULES_METHOD
+                        + "' via reflection because Java language access control doesn't allow to call it",
+                        exception);
+            } catch (InvocationTargetException exception) {
                 throw new RuntimeException(
-                        "Could not write exported web component module!", e);
+                        "Could not write exported web component module because of exception: "
+                                + exception.getCause().getMessage(),
+                        exception.getCause());
             }
         }
 

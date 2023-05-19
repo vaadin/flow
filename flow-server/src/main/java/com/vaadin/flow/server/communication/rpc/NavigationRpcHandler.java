@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,6 +30,8 @@ import elemental.json.JsonValue;
 
 /**
  * RPC handler for Navigation.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @see JsonConstants#RPC_TYPE_NAVIGATION
  * @author Vaadin Ltd
@@ -54,13 +56,11 @@ public class NavigationRpcHandler implements RpcInvocationHandler {
                     .get(JsonConstants.RPC_NAVIGATION_STATE);
             String location = invocationJson
                     .getString(JsonConstants.RPC_NAVIGATION_LOCATION);
-
             boolean triggeredByLink = invocationJson
                     .hasKey(JsonConstants.RPC_NAVIGATION_ROUTERLINK);
             NavigationTrigger trigger = triggeredByLink
                     ? NavigationTrigger.ROUTER_LINK
                     : NavigationTrigger.HISTORY;
-
             HistoryStateChangeEvent event = new HistoryStateChangeEvent(history,
                     state, new Location(location), trigger);
             historyStateChangeHandler.onHistoryStateChange(event);

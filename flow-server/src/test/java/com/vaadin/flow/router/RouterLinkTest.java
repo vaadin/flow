@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,6 +32,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.HasCurrentService;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
@@ -66,18 +67,13 @@ public class RouterLinkTest extends HasCurrentService {
         routeConfiguration.update(() -> {
             routeConfiguration.getHandledRegistry().clean();
             Arrays.asList(TestView.class, FooNavigationTarget.class,
+                    ParameterNavigationTarget.class,
                     GreetingNavigationTarget.class)
                     .forEach(routeConfiguration::setAnnotatedRoute);
         });
         router = new Router(registry);
 
-        ui = new UI() {
-            @Override
-            public Router getRouter() {
-                return router;
-            }
-        };
-
+        ui = new RoutingTestBase.RouterTestUI(router);
         VaadinService service = VaadinService.getCurrent();
         Mockito.when(service.getRouter()).thenReturn(router);
     }
@@ -113,10 +109,116 @@ public class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
+    public void setRoute_withoutRouter() {
+        RouterLink link = new RouterLink();
+
+        ui.add(link);
+        link.setRoute(FooNavigationTarget.class);
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("foo", link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void setRoute_withoutRouterWithParameter() {
+        RouterLink link = new RouterLink();
+
+        ui.add(link);
+        link.setRoute(GreetingNavigationTarget.class, "foo");
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("greeting/foo",
+                link.getElement().getAttribute("href"));
+    }
+
+    @Test
     public void createRouterLink_explicitRouter() {
         RouterLink link = new RouterLink(router, "Show something",
                 TestView.class, "something");
         Assert.assertEquals("Show something", link.getText());
+        Assert.assertTrue(link.getElement()
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("bar/something",
+                link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createRouterLink_withTargetViewNoText() {
+        RouterLink link = new RouterLink(FooNavigationTarget.class);
+        Assert.assertEquals("", link.getText());
+        Assert.assertTrue(link.getElement()
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("foo", link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createRouterLink_withTargetViewWithParameterNoText() {
+        RouterLink link = new RouterLink(TestView.class, "something");
+        Assert.assertEquals("", link.getText());
+        Assert.assertTrue(link.getElement()
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("bar/something",
+                link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createRouterLink_withTargetViewWithRouteParametersNoText() {
+        RouteParameters routeParameters = HasUrlParameterFormat
+                .getParameters("something");
+        RouterLink link = new RouterLink(TestView.class, routeParameters);
+        Assert.assertEquals("", link.getText());
+        Assert.assertTrue(link.getElement()
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("bar/something",
+                link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createRouterLink_explicitRouterWithTargetViewNoText() {
+        RouterLink link = new RouterLink(router, FooNavigationTarget.class);
+        Assert.assertEquals("", link.getText());
+        Assert.assertTrue(link.getElement()
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("foo", link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createRouterLink_explicitRouterWithTargetViewWithParameterNoText() {
+        RouterLink link = new RouterLink(router, TestView.class, "something");
+        Assert.assertEquals("", link.getText());
+        Assert.assertTrue(link.getElement()
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("bar/something",
+                link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createRouterLink_explicitRouterWithTargetViewWithRouteParametersNoText() {
+        RouteParameters routeParameters = HasUrlParameterFormat
+                .getParameters("something");
+        RouterLink link = new RouterLink(router, TestView.class,
+                routeParameters);
+        Assert.assertEquals("", link.getText());
         Assert.assertTrue(link.getElement()
                 .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
 
@@ -179,6 +281,48 @@ public class RouterLinkTest extends HasCurrentService {
         VaadinService service = VaadinService.getCurrent();
         Mockito.when(service.getRouter()).thenReturn(null);
         new RouterLink("Show something", TestView.class);
+    }
+
+    @Test
+    public void routerLink_withoutRouter_WithRouteParameters() {
+        assertRouterLinkRouteParameters(false);
+    }
+
+    @Test
+    public void routerLink_WithRouteParameters() {
+        assertRouterLinkRouteParameters(true);
+    }
+
+    private void assertRouterLinkRouteParameters(boolean useUI) {
+        RouterLink link = new RouterLink("Foo", ParameterNavigationTarget.class,
+                new RouteParameters("barId", "barValue"));
+
+        if (useUI) {
+            ui.add(link);
+        }
+
+        Assert.assertEquals("foo/barValue/bar",
+                link.getElement().getAttribute("href"));
+
+        assertRouterLinkSetRoute(link, ParameterNavigationTarget.class,
+                new RouteParameters("fooId", "123"), "foo/123/foo");
+
+        assertRouterLinkSetRoute(link, ParameterNavigationTarget.class,
+                new RouteParameters("foos", "123/qwe"), "foo/123/qwe");
+
+        try {
+            link.setRoute(ParameterNavigationTarget.class,
+                    new RouteParameters("fooId", "qwe"));
+            Assert.fail("Route is not registered.");
+        } catch (IllegalArgumentException e) {
+        }
+    }
+
+    private void assertRouterLinkSetRoute(RouterLink link,
+            Class<? extends Component> target, RouteParameters parameters,
+            String url) {
+        link.setRoute(target, parameters);
+        Assert.assertEquals(url, link.getElement().getAttribute("href"));
     }
 
     private void triggerNavigationEvent(com.vaadin.flow.router.Router router,
@@ -317,12 +461,25 @@ public class RouterLinkTest extends HasCurrentService {
         Assert.assertEquals("foo", href);
     }
 
+    @Test
+    public void routerLinkToNotRouterTarget_throwsIAE() {
+        expectedEx.expect(IllegalArgumentException.class);
+        new RouterLink("", Foo.class);
+    }
+
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Route("foo")
     @Tag(Tag.DIV)
     public static class FooNavigationTarget extends Component {
+    }
+
+    @Route("foo/:barId?/bar")
+    @RouteAlias("foo/:fooId(" + RouteParameterRegex.INTEGER + ")/foo")
+    @RouteAlias("foo/:foos*")
+    @Tag(Tag.DIV)
+    public static class ParameterNavigationTarget extends Component {
     }
 
     @Route("greeting")
@@ -333,5 +490,10 @@ public class RouterLinkTest extends HasCurrentService {
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
         }
+    }
+
+    @Tag(Tag.DIV)
+    public static class Foo extends Component {
+
     }
 }

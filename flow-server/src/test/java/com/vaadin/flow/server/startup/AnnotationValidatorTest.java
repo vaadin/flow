@@ -3,11 +3,26 @@ package com.vaadin.flow.server.startup;
 import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.ERROR_MESSAGE_BEGINNING;
 import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.NON_PARENT;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.HandlesTypes;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,15 +30,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.page.BodySize;
-import com.vaadin.flow.component.page.Inline;
-import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 
 public class AnnotationValidatorTest {
 
@@ -82,7 +88,7 @@ public class AnnotationValidatorTest {
     public void onStartUp_all_failing_anotations_are_reported()
             throws ServletException {
         try {
-            annotationValidator.onStartup(Stream
+            annotationValidator.process(Stream
                     .of(InlineViewportWithParent.class,
                             BodySizeViewportWithParent.class,
                             ViewPortViewportWithParent.class)
@@ -95,15 +101,15 @@ public class AnnotationValidatorTest {
             Assert.assertTrue("Exception was missing Inline exception",
                     errorMessage.contains(String.format(NON_PARENT,
                             InlineViewportWithParent.class.getName(),
-                            Inline.class.getSimpleName())));
+                            "@" + Inline.class.getSimpleName())));
             Assert.assertTrue("Exception was missing Viewport exception",
                     errorMessage.contains(String.format(NON_PARENT,
                             ViewPortViewportWithParent.class.getName(),
-                            Viewport.class.getSimpleName())));
+                            "@" + Viewport.class.getSimpleName())));
             Assert.assertTrue("Exception was missing BodySize exception",
                     errorMessage.contains(String.format(NON_PARENT,
                             BodySizeViewportWithParent.class.getName(),
-                            BodySize.class.getSimpleName())));
+                            "@" + BodySize.class.getSimpleName())));
         }
     }
 
@@ -113,10 +119,10 @@ public class AnnotationValidatorTest {
         expectedEx.expect(InvalidApplicationConfigurationException.class);
         expectedEx.expectMessage(ERROR_MESSAGE_BEGINNING + String.format(
                 NON_PARENT, FailingMultiAnnotation.class.getName(),
-                BodySize.class.getSimpleName() + ", "
+                "@" + BodySize.class.getSimpleName() + ", " + "@"
                         + Inline.class.getSimpleName()));
 
-        annotationValidator.onStartup(Stream.of(FailingMultiAnnotation.class)
+        annotationValidator.process(Stream.of(FailingMultiAnnotation.class)
                 .collect(Collectors.toSet()), servletContext);
 
         Assert.fail("No exception was thrown for faulty setup.");
@@ -126,7 +132,81 @@ public class AnnotationValidatorTest {
     public void onStartUp_no_exception_is_thrown_for_correctly_setup_classes()
             throws ServletException {
         annotationValidator
-                .onStartup(Stream.of(MultiAnnotation.class, AbstractMain.class)
+                .process(Stream.of(MultiAnnotation.class, AbstractMain.class)
                         .collect(Collectors.toSet()), servletContext);
+    }
+
+    @HandlesTypes({ Viewport.class, BodySize.class, Inline.class })
+    public static class HandlesTypesTest
+            implements ServletContainerInitializer {
+
+        @Override
+        public void onStartup(Set<Class<?>> c, ServletContext ctx)
+                throws ServletException {
+        }
+    }
+
+    public static class ExtendedHandlesTypesTest extends HandlesTypesTest {
+
+    }
+
+    @HandlesTypes({ HasErrorParameter.class, HasSomethingElse.class })
+    public class HasErrorParameterTest implements ServletContainerInitializer {
+        @Override
+        public void onStartup(Set<Class<?>> c, ServletContext ctx)
+                throws ServletException {
+        }
+    }
+
+    public interface HasSomethingElse {
+
+    }
+
+    public static class DummySomethingElse implements HasSomethingElse {
+    }
+
+    public static class DummyHasErrorParameter implements HasErrorParameter {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter parameter) {
+            return 0;
+        }
+
+    }
+
+    @Test
+    public void selfReferencesAreRemoved() {
+        HandlesTypesTest annotationTest = new HandlesTypesTest();
+        assertTypes(annotationTest, Set.of(Viewport.class), Set.of());
+        assertTypes(annotationTest,
+                Set.of(Viewport.class, AnnotationValidatorTest.class),
+                Set.of(AnnotationValidatorTest.class));
+        assertTypes(annotationTest,
+                Set.of(Viewport.class, AnnotationValidatorTest.class),
+                Set.of(AnnotationValidatorTest.class));
+
+        ExtendedHandlesTypesTest extendedAnnotationTest = new ExtendedHandlesTypesTest();
+        assertTypes(extendedAnnotationTest, Set.of(Viewport.class), Set.of());
+
+        HasErrorParameterTest interfaceTest = new HasErrorParameterTest();
+
+        assertTypes(interfaceTest, Set.of(DummyHasErrorParameter.class),
+                Set.of(DummyHasErrorParameter.class));
+        assertTypes(interfaceTest, Set.of(DummyHasErrorParameter.class),
+                Set.of(DummyHasErrorParameter.class));
+        assertTypes(interfaceTest,
+                Set.of(HasErrorParameter.class, DummyHasErrorParameter.class),
+                Set.of(DummyHasErrorParameter.class));
+        assertTypes(interfaceTest,
+                Set.of(HasErrorParameter.class, HasSomethingElse.class,
+                        DummyHasErrorParameter.class, DummySomethingElse.class),
+                Set.of(DummyHasErrorParameter.class, DummySomethingElse.class));
+    }
+
+    private void assertTypes(Object testObject, Set<Class<?>> input,
+            Set<Class<?>> expectedOutput) {
+        Assert.assertEquals(expectedOutput, AbstractAnnotationValidator
+                .removeHandleTypesSelfReferences(input, testObject));
     }
 }

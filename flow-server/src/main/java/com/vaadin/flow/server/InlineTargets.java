@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,6 +31,8 @@ import elemental.json.JsonObject;
 /**
  * Data holder class for collected {@link Inline} annotations to be added to the
  * initial page.
+ *
+ * @since 1.0
  */
 public class InlineTargets {
 
@@ -44,10 +46,10 @@ public class InlineTargets {
      *
      * @param inline
      *            inline dependency to add to bootstrap page
-     * @param request
-     *            the request that is handled
+     * @param service
+     *            the service that can find the dependency
      */
-    public void addInlineDependency(Inline inline, VaadinRequest request) {
+    public void addInlineDependency(Inline inline, VaadinService service) {
         Inline.Wrapping type;
         // Determine the type as given or try to automatically decide
         if (inline.wrapping().equals(Inline.Wrapping.AUTOMATIC)) {
@@ -61,7 +63,7 @@ public class InlineTargets {
         dependency.put("LoadMode", LoadMode.INLINE.toString());
 
         dependency.put(Dependency.KEY_CONTENTS,
-                BootstrapUtils.getDependencyContents(request, inline.value()));
+                BootstrapUtils.getDependencyContents(service, inline.value()));
 
         // Add to correct element target
         if (inline.target() == TargetElement.BODY) {
@@ -91,7 +93,7 @@ public class InlineTargets {
      *            prepend or append
      * @return current list of inline objects
      */
-    protected List<JsonObject> getInlineHead(Inline.Position position) {
+    public List<JsonObject> getInlineHead(Inline.Position position) {
         return inlineHead.computeIfAbsent(position, key -> new ArrayList<>());
     }
 
@@ -102,7 +104,7 @@ public class InlineTargets {
      *            prepend or append
      * @return current list of inline objects
      */
-    protected List<JsonObject> getInlineBody(Inline.Position position) {
+    public List<JsonObject> getInlineBody(Inline.Position position) {
         return inlineBody.computeIfAbsent(position, key -> new ArrayList<>());
     }
 }

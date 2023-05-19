@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,12 +32,15 @@ import elemental.json.JsonValue;
  * the same client multiple times, since all references to the same JSON
  * structure will be encoded as the same id.
  *
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
  * @author Vaadin Ltd
  * @since 1.0
  */
 public class ConstantPoolKey implements Serializable {
     private final JsonValue json;
-    private final String id;
+    private String id;
 
     /**
      * Creates a new constant pool key for the given JSON value. The value
@@ -50,8 +53,6 @@ public class ConstantPoolKey implements Serializable {
     public ConstantPoolKey(JsonValue json) {
         assert json != null;
         this.json = json;
-
-        id = calculateHash(json);
     }
 
     /**
@@ -60,22 +61,23 @@ public class ConstantPoolKey implements Serializable {
      * @return the id used to identify this value
      */
     public String getId() {
+        if (id == null) {
+            id = calculateHash(json);
+        }
         return id;
     }
 
     /**
-     * Exports the this key into a JSON object to send to the client. This
-     * method should be called only by the {@link ConstantPool} instance that
-     * manages this value. It may be called multiple times.
+     * Exports this key into a JSON object to send to the client. This method
+     * should be called only by the {@link ConstantPool} instance that manages
+     * this value. It may be called multiple times.
      *
      * @param clientConstantPoolUpdate
      *            the constant pool update that is to be sent to the client, not
      *            <code>null</code>
      */
     public void export(JsonObject clientConstantPoolUpdate) {
-        assert id.equals(calculateHash(json)) : "Json value has been changed";
-
-        clientConstantPoolUpdate.put(id, json);
+        clientConstantPoolUpdate.put(getId(), json);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,6 +34,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasAriaLabel;
+import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.dom.Element;
 
@@ -115,6 +117,55 @@ public abstract class ComponentTest {
 
     protected Component getComponent() {
         return component;
+    }
+
+    protected void testHasOrderedComponents() {
+        if (!(component instanceof HasOrderedComponents)) {
+            Assert.fail("Component " + component.getClass()
+                    + " did not implement HasOrderedComponents anymore.");
+        }
+
+        HasOrderedComponents component = (HasOrderedComponents) this.component;
+        Assert.assertEquals(0, component.getComponentCount());
+
+        Paragraph firstChildren = new Paragraph("first children");
+        component.add(firstChildren);
+        Assert.assertEquals(firstChildren, component.getComponentAt(0));
+
+        Paragraph newFirstChildren = new Paragraph("new first children");
+        component.addComponentAtIndex(0, newFirstChildren);
+        Assert.assertEquals(newFirstChildren, component.getComponentAt(0));
+
+        Assert.assertEquals(1, component.indexOf(firstChildren));
+    }
+
+    protected void testHasAriaLabelIsImplemented() {
+        if (!(component instanceof HasAriaLabel)) {
+            Assert.fail("Component " + component.getClass()
+                    + " did not implement HasAriaLabel anymore.");
+        }
+    }
+
+    protected void testHasAriaLabelIsNotImplemented() {
+        if (component instanceof HasAriaLabel) {
+            Assert.fail("Component " + component.getClass()
+                    + " implemented HasAriaLabel. This is not valid."
+                    + " See test case for more information.");
+        }
+    }
+
+    @Test
+    public void setAriaLabel() {
+        if (!(component instanceof HasAriaLabel)) {
+            return; // test should only run for components that implement
+                    // HasAriaLabel
+        }
+
+        HasAriaLabel component = (HasAriaLabel) this.component;
+        Assert.assertFalse(component.getAriaLabel().isPresent());
+
+        component.setAriaLabel("new AriaLabel");
+        Assert.assertEquals("new AriaLabel", component.getAriaLabel().get());
     }
 
     @Test
@@ -243,9 +294,8 @@ public abstract class ComponentTest {
     private void testEmptyStringForOptionalStringProperty(ComponentProperty p) {
         try {
             p.setUsingSetter(component, "");
-            Assert.assertEquals(
-                    "The getter for '" + p.name
-                            + "' should return an empty optional after setting \"\"",
+            Assert.assertEquals("The getter for '" + p.name
+                    + "' should return an empty optional after setting \"\"",
                     Optional.empty(), p.getUsingGetter(component));
         } catch (Exception e) {
             throw new AssertionError(e);
@@ -255,9 +305,8 @@ public abstract class ComponentTest {
     private void testNullForOptionalNonStringProperty(ComponentProperty p) {
         try {
             p.setUsingSetter(component, null);
-            Assert.assertEquals(
-                    "Setting the property " + p.name
-                            + " to null should cause an empty optional to be returned by the getter",
+            Assert.assertEquals("Setting the property " + p.name
+                    + " to null should cause an empty optional to be returned by the getter",
                     Optional.empty(), p.getUsingGetter(component));
         } catch (Exception e) {
             throw new AssertionError(

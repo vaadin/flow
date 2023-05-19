@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 /**
  * Wraps a native javascript object containing fields for an error message
  *
+ * @since 1.0
  */
 public final class ErrorMessage extends JavaScriptObject {
 
@@ -40,5 +41,10 @@ public final class ErrorMessage extends JavaScriptObject {
     public native String getUrl()
     /*-{
         return this.url;
+    }-*/;
+
+    public native String getQuerySelector()
+    /*-{
+        return this.querySelector;
     }-*/;
 }

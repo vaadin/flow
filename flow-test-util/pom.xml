@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>2.0-SNAPSHOT</version>
+        <version>24.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>flow-test-util</artifactId>
@@ -15,8 +15,15 @@
     <properties>
         <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
         <sonar.skip>true</sonar.skip>
+        <selenium.version>4.8.3</selenium.version>
+        <guava.version>31.1-jre</guava.version>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-generic</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server</artifactId>
@@ -31,7 +38,38 @@
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-testbench-core</artifactId>
             <version>${testbench.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.seleniumhq.selenium</groupId>
+                    <artifactId>selenium-remote-driver</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-remote-driver</artifactId>
+            <version>${selenium.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
+
         <!-- override scope for junit -->
         <dependency>
             <groupId>junit</groupId>

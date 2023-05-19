@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,18 +25,33 @@ import java.util.Map;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
 /**
  * A container class for all components used in tests.
  */
-public class NodeTestComponents {
+public class NodeTestComponents extends NodeUpdateTestUtil {
+
+    public static final String BUTTON_COMPONENT_FQN = ButtonComponent.class
+            .getName();
+    public static final String ICON_COMPONENT_FQN = IconComponent.class
+            .getName();
+
+    @LoadDependenciesOnStartup
+    public static class AllEager implements AppShellConfigurator {
+
+    }
 
     @NpmPackage(value = "@vaadin/vaadin-button", version = "1.1.1")
     class ButtonComponent extends Component {
@@ -58,7 +73,6 @@ public class NodeTestComponents {
     }
 
     @JsModule("./foo-dir/vaadin-npm-component.js")
-    @JavaScript("frontend://foo-dir/javascript-lib.js")
     public static class VaadinNpmComponent extends Component {
     }
 
@@ -76,9 +90,20 @@ public class NodeTestComponents {
     public static class LocalP3Template extends Component {
     }
 
-    @JsModule("frontend://frontend-p3-template.js")
     @JsModule("unresolved/component")
-    public static class FrontendP3Template extends Component {
+    public static class UnresolvedComponent extends Component {
+    }
+
+    @JsModule("@vaadin/example-flag/experimental-module-1.js")
+    @JsModule("@vaadin/example-flag/experimental-module-2.js")
+    @JavaScript("experimental-Connector.js")
+    @Tag("example-experimental-component")
+    public static class ExampleExperimentalComponent extends Component {
+    }
+
+    @Route("flag-view")
+    public static class FlagView extends Component {
+        ExampleExperimentalComponent component;
     }
 
     @JsModule("./foo.js")
@@ -87,9 +112,9 @@ public class NodeTestComponents {
     @CssImport(value = "./foo.css")
     @CssImport(value = "./foo.css", include = "bar")
     @CssImport(value = "./foo.css", id = "baz")
-    @CssImport(value = "./foo.css", id = "baz", include="bar")
+    @CssImport(value = "./foo.css", id = "baz", include = "bar")
     @CssImport(value = "./foo.css", themeFor = "foo-bar")
-    @CssImport(value = "./foo.css", themeFor = "foo-bar", include="bar")
+    @CssImport(value = "./foo.css", themeFor = "foo-bar", include = "bar")
     public static class FlatImport extends Component {
     }
 
@@ -101,8 +126,17 @@ public class NodeTestComponents {
 
     }
 
-    @Theme(value = LumoTest.class, variant = LumoTest.DARK)
+    @JsModule("./common-js-file.js")
+    @Theme(themeClass = LumoTest.class, variant = LumoTest.DARK)
     @Route
+    public static class MainLayout implements RouterLayout {
+        @Override
+        public Element getElement() {
+            return null;
+        }
+    }
+
+    @Route(value = "", layout = MainLayout.class)
     public static class MainView extends Component {
         ButtonComponent buttonComponent;
         IconComponent iconComponent;
@@ -112,9 +146,10 @@ public class NodeTestComponents {
         VaadinMixedComponent vaadinMixedComponent;
         LocalTemplate localP2Template;
         LocalP3Template localP3Template;
-        FrontendP3Template frontendP3Template;
+        UnresolvedComponent frontendP3Template;
         FlatImport flatImport;
         TranslatedImports translatedImports;
+        JavaScriptOrder order;
     }
 
     /**
@@ -152,12 +187,6 @@ public class NodeTestComponents {
         }
 
         @Override
-        @Deprecated
-        public Map<String, String> getBodyAttributes(String variant) {
-            return getHtmlAttributes(variant);
-        }
-
-        @Override
         public Map<String, String> getHtmlAttributes(String variant) {
             if (variant.isEmpty()) {
                 return Collections.emptyMap();
@@ -179,11 +208,15 @@ public class NodeTestComponents {
         }
     }
 
-    @NpmPackage(value = "@webcomponents/webcomponentsjs", version = "2.2.9")
+    @NpmPackage(value = "@webcomponents/webcomponentsjs", version = "2.2.10")
     public static class ExtraImport {
     }
 
-    @NpmPackage(value = "@vaadin/vaadin-shrinkwrap", version = "1.2.3")
-    public static class VaadinShrinkWrap extends Component {
+    @JavaScript("javascript/a.js")
+    @JavaScript("javascript/b.js")
+    @JavaScript("javascript/c.js")
+    @JsModule("jsmodule/g.js")
+    public static class JavaScriptOrder extends Component {
+
     }
 }

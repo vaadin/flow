@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,27 +15,25 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
-import java.util.Arrays;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.data.binder.HasDataProvider;
-import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 
 /**
  * A generic interface for hierarchical listing components that use a data
- * provider for showing data.
+ * provider for showing hierarchical data.
  *
  * @author Vaadin Ltd
  *
  * @param <T>
  *            the item data type
+ * @since 1.2
  */
-public interface HasHierarchicalDataProvider<T> extends HasDataProvider<T> {
+public interface HasHierarchicalDataProvider<T> extends Serializable {
 
     public HierarchicalDataProvider<T, SerializablePredicate<T>> getDataProvider();
 
@@ -74,8 +72,8 @@ public interface HasHierarchicalDataProvider<T> extends HasDataProvider<T> {
      * <p>
      * The provided items are wrapped into a {@link TreeDataProvider} backed by
      * a flat {@link TreeData} structure. The data provider instance is used as
-     * a parameter for the {@link #setDataProvider(DataProvider)} method. It
-     * means that the items collection can be accessed later on via
+     * a parameter for the {@link #setDataProvider(HierarchicalDataProvider)}
+     * method. It means that the items collection can be accessed later on via
      * {@link #getTreeData()}:
      *
      * <pre>
@@ -118,8 +116,8 @@ public interface HasHierarchicalDataProvider<T> extends HasDataProvider<T> {
      * <p>
      * The provided items are wrapped into a {@link TreeDataProvider} backed by
      * a flat {@link TreeData} structure. The data provider instance is used as
-     * a parameter for the {@link #setDataProvider(DataProvider)} method. It
-     * means that the items collection can be accessed later on via
+     * a parameter for the {@link #setDataProvider(HierarchicalDataProvider)}
+     * method. It means that the items collection can be accessed later on via
      * {@link #getTreeData()}:
      *
      * <pre>
@@ -156,108 +154,12 @@ public interface HasHierarchicalDataProvider<T> extends HasDataProvider<T> {
     }
 
     /**
-     * Sets the data items of this component provided as a collection.
-     * <p>
-     * The provided items are wrapped into a {@link TreeDataProvider} backed by
-     * a flat {@link TreeData} structure. The data provider instance is used as
-     * a parameter for the {@link #setDataProvider(DataProvider)} method. It
-     * means that the items collection can be accessed later on via
-     * {@link #getTreeData()}:
+     * Sets the hierarchical data provider for this listing. The data provider
+     * provides the items and the hierarchy as needed.
      *
-     * <pre>
-     * <code>
-     * HasHierarchicalDataProvider&lt;String&gt; treeGrid = new TreeGrid&lt;&gt;();
-     * treeGrid.setItems(Arrays.asList("a","b"));
-     * ...
-     *
-     * TreeData&lt;String&gt; data = treeGrid.getTreeData();
-     * </code>
-     * </pre>
-     * <p>
-     * The returned {@link TreeData} instance may be used as-is to add, remove
-     * or modify items in the hierarchy. These modifications to the object are
-     * not automatically reflected back to the TreeGrid. Items modified should
-     * be refreshed with {@link HierarchicalDataProvider#refreshItem(Object)}
-     * and when adding or removing items
-     * {@link HierarchicalDataProvider#refreshAll()} should be called.
-     *
-     * @param items
-     *            the data items to display, not {@code null}
+     * @param hierarchicalDataProvider
+     *            the hierarchical data provider to use, not {@code null}
      */
-    @Override
-    public default void setItems(Collection<T> items) {
-        Objects.requireNonNull(items, "Given collection may not be null");
-        setDataProvider(new TreeDataProvider<>(
-                new TreeData<T>().addItems(null, items)));
-    }
-
-    /**
-     * Sets the data items of this component provided as a stream.
-     * <p>
-     * The provided items are wrapped into a {@link TreeDataProvider} backed by
-     * a flat {@link TreeData} structure. The data provider instance is used as
-     * a parameter for the {@link #setDataProvider(DataProvider)} method. It
-     * means that the items collection can be accessed later on via
-     * {@link #getTreeData()}:
-     *
-     * <pre>
-     * <code>
-     * HasHierarchicalDataProvider&lt;String&gt; treeGrid = new TreeGrid&lt;&gt;();
-     * treeGrid.setItems(Stream.of("a","b"));
-     * ...
-     *
-     * TreeData&lt;String&gt; data = treeGrid.getTreeData();
-     * </code>
-     * </pre>
-     * <p>
-     * The returned {@link TreeData} instance may be used as-is to add, remove
-     * or modify items in the hierarchy. These modifications to the object are
-     * not automatically reflected back to the TreeGrid. Items modified should
-     * be refreshed with {@link HierarchicalDataProvider#refreshItem(Object)}
-     * and when adding or removing items
-     * {@link HierarchicalDataProvider#refreshAll()} should be called.
-     *
-     * @param items
-     *            the data items to display, not {@code null}
-     */
-    @Override
-    public default void setItems(Stream<T> items) {
-        Objects.requireNonNull(items, "Given stream may not be null");
-        setItems(items.collect(Collectors.toList()));
-    }
-
-    /**
-     * Sets the data items of this listing.
-     * <p>
-     * The provided items are wrapped into a {@link TreeDataProvider} backed by
-     * a flat {@link TreeData} structure. The data provider instance is used as
-     * a parameter for the {@link #setDataProvider(DataProvider)} method. It
-     * means that the items collection can be accessed later on via
-     * {@link #getTreeData()}:
-     *
-     * <pre>
-     * <code>
-     * TreeGrid&lt;String&gt; treeGrid = new TreeGrid&lt;&gt;();
-     * treeGrid.setItems("a","b");
-     * ...
-     *
-     * TreeData&lt;String&gt; data = treeGrid.getTreeData();
-     * </code>
-     * </pre>
-     * <p>
-     * The returned {@link TreeData} instance may be used as-is to add, remove
-     * or modify items in the hierarchy. These modifications to the object are
-     * not automatically reflected back to the TreeGrid. Items modified should
-     * be refreshed with {@link HierarchicalDataProvider#refreshItem(Object)}
-     * and when adding or removing items
-     * {@link HierarchicalDataProvider#refreshAll()} should be called.
-     *
-     * @param items
-     *            the data items to display, not {@code null}
-     */
-    @Override
-    public default void setItems(@SuppressWarnings("unchecked") T... items) {
-        Objects.requireNonNull(items, "Given items may not be null");
-        setItems(Arrays.asList(items));
-    }
+    void setDataProvider(
+            HierarchicalDataProvider<T, ?> hierarchicalDataProvider);
 }

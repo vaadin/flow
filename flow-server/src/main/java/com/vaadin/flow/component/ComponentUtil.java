@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,7 +24,6 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component.MapToExistingElement;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
@@ -40,7 +39,9 @@ import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
@@ -237,9 +238,9 @@ public class ComponentUtil {
                 && component.getElement().isEnabled() != component.getElement()
                         .getNode().isEnabledSelf()) {
 
-            Optional<Component> parent = component.getParent();
-            if (parent.isPresent()
-                    && isAttachedToParent(component, parent.get())) {
+            Element parent = component.getElement().getParent();
+            if (parent != null
+                    && isAttachedToParent(component.getElement(), parent)) {
                 component.onEnabledStateChanged(
                         component.getElement().isEnabled());
             }
@@ -268,12 +269,12 @@ public class ComponentUtil {
         if (component instanceof HasEnabled
                 && component.getElement().isEnabled() != component.getElement()
                         .getNode().isEnabledSelf()) {
-            Optional<Component> parent = component.getParent();
-            if (parent.isPresent()) {
-                Component parentComponent = parent.get();
-                boolean state = isAttachedToParent(component, parentComponent)
-                        ? checkParentChainState(parentComponent)
-                        : component.getElement().getNode().isEnabledSelf();
+            Element parent = component.getElement().getParent();
+            if (parent != null) {
+                boolean state = isAttachedToParent(component.getElement(),
+                        parent) ? checkParentChainState(parent)
+                                : component.getElement().getNode()
+                                        .isEnabledSelf();
                 component.onEnabledStateChanged(state);
             } else {
                 component.onEnabledStateChanged(
@@ -282,37 +283,33 @@ public class ComponentUtil {
         }
     }
 
-    private static boolean isAttachedToParent(Component component,
-            Component parentComponent) {
-        return parentComponent.getChildren()
-                .anyMatch(child -> child.equals(component))
-                || isVirtualChild(component, parentComponent);
+    private static boolean isAttachedToParent(Element element, Element parent) {
+        return parent.getChildren().anyMatch(child -> child.equals(element))
+                || isVirtualChild(element, parent);
     }
 
-    private static boolean isVirtualChild(Component component,
-            Component parentComponent) {
-        Iterator<StateNode> iterator = parentComponent.getElement().getNode()
+    private static boolean isVirtualChild(Element element, Element parent) {
+        Iterator<StateNode> iterator = parent.getNode()
                 .getFeatureIfInitialized(VirtualChildrenList.class)
                 .map(VirtualChildrenList::iterator)
                 .orElse(Collections.emptyIterator());
         while (iterator.hasNext()) {
-            if (iterator.next().equals(component.getElement().getNode())) {
+            if (iterator.next().equals(element.getNode())) {
                 return true;
             }
         }
         return false;
     }
 
-    private static boolean checkParentChainState(Component component) {
-        if (!component.getElement().getNode().isEnabledSelf()) {
+    private static boolean checkParentChainState(Element element) {
+        if (!element.getNode().isEnabledSelf()) {
             return false;
         }
 
-        Optional<Component> parent = component.getParent();
-        if (parent.isPresent()) {
-            Component parentComponent = parent.get();
-            if (isAttachedToParent(component, parentComponent)) {
-                return checkParentChainState(parentComponent);
+        Element parent = element.getParent();
+        if (parent != null) {
+            if (isAttachedToParent(element, parent)) {
+                return checkParentChainState(parent);
             }
         }
 
@@ -371,6 +368,35 @@ public class ComponentUtil {
             Consumer<DomListenerRegistration> domListenerConsumer) {
         return component.getEventBus().addListener(eventType, listener,
                 domListenerConsumer);
+    }
+
+    /**
+     * Check if the component has at least one registered listener of the given
+     * event type.
+     *
+     * @param component
+     *            the component to which the listener(s) are registered.
+     * @param eventType
+     *            the event type for which the listener(s) are registered.
+     * @return a boolean indicating whether at least one listener registered to
+     *         the component for the given event type.
+     */
+    public static <T extends ComponentEvent<?>> boolean hasEventListener(
+            Component component, Class<? extends T> eventType) {
+        return component.hasListener(eventType);
+    }
+
+    /**
+     * Returns all listeners that match or extend the given event type.
+     *
+     * @param eventType
+     *            the component event type
+     * @return A collection with all registered listeners for a given event
+     *         type. Empty if no listeners are found.
+     */
+    public static Collection<?> getListeners(Component component,
+            Class<? extends ComponentEvent> eventType) {
+        return component.getListeners(eventType);
     }
 
     /**
@@ -473,8 +499,7 @@ public class ComponentUtil {
 
     /**
      * Gets the dependencies for the given class, defined using annotations (
-     * {@link HtmlImport}, {@link JavaScript}, {@link StyleSheet} and
-     * {@link Uses}).
+     * {@link JavaScript}, {@link StyleSheet} and {@link Uses}).
      *
      * @param service
      *            the service to use for resolving dependencies
@@ -526,7 +551,7 @@ public class ComponentUtil {
     }
 
     /**
-     * Stores a an instance of a specific type for the given component.
+     * Stores an instance of a specific type for the given component.
      *
      * @see #setData(Component, String, Object)
      * @see #getData(Component, Class)
@@ -590,6 +615,36 @@ public class ComponentUtil {
     public static <T> T getData(Component component, Class<T> type) {
         return getData(component,
                 (attributes, ignore) -> attributes.getAttribute(type), type);
+    }
+
+    /**
+     * Gets the router instance for the given component.
+     *
+     * Falls back to the router for the currently active VaadinService if the
+     * component is not attached.
+     *
+     * @param component
+     *            component for which the requested router instance serves
+     *            navigation
+     * @return a router instance
+     * @throws IllegalStateException
+     *             if no router instance is available
+     */
+    public static Router getRouter(HasElement component) {
+        Router router = null;
+        if (component.getElement().getNode().isAttached()) {
+            StateTree tree = (StateTree) component.getElement().getNode()
+                    .getOwner();
+            router = tree.getUI().getInternals().getRouter();
+        }
+        if (router == null) {
+            router = VaadinService.getCurrent().getRouter();
+        }
+        if (router == null) {
+            throw new IllegalStateException(
+                    "Implicit router instance is not available.");
+        }
+        return router;
     }
 
 }

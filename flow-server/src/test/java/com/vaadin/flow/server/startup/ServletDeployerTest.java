@@ -1,63 +1,57 @@
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.Registration;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.easymock.Capture;
-import org.easymock.CaptureType;
-import org.easymock.EasyMock;
-import org.junit.Before;
-import org.junit.Test;
+import jakarta.servlet.Registration;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
-import static org.easymock.EasyMock.anyBoolean;
-import static org.easymock.EasyMock.anyObject;
-import static org.easymock.EasyMock.anyString;
-import static org.easymock.EasyMock.capture;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.mock;
-import static org.easymock.EasyMock.newCapture;
-import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.apache.commons.io.FileUtils;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
 public class ServletDeployerTest {
     private final ServletDeployer deployer = new ServletDeployer();
 
-    private final Capture<String> servletNames = EasyMock
-            .newCapture(CaptureType.ALL);
-    private final Capture<String> servletMappings = EasyMock
-            .newCapture(CaptureType.ALL);
+    private List<String> servletNames;
+    private List<String> servletMappings;
+    private List<Integer> servletLoadOnStartup;
 
-    private static class TestVaadinServlet extends VaadinServlet {
-    }
+    private boolean disableAutomaticServletRegistration = false;
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     private static class TestServlet implements Servlet {
         @Override
@@ -89,316 +83,216 @@ public class ServletDeployerTest {
 
     @Before
     public void clearCaptures() {
-        servletNames.reset();
-        servletMappings.reset();
+        servletNames = new ArrayList<>();
+        servletMappings = new ArrayList<>();
+        servletLoadOnStartup = new ArrayList<>();
     }
 
     @Test
-    public void hasRoutes_automaticallyRegisterTwoServletsWhenNoServletsPresent()
+    public void automaticallyRegisterTwoServletsWhenNoServletsPresent()
             throws Exception {
-        deployer.contextInitialized(getContextEvent(true, false));
+        deployer.contextInitialized(getContextEvent());
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
-    }
-
-    @Test
-    public void hasWebComponents_automaticallyRegisterOneServletsWhenNoServletsPresent()
-            throws Exception {
-        deployer.contextInitialized(getContextEvent(false, true));
-
-        assertMappingsCount(1, 1);
-        assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+        assertLoadOnStartupSet();
     }
 
     @Test
     public void doNotRegisterAnythingIfRegistrationIsDisabled()
             throws Exception {
-        deployer.contextInitialized(getContextEvent(true, true,
+        disableAutomaticServletRegistration = true;
+        deployer.contextInitialized(getContextEvent(
                 getServletRegistration("testServlet", TestServlet.class,
-                        singletonList("/test/*"),
-                        singletonMap(
-                                Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION,
-                                "true"))));
+                        singletonList("/test/*"), Collections.emptyMap())));
 
         assertMappingsCount(0, 0);
     }
 
     @Test
-    public void noServlets_noRoutes_noWebComponents_servletsAreNotRegistered()
+    public void registeredNonVaadinServlets_vaadinServletsAreRegistered()
             throws Exception {
-        deployer.contextInitialized(getContextEvent(false, false));
-
-        assertMappingsCount(0, 0);
-    }
-
-    @Test
-    public void registeredServlets_noRoutes_noWebComponents_compatibilityMode_servletsAreNotRegistered()
-            throws Exception {
-        assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents(
-                true);
-    }
-
-    @Test
-    public void registeredServlets_noRoutes_noWebComponents_servletsAreNotRegistered()
-            throws Exception {
-        assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents(
-                false);
-    }
-
-    @Test
-    public void mainServletIsNotRegisteredWhenVaadinServletIsPresent_frontendServletIsRegistered()
-            throws Exception {
-        deployer.contextInitialized(getContextEvent(true, true,
-                getServletRegistration("testServlet", TestVaadinServlet.class,
-                        singletonList("/test/*"), emptyMap())));
+        deployer.contextInitialized(getContextEvent(
+                getServletRegistration("testServlet", TestServlet.class,
+                        singletonList("/test/*"), Collections.emptyMap())));
 
         assertMappingsCount(1, 1);
-        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
+        assertLoadOnStartupSet();
     }
 
     @Test
     public void frontendServletIsNotRegisteredWhenProductionModeIsActive()
             throws Exception {
-        deployer.contextInitialized(getContextEvent(true, true,
-                getServletRegistration("testServlet", TestServlet.class,
-                        singletonList("/test/*"),
-                        singletonMap(
-                                Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
-                                "true"))));
+        deployer.contextInitialized(getContextEvent(getServletRegistration(
+                "testServlet", TestServlet.class, singletonList("/test/*"),
+                singletonMap(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
+                        "true"))));
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+        assertLoadOnStartupSet();
     }
 
     @Test
     public void frontendServletIsNotRegistered_whenMainServletIsRegistered()
             throws Exception {
-        deployer.contextInitialized(getContextEvent(true, true));
+        deployer.contextInitialized(getContextEvent());
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
-    }
-
-    @Test
-    public void frontendServletIsRegisteredWhenAtLeastOneServletHasDevelopmentAndCompatibilityMode()
-            throws Exception {
-        deployer.contextInitialized(getContextEvent(true, true,
-                getServletRegistration("testServlet1", TestVaadinServlet.class,
-                        singletonList("/test1/*"), singletonMap(
-                                Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
-                                "true")),
-                getServletRegistration("testServlet2", TestVaadinServlet.class,
-                        singletonList("/test2/*"),
-                        singletonMap(
-                                Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
-                                "false"))));
-
-        assertMappingsCount(1, 1);
-        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
-    }
-
-    @Test
-    public void frontendServletIsNotRegisteredWhenNoServletsHaveDevelopmentAndCompatibilityMode()
-            throws Exception {
-        Map<String, String> params = new HashMap<>();
-        params.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "false");
-        params.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, "false");
-        deployer.contextInitialized(getContextEvent(
-                true, true,
-                getServletRegistration("testServlet1", TestVaadinServlet.class,
-                        singletonList("/test1/*"),
-                        singletonMap(
-                                Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
-                                "true")),
-                getServletRegistration("testServlet2", TestVaadinServlet.class,
-                        singletonList("/test2/*"), params)));
-
-        assertMappingsCount(0, 0);
-    }
-
-    @Test
-    public void frontendServletIsRegisteredInProductionModeIfOriginalFrontendResourcesAreUsed()
-            throws Exception {
-        Map<String, String> params = new HashMap<>();
-        params.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
-        params.put(Constants.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
-
-        deployer.contextInitialized(
-                getContextEvent(true, true, getServletRegistration("test",
-                        TestVaadinServlet.class, emptyList(), params)));
-
-        assertMappingsCount(1, 1);
-        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
+        assertLoadOnStartupSet();
     }
 
     @Test
     public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_mainServlet()
             throws Exception {
-        deployer.contextInitialized(getContextEvent(true, true,
+        deployer.contextInitialized(getContextEvent(
                 getServletRegistration("test", TestServlet.class,
                         singletonList("/*"), Collections.emptyMap())));
 
-        assertMappingsCount(1, 1);
-        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
+        assertMappingsCount(0, 0);
     }
 
     @Test
     public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_frontendServlet()
             throws Exception {
-        deployer.contextInitialized(getContextEvent(true, true,
+        deployer.contextInitialized(getContextEvent(
                 getServletRegistration("test", TestServlet.class,
                         singletonList("/frontend/*"), Collections.emptyMap())));
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+        assertLoadOnStartupSet();
     }
 
     private void assertMappingsCount(int numServlets, int numMappings) {
         assertEquals(String.format(
                 "Expected to have exactly '%d' servlets, but got '%d': '%s'",
-                numServlets, servletNames.getValues().size(),
-                servletNames.getValues()), servletNames.getValues().size(),
-                numServlets);
+                numServlets, servletNames.size(), servletNames),
+                servletNames.size(), numServlets);
         assertEquals(String.format(
                 "Expected to have exactly '%d' mappings, but got '%d': '%s'",
-                numMappings, servletMappings.getValues().size(),
-                servletMappings.getValues()),
-                servletMappings.getValues().size(), numMappings);
+                numMappings, servletMappings.size(), servletMappings),
+                servletMappings.size(), numMappings);
     }
 
     private void assertMappingIsRegistered(String servletName,
             String mappedPath) {
-        int servletNameIndex = servletNames.getValues().indexOf(servletName);
-        int pathIndex = servletMappings.getValues().indexOf(mappedPath);
+        int servletNameIndex = servletNames.indexOf(servletName);
+        int pathIndex = servletMappings.indexOf(mappedPath);
         assertTrue(String.format(
                 "Did not find servlet name '%s' among added servlet names: '%s'",
-                servletName, servletNames.getValues()), servletNameIndex >= 0);
-        assertTrue(
-                String.format(
-                        "Did not find mapped path '%s' among added paths: '%s'",
-                        mappedPath, servletMappings.getValues()),
-                pathIndex >= 0);
+                servletName, servletNames), servletNameIndex >= 0);
+        assertTrue(String.format(
+                "Did not find mapped path '%s' among added paths: '%s'",
+                mappedPath, servletMappings), pathIndex >= 0);
         assertEquals(
                 "Expected servlet name '%s' and mapped path '%s' to be added for the same servlet in the same time",
                 pathIndex, servletNameIndex);
     }
 
+    private void assertLoadOnStartupSet() {
+        assertEquals("Servlet loadOnStartup should be invoked only once", 1,
+                servletLoadOnStartup.size());
+        assertEquals(
+                String.format(
+                        "Expected servlet loadOnStartup to be '%d' but was '%d",
+                        1, servletLoadOnStartup.get(0)),
+                (Integer) 1, servletLoadOnStartup.get(0));
+    }
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private ServletContextEvent getContextEvent(boolean addRoutes,
-            boolean addWebComponents,
+    private ServletContextEvent getContextEvent(
             ServletRegistration... servletRegistrations) throws Exception {
-        ServletRegistration.Dynamic dynamicMock = mock(
-                ServletRegistration.Dynamic.class);
-        dynamicMock.setAsyncSupported(anyBoolean());
-        EasyMock.expectLastCall().anyTimes();
-        expect(dynamicMock.addMapping(capture(servletMappings)))
-                .andReturn(Collections.emptySet()).anyTimes();
+        ServletRegistration.Dynamic dynamicMock = Mockito
+                .mock(ServletRegistration.Dynamic.class);
 
-        ServletContext contextMock = mock(ServletContext.class);
-        expect(contextMock.getClassLoader())
-                .andReturn(this.getClass().getClassLoader()).anyTimes();
-        expect(contextMock.addServlet(EasyMock.capture(servletNames),
-                anyObject(Class.class))).andAnswer(() -> dynamicMock)
-                        .anyTimes();
+        Mockito.when(dynamicMock.addMapping(Mockito.anyString()))
+                .thenAnswer(answer -> {
+                    String mappings = answer.getArgument(0);
+                    this.servletMappings.addAll(Arrays.asList(mappings));
+                    return Collections.emptySet();
+                });
+        Mockito.doAnswer(i -> this.servletLoadOnStartup.add(i.getArgument(0)))
+                .when(dynamicMock).setLoadOnStartup(ArgumentMatchers.anyInt());
 
-        expect(contextMock.getResource(EasyMock.anyString())).andReturn(null)
-                .anyTimes();
+        ServletContext contextMock = Mockito.mock(ServletContext.class);
 
-        // seems to be a compiler bug, since fails to compile with the actual
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(contextMock.getAttribute(Lookup.class.getName()))
+                .thenReturn(lookup);
+
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+
+        Mockito.when(resourceProvider.getApplicationResources(Mockito.any()))
+                .thenReturn(Collections.emptyList());
+
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
+
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+
+        Mockito.when(appConfig.getPropertyNames())
+                .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+
+        Mockito.when(appConfig.disableAutomaticServletRegistration())
+                .thenReturn(disableAutomaticServletRegistration);
+
+        Mockito.when(contextMock
+                .getAttribute(ApplicationConfiguration.class.getName()))
+                .thenReturn(appConfig);
+
+        Mockito.when(contextMock.getContextPath()).thenReturn("");
+        Mockito.when(contextMock.getClassLoader())
+                .thenReturn(this.getClass().getClassLoader());
+
+        Mockito.when(contextMock.addServlet(Mockito.anyString(),
+                Mockito.any(Class.class))).thenAnswer(answer -> {
+                    String servletName = answer.getArgument(0);
+                    servletNames.add(servletName);
+                    return dynamicMock;
+                });
+
+        // seems to be a compiler bug, since fails to compile with the
+        // actual
         // types specified (or being inlined) but works with raw type
-        @SuppressWarnings({ "rawtypes", "serial" })
         Map hack = Stream.of(servletRegistrations).collect(
                 Collectors.toMap(Registration::getName, Function.identity()));
-        expect(contextMock.getServletRegistrations()).andReturn(hack)
-                .anyTimes();
+        Mockito.when(contextMock.getServletRegistrations()).thenReturn(hack);
 
-        if (addRoutes) {
-            expect(contextMock.getAttribute(RouteRegistry.class.getName()))
-                    .andAnswer(() -> {
-                        ApplicationRouteRegistry registry = new ApplicationRouteRegistry();
+        File token = tempFolder.newFile();
+        FileUtils.write(token, "{}", StandardCharsets.UTF_8);
 
-                        RouteConfiguration routeConfiguration = RouteConfiguration
-                                .forRegistry(registry);
-                        routeConfiguration.update(() -> {
-                            routeConfiguration.getHandledRegistry().clean();
-                            routeConfiguration.setAnnotatedRoute(
-                                    ComponentWithRoute.class);
-                        });
-                        return registry;
-                    }).anyTimes();
-        }
-        if (addWebComponents) {
-            expect(contextMock.getAttribute(
-                    WebComponentConfigurationRegistry.class.getName()))
-                            .andAnswer(() -> {
-                                WebComponentConfigurationRegistry registry = new WebComponentConfigurationRegistry() {
-                                };
-                                registry.setConfigurations(
-                                        Collections.singleton(
-                                                new WebComponentExporter.WebComponentConfigurationFactory()
-                                                        .create(FakeExporter.class)));
+        Mockito.when(contextMock.getInitParameterNames())
+                .thenReturn(Collections.enumeration(Collections
+                        .singletonList(FrontendUtils.PARAM_TOKEN_FILE)));
+        Mockito.when(
+                contextMock.getInitParameter(FrontendUtils.PARAM_TOKEN_FILE))
+                .thenReturn(token.getPath());
 
-                                return registry;
-                            }).anyTimes();
-
-        }
-
-        expect(contextMock.getAttribute(anyString())).andReturn(null)
-                .anyTimes();
-        contextMock.setAttribute(anyObject(), anyObject());
-        contextMock.setAttribute(anyObject(), anyObject());
-        EasyMock.expectLastCall();
-
-        expect(contextMock.getInitParameterNames())
-                .andReturn(Collections.emptyEnumeration()).anyTimes();
-
-        replay(dynamicMock, contextMock);
         return new ServletContextEvent(contextMock);
     }
 
     private ServletRegistration getServletRegistration(String servletName,
             Class<?> servletClass, Collection<String> pathMappings,
             Map<String, String> initParameters) {
-        ServletRegistration registrationMock = mock(ServletRegistration.class);
-        expect(registrationMock.getClassName())
-                .andReturn(servletClass.getName()).anyTimes();
-        expect(registrationMock.getMappings()).andReturn(pathMappings)
-                .anyTimes();
-        expect(registrationMock.getName()).andReturn(servletName).anyTimes();
-        expect(registrationMock.getInitParameters()).andReturn(initParameters)
-                .anyTimes();
-        Capture<String> parameterNameCapture = newCapture();
-        expect(registrationMock.getInitParameter(capture(parameterNameCapture)))
-                .andAnswer(() -> initParameters
-                        .get(parameterNameCapture.getValue()))
-                .anyTimes();
-        replay(registrationMock);
+        ServletRegistration registrationMock = Mockito
+                .mock(ServletRegistration.class);
+        Mockito.when(registrationMock.getClassName())
+                .thenReturn(servletClass.getName());
+        Mockito.when(registrationMock.getMappings()).thenReturn(pathMappings);
+        Mockito.when(registrationMock.getName()).thenReturn(servletName);
+        Mockito.when(registrationMock.getInitParameters())
+                .thenReturn(initParameters);
+        Mockito.when(registrationMock.getInitParameter(Mockito.anyString()))
+                .thenAnswer(answer -> {
+                    String name = answer.getArgument(0);
+                    return initParameters.get(name);
+                });
         return registrationMock;
     }
 
-    private void assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents(
-            boolean compatibilityMode) throws Exception {
-        deployer.contextInitialized(getContextEvent(false, false,
-                getServletRegistration("testServlet", TestServlet.class,
-                        singletonList("/test/*"),
-                        singletonMap(
-                                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                                Boolean.toString(compatibilityMode)))));
-
-        assertMappingsCount(0, 0);
-    }
-
-    public final static class FakeExporter
-            extends WebComponentExporter<Component> {
-        public FakeExporter() {
-            super("tag");
-        }
-
-        @Override
-        public void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
-
-        }
-    }
 }

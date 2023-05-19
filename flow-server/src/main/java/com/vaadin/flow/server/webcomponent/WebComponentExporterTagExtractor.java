@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,22 +18,25 @@ package com.vaadin.flow.server.webcomponent;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.function.SerializableFunction;
 
 /**
- * Retrieves web component tag from a {@link com.vaadin.flow.component.WebComponentExporter}
- * class.
+ * Retrieves web component tag from a
+ * {@link com.vaadin.flow.component.WebComponentExporterFactory} object.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd.
+ * @since 2.0
  */
-public final class WebComponentExporterTagExtractor
-        implements SerializableFunction<Class<? extends WebComponentExporter<? extends Component>>, String> {
+public final class WebComponentExporterTagExtractor implements
+        SerializableFunction<WebComponentExporterFactory<? extends Component>, String> {
 
     @Override
-    public String apply(Class<?
-            extends WebComponentExporter<? extends Component>> exporterClass) {
+    public String apply(
+            WebComponentExporterFactory<? extends Component> factory) {
         return new WebComponentExporter.WebComponentConfigurationFactory()
-                .create(exporterClass)
-                .getTag();
+                .create(factory.create()).getTag();
     }
 }

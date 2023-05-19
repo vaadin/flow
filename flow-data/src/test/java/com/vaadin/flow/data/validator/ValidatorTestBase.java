@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,10 +30,11 @@ public class ValidatorTestBase {
 
     private TestLabel localeContext;
     private Locale locale = Locale.US;
+    private UI ui;
 
     @Before
     public void setUp() {
-        UI ui = new UI() {
+        ui = new UI() {
             @Override
             public Locale getLocale() {
                 return locale;

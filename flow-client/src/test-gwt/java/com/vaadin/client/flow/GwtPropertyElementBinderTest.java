@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,12 +17,15 @@ package com.vaadin.client.flow;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.InitialPropertiesHandler;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.binding.Binder;
+import com.vaadin.client.flow.binding.Debouncer;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
@@ -58,6 +61,7 @@ public abstract class GwtPropertyElementBinderTest
                 ExistingElementMap existingElementMap) {
             this.constantPool = constantPool;
             this.existingElementMap = existingElementMap;
+            set(ApplicationConfiguration.class, new ApplicationConfiguration());
         }
 
         @Override
@@ -138,7 +142,6 @@ public abstract class GwtPropertyElementBinderTest
 
     protected NodeMap properties;
     private NodeList synchronizedPropertyList;
-    private NodeList synchronizedPropertyEventsList;
 
     @Override
     protected void gwtSetUp() throws Exception {
@@ -149,112 +152,9 @@ public abstract class GwtPropertyElementBinderTest
 
         node = createNode();
         properties = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
-        synchronizedPropertyList = node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
-        synchronizedPropertyEventsList = node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+        synchronizedPropertyList = new NodeList(0, node);
 
         element = Browser.getDocument().createElement("div");
-    }
-
-    public void testSynchronizePropertySendsToServer() {
-        // Must append for events to work in HTMLUnit
-        Browser.getDocument().getBody().appendChild(element);
-        Binder.bind(node, element);
-
-        setSyncEvents("event1");
-        setSyncProperties("offsetWidth", "tagName");
-        Reactive.flush();
-
-        assertSynchronized();
-        dispatchEvent("event1");
-        assertSynchronized("offsetWidth", "tagName");
-    }
-
-    public void testSynchronizePropertyOnlyOnChange() {
-        // Must append for events to work in HTMLUnit
-        Browser.getDocument().getBody().appendChild(element);
-        Binder.bind(node, element);
-
-        setSyncEvents("event");
-        setSyncProperties("offsetWidth", "offsetHeight");
-        Reactive.flush();
-
-        dispatchEvent("event");
-        assertSynchronized("offsetWidth", "offsetHeight");
-        tree.clearSynchronizedProperties();
-
-        dispatchEvent("event");
-        assertSynchronized();
-        tree.clearSynchronizedProperties();
-
-        element.getStyle().setWidth("123px");
-        dispatchEvent("event");
-        assertSynchronized("offsetWidth");
-        tree.clearSynchronizedProperties();
-
-        element.getStyle().setHeight("123px");
-        dispatchEvent("event");
-        assertSynchronized("offsetHeight");
-    }
-
-    public void testSynchronizePropertyAddRemoveEvent() {
-        // Must append for events to work in HTMLUnit
-        Browser.getDocument().getBody().appendChild(element);
-        Binder.bind(node, element);
-
-        setSyncEvents("event1", "event2");
-        setSyncProperties("offsetWidth");
-        Reactive.flush();
-
-        setSyncEvents("event2");
-        Reactive.flush();
-
-        dispatchEvent("event1");
-        assertSynchronized();
-        tree.clearSynchronizedProperties();
-        dispatchEvent("event2");
-        assertSynchronized("offsetWidth");
-        tree.clearSynchronizedProperties();
-
-        synchronizedPropertyEventsList.splice(0,
-                synchronizedPropertyEventsList.length());
-        dispatchEvent("event2");
-        assertSynchronized();
-
-    }
-
-    public void testSynchronizePropertyAddRemoveProperties() {
-        // Must append for events to work in HTMLUnit
-        Browser.getDocument().getBody().appendChild(element);
-        Binder.bind(node, element);
-
-        setSyncEvents("event1");
-        setSyncProperties("offsetWidth");
-        Reactive.flush();
-
-        element.getStyle().setHeight("1px");
-        element.getStyle().setWidth("1px");
-        dispatchEvent("event1");
-        assertSynchronized("offsetWidth");
-        tree.clearSynchronizedProperties();
-
-        setSyncProperties("offsetWidth", "offsetHeight");
-        Reactive.flush();
-
-        element.getStyle().setHeight("2px");
-        element.getStyle().setWidth("2px");
-        dispatchEvent("event1");
-        assertSynchronized("offsetWidth", "offsetHeight");
-        tree.clearSynchronizedProperties();
-
-        setSyncProperties();
-        Reactive.flush();
-        element.getStyle().setHeight("3px");
-        element.getStyle().setWidth("3px");
-        dispatchEvent("event1");
-        assertSynchronized();
-        tree.clearSynchronizedProperties();
     }
 
     public void testDomListenerSynchronization() {
@@ -290,16 +190,80 @@ public abstract class GwtPropertyElementBinderTest
         assertSynchronized("offsetWidth");
     }
 
-    protected StateNode createNode() {
-        return new StateNode(0, tree);
+    public void testFlushPendingChangesOnDomEvent() {
+        Browser.getDocument().getBody().appendChild(element);
+        Binder.bind(node, element);
+
+        AtomicInteger commandExecution = new AtomicInteger();
+        Debouncer debouncer = Debouncer.getOrCreate(element, "on-value:false",
+                300);
+        debouncer.trigger(JsCollections.<String> set()
+                .add(JsonConstants.EVENT_PHASE_TRAILING), phase -> {
+                    if (phase == null) {
+                        commandExecution.incrementAndGet();
+                    } else if (JsonConstants.EVENT_PHASE_TRAILING
+                            .equals(phase)) {
+                        finishTest();
+                    }
+                });
+
+        String constantPoolKey = "expressionsKey";
+        JsonObject expressions = Json.createObject();
+        expressions.put(
+                JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "offsetWidth",
+                false);
+        GwtBasicElementBinderTest.addToConstantPool(constantPool,
+                constantPoolKey, expressions);
+        node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty("event1")
+                .setValue(constantPoolKey);
+        Reactive.flush();
+
+        dispatchEvent("event1");
+
+        assertEquals("Changes should have not been flushed", 0,
+                commandExecution.get());
+
+        // Wait for debouncer to be unregistered
+        delayTestFinish(1000);
     }
 
-    private void setSyncEvents(String... eventTypes) {
-        synchronizedPropertyEventsList.splice(0,
-                synchronizedPropertyEventsList.length());
-        for (int i = 0; i < eventTypes.length; i++) {
-            synchronizedPropertyEventsList.add(i, eventTypes[i]);
-        }
+    public void testDoNotFlushPendingChangesOnPropertySynchronization() {
+        Browser.getDocument().getBody().appendChild(element);
+        Binder.bind(node, element);
+
+        AtomicInteger commandExecution = new AtomicInteger();
+        Debouncer debouncer = Debouncer.getOrCreate(element, "on-value:false",
+                300);
+        debouncer.trigger(JsCollections.<String> set()
+                .add(JsonConstants.EVENT_PHASE_TRAILING), phase -> {
+                    if (phase == null) {
+                        commandExecution.incrementAndGet();
+                    } else if (JsonConstants.EVENT_PHASE_TRAILING
+                            .equals(phase)) {
+                        finishTest();
+                    }
+                });
+
+        String constantPoolKey = "expressionsKey";
+        JsonObject expressions = Json.createObject();
+        node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty("event1")
+                .setValue(constantPoolKey);
+        GwtBasicElementBinderTest.addToConstantPool(constantPool,
+                constantPoolKey, expressions);
+
+        Reactive.flush();
+
+        dispatchEvent("event1");
+
+        assertEquals("Changes should have been flushed", 1,
+                commandExecution.get());
+
+        // Wait for debouncer to be unregistered
+        delayTestFinish(1000);
+    }
+
+    protected StateNode createNode() {
+        return new StateNode(0, tree);
     }
 
     private void setSyncProperties(String... properties) {

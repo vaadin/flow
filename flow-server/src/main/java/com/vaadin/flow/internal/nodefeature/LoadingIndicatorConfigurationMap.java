@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,8 @@ import com.vaadin.flow.internal.StateNode;
 
 /**
  * Map for storing configuration for the loading indicator.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -27,7 +29,7 @@ import com.vaadin.flow.internal.StateNode;
 public class LoadingIndicatorConfigurationMap extends NodeMap
         implements LoadingIndicatorConfiguration {
     public static final String FIRST_DELAY_KEY = "first";
-    public static final int FIRST_DELAY_DEFAULT = 300;
+    public static final int FIRST_DELAY_DEFAULT = 450;
     public static final String SECOND_DELAY_KEY = "second";
     public static final int SECOND_DELAY_DEFAULT = 1500;
     public static final String THIRD_DELAY_KEY = "third";
@@ -39,7 +41,7 @@ public class LoadingIndicatorConfigurationMap extends NodeMap
      * Creates a new map for the given node.
      *
      * @param node
-     *         the node that the map belongs to
+     *            the node that the map belongs to
      */
     public LoadingIndicatorConfigurationMap(StateNode node) {
         super(node);
@@ -77,7 +79,8 @@ public class LoadingIndicatorConfigurationMap extends NodeMap
 
     @Override
     public boolean isApplyDefaultTheme() {
-        return getOrDefault(DEFAULT_THEME_APPLIED_KEY, DEFAULT_THEME_APPLIED_DEFAULT);
+        return getOrDefault(DEFAULT_THEME_APPLIED_KEY,
+                DEFAULT_THEME_APPLIED_DEFAULT);
     }
 
     @Override

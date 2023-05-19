@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,14 +18,18 @@ package com.vaadin.client.flow;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.flow.binding.ServerEventObject;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
+import com.vaadin.client.flow.dom.DomNode;
 import com.vaadin.client.flow.nodefeature.MapProperty;
+import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
+import elemental.dom.Node;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
@@ -46,6 +50,7 @@ public class StateTree {
     private JsMap<Integer, String> nodeFeatureDebugName;
 
     private boolean updateInProgress;
+    private boolean resync;
 
     /**
      * Creates a new instance connected to the given registry.
@@ -67,8 +72,10 @@ public class StateTree {
      * @see #isUpdateInProgress()
      */
     public void setUpdateInProgress(boolean updateInProgress) {
-        assert this.updateInProgress != updateInProgress : "Inconsistent state tree updating status, expected "
-                + (updateInProgress ? "no " : "") + " updates in progress.";
+        assert this.updateInProgress != updateInProgress
+                : "Inconsistent state tree updating status, expected "
+                        + (updateInProgress ? "no " : "")
+                        + " updates in progress.";
         this.updateInProgress = updateInProgress;
 
         getRegistry().getInitialPropertiesHandler().flushPropertyUpdates();
@@ -125,6 +132,87 @@ public class StateTree {
     }
 
     /**
+     * Unregisters all nodes except root from this tree, and clears the root's
+     * features. Use to reset the tree in preparation for rebuilding it in in a
+     * resynchronization response.
+     */
+    public void prepareForResync() {
+        rootNode.getList(NodeFeatures.VIRTUAL_CHILDREN)
+                .forEach(sn -> clearLists((StateNode) sn));
+        clearLists(rootNode);
+
+        idToNode.forEach((node, b) -> {
+            if (node != rootNode) {
+                final Node dom = node.getDomNode();
+                if (dom != null
+                        && ServerEventObject.getIfPresent(dom) != null) {
+                    // reject any promise waiting on this node
+                    ServerEventObject.getIfPresent(dom).rejectPromises();
+                }
+                unregisterNode(node);
+                node.setParent(null);
+            }
+        });
+        setResync(true);
+    }
+
+    /**
+     * Check if tree is resynchronizing after a {@link #prepareForResync}
+     *
+     * @return true if resync called
+     */
+    public boolean isResync() {
+        return resync;
+    }
+
+    /**
+     * Set the resynchronization state for the StateTree.
+     *
+     * @param resync
+     *            resynchronization state to set
+     */
+    public void setResync(boolean resync) {
+        this.resync = resync;
+    }
+
+    /**
+     * Returns the state node in the tree for the given dom node or {@code null}
+     * if none found.
+     * <p>
+     * Comparison is done with Node.isSameNode() method which is same as
+     * {@code ===} comparison.
+     *
+     * @param domNode
+     *            the dom node to find state node for
+     * @return the state node or null
+     */
+    public StateNode getStateNodeForDomNode(DomNode domNode) {
+        final JsArray<StateNode> stateNodes = idToNode.mapValues();
+        for (int i = 0; i < stateNodes.length(); i++) {
+            StateNode stateNode = stateNodes.get(i);
+            if (domNode.isSameNode(stateNode.getDomNode())) {
+                return stateNode;
+            }
+        }
+        return null;
+    }
+
+    private void clearLists(StateNode stateNode) {
+        stateNode.forEachFeature((feature, featureId) -> {
+            if (feature instanceof NodeList) {
+                final NodeList nodeList = (NodeList) feature;
+                if (featureId.intValue() == NodeFeatures.ELEMENT_CHILDREN) {
+                    // splice() instead of clear() to preserve auxiliary DOM
+                    // nodes (loading indicator and <noscript>)
+                    nodeList.splice(0, nodeList.length());
+                } else {
+                    nodeList.clear();
+                }
+            }
+        });
+    }
+
+    /**
      * Verifies that the provided node is not null and properly registered with
      * this state tree.
      *
@@ -136,8 +224,8 @@ public class StateTree {
     private boolean assertValidNode(StateNode node) {
         assert node != null : "Node is null";
         assert node.getTree() == this : "Node is not created for this tree";
-        assert node == getNode(
-                node.getId()) : "Node id is not registered with this tree";
+        assert node == getNode(node.getId())
+                : "Node id is not registered with this tree";
 
         return true;
     }
@@ -245,13 +333,16 @@ public class StateTree {
      *            the method name
      * @param argsArray
      *            the arguments array for the method
+     * @param promiseId
+     *            the promise id to use for getting the result back, or -1 if no
+     *            result is expected
      */
     public void sendTemplateEventToServer(StateNode node, String methodName,
-            JsArray<?> argsArray) {
+            JsArray<?> argsArray, int promiseId) {
         if (isValidNode(node)) {
             JsonArray array = WidgetUtil.crazyJsCast(argsArray);
             registry.getServerConnector().sendTemplateEventMessage(node,
-                    methodName, array);
+                    methodName, array, promiseId);
         }
     }
 
@@ -385,10 +476,6 @@ public class StateTree {
             nodeFeatureDebugName.set(NodeFeatures.CLASS_LIST, "classList");
             nodeFeatureDebugName.set(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
                     "elementStyleProperties");
-            nodeFeatureDebugName.set(NodeFeatures.SYNCHRONIZED_PROPERTIES,
-                    "synchronizedProperties");
-            nodeFeatureDebugName.set(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS,
-                    "synchronizedPropertyEvents");
             nodeFeatureDebugName.set(NodeFeatures.COMPONENT_MAPPING,
                     "componentMapping");
             nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_MODELLIST,
@@ -416,5 +503,4 @@ public class StateTree {
             return "Unknown node feature: " + id;
         }
     }
-
 }

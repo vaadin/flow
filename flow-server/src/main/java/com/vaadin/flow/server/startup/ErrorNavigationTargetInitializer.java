@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,40 +15,37 @@
  */
 package com.vaadin.flow.server.startup;
 
-import java.util.HashSet;
+import jakarta.servlet.annotation.HandlesTypes;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HandlesTypes;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.server.VaadinContext;
 
 /**
  * Servlet initializer for collecting all available error handler navigation
  * targets implementing {@link HasErrorParameter} on startup.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 1.0
  */
 @HandlesTypes(HasErrorParameter.class)
 public class ErrorNavigationTargetInitializer
-        implements ServletContainerInitializer {
+        implements VaadinServletContextStartupInitializer {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
-            throws ServletException {
-        if (classSet == null) {
-            classSet = new HashSet<>();
-        }
+    public void initialize(Set<Class<?>> classSet, VaadinContext context) {
+        classSet = AbstractAnnotationValidator
+                .removeHandleTypesSelfReferences(classSet, this);
         Set<Class<? extends Component>> routes = classSet.stream()
-                // Liberty 18 also includes the interface itself in the set...
-                .filter(clazz -> clazz != HasErrorParameter.class)
                 .map(clazz -> (Class<? extends Component>) clazz)
                 .collect(Collectors.toSet());
 
-        ApplicationRouteRegistry.getInstance(servletContext)
+        ApplicationRouteRegistry.getInstance(context)
                 .setErrorNavigationTargets(routes);
     }
 

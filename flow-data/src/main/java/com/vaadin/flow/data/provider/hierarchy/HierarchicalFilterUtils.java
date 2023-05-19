@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,7 +27,7 @@ import com.vaadin.flow.function.SerializableFunction;
  * Filter based utility methods for {@link HierarchicalDataProvider}.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.3
  */
 final class HierarchicalFilterUtils {
 
@@ -59,8 +59,8 @@ final class HierarchicalFilterUtils {
         }
 
         @Override
-        public int size(Query<T, Q> t) {
-            return HierarchicalConfigurableFilterDataProvider.super.size(t);
+        public int size(Query<T, Q> query) {
+            return HierarchicalConfigurableFilterDataProvider.super.size(query);
         }
 
         @Override

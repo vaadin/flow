@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,8 @@ import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurati
 /**
  * Registry of node feature id numbers and map keys shared between server and
  * client.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -82,14 +84,6 @@ public final class NodeFeatures {
      */
     public static final int ELEMENT_STYLE_PROPERTIES = 12;
     /**
-     * Id for {@link SynchronizedPropertiesList}.
-     */
-    public static final int SYNCHRONIZED_PROPERTIES = 13;
-    /**
-     * Id for {@link SynchronizedPropertyEventsList}.
-     */
-    public static final int SYNCHRONIZED_PROPERTY_EVENTS = 14;
-    /**
      * Id for {@link ComponentMapping}.
      */
     public static final int COMPONENT_MAPPING = 15;
@@ -142,6 +136,11 @@ public final class NodeFeatures {
      * Id for {@link ReturnChannelMap}.
      */
     public static final int RETURN_CHANNEL_MAP = 25;
+
+    /**
+     * Id for {@link InertData}.
+     */
+    public static final int INERT_DATA = 26;
 
     private NodeFeatures() {
         // Only static

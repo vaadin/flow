@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,10 +17,8 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -31,7 +29,8 @@ public class HiddenTemplateIT extends ChromeBrowserTest {
         open();
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
-        WebElement child = template.$(TestBenchElement.class).id("child");
+        WebElement child = template.$(TestBenchElement.class)
+                .id("hidden-child");
         Assert.assertNotNull(child.getAttribute("hidden"));
 
         WebElement visibility = template.$(TestBenchElement.class)
@@ -48,9 +47,6 @@ public class HiddenTemplateIT extends ChromeBrowserTest {
         open();
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
-
-        WebElement hidden = template.$(TestBenchElement.class).id("hidden");
-        hidden.click();
 
         WebElement child = template.$(TestBenchElement.class).id("child");
         Assert.assertNull(child.getAttribute("hidden"));

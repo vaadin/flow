@@ -1,0 +1,30 @@
+.app-theme {
+  color: white;
+  background: green;
+}
+
+/* This is the same rule that Lumo utilities define */
+.bg-contrast-60 {
+  color: white;
+  background-color: green;
+}
+
+.bg-contrast {
+  color: white;
+}
+
+.container {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+.compare {
+  padding: 0.5rem;
+  width: 100%;
+}
+.expected {
+  width: 32px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -80,6 +80,40 @@ public class HasComponentsTest {
 
         // No any exception is thrown
         component.remove(innerComponent);
+    }
+
+    @Test
+    public void remove_removeSeveralComponents_oneHasParent_nothingRemovedAndThrows() {
+        TestComponent component = createTestStructure();
+
+        TestComponent child = new TestComponent();
+        component.add(child);
+
+        TestComponent another = createTestStructure();
+        TestComponent innerComponent = new TestComponent();
+        another.add(innerComponent);
+
+        try {
+            component.remove(child, innerComponent);
+            Assert.fail();
+        } catch (IllegalArgumentException exception) {
+            Assert.assertEquals(component, child.getParent().get());
+        }
+    }
+
+    @Test
+    public void remove_removeSeveralComponents_oneHasNoParent_childIsRemoved() {
+        TestComponent component = createTestStructure();
+
+        TestComponent child = new TestComponent();
+        component.add(child);
+
+        TestComponent notAChild = new TestComponent();
+
+        component.remove(notAChild, child);
+        Assert.assertFalse(child.getParent().isPresent());
+        Assert.assertFalse(component.getChildren()
+                .filter(comp -> comp.equals(child)).findAny().isPresent());
     }
 
     @Test

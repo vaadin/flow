@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
@@ -32,7 +32,7 @@ public class EventListenersView extends AbstractDivView {
         button.setId("click");
         button.addClickListener(evt -> {
             int value = count.incrementAndGet();
-            Label label = new Label(String.valueOf(value));
+            NativeLabel label = new NativeLabel(String.valueOf(value));
             label.addClassName("count");
             add(label);
             add(button);

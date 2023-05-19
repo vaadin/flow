@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
-import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dnd.internal.DndUtil;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
@@ -40,7 +40,7 @@ import com.vaadin.flow.shared.Registration;
  * @author Vaadin Ltd
  * @since 2.0
  */
-@JavaScript(DndUtil.DND_CONNECTOR)
+@JsModule(DndUtil.DND_CONNECTOR)
 public interface DropTarget<T extends Component> extends HasElement {
 
     /**
@@ -50,7 +50,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * The given component will be always set an active drop target, if this is
      * not desired, use either method {@link #configure(Component, boolean)} or
      * {@link #setActive(boolean)}.
-     * 
+     *
      * @param component
      *            the component to make a drop target
      * @param <T>
@@ -69,7 +69,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * Unlike {@link #create(Component)} and
      * {@link #configure(Component, boolean)}, this method does not change the
      * active drop target status of the given component.
-     * 
+     *
      * @param component
      *            the component to make a drop target
      * @param <T>
@@ -79,7 +79,6 @@ public interface DropTarget<T extends Component> extends HasElement {
      * @see #create(Component)
      */
     static <T extends Component> DropTarget<T> configure(T component) {
-        DndUtil.addDndConnectorWhenComponentAttached(component);
         return new DropTarget<T>() {
             @Override
             public T getDropTargetComponent() {
@@ -97,7 +96,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * <p>
      * The drop target active state can be changed at any time with
      * {@link #setActive(boolean)}.
-     * 
+     *
      * @param component
      *            the component to provide drop target API for
      * @param active
@@ -123,7 +122,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * The default implementation of this method returns {@code this}. This
      * method exists for type safe access for the drop target component and
      * being able to provide access to drop target API for any component.
-     * 
+     *
      * @return the drop target component
      */
     default T getDropTargetComponent() {
@@ -134,7 +133,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * Returns the element which is made as a drop target in the UI. By default
      * it is the element of the component returned by
      * {@link #getDropTargetComponent()}.
-     * 
+     *
      * @return the element that is a drop target
      */
     @Override
@@ -144,7 +143,7 @@ public interface DropTarget<T extends Component> extends HasElement {
 
     /**
      * Activate or deactivate this drop target. By default, it is not active.
-     * 
+     *
      * @param active
      *            {@code true} to allow drops, {@code false} to not
      */
@@ -152,23 +151,15 @@ public interface DropTarget<T extends Component> extends HasElement {
         if (isActive() != active) {
             getElement().setProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY,
                     active);
-            if (active) {
-                getElement().executeJs(
-                        "window.Vaadin.Flow"
-                                + ".dndConnector.activateDropTarget($0)",
-                        getElement());
-            } else {
-                getElement().executeJavaScript(
-                        "window.Vaadin.Flow"
-                                + ".dndConnector.deactivateDropTarget($0)",
-                        getElement());
-            }
+            DndUtil.updateDropTargetActivation(this);
+            // only onetime thing when in development mode
+            DndUtil.reportUsage();
         }
     }
 
     /**
      * Gets whether this drop target is activate or not. By default, it is not.
-     * 
+     *
      * @return {@code true} to allow drops, {@code false} to not
      */
     default boolean isActive() {
@@ -184,7 +175,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * <p>
      * <em>NOTE: If the drop effect that doesn't match the effectAllowed of the
      * drag source, it DOES NOT prevent drop on IE11 and Safari! For FireFox and
-     * Chrome the drop is prevented if there they don't match.</em>
+     * Chrome the drop is prevented if the properties don't match.</em>
      *
      * @param dropEffect
      *            the drop effect to be set or {@code null} to not modify

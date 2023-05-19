@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.junit.Test;
+
 public class SectionTest extends ComponentTest {
     // Actual test methods in super class
 
@@ -23,4 +25,19 @@ public class SectionTest extends ComponentTest {
         // Component defines no new properties
     }
 
+    @Test
+    @Override
+    public void testHasOrderedComponents() {
+        super.testHasOrderedComponents();
+    }
+
+    @Test
+    @Override
+    public void testHasAriaLabelIsNotImplemented() {
+        // For most assistive technology it's fine to use aria-label or
+        // aria-labelledby on the <nav>, and <main> elements but not
+        // on <footer>, <section>, <article>, or <header>.
+        // Source: https://www.w3.org/TR/using-aria/#label-support
+        super.testHasAriaLabelIsNotImplemented();
+    }
 }

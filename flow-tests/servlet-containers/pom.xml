@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>2.0-SNAPSHOT</version>
+        <version>24.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-servlet-containers-test</artifactId>
     <name>flow-servlet-containers-test</name>
@@ -23,10 +23,11 @@
     <build>
         <pluginManagement>
             <plugins>
-              <!-- Generic cargo plugin configuration. Define container to use in submodule. -->
+                <!-- Generic cargo plugin configuration. Define container to use in submodule. -->
                 <plugin>
                     <groupId>org.codehaus.cargo</groupId>
-                    <artifactId>cargo-maven2-plugin</artifactId>
+                    <artifactId>cargo-maven3-plugin</artifactId>
+                    <version>1.10.7</version>
                     <configuration>
                         <configuration>
                             <type>standalone</type>
@@ -40,7 +41,7 @@
                         <deployables>
                             <deployable>
                                 <groupId>${project.groupId}</groupId>
-                                <artifactId>flow-test-root-context</artifactId>
+                                <artifactId>flow-test-root-context-npm</artifactId>
                                 <type>war</type>
                                 <properties>
                                     <context>/</context>
@@ -82,7 +83,7 @@
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <configuration>
                         <dependenciesToScan>
-                            <dependency>${project.groupId}:flow-test-root-context</dependency>
+                            <dependency>${project.groupId}:flow-test-root-context-npm</dependency>
                         </dependenciesToScan>
                     </configuration>
                 </plugin>
@@ -94,46 +95,8 @@
         <profile>
             <id>tomcat</id>
             <modules>
-                <module>tomcat85</module>
-                <module>tomcat9</module>
+                <module>tomcat10</module>
             </modules>
-        </profile>
-        <profile>
-            <id>felix-jetty</id>
-            <modules>
-                <module>felix-jetty</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>local-run</id>
-            <activation>
-                <property>
-                    <name>!test.use.hub</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.lazerycode.selenium</groupId>
-                        <artifactId>driver-binary-downloader-maven-plugin</artifactId>
-                        <version>${driver.binary.downloader.maven.plugin.version}</version>
-                        <configuration>
-                            <onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem>
-                            <rootStandaloneServerDirectory>${project.rootdir}/driver</rootStandaloneServerDirectory>
-                            <downloadedZipFileDirectory>${project.rootdir}/driver_zips</downloadedZipFileDirectory>
-                            <customRepositoryMap>${project.rootdir}/drivers.xml</customRepositoryMap>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>selenium</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
     </profiles>
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,23 +20,29 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.internal.AllowInert;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
@@ -61,6 +67,7 @@ public class Page implements Serializable {
         private int windowResizeListenersSize;
 
         @ClientCallable
+        @AllowInert
         private void windowResized(int width, int height) {
             if (windowResizeListenersSize != 0) {
                 fireEvent(new ResizeEvent(this, width, height));
@@ -72,7 +79,10 @@ public class Page implements Serializable {
             Registration registration = addListener(ResizeEvent.class,
                     event -> listener
                             .browserWindowResized(event.getApiEvent()));
-            return new ResizeRegistration(this, registration);
+
+            Registration combined = Registration
+                    .combine(this::listenerIsUnregistered, registration);
+            return Registration.once(combined::remove);
         }
 
         private void listenerIsUnregistered() {
@@ -93,6 +103,7 @@ public class Page implements Serializable {
             super(source, true);
             apiEvent = new BrowserWindowResizeEvent(
                     source.getUI().get().getPage(), width, height);
+
         }
 
         private BrowserWindowResizeEvent getApiEvent() {
@@ -100,52 +111,7 @@ public class Page implements Serializable {
         }
     }
 
-    private static class ResizeRegistration implements Registration {
-        private boolean isInvoked;
-
-        private final Registration origin;
-        private final ResizeEventReceiver receiver;
-
-        private ResizeRegistration(ResizeEventReceiver receiver,
-                Registration origin) {
-            this.origin = origin;
-            this.receiver = receiver;
-        }
-
-        @Override
-        public void remove() {
-            if (isInvoked) {
-                return;
-            }
-            origin.remove();
-            receiver.listenerIsUnregistered();
-
-            isInvoked = true;
-        }
-
-    }
-
     private ResizeEventReceiver resizeReceiver;
-
-    /**
-     * Callback method for canceling executable javascript set with
-     * {@link Page#executeJs(String, Serializable...)}.
-     *
-     * @deprecated superseded by {@link PendingJavaScriptResult}
-     */
-    @FunctionalInterface
-    @Deprecated
-    public interface ExecutionCanceler extends Serializable {
-        /**
-         * Cancel the javascript execution, if it was not yet sent to the
-         * browser for execution.
-         *
-         * @return <code>true</code> if the execution was canceled,
-         *         <code>false</code> if not
-         */
-        boolean cancelExecution();
-    }
-
     private final UI ui;
     private final History history;
 
@@ -181,10 +147,15 @@ public class Page implements Serializable {
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
+     * Relative URLs are interpreted as relative to the static web resources
+     * directory. So if the {@code url} value is {@code "some.js"} and
+     * {@code src/main/webapp} is used as a location for static web resources
+     * (which is the default location) then the file system path for the
+     * resource should be {@code src/main/webapp/some.js}.
+     * <p>
+     * You can prefix the URL with {@code context://} to make it relative to the
+     * context path or use an absolute URL to refer to files outside the
+     * frontend directory.
      * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
@@ -203,10 +174,15 @@ public class Page implements Serializable {
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
+     * Relative URLs are interpreted as relative to the static web resources
+     * directory. So if the {@code url} value is {@code "some.js"} and
+     * {@code src/main/webapp} is used as a location for static web resources
+     * (which is the default location) then the file system path for the
+     * resource should be {@code src/main/webapp/some.js}.
+     * <p>
+     * You can prefix the URL with {@code context://} to make it relative to the
+     * context path or use an absolute URL to refer to files outside the
+     * frontend directory.
      * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
@@ -225,10 +201,15 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
+     * Relative URLs are interpreted as relative to the static web resources
+     * directory. So if the {@code url} value is {@code "some.js"} and
+     * {@code src/main/webapp} is used as a location for static web resources
+     * (which is the default location) then the file system path for the
+     * resource should be {@code src/main/webapp/some.js}.
+     * <p>
+     * You can prefix the URL with {@code context://} to make it relative to the
+     * context path or use an absolute URL to refer to files outside the
+     * frontend directory.
      * <p>
      * For component related JavaScript dependencies, you should use the
      * {@link JavaScript @JavaScript} annotation.
@@ -247,10 +228,15 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
+     * Relative URLs are interpreted as relative to the static web resources
+     * directory. So if the {@code url} value is {@code "some.js"} and
+     * {@code src/main/webapp} is used as a location for static web resources
+     * (which is the default location) then the file system path for the
+     * resource should be {@code src/main/webapp/some.js}.
+     * <p>
+     * You can prefix the URL with {@code context://} to make it relative to the
+     * context path or use an absolute URL to refer to files outside the
+     * frontend directory.
      * <p>
      * For component related JavaScript dependencies, you should use the
      * {@link JavaScript @JavaScript} annotation.
@@ -266,138 +252,49 @@ public class Page implements Serializable {
     }
 
     /**
-     * Adds the given JavaScript module to the page and ensures that it is
-     * loaded successfully.
+     * Adds the given external JavaScript module to the page and ensures that it
+     * is loaded successfully.
      * <p>
-     * For component related JsModule dependencies, you should use the
-     * {@link JsModule @JsModule} annotation.
-     * <p>
-     * Is is guaranteed that script will be loaded before the first page load.
-     * For more options, refer to {@link #addJsModule(String, LoadMode)}
+     * If the JavaScript modules do not need to be added dynamically, you should
+     * use the {@link JsModule @JsModule} annotation instead.
      *
      * @param url
-     *            the URL to load the JavaScript from, not <code>null</code>
+     *            the URL to load the JavaScript module from, not
+     *            <code>null</code>
      */
     public void addJsModule(String url) {
-        addJsModule(url, LoadMode.EAGER);
-    }
-
-    /**
-     * Adds the given JavaScript module to the page and ensures that it is
-     * loaded successfully.
-     * <p>
-     * For component related JavaScript dependencies, you should use the
-     * {@link JsModule @JsModule} annotation.
-     *
-     * @param url
-     *            the URL to load the JavaScript from, not <code>null</code>
-     * @param loadMode
-     *            determines dependency load mode, refer to {@link LoadMode} for
-     *            details
-     */
-    public void addJsModule(String url, LoadMode loadMode) {
-        addDependency(new Dependency(Type.JS_MODULE, url, loadMode));
-    }
-
-    /**
-     * In compatibility mode (or Flow 1.x), adds the given HTML import to the
-     * page and ensures that it is loaded successfully. In normal mode (Flow
-     * 2.x with npm support), throws an {@code UnsupportedOperationException}.
-     * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
-     * <p>
-     * Is is guaranteed that html import will be loaded before the first page
-     * load. For more options, refer to {@link #addHtmlImport(String, LoadMode)}
-     *
-     * @param url
-     *            the URL to load the HTML import from, not <code>null</code>
-     * @throws java.lang.UnsupportedOperationException
-     *             if called outside of compatibility mode.
-     */
-    public void addHtmlImport(String url) {
-        addHtmlImport(url, LoadMode.EAGER);
-    }
-
-    /**
-     * In compatibility mode (or Flow 1.x), adds the given HTML import to the
-     * page and ensures that it is loaded successfully. In normal mode (Flow
-     * 2.x with npm support), throws an {@code UnsupportedOperationException}.
-     * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
-     *
-     * @param url
-     *            the URL to load the HTML import from, not <code>null</code>
-     * @param loadMode
-     *            determines dependency load mode, refer to {@link LoadMode} for
-     *            details
-     * @throws java.lang.UnsupportedOperationException
-     *             if called outside of compatibility mode.
-     */
-    public void addHtmlImport(String url, LoadMode loadMode) {
-        if (ui.getSession().getConfiguration().isCompatibilityMode()) {
-            addDependency(new Dependency(Type.HTML_IMPORT, url, loadMode));
+        if (UrlUtil.isExternal(url) || url.startsWith("/")) {
+            addDependency(new Dependency(Type.JS_MODULE, url, LoadMode.EAGER));
         } else {
-            throw new UnsupportedOperationException("Adding html imports is "
-                    + "only supported in compatibility mode. Either run the "
-                    + "application in compatibility mode or add the "
-                    + "dependency via annotation (@NpmPackage and @JsModule).");
+            throw new IllegalArgumentException(
+                    "url argument must contains either a protocol (eg. starts with \"http://\" or \"//\"), or starts with \"/\".");
         }
     }
 
-    private void addDependency(Dependency dependency) {
-        assert dependency != null;
-        ui.getInternals().getDependencyList().add(dependency);
-    }
-
-    // When updating JavaDocs here, keep in sync with Element.executeJavaScript
     /**
-     * Asynchronously runs the given JavaScript expression in the browser. The
-     * given parameters will be available to the expression as variables named
-     * <code>$0</code>, <code>$1</code>, and so on. Supported parameter types
-     * are:
-     * <ul>
-     * <li>{@link String}
-     * <li>{@link Integer}
-     * <li>{@link Double}
-     * <li>{@link Boolean}
-     * <li>{@link JsonValue}
-     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
-     * element instance is not attached when the invocation is sent to the
-     * client)
-     * </ul>
-     * Note that the parameter variables can only be used in contexts where a
-     * JavaScript variable can be used. You should for instance do
-     * <code>'prefix' + $0</code> instead of <code>'prefix$0'</code> and
-     * <code>value[$0]</code> instead of <code>value.$0</code> since JavaScript
-     * variables aren't evaluated inside strings or property names.
+     * Adds a dynamic import using a JavaScript {@code expression} which is
+     * supposed to return a JavaScript {@code Promise}.
+     * <p>
+     * No change will be applied on the client side until resulting
+     * {@code Promise} of the {@code expression} is completed. It behaves like
+     * other dependencies ({@link #addJavaScript(String)},
+     * {@link #addJsModule(String)}, etc.)
+     *
      *
      * @param expression
-     *            the JavaScript expression to invoke
-     * @param parameters
-     *            parameters to pass to the expression
-     * @return a callback for canceling the execution if not yet sent to browser
-     * @deprecated Use {@link #executeJs(String,Serializable...)} instead since
-     *             it also allows getting return value back.
+     *            the JavaScript expression which return a Promise
      */
-    @Deprecated
-    public ExecutionCanceler executeJavaScript(String expression,
-            Serializable... parameters) {
-        return executeJs(expression, parameters);
+    public void addDynamicImport(String expression) {
+        addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
 
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript
     /**
      * Asynchronously runs the given JavaScript expression in the browser.
      * <p>
-     * It is possible to get access to the return value of the execution by
-     * registering a handler with the returned pending result. If no handler is
-     * registered, the return value will be ignored.
+     * The returned <code>PendingJavaScriptResult</code> can be used to retrieve
+     * any <code>return</code> value from the JavaScript expression. If no
+     * return value handler is registered, the return value will be ignored.
      * <p>
      * The given parameters will be available to the expression as variables
      * named <code>$0</code>, <code>$1</code>, and so on. Supported parameter
@@ -531,8 +428,10 @@ public class Page implements Serializable {
      * @param windowName
      *            the name of the window.
      */
-    private void open(String url, String windowName) {
-        executeJavaScript("window.open($0, $1)", url, windowName);
+    public void open(String url, String windowName) {
+        executeJs(
+                "if ($1 == '_self') this.stopApplication(); window.open($0, $1)",
+                url, windowName);
     }
 
     /**
@@ -555,6 +454,11 @@ public class Page implements Serializable {
      */
     public void setLocation(URI uri) {
         setLocation(uri.toString());
+    }
+
+    private void addDependency(Dependency dependency) {
+        assert dependency != null;
+        ui.getInternals().getDependencyList().add(dependency);
     }
 
     private static class LazyJsLoader implements Serializable {
@@ -589,7 +493,7 @@ public class Page implements Serializable {
 
         /**
          * Invoked when the client-side details are available.
-         * 
+         *
          * @param extendedClientDetails
          *            object containing extended client details
          */
@@ -626,6 +530,11 @@ public class Page implements Serializable {
     }
 
     private void handleExtendedClientDetailsResponse(JsonValue json) {
+        ExtendedClientDetails cachedDetails = ui.getInternals()
+                .getExtendedClientDetails();
+        if (cachedDetails != null) {
+            return;
+        }
         if (!(json instanceof JsonObject)) {
             throw new RuntimeException("Expected a JSON object");
         }
@@ -658,6 +567,68 @@ public class Page implements Serializable {
                         getStringElseNull.apply("v-curdate"),
                         getStringElseNull.apply("v-td"),
                         getStringElseNull.apply("v-pr"),
-                        getStringElseNull.apply("v-wn")));
+                        getStringElseNull.apply("v-wn"),
+                        getStringElseNull.apply("v-np")));
+    }
+
+    /**
+     * Retrieves the current url from the browser. The URL is fetched from the
+     * browser in another request asynchronously and passed to the callback. The
+     * URL is the full URL that the user sees in the browser (including hash #)
+     * and works even when client side routing is used or there is a reverse
+     * proxy between the client and the server.
+     * <p>
+     * In case you need more control over the execution you can use
+     * {@link #executeJs(String, Serializable...)} by passing
+     * {@code return window.location.href}.
+     * <p>
+     * <em>NOTE: </em> the URL is not escaped, use {@link URL#toURI()} to escape
+     * it.
+     *
+     * @param callback
+     *            to be notified when the url is resolved.
+     */
+    public void fetchCurrentURL(SerializableConsumer<URL> callback) {
+        Objects.requireNonNull(callback,
+                "Url consumer callback should not be null.");
+        final String js = "return window.location.href";
+        executeJs(js).then(String.class, urlString -> {
+            try {
+                callback.accept(new URL(urlString));
+            } catch (MalformedURLException e) {
+                throw new IllegalStateException(
+                        "Error while encoding the URL from client", e);
+            }
+        });
+    }
+
+    /**
+     * Retrieves {@code document.dir} of the current UI from the browser and
+     * passes it to the {@code callback} parameter. If the {@code document.dir}
+     * has not been set explicitly, then {@code Direction.LEFT_TO_RIGHT} will be
+     * the fallback value.
+     * <p>
+     * Note that direction is fetched from the browser in an asynchronous
+     * request and passed to the callback.
+     * <p>
+     * In case you need more control over the execution you can use
+     * {@link #executeJs(String, Serializable...)} by passing
+     * {@code return document.dir}.
+     *
+     * @param callback
+     *            to be notified when the direction is resolved.
+     */
+    public void fetchPageDirection(SerializableConsumer<Direction> callback) {
+        executeJs("return document.dir").then(String.class, dir -> {
+            Direction direction = getDirectionByClientName(dir);
+            callback.accept(direction);
+        });
+    }
+
+    private Direction getDirectionByClientName(String directionClientName) {
+        return Arrays.stream(Direction.values())
+                .filter(direction -> direction.getClientName()
+                        .equals(directionClientName))
+                .findFirst().orElse(Direction.LEFT_TO_RIGHT);
     }
 }

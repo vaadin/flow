@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.Map;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 
@@ -26,12 +28,22 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public abstract class AbstractDeploymentConfiguration
-        implements DeploymentConfiguration {
+public abstract class AbstractDeploymentConfiguration extends
+        AbstractPropertyConfiguration implements DeploymentConfiguration {
+
+    /**
+     * Creates a new configuration based on {@code properties}.
+     *
+     * @param properties
+     *            configuration properties
+     */
+    protected AbstractDeploymentConfiguration(Map<String, String> properties) {
+        super(properties);
+    }
 
     @Override
     public String getUIClassName() {
-        return getStringProperty(VaadinSession.UI_PARAMETER,
+        return getStringProperty(InitParameters.UI_PARAMETER,
                 UI.class.getName());
     }
 

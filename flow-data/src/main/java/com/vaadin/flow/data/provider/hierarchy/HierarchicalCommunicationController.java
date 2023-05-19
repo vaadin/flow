@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -40,9 +40,10 @@ import elemental.json.JsonValue;
 
 /**
  * HierarchicalCommunicationController controls all the communication to client.
- * 
+ *
  * @param <T>
  *            the target bean type
+ * @since 1.2
  */
 public class HierarchicalCommunicationController<T> implements Serializable {
 
@@ -81,7 +82,7 @@ public class HierarchicalCommunicationController<T> implements Serializable {
     /**
      * Constructs communication controller with support for hierarchical data
      * structure.
-     * 
+     *
      * @param parentKey
      *            parent key or null if root
      * @param keyMapper
@@ -209,7 +210,7 @@ public class HierarchicalCommunicationController<T> implements Serializable {
     }
 
     private void clear(int start, int length, HierarchicalUpdate update) {
-        if (length == 0 || start >= assumedSize) {
+        if (length == 0) {
             return;
         }
         if (parentKey == null) {
@@ -258,8 +259,9 @@ public class HierarchicalCommunicationController<T> implements Serializable {
             boolean mapperHasKey = keyMapper.has(bean);
             String key = keyMapper.key(bean);
             if (mapperHasKey) {
-                passivatedByUpdate.values()
-                        .forEach(set -> set.remove(key));
+                // Ensure latest instance from provider is used
+                keyMapper.refresh(bean);
+                passivatedByUpdate.values().forEach(set -> set.remove(key));
             }
             activeKeys.add(key);
         });
@@ -285,7 +287,14 @@ public class HierarchicalCommunicationController<T> implements Serializable {
             }
 
             // Finally clear any passivated items that have now been confirmed
-            oldActive.removeAll(newActiveKeyOrder);
+            /*
+             * Due to the implementation of AbstractSet#removeAll, if the size
+             * of newActiveKeyOrder is bigger than oldActive's size, then
+             * calling oldActive.removeAll(newActiveKeyOrder) would end up
+             * calling contains method for all of newActiveKeyOrder items which
+             * is a slow operation on lists. The following avoids that:
+             */
+            newActiveKeyOrder.forEach(oldActive::remove);
             if (!oldActive.isEmpty()) {
                 passivatedByUpdate.put(Integer.valueOf(updateId), oldActive);
             }

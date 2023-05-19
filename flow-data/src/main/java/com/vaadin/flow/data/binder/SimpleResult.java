@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,7 +26,7 @@ import com.vaadin.flow.function.SerializableFunction;
  *
  * @param <R>
  *            the result value type
- *
+ * @since 1.0
  */
 class SimpleResult<R> implements Result<R> {
 
@@ -47,8 +47,8 @@ class SimpleResult<R> implements Result<R> {
      */
     SimpleResult(R value, String message) {
         // value != null => message == null
-        assert value == null
-                || message == null : "Message must be null if value is provided";
+        assert value == null || message == null
+                : "Message must be null if value is provided";
         this.value = value;
         this.message = message;
     }
@@ -100,7 +100,7 @@ class SimpleResult<R> implements Result<R> {
     @Override
     public <X extends Throwable> R getOrThrow(
             SerializableFunction<String, ? extends X> exceptionSupplier)
-                    throws X {
+            throws X {
         Objects.requireNonNull(exceptionSupplier,
                 "Exception supplier cannot be null");
         if (isError()) {
@@ -108,6 +108,27 @@ class SimpleResult<R> implements Result<R> {
         } else {
             return value;
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!obj.getClass().equals(getClass())) {
+            return false;
+        }
+        SimpleResult<?> that = (SimpleResult<?>) obj;
+        return Objects.equals(that.value, value)
+                && Objects.equals(that.message, message);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, message);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,8 @@ import java.io.Serializable;
 /**
  * Event listener that can be registered for receiving an event when a
  * {@link com.vaadin.flow.component.UI} is initialized.
+ *
+ * @since 1.0
  */
 @FunctionalInterface
 public interface UIInitListener extends Serializable {

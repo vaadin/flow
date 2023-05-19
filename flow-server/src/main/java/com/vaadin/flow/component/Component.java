@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,23 +16,25 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.polymertemplate.Id;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.internal.ComponentMetaData;
+import com.vaadin.flow.component.internal.ComponentTracker;
+import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.server.Attributes;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -49,7 +51,7 @@ import com.vaadin.flow.shared.Registration;
  * @since 1.0
  */
 public abstract class Component
-        implements HasElement, AttachNotifier, DetachNotifier {
+        implements HasStyle, AttachNotifier, DetachNotifier {
 
     /**
      * Encapsulates data required for mapping a new component instance to an
@@ -69,6 +71,10 @@ public abstract class Component
 
     private static final PropertyDescriptor<String, Optional<String>> idDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("id", "");
+
+    private static final PropertyChangeListener NOOP_PROPERTY_LISTENER = event -> {
+        // NOOP
+    };
 
     /**
      * Contains information about the element which should be used the next time
@@ -95,6 +101,7 @@ public abstract class Component
      * instead of creating a new element.
      */
     protected Component() {
+        ComponentTracker.trackCreate(this);
         Optional<String> tagNameAnnotation = AnnotationReader
                 .getAnnotationFor(getClass(), Tag.class).map(Tag::value);
         if (!tagNameAnnotation.isPresent()) {
@@ -133,6 +140,7 @@ public abstract class Component
      *            the root element for the component
      */
     protected Component(Element element) {
+        ComponentTracker.trackCreate(this);
         if (elementToMapTo.get() != null) {
             mapToElement(element == null ? null : element.getTag());
             templateMapped = this.element != null
@@ -149,11 +157,25 @@ public abstract class Component
      * Configures synchronized properties based on given annotations.
      */
     private void configureSynchronizedProperties() {
-        ComponentUtil.getSynchronizedProperties(getClass()).forEach(
-                info -> getElement().addSynchronizedProperty(info.getProperty(),
-                        info.getUpdateMode()));
-        ComponentUtil.getSynchronizedPropertyEvents(getClass())
-                .forEach(getElement()::addSynchronizedPropertyEvent);
+        ComponentUtil.getSynchronizedProperties(getClass())
+                .forEach(this::addSynchronizedProperty);
+    }
+
+    private void addSynchronizedProperty(
+            ComponentMetaData.SynchronizedPropertyInfo info) {
+        if (info.getUpdateMode() == null) {
+            throw new IllegalArgumentException(getClass().getName()
+                    + ": property update control mode for disabled element in @Synchronize annotation must not be null.");
+        }
+        info.getEventNames().forEach(eventType -> {
+            if (eventType == null) {
+                throw new IllegalArgumentException(getClass().getName()
+                        + ": event type must not be null for @Synchronize annotation");
+            }
+            element.addPropertyChangeListener(info.getProperty(), eventType,
+                    NOOP_PROPERTY_LISTENER)
+                    .setDisabledUpdateMode(info.getUpdateMode());
+        });
     }
 
     private void mapToElement(String tagName) {
@@ -174,7 +196,22 @@ public abstract class Component
     }
 
     /**
-     * Gets the root element of this component.
+     * Gets the low level root element of this component.
+     * <p>
+     * <b>Note!</b> Element API is designed for building components at a lower
+     * abstraction level than normal Vaadin UI development. If you see a direct
+     * call to this method in your applications UI code, you should consider
+     * that as a sign that you are probably doing something wrong and you should
+     * instead use other methods from your component, e.g. when getting
+     * children, parent or ancestor component or adding listeners. This method
+     * is breaking the Component's abstraction layer and its implementations
+     * provided. You should only call this method and use the Element API when
+     * creating or extending components (e.g. setting the attributes and
+     * properties, adding DOM listeners, execute JavaScript code), or when you
+     * otherwise need to break through the abstraction layer. If it is a hack or
+     * a workaround, it is also better to hide that into an extension, helper
+     * class, separate add-on module or at least into a private method
+     * documenting the usage.
      * <p>
      * Each component must have exactly one root element. When the component is
      * attached to a parent component, this element is attached to the parent
@@ -184,7 +221,8 @@ public abstract class Component
      */
     @Override
     public Element getElement() {
-        assert element != null : "getElement() must not be called before the element has been set";
+        assert element != null
+                : "getElement() must not be called before the element has been set";
         return element;
     }
 
@@ -347,6 +385,20 @@ public abstract class Component
     }
 
     /**
+     * Returns all listeners that match or extend the given event type.
+     *
+     * @param eventType
+     *            the component event type
+     * @return A collection with all registered listeners for a given event
+     *         type. Empty if no listeners are found.
+     */
+    protected Collection<?> getListeners(
+            Class<? extends ComponentEvent> eventType) {
+        return eventBus != null ? eventBus.getListeners(eventType)
+                : Collections.emptyList();
+    }
+
+    /**
      * Dispatches the event to all listeners registered for the event type.
      *
      * @see ComponentUtil#fireEvent(Component, ComponentEvent)
@@ -430,6 +482,19 @@ public abstract class Component
      */
     protected void onDetach(DetachEvent detachEvent) {
         // NOOP by default
+    }
+
+    /**
+     * Checks whether this component is currently attached to a UI.
+     * <p>
+     * When {@link UI#close()} is called, the UI and the components are not
+     * detached immediately; the UI cleanup is performed at the end of the
+     * current request which also detaches the UI and its components.
+     *
+     * @return true if the component is attached to an active UI.
+     */
+    public boolean isAttached() {
+        return getElement().getNode().isAttached();
     }
 
     /**
@@ -543,9 +608,8 @@ public abstract class Component
     }
 
     /**
-     * Gets whether this component was attached as part of a
-     * {@link PolymerTemplate} (by being mapped by an {@link Id} annotation), or
-     * if it was created directly.
+     * Gets whether this component was attached as part of a template (by being
+     * mapped by an {@link Id} annotation), or if it was created directly.
      *
      * @return <code>true</code> when it was mapped inside a template,
      *         <code>false</code> otherwise
@@ -571,7 +635,37 @@ public abstract class Component
      *         null)
      */
     public String getTranslation(String key, Object... params) {
-        return getTranslation(key, getLocale(), params);
+        final Optional<I18NProvider> i18NProvider = LocaleUtil
+                .getI18NProvider();
+        return i18NProvider
+                .map(i18n -> i18n.getTranslation(key,
+                        LocaleUtil.getLocale(() -> i18NProvider), params))
+                .orElseGet(() -> "!{" + key + "}!");
+    }
+
+    /**
+     * Get the translation for the component locale.
+     * <p>
+     * The method never returns a null. If there is no {@link I18NProvider}
+     * available or no translation for the {@code key} it returns an exception
+     * string e.g. '!{key}!'.
+     *
+     * @see #getLocale()
+     *
+     * @param key
+     *            translation key
+     * @param params
+     *            parameters used in translation string
+     * @return translation for key if found (implementation should not return
+     *         null)
+     */
+    public String getTranslation(Object key, Object... params) {
+        final Optional<I18NProvider> i18NProvider = LocaleUtil
+                .getI18NProvider();
+        return i18NProvider
+                .map(i18n -> i18n.getTranslation(key,
+                        LocaleUtil.getLocale(() -> i18NProvider), params))
+                .orElseGet(() -> "!{" + key + "}!");
     }
 
     /**
@@ -588,16 +682,76 @@ public abstract class Component
      * @param params
      *            parameters used in translation string
      * @return translation for key if found
+     * @deprecated Use {@link #getTranslation(Locale, String, Object...)}
+     *             instead
      */
+    @Deprecated
     public String getTranslation(String key, Locale locale, Object... params) {
-        if (getI18NProvider() == null) {
-            return "!{" + key + "}!";
-        }
-        return getI18NProvider().getTranslation(key, locale, params);
+        return LocaleUtil.getI18NProvider()
+                .map(i18n -> i18n.getTranslation(key, locale, params))
+                .orElseGet(() -> "!{" + key + "}!");
     }
 
-    private I18NProvider getI18NProvider() {
-        return VaadinService.getCurrent().getInstantiator().getI18NProvider();
+    /**
+     * Get the translation for key with given locale.
+     * <p>
+     * The method never returns a null. If there is no {@link I18NProvider}
+     * available or no translation for the {@code key} it returns an exception
+     * string e.g. '!{key}!'.
+     *
+     * @param key
+     *            translation key
+     * @param locale
+     *            locale to use
+     * @param params
+     *            parameters used in translation string
+     * @return translation for key if found
+     * @deprecated Use {@link #getTranslation(Locale, String, Object...)}
+     *             instead
+     */
+    @Deprecated
+    public String getTranslation(Object key, Locale locale, Object... params) {
+        return LocaleUtil.getI18NProvider()
+                .map(i18n -> i18n.getTranslation(key, locale, params))
+                .orElseGet(() -> "!{" + key + "}!");
+    }
+
+    /**
+     * Get the translation for key with given locale.
+     * <p>
+     * The method never returns a null. If there is no {@link I18NProvider}
+     * available or no translation for the {@code key} it returns an exception
+     * string e.g. '!{key}!'.
+     *
+     * @param locale
+     *            locale to use
+     * @param key
+     *            translation key
+     * @param params
+     *            parameters used in translation string
+     * @return translation for key if found
+     */
+    public String getTranslation(Locale locale, String key, Object... params) {
+        return getTranslation(key, locale, params);
+    }
+
+    /**
+     * Get the translation for key with given locale.
+     * <p>
+     * The method never returns a null. If there is no {@link I18NProvider}
+     * available or no translation for the {@code key} it returns an exception
+     * string e.g. '!{key}!'.
+     *
+     * @param locale
+     *            locale to use
+     * @param key
+     *            translation key
+     * @param params
+     *            parameters used in translation string
+     * @return translation for key if found
+     */
+    public String getTranslation(Locale locale, Object key, Object... params) {
+        return getTranslation(key, locale, params);
     }
 
     /**
@@ -611,16 +765,57 @@ public abstract class Component
      * @return the component locale
      */
     protected Locale getLocale() {
-        UI currentUi = UI.getCurrent();
-        Locale locale = currentUi == null ? null : currentUi.getLocale();
-        if (locale == null) {
-            List<Locale> locales = getI18NProvider().getProvidedLocales();
-            if (locales != null && !locales.isEmpty()) {
-                locale = locales.get(0);
+        return LocaleUtil.getLocale(LocaleUtil::getI18NProvider);
+    }
+
+    /**
+     * Scrolls the current component into the visible area of the browser
+     * window.
+     */
+    public void scrollIntoView() {
+        scrollIntoView(null);
+    }
+
+    /**
+     * Scrolls the current component into the visible area of the browser
+     * window.
+     *
+     * @param scrollOptions
+     *            options to define the scrolling behavior
+     */
+    public void scrollIntoView(ScrollOptions scrollOptions) {
+        getElement().scrollIntoView(scrollOptions);
+    }
+
+    /**
+     * Traverses the component tree up and returns the first ancestor component
+     * that matches the given type.
+     *
+     * @param componentType
+     *            the class of the ancestor component to search for
+     * @return The first ancestor that can be assigned to the given class. Null
+     *         if no ancestor with the correct type could be found.
+     * @param <T>
+     *            the type of the ancestor component to return
+     */
+    public <T> T findAncestor(Class<T> componentType) {
+        Optional<Component> optionalParent = getParent();
+        while (optionalParent.isPresent()) {
+            Component parent = optionalParent.get();
+            if (componentType.isAssignableFrom(parent.getClass())) {
+                return componentType.cast(parent);
             } else {
-                locale = Locale.getDefault();
+                optionalParent = parent.getParent();
             }
         }
-        return locale;
+        return null;
     }
+
+    /**
+     * Removes the component from its parent.
+     */
+    public void removeFromParent() {
+        getElement().removeFromParent();
+    }
+
 }

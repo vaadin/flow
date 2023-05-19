@@ -1,0 +1,59 @@
+name: Bug Report
+description: Issues for Flow related problems
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For general support from the community, use https://stackoverflow.com/questions/tagged/vaadin (or tag vaadin-flow) or Vaadin discord chat https://discord.gg/MYFq5RTbBn instead.
+  - type: markdown
+    attributes:
+      value: |
+        NOTE: Issues concerning Hilla (formerly Vaadin Fusion) should go to the Hilla repository https://github.com/vaadin/hilla
+  - type: markdown
+    attributes:
+      value: |
+        NOTE: Issues concerning UI components (e.g. Button, Grid, TextField, ...) should go to the components repository https://github.com/vaadin/flow-components
+  - type: markdown
+    attributes:
+      value: |
+        NOTE: Vulnerabilities should not be reported here, see https://vaadin.com/security for instructions how to report these
+  - type: textarea
+    id: description
+    attributes:
+      label: Description of the bug
+      description: Explain briefly what is broken
+      placeholder: When I start my application, the browser only shows a black screen. After refreshing, the application is shown.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior 
+      description: What should happen
+      placeholder: The application should be shown on the first load
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproducible example
+      description: What are the steps to reproduce the issue, example project or a code snippet without dependencies
+      placeholder: |
+        See https://github.com/me/my-example-app
+        Start the application using `mvn` and the automatically opened browser will show only a black screen
+    validations:
+      required: true
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions
+      description: For Vaadin 22+, you can copy this from the debug window 
+      value: |
+        - Vaadin / Flow version:
+        - Java version:
+        - OS version:
+        - Browser version (if applicable):
+        - Application Server (if applicable):
+        - IDE (if applicable):
+    validations:
+      required: true

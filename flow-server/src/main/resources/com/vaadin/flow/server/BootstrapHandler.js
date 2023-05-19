@@ -1,7 +1,5 @@
 (function() {
   var apps = {};
-  var widgetsets = {};
-
 
   var log;
   if (typeof console === undefined || !window.location.search.match(/[&?]debug(&|$)/)) {
@@ -44,9 +42,27 @@
   window.Vaadin = window.Vaadin || {};
   window.Vaadin.Flow = window.Vaadin.Flow || {};
 
+  /*
+   * Needed for wrapping custom javascript functionality in the components (i.e. connectors)
+   */
+  window.Vaadin.Flow.tryCatchWrapper = function(originalFunction, component, repo) {
+    return function() {
+      try {
+        const result = originalFunction.apply(this, arguments);
+        return result;
+      } catch (error) {
+        console.error(
+            `There seems to be an error in ${component}:
+${error.message}
+Please submit an issue to https://github.com/vaadin/flow-components/issues/new/choose`);
+      }
+    }
+  };
+
   if (!window.Vaadin.Flow.clients) {
     window.Vaadin.Flow.clients = {};
 
+    window.Vaadin.Flow.pendingStartup = {};
     window.Vaadin.Flow.initApplication = function(appId, config) {
       var testbenchId = appId.replace(/-\d+$/, '');
       
@@ -85,17 +101,19 @@
       }
   
       var widgetset = "client";
-      widgetsets[widgetset] = {
+      if (!window.Vaadin.Flow.pendingStartup[widgetset]) {
+        window.Vaadin.Flow.pendingStartup[widgetset] = {
           pendingApps: []
         };
-      if (widgetsets[widgetset].callback) {
-        log("Starting from bootstrap", appId);
-        widgetsets[widgetset].callback(appId);
-      }  else {
-        log("Setting pending startup", appId);
-        widgetsets[widgetset].pendingApps.push(appId);
       }
-  
+      if (window.Vaadin.Flow.pendingStartup[widgetset].callback) {
+        log("Starting from bootstrap", appId);
+        window.Vaadin.Flow.pendingStartup[widgetset].callback(appId);
+      } else {
+        log("Setting pending startup", appId);
+        window.Vaadin.Flow.pendingStartup[widgetset].pendingApps.push(appId);
+      }
+
       return app;
     };
     window.Vaadin.Flow.getAppIds = function() {
@@ -112,10 +130,18 @@
     };
     window.Vaadin.Flow.registerWidgetset = function(widgetset, callback) {
       log("Widgetset registered", widgetset);
-      var ws = widgetsets[widgetset];
-      if (ws && ws.pendingApps) {
+      if (!window.Vaadin.Flow.pendingStartup[widgetset]) {
+        window.Vaadin.Flow.pendingStartup[widgetset] = {
+          pendingApps: [],
+          callback: callback
+        };
+        /* Callback will be invoked when initApp is called */
+        return;
+      }
+      var ws = window.Vaadin.Flow.pendingStartup[widgetset];
+      if (ws.pendingApps) {
         ws.callback = callback;
-        for(var i = 0; i < ws.pendingApps.length; i++) {
+        for (var i = 0; i < ws.pendingApps.length; i++) {
           var appId = ws.pendingApps[i];
           log("Starting from register widgetset", appId);
           callback(appId);
@@ -197,6 +223,10 @@
       /* Device Pixel Ratio */
       params['v-pr'] = window.devicePixelRatio;
 
+      if(navigator.platform) {
+        params['v-np'] = navigator.platform;
+      }
+      
       /* Stringify each value (they are parsed on the server side) */
       Object.keys(params).forEach(function(key) {
         var value = params[key];

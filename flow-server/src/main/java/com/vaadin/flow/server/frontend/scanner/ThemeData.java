@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,26 +18,55 @@ package com.vaadin.flow.server.frontend.scanner;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.vaadin.flow.theme.AbstractTheme;
+
 /**
- * A container for Theme information when scanning the class path. It
- * overrides equals and hashCode in order to use HashSet to eliminate
- * duplicates.
+ * A container for Theme information when scanning the class path. It overrides
+ * equals and hashCode in order to use HashSet to eliminate duplicates.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 2.0
  */
 final class ThemeData implements Serializable {
-    String name;
+    String themeClass;
     String variant = "";
+    String themeName = "";
     boolean notheme;
 
-    String getName() {
-        return name;
+    ThemeData(String themeClass, String variant, String themeName) {
+        if (themeClass.equals(AbstractTheme.class.getName())) {
+            this.themeClass = FullDependenciesScanner.LUMO;
+        } else {
+            this.themeClass = themeClass;
+        }
+        this.variant = variant;
+        this.themeName = themeName;
+    }
+
+    ThemeData() {
+    }
+
+    String getThemeClass() {
+        return themeClass;
     }
 
     String getVariant() {
         return variant;
     }
 
+    public String getThemeName() {
+        return themeName;
+    }
+
     boolean isNotheme() {
         return notheme;
+    }
+
+    static ThemeData createNoTheme() {
+        ThemeData data = new ThemeData();
+        data.notheme = true;
+        return data;
     }
 
     @Override
@@ -46,7 +75,9 @@ final class ThemeData implements Serializable {
             return false;
         }
         ThemeData that = (ThemeData) other;
-        return notheme == that.notheme && Objects.equals(name, that.name);
+        return notheme == that.notheme
+                && Objects.equals(themeClass, that.themeClass)
+                && Objects.equals(themeName, that.themeName);
     }
 
     @Override
@@ -54,12 +85,12 @@ final class ThemeData implements Serializable {
         // We might need to add variant when we wanted to fail in the
         // case of same theme class with different variant, which was
         // right in v13
-        return Objects.hash(name, notheme);
+        return Objects.hash(themeClass, notheme, themeName);
     }
 
     @Override
     public String toString() {
-        return " notheme: " + notheme + "\n name:" + name + "\n variant: "
-                + variant;
+        return " notheme: " + notheme + "\n themeClass:" + themeClass
+                + "\n variant: " + variant + "\n themeName: " + themeName;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -49,6 +49,9 @@ import com.vaadin.flow.internal.ReflectTools;
  */
 public abstract class Composite<T extends Component> extends Component {
     private T content;
+
+    // Will deserialize as the default value for boolean, i.e. false
+    private transient boolean contentIsInitializing = false;
 
     /**
      * Creates a new composite.
@@ -113,12 +116,25 @@ public abstract class Composite<T extends Component> extends Component {
      */
     public T getContent() {
         if (content == null) {
-            T newContent = initContent();
-            if (newContent == null) {
-                throw new IllegalStateException(
-                        "initContent returned null instead of a component");
+            try {
+                if (contentIsInitializing) {
+                    throw new IllegalStateException(
+                            "The content is not yet initialized. "
+                                    + "Detected direct or indirect call to 'getContent' from 'initContent'. "
+                                    + "You may not call any framework method on a '"
+                                    + Composite.class.getSimpleName()
+                                    + "' instance before 'initContent' has completed initializing the component.");
+                }
+                contentIsInitializing = true;
+                T newContent = initContent();
+                if (newContent == null) {
+                    throw new IllegalStateException(
+                            "initContent returned null instead of a component");
+                }
+                setContent(newContent);
+            } finally {
+                contentIsInitializing = false;
             }
-            setContent(newContent);
         }
         return content;
     }
@@ -132,8 +148,8 @@ public abstract class Composite<T extends Component> extends Component {
      *            the content for the composite
      */
     private void setContent(T content) {
-        assert content.getElement().getComponent()
-                .isPresent() : "Composite should never be attached to an element which is not attached to a component";
+        assert content.getElement().getComponent().isPresent()
+                : "Composite should never be attached to an element which is not attached to a component";
         assert this.content == null : "Content has already been initialized";
         this.content = content;
         Element element = content.getElement();

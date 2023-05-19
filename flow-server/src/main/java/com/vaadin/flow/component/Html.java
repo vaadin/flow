@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,19 +15,20 @@
  */
 package com.vaadin.flow.component;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
+import org.jsoup.helper.DataUtil;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.dom.Element;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A component which encapsulates a given HTML fragment with a single root
@@ -45,6 +46,9 @@ import com.vaadin.flow.dom.Element;
  * <p>
  * The HTML fragment cannot be changed after creation. You should create a new
  * instance to encapsulate another fragment.
+ * <p>
+ * Note that this component doesn't support svg element as a root node. See
+ * separate {@link Svg} component if you want to display SVG images.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -75,7 +79,15 @@ public class Html extends Component {
             throw new IllegalArgumentException("HTML stream cannot be null");
         }
         try {
-            setOuterHtml(Jsoup.parse(stream, UTF_8.name(), ""));
+            /*
+             * Cannot use any of the methods that accept a stream since they all
+             * parse as a document rather than as a body fragment. The logic for
+             * reading a stream into a String is the same that is used
+             * internally by JSoup if you strip away all the logic to guess an
+             * encoding in case one isn't defined.
+             */
+            setOuterHtml(UTF_8.decode(DataUtil.readToByteBuffer(stream, 0))
+                    .toString(), false);
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to read HTML from stream",
                     e);
@@ -101,10 +113,28 @@ public class Html extends Component {
             throw new IllegalArgumentException("HTML cannot be null or empty");
         }
 
-        setOuterHtml(Jsoup.parse(outerHtml));
+        setOuterHtml(outerHtml, false);
     }
 
-    private void setOuterHtml(Document doc) {
+    /**
+     * Sets the content based on the given HTML fragment. The fragment must have
+     * exactly one root element, which matches the existing one.
+     * <p>
+     * A best effort is done to parse broken HTML but no guarantees are given
+     * for how invalid HTML is handled.
+     * <p>
+     * Any heading or trailing whitespace is removed while parsing but any
+     * whitespace inside the root tag is preserved.
+     *
+     * @param html
+     *            the HTML to wrap
+     */
+    public void setHtmlContent(String html) {
+        setOuterHtml(html, true);
+    }
+
+    private void setOuterHtml(String outerHtml, boolean update) {
+        Document doc = Jsoup.parseBodyFragment(outerHtml);
         int nrChildren = doc.body().children().size();
         if (nrChildren != 1) {
             String message = "HTML must contain exactly one top level element (ignoring text nodes). Found "
@@ -121,12 +151,19 @@ public class Html extends Component {
         org.jsoup.nodes.Element root = doc.body().child(0);
         Attributes attrs = root.attributes();
 
-        Component.setElement(this, new Element(root.tagName()));
+        if (!update) {
+            Component.setElement(this, new Element(root.tagName()));
+        }
         attrs.forEach(this::setAttribute);
+
+        if (update && !root.tagName().equals(getElement().getTag())) {
+            throw new IllegalStateException(
+                    "Existing root tag '" + getElement().getTag()
+                            + "' can't be changed to '" + root.tagName() + "'");
+        }
 
         doc.outputSettings().prettyPrint(false);
         setInnerHtml(root.html());
-
     }
 
     private void setAttribute(Attribute attribute) {

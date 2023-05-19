@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.server;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+
 import java.util.Enumeration;
 import java.util.Properties;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 
 /**
  *
@@ -29,17 +29,11 @@ import javax.servlet.ServletContext;
 public class MockServletConfig implements ServletConfig {
 
     private ServletContext context = new MockServletContext();
-    private static final Properties DEFAULT_PROPERTIES = new Properties();
-    {
-        DEFAULT_PROPERTIES.setProperty(
-                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
-    }
 
     private final Properties initParameters;
 
     public MockServletConfig() {
-        this(DEFAULT_PROPERTIES);
+        this(new Properties());
     }
 
     public MockServletConfig(Properties initParameters) {
@@ -49,7 +43,7 @@ public class MockServletConfig implements ServletConfig {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletConfig#getServletName()
+     * @see jakarta.servlet.ServletConfig#getServletName()
      */
     @Override
     public String getServletName() {
@@ -59,7 +53,7 @@ public class MockServletConfig implements ServletConfig {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletConfig#getServletContext()
+     * @see jakarta.servlet.ServletConfig#getServletContext()
      */
     @Override
     public ServletContext getServletContext() {
@@ -69,7 +63,7 @@ public class MockServletConfig implements ServletConfig {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletConfig#getInitParameter(java.lang.String)
+     * @see jakarta.servlet.ServletConfig#getInitParameter(java.lang.String)
      */
     @Override
     public String getInitParameter(String name) {
@@ -79,7 +73,7 @@ public class MockServletConfig implements ServletConfig {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletConfig#getInitParameterNames()
+     * @see jakarta.servlet.ServletConfig#getInitParameterNames()
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override

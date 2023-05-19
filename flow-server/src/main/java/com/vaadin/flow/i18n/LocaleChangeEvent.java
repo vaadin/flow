@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,7 +34,7 @@ public class LocaleChangeEvent extends EventObject {
      * Locale change event constructor.
      *
      * @param ui
-     *            The object on which the Event initially occurred.
+     *            The ui on which the Event initially occurred.
      * @param locale
      *            new locale that was set
      */
@@ -45,10 +45,19 @@ public class LocaleChangeEvent extends EventObject {
 
     /**
      * Get the new locale that was set.
-     * 
+     *
      * @return set locale
      */
     public Locale getLocale() {
         return locale;
+    }
+
+    /**
+     * Returns the UI where the locale changed in.
+     *
+     * @return the ui
+     */
+    public UI getUI() {
+        return (UI) getSource();
     }
 }

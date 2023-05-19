@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -51,6 +51,24 @@ public class ElementConstants {
      * The style property for color.
      */
     public static final String STYLE_COLOR = "color";
+    /**
+     * The label property.
+     */
+    public static final String LABEL_PROPERTY_NAME = "label";
+    /**
+     * The aria-label property.
+     *
+     * @deprecated use {@link #ARIA_LABEL_ATTRIBUTE_NAME} instead
+     */
+    public static final String ARIA_LABEL_PROPERTY_NAME = "aria-label";
+    /**
+     * The aria-label attribute.
+     */
+    public static final String ARIA_LABEL_ATTRIBUTE_NAME = "aria-label";
+    /**
+     * The aria-labelledby attribute.
+     */
+    public static final String ARIA_LABELLEDBY_ATTRIBUTE_NAME = "aria-labelledby";
 
     private ElementConstants() {
         // Constants only

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,9 +16,8 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -29,13 +28,12 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class UpgradeElementView extends AbstractDivView {
 
     @Tag("upgrade-element")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/UpgradeElement.html")
-    @JsModule("UpgradeElement.js")
+    @JsModule("./UpgradeElement.js")
     public static class UpgradeElement extends PolymerTemplate<Message> {
 
         @EventHandler
         private void valueUpdated() {
-            Label label = new Label(getModel().getText());
+            NativeLabel label = new NativeLabel(getModel().getText());
             label.setId("text-update");
             getUI().get().add(label);
         }

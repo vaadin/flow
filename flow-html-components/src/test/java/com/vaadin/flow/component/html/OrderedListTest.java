@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.html;
 
 import com.vaadin.flow.component.html.OrderedList.NumberingType;
+import org.junit.Test;
 
 public class OrderedListTest extends ComponentTest {
 
@@ -25,5 +26,14 @@ public class OrderedListTest extends ComponentTest {
     protected void addProperties() {
         addProperty("type", NumberingType.class, NumberingType.NUMBER,
                 NumberingType.LOWERCASE_ROMAN, false, true);
+    }
+
+    @Test
+    @Override
+    public void testHasAriaLabelIsNotImplemented() {
+        // Don't use aria-label or aria-labelledby on any other non-interactive
+        // content such as p, legend, li, or ul, because it is ignored.
+        // Source: https://www.w3.org/TR/using-aria/#label-support
+        super.testHasAriaLabelIsNotImplemented();
     }
 }

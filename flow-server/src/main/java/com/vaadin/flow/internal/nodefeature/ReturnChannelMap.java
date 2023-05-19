@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,8 +34,11 @@ import elemental.json.JsonArray;
  * know which channels are registered - it only passes the channel id back to
  * the server. The server checks that the received channel id is (still) valid
  * and logs a warning if it isn't.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
+ * @since 2.0
  */
 public class ReturnChannelMap extends ServerSideFeature {
 
@@ -161,4 +164,12 @@ public class ReturnChannelMap extends ServerSideFeature {
         return channels.get(Integer.valueOf(channelId));
     }
 
+    /**
+     * Return if map contains any registered channels.
+     *
+     * @return {@code true} if registered channels exist.
+     */
+    public boolean hasChannels() {
+        return !channels.isEmpty();
+    }
 }

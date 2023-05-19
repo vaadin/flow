@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,12 +18,11 @@ package com.vaadin.flow.uitest.ui.template;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
@@ -31,8 +30,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.ClearNodeChildrenView", layout = ViewTestLayout.class)
 @Tag("clear-node-children")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ClearNodeChildren.html")
-@JsModule("ClearNodeChildren.js")
+@JsModule("./ClearNodeChildren.js")
 public class ClearNodeChildrenView extends PolymerTemplate<TemplateModel>
         implements HasComponents, HasText {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -77,7 +77,7 @@ public abstract class NodeFeature {
      * Convert the feature values into a {@link JsonValue} using provided
      * {@code converter} for the values stored in the feature (i.e. primitive
      * types, StateNodes).
-     * 
+     *
      * @param converter
      *            converter to convert values stored in the feature
      * @return resulting converted value

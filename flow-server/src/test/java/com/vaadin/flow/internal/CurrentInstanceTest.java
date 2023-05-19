@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,7 +26,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -125,7 +124,8 @@ public class CurrentInstanceTest {
 
         // Then store a new session in there
         Map<Class<?>, CurrentInstance> old = CurrentInstance
-                .setCurrent(new SessionStoredInCurrentInstance(new MockVaadinServletService()));
+                .setCurrent(new SessionStoredInCurrentInstance(
+                        new MockVaadinServletService()));
 
         // Restore the old values and assert that the session is null again
         CurrentInstance.restoreInstances(old);
@@ -136,13 +136,15 @@ public class CurrentInstanceTest {
     @Test
     public void testRestoreWithGarbageCollectedValue()
             throws InterruptedException {
-        VaadinSession session1 = new VaadinSession(new MockVaadinServletService()) {
+        VaadinSession session1 = new VaadinSession(
+                new MockVaadinServletService()) {
             @Override
             public String toString() {
                 return "First session";
             }
         };
-        VaadinSession session2 = new VaadinSession(new MockVaadinServletService()) {
+        VaadinSession session2 = new VaadinSession(
+                new MockVaadinServletService()) {
             @Override
             public String toString() {
                 return "Second session";

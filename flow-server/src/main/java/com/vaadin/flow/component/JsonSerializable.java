@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,19 +22,21 @@ import elemental.json.JsonObject;
 /**
  * Base interface for classes that are serializable to and from
  * {@link JsonObject}.
+ *
+ * @since 1.0
  */
 public interface JsonSerializable extends Serializable {
 
     /**
      * Converts this object to its JSON format.
-     * 
+     *
      * @return the JSON representation of the object
      */
     JsonObject toJson();
 
     /**
      * Sets the JSON object data into the Java object.
-     * 
+     *
      * @param value
      *            the JSON representation of the object
      * @return this instance, for method chaining

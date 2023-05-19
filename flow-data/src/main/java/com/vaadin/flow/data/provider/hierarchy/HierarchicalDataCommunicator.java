@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,12 +19,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
+import com.vaadin.flow.data.provider.DataChangeEvent;
 import com.vaadin.flow.data.provider.DataCommunicator;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -52,6 +56,7 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the bean type
  * @author Vaadin Ltd
+ * @since 1.2
  */
 public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
@@ -62,28 +67,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     private final SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier;
 
     private final Map<String, HierarchicalCommunicationController<T>> dataControllers = new HashMap<>();
-
-    private KeyMapper<T> uniqueKeyMapper = new KeyMapper<T>() {
-
-        private T object;
-
-        @Override
-        public String key(T o) {
-            this.object = o;
-            try {
-                return super.key(o);
-            } finally {
-                this.object = null;
-            }
-        }
-
-        @Override
-        protected String createKey() {
-            return Optional.ofNullable(uniqueKeyProviderSupplier.get())
-                    .map(provider -> provider.apply(object))
-                    .orElse(super.createKey());
-        }
-    };
 
     /**
      * Construct a new hierarchical data communicator backed by a
@@ -111,16 +94,16 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         this.stateNode = stateNode;
         this.uniqueKeyProviderSupplier = uniqueKeyProviderSupplier;
 
-        setKeyMapper(uniqueKeyMapper);
+        KeyMapperWrapper<T> keyMapperWrapper = new KeyMapperWrapper<>();
+        setKeyMapper(keyMapperWrapper);
 
         dataGenerator.addDataGenerator(this::generateTreeData);
         setDataProvider(new TreeDataProvider<>(new TreeData<>()), null);
     }
 
     private void generateTreeData(T item, JsonObject jsonObject) {
-        Optional.ofNullable(getParentItem(item))
-                .ifPresent(parent -> jsonObject.put("parentUniqueKey",
-                        uniqueKeyProviderSupplier.get().apply(parent)));
+        Optional.ofNullable(getParentItem(item)).ifPresent(parent -> jsonObject
+                .put("parentUniqueKey", getKeyMapper().key(parent)));
     }
 
     private void requestFlush(HierarchicalUpdate update) {
@@ -156,8 +139,43 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             HierarchicalUpdate update = arrayUpdater
                     .startUpdate(getHierarchyMapper().getRootSize());
             update.enqueue("$connector.ensureHierarchy");
+
+            Collection<T> expandedItems = getHierarchyMapper()
+                    .getExpandedItems();
+            if (!expandedItems.isEmpty()) {
+                update.enqueue("$connector.expandItems", expandedItems.stream()
+                        .map(getKeyMapper()::key).map(key -> {
+                            JsonObject json = Json.createObject();
+                            json.put("key", key);
+                            return json;
+                        }).collect(JsonUtils.asArray()));
+            }
+
             requestFlush(update);
         }
+    }
+
+    @Override
+    protected void handleDataRefreshEvent(
+            DataChangeEvent.DataRefreshEvent<T> event) {
+        if (event.isRefreshChildren()) {
+            T item = event.getItem();
+            if (isExpanded(item)) {
+                String parentKey = getKeyMapper().key(item);
+
+                if (!dataControllers.containsKey(parentKey)) {
+                    setParentRequestedRange(0, mapper.countChildItems(item),
+                            item);
+                }
+                HierarchicalCommunicationController<T> dataController = dataControllers
+                        .get(parentKey);
+                if (dataController != null) {
+                    dataController.setResendEntireRange(true);
+                    requestFlush(dataController);
+                }
+            }
+        }
+        super.handleDataRefreshEvent(event);
     }
 
     @Override
@@ -168,7 +186,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     public void setParentRequestedRange(int start, int length, T parentItem) {
-        String parentKey = uniqueKeyProviderSupplier.get().apply(parentItem);
+        String parentKey = getKeyMapper().key(parentItem);
 
         HierarchicalCommunicationController<T> controller = dataControllers
                 .computeIfAbsent(parentKey,
@@ -205,14 +223,15 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      */
     public <F> SerializableConsumer<F> setDataProvider(
             HierarchicalDataProvider<T, F> dataProvider, F initialFilter) {
-        SerializableConsumer<F> consumer = super.setDataProvider(dataProvider,
-                initialFilter);
-
-        // Remove old mapper
+        // Remove old mapper before super.setDataProvider(...) prevents calling
+        // reset() before clearing the already expanded items:
         if (mapper != null) {
             mapper.destroyAllData();
         }
         mapper = createHierarchyMapper(dataProvider);
+
+        SerializableConsumer<F> consumer = super.setDataProvider(dataProvider,
+                initialFilter);
 
         // Set up mapper for requests
         mapper.setBackEndSorting(getBackEndSorting());
@@ -521,6 +540,46 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         JsonObject json = Json.createObject();
         json.put("key", getKeyMapper().key(item));
         return json;
+    }
+
+    @Override
+    protected Set<String> getPassivatedKeys(Set<String> oldActive) {
+        return super.getPassivatedKeys(oldActive).stream()
+                .filter(key -> !isExpanded(getKeyMapper().get(key)))
+                .collect(Collectors.toCollection(HashSet::new));
+    }
+
+    /**
+     * KeyMapper extension delegating row key creation to the
+     * <code>uniqueKeyProviderSupplier</code> passed to the hierarchical data
+     * communicator constructor from the component.
+     * <p>
+     * If <code>uniqueKeyProviderSupplier</code> is not present, this class uses
+     * {@link KeyMapper#createKey()} for key creation.
+     *
+     * @param <V>
+     *            the bean type
+     */
+    private class KeyMapperWrapper<V> extends KeyMapper<T> {
+
+        private T object;
+
+        @Override
+        public String key(T o) {
+            this.object = o;
+            try {
+                return super.key(o);
+            } finally {
+                this.object = null;
+            }
+        }
+
+        @Override
+        protected String createKey() {
+            return Optional.ofNullable(uniqueKeyProviderSupplier.get())
+                    .map(provider -> provider.apply(object))
+                    .orElse(super.createKey());
+        }
     }
 
 }

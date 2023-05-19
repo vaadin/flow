@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -40,7 +40,7 @@ import com.vaadin.flow.function.SerializableFunction;
 public interface Converter<PRESENTATION, MODEL> extends Serializable {
 
     /**
-     * Converts the given value from model type to presentation type.
+     * Converts the given value from presentation type to model type.
      * <p>
      * A converter can optionally use locale to do the conversion.
      *
@@ -53,7 +53,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
     Result<MODEL> convertToModel(PRESENTATION value, ValueContext context);
 
     /**
-     * Converts the given value from presentation type to model type.
+     * Converts the given value from model type to presentation type.
      * <p>
      * A converter can optionally use locale to do the conversion.
      *

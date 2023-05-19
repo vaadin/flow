@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "inlineSources": true,
+    "module": "esNext",
+    "target": "es2019",
+    "moduleResolution": "node",
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "experimentalDecorators": true,
+    "outDir": "target/classes/META-INF/frontend",
+    "declaration": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/main/frontend/**/*.ts"
+  ],
+  "exclude": []
+}

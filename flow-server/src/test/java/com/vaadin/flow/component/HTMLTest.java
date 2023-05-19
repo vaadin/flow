@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.flow.component;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -62,6 +63,24 @@ public class HTMLTest {
         Html html = new Html("<span>hello</span>");
         Assert.assertEquals(Tag.SPAN, html.getElement().getTag());
         Assert.assertEquals("hello", html.getInnerHtml());
+    }
+
+    @Test
+    public void setHtmlContent() {
+        Html html = new Html("<span>hello</span>");
+        Assert.assertEquals(Tag.SPAN, html.getElement().getTag());
+        Assert.assertEquals("hello", html.getInnerHtml());
+        html.setHtmlContent("<span>world</span>");
+        Assert.assertEquals("world", html.getInnerHtml());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setHtmlContent_tagMismatch() {
+        Html html = new Html("<span>hello</span>");
+        Assert.assertEquals(Tag.SPAN, html.getElement().getTag());
+        Assert.assertEquals("hello", html.getInnerHtml());
+        html.setHtmlContent("<div>world</div>");
+        Assert.assertEquals("world", html.getInnerHtml());
     }
 
     @Test
@@ -123,6 +142,20 @@ public class HTMLTest {
 
         Assert.assertEquals("<audio controls></audio>",
                 html.getElement().getOuterHTML());
+    }
+
+    @Test
+    public void styleElementAsString_elementIsUsed() {
+        Html html = new Html("<style></style>");
+        Assert.assertEquals("style", html.getElement().getTag());
+    }
+
+    @Test
+
+    public void styleElementAsStream_elementIsUsed() {
+        Html html = new Html(new ByteArrayInputStream(
+                "<style></style>".getBytes(StandardCharsets.UTF_8)));
+        Assert.assertEquals("style", html.getElement().getTag());
     }
 
 }

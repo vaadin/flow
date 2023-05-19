@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,9 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
@@ -173,15 +176,14 @@ public abstract class RouteRegistryTestBase {
                 Arrays.asList(MiddleLayout.class, MainLayout.class));
 
         Assert.assertFalse("'MyRoute' should have a single parent",
-                getTestedRegistry()
-                        .getRouteLayouts("MyRoute", MyRouteWithAliases.class)
-                        .isEmpty());
-        Assert.assertTrue("'info' should have no parents.", getTestedRegistry()
-                .getRouteLayouts("info", MyRouteWithAliases.class).isEmpty());
+                getTestedRegistry().getNavigationRouteTarget("MyRoute")
+                        .getRouteTarget().getParentLayouts().isEmpty());
+        Assert.assertTrue("'info' should have no parents.",
+                getTestedRegistry().getNavigationRouteTarget("info")
+                        .getRouteTarget().getParentLayouts().isEmpty());
         Assert.assertEquals("'version' should return two parents", 2,
-                getTestedRegistry()
-                        .getRouteLayouts("version", MyRouteWithAliases.class)
-                        .size());
+                getTestedRegistry().getNavigationRouteTarget("version")
+                        .getRouteTarget().getParentLayouts().size());
     }
 
     @Test
@@ -198,8 +200,8 @@ public abstract class RouteRegistryTestBase {
 
         Assert.assertEquals(
                 "'version' should return two parents even when original list is changed",
-                2, getTestedRegistry().getRouteLayouts("version", MyRoute.class)
-                        .size());
+                2, getTestedRegistry().getNavigationRouteTarget("version")
+                        .getRouteTarget().getParentLayouts().size());
     }
 
     @Test
@@ -214,8 +216,9 @@ public abstract class RouteRegistryTestBase {
 
         Assert.assertArrayEquals(
                 "Registry should return parent layouts in the same order as set.",
-                parentChain.toArray(), getTestedRegistry()
-                        .getRouteLayouts("version", MyRoute.class).toArray());
+                parentChain.toArray(),
+                getTestedRegistry().getNavigationRouteTarget("version")
+                        .getRouteTarget().getParentLayouts().toArray());
     }
 
     /**
@@ -274,5 +277,21 @@ public abstract class RouteRegistryTestBase {
     @Tag("div")
     protected static class MiddleLayout extends Component
             implements RouterLayout {
+    }
+
+    @Tag("div")
+    public static abstract class AbstractErrorView<EXCEPTION_TYPE extends Exception>
+            extends Component implements HasErrorParameter<EXCEPTION_TYPE> {
+    }
+
+    @Tag("div")
+    public static class ErrorView
+            extends AbstractErrorView<NullPointerException> {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<NullPointerException> parameter) {
+            return 0;
+        }
     }
 }

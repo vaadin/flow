@@ -21,35 +21,23 @@ public class KeyboardEventIT extends ChromeBrowserTest {
 
         input.sendKeys("q");
 
-        Assert.assertEquals(
-                "q:KeyQ",
-                paragraph.getText()
-        );
+        Assert.assertEquals("q:KeyQ", paragraph.getText());
 
         input.sendKeys("%");
 
-        Assert.assertEquals(
-                "%:Digit5",
-                paragraph.getText()
-        );
+        Assert.assertEquals("%:Digit5", paragraph.getText());
         // next tests rely on
         // https://github.com/SeleniumHQ/selenium/blob/master/javascript/node/selenium-webdriver/lib/input.js#L52
 
         // arrow right
         input.sendKeys("\uE014");
 
-        Assert.assertEquals(
-                "ArrowRight:ArrowRight",
-                paragraph.getText()
-        );
+        Assert.assertEquals("ArrowRight:ArrowRight", paragraph.getText());
 
         // physical * key
         input.sendKeys("\uE024");
 
-        Assert.assertEquals(
-                "*:NumpadMultiply",
-                paragraph.getText()
-        );
+        Assert.assertEquals("*:NumpadMultiply", paragraph.getText());
     }
 
     @Test // #5989

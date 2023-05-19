@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
@@ -35,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.MessageDigestUtil;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -55,6 +55,8 @@ import elemental.json.impl.JsonUtil;
 
 /**
  * Handles a client-to-server message containing serialized RPC invocations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -126,7 +128,8 @@ public class ServerRpcHandler implements Serializable {
         }
 
         /**
-         * Gets the CSRF security token (double submit cookie) for this request.
+         * Gets the CSRF security token (synchronizer token pattern) for this
+         * request.
          *
          * @return the CSRF security token for this current change request
          */
@@ -186,6 +189,10 @@ public class ServerRpcHandler implements Serializable {
             return json;
         }
 
+        private boolean isUnloadBeaconRequest() {
+            return json.hasKey(ApplicationConstants.UNLOAD_BEACON);
+        }
+
     }
 
     private static final int MAX_BUFFER_SIZE = 64 * 1024;
@@ -204,6 +211,20 @@ public class ServerRpcHandler implements Serializable {
          * Default constructor for the exception.
          */
         public InvalidUIDLSecurityKeyException() {
+            super();
+        }
+    }
+
+    /**
+     * Exception thrown then the client side resynchronization is required.
+     */
+    public static class ResynchronizationRequiredException
+            extends RuntimeException {
+
+        /**
+         * Default constructor for the exception.
+         */
+        public ResynchronizationRequiredException() {
             super();
         }
     }
@@ -263,8 +284,6 @@ public class ServerRpcHandler implements Serializable {
             // did not reach the client. When the client re-sends the message,
             // it would only get an empty response (because the dirty flags have
             // been cleared on the server) and would be out of sync
-
-            String message;
             if (requestId == expectedId - 1 && Arrays.equals(messageHash,
                     ui.getInternals().getLastProcessedMessageHash())) {
                 /*
@@ -272,28 +291,31 @@ public class ServerRpcHandler implements Serializable {
                  * situation is most likely triggered by a timeout or such
                  * causing a message to be resent.
                  */
-                message = "Confirmed duplicate message from the client.";
+                getLogger().info(
+                        "Ignoring old duplicate message from the client. Expected: "
+                                + expectedId + ", got: " + requestId);
             } else {
-                message = "Unexpected message id from the client.";
+                /*
+                 * If the reason for ending up here is intermittent, then we
+                 * should just issue a full resync since we cannot know the
+                 * state of the client engine.
+                 *
+                 * There are reasons to believe that there are deterministic
+                 * issues that trigger this condition, and we'd like to collect
+                 * more data to uncover anything such before actually
+                 * implementing the resync that would thus hide most symptoms of
+                 * the actual root cause bugs.
+                 */
+                String messageDetails = getMessageDetails(rpcRequest);
+                getLogger().debug("Unexpected message id from the client."
+                        + " Expected sync id: " + expectedId + ", got "
+                        + requestId + ". Message start: " + messageDetails);
+                throw new UnsupportedOperationException(
+                        "Unexpected message id from the client."
+                                + " Expected sync id: " + expectedId + ", got "
+                                + requestId
+                                + ". more details logged on DEBUG level.");
             }
-
-            /*
-             * If the reason for ending up here is intermittent, then we should
-             * just issue a full resync since we cannot know the state of the
-             * client engine.
-             *
-             * There are reasons to believe that there are deterministic issues
-             * that trigger this condition, and we'd like to collect more data
-             * to uncover anything such before actually implementing the resync
-             * that would thus hide most symptoms of the actual root cause bugs.
-             */
-            String messageStart = changeMessage;
-            if (messageStart.length() > 1000) {
-                messageStart = messageStart.substring(0, 1000);
-            }
-            throw new UnsupportedOperationException(
-                    message + " Expected sync id: " + expectedId + ", got "
-                            + requestId + ". Message start: " + messageStart);
         } else {
             // Message id ok, process RPCs
             ui.getInternals().setLastProcessedClientToServerId(expectedId,
@@ -302,10 +324,69 @@ public class ServerRpcHandler implements Serializable {
         }
 
         if (rpcRequest.isResynchronize()) {
-            // FIXME Implement
-            throw new UnsupportedOperationException("FIXME: Implement resync");
+            getLogger().warn("Resynchronizing UI by client's request. "
+                    + "A network message was lost before reaching the client and the client is reloading the full UI state. "
+                    + "This typically happens because of a bad network connection with packet loss or because of some part of"
+                    + " the network infrastructure (load balancer, proxy) terminating a push (websocket or long-polling) connection."
+                    + " If you are using push with a proxy, make sure the push timeout is set to be smaller than the proxy connection timeout");
+
+            // Run detach listeners and re-attach all nodes again to the
+            // state tree, in order to send changes for a full re-build of
+            // the client-side state tree in the response
+            ui.getInternals().getStateTree().prepareForResync();
+
+            // At this point, make no assumptions about which dependencies have
+            // been accepted by the client
+            ui.getInternals().getDependencyList().clearPendingSendToClient();
+
+            // Signal by exception instead of return value to keep the method
+            // signature for source and binary compatibility
+            throw new ResynchronizationRequiredException();
+        }
+        if (rpcRequest.isUnloadBeaconRequest()) {
+            if (isPreserveOnRefreshTarget(ui)) {
+                getLogger().debug(
+                        "Eager UI close ignored for @PreserveOnRefresh view");
+            } else {
+                ui.close();
+                getLogger().debug("UI closed with a beacon request");
+            }
         }
 
+    }
+
+    // Kind of same as in AbstractNavigationStateRenderer, but gets
+    // "routeLayoutTypes" & class from UI instance.
+    private static boolean isPreserveOnRefreshTarget(UI ui) {
+        return ui.getInternals().getActiveRouterTargetsChain().stream()
+                .anyMatch(rt -> rt.getClass()
+                        .isAnnotationPresent(PreserveOnRefresh.class));
+    }
+
+    private String getMessageDetails(RpcRequest rpcRequest) {
+        StringBuilder messageDetails = new StringBuilder();
+        JsonArray rpcArray = rpcRequest.getRpcInvocationsData();
+        if (rpcArray == null) {
+            return "{ no data }";
+        }
+
+        for (int i = 0; i < rpcArray.length(); i++) {
+            JsonObject json = rpcArray.get(i);
+            String type = json.hasKey("type") ? json.getString("type") : "";
+            Double node = json.hasKey("node") ? json.getNumber("node") : null;
+            Double feature = json.hasKey("feature") ? json.getNumber("feature")
+                    : null;
+            appendAll(messageDetails, "{ type: ", type, " node: ",
+                    String.valueOf(node), " feature: ", String.valueOf(feature),
+                    " } ");
+        }
+        return messageDetails.toString();
+    }
+
+    private static void appendAll(StringBuilder builder, String... strings) {
+        for (String string : strings) {
+            builder.append(string);
+        }
     }
 
     /**
@@ -376,9 +457,9 @@ public class ServerRpcHandler implements Serializable {
         }
         try {
             Optional<Runnable> handle = handler.handle(ui, invocationJson);
-            assert !handle.isPresent() : "RPC handler "
-                    + handler.getClass().getName()
-                    + " returned a Runnable even though it shouldn't";
+            assert !handle.isPresent()
+                    : "RPC handler " + handler.getClass().getName()
+                            + " returned a Runnable even though it shouldn't";
         } catch (Throwable throwable) {
             ui.getSession().getErrorHandler().error(new ErrorEvent(throwable));
         }
@@ -414,6 +495,7 @@ public class ServerRpcHandler implements Serializable {
     }
 
     private static class LazyInvocationHandlers {
+
         private static final Map<String, RpcInvocationHandler> HANDLERS = loadHandlers()
                 .stream()
                 .collect(Collectors.toMap(RpcInvocationHandler::getRpcType,

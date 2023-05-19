@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -31,16 +31,19 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
-import com.vaadin.flow.component.polymertemplate.EventHandler;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.AllowInert;
+import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ClientCallableHandlers;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.templatemodel.ModelType;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -51,12 +54,12 @@ import elemental.json.JsonValue;
 /**
  * RPC handler for events triggered through <code>element.$server</code> or
  * simply <code>$server</code> in template event handlers.
- *
- * @see JsonConstants#RPC_PUBLISHED_SERVER_EVENT_HANDLER
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
+ * @see JsonConstants#RPC_PUBLISHED_SERVER_EVENT_HANDLER
  * @since 1.0
- *
  */
 public class PublishedServerEventHandlerRpcHandler
         extends AbstractRpcInvocationHandler {
@@ -66,6 +69,11 @@ public class PublishedServerEventHandlerRpcHandler
     @Override
     public String getRpcType() {
         return JsonConstants.RPC_PUBLISHED_SERVER_EVENT_HANDLER;
+    }
+
+    @Override
+    protected boolean allowInert(UI ui, JsonObject invocationJson) {
+        return true;
     }
 
     @Override
@@ -87,6 +95,13 @@ public class PublishedServerEventHandlerRpcHandler
         if (args.getType() != JsonType.ARRAY) {
             throw new IllegalArgumentException(
                     "Incorrect type for method arguments: " + args.getClass());
+        }
+        int promiseId;
+        if (invocationJson.hasKey(JsonConstants.RPC_TEMPLATE_EVENT_PROMISE)) {
+            promiseId = (int) invocationJson
+                    .getNumber(JsonConstants.RPC_TEMPLATE_EVENT_PROMISE);
+        } else {
+            promiseId = -1;
         }
         assert node.hasFeature(ComponentMapping.class);
         Optional<Component> component = ComponentMapping.getComponent(node);
@@ -115,22 +130,27 @@ public class PublishedServerEventHandlerRpcHandler
 
         if (execute) {
             invokeMethod(component.get(), component.get().getClass(),
-                    methodName, (JsonArray) args);
+                    methodName, (JsonArray) args, promiseId, node.isInert());
         }
 
         return Optional.empty();
     }
 
     static void invokeMethod(Component instance, Class<?> clazz,
-            String methodName, JsonArray args) {
+            String methodName, JsonArray args, int promiseId) {
+        invokeMethod(instance, clazz, methodName, args, promiseId, false);
+    }
+
+    static void invokeMethod(Component instance, Class<?> clazz,
+            String methodName, JsonArray args, int promiseId, boolean inert) {
         assert instance != null;
         Optional<Method> method = findMethod(instance, clazz, methodName);
         if (method.isPresent()) {
-            invokeMethod(instance, method.get(), args);
+            invokeMethod(instance, method.get(), args, promiseId, inert);
         } else if (instance instanceof Composite) {
             Component compositeContent = ((Composite<?>) instance).getContent();
             invokeMethod(compositeContent, compositeContent.getClass(),
-                    methodName, args);
+                    methodName, args, promiseId, inert);
         } else {
             String msg = String.format("Neither class '%s' "
                     + "nor its super classes declare event handler method '%s'",
@@ -143,8 +163,7 @@ public class PublishedServerEventHandlerRpcHandler
             Class<?> clazz, String methodName) {
         List<Method> methods = Stream.of(clazz.getDeclaredMethods())
                 .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> method.isAnnotationPresent(EventHandler.class)
-                        || method.isAnnotationPresent(ClientCallable.class))
+                .filter(method -> hasMethodAnnotation(method))
                 .collect(Collectors.toList());
         if (methods.size() > 1) {
             String msg = String.format("Class '%s' contains "
@@ -160,11 +179,47 @@ public class PublishedServerEventHandlerRpcHandler
         }
     }
 
+    private static boolean hasMethodAnnotation(Method method) {
+        // Check for polymer event handler annotation.
+        final boolean hasEventHandler = ReflectTools.hasAnnotation(method,
+                "com.vaadin.flow.component.polymertemplate.EventHandler");
+        return hasEventHandler
+                || method.isAnnotationPresent(ClientCallable.class);
+    }
+
     private static void invokeMethod(Component instance, Method method,
+            JsonArray args, int promiseId, boolean inert) {
+        if (inert && !method.isAnnotationPresent(AllowInert.class)) {
+            return;
+        }
+        if (promiseId == -1) {
+            invokeMethod(instance, method, args);
+        } else {
+            try {
+                Serializable returnValue = (Serializable) invokeMethod(instance,
+                        method, args);
+
+                instance.getElement()
+                        .executeJs("this.$server['"
+                                + JsonConstants.RPC_PROMISE_CALLBACK_NAME
+                                + "']($0, true, $1)",
+                                Integer.valueOf(promiseId), returnValue);
+            } catch (RuntimeException e) {
+                instance.getElement()
+                        .executeJs("this.$server['"
+                                + JsonConstants.RPC_PROMISE_CALLBACK_NAME
+                                + "']($0, false)", Integer.valueOf(promiseId));
+
+                throw e;
+            }
+        }
+    }
+
+    private static Object invokeMethod(Component instance, Method method,
             JsonArray args) {
         try {
             method.setAccessible(true);
-            method.invoke(instance, decodeArgs(instance, method, args));
+            return method.invoke(instance, decodeArgs(instance, method, args));
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {
@@ -245,24 +300,31 @@ public class PublishedServerEventHandlerRpcHandler
         // come up with method to know that it's an id and should be gotten from
         // the model
         assert argValue != null;
+
         if (type.isPrimitive() && argValue.getType() == JsonType.NULL) {
-            String msg = String.format(
-                    "Null values are not allowed for primitive types but "
-                            + "a 'null' value was received for parameter %d "
-                            + "which refers to primitive type '%s' "
-                            + "in the method '%s' defined in the class '%s'",
-                    index, type.getName(), method.getName(),
-                    method.getDeclaringClass().getName());
-            throw new IllegalArgumentException(msg);
+            return JsonCodec.decodeAs(argValue, type);
         } else if (type.isArray()) {
             return decodeArray(method, type, index, argValue);
         } else {
             Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
 
-            if (isTemplateModelValue(instance, argValue, convertedType)) {
-                return getTemplateItem((PolymerTemplate<?>) instance,
-                        (JsonObject) argValue,
-                        method.getGenericParameterTypes()[index]);
+            if (instance != null) {
+                Optional<UI> ui = instance.getUI();
+                if (!ui.isPresent()) {
+                    throw new IllegalStateException(
+                            "Rpc handler may not be called for a detached component");
+                }
+                VaadinContext context = ui.get().getSession().getService()
+                        .getContext();
+                DeprecatedPolymerPublishedEventHandler handler = context
+                        .getAttribute(Lookup.class)
+                        .lookup(DeprecatedPolymerPublishedEventHandler.class);
+                if (handler != null && handler.isTemplateModelValue(instance,
+                        argValue, convertedType)) {
+                    return handler.getTemplateItem(instance,
+                            (JsonObject) argValue,
+                            method.getGenericParameterTypes()[index]);
+                }
             }
 
             Optional<RpcDecoder> decoder = getDecoder(argValue, convertedType);
@@ -279,6 +341,7 @@ public class PublishedServerEventHandlerRpcHandler
                     index, type.getName());
             throw new IllegalArgumentException(msg);
         }
+
     }
 
     private static Optional<RpcDecoder> getDecoder(JsonValue value,
@@ -286,25 +349,6 @@ public class PublishedServerEventHandlerRpcHandler
         return DECODERS.stream()
                 .filter(decoder -> decoder.isApplicable(value, type))
                 .findFirst();
-    }
-
-    private static boolean isTemplateModelValue(Component instance,
-            JsonValue argValue, Class<?> convertedType) {
-        return instance instanceof PolymerTemplate
-                && argValue instanceof JsonObject
-                && ((PolymerTemplate<?>) instance)
-                        .isSupportedClass(convertedType)
-                && ((JsonObject) argValue).hasKey("nodeId");
-    }
-
-    private static Object getTemplateItem(PolymerTemplate<?> template,
-            JsonObject argValue, Type convertedType) {
-        StateNode node = template.getUI().get().getInternals().getStateTree()
-                .getNodeById((int) argValue.getNumber("nodeId"));
-
-        ModelType propertyType = template.getModelType(convertedType);
-
-        return propertyType.modelToApplication(node);
     }
 
     private static Object decodeArray(Method method, Class<?> type, int index,

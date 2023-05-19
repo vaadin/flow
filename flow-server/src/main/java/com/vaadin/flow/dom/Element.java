@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,12 +16,13 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -31,6 +32,7 @@ import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.ScrollOptions;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
@@ -41,6 +43,7 @@ import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.TextNodeMap;
@@ -66,6 +69,8 @@ public class Element extends Node<Element> {
     private static final String EVENT_TYPE_MUST_NOT_BE_NULL = "Event type must not be null";
 
     static final String ATTRIBUTE_NAME_CANNOT_BE_NULL = "The attribute name cannot be null";
+
+    private static final String USE_SET_PROPERTY_WITH_JSON_NULL = "setProperty(name, Json.createNull()) must be used to set a property to null";
 
     // Can't set $name as a property, use $replacement instead.
     private static final Map<String, String> illegalPropertyReplacements = new HashMap<>();
@@ -112,23 +117,6 @@ public class Element extends Node<Element> {
 
         assert getNode() != null;
         assert getStateProvider() != null;
-    }
-
-    /**
-     * Creates an element using the given tag name.
-     *
-     * @param tag
-     *            tag name of the element. Must be a non-empty string and can
-     *            contain letters, numbers and dashes ({@literal -})
-     * @param autocreate
-     *            parameter is ignored, but retained in the API for backwards
-     *            compatibility
-     * @deprecated The {@code autoCreate} parameter no longer has any effect.
-     *             Use {@link #Element(String)} instead.
-     */
-    @Deprecated
-    public Element(String tag, boolean autocreate) {
-        this(tag);
     }
 
     /**
@@ -220,12 +208,13 @@ public class Element extends Node<Element> {
      * Creates a text node with the given text.
      *
      * @param text
-     *            the text in the node
-     * @return an element representing the text node
+     *            the text in the node, <code>null</code> is interpreted as an
+     *            empty string
+     * @return an element representing the text node, never <code>null</code>
      */
     public static Element createText(String text) {
         if (text == null) {
-            throw new IllegalArgumentException("Text cannot be null");
+            text = "";
         }
 
         return new Element(BasicTextElementStateProvider.createStateNode(text),
@@ -443,8 +432,8 @@ public class Element extends Node<Element> {
     public Stream<String> getAttributeNames() {
         assert getStateProvider().getAttributeNames(getNode())
                 .map(CustomAttribute::get).filter(Optional::isPresent)
-                .filter(attr -> attr.get().hasAttribute(this))
-                .count() == 0 : "Overlap between stored attributes and existing custom attributes";
+                .filter(attr -> attr.get().hasAttribute(this)).count() == 0
+                : "Overlap between stored attributes and existing custom attributes";
 
         Stream<String> regularNames = getStateProvider()
                 .getAttributeNames(getNode());
@@ -516,55 +505,6 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Adds an event listener and event data expressions for the given event
-     * type.
-     * <p>
-     * When an event is fired in the browser, custom JavaScript expressions
-     * defined in the <code>eventDataExpressions</code> parameter are evaluated
-     * to extract data that is sent back to the server. The expression is
-     * evaluated in a context where <code>element</code> refers to this element
-     * and <code>event</code> refers to the fired event. The result of the
-     * evaluation is available in {@link DomEvent#getEventData()} with the
-     * expression as the key in the JSON object. An expression might be e.g.
-     *
-     * <ul>
-     * <li><code>element.value</code> the get the value of an input element for
-     * a change event.
-     * <li><code>event.button === 0</code> to get true for click events
-     * triggered by the primary mouse button.
-     * </ul>
-     * <p>
-     * Event listeners are triggered in the order they are registered.
-     *
-     * @param eventType
-     *            the type of event to listen to, not <code>null</code>
-     * @param listener
-     *            the listener to add, not <code>null</code>
-     * @param eventDataExpressions
-     *            definitions for data that should be passed back to the server
-     *            together with the event
-     * @return a handle that can be used for configuring or removing the
-     *         listener
-     *
-     * @deprecated Instead, use the returned registration instance for adding
-     *             event data expressions
-     */
-    @Deprecated
-    public DomListenerRegistration addEventListener(String eventType,
-            DomEventListener listener, String... eventDataExpressions) {
-        if (eventDataExpressions == null) {
-            throw new IllegalArgumentException(
-                    "The event data expressions array must not be null");
-        }
-
-        DomListenerRegistration registration = addEventListener(eventType,
-                listener);
-        Stream.of(eventDataExpressions).forEach(registration::addEventData);
-
-        return registration;
-    }
-
-    /**
      * Removes this element from its parent.
      * <p>
      * Has no effect if the element does not have a parent
@@ -585,10 +525,15 @@ public class Element extends Node<Element> {
      * @return this element
      */
     public Element removeFromTree() {
+
         Node<?> parent = getParentNode();
-        if (parent != null
-                && parent.getChildren().anyMatch(Predicate.isEqual(this))) {
-            parent.removeChild(this);
+        if (parent != null) {
+            if (parent.getChildren().anyMatch(Predicate.isEqual(this))) {
+                parent.removeChild(this);
+            }
+            if (isVirtualChild()) {
+                parent.removeVirtualChild(this);
+            }
         }
         getNode().removeFromTree();
         return this;
@@ -641,8 +586,9 @@ public class Element extends Node<Element> {
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
-     * unless configured using {@link #addSynchronizedProperty(String)} and
-     * {@link #addSynchronizedPropertyEvent(String)}.
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
      * <p>
      * The "innerHTML" property has an impact on the descendants structure of
      * the element. So setting the "innerHTML" property removes all the
@@ -663,8 +609,9 @@ public class Element extends Node<Element> {
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
-     * unless configured using {@link #addSynchronizedProperty(String)} and
-     * {@link #addSynchronizedPropertyEvent(String)}.
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -681,8 +628,9 @@ public class Element extends Node<Element> {
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
-     * unless configured using {@link #addSynchronizedProperty(String)} and
-     * {@link #addSynchronizedPropertyEvent(String)}.
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -703,8 +651,9 @@ public class Element extends Node<Element> {
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
-     * unless configured using {@link #addSynchronizedProperty(String)} and
-     * {@link #addSynchronizedPropertyEvent(String)}.
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -715,8 +664,7 @@ public class Element extends Node<Element> {
     // Distinct name so setProperty("foo", null) is not ambiguous
     public Element setPropertyJson(String name, JsonValue value) {
         if (value == null) {
-            throw new IllegalArgumentException(
-                    "Json.createNull() must be used instead of null for JSON values");
+            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
         }
 
         setRawProperty(name, value);
@@ -724,12 +672,89 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Adds a property change listener.
+     * Sets the given property to the given bean, converted to a JSON object.
      * <p>
-     * Use either two way Polymer binding or synchronize property explicitly to
-     * be able to get property change events from the client.
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
-     * @see #synchronizeProperty(String, String)
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param value
+     *            the property value, not <code>null</code>
+     * @return this element
+     */
+    // Distinct name so setProperty("foo", null) is not ambiguous
+    public Element setPropertyBean(String name, Object value) {
+        if (value == null) {
+            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
+        }
+        return setPropertyJson(name, JsonUtils.beanToJson(value));
+    }
+
+    /**
+     * Sets the given property to the given list of beans or primitive values,
+     * converted to a JSON array.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param <T>
+     *            the type of items in the list
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param value
+     *            the property value, not <code>null</code>
+     * @return this element
+     */
+    public <T> Element setPropertyList(String name, List<T> value) {
+        if (value == null) {
+            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
+        }
+
+        return setPropertyJson(name, JsonUtils.listToJson(value));
+    }
+
+    /**
+     * Sets the given property to the given map of beans or primitive values,
+     * converted to a JSON object.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param value
+     *            the property value, not <code>null</code>
+     * @return this element
+     */
+    public Element setPropertyMap(String name, Map<String, ?> value) {
+        if (value == null) {
+            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
+        }
+
+        return setPropertyJson(name, JsonUtils.mapToJson(value));
+    }
+
+    /**
+     * Adds a property change listener which is triggered when the property's
+     * value is updated on the server side.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @see #addPropertyChangeListener(String, String, PropertyChangeListener)
      * @param name
      *            the property name to add the listener for, not
      *            <code>null</code>
@@ -740,6 +765,8 @@ public class Element extends Node<Element> {
      */
     public Registration addPropertyChangeListener(String name,
             PropertyChangeListener listener) {
+        verifySetPropertyName(name);
+
         return getStateProvider().addPropertyChangeListener(getNode(), name,
                 listener);
     }
@@ -761,6 +788,7 @@ public class Element extends Node<Element> {
      * @return a handle that can be used for configuring or removing the
      *         listener
      *
+     * @since 1.3
      */
     public DomListenerRegistration addPropertyChangeListener(
             String propertyName, String domEventName,
@@ -780,6 +808,7 @@ public class Element extends Node<Element> {
         if ("innerHTML".equals(name)) {
             removeAllChildren();
         }
+
         getStateProvider().setProperty(getNode(), name, value, true);
 
         return this;
@@ -793,8 +822,9 @@ public class Element extends Node<Element> {
 
         String replacement = illegalPropertyReplacements.get(name);
         if (replacement != null) {
-            throw new IllegalArgumentException("Can't set " + name
-                    + " as a property, use " + replacement + " instead.");
+            throw new IllegalArgumentException(
+                    "Can't set or synchronize " + name + " as a property, use "
+                            + replacement + " instead.");
         }
     }
 
@@ -957,8 +987,9 @@ public class Element extends Node<Element> {
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
-     * unless configured using {@link #addSynchronizedProperty(String)} and
-     * {@link #addSynchronizedPropertyEvent(String)}.
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * and {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -974,8 +1005,9 @@ public class Element extends Node<Element> {
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
-     * unless configured using {@link #addSynchronizedProperty(String)} and
-     * {@link #addSynchronizedPropertyEvent(String)}.
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -991,8 +1023,9 @@ public class Element extends Node<Element> {
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
-     * unless configured using {@link #addSynchronizedProperty(String)} and
-     * {@link #addSynchronizedPropertyEvent(String)}.
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @return a stream of defined property names
      */
@@ -1146,272 +1179,6 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Synchronize the given {@code property}'s value when the given
-     * {@code eventType} occurs on this element on the client side. As a result
-     * the {@code property}'s value is automatically updated to this
-     * {@link Element}.
-     * <p>
-     * Only properties which can be set using setProperty can be synchronized,
-     * e.g. classList cannot be synchronized.
-     * <p>
-     * This is convenience method for batching
-     * {@link #addSynchronizedProperty(String)} and
-     * {@link #addSynchronizedPropertyEvent(String)}.
-     * <p>
-     * The method is shorthand for
-     * {@link #synchronizeProperty(String, String, DisabledUpdateMode)} with
-     * {@literal DisabledUpdateMode.ONLY_WHEN_ENABLED} parameter value.
-     *
-     * @param property
-     *            the property name to synchronize
-     * @param eventType
-     *            the client side event which trigger synchronization of the
-     *            property values to the server
-     *
-     * @see #synchronizeProperty(String, String, DisabledUpdateMode)
-     * @return this element
-     * @deprecated Use
-     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     *             or
-     *             {@link DomListenerRegistration#synchronizeProperty(String)}
-     *             instead.
-     */
-    @Deprecated
-    public Element synchronizeProperty(String property, String eventType) {
-        return synchronizeProperty(property, eventType,
-                DisabledUpdateMode.ONLY_WHEN_ENABLED);
-    }
-
-    /**
-     * Synchronize the given {@code property}'s value when the given
-     * {@code eventType} occurs on this element on the client side. As a result
-     * the {@code property}'s value is automatically updated to this
-     * {@link Element}.
-     * <p>
-     * Only properties which can be set using setProperty can be synchronized,
-     * e.g. classList cannot be synchronized.
-     * <p>
-     * When multiple update mode settings are defined for the same property, the
-     * most permissive mode is used. This means that there might be unexpected
-     * updates for a disabled component if multiple parties independently
-     * configure different aspects for the same component. This is based on the
-     * assumption that if a property is explicitly safe to update for disabled
-     * components in one context, then the nature of that property is probably
-     * such that it's also safe to update in other contexts.
-     * <p>
-     * This is convenience method for batching
-     * {@link #addSynchronizedProperty(String, DisabledUpdateMode)} and
-     * {@link #addSynchronizedPropertyEvent(String)}.
-     *
-     * @param property
-     *            the property name to synchronize
-     * @param eventType
-     *            the client side event which trigger synchronization of the
-     *            property values to the server
-     * @param mode
-     *            controls property update from the client side to the server
-     *            side when the element is disabled, not {@code null}
-     * @return this element
-     * @deprecated Use
-     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     *             or
-     *             {@link DomListenerRegistration#synchronizeProperty(String)}
-     *             instead.
-     */
-    @Deprecated
-    public Element synchronizeProperty(String property, String eventType,
-            DisabledUpdateMode mode) {
-        addSynchronizedProperty(property, mode);
-        addSynchronizedPropertyEvent(eventType);
-        return this;
-    }
-
-    /**
-     * Adds the property whose value should automatically be synchronized from
-     * the client side and updated in this {@link Element}.
-     * <p>
-     * Synchronization takes place whenever one of the events defined using
-     * {@link #addSynchronizedPropertyEvent(String)} is fired for the element.
-     * <p>
-     * Only properties which can be set using setProperty can be synchronized,
-     * e.g. classList cannot be synchronized.
-     * <p>
-     * The method is shorthand for
-     * {@link #addSynchronizedProperty(String, DisabledUpdateMode)} with
-     * {@literal DisabledUpdateMode.ONLY_WHEN_ENABLED} parameter value.
-     * {@link #addSynchronizedProperty(String, DisabledUpdateMode)}
-     *
-     * @param property
-     *            the property name to synchronize
-     * @return this element
-     * @deprecated Use
-     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     *             or
-     *             {@link DomListenerRegistration#synchronizeProperty(String)}
-     *             instead.
-     */
-    @Deprecated
-    public Element addSynchronizedProperty(String property) {
-        return addSynchronizedProperty(property,
-                DisabledUpdateMode.ONLY_WHEN_ENABLED);
-    }
-
-    /**
-     * Adds the property whose value should automatically be synchronized from
-     * the client side and updated in this {@link Element}.
-     * <p>
-     * Synchronization takes place whenever one of the events defined using
-     * {@link #addSynchronizedPropertyEvent(String)} is fired for the element.
-     * <p>
-     * Only properties which can be set using setProperty can be synchronized,
-     * e.g. classList cannot be synchronized.
-     * <p>
-     * When multiple update mode settings are defined for the same property, the
-     * most permissive mode is used. This means that there might be unexpected
-     * updates for a disabled component if multiple parties independently
-     * configure different aspects for the same component. This is based on the
-     * assumption that if a property is explicitly safe to update for disabled
-     * components in one context, then the nature of that property is probably
-     * such that it's also safe to update in other contexts.
-     *
-     * @param property
-     *            the property name to synchronize
-     * @param mode
-     *            controls property update from the client side to the server
-     *            side when the element is disabled, not {@code null}
-     * @return this element
-     * @deprecated Use
-     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     *             or
-     *             {@link DomListenerRegistration#synchronizeProperty(String)}
-     *             instead.
-     */
-    @Deprecated
-    public Element addSynchronizedProperty(String property,
-            DisabledUpdateMode mode) {
-        verifySetPropertyName(property);
-        if (mode == null) {
-            throw new IllegalArgumentException(
-                    "Property update control mode for disabled alement must not be null");
-        }
-        getStateProvider().addSynchronizedProperty(getNode(), property, mode);
-        return this;
-    }
-
-    /**
-     * Adds the event to use for property synchronization from the client side.
-     * <p>
-     * Synchronization takes place whenever one of the given events is fired for
-     * the element (on the client side).
-     * <p>
-     * Use {@link #addSynchronizedProperty(String)} to define which properties
-     * to synchronize.
-     *
-     * @param eventType
-     *            the client side event which trigger synchronization of the
-     *            property values to the server
-     * @return this element
-     * @deprecated Use
-     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     *             or
-     *             {@link DomListenerRegistration#synchronizeProperty(String)}
-     *             instead.
-     */
-    @Deprecated
-    public Element addSynchronizedPropertyEvent(String eventType) {
-        verifyEventType(eventType);
-        getStateProvider().getSynchronizedPropertyEvents(getNode())
-                .add(eventType);
-        return this;
-    }
-
-    /**
-     * Removes the property from the synchronized properties set (
-     * {@link #getSynchronizedProperties()}).
-     *
-     * @see #addSynchronizedProperty(String)
-     *
-     * @param property
-     *            the property name to remove
-     * @return this element
-     * @deprecated Use
-     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     *             or
-     *             {@link DomListenerRegistration#synchronizeProperty(String)}
-     *             instead.
-     */
-    @Deprecated
-    public Element removeSynchronizedProperty(String property) {
-        verifySetPropertyName(property);
-        getStateProvider().getSynchronizedProperties(getNode())
-                .remove(property);
-        return this;
-    }
-
-    /**
-     * Removes the event from the event set that is used for property
-     * synchronization ({@link #getSynchronizedPropertyEvents()}).
-     *
-     * @see #addSynchronizedPropertyEvent(String)
-     *
-     * @param eventType
-     *            the client side event which trigger synchronization of the
-     *            property values to the server
-     * @return this element
-     * @deprecated Use
-     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     *             or
-     *             {@link DomListenerRegistration#synchronizeProperty(String)}
-     *             instead.
-     */
-    @Deprecated
-    public Element removeSynchronizedPropertyEvent(String eventType) {
-        verifyEventType(eventType);
-        getStateProvider().getSynchronizedPropertyEvents(getNode())
-                .remove(eventType);
-        return this;
-    }
-
-    /**
-     * Gets the properties whose values should automatically be synchronized
-     * from the client side and updated in this {@link Element}.
-     *
-     * @see #addSynchronizedProperty(String)
-     * @see #addSynchronizedPropertyEvent(String)
-     *
-     * @return the property names which are synchronized
-     * @deprecated Use
-     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     *             or
-     *             {@link DomListenerRegistration#synchronizeProperty(String)}
-     *             instead.
-     */
-    @Deprecated
-    public Stream<String> getSynchronizedProperties() {
-        return getStateProvider().getSynchronizedProperties(getNode()).stream();
-    }
-
-    /**
-     * Gets the events to use for property synchronization from the client side.
-     *
-     * @see #addSynchronizedProperty(String)
-     * @see #addSynchronizedPropertyEvent(String)
-     *
-     * @return the client side events which trigger synchronization of the
-     *         property values to the server
-     * @deprecated Use
-     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     *             or
-     *             {@link DomListenerRegistration#synchronizeProperty(String)}
-     *             instead.
-     */
-    @Deprecated
-    public Stream<String> getSynchronizedPropertyEvents() {
-        return getStateProvider().getSynchronizedPropertyEvents(getNode())
-                .stream();
-    }
-
-    /**
      * Gets the component this element has been mapped to, if any.
      *
      * @return an optional component, or an empty optional if no component has
@@ -1439,7 +1206,7 @@ public class Element extends Node<Element> {
         return lowerCaseAttribute;
     }
 
-    private static void verifyEventType(String eventType) {
+    static void verifyEventType(String eventType) {
         if (eventType == null) {
             throw new IllegalArgumentException("Event type must not be null");
         }
@@ -1559,35 +1326,6 @@ public class Element extends Node<Element> {
     /**
      * Calls the given function on the element with the given arguments.
      * <p>
-     * The function will be called after all pending DOM updates have completed,
-     * at the same time that {@link Page#executeJs(String, Serializable...)}
-     * calls are invoked.
-     * <p>
-     * If the element is not attached, the function call will be deferred until
-     * the element is attached.
-     *
-     * @see JsonCodec JsonCodec for supported argument types
-     *
-     * @param functionName
-     *            the name of the function to call, may contain dots to indicate
-     *            a function on a property.
-     * @param arguments
-     *            the arguments to pass to the function. Must be of a type
-     *            supported by the communication mechanism, as defined by
-     *            {@link JsonCodec}
-     *
-     * @deprecated Use {@link #callJsFunction(String,Serializable...)} instead
-     *             since it also allows getting return value back.
-     */
-    @Deprecated
-    public void callFunction(String functionName, Serializable... arguments) {
-        // Ignore return value
-        callJsFunction(functionName, arguments);
-    }
-
-    /**
-     * Calls the given function on the element with the given arguments.
-     * <p>
      * It is possible to get access to the return value of the execution by
      * registering a handler with the returned pending result. If no handler is
      * registered, the return value will be ignored.
@@ -1596,8 +1334,8 @@ public class Element extends Node<Element> {
      * at the same time that {@link Page#executeJs(String, Serializable...)}
      * calls are invoked.
      * <p>
-     * If the element is not attached, the function call will be deferred until
-     * the element is attached.
+     * If the element is not attached or not visible, the function call will be
+     * deferred until the element is attached and visible.
      *
      * @see JsonCodec JsonCodec for supported argument types
      *
@@ -1614,8 +1352,8 @@ public class Element extends Node<Element> {
     public PendingJavaScriptResult callJsFunction(String functionName,
             Serializable... arguments) {
         assert functionName != null;
-        assert !functionName
-                .startsWith(".") : "Function name should not start with a dot";
+        assert !functionName.startsWith(".")
+                : "Function name should not start with a dot";
 
         // "$1,$2,$3,..."
         String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
@@ -1631,46 +1369,10 @@ public class Element extends Node<Element> {
     // When updating JavaDocs here, keep in sync with Page.executeJavaScript
     /**
      * Asynchronously runs the given JavaScript expression in the browser in the
-     * context of this element. This element will be available to the expression
-     * as <code>this</code>. The given parameters will be available as variables
-     * named <code>$0</code>, <code>$1</code>, and so on. Supported parameter
-     * types are:
-     * <ul>
-     * <li>{@link String}
-     * <li>{@link Integer}
-     * <li>{@link Double}
-     * <li>{@link Boolean}
-     * <li>{@link JsonValue}
-     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
-     * element instance is not attached when the invocation is sent to the
-     * client)
-     * </ul>
-     * Note that the parameter variables can only be used in contexts where a
-     * JavaScript variable can be used. You should for instance do
-     * <code>'prefix' + $0</code> instead of <code>'prefix$0'</code> and
-     * <code>value[$0]</code> instead of <code>value.$0</code> since JavaScript
-     * variables aren't evaluated inside strings or property names.
-     *
-     * @param expression
-     *            the JavaScript expression to invoke
-     * @param parameters
-     *            parameters to pass to the expression
-     * @deprecated Use {@link #executeJs(String,Serializable...)} instead since
-     *             it also allows getting return value back.
-     */
-    @Deprecated
-    public void executeJavaScript(String expression,
-            Serializable... parameters) {
-        // Ignore return value
-        executeJs(expression, parameters);
-    }
-
-    // When updating JavaDocs here, keep in sync with Page.executeJavaScript
-    /**
-     * Asynchronously runs the given JavaScript expression in the browser in the
-     * context of this element. It is possible to get access to the return value
-     * of the execution by registering a handler with the returned pending
-     * result. If no handler is registered, the return value will be ignored.
+     * context of this element. The returned
+     * <code>PendingJavaScriptResult</code> can be used to retrieve any
+     * <code>return</code> value from the JavaScript expression. If no return
+     * value handler is registered, the return value will be ignored.
      * <p>
      * This element will be available to the expression as <code>this</code>.
      * The given parameters will be available as variables named
@@ -1691,6 +1393,9 @@ public class Element extends Node<Element> {
      * <code>'prefix' + $0</code> instead of <code>'prefix$0'</code> and
      * <code>value[$0]</code> instead of <code>value.$0</code> since JavaScript
      * variables aren't evaluated inside strings or property names.
+     * <p>
+     * If the element is not attached or not visible, the function call will be
+     * deferred until the element is attached and visible.
      *
      * @param expression
      *            the JavaScript expression to invoke
@@ -1765,6 +1470,10 @@ public class Element extends Node<Element> {
     /**
      * Sets the element visibility value.
      *
+     * Also executes pending javascript invocations, if their execution was
+     * requested while the element was not visible, and the element is now set
+     * as visible.
+     *
      * @param visible
      *            the element visibility value
      * @return this element
@@ -1793,41 +1502,8 @@ public class Element extends Node<Element> {
     public Element setEnabled(final boolean enabled) {
         getNode().setEnabled(enabled);
 
-        Optional<Component> componentOptional = getComponent();
-        if (componentOptional.isPresent()) {
-            Component component = componentOptional.get();
-            component.onEnabledStateChanged(enabled);
-            informChildrenOfStateChange(enabled, component);
-        }
+        informEnabledStateChange(enabled, this);
         return getSelf();
-    }
-
-    private void informChildrenOfStateChange(boolean enabled,
-            Component component) {
-        component.getChildren().forEach(child -> {
-            child.onEnabledStateChanged(
-                    enabled ? child.getElement().isEnabled() : false);
-            informChildrenOfStateChange(enabled, child);
-        });
-        if (component.getElement().getNode()
-                .hasFeature(VirtualChildrenList.class)) {
-            component.getElement().getNode()
-                    .getFeatureIfInitialized(VirtualChildrenList.class)
-                    .ifPresent(list -> {
-                        final Consumer<Component> stateChangeInformer = virtual -> {
-                            virtual.onEnabledStateChanged(
-                                    enabled ? virtual.getElement().isEnabled()
-                                            : false);
-
-                            informChildrenOfStateChange(enabled, virtual);
-                        };
-                        final Consumer<StateNode> childNodeConsumer = childNode -> Element
-                                .get(childNode).getComponent()
-                                .ifPresent(stateChangeInformer);
-
-                        list.forEachChild(childNodeConsumer);
-                    });
-        }
     }
 
     /**
@@ -1846,6 +1522,60 @@ public class Element extends Node<Element> {
     @Override
     protected Element getSelf() {
         return this;
+    }
+
+    private void informEnabledStateChange(boolean enabled, Element element) {
+        Optional<Component> componentOptional = element.getComponent();
+        if (componentOptional.isPresent()) {
+            Component component = componentOptional.get();
+            component.onEnabledStateChanged(
+                    enabled ? element.isEnabled() : false);
+        }
+        informChildrenOfStateChange(enabled, element);
+    }
+
+    private void informChildrenOfStateChange(boolean enabled, Element element) {
+        element.getChildren().forEach(child -> {
+            informEnabledStateChange(enabled, child);
+        });
+        if (element.getNode().hasFeature(VirtualChildrenList.class)) {
+            element.getNode().getFeatureIfInitialized(VirtualChildrenList.class)
+                    .ifPresent(list -> list.forEachChild(
+                            node -> informEnabledStateChange(enabled,
+                                    Element.get(node))));
+        }
+    }
+
+    /**
+     * Executes the similarly named DOM method on the client side.
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
+     *      docs</a>
+     * @return the element
+     */
+    public Element scrollIntoView() {
+        return scrollIntoView(null);
+    }
+
+    /**
+     * Executes the similarly named DOM method on the client side.
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
+     *      docs</a>
+     * @param scrollOptions
+     *            the scroll options to pass to the method
+     * @return the element
+     */
+    public Element scrollIntoView(ScrollOptions scrollOptions) {
+        // for an unknown reason, needs to be called deferred to work on a newly
+        // created element
+        String options = scrollOptions == null ? "" : scrollOptions.toJson();
+
+        executeJs("var el = this; setTimeout(function() {el.scrollIntoView("
+                + options + ");}, 0);");
+        return getSelf();
     }
 
 }

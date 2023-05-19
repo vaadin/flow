@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,15 +15,12 @@
  */
 package com.vaadin.flow.server;
 
+import jakarta.servlet.ServletException;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-
-import javax.servlet.ServletException;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -34,19 +31,15 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 
-import net.jcip.annotations.NotThreadSafe;
-
-@NotThreadSafe
 public class StreamResourceRegistryTest {
 
-    private VaadinServlet servlet = new VaadinServlet();
+    private UI ui;
     private VaadinServletService service;
     private VaadinSession session;
 
     @Before
-    public void setUp() throws ServletException {
-        servlet.init(new MockServletConfig());
-        service = servlet.getService();
+    public void setUp() throws ServletException, ServiceException {
+        service = new MockVaadinServletService();
         session = new VaadinSession(service) {
             @Override
             public boolean hasLock() {
@@ -54,7 +47,7 @@ public class StreamResourceRegistryTest {
             }
         };
 
-        UI ui = Mockito.mock(UI.class);
+        ui = Mockito.mock(UI.class);
         Mockito.when(ui.getUIId()).thenReturn(1);
         UI.setCurrent(ui);
     }
@@ -134,18 +127,31 @@ public class StreamResourceRegistryTest {
     }
 
     @Test
-    public void getResourceUrlIsEncoded() throws UnsupportedEncodingException {
+    public void getResourceUriIsEncoded_withQueryParams() {
+        assertResourceUriIsEncoded("a?b=c d&e", "a%3Fb%3Dc%20d%26e");
+    }
+
+    @Test
+    public void getResourceUriIsEncoded_withContainingPlus() {
+        assertResourceUriIsEncoded("image++.svg", "image%2B%2B.svg");
+    }
+
+    @Test
+    public void getResourceUriIsEncoded_withSimpleSpace() {
+        assertResourceUriIsEncoded("my file.png", "my%20file.png");
+    }
+
+    private void assertResourceUriIsEncoded(String resourceName,
+            String suffix) {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
-        StreamResource resource = new StreamResource("a?b=c d&e",
-                () -> makeEmptyStream());
+        StreamResource resource = new StreamResource(resourceName,
+                this::makeEmptyStream);
         StreamRegistration registration = registry.registerResource(resource);
 
-        URI url = registration.getResourceUri();
-        String suffix = URLEncoder.encode(resource.getName(),
-                StandardCharsets.UTF_8.name());
-        Assert.assertTrue("Resource url is not encoded",
-                url.toString().endsWith(suffix));
+        URI uri = registration.getResourceUri();
+        Assert.assertTrue("Resource URI is not properly encoded",
+                uri.toString().endsWith(suffix));
     }
 
     private InputStream makeEmptyStream() {

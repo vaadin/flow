@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,9 +20,8 @@ import java.util.UUID;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
@@ -32,9 +31,8 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Tag("updatable-model-properties")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/UpdatableModelProperties.html")
 @Route(value = "com.vaadin.flow.uitest.ui.template.UpdatableModelPropertiesView", layout = ViewTestLayout.class)
-@JsModule("UpdatableModelProperties.js")
+@JsModule("./UpdatableModelProperties.js")
 public class UpdatableModelPropertiesView extends
         PolymerTemplate<UpdatableModelPropertiesView.UpdatablePropertiesModel>
         implements HasComponents {
@@ -57,7 +55,7 @@ public class UpdatableModelPropertiesView extends
     public UpdatableModelPropertiesView() {
         setId("template");
 
-        Label label = new Label();
+        NativeLabel label = new NativeLabel();
         label.setId("property-value");
         add(label);
 
@@ -73,7 +71,8 @@ public class UpdatableModelPropertiesView extends
 
     @EventHandler
     private void syncAge() {
-        getElement().synchronizeProperty("age", "age-changed");
+        getElement().addPropertyChangeListener("age", "age-changed", event -> {
+        });
     }
 
     @ClientCallable

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,8 +25,6 @@ import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.vaadin.flow.internal.JsonSerializer;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonBoolean;
@@ -274,8 +272,7 @@ public class JsonSerializerTest {
             return arrayListOfDoubles;
         }
 
-        public void setArrayListOfDoubles(
-                List<Double> arrayListOfDoubles) {
+        public void setArrayListOfDoubles(List<Double> arrayListOfDoubles) {
             this.arrayListOfDoubles = arrayListOfDoubles;
         }
     }
@@ -634,7 +631,7 @@ public class JsonSerializerTest {
          * private List<String> listOfStrings; private Set<Integer>
          * setOfIntegers; private LinkedList<Boolean> linkedListOfBooleans;
          * private ArrayList<Double> arrayListOfDoubles;
-         * 
+         *
          */
 
         JsonValue json = JsonSerializer.toJson(bean);

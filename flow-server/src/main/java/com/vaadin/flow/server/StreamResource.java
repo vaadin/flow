@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,17 @@
  */
 package com.vaadin.flow.server;
 
+import jakarta.servlet.ServletContext;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
-import javax.servlet.ServletContext;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.ContentTypeResolver;
@@ -50,6 +55,8 @@ public class StreamResource extends AbstractStreamResource {
 
     private ContentTypeResolver resolver = DEFAULT_RESOLVER;
 
+    private Map<String, String> headers;
+
     private static class DefaultResolver implements ContentTypeResolver {
 
         @Override
@@ -75,6 +82,14 @@ public class StreamResource extends AbstractStreamResource {
                 throws IOException {
             try (InputStream input = createInputStream(session)) {
                 copy(session, input, stream);
+            } catch (IOException ioe) {
+                if ("Broken pipe".equals(ioe.getMessage())) {
+                    LoggerFactory.getLogger(StreamResource.class).debug(
+                            "The client browser has most likely cancelled the request.",
+                            ioe);
+                } else {
+                    throw ioe;
+                }
             }
         }
 
@@ -91,7 +106,7 @@ public class StreamResource extends AbstractStreamResource {
                 OutputStream out) throws IOException {
             byte[] buf = new byte[BUFFER_SIZE];
             int n;
-            while ((n = read(session, source, buf)) > 0) {
+            while ((n = read(session, source, buf)) >= 0) {
                 out.write(buf, 0, n);
             }
         }
@@ -215,6 +230,54 @@ public class StreamResource extends AbstractStreamResource {
      */
     public ContentTypeResolver getContentTypeResolver() {
         return resolver;
+    }
+
+    /**
+     * Sets the value of a generic response header. If the header had already
+     * been set, the new value overwrites the previous one.
+     *
+     * @param name
+     *            a header name
+     * @param value
+     *            value of the header
+     * @return this resource
+     */
+    public StreamResource setHeader(String name, String value) {
+        if (headers == null) {
+            headers = new HashMap<>();
+        }
+        headers.put(name, value);
+        return this;
+    }
+
+    /**
+     * Gets the value for header {@code name} set for the resource.
+     *
+     * @param name
+     *            name of header to get value for
+     * @return an optional with header value, or an empty optional if it has not
+     *         been set
+     */
+    public Optional<String> getHeader(String name) {
+        if (headers != null) {
+            return Optional.ofNullable(headers.get(name));
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Gets the additionally configured headers for the resource.
+     * <p>
+     * This method doesn't return headers which are set via explicit setters
+     * like {@link #setContentType(String)} and {@link #setCacheTime(long)}.
+     *
+     * @return a map of headers and their values
+     */
+    public Map<String, String> getHeaders() {
+        if (headers == null) {
+            return Collections.emptyMap();
+        }
+        return Collections.unmodifiableMap(headers);
     }
 
     @Override

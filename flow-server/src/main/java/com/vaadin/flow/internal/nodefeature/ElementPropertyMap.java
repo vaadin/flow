@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,10 +37,11 @@ import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.templatemodel.AllowClientUpdates;
 
 /**
  * Map for element property values.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -50,6 +51,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     private static final Set<String> forbiddenProperties = Stream
             .of("textContent", "classList", "className")
             .collect(Collectors.toSet());
+
+    private static final Set<String> ALWAYS_GENERATE_CHANGE_PROPERTIES = Collections
+            .singleton("innerHTML");
 
     private Map<String, List<PropertyChangeListener>> listeners;
 
@@ -78,16 +82,19 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      * @param value
      *            the value to store
      * @return a runnable for firing the deferred change event
+     * @exception PropertyChangeDeniedException
+     *                if the property change is disallowed
      */
-    public Runnable deferredUpdateFromClient(String key, Serializable value) {
+    public Runnable deferredUpdateFromClient(String key, Serializable value)
+            throws PropertyChangeDeniedException {
         return doDeferredUpdateFromClient(key, value);
     }
 
     @Override
     public void setProperty(String name, Serializable value,
             boolean emitChange) {
-        assert !forbiddenProperties.contains(name) : "Forbidden property name: "
-                + name;
+        assert !forbiddenProperties.contains(name)
+                : "Forbidden property name: " + name;
 
         super.setProperty(name, value, emitChange);
     }
@@ -133,8 +140,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                     key -> new ArrayList<>(1));
         }
 
-        propertyListeners.add(listener);
-        return () -> propertyListeners.remove(listener);
+        return Registration.addAndRemove(propertyListeners, listener);
     }
 
     @Override
@@ -197,6 +203,15 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         return allowUpdateFromClient(key, value);
     }
 
+    @Override
+    protected boolean producePutChange(String key, boolean hadValueEarlier,
+            Serializable newValue) {
+        if (ALWAYS_GENERATE_CHANGE_PROPERTIES.contains(key)) {
+            return true;
+        }
+        return super.producePutChange(key, hadValueEarlier, newValue);
+    }
+
     private boolean allowUpdateFromClient(String key, Serializable value) {
         AllowUpdate isAllowed = isUpdateFromClientAllowedBeforeFilter(key);
         if (!AllowUpdate.NO_EXPLICIT_STATUS.equals(isAllowed)) {
@@ -226,8 +241,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             if (!AllowUpdate.NO_EXPLICIT_STATUS.equals(allowed)) {
                 // This condition means there is a filter which explicitly
                 // allows or disallows the property
-                assert AllowUpdate.EXPLICITLY_DISALLOW
-                        .equals(allowed) : "Implementation error. If update for a property is allowed before the "
+                assert AllowUpdate.EXPLICITLY_DISALLOW.equals(allowed)
+                        : "Implementation error. If update for a property is allowed before the "
                                 + "filter it's expected that the filter disallow it";
                 return true;
             }
@@ -241,11 +256,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         }
         StateNode node = getNode();
 
-        if (node.hasFeature(SynchronizedPropertiesList.class)
-                && node.getFeature(SynchronizedPropertiesList.class)
-                        .getSynchronizedProperties().contains(property)) {
-            return AllowUpdate.EXPLICITLY_ALLOW;
-        } else if (node.hasFeature(ElementListenerMap.class)
+        if (node.hasFeature(ElementListenerMap.class)
                 && node.getFeature(ElementListenerMap.class)
                         .getPropertySynchronizationMode(property) != null) {
             return AllowUpdate.EXPLICITLY_ALLOW;
@@ -259,13 +270,14 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             ElementPropertyMap propertyMap = node
                     .getFeature(ElementPropertyMap.class);
             if (propertyMap.updateFromClientFilter != null) {
+                //// TODO to be removed with polymer template support removal
                 boolean allow = propertyMap.updateFromClientFilter.test(key);
                 if (!allow && log) {
-                    getLogger().warn(
-                            "Ignoring model update for {}. "
-                                    + "For security reasons, the property must have a "
-                                    + "two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
-                            key, AllowClientUpdates.class.getSimpleName());
+                    getLogger().warn("Ignoring model update for {}. "
+                            + "For security reasons, the property must have a "
+                            + "two-way binding in the template, be annotated"
+                            + " with @AllowClientUpdates in the model, or be defined as synchronized.",
+                            key);
                 }
                 return allow ? AllowUpdate.EXPLICITLY_ALLOW
                         : AllowUpdate.EXPLICITLY_DISALLOW;
@@ -501,9 +513,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                           |                 |                         |        |                      |
                           |                 |                         |        | NO_EXPLICIT_STATUS   |
     +-----------------+   |                 |                         |        |                      |
-    |                 |   |                 v                         +----&gt;   |   The proeprty is    |
+    |                 |   |                 v                         +----&gt;   |   The property is    |
     |  DISALLOW       |&lt;--        +----------------------------------+         |not forbidden and     |
-    |                 |           |           ALLOW                  |         |it is not synhronized |
+    |                 |           |           ALLOW                  |         |it is not synchronized |
     | The property is |           | The property is explicitly       |         |  Check whether       |
     | forbidden and   |           | synchronized and should allow    |         |updateFromClientFilter|
     |  filter is not  |           |       update                     |         | exists and disallows |
@@ -538,8 +550,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      *
      * </pre>
      */
-    private Runnable doDeferredUpdateFromClient(String key,
-            Serializable value) {
+    private Runnable doDeferredUpdateFromClient(String key, Serializable value)
+            throws PropertyChangeDeniedException {
         // Use private <code>allowUpdateFromClient</code> method instead of
         // <code>mayUpdateFromClient</code> which may be overridden
         // The logic below
@@ -550,7 +562,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                 };
             }
 
-            throw new IllegalArgumentException(String.format(
+            throw new PropertyChangeDeniedException(String.format(
                     "Feature '%s' doesn't allow the client to update '%s'. "
                             + "For security reasons, the property must be defined as synchronized through the Element's API.",
                     getClass().getName(), key));

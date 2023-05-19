@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,9 @@ import com.vaadin.flow.internal.nodefeature.NodeList;
 /**
  * Change describing an operation (add/remove) in a {@link NodeList list} node
  * feature.
- * 
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
  * @author Vaadin Ltd
  * @since 1.0
  *
@@ -32,7 +34,7 @@ import com.vaadin.flow.internal.nodefeature.NodeList;
 public abstract class AbstractListChange<T extends Serializable>
         extends NodeFeatureChange {
 
-    private final int index;
+    private int index;
     private final NodeList<T> list;
 
     /**
@@ -60,7 +62,7 @@ public abstract class AbstractListChange<T extends Serializable>
 
     /**
      * Gets a changed list.
-     * 
+     *
      * @return the changed list
      */
     protected NodeList<T> getNodeList() {
@@ -69,10 +71,24 @@ public abstract class AbstractListChange<T extends Serializable>
 
     /**
      * Gets a copy of the change with the same data except {@code index}.
-     * 
+     *
      * @param index
      *            the new index of the change
      * @return a copy of the change based on new index
      */
     public abstract AbstractListChange<T> copy(int index);
+
+    /**
+     * Sets the index of this change in the change list.
+     * <p>
+     * Note: This should be used only when list of changes is being re-indexed
+     * after adding a new change.
+     *
+     * @param index
+     *            Integer value.
+     */
+    public void setIndex(int index) {
+        assert (index > -1) : "Index can't be negative.";
+        this.index = index;
+    }
 }

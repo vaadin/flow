@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,9 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
+
+import com.vaadin.client.communication.MessageSender.ResynchronizationState;
+import com.vaadin.client.ConnectionIndicator;
 import com.vaadin.client.Registry;
 import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
 
@@ -106,8 +109,10 @@ public class RequestResponseTracker {
         // the call.
         hasActiveRequest = false;
 
-        if (registry.getUILifecycle().isRunning()
-                && registry.getServerRpcQueue().isFlushPending()) {
+        if ((registry.getUILifecycle().isRunning()
+                && registry.getServerRpcQueue().isFlushPending())
+                || registry.getMessageSender()
+                        .getResynchronizationState() == ResynchronizationState.SEND_TO_SERVER) {
             // Send the pending RPCs immediately.
             // This might be an unnecessary optimization as ServerRpcQueue has a
             // finally scheduled command which trigger the send if we do not do
@@ -123,7 +128,7 @@ public class RequestResponseTracker {
                     || registry.getServerRpcQueue().isFlushPending();
 
             if (terminated || !requestNowOrSoon) {
-                registry.getLoadingIndicator().hide();
+                ConnectionIndicator.setState(ConnectionIndicator.CONNECTED);
             }
         });
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,7 +19,7 @@ package com.vaadin.flow.uitest.ui;
 import java.util.Collections;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
@@ -31,10 +31,10 @@ public class RequestParametersView extends Div implements BeforeEnterObserver {
     static final String NO_INPUT_TEXT = "No input";
     static final String REQUEST_PARAM_ID = "requestParamDisplayLabel";
 
-    private final Label requestParamLabel;
+    private final NativeLabel requestParamLabel;
 
     public RequestParametersView() {
-        requestParamLabel = new Label(NO_INPUT_TEXT);
+        requestParamLabel = new NativeLabel(NO_INPUT_TEXT);
         requestParamLabel.setId(REQUEST_PARAM_ID);
         add(requestParamLabel);
     }

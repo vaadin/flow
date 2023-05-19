@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
@@ -37,7 +38,7 @@ public class AbstractDeploymentConfigurationTest {
     @Test
     public void getUIClass_returnsUIParameterPropertyValue() {
         String ui = UUID.randomUUID().toString();
-        DeploymentConfiguration config = getConfig(VaadinSession.UI_PARAMETER,
+        DeploymentConfiguration config = getConfig(InitParameters.UI_PARAMETER,
                 ui);
         Assert.assertEquals("Unexpected UI class configuration option value",
                 ui, config.getUIClassName());
@@ -65,16 +66,12 @@ public class AbstractDeploymentConfigurationTest {
         private Properties properties;
 
         DeploymentConfigImpl(Properties props) {
+            super(Collections.emptyMap());
             properties = props;
         }
 
         @Override
         public boolean isProductionMode() {
-            return false;
-        }
-
-        @Override
-        public boolean isBowerMode() {
             return false;
         }
 
@@ -99,6 +96,11 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
+        public int getMaxMessageSuspendTimeout() {
+            return 0;
+        }
+
+        @Override
         public int getWebComponentDisconnect() {
             return 0;
         }
@@ -114,11 +116,6 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
-        public String getPushURL() {
-            return "";
-        }
-
-        @Override
         public Properties getInitParameters() {
             return null;
         }
@@ -128,6 +125,16 @@ public class AbstractDeploymentConfigurationTest {
                 T defaultValue, Function<String, T> converter) {
             return Optional.ofNullable(properties.getProperty(propertyName))
                     .map(converter).orElse(defaultValue);
+        }
+
+        @Override
+        public boolean isDevModeLiveReloadEnabled() {
+            return false;
+        }
+
+        @Override
+        public boolean isDevToolsEnabled() {
+            return false;
         }
 
         @Override

@@ -29,7 +29,8 @@ public class PopStateHandlerView extends RouterLinkView {
         Element button = ElementFactory.createButton(target).setAttribute("id",
                 target);
         button.addEventListener("click", e -> {
-        }, "window.history.pushState(null, null, event.target.textContent)");
+        }).addEventData(
+                "window.history.pushState(null, null, event.target.textContent)");
         return button;
     }
 }

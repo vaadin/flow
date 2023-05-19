@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,7 +29,7 @@ import com.vaadin.flow.shared.Registration;
  * binding.
  * <p>
  * Example:
- * 
+ *
  * <pre>
  * Label label = new Label();
  * ReadOnlyHasValue&lt;String&gt; hasValue = new ReadOnlyHasValue&lt;&gt;(label::setText);
@@ -38,6 +38,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @param <V>
  *            the value type
+ * @since 1.0
  */
 public class ReadOnlyHasValue<V>
         implements HasValue<ValueChangeEvent<V>, V>, Serializable {
@@ -98,9 +99,7 @@ public class ReadOnlyHasValue<V>
         if (listenerList == null) {
             listenerList = new LinkedHashSet<>();
         }
-        listenerList.add(listener);
-
-        return () -> listenerList.remove(listener);
+        return Registration.addAndRemove(listenerList, listener);
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,13 +17,12 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -33,13 +32,12 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class RestoreViewWithAttachedByIdView extends AbstractDivView {
 
     private TemplateWithInjectedId template;
-    private Label label;
+    private NativeLabel label;
 
     private Component current;
 
     @Tag("template-with-injected-id")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TemplateWithInjectedId.html")
-    @JsModule("TemplateWithInjectedId.js")
+    @JsModule("./TemplateWithInjectedId.js")
     public static class TemplateWithInjectedId
             extends PolymerTemplate<TemplateModel> {
 
@@ -56,7 +54,7 @@ public class RestoreViewWithAttachedByIdView extends AbstractDivView {
 
     public RestoreViewWithAttachedByIdView() {
         template = new TemplateWithInjectedId();
-        label = new Label("Switched component");
+        label = new NativeLabel("Switched component");
         label.setId("info");
         template.setId("template");
 
