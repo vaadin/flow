@@ -46,6 +46,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
@@ -88,6 +89,7 @@ public class UIInternals implements Serializable {
     public static class JavaScriptInvocation implements Serializable {
         private final String expression;
         private final List<Serializable> parameters = new ArrayList<>();
+        private final StateNode owner;
 
         /**
          * Creates a new invocation.
@@ -98,10 +100,22 @@ public class UIInternals implements Serializable {
          *            a list of parameters to use when invoking the script
          */
         public JavaScriptInvocation(String expression,
+                                    StateNode owner,
                 Serializable... parameters) {
             this.expression = expression;
+            this.owner = owner;
             Collections.addAll(this.parameters, parameters);
         }
+
+        /**
+         * Gets the state node that this invocation belongs to.
+         *
+         * @return the owner state node
+         */
+        public StateNode getOwner() {
+            return owner;
+        }
+
 
         /**
          * Gets the JavaScript expression to invoke.
@@ -557,7 +571,7 @@ public class UIInternals implements Serializable {
     public void setTitle(String title) {
         assert title != null;
         JavaScriptInvocation invocation = new JavaScriptInvocation(
-                "document.title = $0", title);
+                "document.title = $0", getStateTree().getRootNode(), title);
 
         pendingTitleUpdateCanceler = addJavaScriptInvocation(invocation);
 

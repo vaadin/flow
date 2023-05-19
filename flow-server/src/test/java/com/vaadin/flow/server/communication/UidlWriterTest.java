@@ -189,9 +189,9 @@ public class UidlWriterTest {
         Element element = ElementFactory.createDiv();
 
         JavaScriptInvocation invocation1 = new JavaScriptInvocation(
-                "$0.focus()", element);
+                "$0.focus()", element.getNode(), element);
         JavaScriptInvocation invocation2 = new JavaScriptInvocation(
-                "console.log($0, $1)", "Lives remaining:", Integer.valueOf(3));
+                "console.log($0, $1)", element.getNode(), "Lives remaining:", 3);
         List<JavaScriptInvocation> executeJavaScriptList = Arrays
                 .asList(invocation1, invocation2);
 
