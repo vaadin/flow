@@ -59,14 +59,14 @@ public class TaskCleanFrontendFilesTest {
             throws IOException, ExecutionFailedException {
         final Set<String> existingfiles = Stream
                 .of(FrontendUtils.VITE_CONFIG, Constants.PACKAGE_JSON,
-                        Constants.PACKAGE_LOCK_JSON)
+                        "node_modules", Constants.PACKAGE_LOCK_JSON)
                 .collect(Collectors.toSet());
         createFiles(existingfiles);
 
         TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot);
 
         final Set<String> generatedFiles = Stream
-                .of(FrontendUtils.VITE_GENERATED_CONFIG, "node_modules",
+                .of(FrontendUtils.VITE_GENERATED_CONFIG,
                         TaskGenerateTsConfig.TSCONFIG_JSON,
                         TaskGenerateTsDefinitions.TS_DEFINITIONS, ".npmrc")
                 .collect(Collectors.toSet());
