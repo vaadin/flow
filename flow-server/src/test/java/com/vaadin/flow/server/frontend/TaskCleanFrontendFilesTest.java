@@ -13,9 +13,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.MessageDigestUtil;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 
@@ -56,14 +59,14 @@ public class TaskCleanFrontendFilesTest {
             throws IOException, ExecutionFailedException {
         final Set<String> existingfiles = Stream
                 .of(FrontendUtils.VITE_CONFIG, Constants.PACKAGE_JSON,
-                        Constants.PACKAGE_LOCK_JSON)
+                        "node_modules", Constants.PACKAGE_LOCK_JSON)
                 .collect(Collectors.toSet());
         createFiles(existingfiles);
 
         TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot);
 
         final Set<String> generatedFiles = Stream
-                .of(FrontendUtils.VITE_GENERATED_CONFIG, "node_modules",
+                .of(FrontendUtils.VITE_GENERATED_CONFIG,
                         TaskGenerateTsConfig.TSCONFIG_JSON,
                         TaskGenerateTsDefinitions.TS_DEFINITIONS, ".npmrc")
                 .collect(Collectors.toSet());
@@ -89,6 +92,45 @@ public class TaskCleanFrontendFilesTest {
         clean.execute();
 
         assertFilesNotExist(Collections.singleton("node_modules"));
+    }
+
+    @Test
+    public void packageJsonExists_nodeModulesFolderIsKept()
+            throws IOException, ExecutionFailedException {
+        createFiles(Collections.singleton(Constants.PACKAGE_JSON));
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot);
+
+        final File nodeModules = rootFolder.newFolder("node_modules");
+        new File(nodeModules, "file").createNewFile();
+        final File directory = new File(nodeModules, "directory");
+        directory.mkdir();
+        new File(directory, "file.fi").createNewFile();
+
+        clean.execute();
+
+        assertFilesExist(Collections.singleton("node_modules"));
+    }
+
+    @Test
+    public void hillaIsUsed_nodeModulesFolderIsKept()
+            throws IOException, ExecutionFailedException {
+        TaskCleanFrontendFiles clean;
+        try (MockedStatic<EndpointRequestUtil> util = Mockito
+                .mockStatic(EndpointRequestUtil.class)) {
+            util.when(() -> EndpointRequestUtil.isHillaAvailable())
+                    .thenReturn(true);
+            clean = new TaskCleanFrontendFiles(projectRoot);
+        }
+
+        final File nodeModules = rootFolder.newFolder("node_modules");
+        new File(nodeModules, "file").createNewFile();
+        final File directory = new File(nodeModules, "directory");
+        directory.mkdir();
+        new File(directory, "file.fi").createNewFile();
+
+        clean.execute();
+
+        assertFilesExist(Collections.singleton("node_modules"));
     }
 
     private void createFiles(Set<String> filesToCreate) throws IOException {

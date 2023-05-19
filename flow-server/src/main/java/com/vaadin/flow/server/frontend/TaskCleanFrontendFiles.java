@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 
@@ -33,14 +34,20 @@ import com.vaadin.flow.server.ExecutionFailedException;
  * Clean any frontend files generated for creation on a new development or
  * production bundle.
  * <p>
+ * For a project containing {@code package.json} or is using Hilla,
+ * {@code node_modules} will be retained.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
 public class TaskCleanFrontendFiles implements FallibleCommand {
+
+    public static final String NODE_MODULES = "node_modules";
+
     private File projectRoot;
 
-    private List<String> generatedFiles = List.of("node_modules",
+    private List<String> generatedFiles = List.of(NODE_MODULES,
             Constants.PACKAGE_JSON, Constants.PACKAGE_LOCK_JSON,
             Constants.PACKAGE_LOCK_YAML, TaskGenerateTsConfig.TSCONFIG_JSON,
             TaskGenerateTsDefinitions.TS_DEFINITIONS, ".pnpmfile.cjs", ".npmrc",
@@ -59,6 +66,14 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
         Arrays.stream(projectRoot
                 .listFiles(file -> generatedFiles.contains(file.getName())))
                 .forEach(existingFiles::add);
+
+        // If we have an existing package.json or run Hilla, do not remove
+        // node_modules
+        if (existingFiles
+                .contains(new File(projectRoot, Constants.PACKAGE_JSON))
+                || EndpointRequestUtil.isHillaAvailable()) {
+            existingFiles.add(new File(projectRoot, NODE_MODULES));
+        }
     }
 
     @Override
