@@ -42,8 +42,8 @@ public class DepsTests {
     }
 
     public static void assertImportsWithFilter(
-            Map<ChunkInfo, List<String>> actualUrls,
-            Predicate<String> filter, String... expectedUrls) {
+            Map<ChunkInfo, List<String>> actualUrls, Predicate<String> filter,
+            String... expectedUrls) {
         Assert.assertEquals(List.of(expectedUrls), merge(actualUrls).stream()
                 .filter(filter).collect(Collectors.toList()));
     }

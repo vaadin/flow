@@ -215,14 +215,13 @@ public class FrontendDependenciesTest {
 
     @Test
     public void jsModuleOrderIsPreserved() {
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
-                .thenReturn(
-                        Collections.singleton(JsModuleOrderComponent.class));
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
+                Collections.singleton(JsModuleOrderComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
 
-        DepsTests.assertImportsExcludingUI(dependencies.getModules(), "c.js", "b.js",
-                "a.js");
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(), "c.js",
+                "b.js", "a.js");
     }
 
     // flow #6524

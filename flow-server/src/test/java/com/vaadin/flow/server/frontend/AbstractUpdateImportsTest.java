@@ -496,8 +496,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     public void assertFullSortOrder(boolean uiImportSeparated,
-            List<String> expectedJsModuleImports)
-            throws MalformedURLException {
+            List<String> expectedJsModuleImports) throws MalformedURLException {
         Class[] testClasses = { MainView.class,
                 NodeTestComponents.TranslatedImports.class,
                 NodeTestComponents.LocalP3Template.class,
