@@ -294,6 +294,12 @@ public class ScannerTestComponents {
     public static class DynamicComponentClass extends Component {
     }
 
+    @Route("route-3")
+    @JsModule("dynamic-component.js")
+    @JsModule("another-dynamic-component.js")
+    public static class DynamicComponentClassWithTwoImports extends Component {
+    }
+
     @JsModule("dynamic-layout.js")
     public static class DynamicLayoutClass implements RouterLayout {
         @Override

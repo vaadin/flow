@@ -44,6 +44,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.ErrorComponent;
+import com.vaadin.flow.server.frontend.scanner.samples.JsModuleOrderComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.JsOrderComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.MyServiceListener;
 import com.vaadin.flow.server.frontend.scanner.samples.MyUIInitListener;
@@ -262,6 +263,17 @@ public class FrontendDependenciesTest {
         List<String> modules = dependencies.getModules();
         Assert.assertEquals("Theme's annotations should come first",
                 "theme-foo.js", modules.get(0));
+    }
+
+    @Test
+    public void jsModuleOrderIsPreserved() {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
+                Collections.singleton(JsModuleOrderComponent.class));
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(), "c.js",
+                "b.js", "a.js");
     }
 
     // flow #6524

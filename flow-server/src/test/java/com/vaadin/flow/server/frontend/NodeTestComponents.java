@@ -208,6 +208,7 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     @JavaScript("javascript/a.js")
     @JavaScript("javascript/b.js")
     @JavaScript("javascript/c.js")
+    @JsModule("jsmodule/h.js")
     @JsModule("jsmodule/g.js")
     public static class JavaScriptOrder extends Component {
 

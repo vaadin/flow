@@ -62,7 +62,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
@@ -481,8 +480,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                         .matches(".*unsafeCSS\\(\\$cssFromFile_.*")));
     }
 
-    @Test
-    public void assertFullSortOrder() throws MalformedURLException {
+    public void assertFullSortOrder(boolean uiImportSeparated,
+            List<String> expectedJsModuleImports) throws MalformedURLException {
         Class[] testClasses = { MainView.class,
                 NodeTestComponents.TranslatedImports.class,
                 NodeTestComponents.LocalP3Template.class,
@@ -504,11 +503,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         expectedImports.addAll(updater.getExportLines());
         expectedImports.addAll(updater.getThemeLines());
 
-        getAnntotationsAsStream(JsModule.class, testClasses)
-                .map(JsModule::value).map(this::updateToImport).sorted()
-                .forEach(expectedImports::add);
+        // JsModules
+        expectedImports.addAll(expectedJsModuleImports);
+
         getAnntotationsAsStream(JavaScript.class, testClasses)
-                .map(JavaScript::value).map(this::updateToImport).sorted()
+                .map(JavaScript::value).map(this::updateToImport)
                 .forEach(expectedImports::add);
 
         List<String> internals = expectedImports.stream()
