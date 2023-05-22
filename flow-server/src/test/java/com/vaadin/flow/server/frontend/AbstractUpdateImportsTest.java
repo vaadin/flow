@@ -39,7 +39,6 @@ import java.util.stream.Stream;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,7 +53,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
@@ -497,8 +495,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     }
 
-    public void assertFullSortOrder(boolean uiImportSeparated)
-            throws MalformedURLException {
+    public void assertFullSortOrder(boolean uiImportSeparated,
+            List<String> expectedJsModuleImports) throws MalformedURLException {
         Class[] testClasses = { MainView.class,
                 NodeTestComponents.TranslatedImports.class,
                 NodeTestComponents.LocalP3Template.class,
@@ -519,11 +517,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         List<String> expectedImports = new ArrayList<>();
         List<String> uiAndGeneratedImports = new ArrayList<>();
 
-        getAnntotationsAsStream(JsModule.class, testClasses)
-                .map(JsModule::value).sorted().map(this::updateToImport)
-                .forEach(expectedImports::add);
+        // JsModules
+        expectedImports.addAll(expectedJsModuleImports);
+
         getAnntotationsAsStream(JavaScript.class, testClasses)
-                .map(JavaScript::value).map(this::updateToImport).sorted()
+                .map(JavaScript::value).map(this::updateToImport)
                 .forEach(expectedImports::add);
 
         if (uiImportSeparated) {

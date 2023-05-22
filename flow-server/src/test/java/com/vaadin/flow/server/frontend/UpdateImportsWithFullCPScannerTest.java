@@ -16,10 +16,13 @@
 package com.vaadin.flow.server.frontend;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Test;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 public class UpdateImportsWithFullCPScannerTest
@@ -33,6 +36,19 @@ public class UpdateImportsWithFullCPScannerTest
 
     @Test
     public void assertFullSortOrder() throws MalformedURLException {
-        super.assertFullSortOrder(false);
+        List<String> expectedJsModuleImports = new ArrayList<>();
+        expectedJsModuleImports.add(
+                "import '@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js';");
+        expectedJsModuleImports.add(
+                "import '@vaadin/vaadin-mixed-component/src/vaadin-something-else.js';");
+        expectedJsModuleImports.add(
+                "import '@vaadin/vaadin-mixed-component/src/vaadin-something-else';");
+        expectedJsModuleImports.add(
+                "import '@vaadin/vaadin-mixed-component/src/vaadin-custom-themed-component.js';");
+        expectedJsModuleImports.add("import 'Frontend/local-p3-template.js';");
+        expectedJsModuleImports.add("import 'jsmodule/h.js';");
+        expectedJsModuleImports.add("import 'jsmodule/g.js';");
+        expectedJsModuleImports.add("import '" + DepsTests.UI_IMPORT + "';");
+        super.assertFullSortOrder(false, expectedJsModuleImports);
     }
 }

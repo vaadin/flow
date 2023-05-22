@@ -211,6 +211,25 @@ public class FullDependenciesScannerTest {
     }
 
     @Test
+    public void getScripts_returnAllJsModules_orderPerClassIsPreserved_getClassesReturnAllJSAnnotatedComponents()
+            throws ClassNotFoundException {
+        List<String> expectedModulesInOrder = new ArrayList<>();
+        expectedModulesInOrder.add("jsmodule/h.js");
+        expectedModulesInOrder.add("jsmodule/g.js");
+        FrontendDependenciesScanner scanner = setUpAnnotationScanner(
+                JsModule.class);
+        DepsTests.assertImportsWithFilter(scanner.getModules(),
+                jsmodule -> expectedModulesInOrder.contains(jsmodule),
+                expectedModulesInOrder.toArray(String[]::new));
+
+        Set<String> visitedClasses = scanner.getClasses();
+        Assert.assertTrue(
+                visitedClasses.contains(VaadinBowerComponent.class.getName()));
+        Assert.assertTrue(
+                visitedClasses.contains(JavaScriptOrder.class.getName()));
+    }
+
+    @Test
     public void getCss_returnAllCss_orderPerClassIsPreserved_getClassesReturnAllCssAnnotatedComponents()
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
@@ -238,7 +257,7 @@ public class FullDependenciesScannerTest {
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 JsModule.class);
-        DepsTests.assertImportCount(19, scanner.getModules());
+        DepsTests.assertImportCount(20, scanner.getModules());
         assertJsModules(DepsTests.merge(scanner.getModules()));
 
         Set<String> classes = scanner.getClasses();
@@ -288,7 +307,7 @@ public class FullDependenciesScannerTest {
                     return null;
                 }, null);
 
-        DepsTests.assertImportCount(25, scanner.getModules());
+        DepsTests.assertImportCount(26, scanner.getModules());
         List<String> modules = DepsTests.merge(scanner.getModules());
         assertJsModules(modules);
 
