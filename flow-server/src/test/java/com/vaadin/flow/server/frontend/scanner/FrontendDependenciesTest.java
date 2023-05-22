@@ -37,10 +37,10 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.internal.DependencyTrigger;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.ErrorComponent;
+import com.vaadin.flow.server.frontend.scanner.samples.JsModuleOrderComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.JsOrderComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.MyServiceListener;
 import com.vaadin.flow.server.frontend.scanner.samples.MyUIInitListener;
@@ -211,6 +211,17 @@ public class FrontendDependenciesTest {
 
         DepsTests.assertImports(dependencies.getScripts(), "a.js", "b.js",
                 "c.js");
+    }
+
+    @Test
+    public void jsModuleOrderIsPreserved() {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
+                Collections.singleton(JsModuleOrderComponent.class));
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(), "c.js",
+                "b.js", "a.js");
     }
 
     // flow #6524

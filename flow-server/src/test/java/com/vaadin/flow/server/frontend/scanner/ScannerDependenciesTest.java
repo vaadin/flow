@@ -15,6 +15,7 @@ import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.BridgeClass
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component0;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component1;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component2;
+import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.DynamicComponentClassWithTwoImports;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.FirstView;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RouteWithNestedDynamicRouteClass;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RouteWithService;
@@ -207,6 +208,14 @@ public class ScannerDependenciesTest {
             assertTrue("should cache " + clz.getName(),
                     deps.getClasses().contains(clz.getName()));
         }
+    }
+
+    @Test
+    public void should_visitDynamicRouteWithTwoImports() {
+        FrontendDependencies deps = getFrontendDependencies(
+                DynamicComponentClassWithTwoImports.class);
+        DepsTests.assertImportsExcludingUI(deps.getModules(),
+                "dynamic-component.js", "another-dynamic-component.js");
     }
 
     @Test // #5509
