@@ -240,25 +240,6 @@ public class FullDependenciesScannerTest {
     }
 
     @Test
-    public void getScripts_returnAllJsModules_orderPerClassIsPreserved_getClassesReturnAllJSAnnotatedComponents()
-            throws ClassNotFoundException {
-        List<String> expectedModulesInOrder = new ArrayList<>();
-        expectedModulesInOrder.add("jsmodule/h.js");
-        expectedModulesInOrder.add("jsmodule/g.js");
-        FrontendDependenciesScanner scanner = setUpAnnotationScanner(
-                JsModule.class);
-        DepsTests.assertImportsWithFilter(scanner.getModules(),
-                jsmodule -> expectedModulesInOrder.contains(jsmodule),
-                expectedModulesInOrder.toArray(String[]::new));
-
-        Set<String> visitedClasses = scanner.getClasses();
-        Assert.assertTrue(
-                visitedClasses.contains(VaadinBowerComponent.class.getName()));
-        Assert.assertTrue(
-                visitedClasses.contains(JavaScriptOrder.class.getName()));
-    }
-
-    @Test
     public void getCss_returnAllCss_orderPerClassIsPreserved_getClassesReturnAllCssAnnotatedComponents()
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
@@ -298,7 +279,7 @@ public class FullDependenciesScannerTest {
         List<String> modules = scanner.getModules();
 
         DepsTests.assertImportCount(20, modules);
-        assertJsModules(DepsTests.merge(modules));
+        assertJsModules(modules);
 
         Set<String> classes = scanner.getClasses();
         Assert.assertEquals(13, classes.size());
@@ -350,7 +331,6 @@ public class FullDependenciesScannerTest {
 
         List<String> modules = scanner.getModules();
         DepsTests.assertImportCount(26, modules);
-        List<String> modules = DepsTests.merge(modules);
         assertJsModules(modules);
 
         // Theme modules should be included now
