@@ -100,8 +100,25 @@ public class UIInternals implements Serializable {
          *            a list of parameters to use when invoking the script
          */
         public JavaScriptInvocation(String expression,
+                                    Serializable... parameters) {
+            this.expression = expression;
+            this.owner = new StateNode();
+            Collections.addAll(this.parameters, parameters);
+        }
+
+        /**
+         * Creates a new invocation.
+         *
+         * @param expression
+         *            the expression to invoke
+         * @param owner
+         *            the state node that this invocation belongs to
+         * @param parameters
+         *            a list of parameters to use when invoking the script
+         */
+        public JavaScriptInvocation(String expression,
                                     StateNode owner,
-                Serializable... parameters) {
+                                    Serializable... parameters) {
             this.expression = expression;
             this.owner = owner;
             Collections.addAll(this.parameters, parameters);
