@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
@@ -174,7 +173,7 @@ public class UIInternals implements Serializable {
 
     private List<PendingJavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
 
-    private final WeakHashMap<StateNode, PendingJavaScriptInvocationDetachListener> pendingJsInvocationDetachListeners = new WeakHashMap<>();
+    private final HashMap<StateNode, PendingJavaScriptInvocationDetachListener> pendingJsInvocationDetachListeners = new HashMap<>();
 
     /**
      * The related UI.
