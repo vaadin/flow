@@ -129,9 +129,9 @@ public class Text extends Component implements HasText {
     @Override
     public boolean removeClassName(String className) {
         throw new UnsupportedOperationException(
-                "Cannot remove a class from the "
-                + getClass().getSimpleName() + " component because it doesn't "
-                + "represent an HTML Element but a text Node on the client side.");
+                "Cannot remove a class from the " + getClass().getSimpleName()
+                        + " component because it doesn't "
+                        + "represent an HTML Element but a text Node on the client side.");
     }
 
     /**
