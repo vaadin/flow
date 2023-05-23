@@ -120,7 +120,7 @@
                             <directory>${project.basedir}</directory>
                             <includes>
                                 <include>package*.json</include>
-                                <include>vite.*.ts</include>
+                                <include>vite.generated.ts</include>
                                 <include>types.d.ts</include>
                                 <include>tsconfig.json</include>
                             </includes>
