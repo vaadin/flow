@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -24,6 +25,10 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
+import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -272,6 +277,150 @@ public class UIInternalsTest {
         Assert.assertEquals(
                 "Expected no child elements for sub layout after navigation", 0,
                 subLayout.getElement().getChildren().count());
+    }
+
+    @Test
+    public void dumpPendingJavaScriptInvocations_detachListenerRegisteredOnce() {
+        StateNode node = Mockito.spy(new StateNode(ElementData.class));
+        node.getFeature(ElementData.class).setVisible(false);
+        internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class).add(0, node);
+
+        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node,
+                new UIInternals.JavaScriptInvocation("")));
+        internals.dumpPendingJavaScriptInvocations();
+        internals.dumpPendingJavaScriptInvocations();
+        internals.dumpPendingJavaScriptInvocations();
+
+        Mockito.verify(node, Mockito.times(1))
+                .addDetachListener(ArgumentMatchers.any());
+    }
+
+    @Test
+    public void dumpPendingJavaScriptInvocations_multipleInvocationPerNode_onlyOneDetachListenerRegistered() {
+        StateNode node = Mockito.spy(new StateNode(ElementData.class));
+        node.getFeature(ElementData.class).setVisible(false);
+        internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class).add(0, node);
+
+        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node,
+                new UIInternals.JavaScriptInvocation("1")));
+        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node,
+                new UIInternals.JavaScriptInvocation("2")));
+        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node,
+                new UIInternals.JavaScriptInvocation("3")));
+        internals.dumpPendingJavaScriptInvocations();
+
+        Mockito.verify(node, Mockito.times(1))
+                .addDetachListener(ArgumentMatchers.any());
+    }
+
+    @Test
+    public void dumpPendingJavaScriptInvocations_registerOneDetachListenerPerNode() {
+        StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
+        node1.getFeature(ElementData.class).setVisible(false);
+        internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class).add(0, node1);
+        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node1,
+                new UIInternals.JavaScriptInvocation("1")));
+
+        StateNode node2 = Mockito.spy(new StateNode(ElementData.class));
+        node2.getFeature(ElementData.class).setVisible(false);
+        internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class).add(0, node2);
+        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node2,
+                new UIInternals.JavaScriptInvocation("1")));
+
+        internals.dumpPendingJavaScriptInvocations();
+
+        Mockito.verify(node1, Mockito.times(1))
+                .addDetachListener(ArgumentMatchers.any());
+        Mockito.verify(node2, Mockito.times(1))
+                .addDetachListener(ArgumentMatchers.any());
+    }
+
+    @Test
+    public void dumpPendingJavaScriptInvocations_invocationCompletes_pendingListPurged() {
+        StateNode node = Mockito.spy(new StateNode(ElementData.class));
+        node.getFeature(ElementData.class).setVisible(false);
+        internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class).add(0, node);
+
+        PendingJavaScriptInvocation invocation = new PendingJavaScriptInvocation(
+                node, new UIInternals.JavaScriptInvocation(""));
+        internals.addJavaScriptInvocation(invocation);
+        internals.dumpPendingJavaScriptInvocations();
+
+        Mockito.verify(node, Mockito.times(1))
+                .addDetachListener(ArgumentMatchers.any());
+
+        invocation.complete(JsonCodec.encodeWithTypeInfo("OK"));
+
+        Assert.assertEquals(0,
+                internals.getPendingJavaScriptInvocations().count());
+    }
+
+    @Test
+    public void dumpPendingJavaScriptInvocations_invocationFails_pendingListPurged() {
+        StateNode node = Mockito.spy(new StateNode(ElementData.class));
+        node.getFeature(ElementData.class).setVisible(false);
+        internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class).add(0, node);
+
+        PendingJavaScriptInvocation invocation = new PendingJavaScriptInvocation(
+                node, new UIInternals.JavaScriptInvocation(""));
+        internals.addJavaScriptInvocation(invocation);
+        internals.dumpPendingJavaScriptInvocations();
+
+        Mockito.verify(node, Mockito.times(1))
+                .addDetachListener(ArgumentMatchers.any());
+
+        invocation.completeExceptionally(JsonCodec.encodeWithTypeInfo("ERROR"));
+
+        Assert.assertEquals(0,
+                internals.getPendingJavaScriptInvocations().count());
+    }
+
+    @Test
+    public void dumpPendingJavaScriptInvocations_invocationCanceled_pendingListPurged() {
+        StateNode node = Mockito.spy(new StateNode(ElementData.class));
+        node.getFeature(ElementData.class).setVisible(false);
+        internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class).add(0, node);
+
+        PendingJavaScriptInvocation invocation = new PendingJavaScriptInvocation(
+                node, new UIInternals.JavaScriptInvocation(""));
+        internals.addJavaScriptInvocation(invocation);
+        internals.dumpPendingJavaScriptInvocations();
+
+        Mockito.verify(node, Mockito.times(1))
+                .addDetachListener(ArgumentMatchers.any());
+
+        invocation.cancelExecution();
+
+        Assert.assertEquals(0,
+                internals.getPendingJavaScriptInvocations().count());
+    }
+
+    @Test
+    public void dumpPendingJavaScriptInvocations_nodeDetached_pendingListPurged() {
+        StateNode node = Mockito.spy(new StateNode(ElementData.class));
+        node.getFeature(ElementData.class).setVisible(false);
+        internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class).add(0, node);
+
+        PendingJavaScriptInvocation invocation = new PendingJavaScriptInvocation(
+                node, new UIInternals.JavaScriptInvocation(""));
+        internals.addJavaScriptInvocation(invocation);
+        internals.dumpPendingJavaScriptInvocations();
+
+        Mockito.verify(node, Mockito.times(1))
+                .addDetachListener(ArgumentMatchers.any());
+
+        node.setParent(null);
+
+        Assert.assertEquals(0,
+                internals.getPendingJavaScriptInvocations().count());
     }
 
     private PushConfiguration setUpInitialPush() {
