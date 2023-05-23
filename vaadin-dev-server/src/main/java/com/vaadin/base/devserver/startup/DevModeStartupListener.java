@@ -18,6 +18,7 @@ package com.vaadin.base.devserver.startup;
 import java.io.Serializable;
 import java.util.Set;
 
+import com.vaadin.flow.server.*;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.HandlesTypes;
@@ -35,12 +36,6 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.LoadDependenciesOnStartup;
-import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.server.UIInitListener;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.flow.server.startup.VaadinServletContextStartupInitializer;
 import com.vaadin.flow.theme.NoTheme;
@@ -60,7 +55,7 @@ import com.vaadin.flow.theme.Theme;
         NpmPackage.Container.class, JsModule.class, JsModule.Container.class,
         CssImport.class, CssImport.Container.class, JavaScript.class,
         JavaScript.Container.class, Theme.class, NoTheme.class,
-        HasErrorParameter.class, PWA.class, AppShellConfigurator.class,
+        HasErrorParameter.class, PWA.class, WebPush.class, AppShellConfigurator.class,
         Template.class, LoadDependenciesOnStartup.class })
 @WebListener
 public class DevModeStartupListener

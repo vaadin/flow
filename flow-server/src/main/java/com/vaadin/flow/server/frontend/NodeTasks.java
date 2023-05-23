@@ -280,6 +280,7 @@ public class NodeTasks implements FallibleCommand {
     private void addGenerateServiceWorkerTask(Options options,
             PwaConfiguration pwaConfiguration) {
         if (pwaConfiguration.isEnabled()) {
+            options.setWebPush(pwaConfiguration.isWebPush());
             commands.add(new TaskGenerateServiceWorker(options));
         }
     }

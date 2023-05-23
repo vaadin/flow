@@ -816,4 +816,14 @@ public class Options implements Serializable {
     public boolean isSkipDevBundle() {
         return skipDevBundle;
     }
+
+    boolean webPush = false;
+
+    public Options setWebPush(Boolean webPush) {
+        this.webPush = webPush;
+        return this;
+    }
+    public boolean isWebPush() {
+        return webPush;
+    }
 }

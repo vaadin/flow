@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,11 +38,6 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.server.AppShellRegistry;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.InvalidApplicationConfigurationException;
-import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -58,7 +54,7 @@ import jakarta.servlet.annotation.WebListener;
  * @since 3.0
  */
 @HandlesTypes({ AppShellConfigurator.class, Meta.class, Meta.Container.class,
-        PWA.class, Inline.class, Inline.Container.class, Viewport.class,
+        PWA.class, WebPush.class, Inline.class, Inline.Container.class, Viewport.class,
         BodySize.class, PageTitle.class, Push.class, Theme.class,
         NoTheme.class })
 // @WebListener is needed so that servlet containers know that they have to run

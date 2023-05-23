@@ -31,6 +31,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.WebPush;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -475,6 +476,10 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                 throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
             }
 
+
+            Class<? extends Annotation> webPushAnnotation = getFinder()
+                    .loadClass(WebPush.class.getName());
+
             Annotation pwa = annotationFinder
                     .apply(hopefullyAppShellClass, loadedPWAAnnotation).get(0);
 
@@ -498,7 +503,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
             return new PwaConfiguration(true, name, shortName, description,
                     backgroundColor, themeColor, iconPath, manifestPath,
-                    offlinePath, display, startPath, offlineResources, offline);
+                    offlinePath, display, startPath, offlineResources, offline,
+                    !getFinder()
+                            .getAnnotatedClasses(webPushAnnotation).isEmpty());
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
                     "Could not load PWA annotation class", exception);

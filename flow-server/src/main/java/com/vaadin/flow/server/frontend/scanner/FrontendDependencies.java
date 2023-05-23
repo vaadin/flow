@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.server.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;
@@ -52,11 +53,6 @@ import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.DependencyTrigger;
-import com.vaadin.flow.server.LoadDependenciesOnStartup;
-import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.server.PwaConfiguration;
-import com.vaadin.flow.server.UIInitListener;
-import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -629,7 +625,6 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
             pwaVisitor.visitClass(hopefullyAppShellClass.getName());
         }
-
         Set<String> dependencies = pwaVisitor.getValues("name");
         if (dependencies.size() > 1) {
             throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
@@ -652,10 +647,14 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         List<String> offlineResources = pwaVisitor.getValue("offlineResources");
         boolean offline = pwaVisitor.getValue("offline");
 
+        Class<? extends Annotation> webPushAnnotation = getFinder()
+                .loadClass(WebPush.class.getName());
+
         this.pwaConfiguration = new PwaConfiguration(true, name, shortName,
                 description, backgroundColor, themeColor, iconPath,
                 manifestPath, offlinePath, display, startPath,
-                offlineResources.toArray(new String[] {}), offline);
+                offlineResources.toArray(new String[] {}), offline, !getFinder()
+                .getAnnotatedClasses(webPushAnnotation).isEmpty());
     }
 
     private Logger log() {

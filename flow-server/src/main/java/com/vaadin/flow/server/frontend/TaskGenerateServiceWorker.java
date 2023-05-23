@@ -48,10 +48,46 @@ public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() throws IOException {
+        String content;
         try (InputStream swStream = getClass()
                 .getResourceAsStream(SERVICE_WORKER_SRC)) {
-            return IOUtils.toString(swStream, UTF_8);
+            content = IOUtils.toString(swStream, UTF_8);
         }
+        if (options.isWebPush()) {
+            //@formatter:off
+        content += "\n\n// Handle web push\n" +
+                "\n" +
+                "self.addEventListener('push', (e) => {\n" +
+                "  const data = e.data?.json();\n" +
+                "  if (data) {\n" +
+                "    self.registration.showNotification(data.title, {\n" +
+                "      body: data.body,\n" +
+                "    });\n" +
+                "  }\n" +
+                "});\n" +
+                "\n" +
+                "self.addEventListener('notificationclick', (e) => {\n" +
+                "  e.notification.close();\n" +
+                "  e.waitUntil(focusOrOpenWindow());\n" +
+                "});\n" +
+                "\n" +
+                "async function focusOrOpenWindow() {\n" +
+                "  const url = new URL('/', self.location.origin).href;\n" +
+                "\n" +
+                "  const allWindows = await self.clients.matchAll({\n" +
+                "    type: 'window',\n" +
+                "  });\n" +
+                "  const appWindow = allWindows.find((w) => w.url === url);\n" +
+                "\n" +
+                "  if (appWindow) {\n" +
+                "    return appWindow.focus();\n" +
+                "  } else {\n" +
+                "    return self.clients.openWindow(url);\n" +
+                "  }\n" +
+                "}";
+            //@formatter:on
+        }
+        return content;
     }
 
     @Override
