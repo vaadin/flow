@@ -54,8 +54,10 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
@@ -75,6 +77,7 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
@@ -90,7 +93,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
  * framework.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -171,6 +174,8 @@ public class UIInternals implements Serializable {
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
 
     private List<PendingJavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
+
+    private final HashMap<StateNode, PendingJavaScriptInvocationDetachListener> pendingJsInvocationDetachListeners = new HashMap<>();
 
     /**
      * The related UI.
@@ -550,11 +555,6 @@ public class UIInternals implements Serializable {
             PendingJavaScriptInvocation invocation) {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
-
-        invocation.getOwner()
-                .addDetachListener(() -> pendingJsInvocations
-                        .removeIf(pendingInvocation -> pendingInvocation
-                                .equals(invocation)));
     }
 
     /**
@@ -579,8 +579,59 @@ public class UIInternals implements Serializable {
         pendingJsInvocations = getPendingJavaScriptInvocations()
                 .filter(invocation -> !invocation.getOwner().isVisible())
                 .collect(Collectors.toCollection(ArrayList::new));
-
+        pendingJsInvocations
+                .forEach(this::registerDetachListenerForPendingInvocation);
         return readyToSend;
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private void registerDetachListenerForPendingInvocation(
+            PendingJavaScriptInvocation invocation) {
+
+        PendingJavaScriptInvocationDetachListener listener = pendingJsInvocationDetachListeners
+                .computeIfAbsent(invocation.getOwner(), node -> {
+                    PendingJavaScriptInvocationDetachListener detachListener = new PendingJavaScriptInvocationDetachListener();
+                    detachListener.registration = Registration.combine(
+                            () -> pendingJsInvocationDetachListeners
+                                    .remove(node),
+                            node.addDetachListener(detachListener));
+                    return detachListener;
+                });
+        listener.invocationList.add(invocation);
+
+        SerializableConsumer callback = unused -> listener
+                .onInvocationCompleted(invocation);
+        invocation.then(callback, callback);
+    }
+
+    private class PendingJavaScriptInvocationDetachListener implements Command {
+        private final Set<PendingJavaScriptInvocation> invocationList = new HashSet<>();
+
+        private Registration registration;
+
+        @Override
+        public void execute() {
+            if (!invocationList.isEmpty()) {
+                List<PendingJavaScriptInvocation> copy = new ArrayList<>(
+                        invocationList);
+                invocationList.clear();
+                copy.forEach(this::removePendingInvocation);
+            }
+        }
+
+        private void removePendingInvocation(
+                PendingJavaScriptInvocation invocation) {
+            UIInternals.this.pendingJsInvocations.removeIf(
+                    pendingInvocation -> pendingInvocation.equals(invocation));
+            if (invocationList.isEmpty() && registration != null) {
+                registration.remove();
+            }
+        }
+
+        void onInvocationCompleted(PendingJavaScriptInvocation invocation) {
+            invocationList.remove(invocation);
+            removePendingInvocation(invocation);
+        }
     }
 
     /**
