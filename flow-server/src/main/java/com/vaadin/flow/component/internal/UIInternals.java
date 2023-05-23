@@ -636,6 +636,7 @@ public class UIInternals implements Serializable {
                     pendingInvocation -> pendingInvocation.equals(invocation));
             if (invocationList.isEmpty() && registration != null) {
                 registration.remove();
+                registration = null;
             }
         }
 
