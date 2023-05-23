@@ -257,7 +257,6 @@ public class Page implements Serializable {
         }
 
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                ui.getInternals().getStateTree().getRootNode(),
                 parameters);
 
         return ui.getInternals().addJavaScriptInvocation(invocation);

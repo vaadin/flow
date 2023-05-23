@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.internal.UIInternals;
 import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.component.Component;
@@ -1463,6 +1464,10 @@ public class Element extends Node<Element> {
 
     private void doCallFunction(UI ui, String functionName,
             Serializable... arguments) {
+        UIInternals.JavaScriptInvocation invocation = new UIInternals.JavaScriptInvocation(
+                functionName, getNode(), arguments);
+        ui.getInternals().addJavaScriptInvocation(invocation);
+
         ui.getInternals().getStateTree().beforeClientResponse(getNode(),
                 context -> {
                     // $0.method($1,$2,$3)
