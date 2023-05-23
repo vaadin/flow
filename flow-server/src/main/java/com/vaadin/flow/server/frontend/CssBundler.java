@@ -2,14 +2,19 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.server.Constants;
 
 public class CssBundler {
 
@@ -51,10 +56,10 @@ public class CssBundler {
 
     private static Pattern urlPattern = Pattern.compile(URL);
 
-    public static String inlineImports(File themeFolder, File cssFile)
-            throws IOException {
-        String content = FileUtils.readFileToString(cssFile,
-                StandardCharsets.UTF_8);
+    public static String inlineImports(File themeFolder, File cssFile,
+            String pathToJar) throws IOException {
+
+        String content = getStylesheetContent(pathToJar, cssFile);
 
         Matcher urlMatcher = urlPattern.matcher(content);
         content = urlMatcher.replaceAll(result -> {
@@ -63,8 +68,20 @@ public class CssBundler {
                 // These are handled below
                 return urlMatcher.group();
             }
+
             File potentialFile = new File(cssFile.getParentFile(), url.trim());
-            if (potentialFile.exists()) {
+
+            boolean potentialFileExists = false;
+            try {
+                potentialFileExists = potentialFileExistsInThemes(potentialFile,
+                        pathToJar);
+            } catch (IOException e) {
+                getLogger().warn(
+                        "Unable to inline import {}, because couldn't resolve URL paths",
+                        result.group(), e);
+            }
+
+            if (potentialFileExists) {
                 // e.g. background-image: url("./foo/bar.png") should become
                 // url("VAADIN/themes/<theme-name>>/foo/bar.png IF the file is
                 // inside the theme folder
@@ -100,9 +117,19 @@ public class CssBundler {
             }
 
             File potentialFile = new File(cssFile.getParentFile(), url.trim());
-            if (potentialFile.exists()) {
+            boolean potentialFileExists = false;
+            try {
+                potentialFileExists = potentialFileExistsInThemes(potentialFile,
+                        pathToJar);
+            } catch (IOException e) {
+                getLogger().warn(
+                        "Unable to inline import {}, because couldn't resolve URL paths",
+                        result.group(), e);
+            }
+
+            if (potentialFileExists) {
                 try {
-                    return inlineImports(themeFolder, potentialFile);
+                    return inlineImports(themeFolder, potentialFile, pathToJar);
                 } catch (IOException e) {
                     getLogger()
                             .warn("Unable to inline import: " + result.group());
@@ -112,6 +139,43 @@ public class CssBundler {
         });
 
         return content;
+    }
+
+    private static boolean potentialFileExistsInThemes(File potentialFile,
+            String pathToJar) throws IOException {
+        if (pathToJar != null) {
+            URL potentialFileUrl = getCssResourceUrl(pathToJar, potentialFile);
+            return !(potentialFileUrl.toString()
+                    .contains(Constants.RESOURCES_JAR_DEFAULT)
+                    || potentialFileUrl.toString()
+                            .contains(Constants.VAADIN_WEBAPP_RESOURCES));
+        } else {
+            return potentialFile.exists();
+        }
+    }
+
+    private static String getStylesheetContent(String basePath, File cssFile)
+            throws IOException {
+        if (basePath != null) {
+            URL resourceUrl = getCssResourceUrl(basePath, cssFile);
+            return IOUtils.toString(resourceUrl, StandardCharsets.UTF_8);
+        } else {
+            return FileUtils.readFileToString(cssFile, StandardCharsets.UTF_8);
+        }
+    }
+
+    private static URL getCssResourceUrl(String pathToJar,
+            File resourceRelativePath) throws IOException {
+        String path = resourceRelativePath.toString();
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+        try {
+            return new URL(pathToJar + "!" + path);
+        } catch (MalformedURLException e) {
+            throw new IOException(
+                    "Couldn't get the URL for stylesheet resource", e);
+        }
     }
 
     private static String getNonNullGroup(MatchResult result, int... groupId) {

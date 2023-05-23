@@ -7,6 +7,5 @@ body {
 }
 
 .vaadin-logo {
-    /* This doesn't work currently with url("./images/vaadin-logo.png")*/
-    background-image: url("/images/vaadin-logo.png");
+    background-image: url("./images/vaadin-logo.png");
 }
