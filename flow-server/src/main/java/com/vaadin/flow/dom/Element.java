@@ -1464,10 +1464,6 @@ public class Element extends Node<Element> {
 
     private void doCallFunction(UI ui, String functionName,
             Serializable... arguments) {
-        UIInternals.JavaScriptInvocation invocation = new UIInternals.JavaScriptInvocation(
-                functionName, getNode(), arguments);
-        ui.getInternals().addJavaScriptInvocation(invocation);
-
         ui.getInternals().getStateTree().beforeClientResponse(getNode(),
                 context -> {
                     // $0.method($1,$2,$3)
@@ -1480,7 +1476,7 @@ public class Element extends Node<Element> {
                             .toArray(Serializable[]::new);
 
                     ui.getPage().executeJavaScript("$0." + functionName + "("
-                            + paramPlaceholderString + ")", jsParameters);
+                            + paramPlaceholderString + ")", getNode(),  jsParameters);
                 });
     }
 
