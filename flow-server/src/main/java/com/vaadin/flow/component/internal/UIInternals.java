@@ -102,7 +102,7 @@ public class UIInternals implements Serializable {
         public JavaScriptInvocation(String expression,
                                     Serializable... parameters) {
             this.expression = expression;
-            this.owner = new StateNode();
+            this.owner = null;
             Collections.addAll(this.parameters, parameters);
         }
 
@@ -129,8 +129,8 @@ public class UIInternals implements Serializable {
          *
          * @return the owner state node
          */
-        public StateNode getOwner() {
-            return owner;
+        public Optional<StateNode> getOwner() {
+            return Optional.ofNullable(owner);
         }
 
 
