@@ -689,7 +689,7 @@ public class StateNode implements Serializable {
      * @see NodeFeature#allowsChanges()
      */
     public void updateActiveState() {
-        setInactive(getDisalowFeatures().count() != 0);
+        setInactive(getDisalowFeatures().findAny().isPresent());
     }
 
     /**
@@ -721,13 +721,13 @@ public class StateNode implements Serializable {
                      * We are here if: the child node itself is not inactive but
                      * it has some ascendant which is inactive.
                      *
-                     * In this case we send only some subset of changes (not
+                     * In this case, we send only some subset of changes (not
                      * from all the features). But we should send changes for
-                     * all remaining features. Normally it automatically happens
+                     * all remaining features. Normally, it automatically happens
                      * if the node becomes "visible". But if it was visible with
-                     * some invisible parent then only the parent becomes dirty
+                     * some invisible parent, then only the parent becomes dirty
                      * (when it's set visible) and this child will never
-                     * participate in collection of changes since it's not
+                     * participate in a collection of changes since it's not
                      * marked as dirty.
                      *
                      * So here such node (which is active itself but its
@@ -768,7 +768,7 @@ public class StateNode implements Serializable {
     private static Class[] getNonRepeatebleFeatures(StateNode node) {
         if (node.reportedFeatures.isEmpty()) {
             Set<Class<? extends NodeFeature>> set = node.features.keySet();
-            return set.toArray(new Class[set.size()]);
+            return set.toArray(new Class[0]);
         }
         return node.features.keySet().stream()
                 .filter(clazz -> !node.reportedFeatures.contains(clazz))
@@ -885,10 +885,10 @@ public class StateNode implements Serializable {
      * during attach/detach event dispatching (inside listeners) when some node
      * still has a parent (all the ascendant) but it's already unregistered.
      *
-     * This is intermediate state which may happen only when tree is changed
+     * This is an intermediate state which may happen only when tree is changed
      * inside listeners.
      *
-     * Outside of the listeners this method is effectively the same as
+     * Outside the listeners this method is effectively the same as
      * {@link #isAttached()}.
      */
     private boolean isRegistered() {

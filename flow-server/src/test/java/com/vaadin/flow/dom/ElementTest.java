@@ -2148,7 +2148,7 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "$0.noArgsMethod()", element);
+        assertPendingJs(ui, "$0.noArgsMethod()", ui.getInternals().getStateTree().getRootNode(), element);
     }
 
     @Test
@@ -2159,7 +2159,7 @@ public class ElementTest extends AbstractNodeTest {
         element.callFunction("noArgsMethod");
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "$0.noArgsMethod()", element);
+        assertPendingJs(ui, "$0.noArgsMethod()", ui.getInternals().getStateTree().getRootNode(), element);
     }
 
     @Test
@@ -2189,7 +2189,7 @@ public class ElementTest extends AbstractNodeTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "$0.noArgsMethod()", element);
+        assertPendingJs(ui, "$0.noArgsMethod()", ui.getInternals().getStateTree().getRootNode(),  element);
     }
 
     @Test
@@ -2200,7 +2200,7 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        assertPendingJs(ui, "$0.method($1)", element, "foo");
+        assertPendingJs(ui, "$0.method($1)", ui.getInternals().getStateTree().getRootNode(), element, "foo");
 
     }
 
@@ -2212,7 +2212,7 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "$0.method($1,$2)", element, "foo", 123);
+        assertPendingJs(ui, "$0.method($1,$2)", ui.getInternals().getStateTree().getRootNode(),  element, "foo", 123);
     }
 
     @Test
@@ -2223,7 +2223,7 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "$0.property.method()", element);
+        assertPendingJs(ui, "$0.property.method()", ui.getInternals().getStateTree().getRootNode(), element);
     }
 
     @Test
@@ -2234,7 +2234,7 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "$0.property.other.method()", element);
+        assertPendingJs(ui, "$0.property.other.method()", ui.getInternals().getStateTree().getRootNode(), element);
     }
 
     @Test
@@ -2352,13 +2352,12 @@ public class ElementTest extends AbstractNodeTest {
         Assert.assertEquals(child, parent.getChild(index));
     }
 
-    private void assertPendingJs(UI ui, String js, Serializable... arguments) {
+    private void assertPendingJs(UI ui, String js, StateNode owner, Serializable... arguments) {
         List<JavaScriptInvocation> pendingJs = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
-        JavaScriptInvocation expected = new JavaScriptInvocation(js, arguments);
+        JavaScriptInvocation expected = new JavaScriptInvocation(js, owner, arguments);
         Assert.assertEquals(1, pendingJs.size());
         assertEquals(expected, pendingJs.get(0));
-
     }
 
     private void assertEquals(JavaScriptInvocation expected,
