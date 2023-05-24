@@ -125,9 +125,9 @@ public class UIInternals implements Serializable {
         }
 
         /**
-         * Gets the state node that this invocation belongs to.
+         * Gets the state node that this invocation belongs to, if any.
          *
-         * @return the owner state node
+         * @return the optional owner state node, or an empty optional if no state node has been provided for this invocation.
          */
         public Optional<StateNode> getOwner() {
             return Optional.ofNullable(owner);
