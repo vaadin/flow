@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -542,6 +543,9 @@ public class UIInternals implements Serializable {
             JavaScriptInvocation invocation) {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
+      invocation.getOwner().ifPresent(node -> node.addDetachListener(() -> pendingJsInvocations
+                     .removeIf(pendingInvocation -> pendingInvocation
+                             .equals(invocation))));
         return () -> pendingJsInvocations.remove(invocation);
     }
 
@@ -557,11 +561,17 @@ public class UIInternals implements Serializable {
             return Collections.emptyList();
         }
 
-        List<JavaScriptInvocation> currentList = pendingJsInvocations;
+        List<JavaScriptInvocation> readyToSend = getPendingJavaScriptInvocations()
+                .stream()
+                .filter(invocation -> invocation.getOwner().map(StateNode::isVisible).orElse(true))
+                .collect(Collectors.toList());
 
-        pendingJsInvocations = new ArrayList<>();
+        pendingJsInvocations = getPendingJavaScriptInvocations()
+                .stream()
+                .filter(invocation -> invocation.getOwner().map(node -> !node.isVisible()).orElse(false))
+                .collect(Collectors.toCollection(ArrayList::new));
 
-        return currentList;
+        return readyToSend;
     }
 
     /**
@@ -598,7 +608,7 @@ public class UIInternals implements Serializable {
     /**
      * Gets the page title recorded with {@link Page#setTitle(String)}.
      * <p>
-     * <b>NOTE</b> this might not be up to date with the actual title set since
+     * <b>NOTE</b> this might not be up-to-date with the actual title set since
      * it is not updated from the browser and the update might have been
      * canceled before it has been sent to the browser with
      * {@link #cancelPendingTitleUpdate()}.

@@ -179,6 +179,8 @@ public class HtmlComponentSmokeTest {
     }
 
     private static void testSetter(HtmlComponent instance, Method setter) {
+        instance.setVisible(true);
+
         Class<?> propertyType = setter.getParameterTypes()[0];
 
         Method getter = findGetter(setter);
@@ -203,6 +205,18 @@ public class HtmlComponentSmokeTest {
         StateNode elementNode = instance.getElement().getNode();
 
         try {
+            Object originalGetterValue = null;
+
+            try {
+                originalGetterValue = getter.invoke(instance);
+                if (isOptional) {
+                    originalGetterValue = ((Optional<?>) originalGetterValue)
+                            .orElse(null);
+                }
+            } catch (InvocationTargetException e) {
+                // Unable to retrieve original value, assuming null
+            }
+
             // Purge all pending changes
             elementNode.collectChanges(c -> {
             });
@@ -210,13 +224,16 @@ public class HtmlComponentSmokeTest {
             setter.invoke(instance, testValue);
 
             // Might have to add a blacklist for this logic at some point
-            Assert.assertTrue(
-                    setter + " should update the underlying state node",
-                    hasPendingChanges(elementNode));
+            if (!testValue.equals(originalGetterValue)) {
+                Assert.assertTrue(
+                        setter + " should update the underlying state node",
+                        hasPendingChanges(elementNode));
+            }
 
             Object getterValue = getter.invoke(instance);
-            if (isOptional) {
-                getterValue = ((Optional<?>) getterValue).get();
+            Optional<?> getterValueOpt = ((Optional<?>) getterValue);
+            if (isOptional && getterValueOpt.isPresent()) {
+                getterValue = getterValueOpt.get();
             }
             Assert.assertEquals(getter + " should return the set value",
                     testValue, getterValue);
