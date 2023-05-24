@@ -1474,18 +1474,14 @@ public class Element extends Node<Element> {
                             .collect(Collectors.joining(","));
                     Serializable[] jsParameters = Stream
                             .concat(Stream.of(this), Stream.of(arguments))
+                            /*
+                             * To ensure attached elements are actually attached, the parameters
+                             * won't be serialized until the phase the UIDL message is created. To
+                             * give the user immediate feedback if using a parameter type that can't
+                             * be serialized, we do a dry run at this point.
+                             */
+                            .peek(JsonCodec::encodeWithTypeInfo)
                             .toArray(Serializable[]::new);
-
-                    /*
-                     * To ensure attached elements are actually attached, the parameters
-                     * won't be serialized until the phase the UIDL message is created. To
-                     * give the user immediate feedback if using a parameter type that can't
-                     * be serialized, we do a dry run at this point.
-                     */
-                    for (Object argument : jsParameters) {
-                        // Throws IAE for unsupported types
-                        JsonCodec.encodeWithTypeInfo(argument);
-                    }
 
                     String expression = "$0." + functionName + "(" + paramPlaceholderString + ")";
                     UIInternals.JavaScriptInvocation invocation = new UIInternals.JavaScriptInvocation(expression,
