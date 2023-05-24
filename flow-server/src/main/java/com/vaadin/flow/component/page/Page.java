@@ -23,7 +23,6 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
-import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -258,26 +257,6 @@ public class Page implements Serializable {
         }
 
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                parameters);
-
-        return ui.getInternals().addJavaScriptInvocation(invocation);
-    }
-
-    public ExecutionCanceler executeJavaScript(String expression, StateNode owner,
-                                               Serializable... parameters) {
-        /*
-         * To ensure attached elements are actually attached, the parameters
-         * won't be serialized until the phase the UIDL message is created. To
-         * give the user immediate feedback if using a parameter type that can't
-         * be serialized, we do a dry run at this point.
-         */
-        for (Object argument : parameters) {
-            // Throws IAE for unsupported types
-            JsonCodec.encodeWithTypeInfo(argument);
-        }
-
-        JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                owner,
                 parameters);
 
         return ui.getInternals().addJavaScriptInvocation(invocation);

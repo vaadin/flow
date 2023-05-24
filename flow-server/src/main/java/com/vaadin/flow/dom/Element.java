@@ -1464,7 +1464,8 @@ public class Element extends Node<Element> {
 
     private void doCallFunction(UI ui, String functionName,
             Serializable... arguments) {
-        ui.getInternals().getStateTree().beforeClientResponse(getNode(),
+        StateNode node = getNode();
+        ui.getInternals().getStateTree().beforeClientResponse(node,
                 context -> {
                     // $0.method($1,$2,$3)
                     String paramPlaceholderString = IntStream
@@ -1475,8 +1476,22 @@ public class Element extends Node<Element> {
                             .concat(Stream.of(this), Stream.of(arguments))
                             .toArray(Serializable[]::new);
 
-                    ui.getPage().executeJavaScript("$0." + functionName + "("
-                            + paramPlaceholderString + ")", getNode(),  jsParameters);
+                    /*
+                     * To ensure attached elements are actually attached, the parameters
+                     * won't be serialized until the phase the UIDL message is created. To
+                     * give the user immediate feedback if using a parameter type that can't
+                     * be serialized, we do a dry run at this point.
+                     */
+                    for (Object argument : jsParameters) {
+                        // Throws IAE for unsupported types
+                        JsonCodec.encodeWithTypeInfo(argument);
+                    }
+
+                    String expression = "$0." + functionName + "(" + paramPlaceholderString + ")";
+                    UIInternals.JavaScriptInvocation invocation = new UIInternals.JavaScriptInvocation(expression,
+                            node,  jsParameters);
+
+                    ui.getInternals().addJavaScriptInvocation(invocation);
                 });
     }
 
