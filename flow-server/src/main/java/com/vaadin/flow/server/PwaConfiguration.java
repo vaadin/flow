@@ -53,8 +53,6 @@ public class PwaConfiguration implements Serializable {
     private final List<String> offlineResources;
     private final boolean offlineEnabled;
 
-    boolean webPush;
-
     /**
      * Creates the configuration using default PWA parameters.
      */
@@ -62,7 +60,7 @@ public class PwaConfiguration implements Serializable {
         this(false, DEFAULT_NAME, "Flow PWA", "", DEFAULT_BACKGROUND_COLOR,
                 DEFAULT_THEME_COLOR, DEFAULT_ICON, DEFAULT_PATH,
                 DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, DEFAULT_START_URL,
-                new String[] {}, false, false);
+                new String[] {}, false);
     }
 
     /**
@@ -75,7 +73,7 @@ public class PwaConfiguration implements Serializable {
         this(true, pwa.name(), pwa.shortName(), pwa.description(),
                 pwa.backgroundColor(), pwa.themeColor(), pwa.iconPath(),
                 pwa.manifestPath(), pwa.offlinePath(), pwa.display(),
-                pwa.startPath(), pwa.offlineResources(), pwa.offline(), false);
+                pwa.startPath(), pwa.offlineResources(), pwa.offline());
     }
 
     /**
@@ -112,7 +110,7 @@ public class PwaConfiguration implements Serializable {
             String description, String backgroundColor, String themeColor,
             String iconPath, String manifestPath, String offlinePath,
             String display, String startPath, String[] offlineResources,
-            boolean offlineEnabled, boolean webPush) {
+            boolean offlineEnabled) {
         this.appName = name;
         this.shortName = shortName.substring(0,
                 Math.min(shortName.length(), 12));
@@ -127,7 +125,6 @@ public class PwaConfiguration implements Serializable {
         this.enabled = enabled;
         this.offlineResources = Arrays.asList(offlineResources);
         this.offlineEnabled = offlineEnabled;
-        this.webPush = webPush;
     }
 
     /**
@@ -319,9 +316,5 @@ public class PwaConfiguration implements Serializable {
      */
     public boolean isOfflinePathEnabled() {
         return !offlinePath.isEmpty();
-    }
-
-    public boolean isWebPush() {
-        return webPush;
     }
 }
