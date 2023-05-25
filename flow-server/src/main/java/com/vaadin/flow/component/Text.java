@@ -105,4 +105,91 @@ public class Text extends Component implements HasText {
                 + "represent an HTML Element but a text Node on the client side.");
     }
 
+    /**
+     * The method is not supported for the {@link Text} class.
+     * <p>
+     * Always throws an {@link UnsupportedOperationException}.
+     *
+     * @throws UnsupportedOperationException
+     */
+    @Override
+    public void addClassName(String className) {
+        throw new UnsupportedOperationException("Cannot add a class to the "
+                + getClass().getSimpleName() + " component because it doesn't "
+                + "represent an HTML Element but a text Node on the client side.");
+    }
+
+    /**
+     * The method is not supported for the {@link Text} class.
+     * <p>
+     * Always throws an {@link UnsupportedOperationException}.
+     *
+     * @throws UnsupportedOperationException
+     */
+    @Override
+    public boolean removeClassName(String className) {
+        throw new UnsupportedOperationException(
+                "Cannot remove a class from the " + getClass().getSimpleName()
+                        + " component because it doesn't "
+                        + "represent an HTML Element but a text Node on the client side.");
+    }
+
+    /**
+     * The method is not supported for the {@link Text} class.
+     * <p>
+     * Always throws an {@link UnsupportedOperationException}.
+     *
+     * @throws UnsupportedOperationException
+     */
+    @Override
+    public void setClassName(String className) {
+        throw new UnsupportedOperationException("Cannot set the "
+                + getClass().getSimpleName()
+                + " component class because it doesn't "
+                + "represent an HTML Element but a text Node on the client side.");
+    }
+
+    /**
+     * The method is not supported for the {@link Text} class.
+     * <p>
+     * Always throws an {@link UnsupportedOperationException}.
+     *
+     * @throws UnsupportedOperationException
+     */
+    @Override
+    public void setClassName(String className, boolean set) {
+        throw new UnsupportedOperationException("Cannot set the "
+                + getClass().getSimpleName()
+                + " component class because it doesn't "
+                + "represent an HTML Element but a text Node on the client side.");
+    }
+
+    /**
+     * The method is not supported for the {@link Text} class.
+     * <p>
+     * Always throws an {@link UnsupportedOperationException}.
+     *
+     * @throws UnsupportedOperationException
+     */
+    @Override
+    public void addClassNames(String... classNames) {
+        throw new UnsupportedOperationException("Cannot add classes to the "
+                + getClass().getSimpleName() + " component because it doesn't "
+                + "represent an HTML Element but a text Node on the client side.");
+    }
+
+    /**
+     * The method is not supported for the {@link Text} class.
+     * <p>
+     * Always throws an {@link UnsupportedOperationException}.
+     *
+     * @throws UnsupportedOperationException
+     */
+    @Override
+    public void removeClassNames(String... classNames) {
+        throw new UnsupportedOperationException(
+                "Cannot remove classes from the " + getClass().getSimpleName()
+                        + " component because it doesn't "
+                        + "represent an HTML Element but a text Node on the client side.");
+    }
 }
