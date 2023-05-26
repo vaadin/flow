@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +38,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.DependencyTrigger;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 public class UpdateImportsWithByteCodeScannerTest
@@ -50,7 +52,20 @@ public class UpdateImportsWithByteCodeScannerTest
 
     @Test
     public void assertFullSortOrder() throws MalformedURLException {
-        super.assertFullSortOrder(true);
+        List<String> expectedJsModuleImports = new ArrayList<>();
+        expectedJsModuleImports.add(
+                "import '@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js';");
+        expectedJsModuleImports.add(
+                "import '@vaadin/vaadin-mixed-component/src/vaadin-something-else.js';");
+        expectedJsModuleImports.add(
+                "import '@vaadin/vaadin-mixed-component/src/vaadin-something-else';");
+        expectedJsModuleImports.add(
+                "import '@vaadin/vaadin-mixed-component/src/vaadin-custom-themed-component.js';");
+        expectedJsModuleImports.add("import 'jsmodule/h.js';");
+        expectedJsModuleImports.add("import 'jsmodule/g.js';");
+        expectedJsModuleImports.add("import 'Frontend/local-p3-template.js';");
+        expectedJsModuleImports.add("import '" + DepsTests.UI_IMPORT + "';");
+        super.assertFullSortOrder(true, expectedJsModuleImports);
     }
 
     @JavaScript("./lazy-component-javascript.js")
@@ -61,7 +76,8 @@ public class UpdateImportsWithByteCodeScannerTest
     }
 
     @JavaScript("./eager-component-javascript.js")
-    @JsModule("./eager-component-jsmodule.js")
+    @JsModule("./eager-component-jsmodule-2.js")
+    @JsModule("./eager-component-jsmodule-1.js")
     @CssImport("./eager-component-cssimport.css")
     public static class EagerComponent extends Component {
 
@@ -177,7 +193,8 @@ public class UpdateImportsWithByteCodeScannerTest
         assertImports(mainImportContent, lazyChunkContent,
                 new String[] { "Frontend/eager-component-cssimport.css",
                         "Frontend/eager-component-javascript.js",
-                        "Frontend/eager-component-jsmodule.js" },
+                        "Frontend/eager-component-jsmodule-2.js",
+                        "Frontend/eager-component-jsmodule-1.js" },
                 new String[] { "Frontend/lazy-component-cssimport.css",
                         "Frontend/lazy-component-javascript.js",
                         "Frontend/lazy-component-jsmodule.js", });
@@ -193,7 +210,9 @@ public class UpdateImportsWithByteCodeScannerTest
         createExpectedImport(frontendDirectory, nodeModulesPath,
                 "./eager-component-javascript.js");
         createExpectedImport(frontendDirectory, nodeModulesPath,
-                "./eager-component-jsmodule.js");
+                "./eager-component-jsmodule-2.js");
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./eager-component-jsmodule-1.js");
         createExpectedImport(frontendDirectory, nodeModulesPath,
                 "./eager-component-cssimport.css");
     }
