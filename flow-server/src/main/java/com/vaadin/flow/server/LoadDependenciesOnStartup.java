@@ -20,6 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 
 /**
@@ -50,6 +51,9 @@ public @interface LoadDependenciesOnStartup {
     /**
      * The views for which to load dependencies when the application is opened
      * for the first time.
+     * <p>
+     * Note that all classes must extend {@link Component}. The the type is
+     * {@code Class<?>} because of a VS Code issue.
      *
      * @return a collection of views to load eagerly or an empty array to load
      *         all dependencies eagerly
