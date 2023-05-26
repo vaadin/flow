@@ -283,6 +283,11 @@ public open class VaadinFlowPluginExtension(project: Project) {
             ciBuild = ciBuildProperty
         }
 
+        val forceProductionBuildProperty: Boolean? = project.getBooleanProperty(InitParameters.FORCE_PRODUCTION_BUILD)
+        if (forceProductionBuildProperty != null) {
+            forceProductionBuild = forceProductionBuildProperty
+        }
+
         val useGlobalPnpmProperty: Boolean? = project.getBooleanProperty(InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM)
         if (useGlobalPnpmProperty != null) {
             useGlobalPnpm = useGlobalPnpmProperty
@@ -319,6 +324,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "optimizeBundle=$optimizeBundle, " +
             "pnpmEnable=$pnpmEnable, " +
             "ciBuild=$ciBuild, " +
+            "forceProductionBuild=$forceProductionBuild, " +
             "useGlobalPnpm=$useGlobalPnpm, " +
             "requireHomeNodeExec=$requireHomeNodeExec, " +
             "eagerServerLoad=$eagerServerLoad, " +
