@@ -231,9 +231,8 @@ public class HtmlComponentSmokeTest {
             }
 
             Object getterValue = getter.invoke(instance);
-            Optional<?> getterValueOpt = ((Optional<?>) getterValue);
-            if (isOptional && getterValueOpt.isPresent()) {
-                getterValue = getterValueOpt.get();
+            if (isOptional && ((Optional<?>) getterValue).isPresent()) {
+                getterValue = ((Optional<?>) getterValue).get();
             }
             Assert.assertEquals(getter + " should return the set value",
                     testValue, getterValue);
