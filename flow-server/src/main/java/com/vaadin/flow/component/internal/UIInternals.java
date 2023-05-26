@@ -22,10 +22,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -173,6 +176,8 @@ public class UIInternals implements Serializable {
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
 
     private List<JavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
+
+    private final HashMap<StateNode, JavaScriptInvocationDetachListener> pendingJsInvocationDetachListeners = new HashMap<>();
 
     /**
      * The related UI.
@@ -542,6 +547,7 @@ public class UIInternals implements Serializable {
             JavaScriptInvocation invocation) {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
+
         return () -> pendingJsInvocations.remove(invocation);
     }
 
@@ -557,11 +563,83 @@ public class UIInternals implements Serializable {
             return Collections.emptyList();
         }
 
-        List<JavaScriptInvocation> currentList = pendingJsInvocations;
+        List<JavaScriptInvocation> readyToSend = getPendingJavaScriptInvocations()
+                .stream()
+                .filter(invocation -> invocation.getOwner().map(StateNode::isVisible).orElse(true))
+                .collect(Collectors.toList());
 
-        pendingJsInvocations = new ArrayList<>();
+        StateNode rootNode = ui.getInternals().getStateTree().getRootNode();
+        readyToSend.forEach(i -> {
+            JavaScriptInvocationDetachListener listener = pendingJsInvocationDetachListeners.get(i.getOwner().orElse(rootNode));
+            if (listener != null) {
+                listener.removePendingStatusAndRegistrationAndDetachListener(i);
+            }
+        });
 
-        return currentList;
+        pendingJsInvocations = getPendingJavaScriptInvocations()
+                .stream()
+                .filter(invocation -> invocation.getOwner().map(node -> !node.isVisible()).orElse(false))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        pendingJsInvocations
+                .forEach(this::registerDetachListenerForPendingInvocation);
+
+        return readyToSend;
+    }
+
+    /**
+     *  Registers a detach listener for the given invocation.
+     *
+     * @param invocation - invocation should always be having an existing owner if we call with this.
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private void registerDetachListenerForPendingInvocation(
+            JavaScriptInvocation invocation) {
+
+        StateNode ownerNode = invocation.getOwner().orElse(ui.getInternals().getStateTree().getRootNode());
+
+        JavaScriptInvocationDetachListener listener = pendingJsInvocationDetachListeners
+                .computeIfAbsent(ownerNode, node -> {
+                    JavaScriptInvocationDetachListener detachListener = new JavaScriptInvocationDetachListener();
+                    Registration registration = node.addDetachListener(detachListener);
+                    detachListener.registration = () -> {
+                        pendingJsInvocationDetachListeners.remove(node);
+                        registration.remove();
+                    };
+                    return detachListener;
+                });
+        listener.invocationList.add(invocation);
+    }
+
+    private class JavaScriptInvocationDetachListener implements Command {
+        private final Set<JavaScriptInvocation> invocationList = new HashSet<>();
+
+        private Registration registration;
+
+        @Override
+        public void execute() {
+            if (!invocationList.isEmpty()) {
+                List<JavaScriptInvocation> copy = new ArrayList<>(
+                        invocationList);
+                invocationList.clear();
+                copy.forEach(this::removePendingInvocation);
+            }
+        }
+
+        private void removePendingInvocation(
+                JavaScriptInvocation invocation) {
+            UIInternals.this.pendingJsInvocations.removeIf(
+                    pendingInvocation -> pendingInvocation.equals(invocation));
+            if (invocationList.isEmpty() && registration != null) {
+                registration.remove();
+                registration = null;
+            }
+        }
+
+        void removePendingStatusAndRegistrationAndDetachListener(JavaScriptInvocation invocation) {
+            invocationList.remove(invocation);
+            removePendingInvocation(invocation);
+        }
     }
 
     /**
@@ -598,7 +676,7 @@ public class UIInternals implements Serializable {
     /**
      * Gets the page title recorded with {@link Page#setTitle(String)}.
      * <p>
-     * <b>NOTE</b> this might not be up to date with the actual title set since
+     * <b>NOTE</b> this might not be up-to-date with the actual title set since
      * it is not updated from the browser and the update might have been
      * canceled before it has been sent to the browser with
      * {@link #cancelPendingTitleUpdate()}.

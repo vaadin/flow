@@ -1439,8 +1439,8 @@ public class Element extends Node<Element> {
      * {@link Page#executeJavaScript(String, Serializable...)} calls are
      * invoked.
      * <p>
-     * If the element is not attached, the function call will be deferred until
-     * the element is attached.
+     * If the element is not attached or not visible, the function call will be
+     * deferred until the element is attached and visible.
      *
      * @see JsonCodec JsonCodec for supported argument types
      *
@@ -1520,6 +1520,10 @@ public class Element extends Node<Element> {
 
     /**
      * Sets the element visibility value.
+     *
+     * Also execute pending javascript invocations if their execution was
+     * requested while the element was not visible, and the element is now set
+     * as visible.
      *
      * @param visible
      *            the element visibility value
