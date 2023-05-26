@@ -70,9 +70,11 @@ public class VaadinUIScope extends AbstractScope {
         public void onComponentEvent(DetachEvent event) {
             assert session.hasLock();
             UI ui = event.getUI();
-            BeanStore beanStore = uiStores.remove(ui.getUIId());
-            if (beanStore != null) {
-                beanStore.destroy();
+            if (ui.isClosing()) {
+                BeanStore beanStore = uiStores.remove(ui.getUIId());
+                if (beanStore != null) {
+                    beanStore.destroy();
+                }
             }
         }
 
