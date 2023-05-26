@@ -26,7 +26,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.logging.Level;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +41,8 @@ public class StatisticsSender {
     /**
      * Creates a new instance connected to the given storage.
      *
-     * @param storage the storage to use
+     * @param storage
+     *            the storage to use
      */
     public StatisticsSender(StatisticsStorage storage) {
         this.storage = storage;
@@ -60,9 +60,10 @@ public class StatisticsSender {
     /**
      * Get the last server message.
      *
-     * @param json The json returned by {@link StatisticsStorage#read()}
+     * @param json
+     *            The json returned by {@link StatisticsStorage#read()}
      * @return The message string returned from server in last successful
-     * requests.
+     *         requests.
      */
     String getLastServerMessage(ObjectNode json) {
         return json.has(StatisticsConstants.FIELD_SERVER_MESSAGE)
@@ -75,7 +76,8 @@ public class StatisticsSender {
      * <p>
      * Uses <code>System.currentTimeMillis</code> as time source.
      *
-     * @param json The json returned by {@link StatisticsStorage#read()}
+     * @param json
+     *            The json returned by {@link StatisticsStorage#read()}
      * @return true if enough time has passed since the last send attempt.
      * @see #getLastSendTime()
      * @see #getInterval()
@@ -90,10 +92,11 @@ public class StatisticsSender {
     /**
      * Reads the statistics update interval.
      *
-     * @param json The json returned by {@link StatisticsStorage#read()}
+     * @param json
+     *            The json returned by {@link StatisticsStorage#read()}
      * @return Time interval in seconds.
-     * {@link StatisticsConstants#TIME_SEC_24H} in minumun and
-     * {@link StatisticsConstants#TIME_SEC_30D} as maximum.
+     *         {@link StatisticsConstants#TIME_SEC_24H} in minumun and
+     *         {@link StatisticsConstants#TIME_SEC_30D} as maximum.
      * @see StatisticsConstants#FIELD_SEND_INTERVAL
      */
     long getInterval(ObjectNode json) {
@@ -114,7 +117,8 @@ public class StatisticsSender {
      * Get interval that is between {@link StatisticsConstants#TIME_SEC_12H} and
      * {@link StatisticsConstants#TIME_SEC_30D}
      *
-     * @param intervalSec Interval to normalize
+     * @param intervalSec
+     *            Interval to normalize
      * @return <code>interval</code> if inside valid range.
      */
     private static long normalizeInterval(long intervalSec) {
@@ -128,7 +132,8 @@ public class StatisticsSender {
      * Gets the last time the data was collected according to the statistics
      * file.
      *
-     * @param json The json returned by {@link StatisticsStorage#read()}
+     * @param json
+     *            The json returned by {@link StatisticsStorage#read()}
      * @return Unix timestamp or -1 if not present
      * @see StatisticsConstants#FIELD_LAST_SENT
      */
@@ -147,7 +152,8 @@ public class StatisticsSender {
      * Gets the last time the data was collected according to the statistics
      * file.
      *
-     * @param json The json returned by {@link StatisticsStorage#read()}
+     * @param json
+     *            The json returned by {@link StatisticsStorage#read()}
      * @return Unix timestamp or -1 if not present
      * @see StatisticsConstants#FIELD_LAST_STATUS
      */
@@ -165,7 +171,8 @@ public class StatisticsSender {
     /**
      * Send data in the background if needed.
      *
-     * @param json The json returned by {@link StatisticsStorage#read()}
+     * @param json
+     *            The json returned by {@link StatisticsStorage#read()}
      */
     public void triggerSendIfNeeded(ObjectNode json) {
         // Send usage statistics asynchronously, if enough time has
@@ -188,7 +195,8 @@ public class StatisticsSender {
      * Reads the current data and posts it to given URL. Updates or replaces the
      * local data according to the response.
      *
-     * @param json The json returned by {@link StatisticsStorage#read()}
+     * @param json
+     *            The json returned by {@link StatisticsStorage#read()}
      *
      * @see #postData(String, JsonNode)
      */
@@ -260,10 +268,12 @@ public class StatisticsSender {
      * <p>
      * Updates <code>FIELD_LAST_STATUS</code>.
      *
-     * @param postUrl URL to post data to.
-     * @param data Json data to send
+     * @param postUrl
+     *            URL to post data to.
+     * @param data
+     *            Json data to send
      * @return Response or <code>data</code> if the data was not successfully
-     * sent.
+     *         sent.
      */
     private static ObjectNode postData(String postUrl, String data) {
         ObjectNode result;
@@ -272,17 +282,16 @@ public class StatisticsSender {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(postUrl))
                     .POST(HttpRequest.BodyPublishers.ofString(data))
-                    .header("Content-Type", "application/json")
-                    .build();
+                    .header("Content-Type", "application/json").build();
 
-            HttpResponse<String> r = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> r = client.send(request,
+                    HttpResponse.BodyHandlers.ofString());
 
             int statusCode = r.statusCode();
 
             JsonNode jsonResponse = null;
             if (statusCode == 200) {
-                jsonResponse = JsonHelpers.getJsonMapper()
-                        .readTree(r.body());
+                jsonResponse = JsonHelpers.getJsonMapper().readTree(r.body());
             }
 
             if (jsonResponse != null && jsonResponse.isObject()) {
@@ -292,7 +301,8 @@ public class StatisticsSender {
                 result = JsonHelpers.getJsonMapper().createObjectNode();
             }
             // Update the status and return the results
-            result.put(StatisticsConstants.FIELD_LAST_STATUS, statusCode + ": "); // TODO is reason phrase needed here
+            result.put(StatisticsConstants.FIELD_LAST_STATUS,
+                    statusCode + ": "); // TODO is reason phrase needed here
             return result;
 
         } catch (IOException | InterruptedException ex) {

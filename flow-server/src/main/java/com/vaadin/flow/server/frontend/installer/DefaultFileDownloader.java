@@ -56,7 +56,8 @@ public final class DefaultFileDownloader implements FileDownloader {
     /**
      * Construct file downloader with given proxy configuration.
      *
-     * @param proxyConfig proxy configuration to use for file download
+     * @param proxyConfig
+     *            proxy configuration to use for file download
      */
     public DefaultFileDownloader(ProxyConfig proxyConfig) {
         this.proxyConfig = proxyConfig;
@@ -92,8 +93,7 @@ public final class DefaultFileDownloader implements FileDownloader {
     private void downloadFile(File destination, URI downloadUri)
             throws IOException, DownloadException {
 
-        HttpClient.Builder b = HttpClient.newBuilder()
-                .version(Version.HTTP_1_1)
+        HttpClient.Builder b = HttpClient.newBuilder().version(Version.HTTP_1_1)
                 .followRedirects(Redirect.NORMAL)
                 .connectTimeout(Duration.ofSeconds(20));
 
@@ -101,14 +101,17 @@ public final class DefaultFileDownloader implements FileDownloader {
                 .getProxyForUrl(downloadUri.toString());
 
         if (proxy != null) {
-            b = b.proxy(ProxySelector.of(new InetSocketAddress(proxy.host, proxy.port)));
+            b = b.proxy(ProxySelector
+                    .of(new InetSocketAddress(proxy.host, proxy.port)));
             b = b.authenticator(new Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
                     if (getRequestorType() == RequestorType.PROXY) {
-                        return new PasswordAuthentication(proxy.username, proxy.password.toCharArray());
+                        return new PasswordAuthentication(proxy.username,
+                                proxy.password.toCharArray());
                     }
-                    return new PasswordAuthentication(userName, password.toCharArray());
+                    return new PasswordAuthentication(userName,
+                            password.toCharArray());
                 }
             });
         } else {
@@ -118,7 +121,8 @@ public final class DefaultFileDownloader implements FileDownloader {
                 b = b.authenticator(new Authenticator() {
                     @Override
                     protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(userName, password.toCharArray());
+                        return new PasswordAuthentication(userName,
+                                password.toCharArray());
                     }
                 });
 
@@ -126,23 +130,22 @@ public final class DefaultFileDownloader implements FileDownloader {
         }
 
         HttpClient client = b.build();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(downloadUri)
-                .timeout(Duration.ofMinutes(5))
-                .GET()
-                .build();
+        HttpRequest request = HttpRequest.newBuilder().uri(downloadUri)
+                .timeout(Duration.ofMinutes(5)).GET().build();
 
         try {
-            HttpResponse<Path> response = client.send(request, BodyHandlers.ofFile(destination.toPath()));
+            HttpResponse<Path> response = client.send(request,
+                    BodyHandlers.ofFile(destination.toPath()));
             if (response.statusCode() != 200) {
-                throw new DownloadException(
-                        "Got error code " + response.statusCode() + " from the server.");
+                throw new DownloadException("Got error code "
+                        + response.statusCode() + " from the server.");
             }
-            long expected = response.headers().firstValueAsLong("Content-Lenght").getAsLong();
+            long expected = response.headers()
+                    .firstValueAsLong("Content-Lenght").getAsLong();
             if (destination.length() != expected) {
-                throw new DownloadException(
-                        "Error downloading from " + downloadUri + ". Expected "
-                        + expected + " bytes but got " + destination.length());
+                throw new DownloadException("Error downloading from "
+                        + downloadUri + ". Expected " + expected
+                        + " bytes but got " + destination.length());
             }
 
         } catch (InterruptedException ex) {
