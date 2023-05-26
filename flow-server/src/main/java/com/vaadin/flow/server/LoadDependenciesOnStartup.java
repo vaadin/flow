@@ -20,7 +20,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 
 /**
@@ -55,6 +54,6 @@ public @interface LoadDependenciesOnStartup {
      * @return a collection of views to load eagerly or an empty array to load
      *         all dependencies eagerly
      */
-    Class<? extends Component>[] value() default {};
+    Class<?>[] value() default {};
 
 }
