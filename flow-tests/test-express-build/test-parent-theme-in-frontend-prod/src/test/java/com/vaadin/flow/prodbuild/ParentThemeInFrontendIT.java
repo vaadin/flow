@@ -35,6 +35,11 @@ public class ParentThemeInFrontendIT extends ChromeBrowserTest {
     private static final String GREEN_COLOR = "rgba(0, 128, 0, 1)";
     private File nodeModules;
 
+    @Override
+    protected String getTestPath() {
+        return "/com.vaadin.flow.prodbuild.ParentThemeInFrontendView";
+    }
+
     @Before
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
