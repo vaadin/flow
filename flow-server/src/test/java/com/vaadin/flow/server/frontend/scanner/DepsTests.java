@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 
@@ -37,6 +39,13 @@ public class DepsTests {
             actualUrls.get(key).removeIf(imp -> imp.equals(UI_IMPORT));
         }
         assertImports(actualUrls, expectedUrls);
+    }
+
+    public static void assertImportsWithFilter(
+            Map<ChunkInfo, List<String>> actualUrls, Predicate<String> filter,
+            String... expectedUrls) {
+        Assert.assertEquals(List.of(expectedUrls), merge(actualUrls).stream()
+                .filter(filter).collect(Collectors.toList()));
     }
 
     /**

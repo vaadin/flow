@@ -279,7 +279,7 @@ abstract class AbstractUpdateImports implements Runnable {
                         && !module.startsWith(
                                 ApplicationConstants.BASE_PROTOCOL_PREFIX))
                 .filter(module -> !UrlUtil.isExternal(module))
-                .map(module -> resolveResource(module)).sorted()
+                .map(module -> resolveResource(module))
                 .collect(Collectors.toList());
     }
 
