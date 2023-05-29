@@ -220,7 +220,7 @@ public class InitParameters implements Serializable {
     /**
      * Configuration name for disabling dev bundle rebuild.
      */
-    public static final String SKIP_DEV_BUNDLE_REBUILD = "skip.dev.bundle";
+    public static final String SKIP_DEV_BUNDLE_REBUILD = "vaadin.skip.dev.bundle";
 
     /**
      * Configuration name for forcing optimized production bundle build.
