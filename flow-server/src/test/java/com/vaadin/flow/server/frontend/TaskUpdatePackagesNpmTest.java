@@ -562,7 +562,7 @@ public class TaskUpdatePackagesNpmTest {
         FileUtils.write(versionJsonFile, versionJsonString,
                 StandardCharsets.UTF_8);
 
-        Optional<String> vaadinVersion = task.getVaadinVersion();
+        Optional<String> vaadinVersion = task.getVaadinVersion(finder);
 
         Assert.assertTrue("versions.json should have had the platform field",
                 vaadinVersion.isPresent());
@@ -575,7 +575,7 @@ public class TaskUpdatePackagesNpmTest {
         //@formatter:on
         FileUtils.write(versionJsonFile, versionJsonString,
                 StandardCharsets.UTF_8);
-        vaadinVersion = task.getVaadinVersion();
+        vaadinVersion = task.getVaadinVersion(finder);
 
         Assert.assertFalse("versions.json should not contain platform version",
                 vaadinVersion.isPresent());
@@ -588,7 +588,7 @@ public class TaskUpdatePackagesNpmTest {
         final TaskUpdatePackages task = createTask(
                 createApplicationDependencies());
 
-        Optional<String> vaadinVersion = task.getVaadinVersion();
+        Optional<String> vaadinVersion = task.getVaadinVersion(finder);
 
         Assert.assertFalse("versions.json should not contain platform version",
                 vaadinVersion.isPresent());
