@@ -215,15 +215,15 @@ public class InitParameters implements Serializable {
     /**
      * Configuration name for enabling ci build for npm/pnpm.
      */
-    public static final String CI_BUILD = "ci.build";
+    public static final String CI_BUILD = "vaadin.ci.build";
 
     /**
      * Configuration name for disabling dev bundle rebuild.
      */
-    public static final String SKIP_DEV_BUNDLE_REBUILD = "skip.dev.bundle";
+    public static final String SKIP_DEV_BUNDLE_REBUILD = "vaadin.skip.dev.bundle";
 
     /**
      * Configuration name for forcing optimized production bundle build.
      */
-    public static final String FORCE_PRODUCTION_BUILD = "force.production.build";
+    public static final String FORCE_PRODUCTION_BUILD = "vaadin.force.production.build";
 }
