@@ -15,13 +15,9 @@
  */
 package com.vaadin.flow.spring.test;
 
-import java.time.Duration;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
  * @author Vaadin Ltd
@@ -81,7 +77,7 @@ public class ScopesIT extends AbstractSpringTest {
 
     @Test
     public void checkUiScope_afterResynchronized() throws Exception {
-        getDriver().get(getTestURL() + "ui-scope-push");
+        getDriver().get(getTestURL() + "ui-scope");
         waitForDevServer();
 
         String mainId = findElement(By.id("main")).getText();
@@ -92,15 +88,6 @@ public class ScopesIT extends AbstractSpringTest {
 
         // Resynchronize
         findElement(By.id("resynchronize")).click();
-
-        // need to wait a bit here so that thread is done. Changing UI from this
-        // thread and pushing will not work.
-        try {
-            new WebDriverWait(getDriver(), Duration.ofMillis(100))
-                    .until((a) -> false);
-        } catch (TimeoutException e) {
-            // expected
-        }
 
         findElement(By.id("status-check")).click();
 
