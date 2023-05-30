@@ -46,13 +46,13 @@ const addAdoptedStyle = (cssText, target, first) => {
   const sheet = new CSSStyleSheet();
   sheet.replaceSync(cssText);
   if (first) {
-    target.adoptedStyleSheets = [sheet, ...target.adoptedStyleSheets];
+    target.adoptedStyleSheets.splice(0, 0, sheet);
   } else {
-    target.adoptedStyleSheets = [...target.adoptedStyleSheets, sheet];
+    target.adoptedStyleSheets.push(sheet);
   }
   return () => {
-    target.adoptedStyleSheets = target.adoptedStyleSheets.filter(ss => ss !== sheet);
-  }
+    target.adoptedStyleSheets.splice(target.adoptedStyleSheets.indexOf(sheet), 1);
+  };
 };
 
 const addStyleTag = (cssText, referenceComment) => {
