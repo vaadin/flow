@@ -21,14 +21,34 @@ import java.nio.file.Files;
 import com.vaadin.flow.testutil.TestUtils;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 public class ProjectHelpersTest {
 
+    private static final String USER_HOME = "user.home";
+
+    private String userHome;
+
+    @Before
+    public void setup() {
+        userHome = System.getProperty(USER_HOME);
+    }
+
+    @After
+    public void teardown() {
+        if (userHome == null) {
+            System.clearProperty(USER_HOME);
+        } else {
+            System.setProperty(USER_HOME, userHome);
+        }
+    }
+
     @Test
     public void readUserKey() throws IOException {
-        System.setProperty("user.home",
+        System.setProperty(USER_HOME,
                 TestUtils.getTestFolder("stats-data").toPath().toString());
 
         // Read from file
@@ -41,7 +61,7 @@ public class ProjectHelpersTest {
         File vaadinHome = new File(tempDir, ".vaadin");
         vaadinHome.mkdir();
 
-        System.setProperty("user.home", tempDir.getAbsolutePath());
+        System.setProperty(USER_HOME, tempDir.getAbsolutePath());
         String newKey = ProjectHelpers.getUserKey();
         assertNotNull(newKey);
         assertNotSame(keyString, newKey);
@@ -58,14 +78,14 @@ public class ProjectHelpersTest {
 
     @Test
     public void writeAndReadUserKey() throws IOException {
-        System.setProperty("user.home", createTempDir().getAbsolutePath());
+        System.setProperty(USER_HOME, createTempDir().getAbsolutePath());
 
         // Write file
         String userKey = ProjectHelpers.getUserKey();
         Assert.assertNotNull(userKey);
 
         // Check file
-        File userFile = new File(System.getProperty("user.home"),
+        File userFile = new File(System.getProperty(USER_HOME),
                 ".vaadin/userKey");
         String fromFile = IOUtils.toString(new FileInputStream(userFile),
                 StandardCharsets.UTF_8);
@@ -76,7 +96,7 @@ public class ProjectHelpersTest {
 
     @Test
     public void readProKey() {
-        System.setProperty("user.home",
+        System.setProperty(USER_HOME,
                 TestUtils.getTestFolder("stats-data").toPath().toString());
 
         // File is used by default
