@@ -17,6 +17,7 @@ package com.vaadin.flow.server;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -623,6 +624,11 @@ public class VaadinServlet extends HttpServlet {
     @Override
     public void destroy() {
         super.destroy();
+        if(staticFileHandler instanceof final StaticFileServer staticFileServer) {
+            for(final URI resourceUri : StaticFileServer.openFileSystems.keySet()) {
+                staticFileServer.closeFileSystem(resourceUri);
+            }
+        }
         if (getService() != null) {
             getService().destroy();
         }

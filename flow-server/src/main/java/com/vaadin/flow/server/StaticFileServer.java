@@ -131,8 +131,6 @@ public class StaticFileServer implements StaticFileHandler {
                 return Files.isDirectory(path);
             } catch (IOException e) {
                 getLogger().debug("failed to read jar file contents", e);
-            } finally {
-                closeFileSystem(resourceURI);
             }
         }
 
