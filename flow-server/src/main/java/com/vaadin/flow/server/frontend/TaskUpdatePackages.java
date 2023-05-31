@@ -356,7 +356,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     private boolean isPlatformVersionUpdated() throws IOException {
         // if no record of current version is present, version is not
         // considered updated
-        Optional<String> platformVersion = getVaadinVersion();
+        Optional<String> platformVersion = getVaadinVersion(finder);
         if (platformVersion.isPresent()
                 && options.getNodeModulesFolder().exists()) {
             JsonObject vaadinJsonContents = getVaadinJsonContents();
@@ -371,7 +371,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         return false;
     }
 
-    protected Optional<String> getVaadinVersion() {
+    static Optional<String> getVaadinVersion(ClassFinder finder) {
         URL coreVersionsResource = finder
                 .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
 
