@@ -141,7 +141,7 @@ public final class DefaultFileDownloader implements FileDownloader {
                         + response.statusCode() + " from the server.");
             }
             long expected = response.headers()
-                    .firstValueAsLong("Content-Lenght").getAsLong();
+                    .firstValueAsLong("Content-Length").getAsLong();
             if (destination.length() != expected) {
                 throw new DownloadException("Error downloading from "
                         + downloadUri + ". Expected " + expected
