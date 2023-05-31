@@ -121,13 +121,13 @@ public class CleanFrontendMojoTest {
 
     @Test
     public void should_removeDevBundleFolder() throws MojoFailureException {
-        final File nodeModules = new File(projectBase,
+        final File devBundleDir = new File(projectBase,
                 Constants.DEV_BUNDLE_LOCATION);
         Assert.assertTrue("Failed to create 'dev-bundle'",
-                nodeModules.mkdirs());
+                devBundleDir.mkdirs());
         mojo.execute();
         Assert.assertFalse("'dev-bundle' was not removed.",
-                nodeModules.exists());
+                devBundleDir.exists());
     }
 
     @Test
