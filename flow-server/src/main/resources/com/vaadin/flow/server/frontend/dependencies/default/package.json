@@ -19,8 +19,8 @@
     "async": "3.2.2",
     "glob": "7.2.3",
     "typescript": "5.0.4",
-    "workbox-core": "6.5.4",
-    "workbox-precaching": "6.5.4",
+    "workbox-core": "6.6.1",
+    "workbox-precaching": "6.6.1",
     "strip-css-comments": "5.0.0"
   }
 }
