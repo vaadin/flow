@@ -72,7 +72,7 @@ public class CssBundlerTest {
         Assert.assertEquals(
                 "background-image: url('VAADIN/themes/my-theme/foo/bar.png');",
                 CssBundler.inlineImports(themeFolder,
-                        getThemeFile("styles.css"), null));
+                        getThemeFile("styles.css")));
     }
 
     @Test
@@ -94,8 +94,9 @@ public class CssBundlerTest {
                             src: url('VAADIN/themes/my-theme/fonts/ostrich-sans-regular.ttf') format("TrueType");
                         }"""
                         .trim(),
-                CssBundler.inlineImports(themeFolder,
-                        getThemeFile("styles.css"), null).trim());
+                CssBundler
+                        .inlineImports(themeFolder, getThemeFile("styles.css"))
+                        .trim());
     }
 
     @Test
@@ -107,7 +108,7 @@ public class CssBundlerTest {
         Assert.assertEquals(
                 "background-image: url('VAADIN/themes/my-theme/sub/file.png');",
                 CssBundler.inlineImports(themeFolder,
-                        getThemeFile("styles.css"), null));
+                        getThemeFile("styles.css")));
     }
 
     private boolean createThemeFile(String filename) throws IOException {
@@ -123,14 +124,14 @@ public class CssBundlerTest {
     private void assertImportWorks(String importCss) throws IOException {
         File f = writeFileWithImport(importCss, "foo.css");
         Assert.assertEquals(importCss, TEST_CSS.trim(),
-                CssBundler.inlineImports(f.getParentFile(), f, null).trim());
+                CssBundler.inlineImports(f.getParentFile(), f).trim());
 
     }
 
     private void assertImportNotHandled(String importCss) throws IOException {
         File f = writeFileWithImport(importCss, "foo.css");
         Assert.assertEquals(importCss,
-                CssBundler.inlineImports(f.getParentFile(), f, null));
+                CssBundler.inlineImports(f.getParentFile(), f));
 
     }
 
