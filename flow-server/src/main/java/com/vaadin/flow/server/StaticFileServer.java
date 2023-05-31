@@ -78,8 +78,9 @@ public class StaticFileServer implements StaticFileHandler {
 
     // Matches paths to theme files referenced from link tags (e.g. styles
     // .css or document.css)
+    private static final String APP_THEME_STRING_PATTERN = "^\\/VAADIN\\/themes\\/([\\s\\S]+?)\\/";
     private static final Pattern APP_THEME_PATTERN = Pattern
-            .compile("^\\/VAADIN\\/themes\\/([\\s\\S]+?)\\/");
+            .compile(APP_THEME_STRING_PATTERN);
 
     // Matches paths to theme asset files referenced from CSS as an url() or
     // from Java (e.g. new Image("themes/my-theme/...")
@@ -284,6 +285,11 @@ public class StaticFileServer implements StaticFileHandler {
                     .getThemeResourceFromPrecompiledProductionBundle(
                             filenameWithPath.replace(VAADIN_MAPPING, "")
                                     .replaceFirst("^/", ""));
+            if (resourceUrl == null) {
+                String staticResourcePath = filenameWithPath
+                        .replaceFirst(APP_THEME_STRING_PATTERN, "/");
+                resourceUrl = getStaticResource(staticResourcePath);
+            }
         } else if (APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath).find()) {
             resourceUrl = vaadinService.getClassLoader()
                     .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
