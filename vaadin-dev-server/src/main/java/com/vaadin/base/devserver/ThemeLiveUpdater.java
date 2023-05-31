@@ -63,7 +63,7 @@ public class ThemeLiveUpdater implements Closeable {
                                             themeName, "styles.css"),
                                             CssBundler.inlineImports(
                                                     stylesCss.getParentFile(),
-                                                    stylesCss, null));
+                                                    stylesCss));
                         } catch (IOException e) {
                             getLogger().error(
                                     "Unable to perform hot update of " + file,
