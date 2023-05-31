@@ -25,9 +25,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,7 +48,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -98,6 +95,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -1648,45 +1646,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static Element getStyleTag(String themeName, String fileName,
             AbstractConfiguration config) {
-        Element element = new Element("style");
+        Element element;
         try {
+            String themeFilePath = ThemeUtils.getThemeFilePath(themeName,
+                    fileName);
             if (config.isProductionMode()) {
-
-                java.net.URL cssResourceUrl = ThemeUtils
-                        .getThemeResourceFromPrecompiledProductionBundle(
-                                Paths.get(Constants.APPLICATION_THEME_ROOT,
-                                        themeName, fileName).toString());
-
-                if (cssResourceUrl != null) {
-                    File stylesCss;
-                    String pathToJar = null;
-                    String cssResourcePath = cssResourceUrl.toString();
-                    int jarExtensionPosition = cssResourcePath
-                            .lastIndexOf(".jar!/");
-                    if (jarExtensionPosition >= 0) {
-                        // URL points to the resource in the JAR
-                        pathToJar = cssResourcePath.substring(0,
-                                jarExtensionPosition + 4);
-                        String relativeFilePath = cssResourcePath
-                                .substring(jarExtensionPosition + 5);
-                        stylesCss = new File(relativeFilePath);
-                    } else {
-                        // URL points onto the file in the build folder (e.g.
-                        // when running from IDE)
-                        stylesCss = Paths.get(cssResourceUrl.toURI()).toFile();
-                    }
-                    // Inline CSS into tag to make url and imports resolved
-                    // properly when CSS is in the static resources folder
-                    element.appendChild(new DataNode(CssBundler.inlineImports(
-                            stylesCss.getParentFile(), stylesCss, pathToJar)));
-                } else {
-                    getLogger().warn(
-                            "Couldn't find stylesheet '{}' resource in the classpath",
-                            fileName);
-                }
+                element = new Element("link");
+                element.attr("rel", "stylesheet");
+                element.attr("type", "text/css");
+                element.attr("href", themeFilePath);
             } else {
-                String themeFilePath = ThemeUtils.getThemeFilePath(themeName,
-                        fileName);
+                element = new Element("style");
                 element.attr("data-file-path", themeFilePath);
                 File frontendDirectory = FrontendUtils
                         .getProjectFrontendDir(config);
@@ -1694,10 +1664,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         ThemeUtils.getThemeFolder(frontendDirectory, themeName),
                         fileName);
                 // Inline CSS into style tag to have hot module reload feature
-                element.appendChild(new DataNode(CssBundler.inlineImports(
-                        stylesCss.getParentFile(), stylesCss, null)));
+                element.appendChild(new DataNode(CssBundler
+                        .inlineImports(stylesCss.getParentFile(), stylesCss)));
             }
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             throw new RuntimeException(
                     "Unable to read theme file from " + fileName, e);
         }
