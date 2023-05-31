@@ -26,6 +26,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
@@ -110,6 +111,27 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
         } catch (IOException e) {
             throw new MojoFailureException(
                     "Failed to clean 'package.json' file", e);
+        }
+
+        removeDevBundle();
+    }
+
+    /**
+     * Try removing the application dev-bundle folder if it exists.
+     * <p>
+     * Log a warning if there was an issue removing the folder.
+     */
+    private void removeDevBundle() {
+        File devBundleDir = new File(npmFolder(),
+                Constants.DEV_BUNDLE_LOCATION);
+        try {
+            if (devBundleDir.exists()) {
+                FrontendUtils.deleteDirectory(devBundleDir);
+            }
+        } catch (IOException exception) {
+            getLog().debug("Exception removing dev-bundle", exception);
+            getLog().error("Failed to remove '" + devBundleDir.getAbsolutePath()
+                    + "'. Please remove it manually.");
         }
     }
 
