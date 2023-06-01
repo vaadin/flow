@@ -1,16 +1,22 @@
 package com.vaadin.flow.server.frontend.scanner;
 
+import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.junit.Test;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.scanner.ScannerDependenciesTest.UISearchField.SearchField;
+import com.vaadin.flow.server.frontend.scanner.ScannerDependenciesTest.UISearchField.UISearchLayout;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.BridgeClass;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component0;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component1;
@@ -242,4 +248,64 @@ public class ScannerDependenciesTest {
         DepsTests.assertImportsExcludingUI(deps.getModules(),
                 "dynamic-component.js", "dynamic-layout.js");
     }
+
+    @Test
+    public void should_visitMethodAnnotations() {
+        FrontendDependencies deps = getFrontendDependencies(
+                MethodAnnotationRoute.class);
+        DepsTests.assertImportsExcludingUI(deps.getModules(),
+                "./search-layout.js", "./search-field.js");
+    }
+
+    @Route
+    public static class MethodAnnotationRoute {
+        private MyPmo myPmo;
+    }
+
+    @UISearchLayout
+    public static class MyPmo {
+
+        @UISearchField()
+        public String getText() {
+            return "value to be displayed";
+        }
+    }
+
+    public interface ComponentDefinitionCreator<T> {
+
+    }
+
+    @Uses(SearchField.class)
+    public @interface UISearchField {
+        class SearchFieldComponentDefinitionCreator
+                implements ComponentDefinitionCreator<UISearchField> {
+            public Supplier<Component> create(UISearchField annotation,
+                    AnnotatedElement annotatedElement) {
+                return () -> new SearchField();
+            }
+        }
+
+        @Uses(SearchLayout.class)
+        public @interface UISearchLayout {
+            class SearchLayoutComponentDefinitionCreator
+                    implements ComponentDefinitionCreator<UISearchLayout> {
+                public Supplier<Component> create(UISearchLayout annotation,
+                        AnnotatedElement annotatedElement) {
+                    return () -> new SearchLayout();
+                }
+            }
+        }
+
+        @JsModule("./search-layout.js")
+        public static class SearchLayout extends Component {
+
+        }
+
+        @JsModule("./search-field.js")
+        public static class SearchField extends Component {
+
+        }
+
+    }
+
 }
