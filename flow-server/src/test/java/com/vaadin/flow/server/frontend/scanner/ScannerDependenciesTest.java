@@ -1,6 +1,8 @@
 package com.vaadin.flow.server.frontend.scanner;
 
+import java.io.InputStream;
 import java.lang.reflect.AnnotatedElement;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -9,14 +11,15 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.junit.Test;
+import org.objectweb.asm.ClassReader;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
-import com.vaadin.flow.server.frontend.scanner.ScannerDependenciesTest.UISearchField.SearchField;
+import com.vaadin.flow.server.frontend.scanner.ScannerDependenciesTest.UISearchField.SearchFieldComponentDefinitionCreator;
 import com.vaadin.flow.server.frontend.scanner.ScannerDependenciesTest.UISearchField.UISearchLayout;
+import com.vaadin.flow.server.frontend.scanner.ScannerDependenciesTest.UISearchField.UISearchLayout.SearchLayoutComponentDefinitionCreator;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.BridgeClass;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component0;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component1;
@@ -275,7 +278,11 @@ public class ScannerDependenciesTest {
 
     }
 
-    @Uses(SearchField.class)
+    public @interface LinkTo {
+        Class<?> value();
+    }
+
+    @LinkTo(SearchFieldComponentDefinitionCreator.class)
     public @interface UISearchField {
         class SearchFieldComponentDefinitionCreator
                 implements ComponentDefinitionCreator<UISearchField> {
@@ -285,7 +292,7 @@ public class ScannerDependenciesTest {
             }
         }
 
-        @Uses(SearchLayout.class)
+        @LinkTo(SearchLayoutComponentDefinitionCreator.class)
         public @interface UISearchLayout {
             class SearchLayoutComponentDefinitionCreator
                     implements ComponentDefinitionCreator<UISearchLayout> {
