@@ -65,6 +65,7 @@ dependencies {
     implementation('org.jetbrains.kotlin:kotlin-stdlib:1.7.20')
 
     implementation("com.vaadin:flow-plugin-base:${pom.parent.version}")
+    compileOnly("com.vaadin:flow-server:${pom.parent.version}")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.7.20")
