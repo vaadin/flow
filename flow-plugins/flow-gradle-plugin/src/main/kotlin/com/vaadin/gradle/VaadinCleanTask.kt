@@ -17,6 +17,7 @@ package com.vaadin.gradle
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import com.vaadin.flow.server.Constants
 
 /**
  * Cleans everything Vaadin-related. Useful if npm fails to run after Vaadin
@@ -44,8 +45,8 @@ import org.gradle.api.tasks.TaskAction
 public open class VaadinCleanTask : DefaultTask() {
     init {
         group = "Vaadin"
-        description = "Cleans the project completely and removes 'generated' folders, node_modules, webpack.generated.js, " +
-                "tsconfig.json, types.d.ts, pnpm-lock.yaml, pnpmfile.js and package-lock.json"
+        description = "Cleans the project completely and removes 'generated' folders, node_modules, src/main/dev-bundle, webpack.generated.js, " +
+                "vite.generated.js, tsconfig.json, types.d.ts, pnpm-lock.yaml, pnpmfile.js and package-lock.json"
 
         dependsOn("clean")
     }
@@ -58,8 +59,10 @@ public open class VaadinCleanTask : DefaultTask() {
                 extension.generatedTsFolder.absolutePath,
                 extension.frontendDirectory.resolve("generated").absolutePath,
                 "${project.projectDir}/node_modules",
+                "${project.projectDir}/${Constants.DEV_BUNDLE_LOCATION}",
                 "${project.projectDir}/package-lock.json",
                 "${project.projectDir}/webpack.generated.js",
+                "${project.projectDir}/vite.generated.js",
                 "${project.projectDir}/pnpm-lock.yaml", // used by Vaadin 14.2+ pnpm
                 "${project.projectDir}/pnpmfile.js", // used by Vaadin 14.2+ pnpm
                 "${project.projectDir}/tsconfig.json", // used by Vaadin 15+

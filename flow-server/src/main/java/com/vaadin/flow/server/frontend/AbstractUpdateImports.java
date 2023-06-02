@@ -654,7 +654,7 @@ abstract class AbstractUpdateImports implements Runnable {
         } else {
             addLines(lines, String.format(INJECT_CSS, i, cssImport));
         }
-        return found;
+        return found || !options.isBundleBuild();
     }
 
     private String notFoundMessage(Set<String> files, String prefix,
