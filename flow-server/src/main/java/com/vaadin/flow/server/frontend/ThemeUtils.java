@@ -166,9 +166,9 @@ public class ThemeUtils {
     public static URL getThemeResourceFromPrecompiledProductionBundle(
             String themeAssetPath) {
         // lookup in the prod bundle, where themes are copied from project's
-        URL resourceUrl = ThemeUtils.class.getClassLoader()
-                .getResource(Paths.get(VAADIN_WEBAPP_RESOURCES,
-                        VAADIN_STATIC_FILES_PATH, themeAssetPath).toString());
+        URL resourceUrl = ThemeUtils.class.getClassLoader().getResource(
+                FrontendUtils.getUnixPath(Paths.get(VAADIN_WEBAPP_RESOURCES,
+                        VAADIN_STATIC_FILES_PATH, themeAssetPath)));
         if (resourceUrl == null) {
             // lookup in the JARs for packaged themes
             resourceUrl = ThemeUtils.class.getClassLoader().getResource(

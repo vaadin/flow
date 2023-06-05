@@ -16,6 +16,8 @@
 package com.vaadin.flow.internal.springcsrf;
 
 import java.util.Optional;
+
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Element;
 
 import jakarta.servlet.ServletRequest;
@@ -113,7 +115,7 @@ public class SpringCsrfTokenUtil {
         // See: https://github.com/vaadin/hilla/issues/910
         Element script = new Element("script");
         script.attr("type", "module");
-        script.append(
+        script.appendChild(new DataNode(
                 """
                         const csrfParameterName = '%s';
                         const csrfCookieName = '%s';
@@ -130,7 +132,7 @@ public class SpringCsrfTokenUtil {
                           e.formData.set(csrfParameterName, cookies.get(csrfCookieName));
                         });
                         """
-                        .formatted(parameterName, cookieName));
+                        .formatted(parameterName, cookieName)));
         head.insertChildren(0, script);
     }
 }
