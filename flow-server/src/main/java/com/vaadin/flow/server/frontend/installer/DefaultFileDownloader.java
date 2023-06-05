@@ -93,17 +93,17 @@ public final class DefaultFileDownloader implements FileDownloader {
     private void downloadFile(File destination, URI downloadUri)
             throws IOException, DownloadException {
 
-        HttpClient.Builder b = HttpClient.newBuilder().version(Version.HTTP_1_1)
-                .followRedirects(Redirect.NORMAL)
-                .connectTimeout(Duration.ofSeconds(20));
+        HttpClient.Builder clientBuilder = HttpClient.newBuilder()
+                .version(Version.HTTP_1_1).followRedirects(Redirect.NORMAL);
 
         ProxyConfig.Proxy proxy = proxyConfig
                 .getProxyForUrl(downloadUri.toString());
 
         if (proxy != null) {
-            b = b.proxy(ProxySelector
+            getLogger().debug("Downloading via proxy {}", proxy.toString());
+            clientBuilder = clientBuilder.proxy(ProxySelector
                     .of(new InetSocketAddress(proxy.host, proxy.port)));
-            b = b.authenticator(new Authenticator() {
+            clientBuilder = clientBuilder.authenticator(new Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
                     if (getRequestorType() == RequestorType.PROXY) {
@@ -115,23 +115,25 @@ public final class DefaultFileDownloader implements FileDownloader {
                 }
             });
         } else {
+            getLogger().debug("No proxy was configured, downloading directly");
             if (userName != null && !userName.isEmpty() && password != null
                     && !password.isEmpty()) {
                 getLogger().info("Using credentials ({})", userName);
-                b = b.authenticator(new Authenticator() {
-                    @Override
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(userName,
-                                password.toCharArray());
-                    }
-                });
+                clientBuilder = clientBuilder
+                        .authenticator(new Authenticator() {
+                            @Override
+                            protected PasswordAuthentication getPasswordAuthentication() {
+                                return new PasswordAuthentication(userName,
+                                        password.toCharArray());
+                            }
+                        });
 
             }
         }
 
-        HttpClient client = b.build();
-        HttpRequest request = HttpRequest.newBuilder().uri(downloadUri)
-                .timeout(Duration.ofMinutes(5)).GET().build();
+        HttpClient client = clientBuilder.build();
+        HttpRequest request = HttpRequest.newBuilder().uri(downloadUri).GET()
+                .build();
 
         try {
             HttpResponse<Path> response = client.send(request,
@@ -149,6 +151,7 @@ public final class DefaultFileDownloader implements FileDownloader {
             }
 
         } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(ex);
         }
 

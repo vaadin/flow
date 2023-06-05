@@ -284,14 +284,15 @@ public class StatisticsSender {
                     .POST(HttpRequest.BodyPublishers.ofString(data))
                     .header("Content-Type", "application/json").build();
 
-            HttpResponse<String> r = client.send(request,
+            HttpResponse<String> response = client.send(request,
                     HttpResponse.BodyHandlers.ofString());
 
-            int statusCode = r.statusCode();
+            int statusCode = response.statusCode();
 
             JsonNode jsonResponse = null;
             if (statusCode == 200) {
-                jsonResponse = JsonHelpers.getJsonMapper().readTree(r.body());
+                jsonResponse = JsonHelpers.getJsonMapper()
+                        .readTree(response.body());
             }
 
             if (jsonResponse != null && jsonResponse.isObject()) {
@@ -305,7 +306,10 @@ public class StatisticsSender {
                     statusCode + ": "); // TODO is reason phrase needed here
             return result;
 
-        } catch (IOException | InterruptedException ex) {
+        } catch (IOException ex) {
+            getLogger().debug("Failed to send statistics.", ex);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             getLogger().debug("Failed to send statistics.", ex);
         }
 
