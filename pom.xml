@@ -660,12 +660,6 @@
                         <excludedScopes>system,test</excludedScopes>
                     </configuration>
                 </plugin>
-    			<plugin>
-					<groupId>org.jboss.bridger</groupId>
-					<artifactId>bridger</artifactId>
-					<version>1.6.Final</version>
-				</plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>

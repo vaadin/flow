@@ -896,15 +896,6 @@ public class UI extends Component
         return navigate(navigationTarget, RouteParameters.empty());
     }
 
-    /**
-     * For backwards compatibility, to be removed in V24
-     *
-     * @hidden
-     */
-    public void navigate$$bridge(Class<? extends Component> navigationTarget) {
-        navigate(navigationTarget);
-    }
-
     private <T extends Component> Optional<T> findCurrentNavigationTarget(
             Class<T> navigationTarget) {
         List<HasElement> activeRouterTargetsChain = getInternals()
@@ -959,16 +950,6 @@ public class UI extends Component
     }
 
     /**
-     * For backwards compatibility, to be removed in V24
-     *
-     * @hidden
-     */
-    public <T, C extends Component & HasUrlParameter<T>> void navigate$$bridge(
-            Class<? extends C> navigationTarget, T parameter) {
-        navigate(navigationTarget, parameter);
-    }
-
-    /**
      * Updates this UI to show the view corresponding to the given navigation
      * target with the specified parameters. The parameters needs to comply with
      * the ones defined in one of the {@link com.vaadin.flow.router.Route} or
@@ -1002,16 +983,6 @@ public class UI extends Component
                 .forRegistry(getInternals().getRouter().getRegistry());
         navigate(configuration.getUrl(navigationTarget, parameters));
         return findCurrentNavigationTarget(navigationTarget);
-    }
-
-    /**
-     * For backwards compatibility, to be removed in V24
-     *
-     * @hidden
-     */
-    public void navigate$$bridge(Class<? extends Component> navigationTarget,
-            RouteParameters parameters) {
-        navigate(navigationTarget, parameters);
     }
 
     /**
