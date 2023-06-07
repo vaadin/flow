@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.internal.UrlUtil;
+import java.util.NoSuchElementException;
 
 /**
  * Holds query parameters information.
@@ -37,6 +38,7 @@ import com.vaadin.flow.internal.UrlUtil;
  * @since 1.0.
  */
 public class QueryParameters implements Serializable {
+
     private static final String PARAMETER_VALUES_SEPARATOR = "=";
     private static final String PARAMETERS_SEPARATOR = "&";
 
@@ -190,6 +192,40 @@ public class QueryParameters implements Serializable {
     }
 
     /**
+     * Returns query parameter values mapped with the given key.
+     * <p>
+     * Example: Calling the method with key "one" for a parameters like
+     * {@code https://example.com/?one=1&two=2&one=3} will result in the
+     * corresponding list: {@code [1, 3]}
+     *
+     * @param key
+     *            the key of query parameters to fetch
+     * @return query parameters or null if there are no parameters with the
+     *         given key
+     */
+    public List<String> getParameter(String key) {
+        return parameters.get(key);
+    }
+
+    /**
+     * Returns the first query parameter values mapped with the given key.
+     * <p>
+     * Example: Calling with key value "one" with
+     * {@code https://example.com/?one=1&two=2&one=3} will return {@code 1}
+     *
+     * @param key
+     *            the key of query parameters to fetch
+     * @return query parameter value
+     */
+    public String getSingleParameter(String key) {
+        try {
+            return parameters.get(key).get(0);
+        } catch (Exception e) {
+            throw new NoSuchElementException(e);
+        }
+    }
+
+    /**
      * Returns a UTF-8 encoded query string containing all parameter names and
      * values suitable for appending to a URL after the {@code ?} character.
      * Parameters may appear in different order than in the query string they
@@ -237,8 +273,9 @@ public class QueryParameters implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this)
+        if (obj == this) {
             return true;
+        }
 
         if (obj instanceof QueryParameters) {
             QueryParameters o = (QueryParameters) obj;
