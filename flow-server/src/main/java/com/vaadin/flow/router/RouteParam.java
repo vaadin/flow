@@ -26,8 +26,10 @@ public class RouteParam extends Pair<String, String> {
     /**
      * Creates a new route parameter.
      *
-     * @param name the name of the parameter.
-     * @param value the value of the parameter.
+     * @param name
+     *            the name of the parameter.
+     * @param value
+     *            the value of the parameter.
      */
     public RouteParam(String name, String value) {
         super(name, value);
@@ -36,8 +38,10 @@ public class RouteParam extends Pair<String, String> {
     /**
      * Creates a new route parameter.
      *
-     * @param name the name of the parameter.
-     * @param value the value of the parameter.
+     * @param name
+     *            the name of the parameter.
+     * @param value
+     *            the value of the parameter.
      */
     public RouteParam(String name, Integer value) {
         super(name, value.toString());
@@ -46,8 +50,10 @@ public class RouteParam extends Pair<String, String> {
     /**
      * Creates a new route parameter.
      *
-     * @param name the name of the parameter.
-     * @param value the value of the parameter.
+     * @param name
+     *            the name of the parameter.
+     * @param value
+     *            the value of the parameter.
      */
     public RouteParam(String name, Long value) {
         super(name, value.toString());
