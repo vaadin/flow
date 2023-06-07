@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.internal.UrlUtil;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * Holds query parameters information.
@@ -217,11 +218,11 @@ public class QueryParameters implements Serializable {
      *            the key of query parameters to fetch
      * @return query parameter value
      */
-    public String getSingleParameter(String key) {
+    public Optional<String> getSingleParameter(String key) {
         try {
-            return parameters.get(key).get(0);
+            return Optional.ofNullable(parameters.get(key).get(0));
         } catch (Exception e) {
-            throw new NoSuchElementException(e);
+            return Optional.empty();
         }
     }
 
