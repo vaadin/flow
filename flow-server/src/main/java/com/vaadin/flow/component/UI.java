@@ -1004,7 +1004,7 @@ public class UI extends Component
         navigate(configuration.getUrl(navigationTarget, parameters));
         return findCurrentNavigationTarget(navigationTarget);
     }
-    
+
     /**
      * Updates this UI to show the view corresponding to the given navigation
      * target with the specified parameters. The parameters needs to comply with
@@ -1037,7 +1037,7 @@ public class UI extends Component
             RouteParam... parameters) {
         return navigate(navigationTarget, new RouteParameters(parameters));
     }
-    
+
     /**
      * For backwards compatibility, to be removed in V24
      *
