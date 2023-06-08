@@ -148,7 +148,6 @@ export class AccessibilityChecker extends LitElement {
         if (this.detail) {
             return this.renderDetail(this.detail)
         } else {
-        console.error("render()");
         return html`
             ${this.report
                     ? html`
@@ -198,28 +197,33 @@ export class AccessibilityChecker extends LitElement {
 
 
     renderItem(issue:RuleDetails) {
-        console.error("renderItem()");
         const componentList = getComponents(issue.node.parentElement!);
         const component = componentList[componentList.length - 1];
-        return html`<li class="result">
+        return html`<li class="result" @click="${() => this.detail = issue}">
             <p class="text">
                 <span class="component">${component?.element?.tagName}</span>
                 <span class="warning-message">
 
+                    ${issue.value[0] == "VIOLATION" ?
+                    html`
                     <!--violation icon-->
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <path d="M10 0C4.5 0 0 4.5 0 10C0 15.5 4.5 20 10 20C15.5 20 20 15.5 20 10C20 4.5 15.5 0 10 0ZM15.25 13.5L13.5 15.25L10 11.75L6.5 15.25L4.75 13.5L8.25 10L4.75 6.5L6.5 4.75L10 8.25L13.5 4.75L15.25 6.5L11.75 10L15.25 13.5Z" fill="#FF3A49"/>
-                    </svg>
+                    </svg>` : ``}
 
+                    ${issue.value[0] == "RECOMMENDATION" ?
+                    html`
                     <!--need review icon-->
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 20 18" fill="none">
                     <path d="M10 0.25L0 17.75H20L10 0.25ZM10 15.25C9.25 15.25 8.75 14.75 8.75 14C8.75 13.25 9.25 12.75 10 12.75C10.75 12.75 11.25 13.25 11.25 14C11.25 14.75 10.75 15.25 10 15.25ZM8.75 11.5V6.5H11.25V11.5H8.75Z" fill="#FFDB7D"/>
-                    </svg>
+                    </svg>` : ``}
 
+                    ${issue.value[0] == "INFORMATION" ?
+                    html`
                     <!--enhancement icon-->
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <path d="M10 0C4.5 0 0 4.5 0 10C0 15.5 4.5 20 10 20C15.5 20 20 15.5 20 10C20 4.5 15.5 0 10 0ZM11.25 16.25H8.75V7.5H11.25V16.25ZM11.25 6.25H8.75V3.75H11.25V6.25Z" fill="#57A1F8"/>
-                    </svg>
+                    </svg>` : ``}
 
                     ${issue.message}
                 </span>
