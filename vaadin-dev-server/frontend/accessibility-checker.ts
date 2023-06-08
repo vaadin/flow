@@ -20,7 +20,7 @@ export class AccessibilityChecker extends LitElement {
             z-index: 1;
         }
 
-        .issue-summary .icon {
+        .icon {
             width: 14px;
             height: 14px;
             margin-right: 0.2rem;
@@ -39,7 +39,7 @@ export class AccessibilityChecker extends LitElement {
             padding: 0;
         }
 
-        .result {
+        .result, .section {
             border-bottom: 1px solid #3C3C3C;
             padding: 0.75rem;
             margin-left: -0.75rem;
@@ -47,6 +47,17 @@ export class AccessibilityChecker extends LitElement {
             width: calc(100% + 2(0.75rem));
             display: flex;
             align-items: center;
+            justify-content: space-between;
+        }
+
+        .result:hover {
+            cursor: pointer;
+            background: rgba(0,0,0,0.1);
+            transition: background 0.2s;
+        }
+
+        .detail-header {
+            padding-top: 0;
             justify-content: space-between;
         }
 
@@ -64,12 +75,12 @@ export class AccessibilityChecker extends LitElement {
             margin-bottom: 0.5rem;
         }
 
-        .result .warning-message {
+        .warning-message {
             display: flex;
             line-height: 1.2;
         }
 
-        .result .warning-message .icon {
+        .warning-message .icon {
             flex-shrink: 0;
             width: 14px;
             height: 14px;
@@ -92,6 +103,17 @@ export class AccessibilityChecker extends LitElement {
             padding: 0.25rem 0.375rem;
             border-radius: 0.25rem;
             cursor: pointer;
+        }
+
+        .text-field {
+            background: #3C3C3C;
+            border: none;
+            padding: 0.2rem;
+            border-radius: 4px;
+        }
+
+        .small-heading {
+            opacity: 0.7;
         }
     `;
 
@@ -247,14 +269,51 @@ export class AccessibilityChecker extends LitElement {
             path : issue.path["dom"],
             node: issue.node
         };
-        return html`<li>
-            <button @click="${() => this.openIde(minIssue.node)}">Open in IDE</button> 
-            DETAILS: ${minIssue.ruleId}, ${minIssue.reasonId}, ${minIssue.message},
-            <label for="input-label">Label </label>
-            <input id="input-label" @change=${this._labelUpdated}>
-            <button @click="${() => this.setLabel(minIssue.node)}">set label</button> 
-            <button @click="${() => this.setAriaLabel(minIssue.node)}">set aria label</button>
-        </li>
+        return html`<div>
+            <div class="section detail-header">
+                Component title
+                <button class="button" @click="${() => this.openIde(minIssue.node)}">Open in IDE</button>
+            </div>
+
+            <div class="section">
+                <span class="warning-message">
+                    ${minIssue.value[0] == "VIOLATION" ?
+                    html`
+                    <!--violation icon-->
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M10 0C4.5 0 0 4.5 0 10C0 15.5 4.5 20 10 20C15.5 20 20 15.5 20 10C20 4.5 15.5 0 10 0ZM15.25 13.5L13.5 15.25L10 11.75L6.5 15.25L4.75 13.5L8.25 10L4.75 6.5L6.5 4.75L10 8.25L13.5 4.75L15.25 6.5L11.75 10L15.25 13.5Z" fill="#FF3A49"/>
+                    </svg>` : ``}
+
+                    ${minIssue.value[0] == "RECOMMENDATION" ?
+                    html`
+                    <!--need review icon-->
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 20 18" fill="none">
+                    <path d="M10 0.25L0 17.75H20L10 0.25ZM10 15.25C9.25 15.25 8.75 14.75 8.75 14C8.75 13.25 9.25 12.75 10 12.75C10.75 12.75 11.25 13.25 11.25 14C11.25 14.75 10.75 15.25 10 15.25ZM8.75 11.5V6.5H11.25V11.5H8.75Z" fill="#FFDB7D"/>
+                    </svg>` : ``}
+
+                    ${minIssue.value[0] == "INFORMATION" ?
+                    html`
+                    <!--enhancement icon-->
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M10 0C4.5 0 0 4.5 0 10C0 15.5 4.5 20 10 20C15.5 20 20 15.5 20 10C20 4.5 15.5 0 10 0ZM11.25 16.25H8.75V7.5H11.25V16.25ZM11.25 6.25H8.75V3.75H11.25V6.25Z" fill="#57A1F8"/>
+                    </svg>` : ``}
+
+                    <span >
+                        ${minIssue.message}
+                    </span>
+                </span>
+            </div>
+
+            <div class="section">
+                <div>
+                    <span class="small-heading">Fix issue</span>
+                    <p>Enter a label and set either a label or an invisible (Aria) label</p>
+                    <input class="text-field" id="input-label" @change=${this._labelUpdated} placeholder="Type label here">
+                    <button class="button" @click="${() => this.setLabel(minIssue.node)}">set label</button>
+                    <button class="button" @click="${() => this.setAriaLabel(minIssue.node)}">set aria label</button>
+                </div>
+            </div>
+        </div>
         `;
     }
 
