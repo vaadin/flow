@@ -204,7 +204,7 @@ public class QueryParameters implements Serializable {
      *         given key
      */
     public List<String> getParameter(String key) {
-        return parameters.get(key);
+        return parameters.getOrDefault(key, Collections.emptyList());
     }
 
     /**
