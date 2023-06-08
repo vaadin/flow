@@ -7,6 +7,7 @@ import { ComponentPicker } from './component-picker';
 import { ComponentReference, deepContains } from './component-util';
 import './theme-editor/editor';
 import { ThemeEditorState } from './theme-editor/model';
+import './accessibility-checker';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
@@ -31,7 +32,7 @@ interface Feature {
 }
 
 interface Tab {
-  id: 'log' | 'info' | 'features' | 'code' | 'theme-editor';
+  id: 'log' | 'info' | 'features' | 'code' | 'theme-editor' | 'accessibility';
   title: string;
   render: () => TemplateResult;
   activate?: () => void;
@@ -1012,6 +1013,7 @@ export class VaadinDevTools extends LitElement {
 
     if ((window as any).Vaadin.Flow) {
       this.tabs.push({ id: 'code', title: 'Code', render: () => this.renderCode() });
+      this.tabs.push({ id: 'accessibility', title: 'Accessibility', render: () => this.renderAccessiblity() });
     }
   }
   connectedCallback() {
@@ -1451,6 +1453,12 @@ export class VaadinDevTools extends LitElement {
         </button>
       </div>
       </div>
+    </div>`;
+  }
+
+  renderAccessiblity() {
+    return html`<div class="info-tray">
+      <accessibility-checker><accessibility-checker>
     </div>`;
   }
 
