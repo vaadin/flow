@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.internal.UrlUtil;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -219,7 +218,7 @@ public class QueryParameters implements Serializable {
      * @return query parameter value
      */
     public Optional<String> getSingleParameter(String key) {
-        parameters.getOrDefault(key, Collections.emptyList()).stream().findFirst()
+        return parameters.getOrDefault(key, Collections.emptyList()).stream().findFirst();
     }
 
     /**
