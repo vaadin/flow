@@ -23,11 +23,19 @@
     "vite": "^4.1.4"
   },
   "dependencies": {
+    "@rollup/plugin-commonjs": "^25.0.0",
     "@vaadin/button": "24.0.0",
     "@vaadin/overlay": "24.0.0",
     "@vaadin/select": "24.0.0",
+    "accessibility-checker": "3.1.49",
+    "accessibility-checker-engine": "3.1.49",
     "construct-style-sheets-polyfill": "^3.1.0",
     "lit": "^2.6.1",
     "vanilla-colorful": "^0.7.2"
+  },
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
   }
 }

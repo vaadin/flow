@@ -2,6 +2,10 @@ import {fileURLToPath} from 'url';
 import {hmrPlugin, presets} from '@open-wc/dev-server-hmr';
 import {esbuildPlugin} from '@web/dev-server-esbuild';
 import cors from '@koa/cors';
+import { fromRollup } from '@web/dev-server-rollup';
+import rollupCommonjs from '@rollup/plugin-commonjs';
+
+const commonjs = fromRollup(rollupCommonjs);
 
 export default {
   plugins: [
@@ -14,6 +18,13 @@ export default {
     hmrPlugin({
       include: ['frontend/**/*'],
       presets: [presets.lit]
+    }),
+
+    commonjs({
+      include: [
+        // the commonjs plugin is slow, list the required packages explicitly:
+        '**/node_modules/accessibility-checker/**',
+      ],
     }),
   ],
   middleware: [
