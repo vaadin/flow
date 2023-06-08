@@ -203,7 +203,7 @@ public class QueryParameters implements Serializable {
      * @return query parameters or null if there are no parameters with the
      *         given key
      */
-    public List<String> getParameter(String key) {
+    public List<String> getParameters(String key) {
         return parameters.getOrDefault(key, Collections.emptyList());
     }
 
