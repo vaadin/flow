@@ -44,7 +44,7 @@ export class AccessibilityChecker extends LitElement {
             padding: 0.75rem;
             margin-left: -0.75rem;
             margin-right: -0.75rem;
-            width: calc(100% + 2(0.75rem));
+            /*width: calc(100% + 2*(0.75rem));*/
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -59,6 +59,7 @@ export class AccessibilityChecker extends LitElement {
         .detail-header {
             padding-top: 0;
             justify-content: space-between;
+            gap: 10px;
         }
 
         .result .text {
@@ -94,7 +95,7 @@ export class AccessibilityChecker extends LitElement {
         .button {
             all: initial;
             font-family: inherit;
-            font-size: var(--dev-tools-font-size-small);
+            font-size: var(--dev-tools-text-color-active);
             line-height: 1;
             white-space: nowrap;
             background-color: rgba(255, 255, 255, 0.12);
@@ -110,11 +111,53 @@ export class AccessibilityChecker extends LitElement {
             border: none;
             padding: 0.2rem;
             border-radius: 4px;
+          color: var(--dev-tools-text-color-active);
         }
 
-        .small-heading {
-            opacity: 0.7;
+        h3.small-heading {
+          opacity: 0.7;
+          font-weight: normal;
+          font-size: var(--dev-tools-font-size);
+          margin-top: 0;
         }
+      
+        .detail h2.component:not(:empty) {
+          text-transform: lowercase;
+          font-size: var(--dev-tools-font-size);
+          flex-grow: 1;
+        }
+
+      .nav-button {
+        all: initial;
+        font-family: inherit;
+        font-size: calc( var(--dev-tools-font-size-small) * 1);
+        line-height: 1;
+        white-space: nowrap;
+        color: var(--dev-tools-text-color-active);
+        font-weight: 600;
+        padding: 0.25rem 0.375rem;
+        border-radius: 0.25rem;
+        cursor: pointer;
+      }
+
+      .nav-button .icon {
+        width: 12px;
+        height: 9px;
+      }
+
+      .lower-case {
+        text-transform: lowercase;
+      }
+      .detail-actionbar {
+        background: #3C3C3C;
+        margin-inline: -0.75rem;
+        padding: 0.75rem;
+        display: flex;
+        gap: 10px;
+      }
+      .expand {
+        flex-grow:1;
+      }
     `;
 
     @property()
@@ -122,6 +165,9 @@ export class AccessibilityChecker extends LitElement {
 
     @property()
     detail?: RuleDetails;
+
+    @property()
+    indexDetail?: number;
 
     @property()
     labeltext = "";
@@ -136,14 +182,6 @@ export class AccessibilityChecker extends LitElement {
             (issues: any) => issues.value[1] !== "PASS"
         );
         this.report = accessibilityCheckResult.results;
-/*        const labelRules = accessibilityCheckResult.results.filter(
-            (issues: any) => issues.ruleId == "input_label_visible"
-        )
-        if (labelRules.length > 0) {
-            this.detail = labelRules[0];
-        } else {
-            delete this.detail;
-        }*/
     }
 
     openIde(node:Node) {
@@ -154,9 +192,57 @@ export class AccessibilityChecker extends LitElement {
         this.frontendConnection!.sendShowComponentCreateLocation(serializableComponentRef);
     }
 
+    backToList() {
+        if (this.indexDetail && this.report) {
+            this.resetHighlight(this.report[this.indexDetail].node.parentElement);
+        }
+        this.indexDetail = undefined;
+    }
+
+    back() {
+        if (this.indexDetail && this.report) {
+            this.resetHighlight(this.report[this.indexDetail].node.parentElement);
+        }
+        if (this.indexDetail) {
+            this.indexDetail--;
+        } else {
+            if (this.report) {
+                this.indexDetail = this.report.length - 1;
+            }
+        }
+
+        if (this.indexDetail && this.report) {
+            this.highlight(this.report[this.indexDetail].node.parentElement);
+        }
+    }
+    next() {
+        if (this.indexDetail && this.report) {
+            this.resetHighlight(this.report[this.indexDetail].node.parentElement);
+        }
+        if (this.indexDetail !== undefined && this.report && this.indexDetail < this.report.length - 1) {
+            this.indexDetail++;
+        } else {
+            this.indexDetail = 0;
+        }
+
+        if (this.indexDetail && this.report) {
+            this.highlight(this.report[this.indexDetail].node.parentElement);
+        }
+    }
+
+    highlight(element: HTMLElement | null) {
+        if (element) {
+            element.style.outline = "2px solid red";
+        }
+    }
+
+    resetHighlight(element: HTMLElement | null) {
+        if (element) {
+            element.style.outline = "";
+        }
+    }
     setLabel(node:Node) {
         const element = node.parentElement;
-
         (element as any).label = this.labeltext;
     }
 
@@ -166,9 +252,12 @@ export class AccessibilityChecker extends LitElement {
         (element as any).accessibleName = this.labeltext;
     }
     render() {
-
-        if (this.detail) {
-            return this.renderDetail(this.detail)
+        if (this.indexDetail !== undefined) {
+            if (this.report) {
+                return this.renderDetail(this.report![this.indexDetail]);
+            } else {
+                return html``;
+            }
         } else {
         return html`
             ${this.report
@@ -205,7 +294,7 @@ export class AccessibilityChecker extends LitElement {
                       <button class="button" @click=${this.runTests}>Re-run Check</button>
                   </div>
                   <ul class="result-list">
-                      ${this.report.map((item) => this.renderItem(item))}
+                      ${this.report.map((item, index) => this.renderItem(item, index))}
                   </ul>
             `
                     : html`
@@ -218,10 +307,16 @@ export class AccessibilityChecker extends LitElement {
     }
 
 
-    renderItem(issue:RuleDetails) {
+    renderItem(issue:RuleDetails, index:number) {
         const componentList = getComponents(issue.node.parentElement!);
         const component = componentList[componentList.length - 1];
-        return html`<li class="result" @click="${() => this.detail = issue}">
+        return html`<li class="result" @click="${() => {
+            this.indexDetail = index;
+            if (this.report) {
+                this.highlight(this.report[this.indexDetail].node.parentElement);
+            }
+        }
+        }">
             <p class="text">
                 <span class="component">${component?.element?.tagName}</span>
                 <span class="warning-message">
@@ -260,57 +355,93 @@ export class AccessibilityChecker extends LitElement {
 
 
     renderDetail(issue:RuleDetails) {
-        let minIssue = {
-            message: issue.message,
-            snippet: issue.snippet,
-            value: issue.value,
-            reasonId: issue.reasonId,
-            ruleId: issue.ruleId,
-            path : issue.path["dom"],
-            node: issue.node
-        };
-        return html`<div>
+
+        const componentList = getComponents(issue.node.parentElement!);
+        const component = componentList[componentList.length - 1];
+        return html`<div class="detail">
             <div class="section detail-header">
-                Component title
-                <button class="button" @click="${() => this.openIde(minIssue.node)}">Open in IDE</button>
+                <h2 class="component">${component?.element?.tagName ? html`${component.element.tagName}` : html`Global issue`}</h2>
+                ${(component?.element) ? html`<button class="button" @click="${() => this.openIde(issue.node)}">Open in IDE</button>` : html``}
             </div>
 
-            <div class="section">
-                <span class="warning-message">
-                    ${minIssue.value[0] == "VIOLATION" ?
-                    html`
-                    <!--violation icon-->
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M10 0C4.5 0 0 4.5 0 10C0 15.5 4.5 20 10 20C15.5 20 20 15.5 20 10C20 4.5 15.5 0 10 0ZM15.25 13.5L13.5 15.25L10 11.75L6.5 15.25L4.75 13.5L8.25 10L4.75 6.5L6.5 4.75L10 8.25L13.5 4.75L15.25 6.5L11.75 10L15.25 13.5Z" fill="#FF3A49"/>
-                    </svg>` : ``}
-
-                    ${minIssue.value[0] == "RECOMMENDATION" ?
-                    html`
-                    <!--need review icon-->
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 20 18" fill="none">
-                    <path d="M10 0.25L0 17.75H20L10 0.25ZM10 15.25C9.25 15.25 8.75 14.75 8.75 14C8.75 13.25 9.25 12.75 10 12.75C10.75 12.75 11.25 13.25 11.25 14C11.25 14.75 10.75 15.25 10 15.25ZM8.75 11.5V6.5H11.25V11.5H8.75Z" fill="#FFDB7D"/>
-                    </svg>` : ``}
-
-                    ${minIssue.value[0] == "INFORMATION" ?
-                    html`
-                    <!--enhancement icon-->
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M10 0C4.5 0 0 4.5 0 10C0 15.5 4.5 20 10 20C15.5 20 20 15.5 20 10C20 4.5 15.5 0 10 0ZM11.25 16.25H8.75V7.5H11.25V16.25ZM11.25 6.25H8.75V3.75H11.25V6.25Z" fill="#57A1F8"/>
-                    </svg>` : ``}
-
-                    <span >
-                        ${minIssue.message}
-                    </span>
-                </span>
+            <div class="detail-actionbar">
+                <button class="nav-button" @click="${() => this.backToList()}">
+                    <svg class="icon"  width="20" height="15" viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0 6.875L7.5 0.75V4.5C7.5 4.5 8.875 4.5 10 4.5C20 4.5 20 14.5 20 14.5C20 14.5 18.75 9.5 10.25 9.5C8.875 9.5 8 9.5 7.5 9.5V13.125L0 6.875H0Z" fill="white"/>
+                    </svg> Back to list</button>
+                <span class="expand"></span>
+                <button class="nav-button" @click="${() => this.back()}">
+                    <svg class="icon" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2.99517 6.90911L5.68317 9.9091C5.99517 10.2691 5.97117 10.8451 5.58717 11.1811C5.22717 11.4931 4.65117 11.4691 4.33917 11.0851L0.33117 6.59711C0.0191693 6.23711 0.0191694 5.73311 0.33117 5.39711L4.33917 0.909127C4.65117 0.525128 5.22717 0.501128 5.58717 0.837127C5.97117 1.14913 5.99517 1.72512 5.68317 2.08512L2.99517 5.10912L11.0112 5.10912C11.4912 5.10912 11.8992 5.49311 11.8992 5.99711C11.8992 6.50111 11.4912 6.90911 11.0112 6.90911L2.99517 6.90911Z" fill="white"/>
+                    </svg>
+                    Previous</button>
+                <button class="nav-button" @click="${() => this.next()}">Next
+                    <svg class="icon" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9.00483 5.09089L6.31683 2.0909C6.00483 1.7309 6.02883 1.1549 6.41283 0.818902C6.77283 0.506903 7.34883 0.530903 7.66083 0.914902L11.6688 5.40289C11.9808 5.76289 11.9808 6.26689 11.6688 6.60288L7.66083 11.0909C7.34883 11.4749 6.77283 11.4989 6.41283 11.1629C6.02883 10.8509 6.00483 10.2749 6.31683 9.91488L9.00483 6.89088L0.98883 6.89088C0.50883 6.89088 0.10083 6.50689 0.10083 6.00289C0.10083 5.49889 0.50883 5.09089 0.98883 5.09089L9.00483 5.09089Z" fill="white"/>
+                    </svg>
+                </button>
             </div>
 
             <div class="section">
                 <div>
-                    <span class="small-heading">Fix issue</span>
-                    <p>Enter a label and set either a label or an invisible (Aria) label</p>
-                    <input class="text-field" id="input-label" @change=${this._labelUpdated} placeholder="Type label here">
-                    <button class="button" @click="${() => this.setLabel(minIssue.node)}">set label</button>
-                    <button class="button" @click="${() => this.setAriaLabel(minIssue.node)}">set aria label</button>
+                    ${component?.element?.tagName ? html`<h3 class="small-heading lower-case">${component.element.tagName}</h3>` : html``}
+                    <span class="warning-message">
+                        ${issue.value[0] == "VIOLATION" ?
+                        html`
+                        <!--violation icon-->
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M10 0C4.5 0 0 4.5 0 10C0 15.5 4.5 20 10 20C15.5 20 20 15.5 20 10C20 4.5 15.5 0 10 0ZM15.25 13.5L13.5 15.25L10 11.75L6.5 15.25L4.75 13.5L8.25 10L4.75 6.5L6.5 4.75L10 8.25L13.5 4.75L15.25 6.5L11.75 10L15.25 13.5Z" fill="#FF3A49"/>
+                        </svg>` : ``}
+    
+                        ${issue.value[0] == "RECOMMENDATION" ?
+                        html`
+                        <!--need review icon-->
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 20 18" fill="none">
+                        <path d="M10 0.25L0 17.75H20L10 0.25ZM10 15.25C9.25 15.25 8.75 14.75 8.75 14C8.75 13.25 9.25 12.75 10 12.75C10.75 12.75 11.25 13.25 11.25 14C11.25 14.75 10.75 15.25 10 15.25ZM8.75 11.5V6.5H11.25V11.5H8.75Z" fill="#FFDB7D"/>
+                        </svg>` : ``}
+    
+                        ${issue.value[0] == "INFORMATION" ?
+                        html`
+                        <!--enhancement icon-->
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M10 0C4.5 0 0 4.5 0 10C0 15.5 4.5 20 10 20C15.5 20 20 15.5 20 10C20 4.5 15.5 0 10 0ZM11.25 16.25H8.75V7.5H11.25V16.25ZM11.25 6.25H8.75V3.75H11.25V6.25Z" fill="#57A1F8"/>
+                        </svg>` : ``}
+    
+                        <span>
+                            ${issue.ruleId}
+                        </span>
+                    </span>
+                </div>
+            </div>
+
+            ${(issue.ruleId == "input_label_visible" || issue.ruleId == "input_label_exists") ? html`
+                <div class="section">
+                    <div>
+                        <h3 class="small-heading">Fix issue</h3>
+                        <label for="input-label">Enter a label and set either a label or an invisible (Aria) label</label>
+                        <input class="text-field" id="input-label" @change=${this._labelUpdated} placeholder="Type label here">
+                        <button class="button" @click="${() => this.setLabel(issue.node)}">set label</button>
+                        <button class="button" @click="${() => this.setAriaLabel(issue.node)}">set aria label</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div>
+                        <h3 class="small-heading">Why this is important?</h3>
+                        ${(issue.ruleId == "input_label_visible") ? html`
+                        <p>Visible labels are essential so that people using voice control know what to say. This allows them to easily navigate to interactive elements on the screen.</p>` 
+                                : html`Associating a meaningful label with every UI control allows the browser and assistive technology to expose and announce the control to a user. Associating a visible label also provides a larger clickable area.`
+            }
+                    </div>
+                </div>` : html``
+            }
+
+            
+            
+            <div class="section">
+                <div>
+                    <h3 class="small-heading">HTML Snippet</h3>
+                    <p>${issue.snippet}</p>
                 </div>
             </div>
         </div>
