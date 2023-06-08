@@ -1013,7 +1013,7 @@ export class VaadinDevTools extends LitElement {
 
     if ((window as any).Vaadin.Flow) {
       this.tabs.push({ id: 'code', title: 'Code', render: () => this.renderCode() });
-      this.tabs.push({ id: 'accessibility', title: 'Accessibility', render: () => this.renderAccessiblity() });
+      this.tabs.push({ id: 'accessibility', title: 'Accessibility', render: () => this.renderAccessibility() });
     }
   }
   connectedCallback() {
@@ -1456,9 +1456,9 @@ export class VaadinDevTools extends LitElement {
     </div>`;
   }
 
-  renderAccessiblity() {
+  renderAccessibility() {
     return html`<div class="info-tray">
-      <accessibility-checker><accessibility-checker>
+      <accessibility-checker .frontendConnection="${this.frontendConnection}"><accessibility-checker>
     </div>`;
   }
 
