@@ -219,11 +219,7 @@ public class QueryParameters implements Serializable {
      * @return query parameter value
      */
     public Optional<String> getSingleParameter(String key) {
-        try {
-            return Optional.ofNullable(parameters.get(key).get(0));
-        } catch (Exception e) {
-            return Optional.empty();
-        }
+        parameters.getOrDefault(key, Collections.emptyList()).stream().findFirst()
     }
 
     /**
