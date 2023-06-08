@@ -232,6 +232,7 @@ public class QueryParametersTest {
         List<String> parameters = qp1.getParameters("foo");
         Assert.assertEquals("bar", parameters.get(0));
         Assert.assertEquals(1, parameters.size());
+        Assert.assertTrue(qp1.getParameters("bar").isEmpty());
     }
 
     @Test
