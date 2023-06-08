@@ -294,6 +294,7 @@
 
                 <module>test-scalability</module>
                 <module>test-servlet</module>
+                <module>test-embedded-jetty-12</module>
                 <module>test-themes</module>
                 <module>test-themes/pom-production.xml</module>
                 <module>test-themes/pom-devbundle.xml</module>
