@@ -22,14 +22,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -281,20 +278,21 @@ public class StatisticsSender {
     private static ObjectNode postData(String postUrl, String data) {
         ObjectNode result;
         try {
-            HttpPost post = new HttpPost(postUrl);
-            post.addHeader("Content-Type", "application/json");
-            post.setEntity(new StringEntity(data));
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(postUrl))
+                    .POST(HttpRequest.BodyPublishers.ofString(data))
+                    .header("Content-Type", "application/json").build();
 
-            HttpClient client = HttpClientBuilder.create().build();
-            HttpResponse response = client.execute(post);
-            String responseStatus = response.getStatusLine().getStatusCode()
-                    + ": " + response.getStatusLine().getReasonPhrase();
+            HttpResponse<String> response = client.send(request,
+                    HttpResponse.BodyHandlers.ofString());
+
+            int statusCode = response.statusCode();
+
             JsonNode jsonResponse = null;
-            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                String responseString = EntityUtils
-                        .toString(response.getEntity());
+            if (statusCode == 200) {
                 jsonResponse = JsonHelpers.getJsonMapper()
-                        .readTree(responseString);
+                        .readTree(response.body());
             }
 
             if (jsonResponse != null && jsonResponse.isObject()) {
@@ -304,11 +302,15 @@ public class StatisticsSender {
                 result = JsonHelpers.getJsonMapper().createObjectNode();
             }
             // Update the status and return the results
-            result.put(StatisticsConstants.FIELD_LAST_STATUS, responseStatus);
+            result.put(StatisticsConstants.FIELD_LAST_STATUS,
+                    statusCode + ": "); // TODO is reason phrase needed here
             return result;
 
-        } catch (IOException e) {
-            getLogger().debug("Failed to send statistics.", e);
+        } catch (IOException ex) {
+            getLogger().debug("Failed to send statistics.", ex);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            getLogger().debug("Failed to send statistics.", ex);
         }
 
         // Fallback
