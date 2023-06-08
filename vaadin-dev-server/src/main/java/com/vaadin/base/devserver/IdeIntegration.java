@@ -24,6 +24,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.component.internal.ComponentTracker.Location;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**

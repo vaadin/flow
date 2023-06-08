@@ -25,15 +25,15 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
-import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
-import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
+import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
 import com.vaadin.base.devserver.themeeditor.ThemeEditorMessageHandler;
+import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
@@ -73,6 +73,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
     private IdeIntegration ideIntegration;
 
     private ThemeEditorMessageHandler themeEditorMessageHandler;
+    private TranslatorMessageHandler translatorMessageHandler;
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
@@ -94,6 +95,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
         this.ideIntegration = new IdeIntegration(
                 ApplicationConfiguration.get(context));
         this.themeEditorMessageHandler = new ThemeEditorMessageHandler(context);
+        translatorMessageHandler = new TranslatorMessageHandler(
+                ApplicationConfiguration.get(context));
     }
 
     @Override
@@ -264,6 +267,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
             BaseResponse resultData = themeEditorMessageHandler
                     .handleDebugMessageData(command, data);
             send(resource, ThemeEditorCommand.RESPONSE, resultData);
+        } else if (translatorMessageHandler.handle(command, data)) {
+
         } else {
             getLogger().info("Unknown command from the browser: " + command);
         }

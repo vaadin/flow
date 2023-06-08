@@ -605,7 +605,7 @@ public class Editor {
                 new ImportDeclaration(className, false, false));
     }
 
-    private boolean hasImport(CompilationUnit cu, String className) {
+    public static boolean hasImport(CompilationUnit cu, String className) {
         for (ImportDeclaration importDecl : cu.getImports()) {
             if (importDecl.getNameAsString().equals(className)) {
                 return true;
@@ -993,7 +993,7 @@ public class Editor {
         }
     }
 
-    protected String readFile(File file) throws IOException {
+    public static String readFile(File file) throws IOException {
         try (FileInputStream stream = new FileInputStream(file)) {
             return IOUtils.toString(stream, StandardCharsets.UTF_8);
         }
@@ -1096,7 +1096,7 @@ public class Editor {
                         methodParam));
     }
 
-    protected CompilationUnit parseSource(String source) {
+    public static CompilationUnit parseSource(String source) {
         return LexicalPreservingPrinter.setup(StaticJavaParser.parse(source));
     }
 
