@@ -200,7 +200,7 @@ public class QueryParameters implements Serializable {
      *
      * @param key
      *            the key of query parameters to fetch
-     * @return query parameters or null if there are no parameters with the
+     * @return query parameters or an empty list if there are no parameters with the
      *         given key
      */
     public List<String> getParameters(String key) {
