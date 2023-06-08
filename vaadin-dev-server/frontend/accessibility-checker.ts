@@ -10,7 +10,37 @@ import {Connection} from "./connection";
 @customElement('accessibility-checker')
 export class AccessibilityChecker extends LitElement {
     static styles = css`
-        p { color: pink; }
+
+        .issue-summary {
+            background: #3C3C3C;
+            margin: -0.75rem;
+            padding: 0.75rem;
+        }
+
+        .result-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .result {
+            border-bottom: 1px solid #3C3C3C;
+            padding: 0.75rem;
+            line-height: 1.6;
+            margin-left: -0.75rem;
+            margin-right: -0.75rem;
+            width: calc(100% + 2(0.75rem));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .result .warning-message {
+            flex: 1 1 auto;
+        }
+
+        .result .arrow {
+            flex-shrink: 0;
+        }
         
         .button {
             all: initial;
@@ -80,18 +110,17 @@ export class AccessibilityChecker extends LitElement {
             return this.renderDetail(this.detail)
         } else {
         console.error("render()");
-        debugger;
         return html`
             ${this.report
                     ? html`
-                  <div>
+                  <div class="issue-summary">
                       ${this.report.length} issues
                       ${this.report.filter((issues: any) => issues.value[0] == "VIOLATION").length} violations
                       ${this.report.filter((issues: any) => issues.value[0] == "RECOMMENDATION").length} need review
                       ${this.report.filter((issues: any) => issues.value[0] == "INFORMATION").length} improvements
                       <button class="button" @click=${this.runTests}>Re-run Check</button>
                   </div>
-                  <ul>
+                  <ul class="result-list">
                       ${this.report.map((item) => this.renderItem(item))}
                   </ul>
             `
@@ -109,9 +138,11 @@ export class AccessibilityChecker extends LitElement {
         console.error("renderItem()");
         const componentList = getComponents(issue.node.parentElement!);
         const component = componentList[componentList.length - 1];
-        return html`<li>
-            ${component?.element?.tagName} ${issue.message}
-            <button @click="">&gt;</button>
+        return html`<li class="result">
+            <span class="warning-message">${component?.element?.tagName} ${issue.message}</span>
+            <svg class="arrow" width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path opacity="0.7" d="M11.25 21.25H13.75L20 15L13.75 8.75H11.25L17.5 15L11.25 21.25Z" fill="white"/>
+            </svg>
         </li>
         `;
     }
