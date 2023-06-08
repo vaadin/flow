@@ -15,6 +15,9 @@ export class AccessibilityChecker extends LitElement {
             background: #3C3C3C;
             margin: -0.75rem;
             padding: 0.75rem;
+            position: sticky;
+            top: -0.75rem;
+            z-index: 1;
         }
 
         .issue-summary .icon {
