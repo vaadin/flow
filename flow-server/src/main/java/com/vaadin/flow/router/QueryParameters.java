@@ -218,7 +218,8 @@ public class QueryParameters implements Serializable {
      * @return query parameter value
      */
     public Optional<String> getSingleParameter(String key) {
-        return parameters.getOrDefault(key, Collections.emptyList()).stream().findFirst();
+        return parameters.getOrDefault(key, Collections.emptyList()).stream()
+                .findFirst();
     }
 
     /**

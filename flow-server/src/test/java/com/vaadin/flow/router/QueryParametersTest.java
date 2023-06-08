@@ -221,14 +221,14 @@ public class QueryParametersTest {
                 Collections.singletonMap("foo", Collections.singletonList("")));
         Assert.assertEquals("foo", fullParams.getQueryString());
     }
-    
+
     @Test
     public void shortHands() {
         QueryParameters qp1 = QueryParameters.of("foo", "bar");
         Optional<String> singleParameter = qp1.getSingleParameter("foo");
         Assert.assertEquals("bar", singleParameter.get());
         Assert.assertTrue(qp1.getSingleParameter("bar").isEmpty());
-        
+
         List<String> parameters = qp1.getParameters("foo");
         Assert.assertEquals("bar", parameters.get(0));
         Assert.assertEquals(1, parameters.size());
