@@ -210,8 +210,9 @@ public class StaticFileServer implements StaticFileHandler {
                     "Tried to get new filesystem, but it already existed for target uri.",
                     fsaee);
             FileSystem fileSystem = FileSystems.getFileSystem(resourceURI);
-            if (!openFileSystems.containsKey(getFileURI(resourceURI))) {
-                externalFileSystem.add(getFileURI(resourceURI));
+            URI fileUri = getFileURI(resourceURI);
+            if (!openFileSystems.containsKey(fileUri)) {
+                externalFileSystem.add(fileUri);
             }
             return fileSystem;
         }
