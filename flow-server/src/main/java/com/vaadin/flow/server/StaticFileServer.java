@@ -33,7 +33,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -88,6 +90,7 @@ public class StaticFileServer implements StaticFileHandler {
 
     // Mapped uri is for the jar file
     static final Map<URI, Integer> openFileSystems = new HashMap<>();
+    static final Set<URI> externalFileSystem = new HashSet<>();
     private static final Object fileSystemLock = new Object();
 
     /**
@@ -206,7 +209,12 @@ public class StaticFileServer implements StaticFileHandler {
             getLogger().trace(
                     "Tried to get new filesystem, but it already existed for target uri.",
                     fsaee);
-            return FileSystems.getFileSystem(resourceURI);
+            FileSystem fileSystem = FileSystems.getFileSystem(resourceURI);
+            URI fileUri = getFileURI(resourceURI);
+            if (!openFileSystems.containsKey(fileUri)) {
+                externalFileSystem.add(fileUri);
+            }
+            return fileSystem;
         }
     }
 
@@ -219,9 +227,12 @@ public class StaticFileServer implements StaticFileHandler {
                         (key, value) -> value - 1);
                 if (locks != null && locks == 0) {
                     openFileSystems.remove(fileURI);
-                    // Get filesystem is for the file to get the correct
-                    // provider
-                    FileSystems.getFileSystem(resourceURI).close();
+                    if (!externalFileSystem.contains(fileURI)) {
+                        // Get filesystem is for the file to get the correct
+                        // provider
+                        FileSystems.getFileSystem(resourceURI).close();
+                    }
+                    externalFileSystem.remove(fileURI);
                 }
             } catch (IOException ioe) {
                 getLogger().error("Failed to close FileSystem for '{}'",
