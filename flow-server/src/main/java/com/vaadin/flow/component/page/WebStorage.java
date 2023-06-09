@@ -95,7 +95,7 @@ public interface WebStorage {
 
     /**
      * Removes the value associated by the given key from the
-     * Storage.localStorage
+     * provided storage type
      *
      * @param ui
      *            the UI for which the storage is related to
