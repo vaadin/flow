@@ -19,13 +19,17 @@ package com.vaadin.flow.server.communication;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.atmosphere.cpr.AtmosphereConfig;
+import org.atmosphere.cpr.AtmosphereFramework;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.cpr.AtmosphereResourceSessionFactory;
 import org.atmosphere.cpr.BroadcastFilter.BroadcastAction;
 import org.atmosphere.cpr.BroadcastFilter.BroadcastAction.ACTION;
 import org.atmosphere.cpr.Broadcaster;
 import org.atmosphere.cpr.BroadcasterCache;
 import org.atmosphere.cpr.BroadcasterConfig;
+import org.atmosphere.cpr.DefaultAtmosphereResourceSessionFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -140,9 +144,14 @@ public class LongPollingCacheFilterTest {
                 .thenReturn(broadcasterConfig);
         Mockito.when(broadcasterConfig.getBroadcasterCache()).thenReturn(cache);
 
+        AtmosphereResourceSessionFactory sessionFactory = new DefaultAtmosphereResourceSessionFactory();
+        AtmosphereConfig config = Mockito.mock(AtmosphereConfig.class);
+        Mockito.when(config.sessionFactory()).thenReturn(sessionFactory);
+
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
         Mockito.when(resource.getRequest()).thenReturn(request);
         Mockito.when(resource.uuid()).thenReturn(RESOURCE_UUID);
+        Mockito.when(resource.getAtmosphereConfig()).thenReturn(config);
     }
 
     private void setTransport(AtmosphereResource.TRANSPORT transport) {
@@ -154,7 +163,7 @@ public class LongPollingCacheFilterTest {
                 .getHeader(LongPollingCacheFilter.SEEN_SERVER_SYNC_ID))
                 .thenReturn(Integer.toString(id), IntStream.of(ids)
                         .mapToObj(Integer::toString).toArray(String[]::new));
-
+        LongPollingCacheFilter.onConnect(resource);
     }
 
     private void verifyMessageIsNotCached() {
