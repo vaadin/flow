@@ -82,7 +82,7 @@ public interface WebStorage {
 
     /**
      * Removes the value associated by the given key from the
-     * Storage.localStorage
+     * provided storage type
      *
      * @param storage
      *            the storage type from which the value will be removed
