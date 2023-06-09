@@ -897,15 +897,6 @@ public class UI extends Component
         return navigate(navigationTarget, RouteParameters.empty());
     }
 
-    /**
-     * For backwards compatibility, to be removed in V24
-     *
-     * @hidden
-     */
-    public void navigate$$bridge(Class<? extends Component> navigationTarget) {
-        navigate(navigationTarget);
-    }
-
     private <T extends Component> Optional<T> findCurrentNavigationTarget(
             Class<T> navigationTarget) {
         List<HasElement> activeRouterTargetsChain = getInternals()
@@ -957,16 +948,6 @@ public class UI extends Component
         navigate(navigationTarget,
                 HasUrlParameterFormat.getParameters(parameter));
         return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
-    }
-
-    /**
-     * For backwards compatibility, to be removed in V24
-     *
-     * @hidden
-     */
-    public <T, C extends Component & HasUrlParameter<T>> void navigate$$bridge(
-            Class<? extends C> navigationTarget, T parameter) {
-        navigate(navigationTarget, parameter);
     }
 
     /**
@@ -1036,16 +1017,6 @@ public class UI extends Component
     public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
             RouteParam... parameters) {
         return navigate(navigationTarget, new RouteParameters(parameters));
-    }
-
-    /**
-     * For backwards compatibility, to be removed in V24
-     *
-     * @hidden
-     */
-    public void navigate$$bridge(Class<? extends Component> navigationTarget,
-            RouteParameters parameters) {
-        navigate(navigationTarget, parameters);
     }
 
     /**
