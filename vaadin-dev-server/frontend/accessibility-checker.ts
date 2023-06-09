@@ -1,11 +1,19 @@
 import {html, css, LitElement} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
+import {customElement, property, state} from 'lit/decorators.js';
 
 import {RuleDetails} from "accessibility-checker/lib/api/IEngine";
 // @ts-ignore
 import {runAccessibilityCheck} from "./accessibility-checker-lib.js";
 import {ComponentReference, getComponents} from "./component-util";
 import {Connection} from "./connection";
+import {injectGlobalCss} from "./theme-editor/styles";
+
+injectGlobalCss(css`
+  .vaadin-accessibility-checker-highlight {
+    outline: solid 2px #9e2cc6;
+    outline-offset: 3px;
+  }
+`);
 
 @customElement('accessibility-checker')
 export class AccessibilityChecker extends LitElement {
@@ -172,6 +180,9 @@ export class AccessibilityChecker extends LitElement {
     @property()
     labeltext = "";
 
+    @state()
+    private element: HTMLElement | null = null;
+
     private frontendConnection?: Connection;
 
 
@@ -212,7 +223,8 @@ export class AccessibilityChecker extends LitElement {
         }
 
         if (this.indexDetail && this.report) {
-            this.highlight(this.report[this.indexDetail].node.parentElement);
+            this.element = this.report[this.indexDetail].node.parentElement;
+            this.highlight(this.element);
         }
     }
     next() {
@@ -226,19 +238,20 @@ export class AccessibilityChecker extends LitElement {
         }
 
         if (this.indexDetail && this.report) {
-            this.highlight(this.report[this.indexDetail].node.parentElement);
+            this.element = this.report[this.indexDetail].node.parentElement;
+            this.highlight(this.element);
         }
     }
 
-    highlight(element: HTMLElement | null) {
+    private highlight(element: HTMLElement | null) {
         if (element) {
-            element.style.outline = "2px solid red";
+            element.classList.add('vaadin-accessibility-checker-highlight');
         }
     }
 
-    resetHighlight(element: HTMLElement | null) {
+    private resetHighlight(element: HTMLElement | null) {
         if (element) {
-            element.style.outline = "";
+            element.classList.remove('vaadin-accessibility-checker-highlight');
         }
     }
     setLabel(node:Node) {
@@ -251,6 +264,13 @@ export class AccessibilityChecker extends LitElement {
 
         (element as any).accessibleName = this.labeltext;
     }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+
+        this.resetHighlight(this.element);
+    }
+
     render() {
         if (this.indexDetail !== undefined) {
             if (this.report) {
@@ -313,7 +333,8 @@ export class AccessibilityChecker extends LitElement {
         return html`<li class="result" @click="${() => {
             this.indexDetail = index;
             if (this.report) {
-                this.highlight(this.report[this.indexDetail].node.parentElement);
+                this.element = this.report[this.indexDetail].node.parentElement;
+                this.highlight(this.element);
             }
         }
         }">
