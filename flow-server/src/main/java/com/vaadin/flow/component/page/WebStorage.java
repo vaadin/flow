@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.page;
 
 import com.vaadin.flow.component.UI;
+import java.io.Serializable;
 
 /**
  * Wrapper for similarly named Browser API. WebStorage may be handy to save some
@@ -23,7 +24,7 @@ import com.vaadin.flow.component.UI;
  * on the server. An example could be certain UI settings that the same users
  * might want to have set differently based on their device.
  */
-public interface WebStorage {
+public interface WebStorage extends Serializable {
 
     public enum Storage {
         /**
@@ -52,7 +53,7 @@ public interface WebStorage {
      * client side.
      */
     @FunctionalInterface
-    public interface Callback {
+    public interface Callback extends Serializable {
         /**
          * This method is called when the value detection is complete.
          *
