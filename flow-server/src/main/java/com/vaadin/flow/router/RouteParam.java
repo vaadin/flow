@@ -43,8 +43,8 @@ public class RouteParam extends Pair<String, String> {
      * @param value
      *            the value of the parameter.
      */
-    public RouteParam(String name, Integer value) {
-        super(name, value.toString());
+    public RouteParam(String name, int value) {
+        super(name, Integer.toString(value));
     }
 
     /**
@@ -55,8 +55,8 @@ public class RouteParam extends Pair<String, String> {
      * @param value
      *            the value of the parameter.
      */
-    public RouteParam(String name, Long value) {
-        super(name, value.toString());
+    public RouteParam(String name, long value) {
+        super(name, Long.toString(value));
     }
 
     /**
