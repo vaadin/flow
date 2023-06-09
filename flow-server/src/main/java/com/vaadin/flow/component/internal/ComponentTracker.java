@@ -115,7 +115,7 @@ public class ComponentTracker {
 
         /**
          * Finds the Java file this location refers to.
-         * 
+         *
          * @param configuration
          *            the application configuration
          * @return the Java file the location refers to, or {@code null}
