@@ -36,6 +36,30 @@ public class RouteParam extends Pair<String, String> {
     }
 
     /**
+     * Creates a new route parameter.
+     *
+     * @param name
+     *            the name of the parameter.
+     * @param value
+     *            the value of the parameter.
+     */
+    public RouteParam(String name, int value) {
+        super(name, Integer.toString(value));
+    }
+
+    /**
+     * Creates a new route parameter.
+     *
+     * @param name
+     *            the name of the parameter.
+     * @param value
+     *            the value of the parameter.
+     */
+    public RouteParam(String name, long value) {
+        super(name, Long.toString(value));
+    }
+
+    /**
      * Gets the name of the parameter.
      *
      * @return the name of the parameter.
