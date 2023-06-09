@@ -27,13 +27,22 @@ public interface WebStorage {
 
     public enum Storage {
         /**
-         * Web storage saved in the browser "permanently".
+         * Web storage saved in the browser "permanently". "localStorage" in the browser APIs.
          */
-        localStorage,
+        LOCAL_STORAGE,
         /**
-         * Web storage saved in the browser until the browser is closed
+         * Web storage saved in the browser until the browser is closed. "sessionStorage" in the browser APIs.
          */
-        sessionStorage
+        SESSION_STORAGE;
+        
+        @Override        
+        public String toString() {
+            if(LOCAL_STORAGE == this) {
+                return "localStorage";
+            } else {
+                return "sessionStorage";
+            }
+        }
     }
 
     /**
@@ -60,7 +69,7 @@ public interface WebStorage {
      *            the value
      */
     public static void setItem(String key, String value) {
-        setItem(Storage.localStorage, key, value);
+        setItem(Storage.LOCAL_STORAGE, key, value);
     }
 
     /**
@@ -103,7 +112,7 @@ public interface WebStorage {
      *            the key to be deleted
      */
     public static void removeItem(String key) {
-        removeItem(Storage.localStorage, key);
+        removeItem(Storage.LOCAL_STORAGE, key);
     }
 
     /**
@@ -139,7 +148,7 @@ public interface WebStorage {
      * Clears all values from the Storage.localStorage
      */
     public static void clear() {
-        clear(Storage.localStorage);
+        clear(Storage.LOCAL_STORAGE);
     }
 
     /**
@@ -174,7 +183,7 @@ public interface WebStorage {
      *            client side
      */
     public static void getItem(String key, Callback callback) {
-        getItem(Storage.localStorage, key, callback);
+        getItem(Storage.LOCAL_STORAGE, key, callback);
     }
 
     /**
