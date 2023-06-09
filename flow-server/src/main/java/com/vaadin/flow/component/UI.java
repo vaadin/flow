@@ -985,7 +985,39 @@ public class UI extends Component
         navigate(configuration.getUrl(navigationTarget, parameters));
         return findCurrentNavigationTarget(navigationTarget);
     }
-
+    
+    /**
+     * Updates this UI to show the view corresponding to the given navigation
+     * target with the specified parameters. The parameters needs to comply with
+     * the ones defined in one of the {@link com.vaadin.flow.router.Route} or
+     * {@link com.vaadin.flow.router.RouteAlias} annotating the navigationTarget
+     * and with any {@link com.vaadin.flow.router.RoutePrefix} annotating the
+     * parent layouts of the navigationTarget.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
+     * <p>
+     * If the view change actually happens (e.g. the view itself doesn't cancel
+     * the navigation), all navigation listeners are notified and a reference of
+     * the new view is returned for additional configuration.
+     *
+     * @param navigationTarget
+     *            navigation target to navigate to.
+     * @param parameters
+     *            parameters to pass to view.
+     * @return the view instance, if navigation actually happened
+     * @throws IllegalArgumentException
+     *             if navigationTarget is a {@link HasUrlParameter} with a
+     *             mandatory parameter, but parameters argument doesn't provide
+     *             {@link HasUrlParameterFormat#PARAMETER_NAME} parameter.
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
+     */
+    public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
+            RouteParam... parameters) {
+        return navigate(navigationTarget, new RouteParameters(parameters));
+    }
     /**
      * Updates this UI to show the view corresponding to the given navigation
      * target with the specified parameter. The parameter needs to be the same
