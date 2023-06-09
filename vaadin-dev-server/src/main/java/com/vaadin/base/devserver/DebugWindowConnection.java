@@ -16,12 +16,14 @@
 package com.vaadin.base.devserver;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
@@ -74,6 +76,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private ThemeEditorMessageHandler themeEditorMessageHandler;
 
+    private List<DevToolsMessageHandler> plugins;
+
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
                 "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener"));
@@ -94,6 +98,17 @@ public class DebugWindowConnection implements BrowserLiveReload {
         this.ideIntegration = new IdeIntegration(
                 ApplicationConfiguration.get(context));
         this.themeEditorMessageHandler = new ThemeEditorMessageHandler(context);
+
+        findPlugins();
+    }
+
+    private void findPlugins() {
+        ServiceLoader<DevToolsMessageHandler> loader = ServiceLoader
+                .load(DevToolsMessageHandler.class, classLoader);
+        this.plugins = new ArrayList<>();
+        for (DevToolsMessageHandler s : loader) {
+            this.plugins.add(s);
+        }
     }
 
     @Override
@@ -265,7 +280,17 @@ public class DebugWindowConnection implements BrowserLiveReload {
                     .handleDebugMessageData(command, data);
             send(resource, ThemeEditorCommand.RESPONSE, resultData);
         } else {
-            getLogger().info("Unknown command from the browser: " + command);
+            boolean handled = false;
+            for (DevToolsMessageHandler plugin : plugins) {
+                handled = plugin.handleDevToolsMessage(command, data);
+                if (handled) {
+                    break;
+                }
+            }
+            if (!handled) {
+                getLogger()
+                        .info("Unknown command from the browser: " + command);
+            }
         }
     }
 

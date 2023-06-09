@@ -13,6 +13,30 @@ import { popupStyles } from './styles';
 import './vaadin-dev-tools-log';
 import './vaadin-dev-tools-info';
 
+/**
+ * Experimental plugin API for the dev tools window.
+ */
+export interface DevToolsInterface {
+  send(command: string, data: any): void;
+  get renderRoot(): HTMLElement | ShadowRoot;
+  addTab(caption: string, render: () => TemplateResult): void;
+}
+
+/**
+ * To register a plugin, use
+ * @example
+ * const plugin: DevToolsPlugin = {
+ *   init: function (pluginInferface: DevToolsInterface): void {
+ *     // Your code here
+ *   }
+ * };
+ *
+ * (window as any).Vaadin.devToolsPlugins.push(plugin);
+ */
+export interface DevToolsPlugin {
+  init(pluginInferface: DevToolsInterface): void;
+}
+
 interface Feature {
   id: string;
   title: string;
@@ -22,7 +46,7 @@ interface Feature {
 }
 
 interface Tab {
-  id: 'log' | 'info' | 'features' | 'code' | 'theme-editor';
+  id: string;
   title: string;
   render: (() => TemplateResult) | string;
   element?: HTMLElement;
@@ -1052,6 +1076,26 @@ export class VaadinDevTools extends LitElement {
       const composedPath = sourceEvent.composedPath();
       if (composedPath.includes(this)) {
         event.preventDefault();
+      }
+    });
+
+    const anyVaadin = window.Vaadin as any;
+    if (anyVaadin.devToolsPlugins) {
+      Array.from(anyVaadin.devToolsPlugins as DevToolsPlugin[]).forEach((plugin) => this.initPlugin(plugin));
+      anyVaadin.devToolsPlugins = { push: (plugin: DevToolsPlugin) => this.initPlugin(plugin) };
+    }
+  }
+  initPlugin(plugin: DevToolsPlugin) {
+    const devTools = this;
+    plugin.init({
+      addTab: (title, render) => {
+        devTools.tabs.push({ id: title, title, render });
+      },
+      get renderRoot() {
+        return devTools.renderRoot;
+      },
+      send: function (command: string, data: any): void {
+        devTools.frontendConnection!.send(command, data);
       }
     });
   }

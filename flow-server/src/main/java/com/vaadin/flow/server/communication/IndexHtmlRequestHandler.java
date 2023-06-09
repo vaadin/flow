@@ -153,8 +153,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (!config.isProductionMode()) {
             // Ensure no older tools incorrectly detect a bundle as production
             // mode
-            addScript(indexDocument,
-                    "window.Vaadin = window.Vaadin || {}; window.Vaadin.developmentMode = true;");
+            addScript(indexDocument, """
+                    window.Vaadin = window.Vaadin || {};
+                    window.Vaadin.developmentMode = true;
+                    window.Vaadin.devToolsPlugins = [];
+                    """);
         }
 
         addDevBundleTheme(indexDocument, context);
