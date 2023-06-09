@@ -8,7 +8,7 @@ import com.vaadin.flow.component.UI;
  * on the server. An example could be certain UI settings that the same users
  * might want to have set differently based on their device.
  */
-public class WebStorage {
+public interface WebStorage {
 
     public enum Storage {
         /**
@@ -38,7 +38,7 @@ public class WebStorage {
     }
 
     /**
-     * Sets given key-value pair to give storage type
+     * Sets given key-value pair to given storage type
      *
      * @param storage
      *            the storage type
@@ -52,7 +52,7 @@ public class WebStorage {
     }
 
     /**
-     * Sets given key-value pair to give storage type
+     * Sets given key-value pair to given storage type
      *
      * @param ui
      *            the UI for which the storage is related to
