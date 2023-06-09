@@ -21,7 +21,16 @@ public interface WebStorage {
         sessionStorage
     }
 
+    /**
+     * This callback is notified after the value has been retrieved from the client side.
+     */
+    @FunctionalInterface
     public interface Callback {
+        /**
+         * This method is called when the value detection is complete.
+         * 
+         * @param value the value or null if the value was not available.
+         */
         void onValueDetected(String value);
     }
 
