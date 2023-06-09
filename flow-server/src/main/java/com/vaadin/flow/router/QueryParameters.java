@@ -200,8 +200,8 @@ public class QueryParameters implements Serializable {
      *
      * @param key
      *            the key of query parameters to fetch
-     * @return query parameters or an empty list if there are no parameters with the
-     *         given key
+     * @return query parameters or an empty list if there are no parameters with
+     *         the given key
      */
     public List<String> getParameters(String key) {
         return parameters.getOrDefault(key, Collections.emptyList());
@@ -215,8 +215,8 @@ public class QueryParameters implements Serializable {
      *
      * @param key
      *            the key of query parameters to fetch
-     * @return query parameter value or empty if there are no parameters
-     *               with the given key
+     * @return query parameter value or empty if there are no parameters with
+     *         the given key
      */
     public Optional<String> getSingleParameter(String key) {
         return parameters.getOrDefault(key, Collections.emptyList()).stream()
