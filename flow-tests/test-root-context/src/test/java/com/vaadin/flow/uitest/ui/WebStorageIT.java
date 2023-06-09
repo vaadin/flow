@@ -21,6 +21,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class WebStorageIT extends ChromeBrowserTest {
 
@@ -32,7 +33,6 @@ public class WebStorageIT extends ChromeBrowserTest {
         WebElement set = findElement(By.id("setText"));
         WebElement detect = findElement(By.id("detect"));
         WebElement remove = findElement(By.id("remove"));
-        WebElement msg = findElement(By.id("msg"));
 
         input.clear();
         input.sendKeys("foobar");
@@ -41,13 +41,11 @@ public class WebStorageIT extends ChromeBrowserTest {
 
         detect.click();
 
-        String text = msg.getText();
-        Assert.assertEquals("foobar", text);
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"), "foobar"));
 
         remove.click();
 
-        text = msg.getText();
-        Assert.assertEquals("", text);
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"), ""));
 
     }
 }

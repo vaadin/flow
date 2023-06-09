@@ -37,14 +37,16 @@ public interface WebStorage {
     }
 
     /**
-     * This callback is notified after the value has been retrieved from the client side.
+     * This callback is notified after the value has been retrieved from the
+     * client side.
      */
     @FunctionalInterface
     public interface Callback {
         /**
          * This method is called when the value detection is complete.
-         * 
-         * @param value the value or null if the value was not available.
+         *
+         * @param value
+         *            the value or null if the value was not available.
          */
         void onValueDetected(String value);
     }
@@ -105,8 +107,8 @@ public interface WebStorage {
     }
 
     /**
-     * Removes the value associated by the given key from the
-     * provided storage type
+     * Removes the value associated by the given key from the provided storage
+     * type
      *
      * @param storage
      *            the storage type from which the value will be removed
@@ -118,8 +120,8 @@ public interface WebStorage {
     }
 
     /**
-     * Removes the value associated by the given key from the
-     * provided storage type
+     * Removes the value associated by the given key from the provided storage
+     * type
      *
      * @param ui
      *            the UI for which the storage is related to
