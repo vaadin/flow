@@ -27,17 +27,19 @@ public interface WebStorage {
 
     public enum Storage {
         /**
-         * Web storage saved in the browser "permanently". "localStorage" in the browser APIs.
+         * Web storage saved in the browser "permanently". "localStorage" in the
+         * browser APIs.
          */
         LOCAL_STORAGE,
         /**
-         * Web storage saved in the browser until the browser is closed. "sessionStorage" in the browser APIs.
+         * Web storage saved in the browser until the browser is closed.
+         * "sessionStorage" in the browser APIs.
          */
         SESSION_STORAGE;
-        
-        @Override        
+
+        @Override
         public String toString() {
-            if(LOCAL_STORAGE == this) {
+            if (LOCAL_STORAGE == this) {
                 return "localStorage";
             } else {
                 return "sessionStorage";
