@@ -26,7 +26,6 @@ import java.security.MessageDigest;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,12 +106,24 @@ class ProjectHelpers {
                 MessageDigest md = MessageDigest.getInstance("MD5");
                 md.update(string.getBytes(StandardCharsets.UTF_8));
                 byte[] digest = md.digest();
-                return Hex.encodeHexString(digest);
+                return toHexString(digest);
             } catch (Exception e) {
                 getLogger().debug("Missing hash algorithm", e);
             }
         }
         return StatisticsConstants.MISSING_DATA;
+    }
+
+    private static String toHexString(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+        for (int i = 0; i < bytes.length; i++) {
+            String hex = Integer.toHexString(0xFF & bytes[i]);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 
     /**
