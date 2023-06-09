@@ -84,7 +84,7 @@
 
         <!-- Dependencies -->
         <spring.version>5.3.27</spring.version>
-        <spring.boot.version>2.7.11</spring.boot.version>
+        <spring.boot.version>2.7.12</spring.boot.version>
         <spring.security.version>5.7.8</spring.security.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>6.2.5.Final</hibernate.validator.version>
