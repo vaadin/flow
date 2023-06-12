@@ -15,12 +15,7 @@
  */
 package com.vaadin.flow.component.internal;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
-
+import java.io.File;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,6 +26,13 @@ import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
+import com.vaadin.flow.server.AbstractConfiguration;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
  * Tracks the location in source code where components were instantiated.
@@ -110,6 +112,26 @@ public class ComponentTracker {
             result = 31 * result + lineNumber;
             return result;
         }
+
+        /**
+         * Finds the Java file this location refers to.
+         *
+         * @param configuration
+         *            the application configuration
+         * @return the Java file the location refers to, or {@code null}
+         */
+        public File findJavaFile(AbstractConfiguration configuration) {
+            String cls = className();
+            String filename = filename();
+            if (!cls.endsWith(filename.replace(".java", ""))) {
+                return null;
+            }
+            File src = configuration.getJavaSourceFolder();
+            File javaFile = new File(src,
+                    cls.replace(".", File.separator) + ".java");
+            return javaFile;
+        }
+
     }
 
     /**
