@@ -65,6 +65,7 @@
                     <generatedDependencies>${flow.dev.dependencies.folder}/${flow.dev.dependencies.file}</generatedDependencies>
                     <requireHomeNodeExec>true</requireHomeNodeExec>
                     <nodeAutoUpdate>true</nodeAutoUpdate>
+                    <pnpmEnable>true</pnpmEnable>
                 </configuration>
             </plugin>
             <plugin>

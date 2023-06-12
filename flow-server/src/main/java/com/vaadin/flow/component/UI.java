@@ -68,6 +68,7 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
@@ -897,15 +898,6 @@ public class UI extends Component
         return navigate(navigationTarget, RouteParameters.empty());
     }
 
-    /**
-     * For backwards compatibility, to be removed in V24
-     *
-     * @hidden
-     */
-    public void navigate$$bridge(Class<? extends Component> navigationTarget) {
-        navigate(navigationTarget);
-    }
-
     private <T extends Component> Optional<T> findCurrentNavigationTarget(
             Class<T> navigationTarget) {
         List<HasElement> activeRouterTargetsChain = getInternals()
@@ -960,16 +952,6 @@ public class UI extends Component
     }
 
     /**
-     * For backwards compatibility, to be removed in V24
-     *
-     * @hidden
-     */
-    public <T, C extends Component & HasUrlParameter<T>> void navigate$$bridge(
-            Class<? extends C> navigationTarget, T parameter) {
-        navigate(navigationTarget, parameter);
-    }
-
-    /**
      * Updates this UI to show the view corresponding to the given navigation
      * target with the specified parameters. The parameters needs to comply with
      * the ones defined in one of the {@link com.vaadin.flow.router.Route} or
@@ -1006,13 +988,36 @@ public class UI extends Component
     }
 
     /**
-     * For backwards compatibility, to be removed in V24
+     * Updates this UI to show the view corresponding to the given navigation
+     * target with the specified parameters. The parameters needs to comply with
+     * the ones defined in one of the {@link com.vaadin.flow.router.Route} or
+     * {@link com.vaadin.flow.router.RouteAlias} annotating the navigationTarget
+     * and with any {@link com.vaadin.flow.router.RoutePrefix} annotating the
+     * parent layouts of the navigationTarget.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
+     * <p>
+     * If the view change actually happens (e.g. the view itself doesn't cancel
+     * the navigation), all navigation listeners are notified and a reference of
+     * the new view is returned for additional configuration.
      *
-     * @hidden
+     * @param navigationTarget
+     *            navigation target to navigate to.
+     * @param parameters
+     *            parameters to pass to view.
+     * @return the view instance, if navigation actually happened
+     * @throws IllegalArgumentException
+     *             if navigationTarget is a {@link HasUrlParameter} with a
+     *             mandatory parameter, but parameters argument doesn't provide
+     *             {@link HasUrlParameterFormat#PARAMETER_NAME} parameter.
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
      */
-    public void navigate$$bridge(Class<? extends Component> navigationTarget,
-            RouteParameters parameters) {
-        navigate(navigationTarget, parameters);
+    public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
+            RouteParam... parameters) {
+        return navigate(navigationTarget, new RouteParameters(parameters));
     }
 
     /**

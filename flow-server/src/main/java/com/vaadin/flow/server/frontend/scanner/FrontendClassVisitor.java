@@ -65,6 +65,13 @@ final class FrontendClassVisitor extends ClassVisitor {
             super(Opcodes.ASM9);
         }
 
+        @Override
+        public AnnotationVisitor visitAnnotation(String descriptor,
+                boolean visible) {
+            addSignatureToClasses(classInfo.children, descriptor);
+            return annotationVisitor;
+        }
+
         // We are interested in the new instances created inside the method
         @Override
         public void visitTypeInsn(int opcode, String type) {
