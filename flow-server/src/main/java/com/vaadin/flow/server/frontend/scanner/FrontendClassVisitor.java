@@ -36,8 +36,6 @@ import com.vaadin.flow.theme.Theme;
  * A class visitor for Flow components.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * <p>
- * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
