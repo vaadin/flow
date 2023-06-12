@@ -81,10 +81,10 @@ public @interface JsModule {
 
     /**
      * Defines if the JavaScript should be loaded only when running in
-     * development mode (for development tooling etc) or if it should always be
+     * development mode (for development tooling etc.) or if it should always be
      * loaded.
      * <p>
-     * By default, scripts are always loaded
+     * By default, scripts are always loaded.
      */
     boolean developmentOnly() default false;
 
