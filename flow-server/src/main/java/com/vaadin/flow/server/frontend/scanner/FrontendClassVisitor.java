@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.objectweb.asm.AnnotationVisitor;
@@ -57,6 +58,50 @@ final class FrontendClassVisitor extends ClassVisitor {
     private final AnnotationVisitor jsModuleVisitor;
     private final AnnotationVisitor jScriptVisitor;
     private ClassInfo classInfo;
+
+    private static final class JSAnnotationVisitor
+            extends RepeatedAnnotationVisitor {
+
+        boolean currentDevOnly = false;
+        private String currentModule;
+
+        private LinkedHashSet<String> target;
+        private LinkedHashSet<String> targetDevelopmentOnly;
+
+        public JSAnnotationVisitor(LinkedHashSet<String> target,
+                LinkedHashSet<String> targetDevelopmentOnly) {
+            this.target = target;
+            this.targetDevelopmentOnly = targetDevelopmentOnly;
+        }
+
+        @Override
+        public void visit(String name, Object value) {
+            if (name.equals("developmentOnly")) {
+                Boolean developmentOnly = (Boolean) value;
+                if (developmentOnly != null && developmentOnly) {
+                    currentDevOnly = true;
+                }
+            } else if (name.equals("value")) {
+                currentModule = value.toString();
+            }
+        }
+
+        @Override
+        public void visitEnd() {
+            super.visitEnd();
+            if (currentModule != null) {
+                // This visitor is called also for the $Container annotation
+                if (currentDevOnly) {
+                    targetDevelopmentOnly.add(currentModule);
+                } else {
+                    target.add(currentModule);
+                }
+            }
+            currentModule = null;
+            currentDevOnly = false;
+        }
+
+    }
 
     private final class FrontendMethodVisitor extends MethodVisitor {
         public FrontendMethodVisitor() {
@@ -175,19 +220,11 @@ final class FrontendClassVisitor extends ClassVisitor {
             }
         };
         // Visitor for @JsModule annotations
-        jsModuleVisitor = new RepeatedAnnotationVisitor() {
-            @Override
-            public void visit(String name, Object value) {
-                classInfo.modules.add(value.toString());
-            }
-        };
+        jsModuleVisitor = new JSAnnotationVisitor(classInfo.modules,
+                classInfo.modulesDevelopmentOnly);
         // Visitor for @JavaScript annotations
-        jScriptVisitor = new RepeatedAnnotationVisitor() {
-            @Override
-            public void visit(String name, Object value) {
-                classInfo.scripts.add(value.toString());
-            }
-        };
+        jScriptVisitor = new JSAnnotationVisitor(classInfo.scripts,
+                classInfo.scriptsDevelopmentOnly);
         // Visitor all other annotations
         annotationVisitor = new RepeatedAnnotationVisitor() {
             @Override

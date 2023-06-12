@@ -9,7 +9,9 @@ import java.util.Set;
 public class ClassInfo {
     String className;
     final LinkedHashSet<String> modules = new LinkedHashSet<>();
+    final LinkedHashSet<String> modulesDevelopmentOnly = new LinkedHashSet<>();
     final LinkedHashSet<String> scripts = new LinkedHashSet<>();
+    final LinkedHashSet<String> scriptsDevelopmentOnly = new LinkedHashSet<>();
     final transient List<CssData> css = new ArrayList<>();
     String route = "";
     String layout;

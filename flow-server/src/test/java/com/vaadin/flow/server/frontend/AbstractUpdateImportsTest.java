@@ -53,6 +53,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
@@ -481,6 +482,84 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 Collections.singleton("import './dice.jpg'"));
 
         updater.run();
+    }
+
+    @Route("")
+    @JsModule("./jsm-all.js")
+    @JsModule(value = "./jsm-all2.js", developmentOnly = false)
+    @JsModule(value = "./jsm-dev.js", developmentOnly = true)
+    @JavaScript("./js-all.js")
+    @JavaScript(value = "./js-all2.js", developmentOnly = false)
+    @JavaScript(value = "./js-dev.js", developmentOnly = true)
+    public static class DevelopmentAndProductionDependencies extends Component {
+    }
+
+    @Test
+    public void developmentDependencies_includedInDevelopmentMode()
+            throws IOException, URISyntaxException {
+        createAndLoadDependencies(false);
+
+        List<String> out = updater.getMergedOutput().stream()
+                .filter(row -> !row.startsWith("export "))
+                .filter(row -> !row.startsWith("window.Vaadin"))
+                .filter(row -> !row.contains("Frontend/generated/flow"))
+                .filter(row -> !row.contains("const loadOnDemand"))
+                .filter(row -> !row
+                        .contains("@vaadin/common-frontend/ConnectionIndicato"))
+                .toList();
+
+        Assert.assertEquals(List.of("import 'Frontend/jsm-all.js';",
+                "import 'Frontend/jsm-all2.js';",
+                "import 'Frontend/jsm-dev.js';", "import 'Frontend/js-all.js';",
+                "import 'Frontend/js-all2.js';",
+                "import 'Frontend/js-dev.js';"), out);
+
+    }
+
+    @Test
+    public void developmentDependencies_notIncludedInProductiontMode()
+            throws IOException, URISyntaxException {
+        createAndLoadDependencies(true);
+
+        List<String> out = updater.getMergedOutput().stream()
+                .filter(row -> !row.startsWith("export "))
+                .filter(row -> !row.startsWith("window.Vaadin"))
+                .filter(row -> !row.contains("Frontend/generated/flow"))
+                .filter(row -> !row.contains("const loadOnDemand"))
+                .filter(row -> !row
+                        .contains("@vaadin/common-frontend/ConnectionIndicato"))
+                .toList();
+        Assert.assertEquals(List.of("import 'Frontend/jsm-all.js';",
+                "import 'Frontend/jsm-all2.js';",
+                "import 'Frontend/js-all.js';",
+                "import 'Frontend/js-all2.js';"), out);
+    }
+
+    private void createAndLoadDependencies(boolean productionMode)
+            throws IOException {
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./jsm-all.js");
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./jsm-all2.js");
+        createExpectedImport(frontendDirectory, nodeModulesPath, "./js-all.js");
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./js-all2.js");
+
+        if (!productionMode) {
+            createExpectedImport(frontendDirectory, nodeModulesPath,
+                    "./jsm-dev.js");
+            createExpectedImport(frontendDirectory, nodeModulesPath,
+                    "./js-dev.js");
+        }
+
+        ClassFinder classFinder = getClassFinder(
+                DevelopmentAndProductionDependencies.class);
+
+        options.withProductionMode(productionMode);
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                options);
+        updater.run();
+
     }
 
     @Route(value = "")

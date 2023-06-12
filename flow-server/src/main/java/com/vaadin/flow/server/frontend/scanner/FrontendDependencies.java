@@ -165,8 +165,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             for (String className : entryPoint.reachableClasses) {
                 ClassInfo classInfo = visitedClasses.get(className);
                 entryPoint.getModules().addAll(classInfo.modules);
+                entryPoint.getModulesDevelopmentOnly()
+                        .addAll(classInfo.modulesDevelopmentOnly);
                 entryPoint.getCss().addAll(classInfo.css);
                 entryPoint.getScripts().addAll(classInfo.scripts);
+                entryPoint.getScriptsDevelopmentOnly()
+                        .addAll(classInfo.scriptsDevelopmentOnly);
             }
         }
 
@@ -256,6 +260,21 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         return all;
     }
 
+    /**
+     * Get all JS modules needed in development mode.
+     *
+     * @return list of JS modules
+     */
+    @Override
+    public Map<ChunkInfo, List<String>> getModulesDevelopment() {
+        LinkedHashMap<ChunkInfo, List<String>> all = new LinkedHashMap<>();
+        for (EntryPointData data : entryPoints.values()) {
+            all.computeIfAbsent(getChunkInfo(data), k -> new ArrayList<>())
+                    .addAll(data.getModulesDevelopmentOnly());
+        }
+        return all;
+    }
+
     private ChunkInfo getChunkInfo(EntryPointData data) {
         if (data.getType() == EntryPointType.INTERNAL) {
             return ChunkInfo.GLOBAL;
@@ -275,6 +294,21 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         for (EntryPointData data : entryPoints.values()) {
             all.computeIfAbsent(getChunkInfo(data), k -> new ArrayList<>())
                     .addAll(data.getScripts());
+        }
+        return all;
+    }
+
+    /**
+     * Get all the JS files needed in development mode.
+     *
+     * @return the set of JS files
+     */
+    @Override
+    public Map<ChunkInfo, List<String>> getScriptsDevelopment() {
+        Map<ChunkInfo, List<String>> all = new LinkedHashMap<>();
+        for (EntryPointData data : entryPoints.values()) {
+            all.computeIfAbsent(getChunkInfo(data), k -> new ArrayList<>())
+                    .addAll(data.getScriptsDevelopmentOnly());
         }
         return all;
     }

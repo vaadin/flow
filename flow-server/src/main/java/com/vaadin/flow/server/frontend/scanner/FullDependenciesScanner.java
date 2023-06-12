@@ -27,8 +27,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -62,6 +60,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private static final String COULD_NOT_LOAD_ERROR_MSG = "Could not load annotation class ";
 
     private static final String VALUE = "value";
+    private static final String DEVELOPMENT_ONLY = "developmentOnly";
     private static final String VERSION = "version";
 
     private ThemeDefinition themeDefinition;
@@ -69,9 +68,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private PwaConfiguration pwaConfiguration;
     private Set<String> classes = new HashSet<>();
     private Map<String, String> packages;
-    private List<String> scripts;
     private List<CssData> cssData;
+    private List<String> scripts;
+    private List<String> scriptsDevelopment;
     private List<String> modules;
+    private List<String> modulesDevelopment;
 
     private final Class<?> abstractTheme;
 
@@ -108,6 +109,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         long start = System.currentTimeMillis();
         this.annotationFinder = annotationFinder;
+
         try {
             abstractTheme = finder.loadClass(AbstractTheme.class.getName());
         } catch (ClassNotFoundException exception) {
@@ -118,16 +120,20 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         packages = discoverPackages();
 
         LinkedHashSet<String> modulesSet = new LinkedHashSet<>();
+        LinkedHashSet<String> modulesSetDevelopment = new LinkedHashSet<>();
         LinkedHashSet<String> scriptsSet = new LinkedHashSet<>();
+        LinkedHashSet<String> scriptsSetDevelopment = new LinkedHashSet<>();
 
-        collectScripts(modulesSet, JsModule.class);
-        collectScripts(scriptsSet, JavaScript.class);
+        collectScripts(modulesSet, modulesSetDevelopment, JsModule.class);
+        collectScripts(scriptsSet, scriptsSetDevelopment, JavaScript.class);
         cssData = discoverCss();
 
         discoverTheme();
 
         modules = new ArrayList<>(modulesSet);
+        modulesDevelopment = new ArrayList<>(modulesSetDevelopment);
         scripts = new ArrayList<>(scriptsSet);
+        scriptsDevelopment = new ArrayList<>(scriptsSetDevelopment);
 
         pwaConfiguration = discoverPwa();
 
@@ -147,9 +153,21 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     @Override
+    public Map<ChunkInfo, List<String>> getModulesDevelopment() {
+        return Collections.singletonMap(ChunkInfo.GLOBAL,
+                Collections.unmodifiableList(modulesDevelopment));
+    }
+
+    @Override
     public Map<ChunkInfo, List<String>> getScripts() {
         return Collections.singletonMap(ChunkInfo.GLOBAL,
                 new ArrayList<>(scripts));
+    }
+
+    @Override
+    public Map<ChunkInfo, List<String>> getScriptsDevelopment() {
+        return Collections.singletonMap(ChunkInfo.GLOBAL,
+                new ArrayList<>(scriptsDevelopment));
     }
 
     @Override
@@ -255,7 +273,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private <T extends Annotation> void collectScripts(
-            LinkedHashSet<String> target, Class<T> annotationType) {
+            LinkedHashSet<String> target, LinkedHashSet<String> targetDevOnly,
+            Class<T> annotationType) {
         try {
             Set<String> logs = new HashSet<>();
             Class<? extends Annotation> loadedAnnotation = getFinder()
@@ -268,8 +287,14 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                             .apply(clazz, loadedAnnotation).forEach(ann -> {
                                 String value = getAnnotationValueAsString(ann,
                                         VALUE);
+                                Boolean developmentOnly = getAnnotationValueAsBoolean(
+                                        ann, DEVELOPMENT_ONLY);
 
-                                target.add(value);
+                                if (developmentOnly) {
+                                    targetDevOnly.add(value);
+                                } else {
+                                    target.add(value);
+                                }
                                 classes.add(clazz.getName());
                                 logs.add(value + " " + clazz);
                             }));
@@ -385,6 +410,12 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             String methodName) {
         Object result = getAnnotationValue(target, methodName);
         return result == null ? null : result.toString();
+    }
+
+    private Boolean getAnnotationValueAsBoolean(Annotation target,
+            String methodName) {
+        Object result = getAnnotationValue(target, methodName);
+        return result == null ? null : (Boolean) result;
     }
 
     private Object getAnnotationValue(Annotation target, String methodName) {
