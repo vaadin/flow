@@ -121,8 +121,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         LinkedHashSet<String> scriptsSet = new LinkedHashSet<>();
 
         collectAnnotationValues(
-                (clazz, module) -> handleModule(clazz, module, modulesSet
-                        ),
+                (clazz, module) -> handleModule(clazz, module, modulesSet),
                 JsModule.class,
                 module -> getAnnotationValueAsString(module, VALUE));
 
