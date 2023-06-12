@@ -504,8 +504,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .filter(row -> !row.startsWith("window.Vaadin"))
                 .filter(row -> !row.contains("Frontend/generated/flow"))
                 .filter(row -> !row.contains("const loadOnDemand"))
-                .filter(row -> !row
-                        .contains("@vaadin/common-frontend/ConnectionIndicator"))
+                .filter(row -> !row.contains(
+                        "@vaadin/common-frontend/ConnectionIndicator"))
                 .toList();
 
         Assert.assertEquals(List.of("import 'Frontend/jsm-all.js';",
@@ -526,8 +526,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .filter(row -> !row.startsWith("window.Vaadin"))
                 .filter(row -> !row.contains("Frontend/generated/flow"))
                 .filter(row -> !row.contains("const loadOnDemand"))
-                .filter(row -> !row
-                        .contains("@vaadin/common-frontend/ConnectionIndicato"))
+                .filter(row -> !row.contains(
+                        "@vaadin/common-frontend/ConnectionIndicator"))
                 .toList();
         Assert.assertEquals(List.of("import 'Frontend/jsm-all.js';",
                 "import 'Frontend/jsm-all2.js';",
