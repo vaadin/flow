@@ -128,6 +128,7 @@ public class NodeUpdaterTest {
 
         // Vite
         expectedDependencies.add("vite");
+        expectedDependencies.add("@vitejs/plugin-react");
         expectedDependencies.add("rollup-plugin-brotli");
         expectedDependencies.add("@rollup/plugin-replace");
         expectedDependencies.add("@rollup/pluginutils");
