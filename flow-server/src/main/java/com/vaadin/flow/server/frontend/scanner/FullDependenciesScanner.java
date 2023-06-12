@@ -120,16 +120,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         LinkedHashSet<String> modulesSet = new LinkedHashSet<>();
         LinkedHashSet<String> scriptsSet = new LinkedHashSet<>();
 
-        collectAnnotationValues(
-                (clazz, module) -> handleModule(clazz, module, modulesSet),
-                JsModule.class,
-                module -> getAnnotationValueAsString(module, VALUE));
-
-        collectAnnotationValues((clazz, script) -> {
-            classes.add(clazz.getName());
-            scriptsSet.add(script);
-        }, JavaScript.class,
-                module -> getAnnotationValueAsString(module, VALUE));
+        collectScripts(modulesSet, JsModule.class);
+        collectScripts(scriptsSet, JavaScript.class);
         cssData = discoverCss();
 
         discoverTheme();
@@ -262,9 +254,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         }
     }
 
-    private <T extends Annotation> void collectAnnotationValues(
-            BiConsumer<Class<?>, String> valueHandler, Class<T> annotationType,
-            Function<Annotation, String> valueExtractor) {
+    private <T extends Annotation> void collectScripts(
+            LinkedHashSet<String> target, Class<T> annotationType) {
         try {
             Set<String> logs = new HashSet<>();
             Class<? extends Annotation> loadedAnnotation = getFinder()
@@ -275,8 +266,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             annotatedClasses.stream().filter(c -> !isExperimental(c.getName()))
                     .forEach(clazz -> annotationFinder
                             .apply(clazz, loadedAnnotation).forEach(ann -> {
-                                String value = valueExtractor.apply(ann);
-                                valueHandler.accept(clazz, value);
+                                String value = getAnnotationValueAsString(ann,
+                                        VALUE);
+
+                                target.add(value);
+                                classes.add(clazz.getName());
                                 logs.add(value + " " + clazz);
                             }));
 
@@ -385,12 +379,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                         + "' and variant = '" + theme.getVariant()
                         + "' and name = '" + theme.getThemeName() + "'")
                 .collect(Collectors.joining(", "));
-    }
-
-    private void handleModule(Class<?> clazz, String module,
-            LinkedHashSet<String> modules) {
-        classes.add(clazz.getName());
-        modules.add(module);
     }
 
     private String getAnnotationValueAsString(Annotation target,
