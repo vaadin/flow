@@ -505,7 +505,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .filter(row -> !row.contains("Frontend/generated/flow"))
                 .filter(row -> !row.contains("const loadOnDemand"))
                 .filter(row -> !row
-                        .contains("@vaadin/common-frontend/ConnectionIndicato"))
+                        .contains("@vaadin/common-frontend/ConnectionIndicator"))
                 .toList();
 
         Assert.assertEquals(List.of("import 'Frontend/jsm-all.js';",
@@ -517,7 +517,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void developmentDependencies_notIncludedInProductiontMode()
+    public void developmentDependencies_notIncludedInProductionMode()
             throws IOException, URISyntaxException {
         createAndLoadDependencies(true);
 
