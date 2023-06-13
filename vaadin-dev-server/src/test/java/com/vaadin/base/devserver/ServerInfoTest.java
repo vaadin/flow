@@ -11,7 +11,7 @@ public class ServerInfoTest {
     @Test
     public void testGetProductName() {
         ServerInfo serverInfo = new ServerInfo();
-        var productNames = List.of("Vaadin", "Hilla");
+        var productNames = List.of("Vaadin", "Hilla", "Vaadin,Hilla");
         // This test is more to prevent regressions
         assertTrue("Product name should be there by default",
                 productNames.contains(serverInfo.getProductName()));

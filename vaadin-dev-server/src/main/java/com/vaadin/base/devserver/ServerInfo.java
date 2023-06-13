@@ -17,11 +17,9 @@ package com.vaadin.base.devserver;
 
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
-import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.Version;
 import org.slf4j.LoggerFactory;
 
@@ -65,8 +63,7 @@ public class ServerInfo implements Serializable {
     }
 
     private String fetchVaadinVersion() {
-        return EndpointRequestUtil.isHillaAvailable() ? "-"
-                : Platform.getVaadinVersion().orElse("?");
+        return isVaadinAvailable() ? detectVaadinVersion().orElse("?") : "-";
     }
 
     private String fetchHillaVersion() {
@@ -76,7 +73,14 @@ public class ServerInfo implements Serializable {
     }
 
     private String fetchProductName() {
-        return EndpointRequestUtil.isHillaAvailable() ? "Hilla" : "Vaadin";
+        final Set<String> result = new LinkedHashSet<>();
+        if (isVaadinAvailable()) {
+            result.add("Vaadin");
+        }
+        if (EndpointRequestUtil.isHillaAvailable()) {
+            result.add("Hilla");
+        }
+        return String.join(",", result);
     }
 
     public String getFlowVersion() {
@@ -99,6 +103,11 @@ public class ServerInfo implements Serializable {
         return osVersion;
     }
 
+    /**
+     * Returns the product name.
+     *
+     * @return the product name, one of "Vaadin", "Hilla" or "Vaadin,Hilla".
+     */
     public String getProductName() {
         return productName;
     }
@@ -123,5 +132,34 @@ public class ServerInfo implements Serializable {
                     .error("Unable to determine Hilla version", e);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Returns Vaadin version.
+     *
+     * @return Vaadin version if Vaadin is on the classpath; null if Vaadin is
+     *         not on the classpath.
+     */
+    private static Optional<String> detectVaadinVersion() {
+        // don't use Platform.getVaadinVersion():
+        // https://github.com/vaadin/flow/issues/17017
+        try (final InputStream vaadinPomProperties = Thread.currentThread()
+                .getContextClassLoader().getResourceAsStream(
+                        "META-INF/maven/com.vaadin/vaadin-core/pom.properties")) {
+            if (vaadinPomProperties != null) {
+                final Properties properties = new Properties();
+                properties.load(vaadinPomProperties);
+                return Optional.of(properties.getProperty("version"));
+            }
+        } catch (Exception e) {
+            LoggerFactory.getLogger(ServerInfo.class)
+                    .error("Unable to determine Vaadin version", e);
+        }
+        return Optional.empty();
+    }
+
+    private static boolean isVaadinAvailable() {
+        return Thread.currentThread().getContextClassLoader().getResource(
+                "META-INF/maven/com.vaadin/vaadin-core/pom.properties") != null;
     }
 }
