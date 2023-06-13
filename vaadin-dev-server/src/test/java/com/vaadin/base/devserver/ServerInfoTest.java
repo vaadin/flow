@@ -16,4 +16,10 @@ public class ServerInfoTest {
         assertTrue("Product name should be there by default",
                 productNames.contains(serverInfo.getProductName()));
     }
+
+    @Test
+    public void hillaVersionIsDashWhenNoHillaOnClasspath() {
+        final ServerInfo serverInfo = new ServerInfo();
+        assertEquals("-", serverInfo.getHillaVersion());
+    }
 }
