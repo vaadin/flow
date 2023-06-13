@@ -15,18 +15,17 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class WebStorageIT extends ChromeBrowserTest {
 
     @Test
-    public void tetWebstorage() {
+    public void testWebstorageSetAndRemove() {
         open();
 
         WebElement input = findElement(By.id("input"));
@@ -35,17 +34,42 @@ public class WebStorageIT extends ChromeBrowserTest {
         WebElement remove = findElement(By.id("remove"));
 
         input.clear();
-        input.sendKeys("foobar");
+        input.sendKeys("foobar", "\n");
 
         set.click();
-
         detect.click();
 
         waitUntil(ExpectedConditions.textToBe(By.id("msg"), "foobar"));
 
         remove.click();
+        detect.click();
 
-        waitUntil(ExpectedConditions.textToBe(By.id("msg"), ""));
-
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"),
+                WebStorageView.VALUE_NOT_SET));
     }
+
+    @Test
+    public void testWebstorageSetAndClear() {
+        open();
+
+        WebElement input = findElement(By.id("input"));
+        WebElement set = findElement(By.id("setText"));
+        WebElement detect = findElement(By.id("detect"));
+        WebElement clear = findElement(By.id("clear"));
+
+        input.clear();
+        input.sendKeys("foobar", "\n");
+
+        set.click();
+        detect.click();
+
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"), "foobar"));
+
+        clear.click();
+        detect.click();
+
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"),
+                WebStorageView.VALUE_NOT_SET));
+    }
+
 }

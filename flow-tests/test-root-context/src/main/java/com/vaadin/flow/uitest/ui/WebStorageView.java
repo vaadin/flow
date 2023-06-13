@@ -25,6 +25,8 @@ import java.time.LocalDateTime;
 @Route(value = "com.vaadin.flow.uitest.ui.WebStorageView")
 public class WebStorageView extends Div {
 
+    static final String VALUE_NOT_SET = "Value is not currently set for the key";
+
     public WebStorageView() {
         Input value = new Input();
         value.setId("input");
@@ -49,7 +51,7 @@ public class WebStorageView extends Div {
         detect.addClickListener(e -> {
             WebStorage.getItem("test", v -> {
                 if (v == null) {
-                    msg.setText("Value is not currently set for the key");
+                    msg.setText(VALUE_NOT_SET);
                 } else {
                     msg.setText(v);
                 }
@@ -63,6 +65,7 @@ public class WebStorageView extends Div {
         });
 
         clear.setText("Clear all");
+        clear.setId("clear");
         clear.addClickListener(e -> {
             WebStorage.clear();
         });
