@@ -107,6 +107,9 @@ public class FrontendTools {
             + FrontendUtils.DISABLE_CHECK //
             + MSG_SUFFIX;
 
+    private static final List<FrontendVersion> BAD_NPM_VERSIONS = Collections
+            .singletonList(new FrontendVersion("9.2.0"));
+
     private static final FrontendVersion WHITESPACE_ACCEPTING_NPM_VERSION = new FrontendVersion(
             7, 0);
 
@@ -624,6 +627,7 @@ public class FrontendTools {
                     getNpmExecutable(false).get(0));
             FrontendUtils.validateToolVersion("npm", foundNpmVersion,
                     SUPPORTED_NPM_VERSION);
+            checkForFaultyNpmVersion(foundNpmVersion);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if npm is new enough", e);
         }
@@ -697,6 +701,15 @@ public class FrontendTools {
         proxyList.addAll(readProxySettingsFromEnvironmentVariables());
 
         return proxyList;
+    }
+
+    void checkForFaultyNpmVersion(FrontendVersion npmVersion) {
+        if (BAD_NPM_VERSIONS.contains(npmVersion)) {
+            String badNpmVersion = buildBadVersionString("npm",
+                    npmVersion.getFullVersion(),
+                    "by updating your global npm installation with `npm install -g npm@latest`");
+            throw new IllegalStateException(badNpmVersion);
+        }
     }
 
     /**

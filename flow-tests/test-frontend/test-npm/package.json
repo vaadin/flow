@@ -1,13 +1,15 @@
 {
   "name": "no-name",
   "license": "UNLICENSED",
+  "type": "module",
   "dependencies": {
     "@polymer/polymer": "3.5.1",
-    "@vaadin/common-frontend": "0.0.17",
+    "@vaadin/common-frontend": "0.0.18",
     "@vaadin/router": "1.7.5",
-    "@vaadin/vaadin-text-field": "23.3.0-alpha2",
+    "@vaadin/text-field": "24.1.0",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "2.6.1"
+    "lit": "2.7.4",
+    "mobile-drag-drop": "2.3.0-rc.2"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "5.0.2",
@@ -16,23 +18,25 @@
     "glob": "7.2.3",
     "mkdirp": "1.0.4",
     "rollup-plugin-brotli": "3.1.0",
+    "rollup-plugin-visualizer": "5.9.0",
     "strip-css-comments": "5.0.0",
     "transform-ast": "2.4.4",
-    "typescript": "4.9.3",
-    "vite": "4.0.2",
-    "vite-plugin-checker": "0.5.2",
-    "workbox-build": "6.5.4",
-    "workbox-core": "6.5.4",
-    "workbox-precaching": "6.5.4"
+    "typescript": "5.0.4",
+    "vite": "4.3.9",
+    "vite-plugin-checker": "0.5.5",
+    "workbox-build": "7.0.0",
+    "workbox-core": "7.0.0",
+    "workbox-precaching": "7.0.0"
   },
   "vaadin": {
     "dependencies": {
       "@polymer/polymer": "3.5.1",
-      "@vaadin/common-frontend": "0.0.17",
+      "@vaadin/common-frontend": "0.0.18",
       "@vaadin/router": "1.7.5",
-      "@vaadin/vaadin-text-field": "23.3.0-alpha2",
+      "@vaadin/text-field": "24.1.0",
       "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "2.6.1"
+      "lit": "2.7.4",
+      "mobile-drag-drop": "2.3.0-rc.2"
     },
     "devDependencies": {
       "@rollup/plugin-replace": "5.0.2",
@@ -41,16 +45,17 @@
       "glob": "7.2.3",
       "mkdirp": "1.0.4",
       "rollup-plugin-brotli": "3.1.0",
+      "rollup-plugin-visualizer": "5.9.0",
       "strip-css-comments": "5.0.0",
       "transform-ast": "2.4.4",
-      "typescript": "4.9.3",
-      "vite": "4.0.2",
-      "vite-plugin-checker": "0.5.2",
-      "workbox-build": "6.5.4",
-      "workbox-core": "6.5.4",
-      "workbox-precaching": "6.5.4"
+      "typescript": "5.0.4",
+      "vite": "4.3.9",
+      "vite-plugin-checker": "0.5.5",
+      "workbox-build": "7.0.0",
+      "workbox-core": "7.0.0",
+      "workbox-precaching": "7.0.0"
     },
-    "hash": "c5e599a1ccc4ae18cdbd06d240b3af84195ae60a3e5aeea766a56623ebaa3edc"
+    "hash": "5ba90176048f9e67a468f043e398dafc1dac4c3f57ba9b9a14168a138aeb2090"
   },
   "overrides": {
     "@vaadin/common-frontend": "$@vaadin/common-frontend",
@@ -58,6 +63,7 @@
     "lit": "$lit",
     "@vaadin/router": "$@vaadin/router",
     "@polymer/polymer": "$@polymer/polymer",
-    "@vaadin/vaadin-text-field": "$@vaadin/vaadin-text-field"
+    "@vaadin/text-field": "$@vaadin/text-field",
+    "mobile-drag-drop": "$mobile-drag-drop"
   }
 }

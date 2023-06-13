@@ -53,14 +53,18 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
+import com.vaadin.flow.server.frontend.NodeTestComponents.LumoTest;
+import com.vaadin.flow.server.frontend.NodeTestComponents.MainLayout;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.flow.theme.AbstractTheme;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -492,6 +496,45 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @LoadDependenciesOnStartup
     static class AllEagerAppConf implements AppShellConfigurator {
+
+    }
+
+    @JsModule("./fake-material-theme.js")
+    public static class FakeMaterialTheme implements AbstractTheme {
+
+        @Override
+        public String getBaseUrl() {
+            return "fake-material-base";
+        }
+
+        @Override
+        public String getThemeUrl() {
+            return null;
+        }
+
+    }
+
+    @Test
+    public void multipleThemes_importsOnlyFromActiveTheme() throws Exception {
+        // The active theme comes from NodeTestComponents.MainLayout
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./fake-material-theme.js");
+        Class[] testClasses = { FakeMaterialTheme.class, MainLayout.class,
+                LumoTest.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                options);
+        updater.run();
+        String output = String.join("\n", updater.getMergedOutput());
+
+        // Lumo is the active theme so its imports should be included
+        Assert.assertTrue(output
+                .contains("import '@vaadin/vaadin-lumo-styles/color.js';"));
+
+        // FakeMaterialTheme is inactive and its JS module annotation value
+        // should not be there
+        Assert.assertFalse(output.contains("Frontend/fake-material-theme.js"));
 
     }
 
