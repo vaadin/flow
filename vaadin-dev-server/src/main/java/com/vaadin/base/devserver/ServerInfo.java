@@ -65,11 +65,14 @@ public class ServerInfo implements Serializable {
     }
 
     private String fetchVaadinVersion() {
-        return EndpointRequestUtil.isHillaAvailable() ? "-" : Platform.getVaadinVersion().orElse("?");
+        return EndpointRequestUtil.isHillaAvailable() ? "-"
+                : Platform.getVaadinVersion().orElse("?");
     }
 
     private String fetchHillaVersion() {
-        return EndpointRequestUtil.isHillaAvailable() ? detectHillaVersion().orElse("?") : "-";
+        return EndpointRequestUtil.isHillaAvailable()
+                ? detectHillaVersion().orElse("?")
+                : "-";
     }
 
     private String fetchProductName() {
@@ -102,12 +105,14 @@ public class ServerInfo implements Serializable {
 
     /**
      * Returns Hilla version.
-     * @return Hilla version if Hilla is on the classpath; null if Hilla is not on the classpath.
+     * 
+     * @return Hilla version if Hilla is on the classpath; null if Hilla is not
+     *         on the classpath.
      */
     private static Optional<String> detectHillaVersion() {
-        try (final InputStream hillaPomProperties =
-                     Thread.currentThread().getContextClassLoader()
-                             .getResourceAsStream("META-INF/maven/dev.hilla/hilla/pom.properties")) {
+        try (final InputStream hillaPomProperties = Thread.currentThread()
+                .getContextClassLoader().getResourceAsStream(
+                        "META-INF/maven/dev.hilla/hilla/pom.properties")) {
             if (hillaPomProperties != null) {
                 final Properties properties = new Properties();
                 properties.load(hillaPomProperties);
