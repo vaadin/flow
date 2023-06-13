@@ -105,7 +105,7 @@ public class ServerInfo implements Serializable {
 
     /**
      * Returns Hilla version.
-     * 
+     *
      * @return Hilla version if Hilla is on the classpath; null if Hilla is not
      *         on the classpath.
      */
