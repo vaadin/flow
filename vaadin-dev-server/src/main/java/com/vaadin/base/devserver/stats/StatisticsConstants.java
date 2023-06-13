@@ -54,6 +54,7 @@ public class StatisticsConstants {
     static final String FIELD_OPERATING_SYSTEM = "os";
     static final String FIELD_JVM = "jvm";
     static final String FIELD_FLOW_VERSION = "flowVersion";
+    static final String FIELD_VAADIN_VERSION = "vaadinVersion";
     static final String FIELD_HILLA_VERSION = "hillaVersion";
     static final String FIELD_SOURCE_ID = "sourceId";
     static final String FIELD_PROKEY = "proKey";
