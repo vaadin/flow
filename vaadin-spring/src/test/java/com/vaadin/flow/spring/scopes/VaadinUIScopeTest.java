@@ -130,8 +130,9 @@ public class VaadinUIScopeTest extends AbstractUIScopedTest {
 
     @SuppressWarnings("rawtypes")
     @Test
-    public void datachUI_sessionAttributeIsCleanedAndDestructionCallbackIsCalled() {
+    public void detachUI_uiClosing_sessionAttributeIsCleanedAndDestructionCallbackIsCalled() {
         UI ui = mockUI();
+        ui.close();
 
         VaadinUIScope scope = new VaadinUIScope();
 
@@ -156,6 +157,36 @@ public class VaadinUIScopeTest extends AbstractUIScopedTest {
         // once again to create the bean
         scope.get("foo", factory);
         verify(factory, times(2)).getObject();
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Test
+    public void detachUi_uiNotClosing_sessionAttributeIsNotCleanedAndDestructionCallbackIsNotCalled() {
+        UI ui = mockUI();
+
+        VaadinUIScope scope = new VaadinUIScope();
+
+        AtomicInteger count = new AtomicInteger();
+        scope.registerDestructionCallback("foo", () -> count.getAndIncrement());
+
+        Object object = new Object();
+
+        ObjectFactory factory = Mockito.mock(ObjectFactory.class);
+        when(factory.getObject()).thenReturn(object);
+        scope.get("foo", factory);
+
+        ComponentUtil.onComponentDetach(ui);
+
+        Assert.assertEquals(0, count.get());
+
+        // Destruction callbacks are not called anymore (they are removed)
+        // scope.getBeanStore().destroy();
+        Assert.assertEquals(0, count.get());
+
+        // object has been not removed from the storage, so object factory is
+        // not called to create the bean
+        scope.get("foo", factory);
+        verify(factory, times(1)).getObject();
     }
 
     @Override
