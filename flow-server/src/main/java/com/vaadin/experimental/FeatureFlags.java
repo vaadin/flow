@@ -59,11 +59,11 @@ public class FeatureFlags implements Serializable {
             "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
     public static final Feature THEME_EDITOR = new Feature(
-            "Theme Editor (Free Preview)", "themeEditor", null, true, null);
+            "Theme Editor (Free Preview)", "themeEditor", "https://vaadin.com/docs/latest/tools/theme-editor", true, null);
 
     public static final Feature SIDE_NAV_COMPONENT = new Feature(
             "SideNav component (Production ready but tweaks to at least the internal DOM will still take place)",
-            "sideNavComponent", null, true,
+            "sideNavComponent", "https://vaadin.com/docs/latest/components/side-nav", true,
             "com.vaadin.flow.component.sidenav.SideNav");
 
     private List<Feature> features = new ArrayList<>();
