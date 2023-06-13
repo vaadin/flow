@@ -130,7 +130,7 @@ public class VaadinUIScopeTest extends AbstractUIScopedTest {
 
     @SuppressWarnings("rawtypes")
     @Test
-    public void datachUI_sessionAttributeIsCleanedAndDestructionCallbackIsCalled() {
+    public void detachUI_uiClosing_sessionAttributeIsCleanedAndDestructionCallbackIsCalled() {
         UI ui = mockUI();
         ui.close();
 
@@ -161,7 +161,7 @@ public class VaadinUIScopeTest extends AbstractUIScopedTest {
 
     @SuppressWarnings("rawtypes")
     @Test
-    public void datachNotClosingUI_sessionAttributeIsNotCleanedAndDestructionCallbackIsNotCalled() {
+    public void detachUi_uiNotClosing_sessionAttributeIsNotCleanedAndDestructionCallbackIsNotCalled() {
         UI ui = mockUI();
 
         VaadinUIScope scope = new VaadinUIScope();
