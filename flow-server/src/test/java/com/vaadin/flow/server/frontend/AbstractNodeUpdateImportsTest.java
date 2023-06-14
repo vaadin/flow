@@ -136,6 +136,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "injectGlobalCss($cssFromFile_0.toString(), 'CSSImport end', document);");
         expectedLines.add(
                 "injectGlobalCss($cssFromFile_1.toString(), 'CSSImport end', document);");
+        expectedLines.add("function addCssBlock(block) {");
         expectedLines.add(
                 "addCssBlock(`<style include=\"bar\">${$css_2}</style>`);");
         expectedLines.add("registerStyles('', $css_3, {moduleId: 'baz'});");
