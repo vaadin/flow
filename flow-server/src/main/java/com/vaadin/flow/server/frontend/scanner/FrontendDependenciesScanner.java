@@ -101,7 +101,7 @@ public interface FrontendDependenciesScanner extends Serializable {
     /**
      * Get all npm packages the application depends on.
      *
-     * @return the set of npm packages
+     * @return the npm packages
      */
     Map<String, String> getPackages();
 
@@ -109,21 +109,36 @@ public interface FrontendDependenciesScanner extends Serializable {
      * Get all ES6 modules needed for run the application. Modules that are
      * theme dependencies are guaranteed to precede other modules in the result.
      *
-     * @return list of JS modules
+     * @return the JS modules
      */
     Map<ChunkInfo, List<String>> getModules();
 
     /**
+     * Get all ES6 modules needed only in development mode. Modules that are
+     * theme dependencies are guaranteed to precede other modules in the result.
+     *
+     * @return the JS modules
+     */
+    Map<ChunkInfo, List<String>> getModulesDevelopment();
+
+    /**
      * Get all the JS files used by the application.
      *
-     * @return the set of JS files
+     * @return the JS files
      */
     Map<ChunkInfo, List<String>> getScripts();
 
     /**
+     * Get all the JS files needed only in development mode.
+     *
+     * @return the JS files
+     */
+    Map<ChunkInfo, List<String>> getScriptsDevelopment();
+
+    /**
      * Get all the CSS files used by the application.
      *
-     * @return the set of CSS files
+     * @return the CSS files
      */
     Map<ChunkInfo, List<CssData>> getCss();
 
