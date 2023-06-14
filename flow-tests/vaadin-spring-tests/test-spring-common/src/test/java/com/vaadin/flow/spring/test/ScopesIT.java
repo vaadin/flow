@@ -74,4 +74,32 @@ public class ScopesIT extends AbstractSpringTest {
 
         Assert.assertEquals(anotherMainId, innerId);
     }
+
+    @Test
+    public void checkUiScope_afterResynchronized() throws Exception {
+        getDriver().get(getTestURL() + "ui-scope");
+        waitForDevServer();
+
+        String mainId = findElement(By.id("main")).getText();
+
+        String innerId = findElement(By.id("inner")).getText();
+
+        Assert.assertEquals(mainId, innerId);
+
+        // Resynchronize
+        findElement(By.id("resynchronize")).click();
+
+        findElement(By.id("status-check")).click();
+
+        waitForElementPresent(By.id("ui-was-attached"));
+        waitForElementPresent(By.id("ui-was-detached"));
+
+        String anotherMainId = findElement(By.id("main")).getText();
+
+        Assert.assertEquals(mainId, anotherMainId);
+
+        innerId = findElement(By.id("inner")).getText();
+
+        Assert.assertEquals(anotherMainId, innerId);
+    }
 }

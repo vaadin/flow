@@ -257,7 +257,7 @@ public class FullDependenciesScannerTest {
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 JsModule.class);
-        DepsTests.assertImportCount(26, scanner.getModules());
+        DepsTests.assertImportCount(20, scanner.getModules());
         assertJsModules(DepsTests.merge(scanner.getModules()));
 
         Set<String> classes = scanner.getClasses();

@@ -123,12 +123,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         LinkedHashSet<String> modulesSetDevelopment = new LinkedHashSet<>();
         LinkedHashSet<String> scriptsSet = new LinkedHashSet<>();
         LinkedHashSet<String> scriptsSetDevelopment = new LinkedHashSet<>();
+        discoverTheme();
 
         collectScripts(modulesSet, modulesSetDevelopment, JsModule.class);
         collectScripts(scriptsSet, scriptsSetDevelopment, JavaScript.class);
         cssData = discoverCss();
-
-        discoverTheme();
 
         modules = new ArrayList<>(modulesSet);
         modulesDevelopment = new ArrayList<>(modulesSetDevelopment);
@@ -404,6 +403,30 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                         + "' and variant = '" + theme.getVariant()
                         + "' and name = '" + theme.getThemeName() + "'")
                 .collect(Collectors.joining(", "));
+    }
+
+    private void handleModule(Class<?> clazz, String module,
+            LinkedHashSet<String> modules) {
+        classes.add(clazz.getName());
+
+        if (isNotActiveThemeClass(clazz)) {
+            // The scanner will discover all theme classes (Lumo and Material)
+            // but should include imports only from the active one
+            return;
+        }
+        modules.add(module);
+    }
+
+    private boolean isNotActiveThemeClass(Class<?> clazz) {
+        if (!abstractTheme.isAssignableFrom(clazz)) {
+            return false;
+        }
+
+        ThemeDefinition themeDef = getThemeDefinition();
+        if (themeDef == null) {
+            return true;
+        }
+        return !themeDef.getTheme().getName().equals(clazz.getName());
     }
 
     private String getAnnotationValueAsString(Annotation target,
