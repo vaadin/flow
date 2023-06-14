@@ -516,6 +516,7 @@ public class PushHandler {
             BrowserLiveReload liveReload = getBrowserLiveReload();
             liveReload.onConnect(resource);
         } else {
+            LongPollingCacheFilter.onConnect(resource);
             callWithUi(resource, establishCallback);
         }
     }
