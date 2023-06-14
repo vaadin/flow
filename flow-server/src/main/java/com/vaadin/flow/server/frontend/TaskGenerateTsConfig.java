@@ -49,7 +49,8 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     private static final String ES_TARGET_VERSION = "target";
     private static final String TSCONFIG_JSON_OLDER_VERSIONS_TEMPLATE = "tsconfig-%s.json";
     private static final String[] tsconfigVersions = { "latest", "v23.3.0.1",
-            "v23.3.0", "v23.2", "v23.1", "v22", "v14", "osgi", "v23.3.4" };
+            "v23.3.0", "v23.2", "v23.1", "v22", "v14", "osgi", "v23.3.4",
+            "v23.3.4-hilla" };
 
     //@formatter:off
     static final String ERROR_MESSAGE =
