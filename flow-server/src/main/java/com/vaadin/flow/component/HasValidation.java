@@ -29,11 +29,12 @@ public interface HasValidation extends Serializable {
      * Sets whether the component's internal validation is disabled.
      * <p>
      * When disabled, the component doesn't automatically validate values
-     * against constraints such as required and so on, which also means that
-     * the invalid state isn't affected. However, it's still possible to use
-     * Binder or implement custom validation logic.
+     * against constraints such as required and so on, which also means that the
+     * invalid state isn't affected. However, it's still possible to use Binder
+     * or implement custom validation logic.
      *
-     * @param disabled whether the validation should be disabled.
+     * @param disabled
+     *            whether the validation should be disabled.
      */
     void setInternalValidationDisabled(boolean disabled);
 
