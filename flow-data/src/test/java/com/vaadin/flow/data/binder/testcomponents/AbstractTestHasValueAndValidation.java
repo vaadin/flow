@@ -16,6 +16,7 @@ public abstract class AbstractTestHasValueAndValidation<C extends AbstractSingle
 
     private String errorMessage = "";
     private boolean invalid;
+    private boolean internalValidationDisabled;
 
     @Override
     public void setErrorMessage(String errorMessage) {
@@ -38,5 +39,15 @@ public abstract class AbstractTestHasValueAndValidation<C extends AbstractSingle
     @Override
     public boolean isInvalid() {
         return invalid;
+    }
+
+    @Override
+    public void setInternalValidationDisabled(boolean disabled) {
+        this.internalValidationDisabled = disabled;
+    }
+
+    @Override
+    public boolean isInternalValidationDisabled() {
+        return this.internalValidationDisabled;
     }
 }

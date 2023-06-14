@@ -25,6 +25,25 @@ import java.io.Serializable;
  * @since 1.0.
  */
 public interface HasValidation extends Serializable {
+    /**
+     * Sets whether the component's internal validation is disabled.
+     * <p>
+     * When disabled, the component doesn't automatically validate values
+     * against constraints such as required and so on, which also means that
+     * the invalid state isn't affected. However, it's still possible to use
+     * Binder or implement custom validation logic.
+     *
+     * @param disabled whether the validation should be disabled.
+     */
+    void setInternalValidationDisabled(boolean disabled);
+
+    /**
+     * Returns {@code true} if the component's internal validation is disabled,
+     * {@code false} otherwise.
+     *
+     * @return whether the validation is disabled.
+     */
+    boolean isInternalValidationDisabled();
 
     /**
      * Sets an error message to the component.

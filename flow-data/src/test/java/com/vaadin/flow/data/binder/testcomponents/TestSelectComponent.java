@@ -52,6 +52,7 @@ public class TestSelectComponent<T>
 
     private String errorMessage = "";
     private boolean invalid;
+    private boolean internalValidationDisabled;
 
     @Override
     public void setErrorMessage(String errorMessage) {
@@ -74,6 +75,16 @@ public class TestSelectComponent<T>
     @Override
     public boolean isInvalid() {
         return invalid;
+    }
+
+    @Override
+    public void setInternalValidationDisabled(boolean disabled) {
+        this.internalValidationDisabled = disabled;
+    }
+
+    @Override
+    public boolean isInternalValidationDisabled() {
+        return this.internalValidationDisabled;
     }
 
     private static <T> Set<T> presentationToModel(TestSelectComponent<T> group,
