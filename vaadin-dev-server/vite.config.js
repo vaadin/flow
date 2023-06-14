@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
+import typescript from '@rollup/plugin-typescript';
 
 export default defineConfig({
   build: {
@@ -15,6 +16,7 @@ export default defineConfig({
         // Ensure consistent file name for dev tools bundle
         entryFileNames: 'vaadin-dev-tools.js'
       },
+      plugins: [typescript({ tsconfig: './tsconfig.json' })],
       // Do not resolve the following imports, these modules
       // will be provided by the application that hosts the dev tools.
       external: [
