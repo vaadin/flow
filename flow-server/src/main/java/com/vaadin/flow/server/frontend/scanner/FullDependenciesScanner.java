@@ -289,12 +289,22 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                                 Boolean developmentOnly = getAnnotationValueAsBoolean(
                                         ann, DEVELOPMENT_ONLY);
 
+                                classes.add(clazz.getName());
+
+                                if (isNotActiveThemeClass(clazz)) {
+                                    // The scanner will discover all theme
+                                    // classes (Lumo and Material)
+                                    // but should include imports only from the
+                                    // active one
+                                    return;
+                                }
+
                                 if (developmentOnly) {
                                     targetDevOnly.add(value);
                                 } else {
                                     target.add(value);
                                 }
-                                classes.add(clazz.getName());
+
                                 logs.add(value + " " + clazz);
                             }));
 
@@ -403,18 +413,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                         + "' and variant = '" + theme.getVariant()
                         + "' and name = '" + theme.getThemeName() + "'")
                 .collect(Collectors.joining(", "));
-    }
-
-    private void handleModule(Class<?> clazz, String module,
-            LinkedHashSet<String> modules) {
-        classes.add(clazz.getName());
-
-        if (isNotActiveThemeClass(clazz)) {
-            // The scanner will discover all theme classes (Lumo and Material)
-            // but should include imports only from the active one
-            return;
-        }
-        modules.add(module);
     }
 
     private boolean isNotActiveThemeClass(Class<?> clazz) {
