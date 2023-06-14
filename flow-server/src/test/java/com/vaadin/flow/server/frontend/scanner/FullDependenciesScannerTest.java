@@ -261,7 +261,7 @@ public class FullDependenciesScannerTest {
         assertJsModules(DepsTests.merge(scanner.getModules()));
 
         Set<String> classes = scanner.getClasses();
-        Assert.assertEquals(13, classes.size());
+        Assert.assertEquals(14, classes.size());
 
         assertJsModulesClasses(classes);
     }

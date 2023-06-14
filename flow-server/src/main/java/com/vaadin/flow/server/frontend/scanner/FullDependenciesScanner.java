@@ -117,13 +117,12 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         packages = discoverPackages();
 
-        Map<String, LinkedHashSet<String>> themeModules = new HashMap<>();
-        LinkedHashSet<String> regularModules = new LinkedHashSet<>();
+        LinkedHashSet<String> modulesSet = new LinkedHashSet<>();
         LinkedHashSet<String> scriptsSet = new LinkedHashSet<>();
+        discoverTheme();
 
         collectAnnotationValues(
-                (clazz, module) -> handleModule(clazz, module, regularModules,
-                        themeModules),
+                (clazz, module) -> handleModule(clazz, module, modulesSet),
                 JsModule.class,
                 module -> getAnnotationValueAsString(module, VALUE));
 
@@ -134,9 +133,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                 module -> getAnnotationValueAsString(module, VALUE));
         cssData = discoverCss();
 
-        discoverTheme();
-
-        modules = calculateModules(regularModules, themeModules);
+        modules = new ArrayList<>(modulesSet);
         scripts = new ArrayList<>(scriptsSet);
 
         pwaConfiguration = discoverPwa();
@@ -390,36 +387,27 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private void handleModule(Class<?> clazz, String module,
-            LinkedHashSet<String> modules,
-            Map<String, LinkedHashSet<String>> themeModules) {
+            LinkedHashSet<String> modules) {
+        classes.add(clazz.getName());
 
-        if (abstractTheme.isAssignableFrom(clazz)) {
-            Set<String> themingModules = themeModules.computeIfAbsent(
-                    clazz.getName(), cl -> new LinkedHashSet<>());
-            themingModules.add(module);
-        } else {
-            classes.add(clazz.getName());
-            modules.add(module);
+        if (isNotActiveThemeClass(clazz)) {
+            // The scanner will discover all theme classes (Lumo and Material)
+            // but should include imports only from the active one
+            return;
         }
+        modules.add(module);
     }
 
-    private List<String> calculateModules(LinkedHashSet<String> modules,
-            Map<String, LinkedHashSet<String>> themeModules) {
-        LinkedHashSet<String> themingModules = themeModules
-                .get(getThemeDefinition() == null ? null
-                        : getThemeDefinition().getTheme().getName());
-        if (themingModules == null) {
-            return new ArrayList<>(modules);
+    private boolean isNotActiveThemeClass(Class<?> clazz) {
+        if (!abstractTheme.isAssignableFrom(clazz)) {
+            return false;
         }
-        if (getThemeDefinition() != null) {
-            classes.add(getThemeDefinition().getTheme().getName());
+
+        ThemeDefinition themeDef = getThemeDefinition();
+        if (themeDef == null) {
+            return true;
         }
-        // get rid of duplicate but preserve the order
-        List<String> result = new ArrayList<>(
-                themingModules.size() + modules.size());
-        result.addAll(themingModules);
-        result.addAll(modules);
-        return result;
+        return !themeDef.getTheme().getName().equals(clazz.getName());
     }
 
     private String getAnnotationValueAsString(Annotation target,

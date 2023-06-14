@@ -398,7 +398,8 @@ public class UI extends Component
      * <ul>
      * <li>after it is explicitly {@link #close() closed}.
      * <li>when its session is closed or expires
-     * <li>after three missed heartbeat requests.
+     * <li>after three missed heartbeat requests
+     * <li>when resynchronizing.
      * </ul>
      * <p>
      * Note that when a UI is detached, any changes made in the {@code detach}

@@ -75,28 +75,18 @@ public final class IdeIntegration {
                     + component.getClass().getName() + " was created");
             return;
         }
-
-        String cls = location.className();
-        String filename = location.filename();
-
-        if (cls.endsWith(filename.replace(".java", ""))) {
-            File src = configuration.getJavaSourceFolder();
-            File javaFile = new File(src, cls.replace(".", "/") + ".java");
-            String absoluteFilename = javaFile.getAbsolutePath();
-            if (!javaFile.exists()) {
-                getLogger().error("Unable to find file in " + absoluteFilename);
-                return;
-            }
-
-            if (!OpenInCurrentIde.openFile(javaFile, location.lineNumber())) {
-                // Failed to open in IDE so print the file and line info.
-                // Either an IDE makes it clickable or you can copy the file
-                // info
-                System.out.println(toStackTraceElement(location));
-            }
-        } else {
-            System.out.println(toStackTraceElement(location));
+        File javaFile = location.findJavaFile(configuration);
+        if (javaFile != null && !javaFile.exists()) {
+            getLogger().error("Unable to find file in " + javaFile);
+            return;
         }
+
+        if (javaFile != null
+                && OpenInCurrentIde.openFile(javaFile, location.lineNumber())) {
+            return;
+        }
+
+        System.out.println(toStackTraceElement(location));
     }
 
     private StackTraceElement toStackTraceElement(Location location) {
