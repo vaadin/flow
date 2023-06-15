@@ -56,6 +56,7 @@ public class Platform implements Serializable {
             LoggerFactory.getLogger(Platform.class)
                     .error("Unable to determine Vaadin version", e);
         }
+
         return Optional.empty();
     }
 }
