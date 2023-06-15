@@ -44,13 +44,17 @@ public class Platform implements Serializable {
                 final Properties properties = new Properties();
                 properties.load(vaadinPomProperties);
                 return Optional.of(properties.getProperty("version"));
+            } else {
+                if (!versionErrorLogged) {
+                    versionErrorLogged = true;
+                    LoggerFactory.getLogger(Platform.class)
+                            .info("Unable to determine Vaadin version. "
+                                    + "No META-INF/maven/com.vaadin/vaadin-core/pom.properties found");
+                }
             }
         } catch (Exception e) {
-            if (!versionErrorLogged) {
-                versionErrorLogged = true;
-                LoggerFactory.getLogger(Platform.class)
-                        .info("Unable to determine Vaadin version", e);
-            }
+            LoggerFactory.getLogger(Platform.class)
+                    .error("Unable to determine Vaadin version", e);
         }
         return Optional.empty();
     }
