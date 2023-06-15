@@ -266,9 +266,10 @@ public class JavaSourceModifier extends Editor {
                 Component component = getComponent(session, uiId, nodeId);
                 ComponentTracker.Location createLocation = getCreateLocation(
                         component);
-                String fileName = SharedUtil.upperCamelCaseToDashSeparated(
-                        createLocation.filename().substring(0,
-                                createLocation.filename().indexOf(".")));
+                String fileName = SharedUtil
+                        .upperCamelCaseToDashSeparatedLowerCase(createLocation
+                                .filename().substring(0, createLocation
+                                        .filename().indexOf(".")));
                 String tagName = component.getElement().getTag()
                         .replace("vaadin-", "");
 

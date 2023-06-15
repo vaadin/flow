@@ -128,24 +128,25 @@ public class SharedUtilTests {
     }
 
     @Test
-    public void upperCamelCaseToDashSeparated() {
+    public void upperCamelCaseToDashSeparatedLowerCase() {
         Assert.assertEquals(null,
-                SharedUtil.upperCamelCaseToDashSeparated(null));
-        Assert.assertEquals("", SharedUtil.upperCamelCaseToDashSeparated(""));
+                SharedUtil.upperCamelCaseToDashSeparatedLowerCase(null));
+        Assert.assertEquals("",
+                SharedUtil.upperCamelCaseToDashSeparatedLowerCase(""));
         Assert.assertEquals("foo",
-                SharedUtil.upperCamelCaseToDashSeparated("foo"));
+                SharedUtil.upperCamelCaseToDashSeparatedLowerCase("foo"));
         Assert.assertEquals("foo-bar",
-                SharedUtil.upperCamelCaseToDashSeparated("fooBar"));
+                SharedUtil.upperCamelCaseToDashSeparatedLowerCase("fooBar"));
         Assert.assertEquals("foo--bar",
-                SharedUtil.upperCamelCaseToDashSeparated("foo--bar"));
+                SharedUtil.upperCamelCaseToDashSeparatedLowerCase("foo--bar"));
         Assert.assertEquals("foo-bar-baz",
-                SharedUtil.upperCamelCaseToDashSeparated("fooBarBaz"));
-        Assert.assertEquals("my-bean-container",
-                SharedUtil.upperCamelCaseToDashSeparated("MyBeanContainer"));
-        Assert.assertEquals("awesome-uRL-factory",
-                SharedUtil.upperCamelCaseToDashSeparated("AwesomeURLFactory"));
-        Assert.assertEquals("some-uri-action",
-                SharedUtil.upperCamelCaseToDashSeparated("someUriAction"));
+                SharedUtil.upperCamelCaseToDashSeparatedLowerCase("fooBarBaz"));
+        Assert.assertEquals("my-bean-container", SharedUtil
+                .upperCamelCaseToDashSeparatedLowerCase("MyBeanContainer"));
+        Assert.assertEquals("awesome-url-factory", SharedUtil
+                .upperCamelCaseToDashSeparatedLowerCase("AwesomeURLFactory"));
+        Assert.assertEquals("some-uri-action", SharedUtil
+                .upperCamelCaseToDashSeparatedLowerCase("someUriAction"));
     }
 
     @Test
