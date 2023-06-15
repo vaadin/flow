@@ -30,12 +30,12 @@ import elemental.json.JsonValue;
  * Class for handling web push registration to the client and returning
  * subscription data on the server for pushing notifications.
  *
- * @since
+ * @since 24.1
  */
 @JsModule("./WebPushRegistration.js")
-public class WebPushRegistration {
+public abstract class WebPushRegistration {
 
-    private String publicKey;
+    private final String publicKey;
 
     private final SerializableConsumer<String> errorHandler = err -> {
         throw new RuntimeException("Unable to retrieve extended "
@@ -45,7 +45,7 @@ public class WebPushRegistration {
     /**
      * Web push subscription class containing web push registration data.
      */
-    public class WebPushSubscription {
+    public static class WebPushSubscription {
         String endpoint;
         String auth;
         String p256dh;
@@ -135,6 +135,14 @@ public class WebPushRegistration {
         this.publicKey = publicKey;
     }
 
+    protected String getPublicKey() {
+        return publicKey;
+    }
+
+    public abstract void sendNotification(
+            WebPushRegistration.WebPushSubscription subscription,
+            String messageJson) throws WebPushException;
+
     /**
      * Check is web push is currently registered on the client.
      *
@@ -209,7 +217,7 @@ public class WebPushRegistration {
 
     private SerializableConsumer<JsonValue> handlePossiblyEmptySubscription(
             WebPushSubcriptionResponse receiver) {
-        final SerializableConsumer<JsonValue> resultHandler = json -> {
+        return json -> {
             JsonObject parse = Json.parse(json.toJson());
             if (parse.hasKey("message")) {
                 receiver.subscription(null);
@@ -220,6 +228,5 @@ public class WebPushRegistration {
                                 parse.getObject("keys").getString("p256dh")));
             }
         };
-        return resultHandler;
     }
 }
