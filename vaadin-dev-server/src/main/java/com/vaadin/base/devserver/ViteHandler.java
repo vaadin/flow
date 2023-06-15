@@ -59,7 +59,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
     private static final String[] FILES_IN_ROOT = new String[] { INDEX_HTML,
             WEB_COMPONENT_HTML, SERVICE_WORKER_SRC_JS };
     private static final Pattern SERVER_RESTARTED_PATTERN = Pattern
-            .compile("\\[vite] server restarted");
+            .compile("\\[vite] server restart(ed| failed)");
     private static final Pattern SERVER_RESTARTING_PATTERN = Pattern
             .compile("\\[vite].*restarting server\\.\\.\\.");
     private static final Pattern SERVER_SUCCESS_PATTERN = Pattern

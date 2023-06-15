@@ -30,7 +30,8 @@ public class RestartMonitorTest {
     private final Executor delayedExecutor = CompletableFuture
             .delayedExecutor(1, TimeUnit.SECONDS);;
     private final RestartMonitor monitor = new RestartMonitor(
-            Pattern.compile("^restart$"), Pattern.compile("^restarted$"));
+            Pattern.compile("^restart$"),
+            Pattern.compile("^restart(ed| failed)$"));
 
     @Test
     public void waitForServerReady_serverReady_notBlocking()
@@ -43,13 +44,24 @@ public class RestartMonitorTest {
     }
 
     @Test
-    public void waitForServerReady_serverRestarting_executionBlocked()
+    public void waitForServerReady_serverRestarting_executionBlockedAndResumed()
+            throws InterruptedException {
+        simulateServerRestart("restarted");
+    }
+
+    @Test
+    public void waitForServerReady_serverRestartFailure_executionBlockedAndResumed()
+            throws InterruptedException {
+        simulateServerRestart("restart failed");
+    }
+
+    private void simulateServerRestart(String restartMessage)
             throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(2);
         monitor.parseLine("restart");
         CompletableFuture.runAsync(() -> simulateTask(latch));
         CompletableFuture.runAsync(() -> {
-            monitor.parseLine("restarted");
+            monitor.parseLine(restartMessage);
             latch.countDown();
         }, delayedExecutor);
         Assert.assertEquals("Restarting, execution should be blocked", 2,
