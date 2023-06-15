@@ -66,6 +66,10 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIA
  */
 abstract class AbstractUpdateImports implements Runnable {
 
+    private static final String CSS_PREPARE = "function addCssBlock(block) {\n"
+            + " const tpl = document.createElement('template');\n"
+            + " tpl.innerHTML = block;\n"
+            + " document.head.appendChild(tpl.content);\n" + "}";
     private static final String IMPORT_INJECT = "import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n";
 
     private static final String CSS_IMPORT = "import $cssFromFile_%d from '%s';%n";
@@ -653,6 +657,9 @@ abstract class AbstractUpdateImports implements Runnable {
             addLines(lines, String.format(REGISTER_STYLES_FOR_TEMPLATE, i,
                     cssImport, themeFor, optionals));
         } else if (cssData.getInclude() != null) {
+            if (!lines.contains("function addCssBlock(block) {")) {
+                addLines(lines, CSS_PREPARE);
+            }
             String include = cssData.getInclude() != null
                     ? " include=\"" + cssData.getInclude() + "\""
                     : "";
