@@ -115,7 +115,7 @@ public class ThemeEditorMessageHandlerTest extends AbstractThemeEditorTest {
         Assert.assertTrue(metadataResponse.isAccessible());
         Assert.assertNull(metadataResponse.getClassName());
         Assert.assertNotNull(metadataResponse.getSuggestedClassName());
-        Assert.assertEquals("TestView-span-1",
+        Assert.assertEquals("test-view-span-1",
                 metadataResponse.getSuggestedClassName());
     }
 

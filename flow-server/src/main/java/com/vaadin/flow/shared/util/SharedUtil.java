@@ -311,6 +311,26 @@ public class SharedUtil implements Serializable {
     }
 
     /**
+     * Converts a UpperCamelCase string into dash ("-") separated.
+     * <p>
+     * Examples:
+     * <p>
+     * {@literal foo} becomes {@literal foo} {@literal fooBar} becomes
+     * {@literal foo-bar} {@literal MyBeanContainer} becomes
+     * {@literal my-bean-container} {@literal AwesomeURLFactory} becomes
+     * {@literal awesome-uRL-factory} {@literal someUriAction} becomes
+     * {@literal some-uri-action}
+     *
+     * @param upperCamelCaseString
+     *            The input string in UpperCamelCase format
+     * @return A human friendly version of the input
+     */
+    public static String upperCamelCaseToDashSeparated(
+            String upperCamelCaseString) {
+        return camelCaseToDashSeparated(firstToLower(upperCamelCaseString));
+    }
+
+    /**
      * Prepend the given url with the prefix if it is not absolute and doesn't
      * have a protocol.
      *
