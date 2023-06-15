@@ -15,11 +15,6 @@
  */
 package com.vaadin.base.devserver;
 
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -37,6 +32,11 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
 
 /**
  * Handles communication with a Vite server.
@@ -58,6 +58,12 @@ public final class ViteHandler extends AbstractDevServerRunner {
      */
     private static final String[] FILES_IN_ROOT = new String[] { INDEX_HTML,
             WEB_COMPONENT_HTML, SERVICE_WORKER_SRC_JS };
+    private static final Pattern SERVER_RESTARTED_PATTERN = Pattern
+            .compile("\\[vite] server restarted");
+    private static final Pattern SERVER_RESTARTING_PATTERN = Pattern
+            .compile("\\[vite].*restarting server\\.\\.\\.");
+    private static final Pattern SERVER_SUCCESS_PATTERN = Pattern
+            .compile("ready in .*ms");
 
     /**
      * Creates and starts the dev mode handler if none has been started yet.
@@ -128,7 +134,17 @@ public final class ViteHandler extends AbstractDevServerRunner {
 
     @Override
     protected Pattern getServerSuccessPattern() {
-        return Pattern.compile("ready in .*ms");
+        return SERVER_SUCCESS_PATTERN;
+    }
+
+    @Override
+    protected Pattern getServerRestartingPattern() {
+        return SERVER_RESTARTING_PATTERN;
+    }
+
+    @Override
+    protected Pattern getServerRestartedPattern() {
+        return SERVER_RESTARTED_PATTERN;
     }
 
     private static Logger getLogger() {

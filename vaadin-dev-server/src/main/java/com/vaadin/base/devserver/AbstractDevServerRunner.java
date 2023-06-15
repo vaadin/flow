@@ -15,6 +15,10 @@
  */
 package com.vaadin.base.devserver;
 
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,10 +63,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Deals with most details of starting a frontend development server or
@@ -122,6 +122,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     private ApplicationConfiguration applicationConfiguration;
 
     private String failedOutput = null;
+
+    private transient Runnable waitForRestart;
 
     /**
      * Craete an instance that waits for the given task to complete before
@@ -325,6 +327,34 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     protected abstract Pattern getServerFailurePattern();
 
     /**
+     * Gets a pattern to match with the output to determine that the server is
+     * restarting.
+     *
+     * Defaults to {@literal null}, meaning that server restart is not
+     * monitored.
+     *
+     * Server restart is monitored only if both this method and
+     * {@link #getServerRestartedPattern()} provides a pattern.
+     */
+    protected Pattern getServerRestartingPattern() {
+        return null;
+    }
+
+    /**
+     * Gets a pattern to match with the output to determine that the server has
+     * been restarted.
+     *
+     * Defaults to {@literal null}, meaning that server restart is not
+     * monitored.
+     *
+     * Server restart is monitored only if both this method and
+     * {@link #getServerRestartingPattern()} provides a pattern.
+     */
+    protected Pattern getServerRestartedPattern() {
+        return null;
+    }
+
+    /**
      * Starts the dev server and returns the started process.
      *
      * @return the started process or {@code null} if no process was started
@@ -370,6 +400,18 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             DevServerOutputTracker outputTracker = new DevServerOutputTracker(
                     process.getInputStream(), getServerSuccessPattern(),
                     getServerFailurePattern(), this::onDevServerCompilation);
+
+            Pattern restartingPattern = getServerRestartingPattern();
+            Pattern restartedPattern = getServerRestartedPattern();
+            if (restartingPattern != null && restartedPattern != null) {
+                waitForRestart = outputTracker.serverRestartGuard(
+                        restartingPattern, restartedPattern);
+                getLogger().debug("RestartMonitor is active");
+            } else {
+                getLogger().trace(
+                        "RestartMonitor not active. Both restarting and restarted pattern are required");
+            }
+
             outputTracker.find();
             getLogger().info(LOG_START, getServerName());
 
@@ -495,6 +537,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         // Save running port for next usage
         saveRunningDevServerPort();
         watchDog.set(null);
+        waitForRestart = DevServerOutputTracker.activeServerRestartGuard();
+        if (waitForRestart != null) {
+            getLogger().debug("RestartMonitor is active");
+        }
     }
 
     private void saveRunningDevServerPort() {
@@ -575,6 +621,9 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     @Override
     public HttpURLConnection prepareConnection(String path, String method)
             throws IOException {
+        if (waitForRestart != null) {
+            waitForRestart.run();
+        }
         // path should have been checked at this point for any outside requests
         URL uri = new URL(DEV_SERVER_HOST + ":" + getPort() + path);
         HttpURLConnection connection = (HttpURLConnection) uri.openConnection();
