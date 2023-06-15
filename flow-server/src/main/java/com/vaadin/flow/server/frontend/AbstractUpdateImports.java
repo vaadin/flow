@@ -66,6 +66,10 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIA
  */
 abstract class AbstractUpdateImports implements Runnable {
 
+    private static final String CSS_PREPARE = "function addCssBlock(block) {\n"
+            + " const tpl = document.createElement('template');\n"
+            + " tpl.innerHTML = block;\n"
+            + " document.head.appendChild(tpl.content);\n" + "}";
     private static final String IMPORT_INJECT = "import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n";
 
     private static final String CSS_IMPORT = "import $cssFromFile_%d from '%s';%n";
@@ -113,8 +117,15 @@ abstract class AbstractUpdateImports implements Runnable {
     @Override
     public void run() {
         Map<ChunkInfo, List<CssData>> css = scanner.getCss();
-        Map<ChunkInfo, List<String>> javascript = mergeJavascript(
-                scanner.getModules(), scanner.getScripts());
+        Map<ChunkInfo, List<String>> javascript;
+        if (options.isProductionMode()) {
+            javascript = mergeJavascript(scanner.getModules(),
+                    scanner.getScripts());
+        } else {
+            javascript = mergeJavascript(scanner.getModules(),
+                    scanner.getModulesDevelopment(), scanner.getScripts(),
+                    scanner.getScriptsDevelopment());
+        }
         Map<File, List<String>> output = process(css, javascript);
         writeOutput(output);
     }
@@ -371,20 +382,20 @@ abstract class AbstractUpdateImports implements Runnable {
 
     protected abstract String getImportsNotFoundMessage();
 
+    @SafeVarargs
     private Map<ChunkInfo, List<String>> mergeJavascript(
-            Map<ChunkInfo, List<String>> modules,
-            Map<ChunkInfo, List<String>> scripts) {
+            Map<ChunkInfo, List<String>>... javascripts) {
         Map<ChunkInfo, List<String>> result = new LinkedHashMap<>();
         Collection<? extends String> generated = resolveGeneratedModules(
                 getGeneratedModules());
-        for (Entry<ChunkInfo, List<String>> entry : modules.entrySet()) {
-            result.computeIfAbsent(entry.getKey(), e -> new ArrayList<>())
-                    .addAll(resolveModules(entry.getValue()));
+        for (Map<ChunkInfo, List<String>> javascript : javascripts) {
+
+            for (Entry<ChunkInfo, List<String>> entry : javascript.entrySet()) {
+                result.computeIfAbsent(entry.getKey(), e -> new ArrayList<>())
+                        .addAll(resolveModules(entry.getValue()));
+            }
         }
-        for (Entry<ChunkInfo, List<String>> entry : scripts.entrySet()) {
-            result.computeIfAbsent(entry.getKey(), e -> new ArrayList<>())
-                    .addAll(resolveModules(entry.getValue()));
-        }
+
         result.computeIfAbsent(ChunkInfo.GLOBAL, e -> new ArrayList<>())
                 .addAll(generated);
         return result;
@@ -646,6 +657,9 @@ abstract class AbstractUpdateImports implements Runnable {
             addLines(lines, String.format(REGISTER_STYLES_FOR_TEMPLATE, i,
                     cssImport, themeFor, optionals));
         } else if (cssData.getInclude() != null) {
+            if (!lines.contains("function addCssBlock(block) {")) {
+                addLines(lines, CSS_PREPARE);
+            }
             String include = cssData.getInclude() != null
                     ? " include=\"" + cssData.getInclude() + "\""
                     : "";

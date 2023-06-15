@@ -41,7 +41,9 @@ public final class EntryPointData implements Serializable {
 
     Set<String> reachableClasses;
     private LinkedHashSet<String> modules = new LinkedHashSet<>();
+    private LinkedHashSet<String> modulesDevelopmentOnly = new LinkedHashSet<>();
     private LinkedHashSet<String> scripts = new LinkedHashSet<>();
+    private LinkedHashSet<String> scriptsDevelopmentOnly = new LinkedHashSet<>();
     private LinkedHashSet<CssData> css = new LinkedHashSet<>();
 
     EntryPointData(Class<?> clazz, EntryPointType type,
@@ -64,8 +66,16 @@ public final class EntryPointData implements Serializable {
         return modules;
     }
 
+    public LinkedHashSet<String> getModulesDevelopmentOnly() {
+        return modulesDevelopmentOnly;
+    }
+
     public Collection<String> getScripts() {
         return scripts;
+    }
+
+    public Collection<String> getScriptsDevelopmentOnly() {
+        return scriptsDevelopmentOnly;
     }
 
     public Collection<CssData> getCss() {
