@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Optional;
+import java.util.Properties;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,6 +58,28 @@ public class Platform implements Serializable {
                     .error("Unable to determine version information", e);
         }
 
+        return Optional.empty();
+    }
+
+    /**
+     * Returns Hilla version.
+     *
+     * @return Hilla version if Hilla is on the classpath; null if Hilla is not
+     *         on the classpath.
+     */
+    public static Optional<String> getHillaVersion() {
+        try (final InputStream hillaPomProperties = Thread.currentThread()
+                .getContextClassLoader().getResourceAsStream(
+                        "META-INF/maven/dev.hilla/hilla/pom.properties")) {
+            if (hillaPomProperties != null) {
+                final Properties properties = new Properties();
+                properties.load(hillaPomProperties);
+                return Optional.of(properties.getProperty("version"));
+            }
+        } catch (Exception e) {
+            LoggerFactory.getLogger(Platform.class)
+                    .error("Unable to determine Hilla version", e);
+        }
         return Optional.empty();
     }
 }
