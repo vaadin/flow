@@ -568,6 +568,7 @@ public class PushHandler {
                             .ifPresent(liveReload -> liveReload
                                     .onConnect(resource)));
         } else {
+            LongPollingCacheFilter.onConnect(resource);
             callWithUi(resource, establishCallback);
         }
     }
