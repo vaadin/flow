@@ -15,8 +15,13 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -38,8 +43,34 @@ public class Platform implements Serializable {
      * @return the platform version or {@link Optional#empty()} if unavailable.
      */
     public static Optional<String> getVaadinVersion() {
-        try (InputStream vaadinVersionsStream = Platform.class.getClassLoader()
-                .getResourceAsStream(Constants.VAADIN_CORE_VERSIONS_JSON)) {
+        try {
+            List<URL> coreVersions = Collections.list(getClassloader()
+                    .getResources(Constants.VAADIN_CORE_VERSIONS_JSON));
+            if (coreVersions.size() == 1) {
+                return loadVersionForUrl(coreVersions.get(0));
+            } else {
+                Optional<URL> vaadinCoreJson = coreVersions.stream()
+                        .filter(url -> url.toString()
+                                .contains("com/vaadin/vaadin-core-internal"))
+                        .findFirst();
+                if (vaadinCoreJson.isPresent()) {
+                    return loadVersionForUrl(vaadinCoreJson.get());
+                }
+            }
+        } catch (IOException ioe) {
+            LoggerFactory.getLogger(Platform.class)
+                    .error("Unable to determine version information", ioe);
+        }
+
+        return Optional.empty();
+    }
+
+    static ClassLoader getClassloader() {
+        return Platform.class.getClassLoader();
+    }
+
+    static Optional<String> loadVersionForUrl(URL url) {
+        try (InputStream vaadinVersionsStream = url.openStream()) {
             if (vaadinVersionsStream != null) {
                 ObjectMapper m = new ObjectMapper();
                 JsonNode vaadinVersions = m.readTree(vaadinVersionsStream);
