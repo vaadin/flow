@@ -46,16 +46,12 @@ public class Platform implements Serializable {
         try {
             List<URL> coreVersions = Collections.list(getClassloader()
                     .getResources(Constants.VAADIN_CORE_VERSIONS_JSON));
-            if (coreVersions.size() == 1) {
-                return loadVersionForUrl(coreVersions.get(0));
-            } else {
-                Optional<URL> vaadinCoreJson = coreVersions.stream()
-                        .filter(url -> url.toString()
-                                .contains("com/vaadin/vaadin-core-internal"))
-                        .findFirst();
-                if (vaadinCoreJson.isPresent()) {
-                    return loadVersionForUrl(vaadinCoreJson.get());
-                }
+            Optional<URL> vaadinCoreJson = coreVersions.stream()
+                    .filter(url -> url.toString()
+                            .contains("com/vaadin/vaadin-core-internal"))
+                    .findFirst();
+            if (vaadinCoreJson.isPresent()) {
+                return loadVersionForUrl(vaadinCoreJson.get());
             }
         } catch (IOException ioe) {
             LoggerFactory.getLogger(Platform.class)
