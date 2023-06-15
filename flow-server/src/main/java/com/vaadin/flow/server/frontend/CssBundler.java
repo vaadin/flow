@@ -78,7 +78,8 @@ public class CssBundler {
                 String relativePath = themeFolder.getParentFile().toPath()
                         .relativize(potentialFile.toPath()).toString()
                         .replaceAll("\\\\", "/");
-                return Matcher.quoteReplacement("url('VAADIN/themes/" + relativePath + "')");
+                return Matcher.quoteReplacement(
+                        "url('VAADIN/themes/" + relativePath + "')");
             }
 
             return Matcher.quoteReplacement(urlMatcher.group());
