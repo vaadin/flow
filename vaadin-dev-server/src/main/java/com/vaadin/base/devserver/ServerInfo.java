@@ -17,9 +17,13 @@ package com.vaadin.base.devserver;
 
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.Version;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +67,7 @@ public class ServerInfo implements Serializable {
     }
 
     private String fetchVaadinVersion() {
-        return isVaadinAvailable() ? detectVaadinVersion().orElse("?") : "-";
+        return isVaadinAvailable() ? Platform.getVaadinVersion().orElse("?") : "-";
     }
 
     private String fetchHillaVersion() {
@@ -130,30 +134,6 @@ public class ServerInfo implements Serializable {
         } catch (Exception e) {
             LoggerFactory.getLogger(ServerInfo.class)
                     .error("Unable to determine Hilla version", e);
-        }
-        return Optional.empty();
-    }
-
-    /**
-     * Returns Vaadin version.
-     *
-     * @return Vaadin version if Vaadin is on the classpath; null if Vaadin is
-     *         not on the classpath.
-     */
-    private static Optional<String> detectVaadinVersion() {
-        // don't use Platform.getVaadinVersion():
-        // https://github.com/vaadin/flow/issues/17017
-        try (final InputStream vaadinPomProperties = Thread.currentThread()
-                .getContextClassLoader().getResourceAsStream(
-                        "META-INF/maven/com.vaadin/vaadin-core/pom.properties")) {
-            if (vaadinPomProperties != null) {
-                final Properties properties = new Properties();
-                properties.load(vaadinPomProperties);
-                return Optional.of(properties.getProperty("version"));
-            }
-        } catch (Exception e) {
-            LoggerFactory.getLogger(ServerInfo.class)
-                    .error("Unable to determine Vaadin version", e);
         }
         return Optional.empty();
     }
