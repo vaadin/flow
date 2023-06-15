@@ -67,7 +67,8 @@ public class ServerInfo implements Serializable {
     }
 
     private String fetchVaadinVersion() {
-        return isVaadinAvailable() ? Platform.getVaadinVersion().orElse("?") : "-";
+        return isVaadinAvailable() ? Platform.getVaadinVersion().orElse("?")
+                : "-";
     }
 
     private String fetchHillaVersion() {
