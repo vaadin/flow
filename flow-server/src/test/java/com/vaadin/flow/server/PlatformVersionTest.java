@@ -94,5 +94,4 @@ public class PlatformVersionTest {
             Assert.assertEquals(version, vaadinVersion.get());
         }
     }
-
 }
