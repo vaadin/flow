@@ -40,6 +40,7 @@ public class PlatformTest {
     @Before
     public void rememberContextClassLoader() {
         oldContextClassLoader = Thread.currentThread().getContextClassLoader();
+        Platform.hillaVersion = null;
     }
 
     @After
@@ -48,6 +49,7 @@ public class PlatformTest {
     }
 
     private void fakeHilla(String hillaVersion) throws IOException {
+        Platform.hillaVersion = null;
         if (hillaVersion == null) {
             Thread.currentThread().setContextClassLoader(oldContextClassLoader);
             return;

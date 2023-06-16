@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.helger.commons.annotation.VisibleForTesting;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -32,6 +33,12 @@ import org.slf4j.LoggerFactory;
 public class Platform implements Serializable {
 
     private static boolean versionErrorLogged = false;
+
+    /**
+     * Memoized hilla version.
+     */
+    @VisibleForTesting
+    static String hillaVersion = null;
 
     /**
      * Returns the platform version string, e.g., {@code "23.0.0"}.
@@ -68,18 +75,26 @@ public class Platform implements Serializable {
      *         Hilla is not on the classpath.
      */
     public static Optional<String> getHillaVersion() {
-        try (final InputStream hillaPomProperties = Thread.currentThread()
-                .getContextClassLoader().getResourceAsStream(
-                        "META-INF/maven/dev.hilla/hilla/pom.properties")) {
-            if (hillaPomProperties != null) {
-                final Properties properties = new Properties();
-                properties.load(hillaPomProperties);
-                return Optional.of(properties.getProperty("version"));
+        // thread-safe: in the worst case hillaVersion may be computed multiple
+        // times by concurrent threads.
+        if (hillaVersion == null) {
+            try (final InputStream hillaPomProperties = Thread.currentThread()
+                    .getContextClassLoader().getResourceAsStream(
+                            "META-INF/maven/dev.hilla/hilla/pom.properties")) {
+                if (hillaPomProperties != null) {
+                    final Properties properties = new Properties();
+                    properties.load(hillaPomProperties);
+                    hillaVersion = properties.getProperty("version");
+                } else {
+                    hillaVersion = "";
+                }
+            } catch (Exception e) {
+                LoggerFactory.getLogger(Platform.class)
+                        .error("Unable to determine Hilla version", e);
+                hillaVersion = "";
             }
-        } catch (Exception e) {
-            LoggerFactory.getLogger(Platform.class)
-                    .error("Unable to determine Hilla version", e);
         }
-        return Optional.empty();
+        return hillaVersion.isEmpty() ? Optional.empty()
+                : Optional.of(hillaVersion);
     }
 }
