@@ -80,6 +80,15 @@ public @interface JsModule {
     String value();
 
     /**
+     * Defines if the JavaScript should be loaded only when running in
+     * development mode (for development tooling etc.) or if it should always be
+     * loaded.
+     * <p>
+     * By default, scripts are always loaded.
+     */
+    boolean developmentOnly() default false;
+
+    /**
      * Internal annotation to enable use of multiple {@link JsModule}
      * annotations.
      */

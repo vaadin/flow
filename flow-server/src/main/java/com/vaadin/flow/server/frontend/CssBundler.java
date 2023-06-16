@@ -61,7 +61,7 @@ public class CssBundler {
             String url = getNonNullGroup(result, 2, 3);
             if (url == null || url.trim().endsWith(".css")) {
                 // These are handled below
-                return urlMatcher.group();
+                return Matcher.quoteReplacement(urlMatcher.group());
             }
             File potentialFile = new File(cssFile.getParentFile(), url.trim());
             if (potentialFile.exists()) {
@@ -78,10 +78,11 @@ public class CssBundler {
                 String relativePath = themeFolder.getParentFile().toPath()
                         .relativize(potentialFile.toPath()).toString()
                         .replaceAll("\\\\", "/");
-                return "url('VAADIN/themes/" + relativePath + "')";
+                return Matcher.quoteReplacement(
+                        "url('VAADIN/themes/" + relativePath + "')");
             }
 
-            return urlMatcher.group();
+            return Matcher.quoteReplacement(urlMatcher.group());
         });
         Matcher importMatcher = importPattern.matcher(content);
         content = importMatcher.replaceAll(result -> {
@@ -92,23 +93,24 @@ public class CssBundler {
             String layerOrMediaQueryInfo = result.group(9);
             if (layerOrMediaQueryInfo != null
                     && !layerOrMediaQueryInfo.isBlank()) {
-                return result.group();
+                return Matcher.quoteReplacement(result.group());
             }
             String url = getNonNullGroup(result, 3, 4, 5, 7, 8);
             if (url == null || !url.trim().endsWith(".css")) {
-                return result.group();
+                return Matcher.quoteReplacement(result.group());
             }
 
             File potentialFile = new File(cssFile.getParentFile(), url.trim());
             if (potentialFile.exists()) {
                 try {
-                    return inlineImports(themeFolder, potentialFile);
+                    return Matcher.quoteReplacement(
+                            inlineImports(themeFolder, potentialFile));
                 } catch (IOException e) {
                     getLogger()
                             .warn("Unable to inline import: " + result.group());
                 }
             }
-            return result.group();
+            return Matcher.quoteReplacement(result.group());
         });
 
         return content;
