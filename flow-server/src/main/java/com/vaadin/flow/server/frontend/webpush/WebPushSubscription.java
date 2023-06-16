@@ -18,6 +18,8 @@ package com.vaadin.flow.server.frontend.webpush;
 
 /**
  * Web push subscription class containing web push registration data.
+ *
+ * @since 24.2
  */
 public class WebPushSubscription {
     String endpoint;

@@ -20,6 +20,8 @@ import java.io.Serializable;
 
 /**
  * Callback for receiving web push subscription details
+ *
+ * @since 24.2
  */
 @FunctionalInterface
 public interface WebPushSubscriptionResponse extends Serializable {

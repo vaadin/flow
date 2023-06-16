@@ -20,6 +20,8 @@ import java.io.Serializable;
 
 /**
  * Callback for receiving web push client-side state boolean.
+ *
+ * @since 24.2
  */
 @FunctionalInterface
 public interface WebPushState extends Serializable {
