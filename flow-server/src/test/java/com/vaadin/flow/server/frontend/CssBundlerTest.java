@@ -111,6 +111,16 @@ public class CssBundlerTest {
                         getThemeFile("styles.css")));
     }
 
+    @Test
+    public void dollarAndBackslashWorks() throws IOException {
+        String css = "body { content: '$\\'}";
+        writeCss("@import 'other.css';", "styles.css");
+        writeCss(css, "other.css");
+
+        Assert.assertEquals("body { content: '$\\'}", CssBundler
+                .inlineImports(themeFolder, getThemeFile("styles.css")));
+    }
+
     private boolean createThemeFile(String filename) throws IOException {
         File f = getThemeFile(filename);
         f.getParentFile().mkdirs();
