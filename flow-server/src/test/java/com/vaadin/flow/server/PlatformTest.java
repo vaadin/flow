@@ -26,6 +26,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -62,21 +63,21 @@ public class PlatformTest {
     }
 
     @Test
-    public void testGetVaadinVersionReturnsNullWhenVaadinNotOnClasspath() {
-        assertNull(Platform.getVaadinVersion().orElse(null));
+    public void testGetVaadinVersionReturnsEmptyOptionalWhenVaadinNotOnClasspath() {
+        assertEquals(Optional.empty(), Platform.getVaadinVersion());
     }
 
     @Test
-    public void testGetHillaVersionReturnsNullWhenHillaNotOnClasspath() {
-        assertNull(Platform.getHillaVersion().orElse(null));
+    public void testGetHillaVersionReturnsEmptyOptionalWhenHillaNotOnClasspath() {
+        assertEquals(Optional.empty(), Platform.getHillaVersion());
     }
 
     @Test
-    public void testGetHillaVersionReturnsVersionWhenHillaOnClasspath()
+    public void testGetHillaVersionReturnsProperVersionWhenHillaOnClasspath()
             throws Exception {
         fakeHilla("2.1.0");
-        assertEquals("2.1.0", Platform.getHillaVersion().orElse(null));
+        assertEquals(Optional.of("2.1.0"), Platform.getHillaVersion());
         fakeHilla("2.0.6");
-        assertEquals("2.0.6", Platform.getHillaVersion().orElse(null));
+        assertEquals(Optional.of("2.0.6"), Platform.getHillaVersion());
     }
 }
