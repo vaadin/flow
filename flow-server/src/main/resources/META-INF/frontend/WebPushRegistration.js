@@ -53,8 +53,12 @@ window.Vaadin.Flow.webPush = {
         return !!(await registration?.pushManager.getSubscription());
     },
 
-    notificationPermission: async function() {
+    notificationDenied: async function() {
         return Notification.permission === 'denied';
+    },
+
+    notificationGranted: async function() {
+        return Notification.permission === 'granted';
     },
 
     getSubscription: async  function() {

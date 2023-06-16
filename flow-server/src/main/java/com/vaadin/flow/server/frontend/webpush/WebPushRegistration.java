@@ -93,6 +93,40 @@ public abstract class WebPushRegistration {
     }
 
     /**
+     * Check if notifications are denied on the client.
+     *
+     * @param ui
+     *            current ui
+     * @param receiver
+     *            the callback to which the details are provided
+     */
+    public void isNotificationDenied(UI ui, WebPushState receiver) {
+        final SerializableConsumer<JsonValue> resultHandler = json -> receiver
+                .state(Boolean.parseBoolean(json.toJson()));
+
+        ui.getPage().executeJs(
+                "return window.Vaadin.Flow.webPush.notificationDenied()")
+                .then(resultHandler, errorHandler);
+    }
+
+    /**
+     * Check if notifications are granted on the client.
+     *
+     * @param ui
+     *            current ui
+     * @param receiver
+     *            the callback to which the details are provided
+     */
+    public void isNotificationGranted(UI ui, WebPushState receiver) {
+        final SerializableConsumer<JsonValue> resultHandler = json -> receiver
+                .state(Boolean.parseBoolean(json.toJson()));
+
+        ui.getPage().executeJs(
+                "return window.Vaadin.Flow.webPush.notificationGranted()")
+                .then(resultHandler, errorHandler);
+    }
+
+    /**
      * Subscribe web push for client. Will open an acceptance window for
      * allowing notifications.
      *
