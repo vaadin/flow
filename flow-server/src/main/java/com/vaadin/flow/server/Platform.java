@@ -84,7 +84,7 @@ public class Platform implements Serializable {
                 if (hillaPomProperties != null) {
                     final Properties properties = new Properties();
                     properties.load(hillaPomProperties);
-                    hillaVersion = properties.getProperty("version");
+                    hillaVersion = properties.getProperty("version", "");
                 } else {
                     hillaVersion = "";
                 }
