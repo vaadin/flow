@@ -64,8 +64,8 @@ public class Platform implements Serializable {
     /**
      * Returns Hilla version.
      *
-     * @return Hilla version if Hilla is on the classpath; empty Optional if Hilla is not
-     *         on the classpath.
+     * @return Hilla version if Hilla is on the classpath; empty Optional if
+     *         Hilla is not on the classpath.
      */
     public static Optional<String> getHillaVersion() {
         try (final InputStream hillaPomProperties = Thread.currentThread()
