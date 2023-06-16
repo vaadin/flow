@@ -224,6 +224,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
 
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.webpush\\.WebPushSubscription",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.webpush\\.WebPushRegistration",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.webpush\\.WebPushMessage",
 
                 // Flow client classes
                 "com\\.vaadin\\.client\\..*",

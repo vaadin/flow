@@ -25,8 +25,17 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Class for handling web push registration to the client and returning
- * subscription data on the server for pushing notifications.
+ * Base class for handling Web Push notifications.
+ * <p>
+ * Enables developers to register clients to the Push Server, return
+ * subscription data to be stored on a server, unregister clients and sending
+ * notifications to the clients.
+ * <p>
+ * This class doesn't include any implementation for the intercommunication with
+ * a third-party Push Server. Abstract method
+ * {@link #sendNotification(WebPushSubscription, WebPushMessage)} to be extended
+ * by developers to use a concrete implementation/library, which sends a
+ * notification to Push Server and later on to a browser.
  *
  * @since 24.2
  */
@@ -65,14 +74,14 @@ public abstract class WebPushRegistration {
      *
      * @param subscription
      *            web push subscription of the client
-     * @param messageJson
-     *            notification message containing <code>title</code> and
-     *            <code>body</code> strings
+     * @param message
+     *            notification message containing data to be shown, e.g.
+     *            <code>title</code> and <code>body</code>
      * @throws WebPushException
      *             if sending a notification fails
      */
     public abstract void sendNotification(WebPushSubscription subscription,
-            String messageJson) throws WebPushException;
+            WebPushMessage message) throws WebPushException;
 
     /**
      * Check is web push is currently registered on the client.
