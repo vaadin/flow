@@ -30,7 +30,7 @@ import elemental.json.JsonValue;
  * Class for handling web push registration to the client and returning
  * subscription data on the server for pushing notifications.
  *
- * @since 24.1
+ * @since 24.2
  */
 @JsModule("./WebPushRegistration.js")
 public abstract class WebPushRegistration {
@@ -114,7 +114,7 @@ public abstract class WebPushRegistration {
      * Callback for receiving web push subscription details
      */
     @FunctionalInterface
-    public interface WebPushSubcriptionResponse extends Serializable {
+    public interface WebPushSubscriptionResponse extends Serializable {
 
         /**
          * Invoked when the client-side details are available.
@@ -135,10 +135,27 @@ public abstract class WebPushRegistration {
         this.publicKey = publicKey;
     }
 
+    /**
+     * Get a public key used for registering/sign up on a Push Server.
+     *
+     * @return public key
+     */
     protected String getPublicKey() {
         return publicKey;
     }
 
+    /**
+     * Sends Web Push Notification to a client/browser having a given
+     * subscription.
+     *
+     * @param subscription
+     *            web push subscription of the client
+     * @param messageJson
+     *            notification message containing <code>title</code> and
+     *            <code>body</code> strings
+     * @throws WebPushException
+     *             if sending a notification fails
+     */
     public abstract void sendNotification(
             WebPushRegistration.WebPushSubscription subscription,
             String messageJson) throws WebPushException;
@@ -170,7 +187,7 @@ public abstract class WebPushRegistration {
      * @param receiver
      *            the callback to which the details are provided
      */
-    public void subscribeWebPush(UI ui, WebPushSubcriptionResponse receiver) {
+    public void subscribeWebPush(UI ui, WebPushSubscriptionResponse receiver) {
         final SerializableConsumer<JsonValue> resultHandler = json -> {
             JsonObject parse = Json.parse(json.toJson());
             receiver.subscription(
@@ -193,7 +210,8 @@ public abstract class WebPushRegistration {
      * @param receiver
      *            the callback to which the details are provided
      */
-    public void unsubscribeWebPush(UI ui, WebPushSubcriptionResponse receiver) {
+    public void unsubscribeWebPush(UI ui,
+            WebPushSubscriptionResponse receiver) {
         ui.getPage()
                 .executeJs("return window.Vaadin.Flow.webPush.unsubscribe()")
                 .then(handlePossiblyEmptySubscription(receiver), errorHandler);
@@ -208,7 +226,7 @@ public abstract class WebPushRegistration {
      *            the callback to which the details are provided
      */
     public void getExistingSubscription(UI ui,
-            WebPushSubcriptionResponse receiver) {
+            WebPushSubscriptionResponse receiver) {
         ui.getPage()
                 .executeJs(
                         "return window.Vaadin.Flow.webPush.getSubscription()")
@@ -216,7 +234,7 @@ public abstract class WebPushRegistration {
     }
 
     private SerializableConsumer<JsonValue> handlePossiblyEmptySubscription(
-            WebPushSubcriptionResponse receiver) {
+            WebPushSubscriptionResponse receiver) {
         return json -> {
             JsonObject parse = Json.parse(json.toJson());
             if (parse.hasKey("message")) {
