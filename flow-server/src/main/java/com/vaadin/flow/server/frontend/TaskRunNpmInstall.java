@@ -213,7 +213,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
     private void runNpmInstall() throws ExecutionFailedException {
         // Do possible cleaning before generating any new files.
         cleanUp();
-        long startTime = System.currentTimeMillis();
 
         Logger logger = packageUpdater.log();
 
