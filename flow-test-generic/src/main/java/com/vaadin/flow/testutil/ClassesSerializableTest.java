@@ -222,7 +222,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.CvdlProducts",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.GenerateMainImports",
 
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.webpush\\.WebPushRegistration\\$WebPushSubscription",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.webpush\\.WebPushSubscription",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.webpush\\.WebPushRegistration",
 
                 // Flow client classes

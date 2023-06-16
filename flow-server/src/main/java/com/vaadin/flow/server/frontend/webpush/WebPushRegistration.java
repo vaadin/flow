@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server.frontend.webpush;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -41,89 +39,6 @@ public abstract class WebPushRegistration {
         throw new RuntimeException("Unable to retrieve extended "
                 + "client details. JS error is '" + err + "'");
     };
-
-    /**
-     * Web push subscription class containing web push registration data.
-     */
-    public static class WebPushSubscription {
-        String endpoint;
-        String auth;
-        String p256dh;
-
-        /**
-         * Subscription constructor.
-         *
-         * @param endpoint
-         *            subscription endpoint
-         * @param auth
-         *            subscription authority
-         * @param p256dh
-         *            subscription p256h key
-         */
-        public WebPushSubscription(String endpoint, String auth,
-                String p256dh) {
-            this.endpoint = endpoint;
-            this.auth = auth;
-            this.p256dh = p256dh;
-        }
-
-        /**
-         * Get the subscription endpoint
-         *
-         * @return endpoint
-         */
-        public String getEndpoint() {
-            return endpoint;
-        }
-
-        /**
-         * Get subscription authority
-         *
-         * @return authority
-         */
-        public String getAuth() {
-            return auth;
-        }
-
-        /**
-         * Get subscription key
-         *
-         * @return p256h key
-         */
-        public String getP256dh() {
-            return p256dh;
-        }
-    }
-
-    /**
-     * Callback for receiving web push client-side state boolean.
-     */
-    @FunctionalInterface
-    public interface WebPushState extends Serializable {
-
-        /**
-         * Invoked when the client-side details are available.
-         *
-         * @param state
-         *            boolean for requested state
-         */
-        void state(boolean state);
-    }
-
-    /**
-     * Callback for receiving web push subscription details
-     */
-    @FunctionalInterface
-    public interface WebPushSubscriptionResponse extends Serializable {
-
-        /**
-         * Invoked when the client-side details are available.
-         *
-         * @param subscription
-         *            web push subscription object
-         */
-        void subscription(WebPushSubscription subscription);
-    }
 
     /**
      * Create new WebPushRegistration for given publicKey.
@@ -156,8 +71,7 @@ public abstract class WebPushRegistration {
      * @throws WebPushException
      *             if sending a notification fails
      */
-    public abstract void sendNotification(
-            WebPushRegistration.WebPushSubscription subscription,
+    public abstract void sendNotification(WebPushSubscription subscription,
             String messageJson) throws WebPushException;
 
     /**
