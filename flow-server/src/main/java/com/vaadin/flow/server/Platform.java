@@ -93,7 +93,7 @@ public class Platform implements Serializable {
                     properties.load(hillaPomProperties);
                     hillaVersion = properties.getProperty("version", "");
                 } else {
-                    log.info("Unable to determine Vaadin version. "
+                    log.info("Unable to determine Hilla version. "
                             + "No META-INF/maven/dev.hilla/hilla/pom.properties found");
                     hillaVersion = "";
                 }
