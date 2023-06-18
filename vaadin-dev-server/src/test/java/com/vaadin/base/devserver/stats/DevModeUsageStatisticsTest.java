@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.testutil.TestUtils;
 
+import com.vaadin.pro.licensechecker.MachineId;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -270,6 +271,17 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
                                                       // default
                                                       // id in both
                                                       // cases
+    }
+
+    @Test
+    public void machineId() throws Exception {
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1");
+        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
+
+        final ObjectNode project = storage.read();
+        Assert.assertEquals(MachineId.get(),
+                project.get(StatisticsConstants.FIELD_MACHINE_ID).asText());
     }
 
     private static JsonObject wrapStats(String data) {
