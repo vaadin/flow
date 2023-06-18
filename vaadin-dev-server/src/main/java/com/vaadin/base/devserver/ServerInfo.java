@@ -15,17 +15,13 @@
  */
 package com.vaadin.base.devserver;
 
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
-import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.Version;
-import org.slf4j.LoggerFactory;
 
 /**
  * Data for a info message to the debug window.
@@ -73,7 +69,7 @@ public class ServerInfo implements Serializable {
 
     private String fetchHillaVersion() {
         return EndpointRequestUtil.isHillaAvailable()
-                ? detectHillaVersion().orElse("?")
+                ? Platform.getHillaVersion().orElse("?")
                 : "-";
     }
 
@@ -115,28 +111,6 @@ public class ServerInfo implements Serializable {
      */
     public String getProductName() {
         return productName;
-    }
-
-    /**
-     * Returns Hilla version.
-     *
-     * @return Hilla version if Hilla is on the classpath; null if Hilla is not
-     *         on the classpath.
-     */
-    private static Optional<String> detectHillaVersion() {
-        try (final InputStream hillaPomProperties = Thread.currentThread()
-                .getContextClassLoader().getResourceAsStream(
-                        "META-INF/maven/dev.hilla/hilla/pom.properties")) {
-            if (hillaPomProperties != null) {
-                final Properties properties = new Properties();
-                properties.load(hillaPomProperties);
-                return Optional.of(properties.getProperty("version"));
-            }
-        } catch (Exception e) {
-            LoggerFactory.getLogger(ServerInfo.class)
-                    .error("Unable to determine Hilla version", e);
-        }
-        return Optional.empty();
     }
 
     private static boolean isVaadinAvailable() {
