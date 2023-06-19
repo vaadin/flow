@@ -62,9 +62,9 @@ public interface HasLazyDataView<T, F, V extends LazyDataView<T>>
                             + " component to fetch the count of the items or a data"
                             + " provider that implements the size query. Provide the "
                             + "callback for fetching item count with%n"
-                            + "component.getLazyDataView().withDefinedSize(CallbackDataProvider.CountCallback);"
+                            + "component.getLazyDataView().setItemCountCallback(CallbackDataProvider.CountCallback);"
                             + "%nor switch to undefined size with%n"
-                            + "component.getLazyDataView().withUndefinedSize();");
+                            + "component.getLazyDataView().setItemCountUnknown();");
         }));
         V lazyDataView = getLazyDataView();
         lazyDataView.setItemCountUnknown();
