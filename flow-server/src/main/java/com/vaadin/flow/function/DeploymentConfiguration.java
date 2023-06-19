@@ -485,7 +485,6 @@ public interface DeploymentConfiguration extends Serializable {
      * https://github.com/vaadin/platform/issues/3066
      *
      * @return {@code true} if enabled, {@code false} otherwise.
-     * @since 2.8
      */
     default boolean isFullExperienceValidationEnabled() {
         return getBooleanProperty(InitParameters.ENABLE_FULL_EXPERIENCE_VALIDATION, false);
