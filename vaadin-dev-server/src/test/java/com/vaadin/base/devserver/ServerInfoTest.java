@@ -75,8 +75,11 @@ public class ServerInfoTest {
         final ClassLoader classLoader = new URLClassLoader(
                 classpath.toArray(new URL[0]), null);
         if (hilla) {
-            endpointRequestUtilMockedStatic = Mockito.mockStatic(EndpointRequestUtil.class);
-            endpointRequestUtilMockedStatic.when(EndpointRequestUtil::isHillaAvailable).thenReturn(true);
+            endpointRequestUtilMockedStatic = Mockito
+                    .mockStatic(EndpointRequestUtil.class);
+            endpointRequestUtilMockedStatic
+                    .when(EndpointRequestUtil::isHillaAvailable)
+                    .thenReturn(true);
         }
         Thread.currentThread().setContextClassLoader(classLoader);
     }
