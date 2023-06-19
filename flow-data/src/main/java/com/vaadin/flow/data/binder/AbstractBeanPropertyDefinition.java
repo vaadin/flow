@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.binder;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.TypeVariable;
 
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -56,7 +57,6 @@ public abstract class AbstractBeanPropertyDefinition<T, V>
         this.propertySet = propertySet;
         this.propertyHolderType = propertyHolderType;
         this.descriptor = descriptor;
-
         if (descriptor.getReadMethod() == null) {
             throw new IllegalArgumentException(
                     "Bean property has no accessible getter: "
@@ -70,6 +70,12 @@ public abstract class AbstractBeanPropertyDefinition<T, V>
     public Class<V> getType() {
         return (Class<V>) ReflectTools
                 .convertPrimitiveType(descriptor.getPropertyType());
+    }
+
+    @Override
+    public boolean isGenericType() {
+        return descriptor.getReadMethod()
+                .getGenericReturnType() instanceof TypeVariable<?>;
     }
 
     @Override
