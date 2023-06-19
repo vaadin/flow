@@ -13,21 +13,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
- package com.vaadin.base.devserver;
+package com.vaadin.base.devserver;
 
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedList;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class ServerInfoTest {
     private ClassLoader oldContextClassLoader;
@@ -35,24 +39,45 @@ public class ServerInfoTest {
     @Rule
     public TemporaryFolder temporary = new TemporaryFolder();
 
+    private MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic;
+
     @Before
-    public void rememberContextClassLoader() {
+    public void rememberContextClassLoader() throws Exception {
         oldContextClassLoader = Thread.currentThread().getContextClassLoader();
+        fakePlatform(false, false);
     }
 
     @After
     public void restoreContextClassLoader() {
         Thread.currentThread().setContextClassLoader(oldContextClassLoader);
+        if (endpointRequestUtilMockedStatic != null) {
+            endpointRequestUtilMockedStatic.close();
+            endpointRequestUtilMockedStatic = null;
+        }
     }
 
-    private void fakeVaadin() throws IOException {
-        final Path vaadinJar = temporary.newFolder().toPath();
-        final Path pomProperties = vaadinJar.resolve(
-                "META-INF/maven/com.vaadin/vaadin-core/pom.properties");
-        Files.createDirectories(pomProperties.getParent());
-        Files.writeString(pomProperties, "version=24.1.0");
-        final URLClassLoader classLoader = new URLClassLoader(
-                new URL[] { vaadinJar.toUri().toURL() }, null);
+    private void fakePlatform(boolean vaadin, boolean hilla)
+            throws IOException {
+        if (endpointRequestUtilMockedStatic != null) {
+            endpointRequestUtilMockedStatic.close();
+            endpointRequestUtilMockedStatic = null;
+        }
+
+        final LinkedList<URL> classpath = new LinkedList<>();
+        if (vaadin) {
+            final Path vaadinJar = temporary.newFolder().toPath();
+            final Path pomProperties = vaadinJar.resolve(
+                    "META-INF/maven/com.vaadin/vaadin-core/pom.properties");
+            Files.createDirectories(pomProperties.getParent());
+            Files.writeString(pomProperties, "version=24.1.0");
+            classpath.add(vaadinJar.toUri().toURL());
+        }
+        final ClassLoader classLoader = new URLClassLoader(
+                classpath.toArray(new URL[0]), null);
+        if (hilla) {
+            endpointRequestUtilMockedStatic = Mockito.mockStatic(EndpointRequestUtil.class);
+            endpointRequestUtilMockedStatic.when(EndpointRequestUtil::isHillaAvailable).thenReturn(true);
+        }
         Thread.currentThread().setContextClassLoader(classLoader);
     }
 
@@ -64,14 +89,35 @@ public class ServerInfoTest {
 
     @Test
     public void testGetProductNameWithVaadinOnClasspath() throws Exception {
-        fakeVaadin();
+        fakePlatform(true, false);
         ServerInfo serverInfo = new ServerInfo();
         assertEquals("Vaadin", serverInfo.getProductName());
+    }
+
+    @Test
+    public void testGetProductNameWithHillaOnClasspath() throws Exception {
+        fakePlatform(false, true);
+        ServerInfo serverInfo = new ServerInfo();
+        assertEquals("Hilla", serverInfo.getProductName());
+    }
+
+    @Test
+    public void testGetProductNameWithBothVaadinAndHillaOnClasspath()
+            throws Exception {
+        fakePlatform(true, true);
+        ServerInfo serverInfo = new ServerInfo();
+        assertEquals("Vaadin,Hilla", serverInfo.getProductName());
     }
 
     @Test
     public void hillaVersionIsDashWhenNoHillaOnClasspath() {
         final ServerInfo serverInfo = new ServerInfo();
         assertEquals("-", serverInfo.getHillaVersion());
+    }
+
+    @Test
+    public void vaadinVersionIsDashWhenNoVaadinOnClasspath() {
+        final ServerInfo serverInfo = new ServerInfo();
+        assertEquals("-", serverInfo.getVaadinVersion());
     }
 }
