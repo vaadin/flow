@@ -30,15 +30,18 @@ import org.slf4j.LoggerFactory;
  * @since 23.0
  */
 public class Platform implements Serializable {
-    private static final Logger log = LoggerFactory.getLogger(Platform.class);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(Platform.class);
     /**
-     * Memoized hilla version.
+     * Memoized Hilla version. null if not yet calculated, empty string if Hilla
+     * is not present on the classpath.
      */
     @VisibleForTesting
     static String hillaVersion = null;
 
     /**
-     * Memoized Vaadin version.
+     * Memoized Vaadin version. null if not yet calculated, empty string if
+     * Vaadin is not present on the classpath.
      */
     @VisibleForTesting
     static String vaadinVersion = null;
@@ -49,8 +52,9 @@ public class Platform implements Serializable {
      * @return the platform version or {@link Optional#empty()} if unavailable.
      */
     public static Optional<String> getVaadinVersion() {
-        // thread-safe: in the worst case hillaVersion may be computed multiple
-        // times by concurrent threads.
+        // thread-safe: in the worst case vaadinVersion may be computed multiple
+        // times by concurrent threads. Unsafe-publish is OK since String is
+        // immutable and thread-safe.
         if (vaadinVersion == null) {
             try (final InputStream vaadinPomProperties = Thread.currentThread()
                     .getContextClassLoader().getResourceAsStream(
@@ -60,13 +64,12 @@ public class Platform implements Serializable {
                     properties.load(vaadinPomProperties);
                     vaadinVersion = properties.getProperty("version", "");
                 } else {
-                    log.info("Unable to determine Vaadin version. "
+                    LOGGER.info("Unable to determine Vaadin version. "
                             + "No META-INF/maven/com.vaadin/vaadin-core/pom.properties found");
                     vaadinVersion = "";
                 }
             } catch (Exception e) {
-                LoggerFactory.getLogger(Platform.class)
-                        .error("Unable to determine Vaadin version", e);
+                LOGGER.error("Unable to determine Vaadin version", e);
                 vaadinVersion = "";
             }
         }
@@ -83,7 +86,8 @@ public class Platform implements Serializable {
      */
     public static Optional<String> getHillaVersion() {
         // thread-safe: in the worst case hillaVersion may be computed multiple
-        // times by concurrent threads.
+        // times by concurrent threads. Unsafe-publish is OK since String is
+        // immutable and thread-safe.
         if (hillaVersion == null) {
             try (final InputStream hillaPomProperties = Thread.currentThread()
                     .getContextClassLoader().getResourceAsStream(
@@ -93,13 +97,12 @@ public class Platform implements Serializable {
                     properties.load(hillaPomProperties);
                     hillaVersion = properties.getProperty("version", "");
                 } else {
-                    log.info("Unable to determine Hilla version. "
+                    LOGGER.info("Unable to determine Hilla version. "
                             + "No META-INF/maven/dev.hilla/hilla/pom.properties found");
                     hillaVersion = "";
                 }
             } catch (Exception e) {
-                LoggerFactory.getLogger(Platform.class)
-                        .error("Unable to determine Hilla version", e);
+                LOGGER.error("Unable to determine Hilla version", e);
                 hillaVersion = "";
             }
         }

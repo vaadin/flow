@@ -41,13 +41,18 @@ public class PlatformTest {
     @Before
     public void rememberContextClassLoader() {
         oldContextClassLoader = Thread.currentThread().getContextClassLoader();
-        Platform.hillaVersion = null;
-        Platform.vaadinVersion = null;
     }
 
     @After
     public void restoreContextClassLoader() {
         Thread.currentThread().setContextClassLoader(oldContextClassLoader);
+    }
+
+    @Before
+    @After
+    public void cleanMemoizedValues() {
+        Platform.hillaVersion = null;
+        Platform.vaadinVersion = null;
     }
 
     private void fakeVaadinHilla(String vaadinVersion, String hillaVersion)
