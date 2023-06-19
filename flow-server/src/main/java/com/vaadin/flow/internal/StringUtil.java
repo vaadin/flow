@@ -156,7 +156,7 @@ public final class StringUtil {
     /**
      * Strips the given suffix from the given string, if the strings end with
      * the suffix.
-     * 
+     *
      * @param string
      *            the string to scan
      * @param suffix

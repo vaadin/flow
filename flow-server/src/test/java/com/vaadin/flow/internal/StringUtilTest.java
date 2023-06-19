@@ -112,7 +112,8 @@ public class StringUtilTest {
     public void stripSuffix() {
         Assert.assertEquals("foo", StringUtil.stripSuffix("foo", "bar"));
         Assert.assertEquals("foo", StringUtil.stripSuffix("foobar", "bar"));
-        Assert.assertEquals("foobar", StringUtil.stripSuffix("foobarbar", "bar"));
+        Assert.assertEquals("foobar",
+                StringUtil.stripSuffix("foobarbar", "bar"));
         Assert.assertEquals("", StringUtil.stripSuffix("", "bar"));
     }
 }
