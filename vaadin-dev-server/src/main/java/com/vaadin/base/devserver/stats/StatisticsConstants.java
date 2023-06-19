@@ -29,9 +29,6 @@ public class StatisticsConstants {
      * Event tracking identifiers.
      */
     public static final String EVENT_LIVE_RELOAD = "liveReload";
-    public static final String EVENT_DEV_SERVER_START_PREFIX = "startDevserver";
-    public static final String EVENT_PACKAGEMANAGER_INSTALL_TIME_PREFIX = "packageManagerInstall";
-    public static final String EVENT_PACKAGEMANAGER_CLEANUP_TIME_PREFIX = "packageManagerCleanup";
 
     /*
      * Name of the default JSON file containing all the statistics.
@@ -57,6 +54,7 @@ public class StatisticsConstants {
     static final String FIELD_SOURCE_ID = "sourceId";
     static final String FIELD_PROKEY = "proKey";
     static final String FIELD_USER_KEY = "userKey";
+    static final String FIELD_MACHINE_ID = "machineId";
     static final String FIELD_PROJECTS = "projects";
     static final String VAADIN_PROJECT_SOURCE_TEXT = "Vaadin project from";
     static final String PROJECT_SOURCE_TEXT = "Project from";
