@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
@@ -32,15 +33,26 @@ public abstract class AbstractLiveReloadIT extends ChromeDeviceTest {
         open((String[]) null);
         waitForServiceWorkerReady();
         waitForElementPresent(By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER));
-        initialAttachId = findElement(
-                By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER)).getText();
+        initialAttachId = getAttachId();
+    }
+
+    protected String getAttachId() {
+        return findElement(By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER))
+                .getText();
     }
 
     protected void waitForLiveReload() {
         waitUntil(d -> {
-            final String newViewId = findElement(
-                    By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER)).getText();
-            return !initialAttachId.equals(newViewId);
+            try {
+                final String newViewId = getAttachId();
+                return !initialAttachId.equals(newViewId);
+            } catch (StaleElementReferenceException ex) {
+                return false;
+            }
         });
+    }
+
+    public String getInitialAttachId() {
+        return initialAttachId;
     }
 }
