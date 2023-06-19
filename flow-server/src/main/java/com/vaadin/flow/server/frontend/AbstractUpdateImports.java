@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
@@ -719,6 +720,7 @@ abstract class AbstractUpdateImports implements Runnable {
         for (String importedPath : importedPaths) {
             // try to resolve path relatively to original filePath (inside user
             // frontend folder)
+            importedPath = StringUtil.stripSuffix(importedPath, "?inline");
             String resolvedPath = resolve(importedPath, filePath, path);
             File file = getImportedFrontendFile(resolvedPath);
             if (file == null && !importedPath.startsWith("./")) {
@@ -747,7 +749,7 @@ abstract class AbstractUpdateImports implements Runnable {
         }
     }
 
-    private void handleImports(String path, AbstractTheme theme,
+    void handleImports(String path, AbstractTheme theme,
             Collection<String> imports, Set<String> visitedImports) {
         if (visitedImports.contains(path)) {
             return;
