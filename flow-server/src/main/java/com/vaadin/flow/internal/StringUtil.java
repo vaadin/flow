@@ -154,6 +154,25 @@ public final class StringUtil {
     }
 
     /**
+     * Strips the given suffix from the given string, if the strings end with
+     * the suffix.
+     *
+     * @param string
+     *            the string to scan
+     * @param suffix
+     *            the suffix
+     * @return the string without the suffix at the end or the same string if
+     *         the suffix was not found
+     */
+    public static String stripSuffix(String string, String suffix) {
+        if (string.endsWith(suffix)) {
+            return string.substring(0, string.length() - suffix.length());
+        }
+
+        return string;
+    }
+
+    /**
      * Generate a hash for given content.
      *
      * @param content
