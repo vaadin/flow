@@ -69,8 +69,7 @@ public class FeatureFlags implements Serializable {
             "com.vaadin.flow.component.sidenav.SideNav");
 
     public static final Feature WEB_PUSH = new Feature(
-            "Server side WebPush API",
-            "webPush",
+            "Server side WebPush API", "webPush",
             "https://github.com/vaadin/docs/pull/2442/files", true,
             "com.vaadin.flow.server.webpush.WebPush");
 
