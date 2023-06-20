@@ -82,6 +82,32 @@ public class BeanPropertySetTest {
         String getName();
     }
 
+    interface DefaultMethodIface {
+        default String getName() {
+            return "FIXED";
+        }
+    }
+
+    interface GenericIface<TYPE> {
+        TYPE getProperty();
+
+        GenericIface<TYPE> getWrappedProperty();
+    }
+
+    interface DefaultMethodSubclassIface extends GenericIface<String> {
+        String getName();
+
+        @Override
+        default String getProperty() {
+            return this.getName();
+        }
+
+        @Override
+        default GenericIface<String> getWrappedProperty() {
+            return null;
+        }
+    }
+
     @Test
     public void testSerializeDeserialize_propertySet() throws Exception {
         PropertySet<Person> originalPropertySet = BeanPropertySet
@@ -306,4 +332,34 @@ public class BeanPropertySetTest {
         Assert.assertEquals(1, defs.size());
         Assert.assertEquals("name", defs.get(0).getName());
     }
+
+    @Test
+    public void get_beanImplementsInterfaceWithDefaultMethod_propertyFound() {
+        PropertySet<DefaultMethodIface> set = BeanPropertySet
+                .get(DefaultMethodIface.class);
+
+        List<PropertyDefinition<DefaultMethodIface, ?>> defs = set
+                .getProperties().collect(Collectors.toList());
+
+        Assert.assertEquals(1, defs.size());
+        Assert.assertEquals("name", defs.get(0).getName());
+    }
+
+    @Test
+    public void get_beanImplementsGenericInterfaceSubclassWithDefaultMethod_interfacePropertyIsNotDuplicated() {
+        PropertySet<DefaultMethodSubclassIface> set = BeanPropertySet
+                .get(DefaultMethodSubclassIface.class);
+
+        List<PropertyDefinition<DefaultMethodSubclassIface, ?>> defs = set
+                .getProperties().collect(Collectors.toList());
+
+        Assert.assertEquals(3, defs.size());
+        Assert.assertEquals("name", defs.get(0).getName());
+        Assert.assertEquals(String.class, defs.get(0).getType());
+        Assert.assertEquals("property", defs.get(1).getName());
+        Assert.assertEquals(String.class, defs.get(1).getType());
+        Assert.assertEquals("wrappedProperty", defs.get(2).getName());
+        Assert.assertEquals(GenericIface.class, defs.get(2).getType());
+    }
+
 }

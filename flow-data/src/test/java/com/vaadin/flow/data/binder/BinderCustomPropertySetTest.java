@@ -61,6 +61,11 @@ public class BinderCustomPropertySetTest {
         }
 
         @Override
+        public boolean isGenericType() {
+            return false;
+        }
+
+        @Override
         public Class<?> getPropertyHolderType() {
             return Map.class;
         }
