@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend.webpush;
+package com.vaadin.flow.server.webpush;
 
 import java.io.Serializable;
 
@@ -26,31 +26,15 @@ import elemental.json.JsonObject;
  *
  * @since 24.2
  */
-public class WebPushMessage implements Serializable {
-
-    private final String title;
-
-    private final String body;
+public record WebPushMessage(String title, String body) implements Serializable {
 
     /**
      * Creates a new Web Push notification message with title and body.
      *
-     * @param title
-     *            notification title
-     * @param body
-     *            notification body
+     * @param title notification title
+     * @param body  notification body
      */
-    public WebPushMessage(String title, String body) {
-        this.title = title;
-        this.body = body;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getBody() {
-        return body;
+    public WebPushMessage {
     }
 
     @Override

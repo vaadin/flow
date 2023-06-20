@@ -14,11 +14,28 @@
  * the License.
  */
 
-package com.vaadin.flow.server.frontend.webpush;
+package com.vaadin.flow.server.webpush;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.security.Security;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.function.SerializableConsumer;
+
+import nl.martijndwars.webpush.Notification;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import nl.martijndwars.webpush.PushService;
+import nl.martijndwars.webpush.Subscription;
+import org.jose4j.lang.JoseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -33,16 +50,18 @@ import elemental.json.JsonValue;
  * <p>
  * This class doesn't include any implementation for the intercommunication with
  * a third-party Push Server. Abstract method
- * {@link #sendNotification(WebPushSubscription, WebPushMessage)} to be extended
- * by developers to use a concrete implementation/library, which sends a
+ * {@link #sendNotification(Subscription, WebPushMessage)} to be extended by
+ * developers to use a concrete implementation/library, which sends a
  * notification to Push Server and later on to a browser.
  *
  * @since 24.2
  */
-@JsModule("./WebPushRegistration.js")
-public abstract class WebPushRegistration {
+@JsModule("./FlowWebPush.js")
+public class WebPush {
 
     private final String publicKey;
+
+    private PushService pushService;
 
     private final SerializableConsumer<String> errorHandler = err -> {
         throw new RuntimeException("Unable to retrieve extended "
@@ -55,17 +74,18 @@ public abstract class WebPushRegistration {
      * @param publicKey
      *            public key to use for web push
      */
-    public WebPushRegistration(String publicKey) {
+    public WebPush(String publicKey, String privateKey, String subject) {
         this.publicKey = publicKey;
-    }
 
-    /**
-     * Get a public key used for registering/sign up on a Push Server.
-     *
-     * @return public key
-     */
-    protected String getPublicKey() {
-        return publicKey;
+        Security.addProvider(new BouncyCastleProvider());
+        try {
+            // Initialize push service with the public key, private key and
+            // subject
+            pushService = new PushService(publicKey, privateKey, subject);
+        } catch (GeneralSecurityException e) {
+            throw new WebPushException(
+                    "Security exception initializing web push PushService", e);
+        }
     }
 
     /**
@@ -80,18 +100,34 @@ public abstract class WebPushRegistration {
      * @throws WebPushException
      *             if sending a notification fails
      */
-    public abstract void sendNotification(WebPushSubscription subscription,
-            WebPushMessage message) throws WebPushException;
+    public void sendNotification(Subscription subscription,
+            WebPushMessage message) throws WebPushException {
+        try {
+            HttpResponse response = pushService
+                    .send(new Notification(subscription, message.toJson()));
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 201) {
+                getLogger().error("Server error, status code:" + statusCode);
+                InputStream content = response.getEntity().getContent();
+                List<String> strings = IOUtils.readLines(content, "UTF-8");
+                getLogger().error(String.join("\n", strings));
+            }
+        } catch (GeneralSecurityException | IOException | JoseException
+                | ExecutionException | InterruptedException e) {
+            getLogger().error("Failed to send notification.", e);
+        }
+    }
 
     /**
-     * Check is web push is currently registered on the client.
+     * Check if there is a web push subscription registered to the serviceWorker
+     * on the client.
      *
      * @param ui
      *            current ui
      * @param receiver
      *            the callback to which the details are provided
      */
-    public void isWebPushRegistered(UI ui, WebPushState receiver) {
+    public void subscriptionExists(UI ui, WebPushState receiver) {
         final SerializableConsumer<JsonValue> resultHandler = json -> {
             receiver.state(Boolean.parseBoolean(json.toJson()));
         };
@@ -144,13 +180,10 @@ public abstract class WebPushRegistration {
      * @param receiver
      *            the callback to which the details are provided
      */
-    public void subscribeWebPush(UI ui, WebPushSubscriptionResponse receiver) {
+    public void subscribe(UI ui, WebPushSubscriptionResponse receiver) {
         final SerializableConsumer<JsonValue> resultHandler = json -> {
-            JsonObject parse = Json.parse(json.toJson());
-            receiver.subscription(
-                    new WebPushSubscription(parse.getString("endpoint"),
-                            parse.getObject("keys").getString("auth"),
-                            parse.getObject("keys").getString("p256dh")));
+            JsonObject responseJson = Json.parse(json.toJson());
+            receiver.subscription(generateSubscription(responseJson));
         };
 
         ui.getPage()
@@ -167,8 +200,7 @@ public abstract class WebPushRegistration {
      * @param receiver
      *            the callback to which the details are provided
      */
-    public void unsubscribeWebPush(UI ui,
-            WebPushSubscriptionResponse receiver) {
+    public void unsubscribe(UI ui, WebPushSubscriptionResponse receiver) {
         ui.getPage()
                 .executeJs("return window.Vaadin.Flow.webPush.unsubscribe()")
                 .then(handlePossiblyEmptySubscription(receiver), errorHandler);
@@ -182,7 +214,7 @@ public abstract class WebPushRegistration {
      * @param receiver
      *            the callback to which the details are provided
      */
-    public void getExistingSubscription(UI ui,
+    public void fetchExistingSubscription(UI ui,
             WebPushSubscriptionResponse receiver) {
         ui.getPage()
                 .executeJs(
@@ -193,15 +225,23 @@ public abstract class WebPushRegistration {
     private SerializableConsumer<JsonValue> handlePossiblyEmptySubscription(
             WebPushSubscriptionResponse receiver) {
         return json -> {
-            JsonObject parse = Json.parse(json.toJson());
-            if (parse.hasKey("message")) {
+            JsonObject responseJson = Json.parse(json.toJson());
+            if (responseJson.hasKey("message")) {
                 receiver.subscription(null);
             } else {
-                receiver.subscription(
-                        new WebPushSubscription(parse.getString("endpoint"),
-                                parse.getObject("keys").getString("auth"),
-                                parse.getObject("keys").getString("p256dh")));
+                receiver.subscription(generateSubscription(responseJson));
             }
         };
+    }
+
+    private Subscription generateSubscription(JsonObject subscriptionJson) {
+        Subscription.Keys keys = new Subscription.Keys(
+                subscriptionJson.getObject("keys").getString("p256dh"),
+                subscriptionJson.getObject("keys").getString("auth"));
+        return new Subscription(subscriptionJson.getString("endpoint"), keys);
+    }
+
+    private Logger getLogger() {
+        return LoggerFactory.getLogger(WebPush.class);
     }
 }

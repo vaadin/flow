@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend.webpush;
+package com.vaadin.flow.server.webpush;
 
 /**
  * Checked exception which is thrown when Web Push initialisation or sending a
@@ -22,7 +22,7 @@ package com.vaadin.flow.server.frontend.webpush;
  * @author Vaadin Ltd
  * @since 24.2
  */
-public class WebPushException extends Exception {
+public class WebPushException extends RuntimeException {
 
     public WebPushException() {
         super();

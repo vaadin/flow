@@ -14,23 +14,25 @@
  * the License.
  */
 
-package com.vaadin.flow.server.frontend.webpush;
+package com.vaadin.flow.server.webpush;
 
 import java.io.Serializable;
 
+import nl.martijndwars.webpush.Subscription;
+
 /**
- * Callback for receiving web push client-side state boolean.
+ * Callback for receiving web push subscription details
  *
  * @since 24.2
  */
 @FunctionalInterface
-public interface WebPushState extends Serializable {
+public interface WebPushSubscriptionResponse extends Serializable {
 
     /**
      * Invoked when the client-side details are available.
      *
-     * @param state
-     *            boolean for requested state
+     * @param subscription
+     *            web push subscription object
      */
-    void state(boolean state);
+    void subscription(Subscription subscription);
 }
