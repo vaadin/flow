@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.server;
 
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -30,19 +32,36 @@ import com.vaadin.flow.router.InvalidLocationException;
  * @since 1.0
  */
 public class DefaultErrorHandler implements ErrorHandler {
+
+    private final Set<String> ignoredExceptions;
+
+    protected DefaultErrorHandler(Set<String> ignoredExceptions) {
+        this.ignoredExceptions = Set.copyOf(ignoredExceptions);
+    }
+
+    public DefaultErrorHandler() {
+        this.ignoredExceptions = Set.of("org.eclipse.jetty.io.EofException");
+    }
+
     @Override
     public void error(ErrorEvent event) {
         Throwable throwable = findRelevantThrowable(event.getThrowable());
-
-        Marker marker = MarkerFactory.getMarker("INVALID_LOCATION");
-        if (throwable instanceof InvalidLocationException) {
-            if (getLogger().isWarnEnabled(marker)) {
-                getLogger().warn(marker, "", throwable);
+        if (shouldHandle(throwable)) {
+            Marker marker = MarkerFactory.getMarker("INVALID_LOCATION");
+            if (throwable instanceof InvalidLocationException) {
+                if (getLogger().isWarnEnabled(marker)) {
+                    getLogger().warn(marker, "", throwable);
+                }
+            } else {
+                // print the error on console
+                getLogger().error("", throwable);
             }
-        } else {
-            // print the error on console
-            getLogger().error("", throwable);
         }
+    }
+
+    protected boolean shouldHandle(Throwable t) {
+        return getLogger().isDebugEnabled()
+                || !ignoredExceptions.contains(t.getClass().getName());
     }
 
     /**
