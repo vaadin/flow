@@ -335,7 +335,8 @@ public class BeanPropertySet<T> implements PropertySet<T> {
 
     private PropertyDefinition<T, ?> mergePropertyDefinitions(
             PropertyDefinition<T, ?> def1, PropertyDefinition<T, ?> def2) {
-        if (!def1.getType().equals(def2.getType())) {
+        if (!def1.getType().equals(def2.getType())
+                && !(def1.isGenericType() || def2.isGenericType())) {
             throw new IllegalStateException(String.format(
                     "Two property definition for property %s are discovered with different types: %s and %s",
                     def1.getName(), def1.getType(), def2.getType()));
@@ -347,7 +348,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
                     def1.getName(), def1.getPropertyHolderType(),
                     def2.getPropertyHolderType()));
         }
-        return def1;
+        return def1.isGenericType() ? def2 : def1;
     }
 
     private BeanPropertySet(InstanceKey<T> instanceKey,
