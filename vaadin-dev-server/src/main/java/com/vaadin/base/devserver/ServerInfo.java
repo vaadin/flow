@@ -16,6 +16,8 @@
 package com.vaadin.base.devserver;
 
 import java.io.Serializable;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Platform;
@@ -31,6 +33,7 @@ public class ServerInfo implements Serializable {
     private final String javaVersion;
     private final String osVersion;
     private final String productName;
+    private final String hillaVersion;
 
     /**
      * Creates a new instance.
@@ -41,6 +44,7 @@ public class ServerInfo implements Serializable {
         this.javaVersion = fetchJavaVersion();
         this.osVersion = fetchOperatingSystem();
         this.productName = fetchProductName();
+        this.hillaVersion = fetchHillaVersion();
     }
 
     private String fetchJavaVersion() {
@@ -59,11 +63,25 @@ public class ServerInfo implements Serializable {
     }
 
     private String fetchVaadinVersion() {
-        return Platform.getVaadinVersion().orElse("?");
+        return isVaadinAvailable() ? Platform.getVaadinVersion().orElse("?")
+                : "-";
+    }
+
+    private String fetchHillaVersion() {
+        return EndpointRequestUtil.isHillaAvailable()
+                ? Platform.getHillaVersion().orElse("?")
+                : "-";
     }
 
     private String fetchProductName() {
-        return EndpointRequestUtil.isHillaAvailable() ? "Hilla" : "Vaadin";
+        final Set<String> result = new LinkedHashSet<>();
+        if (isVaadinAvailable()) {
+            result.add("Vaadin");
+        }
+        if (EndpointRequestUtil.isHillaAvailable()) {
+            result.add("Hilla");
+        }
+        return String.join(",", result);
     }
 
     public String getFlowVersion() {
@@ -74,6 +92,10 @@ public class ServerInfo implements Serializable {
         return vaadinVersion;
     }
 
+    public String getHillaVersion() {
+        return hillaVersion;
+    }
+
     public String getJavaVersion() {
         return javaVersion;
     }
@@ -82,7 +104,17 @@ public class ServerInfo implements Serializable {
         return osVersion;
     }
 
+    /**
+     * Returns the product name.
+     *
+     * @return the product name, one of "Vaadin", "Hilla" or "Vaadin,Hilla".
+     */
     public String getProductName() {
         return productName;
+    }
+
+    private static boolean isVaadinAvailable() {
+        return Thread.currentThread().getContextClassLoader().getResource(
+                "META-INF/maven/com.vaadin/vaadin-core/pom.properties") != null;
     }
 }
