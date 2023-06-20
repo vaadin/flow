@@ -55,6 +55,15 @@ public interface PropertyDefinition<T, V> extends Serializable {
     Class<V> getType();
 
     /**
+     * Gets whether the type of this property references a generic type (thus
+     * {@link #getType()} will return {@link Object}) or a concrete type.
+     *
+     * @return {@code true} if the type of this property references a generic
+     *         type, {@code false} otherwise
+     */
+    boolean isGenericType();
+
+    /**
      * Gets the type of the class containing this property.
      *
      * @return the property type. not <code>null</code>
