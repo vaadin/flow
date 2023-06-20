@@ -482,7 +482,7 @@ public interface DeploymentConfiguration extends Serializable {
      * <p>
      * The full experience validation integrates client, constraint and binder validation
      * into a seamless chain. For more detailed information, please refer to:
-     * https://github.com/vaadin/platform/issues/3066
+     * https://github.com/vaadin/platform/issues/3066#issuecomment-1598771284
      *
      * @return {@code true} if enabled, {@code false} otherwise.
      */
