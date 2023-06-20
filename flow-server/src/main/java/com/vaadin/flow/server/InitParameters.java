@@ -232,7 +232,7 @@ public class InitParameters implements Serializable {
      * integrating client, constraint and binder validation into a seamless chain.
      * <p>
      * For more detailed information, please refer to:
-     * https://github.com/vaadin/platform/issues/3066
+     * https://github.com/vaadin/platform/issues/3066#issuecomment-1598771284
      */
     public static final String ENABLE_FULL_EXPERIENCE_VALIDATION = "enableFullExperienceValidation";
 }
