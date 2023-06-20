@@ -14,19 +14,47 @@ import './vaadin-dev-tools-log';
 import './vaadin-dev-tools-info';
 
 /**
- * Experimental plugin API for the dev tools window.
+ * Plugin API for the dev tools window.
  */
 export interface DevToolsInterface {
   send(command: string, data: any): void;
   get renderRoot(): HTMLElement | ShadowRoot;
-  addTab(caption: string, render: () => TemplateResult): void;
+  addTab(id: string, render: () => TemplateResult): void;
+  getContent(): HTMLElement | null;
+  /**
+   * Adds a listener for messages from the server.
+   *
+   * @param listener the listener to add
+   */
+  addMessageListener(listener: ServerMessageListener): void;
+}
+
+export interface ServerMessage {
+  /**
+   * The command
+   */
+  command: string;
+  /**
+   * the data for the command
+   */
+  data: any;
+}
+
+/**
+ * A message listener.
+ */
+interface ServerMessageListener {
+  /**
+   * Handles an event. Returns true if the event was handled.
+   */
+  (message: ServerMessage): boolean;
 }
 
 /**
  * To register a plugin, use
  * @example
  * const plugin: DevToolsPlugin = {
- *   init: function (pluginInferface: DevToolsInterface): void {
+ *   init: function (devToolsInterface: DevToolsInterface): void {
  *     // Your code here
  *   }
  * };
@@ -34,7 +62,12 @@ export interface DevToolsInterface {
  * (window as any).Vaadin.devToolsPlugins.push(plugin);
  */
 export interface DevToolsPlugin {
-  init(pluginInferface: DevToolsInterface): void;
+  /**
+   * Called once to initialize the plugin.
+   *
+   * @param devToolsInterface provides methods to interact with the dev tools
+   */
+  init(devToolsInterface: DevToolsInterface): void;
 }
 
 interface Feature {
@@ -75,6 +108,8 @@ interface Message {
 @customElement('vaadin-dev-tools')
 export class VaadinDevTools extends LitElement {
   static MAX_LOG_ROWS = 1000;
+  messageListeners: ServerMessageListener[] = [];
+  unhandledMessages: ServerMessage[] = [];
 
   static get styles() {
     return [
@@ -984,8 +1019,7 @@ export class VaadinDevTools extends LitElement {
         this.requestUpdate();
       }
     } else {
-      // eslint-disable-next-line no-console
-      console.error('Unknown message from front-end connection:', JSON.stringify(message));
+      this.unhandledMessages.push(message);
     }
   }
 
@@ -1036,7 +1070,6 @@ export class VaadinDevTools extends LitElement {
     this.disableEventListener = (_: any) => this.demoteSplashMessage();
     document.body.addEventListener('focus', this.disableEventListener);
     document.body.addEventListener('click', this.disableEventListener);
-    this.openWebSocketConnection();
 
     const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     if (lastReload) {
@@ -1056,8 +1089,6 @@ export class VaadinDevTools extends LitElement {
     const windowAny = window as any;
     windowAny.Vaadin = windowAny.Vaadin || {};
     windowAny.Vaadin.devTools = Object.assign(this, windowAny.Vaadin.devTools);
-
-    licenseInit();
 
     // Prevent application overlays from closing when interacting with the dev tools
     document.documentElement.addEventListener('vaadin-overlay-outside-click', (event: Event) => {
@@ -1084,7 +1115,10 @@ export class VaadinDevTools extends LitElement {
       Array.from(anyVaadin.devToolsPlugins as DevToolsPlugin[]).forEach((plugin) => this.initPlugin(plugin));
       anyVaadin.devToolsPlugins = { push: (plugin: DevToolsPlugin) => this.initPlugin(plugin) };
     }
+    this.openWebSocketConnection();
+    licenseInit();
   }
+
   initPlugin(plugin: DevToolsPlugin) {
     const devTools = this;
     plugin.init({
@@ -1094,8 +1128,25 @@ export class VaadinDevTools extends LitElement {
       get renderRoot() {
         return devTools.renderRoot;
       },
+      getContent: () => {
+        const toolbar = devTools.renderRoot.querySelector('.window-toolbar');
+        if (!toolbar) {
+          return null;
+        }
+        return toolbar.nextElementSibling as HTMLElement;
+      },
       send: function (command: string, data: any): void {
         devTools.frontendConnection!.send(command, data);
+      },
+      addMessageListener: function (listener) {
+        devTools.messageListeners.push(listener);
+        for (var i = 0; i < devTools.unhandledMessages.length; i++) {
+          const handled = listener(devTools.unhandledMessages[i]);
+          if (handled) {
+            devTools.unhandledMessages.splice(i, 1);
+            i--;
+          }
+        }
       }
     });
   }

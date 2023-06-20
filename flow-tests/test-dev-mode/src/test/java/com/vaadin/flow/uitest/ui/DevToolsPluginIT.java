@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -32,11 +35,27 @@ public class DevToolsPluginIT extends ChromeBrowserTest {
         devTools.expand();
         devTools.showTab("Hello");
         TestBenchElement myTool = devTools.$("my-tool").first();
+
+        assertMessages(myTool, "plugin-init");
         myTool.$(NativeButtonElement.class).first().click();
+        assertMessages(myTool, "plugin-init",
+                "Response for Hello from dev tools plugin");
 
         $(NativeButtonElement.class).id("refresh").click();
         Assert.assertEquals("Hello from dev tools plugin",
                 $("div").id("injected").getText());
     }
 
+    private void assertMessages(TestBenchElement myTool, String... expected) {
+        waitUntil(driver -> {
+            List<TestBenchElement> rows = myTool.$("*")
+                    .attribute("class", "plugin-log").all();
+            String[] actual = rows.stream().map(row -> row.getText())
+                    .toArray(String[]::new);
+            if (Arrays.deepEquals(expected, actual)) {
+                return true;
+            }
+            return false;
+        });
+    }
 }

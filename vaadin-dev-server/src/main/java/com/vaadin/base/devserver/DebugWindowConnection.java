@@ -144,12 +144,46 @@ public class DebugWindowConnection implements BrowserLiveReload {
         this.backend = backend;
     }
 
+    /** Implementation of the development tools interface. */
+    public static class DevToolsInterfaceImpl implements DevToolsInterface {
+        private DebugWindowConnection debugWindowConnection;
+        private AtmosphereResource resource;
+
+        private DevToolsInterfaceImpl(
+                DebugWindowConnection debugWindowConnection,
+                AtmosphereResource resource) {
+            this.debugWindowConnection = debugWindowConnection;
+            this.resource = resource;
+        }
+
+        @Override
+        public void send(String command, JsonObject data) {
+            JsonObject msg = Json.createObject();
+            msg.put("command", command);
+            if (data != null) {
+                msg.put("data", data);
+            }
+
+            debugWindowConnection.send(resource, msg.toJson());
+        }
+
+    }
+
+    private DevToolsInterface getDevToolsInterface(
+            AtmosphereResource resource) {
+        return new DevToolsInterfaceImpl(this, resource);
+    }
+
     @Override
     public void onConnect(AtmosphereResource resource) {
         resource.suspend(-1);
         atmosphereResources.add(new WeakReference<>(resource));
         resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
                 resource);
+
+        for (DevToolsMessageHandler plugin : plugins) {
+            plugin.handleConnect(getDevToolsInterface(resource));
+        }
 
         send(resource, "serverInfo", new ServerInfo());
         send(resource, "featureFlags", new FeatureFlagMessage(FeatureFlags
@@ -166,11 +200,16 @@ public class DebugWindowConnection implements BrowserLiveReload {
     private void send(AtmosphereResource resource, String command,
             Object data) {
         try {
-            resource.getBroadcaster().broadcast(objectMapper.writeValueAsString(
-                    new DebugWindowMessage(command, data)), resource);
+            send(resource, objectMapper
+                    .writeValueAsString(new DebugWindowMessage(command, data)));
         } catch (Exception e) {
             getLogger().error("Error sending message", e);
         }
+
+    }
+
+    private void send(AtmosphereResource resource, String json) {
+        resource.getBroadcaster().broadcast(json, resource);
     }
 
     @Override
@@ -282,7 +321,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
         } else {
             boolean handled = false;
             for (DevToolsMessageHandler plugin : plugins) {
-                handled = plugin.handleDevToolsMessage(command, data);
+                handled = plugin.handleDevToolsMessage(command, data,
+                        getDevToolsInterface(resource));
                 if (handled) {
                     break;
                 }
