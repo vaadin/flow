@@ -56,6 +56,19 @@
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server</artifactId>
             <version>${project.version}</version>
+            <classifier>sources</classifier>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin.servletdetector</groupId>
+                    <artifactId>throw-if-servlet3</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server</artifactId>
+            <version>${project.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -181,9 +194,6 @@
                     <include>version.txt</include>
                 </includes>
                 <filtering>true</filtering>
-            </resource>
-            <resource>
-                <directory>../flow-server/src/main/java</directory>
             </resource>
         </resources>
 
