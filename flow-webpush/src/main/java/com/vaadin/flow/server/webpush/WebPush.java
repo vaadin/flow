@@ -23,9 +23,12 @@ import java.security.Security;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
 
 import nl.martijndwars.webpush.Notification;
 import org.apache.commons.io.IOUtils;
@@ -59,8 +62,6 @@ import elemental.json.JsonValue;
 @JsModule("./FlowWebPush.js")
 public class WebPush {
 
-    private final String publicKey;
-
     private PushService pushService;
 
     private final SerializableConsumer<String> errorHandler = err -> {
@@ -75,7 +76,12 @@ public class WebPush {
      *            public key to use for web push
      */
     public WebPush(String publicKey, String privateKey, String subject) {
-        this.publicKey = publicKey;
+        if (!FeatureFlags.get(VaadinService.getCurrent().getContext())
+                .isEnabled(FeatureFlags.WEB_PUSH)) {
+            getLogger().error(
+                    "WebPush feature is not enabled. Enable feature though dev window or feature file.");
+            return;
+        }
 
         Security.addProvider(new BouncyCastleProvider());
         try {
@@ -188,7 +194,7 @@ public class WebPush {
 
         ui.getPage()
                 .executeJs("return window.Vaadin.Flow.webPush.subscribe($0)",
-                        publicKey)
+                        pushService.getPublicKey())
                 .then(resultHandler, errorHandler);
     }
 
