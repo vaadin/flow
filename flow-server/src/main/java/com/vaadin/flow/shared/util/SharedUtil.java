@@ -292,7 +292,7 @@ public class SharedUtil implements Serializable {
      *
      * @param camelCaseString
      *            The input string in camelCase format
-     * @return A human friendly version of the input
+     * @return A dash separated version of the input
      */
     public static String camelCaseToDashSeparated(String camelCaseString) {
         if (camelCaseString == null) {
@@ -308,6 +308,30 @@ public class SharedUtil implements Serializable {
             parts[i] = firstToLower(parts[i]);
         }
         return join(parts, "-");
+    }
+
+    /**
+     * Converts a UpperCamelCase string into dash ("-") separated lowercase.
+     * <p>
+     * Examples:
+     * <p>
+     * {@literal foo} becomes {@literal foo} {@literal fooBar} becomes
+     * {@literal foo-bar} {@literal MyBeanContainer} becomes
+     * {@literal my-bean-container} {@literal AwesomeURLFactory} becomes
+     * {@literal awesome-url-factory} {@literal someUriAction} becomes
+     * {@literal some-uri-action}
+     *
+     * @param upperCamelCaseString
+     *            The input string in UpperCamelCase format
+     * @return A dash separated lowercase version of the input
+     */
+    public static String upperCamelCaseToDashSeparatedLowerCase(
+            String upperCamelCaseString) {
+        if (upperCamelCaseString == null) {
+            return null;
+        }
+        return camelCaseToDashSeparated(firstToLower(upperCamelCaseString))
+                .toLowerCase();
     }
 
     /**

@@ -25,6 +25,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.shared.util.SharedUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -265,8 +266,10 @@ public class JavaSourceModifier extends Editor {
                 Component component = getComponent(session, uiId, nodeId);
                 ComponentTracker.Location createLocation = getCreateLocation(
                         component);
-                String fileName = createLocation.filename().substring(0,
-                        createLocation.filename().indexOf("."));
+                String fileName = SharedUtil
+                        .upperCamelCaseToDashSeparatedLowerCase(createLocation
+                                .filename().substring(0, createLocation
+                                        .filename().indexOf(".")));
                 String tagName = component.getElement().getTag()
                         .replace("vaadin-", "");
 

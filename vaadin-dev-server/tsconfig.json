@@ -19,5 +19,10 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "esModuleInterop": true,
-  }
+    "declaration": true,
+    "declarationDir": "src/main/resources/META-INF/frontend/vaadin-dev-tools",
+    "emitDeclarationOnly": true
+  },
+  "include": ["frontend/vaadin-dev-tools.ts"],
+  "exclude": []
 }

@@ -120,6 +120,10 @@ public class DevModeUsageStatistics {
             // Update basic project statistics and save
             projectData.setValue(StatisticsConstants.FIELD_FLOW_VERSION,
                     Version.getFullVersion());
+            projectData.setValue(StatisticsConstants.FIELD_VAADIN_VERSION,
+                    serverInfo.getVaadinVersion());
+            projectData.setValue(StatisticsConstants.FIELD_HILLA_VERSION,
+                    serverInfo.getHillaVersion());
             projectData.setValue(StatisticsConstants.FIELD_SOURCE_ID,
                     ProjectHelpers.getProjectSource(projectFolder));
             projectData.increment(
