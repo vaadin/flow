@@ -19,6 +19,7 @@ package com.vaadin.base.devserver.stats;
 import java.io.File;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.vaadin.pro.licensechecker.MachineId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,10 +114,16 @@ public class DevModeUsageStatistics {
                     ProjectHelpers.getProKey());
             globalData.setValue(StatisticsConstants.FIELD_USER_KEY,
                     ProjectHelpers.getUserKey());
+            globalData.setValue(StatisticsConstants.FIELD_MACHINE_ID,
+                    MachineId.get());
 
             // Update basic project statistics and save
             projectData.setValue(StatisticsConstants.FIELD_FLOW_VERSION,
                     Version.getFullVersion());
+            projectData.setValue(StatisticsConstants.FIELD_VAADIN_VERSION,
+                    serverInfo.getVaadinVersion());
+            projectData.setValue(StatisticsConstants.FIELD_HILLA_VERSION,
+                    serverInfo.getHillaVersion());
             projectData.setValue(StatisticsConstants.FIELD_SOURCE_ID,
                     ProjectHelpers.getProjectSource(projectFolder));
             projectData.increment(

@@ -70,7 +70,7 @@ public class UsageStatistics {
         }
     }
 
-    private static ConcurrentHashMap<String, UsageEntry> entries = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, UsageEntry> entries = new ConcurrentHashMap<>();
     static {
         setupDefaultEntries();
     }

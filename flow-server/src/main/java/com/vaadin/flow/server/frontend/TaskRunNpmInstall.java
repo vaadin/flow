@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.JsonObject;
@@ -53,45 +52,6 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;
  */
 public class TaskRunNpmInstall implements FallibleCommand {
 
-    /** Container for npm installation statistics. */
-    public static class Stats {
-        private long installTimeMs = 0;
-        private long cleanupTimeMs = 0;
-        private String packageManager = "";
-
-        /** Create an instance. */
-        private Stats() {
-        }
-
-        /**
-         * Gets the time spent running {@code npm install}.
-         *
-         * @return the time in milliseconds
-         */
-        public long getInstallTimeMs() {
-            return installTimeMs;
-        }
-
-        /**
-         * Gets the time spent doing cleanup before {@code npm install}.
-         *
-         * @return the time in milliseconds
-         */
-        public long getCleanupTimeMs() {
-            return cleanupTimeMs;
-        }
-
-        /**
-         * Gets the package manager used for installation.
-         *
-         * @return the name of the package manager
-         */
-        public String getPackageManager() {
-            return packageManager;
-        }
-
-    }
-
     private static final String MODULES_YAML = ".modules.yaml";
 
     private static final String NPM_VALIDATION_FAIL_MESSAGE = "%n%n======================================================================================================"
@@ -110,8 +70,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
             + "%n 4) Deleting the following files from your Vaadin project's folder (if present):"
             + "%n        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js"
             + "%n======================================================================================================%n";
-
-    private static Stats lastInstallStats = new Stats();
 
     private final NodeUpdater packageUpdater;
 
@@ -255,7 +213,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
     private void runNpmInstall() throws ExecutionFailedException {
         // Do possible cleaning before generating any new files.
         cleanUp();
-        long startTime = System.currentTimeMillis();
 
         Logger logger = packageUpdater.log();
 
@@ -450,10 +407,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
                         e);
             }
         }
-        lastInstallStats.installTimeMs = System.currentTimeMillis() - startTime;
-        lastInstallStats.packageManager = options.isEnablePnpm() ? "pnpm"
-                : "npm";
-
     }
 
     private File getPackageJsonForModule(String module) {
@@ -588,10 +541,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     private void cleanUp() throws ExecutionFailedException {
         if (!options.getNodeModulesFolder().exists()) {
-            lastInstallStats.cleanupTimeMs = 0;
             return;
         }
-        long startTime = System.currentTimeMillis();
 
         if (options.isCiBuild()) {
             deleteNodeModules(options.getNodeModulesFolder());
@@ -614,7 +565,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 }
             }
         }
-        lastInstallStats.cleanupTimeMs = System.currentTimeMillis() - startTime;
     }
 
     private void deleteNodeModules(File nodeModulesFolder)
@@ -648,14 +598,4 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     String.format(NPM_VALIDATION_FAIL_MESSAGE));
         }
     }
-
-    /**
-     * Returns timing information for the last operation.
-     *
-     * @return timing information
-     */
-    public static Stats getLastInstallStats() {
-        return lastInstallStats;
-    }
-
 }

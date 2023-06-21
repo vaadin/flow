@@ -44,14 +44,16 @@ public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
      *            the websocket connection from the browser
      * @param vitePort
      *            the port the Vite server is running on
+     * @param vitePath
+     *            the path Vite is using
      * @throws ExecutionException
      *             if there is a problem with the connection
      * @throws InterruptedException
      *             if there is a problem with the connection
      */
-    public ViteWebsocketProxy(Session browserSession, Integer vitePort)
-            throws InterruptedException, ExecutionException {
-        viteConnection = new ViteWebsocketConnection(vitePort,
+    public ViteWebsocketProxy(Session browserSession, Integer vitePort,
+            String vitePath) throws InterruptedException, ExecutionException {
+        viteConnection = new ViteWebsocketConnection(vitePort, vitePath,
                 browserSession.getNegotiatedSubprotocol(),
                 msg -> browserSession.getAsyncRemote().sendText(msg, result -> {
                     if (result.isOK()) {
