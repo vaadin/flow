@@ -16,7 +16,7 @@
 window.Vaadin = window.Vaadin || {};
 window.Vaadin.Flow = window.Vaadin.Flow || {};
 
-window.Vaadin.Flow.webPush = {
+window.Vaadin.Flow.webPush = window.Vaadin.Flow.webPush || {
     subscribe: async function (publicKey) {
         const notificationPermission = await Notification.requestPermission();
 
