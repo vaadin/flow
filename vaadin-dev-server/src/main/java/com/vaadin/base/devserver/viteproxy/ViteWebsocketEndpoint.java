@@ -92,7 +92,8 @@ public class ViteWebsocketEndpoint extends Endpoint {
                 .get(VITE_HANDLER);
         ViteWebsocketProxy proxy;
         try {
-            proxy = new ViteWebsocketProxy(session, viteHandler.getPort(), viteHandler.getPathToVaadin());
+            proxy = new ViteWebsocketProxy(session, viteHandler.getPort(),
+                    viteHandler.getPathToVaadin());
             proxies.put(session.getId(), proxy);
             session.addMessageHandler(proxy);
         } catch (Exception e) {
