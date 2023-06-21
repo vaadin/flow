@@ -53,6 +53,8 @@ public class ViteWebsocketConnection implements Listener {
      *
      * @param port
      *            the port Vite is running on
+     * @param path
+     *            the path Vite is using
      * @param subProtocol
      *            the sub protocol to use
      * @param onMessage
@@ -65,13 +67,13 @@ public class ViteWebsocketConnection implements Listener {
      * @throws ExecutionException
      *             if there is a problem with the connection
      */
-    public ViteWebsocketConnection(int port, String subProtocol,
+    public ViteWebsocketConnection(int port, String path, String subProtocol,
             Consumer<String> onMessage, Runnable onClose)
             throws InterruptedException, ExecutionException {
         this.onMessage = onMessage;
         this.onClose = onClose;
         String wsHost = ViteHandler.DEV_SERVER_HOST.replace("http://", "ws://");
-        URI uri = URI.create(wsHost + ":" + port + "/VAADIN/");
+        URI uri = URI.create(wsHost + ":" + port + path);
         clientWebSocket = HttpClient.newHttpClient().newWebSocketBuilder()
                 .subprotocols(subProtocol).buildAsync(uri, this).get();
         getLogger().debug("Connecting to {} using the {} protocol", uri,
