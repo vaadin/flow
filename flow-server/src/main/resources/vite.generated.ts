@@ -652,6 +652,7 @@ function preserveUsageStats() {
 
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
+  const productionMode = !devMode && !devBundle
 
   if (devMode && process.env.watchDogPort) {
     // Open a connection with the Java dev-mode handler in order to finish
@@ -719,7 +720,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       ]
     },
     plugins: [
-      !devMode && !devBundle && brotli(),
+      productionMode && brotli(),
       devMode && vaadinBundlesPlugin(),
       devMode && showRecompileReason(),
       settings.offlineEnabled && buildSWPlugin({ devMode }),
@@ -800,7 +801,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       checker({
         typescript: true
       }),
-      !devMode && visualizer({ brotliSize: true, filename: bundleSizeFile })
+      productionMode && visualizer({ brotliSize: true, filename: bundleSizeFile })
     ]
   };
 };
