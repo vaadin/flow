@@ -228,8 +228,11 @@ public class InitParameters implements Serializable {
     public static final String CI_BUILD = "ci.build";
 
     /**
-     * A property that enforces full experience validation for Flow components by
-     * integrating client, constraint, and binder validation into a seamless chain.
+     * A property that enforces full experience validation for Flow components.
+     * <p>
+     * The full experience validation integrates client, constraint and binder
+     * validation into a seamless chain. By default, it's disabled, which means
+     * that components aren't validated on blur, for example.
      * <p>
      * For more detailed information, please refer to:
      * https://github.com/vaadin/platform/issues/3066#issuecomment-1598771284
