@@ -26,15 +26,32 @@ import java.io.Serializable;
  */
 public interface HasValidation extends Serializable {
     /**
-     * Sets whether the component's internal validation is disabled.
+     * Sets whether manual validation mode is enabled for the component.
      * <p>
-     * When disabled, the component doesn't automatically validate values
-     * against constraints such as required and so on, which also leads to the
-     * invalid state not getting updated. However, it's still possible to use
-     * Binder or implement custom validation logic.
+     * When enabled, the component doesn't perform its built-in constraint
+     * validation on value change, blur, and other events. This allows you to
+     * manually control the invalid state and error messages using the
+     * {@link #setInvalid(boolean)} and {@link #setErrorMessage(String)}
+     * methods. Manual mode is helpful when there is a need for a totally
+     * custom validation logic that cannot be achieved with Binder.
+     *
+     * <p>Example:</p>
+     *
+     * <pre>
+     * TextField textField = new TextField();
+     * textField.setManualValidation(true);
+     * textField.addValueChangeListener(event -> {
+     *      if (Objects.equal(event.getValue(), "")) {
+     *          textField.setInvalid(true);
+     *          textField.setErrorMessage("The field is required.");
+     *      } else {
+     *          textField.setInvalid(false);
+     *      }
+     * });
+     * </pre>
      *
      * @param enabled
-     *            whether the manual mode should be enabled.
+     *            whether to enable manual validation mode.
      */
     void setManualValidation(boolean enabled);
 
@@ -65,6 +82,11 @@ public interface HasValidation extends Serializable {
      * When component becomes valid it hides the error message by itself, so
      * there is no need to clean up the error message via the
      * {@link #setErrorMessage(String)} call.
+     * <p>
+     * NOTE: If you need to control the invalid state manually, consider
+     * enabling manual validation mode with
+     * {@link #setManualValidation(boolean)} to avoid potential conflicts
+     * between your custom validation and the component's built-in validation.
      *
      * @param invalid
      *            new value for component input validity
