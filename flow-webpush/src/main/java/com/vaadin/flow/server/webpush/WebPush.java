@@ -18,16 +18,20 @@ package com.vaadin.flow.server.webpush;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Security;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.VaadinService;
 
 import nl.martijndwars.webpush.Notification;
@@ -59,7 +63,6 @@ import elemental.json.JsonValue;
  *
  * @since 24.2
  */
-@JsModule("./FlowWebPush.js")
 public class WebPush {
 
     private PushService pushService;
@@ -145,7 +148,7 @@ public class WebPush {
             receiver.state(Boolean.parseBoolean(json.toJson()));
         };
 
-        ui.getPage().executeJs(
+        executeJavascript(ui,
                 "return window.Vaadin.Flow.webPush.registrationStatus()")
                 .then(resultHandler, errorHandler);
     }
@@ -162,7 +165,7 @@ public class WebPush {
         final SerializableConsumer<JsonValue> resultHandler = json -> receiver
                 .state(Boolean.parseBoolean(json.toJson()));
 
-        ui.getPage().executeJs(
+        executeJavascript(ui,
                 "return window.Vaadin.Flow.webPush.notificationDenied()")
                 .then(resultHandler, errorHandler);
     }
@@ -179,7 +182,7 @@ public class WebPush {
         final SerializableConsumer<JsonValue> resultHandler = json -> receiver
                 .state(Boolean.parseBoolean(json.toJson()));
 
-        ui.getPage().executeJs(
+        executeJavascript(ui,
                 "return window.Vaadin.Flow.webPush.notificationGranted()")
                 .then(resultHandler, errorHandler);
     }
@@ -198,11 +201,8 @@ public class WebPush {
             JsonObject responseJson = Json.parse(json.toJson());
             receiver.subscription(generateSubscription(responseJson));
         };
-
-        ui.getPage()
-                .executeJs("return window.Vaadin.Flow.webPush.subscribe($0)",
-                        publicKey)
-                .then(resultHandler, errorHandler);
+        executeJavascript(ui, "return window.Vaadin.Flow.webPush.subscribe($0)",
+                publicKey).then(resultHandler, errorHandler);
     }
 
     /**
@@ -214,8 +214,7 @@ public class WebPush {
      *            the callback to which the details are provided
      */
     public void unsubscribe(UI ui, WebPushSubscriptionResponse receiver) {
-        ui.getPage()
-                .executeJs("return window.Vaadin.Flow.webPush.unsubscribe()")
+        executeJavascript(ui, "return window.Vaadin.Flow.webPush.unsubscribe()")
                 .then(handlePossiblyEmptySubscription(receiver), errorHandler);
     }
 
@@ -229,10 +228,31 @@ public class WebPush {
      */
     public void fetchExistingSubscription(UI ui,
             WebPushSubscriptionResponse receiver) {
-        ui.getPage()
-                .executeJs(
-                        "return window.Vaadin.Flow.webPush.getSubscription()")
+        executeJavascript(ui,
+                "return window.Vaadin.Flow.webPush.getSubscription()")
                 .then(handlePossiblyEmptySubscription(receiver), errorHandler);
+    }
+
+    private PendingJavaScriptResult executeJavascript(UI ui, String script,
+            Serializable... parameters) {
+        initWebPushClient(ui);
+        return ui.getPage().executeJs(script, parameters);
+    }
+
+    private void initWebPushClient(UI ui) {
+        if (ComponentUtil.getData(ui, "webPushInitialized") != null) {
+            return;
+        } else {
+            ComponentUtil.setData(ui, "webPushInitialized", true);
+        }
+        Page page = ui.getPage();
+        try (InputStream stream = WebPush.class.getClassLoader()
+                .getResourceAsStream("META-INF/frontend/FlowWebPush.js")) {
+            page.executeJs(StringUtil.removeComments(
+                    IOUtils.toString(stream, StandardCharsets.UTF_8)));
+        } catch (IOException ioe) {
+            throw new WebPushException("Could not load webpush client code");
+        }
     }
 
     private SerializableConsumer<JsonValue> handlePossiblyEmptySubscription(
