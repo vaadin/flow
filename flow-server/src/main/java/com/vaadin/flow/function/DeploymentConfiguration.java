@@ -478,10 +478,10 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * Returns whether the full experience validation is enabled for Flow components.
+     * Whether the full experience validation is enforced for Flow components.
      * <p>
-     * The full experience validation integrates client, constraint and binder validation
-     * into a seamless chain. For more detailed information, please refer to:
+     * The full experience validation integrates client, constraint and binder
+     * validation into a seamless chain. For more detailed information, please refer to:
      * https://github.com/vaadin/platform/issues/3066#issuecomment-1598771284
      *
      * @return {@code true} if enabled, {@code false} otherwise.

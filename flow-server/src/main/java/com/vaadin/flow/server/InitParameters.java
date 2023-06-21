@@ -228,7 +228,7 @@ public class InitParameters implements Serializable {
     public static final String CI_BUILD = "ci.build";
 
     /**
-     * A property that enables full experience validation for Flow components by
+     * A property that enforces full experience validation for Flow components by
      * integrating client, constraint, and binder validation into a seamless chain.
      * <p>
      * For more detailed information, please refer to:
