@@ -64,6 +64,8 @@ public class WebPush {
 
     private PushService pushService;
 
+    private String publicKey;
+
     private final SerializableConsumer<String> errorHandler = err -> {
         throw new RuntimeException("Unable to retrieve extended "
                 + "client details. JS error is '" + err + "'");
@@ -74,6 +76,10 @@ public class WebPush {
      *
      * @param publicKey
      *            public key to use for web push
+     * @param privateKey
+     *            web push private key
+     * @param subject
+     *            Subject used in the JWT payload (for VAPID).
      */
     public WebPush(String publicKey, String privateKey, String subject) {
         if (!FeatureFlags.get(VaadinService.getCurrent().getContext())
@@ -82,6 +88,7 @@ public class WebPush {
                     "WebPush feature is not enabled. Enable feature though dev window or feature file.");
             return;
         }
+        this.publicKey = publicKey;
 
         Security.addProvider(new BouncyCastleProvider());
         try {
@@ -194,7 +201,7 @@ public class WebPush {
 
         ui.getPage()
                 .executeJs("return window.Vaadin.Flow.webPush.subscribe($0)",
-                        pushService.getPublicKey())
+                        publicKey)
                 .then(resultHandler, errorHandler);
     }
 
