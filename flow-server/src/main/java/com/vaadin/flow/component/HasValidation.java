@@ -83,7 +83,7 @@ public interface HasValidation extends Serializable {
      * there is no need to clean up the error message via the
      * {@link #setErrorMessage(String)} call.
      * <p>
-     * NOTE: If you need to control the invalid state manually, consider
+     * NOTE: If you need to manually control the invalid state, consider
      * enabling manual validation mode with
      * {@link #setManualValidation(boolean)} to avoid potential conflicts
      * between your custom validation and the component's built-in validation.
