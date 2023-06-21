@@ -29,13 +29,15 @@ public interface HasValidation extends Serializable {
      * Sets whether manual validation mode is enabled for the component.
      * <p>
      * When enabled, the component doesn't perform its built-in constraint
-     * validation on value change, blur, and other events. This allows
-     * manually controlling the invalid state and error messages using the
+     * validation on value change, blur, and other events. This allows manually
+     * controlling the invalid state and error messages using the
      * {@link #setInvalid(boolean)} and {@link #setErrorMessage(String)}
-     * methods. Manual mode is helpful when there is a need for a totally
-     * custom validation logic that cannot be achieved with Binder.
+     * methods. Manual mode is helpful when there is a need for a totally custom
+     * validation logic that cannot be achieved with Binder.
      *
-     * <p>Example:</p>
+     * <p>
+     * Example:
+     * </p>
      *
      * <pre>
      * Field field = new Field();
