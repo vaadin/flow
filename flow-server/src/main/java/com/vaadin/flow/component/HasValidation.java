@@ -33,18 +33,10 @@ public interface HasValidation extends Serializable {
      * invalid state not getting updated. However, it's still possible to use
      * Binder or implement custom validation logic.
      *
-     * @param disabled
-     *            whether the validation should be disabled.
+     * @param enabled
+     *            whether the manual mode should be enabled.
      */
-    void setInternalValidationDisabled(boolean disabled);
-
-    /**
-     * Returns {@code true} if the component's internal validation is disabled,
-     * {@code false} otherwise.
-     *
-     * @return whether the validation is disabled.
-     */
-    boolean isInternalValidationDisabled();
+    void setManualValidation(boolean enabled);
 
     /**
      * Sets an error message to the component.
