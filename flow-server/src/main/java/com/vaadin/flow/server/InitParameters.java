@@ -229,10 +229,10 @@ public class InitParameters implements Serializable {
 
     /**
      * A property that enables full experience validation for Flow components by
-     * integrating client, constraint and binder validation into a seamless chain.
+     * integrating client, constraint, and binder validation into a seamless chain.
      * <p>
      * For more detailed information, please refer to:
      * https://github.com/vaadin/platform/issues/3066#issuecomment-1598771284
      */
-    public static final String ENABLE_FULL_EXPERIENCE_VALIDATION = "enableFullExperienceValidation";
+    public static final String ENFORCE_FIELD_VALIDATION = "enforceFieldValidation";
 }

@@ -486,7 +486,7 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @return {@code true} if enabled, {@code false} otherwise.
      */
-    default boolean isFullExperienceValidationEnabled() {
-        return getBooleanProperty(InitParameters.ENABLE_FULL_EXPERIENCE_VALIDATION, false);
+    default boolean isEnforcedFieldValidationEnabled() {
+        return getBooleanProperty(InitParameters.ENFORCE_FIELD_VALIDATION, false);
     }
 }

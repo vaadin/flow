@@ -66,15 +66,15 @@ public class DeploymentConfigurationTest {
     }
 
     @Test
-    public void fullExperienceValidation_default_disabled() {
-        Assert.assertFalse(configuration.isFullExperienceValidationEnabled());
+    public void enforceFieldValidation_default_disabled() {
+        Assert.assertFalse(configuration.isEnforcedFieldValidationEnabled());
     }
 
     @Test
-    public void fullExperienceValidation_configParameterIsTrue_enabled() {
+    public void enforceFieldValidation_configParameterIsTrue_enabled() {
         Mockito.when(configuration.getBooleanProperty(
-                Mockito.eq(InitParameters.ENABLE_FULL_EXPERIENCE_VALIDATION),
+                Mockito.eq(InitParameters.ENFORCE_FIELD_VALIDATION),
                 Mockito.eq(false))).thenReturn(true);
-        Assert.assertTrue(configuration.isFullExperienceValidationEnabled());
+        Assert.assertTrue(configuration.isEnforcedFieldValidationEnabled());
     }
 }
