@@ -38,14 +38,14 @@ public interface HasValidation extends Serializable {
      * <p>Example:</p>
      *
      * <pre>
-     * TextField textField = new TextField();
-     * textField.setManualValidation(true);
-     * textField.addValueChangeListener(event -> {
+     * Field field = new Field();
+     * field.setManualValidation(true);
+     * field.addValueChangeListener(event -> {
      *      if (Objects.equal(event.getValue(), "")) {
-     *          textField.setInvalid(true);
-     *          textField.setErrorMessage("The field is required.");
+     *          field.setInvalid(true);
+     *          field.setErrorMessage("The field is required.");
      *      } else {
-     *          textField.setInvalid(false);
+     *          field.setInvalid(false);
      *      }
      * });
      * </pre>
