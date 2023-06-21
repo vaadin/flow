@@ -31,6 +31,24 @@ import com.vaadin.flow.router.InvalidLocationException;
 /**
  * The default implementation of {@link ErrorHandler}.
  *
+ * This implementation logs the exception at ERROR level, unless the exception
+ * is in the ignore list.
+ *
+ * By default, the following exceptions are ignored to prevent logs to be
+ * flooded by errors that are usually not raised by application logic, but are
+ * caused by external event, such as broken connections or network issues.
+ *
+ * <ul>
+ * <li>java.net.SocketException</li>
+ * <li>java.net.SocketTimeoutException</li>
+ * <li>java.io.EOFException</li>
+ * <li>org.apache.catalina.connector.ClientAbortException</li>
+ * <li>org.eclipse.jetty.io.EofException</li>
+ * </ul>
+ *
+ * If the handler logger is set to DEBUG level, all exceptions are logged,
+ * despite they are in the ignore list.
+ *
  * @author Vaadin Ltd
  * @since 1.0
  */
