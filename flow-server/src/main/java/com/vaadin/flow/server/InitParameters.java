@@ -226,4 +226,13 @@ public class InitParameters implements Serializable {
      * Configuration name for enabling ci build for npm/pnpm.
      */
     public static final String CI_BUILD = "ci.build";
+
+    /**
+     * A property that enforces full experience validation for Flow components by
+     * integrating client, constraint, and binder validation into a seamless chain.
+     * <p>
+     * For more detailed information, please refer to:
+     * https://github.com/vaadin/platform/issues/3066#issuecomment-1598771284
+     */
+    public static final String ENFORCE_FIELD_VALIDATION = "enforceFieldValidation";
 }

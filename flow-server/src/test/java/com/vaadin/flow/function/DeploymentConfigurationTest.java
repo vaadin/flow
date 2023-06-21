@@ -64,4 +64,17 @@ public class DeploymentConfigurationTest {
     public void licenseChecker_default_useNewLicenseChecker() {
         Assert.assertFalse(configuration.isOldLicenseCheckerEnabled());
     }
+
+    @Test
+    public void enforceFieldValidation_default_disabled() {
+        Assert.assertFalse(configuration.isEnforcedFieldValidationEnabled());
+    }
+
+    @Test
+    public void enforceFieldValidation_configParameterIsTrue_enabled() {
+        Mockito.when(configuration.getBooleanProperty(
+                Mockito.eq(InitParameters.ENFORCE_FIELD_VALIDATION),
+                Mockito.eq(false))).thenReturn(true);
+        Assert.assertTrue(configuration.isEnforcedFieldValidationEnabled());
+    }
 }

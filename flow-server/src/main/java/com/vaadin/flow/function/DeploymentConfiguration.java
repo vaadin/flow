@@ -476,4 +476,17 @@ public interface DeploymentConfiguration extends Serializable {
                 InitParameters.SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER,
                 false);
     }
+
+    /**
+     * Whether the full experience validation is enforced for Flow components.
+     * <p>
+     * The full experience validation integrates client, constraint and binder
+     * validation into a seamless chain. For more detailed information, please refer to:
+     * https://github.com/vaadin/platform/issues/3066#issuecomment-1598771284
+     *
+     * @return {@code true} if enabled, {@code false} otherwise.
+     */
+    default boolean isEnforcedFieldValidationEnabled() {
+        return getBooleanProperty(InitParameters.ENFORCE_FIELD_VALIDATION, false);
+    }
 }
