@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.server;
 
+import java.io.EOFException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -40,7 +43,11 @@ public class DefaultErrorHandler implements ErrorHandler {
     }
 
     public DefaultErrorHandler() {
-        this.ignoredExceptions = Set.of("org.eclipse.jetty.io.EofException");
+        this.ignoredExceptions = Set.of(SocketException.class.getName(),
+                SocketTimeoutException.class.getName(),
+                EOFException.class.getName(),
+                "org.eclipse.jetty.io.EofException",
+                "org.apache.catalina.connector.ClientAbortException");
     }
 
     @Override
