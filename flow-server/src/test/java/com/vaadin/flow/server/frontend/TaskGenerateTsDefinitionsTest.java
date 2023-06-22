@@ -36,10 +36,12 @@ public class TaskGenerateTsDefinitionsTest {
     private File outputFolder;
     private TaskGenerateTsDefinitions taskGenerateTsDefinitions;
 
+    private Options options;
+
     @Before
     public void setUp() throws IOException {
         outputFolder = temporaryFolder.newFolder();
-        Options options = new Options(Mockito.mock(Lookup.class), outputFolder);
+        options = new Options(Mockito.mock(Lookup.class), outputFolder);
 
         taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(options);
     }
@@ -52,10 +54,10 @@ public class TaskGenerateTsDefinitionsTest {
                         .toPath());
         taskGenerateTsDefinitions.execute();
         Assert.assertFalse(
-                "Should generate types.d.ts when tsconfig.json exists and "
-                        + "types.d.ts doesn't exist",
+                "Should not generate types.d.ts when tsconfig.json and "
+                        + "types.d.ts exists",
                 taskGenerateTsDefinitions.shouldGenerate());
-        Assert.assertTrue("The generated types.d.ts should not exist",
+        Assert.assertTrue("The generated types.d.ts should exist",
                 taskGenerateTsDefinitions.getGeneratedFile().exists());
         Assert.assertEquals(
                 "The generated content should be equals the default content",
@@ -63,6 +65,44 @@ public class TaskGenerateTsDefinitionsTest {
                 IOUtils.toString(
                         taskGenerateTsDefinitions.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void should_updateTsDefinitions_TsDefinitionsExistsAndContentDiffers()
+            throws Exception {
+        Files.createFile(
+                new File(outputFolder, TaskGenerateTsConfig.TSCONFIG_JSON)
+                        .toPath());
+        taskGenerateTsDefinitions.execute();
+        Assert.assertTrue("The generated types.d.ts should exist",
+                taskGenerateTsDefinitions.getGeneratedFile().exists());
+        Assert.assertFalse(
+                "Should not generate types.d.ts when tsconfig.json and "
+                        + "types.d.ts exists",
+                taskGenerateTsDefinitions.shouldGenerate());
+        Assert.assertEquals(
+                "The generated content should be equals the default content",
+                taskGenerateTsDefinitions.getFileContent(),
+                IOUtils.toString(
+                        taskGenerateTsDefinitions.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8));
+
+        String updatedFileContent = "Updated content";
+        taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(options) {
+            @Override
+            protected String getFileContent() throws IOException {
+                return updatedFileContent;
+            }
+        };
+
+        taskGenerateTsDefinitions.execute();
+        Assert.assertEquals(
+                "The generated content should have updated to new one",
+                updatedFileContent,
+                IOUtils.toString(
+                        taskGenerateTsDefinitions.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8));
+
     }
 
     @Test
