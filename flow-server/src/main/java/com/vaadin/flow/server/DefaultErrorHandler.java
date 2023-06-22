@@ -16,6 +16,11 @@
 
 package com.vaadin.flow.server;
 
+import java.io.EOFException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -26,23 +31,62 @@ import com.vaadin.flow.router.InvalidLocationException;
 /**
  * The default implementation of {@link ErrorHandler}.
  *
+ * This implementation logs the exception at ERROR level, unless the exception
+ * is in the ignore list.
+ *
+ * By default, the following exceptions are ignored to prevent logs to be
+ * flooded by errors that are usually not raised by application logic, but are
+ * caused by external event, such as broken connections or network issues.
+ *
+ * <ul>
+ * <li>java.net.SocketException</li>
+ * <li>java.net.SocketTimeoutException</li>
+ * <li>java.io.EOFException</li>
+ * <li>org.apache.catalina.connector.ClientAbortException</li>
+ * <li>org.eclipse.jetty.io.EofException</li>
+ * </ul>
+ *
+ * If the handler logger is set to DEBUG level, all exceptions are logged,
+ * despite they are in the ignore list.
+ *
  * @author Vaadin Ltd
  * @since 1.0
  */
 public class DefaultErrorHandler implements ErrorHandler {
+
+    private final Set<String> ignoredExceptions;
+
+    protected DefaultErrorHandler(Set<String> ignoredExceptions) {
+        this.ignoredExceptions = Set.copyOf(ignoredExceptions);
+    }
+
+    public DefaultErrorHandler() {
+        this.ignoredExceptions = Set.of(SocketException.class.getName(),
+                SocketTimeoutException.class.getName(),
+                EOFException.class.getName(),
+                "org.eclipse.jetty.io.EofException",
+                "org.apache.catalina.connector.ClientAbortException");
+    }
+
     @Override
     public void error(ErrorEvent event) {
         Throwable throwable = findRelevantThrowable(event.getThrowable());
-
-        Marker marker = MarkerFactory.getMarker("INVALID_LOCATION");
-        if (throwable instanceof InvalidLocationException) {
-            if (getLogger().isWarnEnabled(marker)) {
-                getLogger().warn(marker, "", throwable);
+        if (shouldHandle(throwable)) {
+            Marker marker = MarkerFactory.getMarker("INVALID_LOCATION");
+            if (throwable instanceof InvalidLocationException) {
+                if (getLogger().isWarnEnabled(marker)) {
+                    getLogger().warn(marker, "", throwable);
+                }
+            } else {
+                // print the error on console
+                getLogger().error("", throwable);
             }
-        } else {
-            // print the error on console
-            getLogger().error("", throwable);
         }
+    }
+
+    protected boolean shouldHandle(Throwable t) {
+        return getLogger().isDebugEnabled()
+                || !ignoredExceptions.contains(t.getClass().getName());
     }
 
     /**
