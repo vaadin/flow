@@ -212,8 +212,8 @@ public class DevServerOutputTracker {
     }
 
     /**
-     * Gets a guard object that blocks the current request to dev-server when dev-server is
-     * performing a restart operation.
+     * Gets a guard object that blocks the current request to dev-server when
+     * dev-server is performing a restart operation.
      *
      * @param restartingPattern
      *            a pattern to match with the output to determine that the

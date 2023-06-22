@@ -16,6 +16,7 @@
 
 package com.vaadin.base.devserver;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -29,13 +30,13 @@ import org.slf4j.LoggerFactory;
  *
  * Analyzes dev server logs lines to identify restarts.
  *
- * Allows to block dev-server requests processing when a restart is happening and to resume it
- * once the restart is completed.
+ * Allows to block dev-server requests processing when a restart is happening
+ * and to resume it once the restart is completed.
  */
 class RestartMonitor {
     private final Lock lock = new ReentrantLock();
     private final Condition serverRestartedCondition = lock.newCondition();
-    private boolean serverRestarting = false;
+    private volatile boolean serverRestarting = false;
 
     private final Pattern restarting;
     private final Pattern restarted;
@@ -76,10 +77,15 @@ class RestartMonitor {
                 getLogger().trace(
                         "Thread {} ({}) waiting for dev server restart...",
                         threadName, threadId);
-                serverRestartedCondition.await();
-                getLogger().trace(
-                        "Thread {} ({}) continues execution after server restarts",
-                        threadName, threadId);
+                if (serverRestartedCondition.await(60, TimeUnit.SECONDS)) {
+                    getLogger().trace(
+                            "Thread {} ({}) continues execution after server restarts",
+                            threadName, threadId);
+                } else {
+                    getLogger().trace(
+                            "Thread {} ({}) continues execution after waiting for 60 seconds for a restart to complete",
+                            threadName, threadId);
+                }
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
