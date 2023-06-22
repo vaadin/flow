@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  *
  * Analyzes dev server logs lines to identify restarts.
  *
- * Allows to block an execution when a restart is happening and to resume it
+ * Allows to block dev-server requests processing when a restart is happening and to resume it
  * once the restart is completed.
  */
 class RestartMonitor {
@@ -65,7 +65,7 @@ class RestartMonitor {
     }
 
     /**
-     * Blocks execution during dev-server restarts.
+     * Blocks requests to dev-server during dev-server restarts.
      */
     public void waitForServerReady() {
         lock.lock();
