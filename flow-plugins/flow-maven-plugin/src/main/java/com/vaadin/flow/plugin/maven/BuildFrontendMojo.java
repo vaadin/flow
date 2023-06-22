@@ -136,7 +136,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                 .needsBundleBuild(servletResourceOutputDirectory())) {
             try {
                 BuildFrontendUtil.runFrontendBuild(this);
-                if (cleanFrontentFiles()) {
+                if (cleanFrontendFiles()) {
                     cleanTask.execute();
                 }
             } catch (URISyntaxException | TimeoutException
@@ -166,7 +166,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      *
      * @return {@code true} to remove created files, {@code false} to keep files
      */
-    protected boolean cleanFrontentFiles() {
+    protected boolean cleanFrontendFiles() {
         return true;
     }
 

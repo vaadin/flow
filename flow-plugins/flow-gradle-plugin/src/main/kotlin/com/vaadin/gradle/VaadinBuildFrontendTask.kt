@@ -77,7 +77,7 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
         if (adapter.generateBundle() && BundleValidationUtil.needsBundleBuild
                 (adapter.servletResourceOutputDirectory())) {
             BuildFrontendUtil.runFrontendBuild(adapter)
-            if (cleanFrontentFiles()) {
+            if (cleanFrontendFiles()) {
                 cleanTask.execute()
             }
         }
@@ -100,7 +100,7 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
      *
      * @return {@code true} to remove created files, {@code false} to keep files
      */
-    protected fun cleanFrontentFiles(): Boolean {
+    protected fun cleanFrontendFiles(): Boolean {
         return true;
     }
 }
