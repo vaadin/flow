@@ -136,7 +136,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                 .needsBundleBuild(servletResourceOutputDirectory())) {
             try {
                 BuildFrontendUtil.runFrontendBuild(this);
-                cleanTask.execute();
+                if (cleanFrontentFiles()) {
+                    cleanTask.execute();
+                }
             } catch (URISyntaxException | TimeoutException
                     | ExecutionFailedException exception) {
                 throw new MojoExecutionException(exception.getMessage(),
@@ -150,6 +152,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
         long ms = (System.nanoTime() - start) / 1000000;
         getLog().info("Build frontend completed in " + ms + " ms.");
+    }
+
+    protected boolean cleanFrontentFiles() {
+        return true;
     }
 
     @Override
