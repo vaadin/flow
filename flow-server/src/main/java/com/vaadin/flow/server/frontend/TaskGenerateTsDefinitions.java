@@ -18,8 +18,11 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
+
+import com.vaadin.flow.internal.StringUtil;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -62,7 +65,29 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
     @Override
     protected boolean shouldGenerate() {
         File tsDefinitionsFile = getGeneratedFile();
-        return !tsDefinitionsFile.exists() && new File(options.getNpmFolder(),
-                TaskGenerateTsConfig.TSCONFIG_JSON).exists();
+        boolean needsGeneration = !tsDefinitionsFile.exists()
+                && new File(options.getNpmFolder(),
+                        TaskGenerateTsConfig.TSCONFIG_JSON).exists();
+        return needsGeneration || contentChanged(tsDefinitionsFile);
+    }
+
+    private boolean contentChanged(File tsDefinitionsFile) {
+        if (!tsDefinitionsFile.exists()) {
+            // if the definitions file doesn't exist we don't have the ts Config
+            // file either and should not generate the file.
+            return false;
+        }
+        try {
+            String frameworkFileHash = StringUtil.getHash(getFileContent(),
+                    UTF_8);
+            try (InputStream tsDefinitionStream = tsDefinitionsFile.toURI()
+                    .toURL().openStream()) {
+                String fileHash = StringUtil.getHash(
+                        IOUtils.toString(tsDefinitionStream, UTF_8), UTF_8);
+                return !frameworkFileHash.equals(fileHash);
+            }
+        } catch (IOException e) {
+            return true;
+        }
     }
 }
