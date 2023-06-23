@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(properties = { "server.port = 1235",
-        "server.ssl.enable = true" })
+        "server.ssl.enabled = true" })
 public class DevModeBrowserLauncherHttpsProtoTest
         extends AbstractDevModeBrowserLauncherTest {
 

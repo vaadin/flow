@@ -45,7 +45,8 @@ public class DevModeBrowserLauncher
 
     static String getUrl(GenericWebApplicationContext app) {
         String port = app.getEnvironment().getProperty("server.port");
-        String sslEnabled = app.getEnvironment().getProperty("server.ssl.enabled");
+        String sslEnabled = app.getEnvironment()
+                .getProperty("server.ssl.enabled");
         String proto;
         if (sslEnabled != null && sslEnabled.equals("true")) {
             proto = "https";
