@@ -89,7 +89,15 @@ public class DevModeBrowserLauncher
 
     static String getUrl(GenericWebApplicationContext app) {
         String port = app.getEnvironment().getProperty("server.port");
-        String host = "http://localhost:" + port;
+        String sslEnabled = app.getEnvironment()
+                .getProperty("server.ssl.enabled");
+        String proto;
+        if (sslEnabled != null && sslEnabled.equals("true")) {
+            proto = "https";
+        } else {
+            proto = "http";
+        }
+        String host = proto + "://localhost:" + port;
 
         String path = "/";
         String vaadinServletMapping = RootMappedCondition
