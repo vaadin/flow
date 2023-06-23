@@ -43,6 +43,48 @@ public class DevModeBrowserLauncher
             String[] arguments) {
     }
 
+    static String getUrl(GenericWebApplicationContext app) {
+        String port = app.getEnvironment().getProperty("server.port");
+        String sslEnabled = app.getEnvironment().getProperty("server.ssl.enabled");
+        String proto;
+        if (sslEnabled != null && sslEnabled.equals("true")) {
+            proto = "https";
+        } else {
+            proto = "http";
+        }
+        String host = proto + "://localhost:" + port;
+
+        String path = "/";
+        String vaadinServletMapping = RootMappedCondition
+                .getUrlMapping(app.getEnvironment());
+
+        ServletContext servletContext = app.getServletContext();
+        if (servletContext != null) {
+            String contextPath = servletContext.getContextPath();
+            if (contextPath != null && !contextPath.isEmpty()) {
+                path = contextPath + "/";
+            }
+        }
+
+        if (vaadinServletMapping != null && !vaadinServletMapping.isEmpty()) {
+            if (vaadinServletMapping.startsWith("/")) {
+                vaadinServletMapping = vaadinServletMapping.substring(1);
+            }
+            if (vaadinServletMapping.endsWith("*")) {
+                vaadinServletMapping = vaadinServletMapping.substring(0,
+                        vaadinServletMapping.length() - 1);
+
+            }
+            path += vaadinServletMapping;
+        }
+
+        return host + path;
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(DevModeBrowserLauncher.class);
+    }
+
     @Override
     public void ready(ConfigurableApplicationContext context,
             Duration timeTaken) {
@@ -85,41 +127,6 @@ public class DevModeBrowserLauncher
             devModeHandlerManager
                     .launchBrowserInDevelopmentMode(getUrl(webAppContext));
         }
-    }
-
-    static String getUrl(GenericWebApplicationContext app) {
-        String port = app.getEnvironment().getProperty("server.port");
-        String host = "http://localhost:" + port;
-
-        String path = "/";
-        String vaadinServletMapping = RootMappedCondition
-                .getUrlMapping(app.getEnvironment());
-
-        ServletContext servletContext = app.getServletContext();
-        if (servletContext != null) {
-            String contextPath = servletContext.getContextPath();
-            if (contextPath != null && !contextPath.isEmpty()) {
-                path = contextPath + "/";
-            }
-        }
-
-        if (vaadinServletMapping != null && !vaadinServletMapping.isEmpty()) {
-            if (vaadinServletMapping.startsWith("/")) {
-                vaadinServletMapping = vaadinServletMapping.substring(1);
-            }
-            if (vaadinServletMapping.endsWith("*")) {
-                vaadinServletMapping = vaadinServletMapping.substring(0,
-                        vaadinServletMapping.length() - 1);
-
-            }
-            path += vaadinServletMapping;
-        }
-
-        return host + path;
-    }
-
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(DevModeBrowserLauncher.class);
     }
 
 }
