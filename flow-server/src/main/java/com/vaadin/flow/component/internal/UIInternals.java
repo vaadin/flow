@@ -616,11 +616,11 @@ public class UIInternals implements Serializable {
                             node.addDetachListener(detachListener));
                     return detachListener;
                 });
-        listener.invocationList.add(invocation);
-
-        SerializableConsumer callback = unused -> listener
-                .onInvocationCompleted(invocation);
-        invocation.then(callback, callback);
+        if (listener.invocationList.add(invocation)) {
+            SerializableConsumer callback = unused -> listener
+                    .onInvocationCompleted(invocation);
+            invocation.then(callback, callback);
+        }
     }
 
     private class PendingJavaScriptInvocationDetachListener implements Command {
