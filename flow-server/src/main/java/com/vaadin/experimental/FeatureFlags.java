@@ -68,6 +68,11 @@ public class FeatureFlags implements Serializable {
             "https://vaadin.com/docs/latest/components/side-nav", true,
             "com.vaadin.flow.component.sidenav.SideNav");
 
+    public static final Feature WEB_PUSH = new Feature(
+            "Server side WebPush API", "webPush",
+            "https://github.com/vaadin/docs/pull/2442/files", true,
+            "com.vaadin.flow.server.webpush.WebPush");
+
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -88,6 +93,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
         features.add(new Feature(THEME_EDITOR));
         features.add(new Feature(SIDE_NAV_COMPONENT));
+        features.add(new Feature(WEB_PUSH));
         loadProperties();
     }
 

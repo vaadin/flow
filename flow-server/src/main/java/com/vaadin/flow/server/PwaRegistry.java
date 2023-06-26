@@ -82,6 +82,8 @@ public class PwaRegistry implements Serializable {
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
 
+    private BufferedImage baseImage;
+
     /**
      * Creates a new PwaRegistry instance.
      *
@@ -108,8 +110,12 @@ public class PwaRegistry implements Serializable {
         initializeResources(servletContext);
     }
 
+    BufferedImage getBaseImage() {
+        return baseImage;
+    }
+
     private void initializeResources(ServletContext servletContext)
-            throws MalformedURLException, IOException {
+            throws IOException {
         if (!pwaConfiguration.isEnabled()) {
             return;
         }
@@ -125,17 +131,13 @@ public class PwaRegistry implements Serializable {
 
         // Load base logo from servlet context if available
         // fall back to local image if unavailable
-        BufferedImage baseImage = getBaseImage(logo);
+        baseImage = getBaseImage(logo);
 
         if (baseImage == null) {
             getLogger().error("Image is not found or can't be loaded: " + logo);
         } else {
-            // Pick top-left pixel as fill color if needed for image
-            // resizing
-            int bgColor = baseImage.getRGB(0, 0);
-
             // initialize icons
-            icons = initializeIcons(baseImage, bgColor);
+            icons = initializeIcons();
         }
 
         // Load offline page as string, from servlet context if
@@ -170,52 +172,12 @@ public class PwaRegistry implements Serializable {
         return resourceUrl;
     }
 
-    private List<PwaIcon> initializeIcons(BufferedImage baseImage,
-            int bgColor) {
+    private List<PwaIcon> initializeIcons() {
         for (PwaIcon icon : getIconTemplates(pwaConfiguration.getIconPath())) {
-            // New image with wanted size
-            icon.setImage(drawIconImage(baseImage, bgColor, icon));
-            // Store byte array and hashcode of image (GeneratedImage)
+            icon.setRegistry(this);
             icons.add(icon);
         }
         return icons;
-    }
-
-    private BufferedImage drawIconImage(BufferedImage baseImage, int bgColor,
-            PwaIcon icon) {
-        BufferedImage bimage = new BufferedImage(icon.getWidth(),
-                icon.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        // Draw the image on to the buffered image
-        Graphics2D graphics = bimage.createGraphics();
-
-        // fill bg with fill-color
-        graphics.setBackground(new Color(bgColor, true));
-        graphics.clearRect(0, 0, icon.getWidth(), icon.getHeight());
-
-        // calculate ratio (bigger ratio) for resize
-        float ratio = (float) baseImage.getWidth()
-                / (float) icon.getWidth() > (float) baseImage.getHeight()
-                        / (float) icon.getHeight()
-                                ? (float) baseImage.getWidth()
-                                        / (float) icon.getWidth()
-                                : (float) baseImage.getHeight()
-                                        / (float) icon.getHeight();
-
-        // Forbid upscaling of image
-        ratio = ratio > 1.0f ? ratio : 1.0f;
-
-        // calculate sizes with ratio
-        int newWidth = Math.round(baseImage.getHeight() / ratio);
-        int newHeight = Math.round(baseImage.getWidth() / ratio);
-
-        // draw rescaled img in the center of created image
-        graphics.drawImage(
-                baseImage.getScaledInstance(newWidth, newHeight,
-                        Image.SCALE_SMOOTH),
-                (icon.getWidth() - newWidth) / 2,
-                (icon.getHeight() - newHeight) / 2, null);
-        graphics.dispose();
-        return bimage;
     }
 
     /**
