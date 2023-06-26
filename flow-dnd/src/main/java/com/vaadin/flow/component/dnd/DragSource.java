@@ -33,12 +33,6 @@ import com.vaadin.flow.shared.Registration;
  * This can be used by either implementing this interface, or with the static
  * API {@link #create(Component)}, {@link #configure(Component)} or
  * {@link #configure(Component, boolean)}.
- * <p>
- * <em>NOTE: Starting a drag from a component that has contents inside shadow
- * dom does not work in Firefox due to https://bugzilla.mozilla
- * .org/show_bug.cgi?id=1521471. Thus currently Vaadin components like
- * TextField, DatePicker and ComboBox cannot be dragged by the user in
- * Firefox.</em>
  *
  * @param <T>
  *            the type of the drag source component
