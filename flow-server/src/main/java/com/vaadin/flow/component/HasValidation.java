@@ -43,19 +43,26 @@ public interface HasValidation extends Serializable {
      * Field field = new Field();
      * field.setManualValidation(true);
      * field.addValueChangeListener(event -> {
-     *      if (Objects.equal(event.getValue(), "")) {
-     *          field.setInvalid(true);
-     *          field.setErrorMessage("The field is required.");
-     *      } else {
-     *          field.setInvalid(false);
-     *      }
+     *     if (Objects.equal(event.getValue(), "")) {
+     *         field.setInvalid(true);
+     *         field.setErrorMessage("The field is required.");
+     *     } else {
+     *         field.setInvalid(false);
+     *     }
      * });
      * </pre>
      *
+     * <p>
+     * The method should be implemented by components that support validation.
+     *
      * @param enabled
      *            whether to enable manual validation mode.
+     * @throws UnsupportedOperationException
+     *             if the component doesn't support validation.
      */
-    void setManualValidation(boolean enabled);
+    default void setManualValidation(boolean enabled) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Sets an error message to the component.
