@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.AttachEvent;
@@ -150,8 +151,14 @@ public class Label extends HtmlContainer {
                         // Label was not associated with a for-attribute
                         // AND
                         // Label was not associated by adding a nested component
+                        // AND
+                        // Label has no attribute slot=label
+                        // (used e.g. in flow-components/FormLayout)
                         if (getFor().isEmpty()
-                                && getChildren().findAny().isEmpty()) {
+                                && getChildren().findAny().isEmpty()
+                                && !Objects.equals(
+                                        getElement().getAttribute("slot"),
+                                        "label")) {
                             LoggerFactory.getLogger(Label.class.getName()).warn(
                                     "The Label '{}' was not associated with a component. "
                                             + "Labels should not be used for loose text on the page. "
