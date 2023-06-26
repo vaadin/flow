@@ -53,12 +53,13 @@ public interface HasValidation extends Serializable {
      * </pre>
      *
      * <p>
-     * The method should be implemented by components that support validation.
+     * The method should be implemented by components that support built-in
+     * validation.
      *
      * @param enabled
      *            whether to enable manual validation mode.
      * @throws UnsupportedOperationException
-     *             if the component doesn't support validation.
+     *             if the component doesn't support built-in validation.
      */
     default void setManualValidation(boolean enabled) {
         throw new UnsupportedOperationException();
