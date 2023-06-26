@@ -100,7 +100,7 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
      *
      * @return {@code true} to remove created files, {@code false} to keep files
      */
-    protected fun cleanFrontendFiles(): Boolean {
+    protected open fun cleanFrontendFiles(): Boolean {
         return true;
     }
 }
