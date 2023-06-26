@@ -25,6 +25,7 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
@@ -419,6 +420,33 @@ public class UIInternalsTest {
 
         node.setParent(null);
 
+        Assert.assertEquals(0,
+                internals.getPendingJavaScriptInvocations().count());
+    }
+
+    @Test
+    public void dumpPendingJavaScriptInvocations_multipleInvocation_detachListenerRegisteredOnce() {
+        StateNode node = Mockito.spy(new StateNode(ElementData.class));
+        node.getFeature(ElementData.class).setVisible(false);
+        internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class).add(0, node);
+
+        PendingJavaScriptInvocation invocation = Mockito
+                .spy(new PendingJavaScriptInvocation(node,
+                        new UIInternals.JavaScriptInvocation("")));
+        internals.addJavaScriptInvocation(invocation);
+        internals.dumpPendingJavaScriptInvocations();
+        internals.dumpPendingJavaScriptInvocations();
+        internals.dumpPendingJavaScriptInvocations();
+        internals.dumpPendingJavaScriptInvocations();
+
+        Mockito.verify(node, Mockito.times(1))
+                .addDetachListener(ArgumentMatchers.any());
+        Mockito.verify(invocation, Mockito.times(1)).then(
+                ArgumentMatchers.any(SerializableConsumer.class),
+                ArgumentMatchers.any(SerializableConsumer.class));
+
+        node.setParent(null);
         Assert.assertEquals(0,
                 internals.getPendingJavaScriptInvocations().count());
     }

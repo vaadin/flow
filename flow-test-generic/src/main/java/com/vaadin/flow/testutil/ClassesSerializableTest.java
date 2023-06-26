@@ -84,6 +84,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.base\\.devserver\\.FileWatcher",
                 "com\\.vaadin\\.base\\.devserver\\.IdeIntegration",
                 "com\\.vaadin\\.base\\.devserver\\.OpenInCurrentIde",
+                "com\\.vaadin\\.base\\.devserver\\.RestartMonitor",
                 "com\\.vaadin\\.base\\.devserver\\.ThemeLiveUpdater",
                 "com\\.vaadin\\.base\\.devserver\\.editor..*",
                 "com\\.vaadin\\.base\\.devserver\\.themeeditor..*",
@@ -221,6 +222,10 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.EndpointGeneratorTaskFactory",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.CvdlProducts",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.GenerateMainImports",
+
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.webpush\\.WebPushSubscription",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.webpush\\.WebPushRegistration",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.webpush\\.WebPushMessage",
 
                 // Flow client classes
                 "com\\.vaadin\\.client\\..*",
