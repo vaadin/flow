@@ -52,7 +52,6 @@ public class TestSelectComponent<T>
 
     private String errorMessage = "";
     private boolean invalid;
-    private boolean manualValidationEnabled;
 
     @Override
     public void setErrorMessage(String errorMessage) {
@@ -75,11 +74,6 @@ public class TestSelectComponent<T>
     @Override
     public boolean isInvalid() {
         return invalid;
-    }
-
-    @Override
-    public void setManualValidation(boolean enabled) {
-        this.manualValidationEnabled = enabled;
     }
 
     private static <T> Set<T> presentationToModel(TestSelectComponent<T> group,
