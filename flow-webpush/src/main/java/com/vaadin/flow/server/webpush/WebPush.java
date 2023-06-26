@@ -54,12 +54,6 @@ import elemental.json.JsonValue;
  * Enables developers to register clients to the Push Server, return
  * subscription data to be stored on a server, unregister clients and sending
  * notifications to the clients.
- * <p>
- * This class doesn't include any implementation for the intercommunication with
- * a third-party Push Server. Abstract method
- * {@link #sendNotification(Subscription, WebPushMessage)} to be extended by
- * developers to use a concrete implementation/library, which sends a
- * notification to Push Server and later on to a browser.
  *
  * @since 24.2
  */
@@ -88,7 +82,7 @@ public class WebPush {
         if (!FeatureFlags.get(VaadinService.getCurrent().getContext())
                 .isEnabled(FeatureFlags.WEB_PUSH)) {
             getLogger().error(
-                    "WebPush feature is not enabled. Enable feature though dev window or feature file.");
+                    "WebPush feature is not enabled. Enable feature through dev tools window or feature flags file.");
             return;
         }
         this.publicKey = publicKey;
@@ -123,7 +117,9 @@ public class WebPush {
                     .send(new Notification(subscription, message.toJson()));
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 201) {
-                getLogger().error("Server error, status code:" + statusCode);
+                getLogger().error(
+                        "Failed to send web push notification, received status code:"
+                                + statusCode);
                 InputStream content = response.getEntity().getContent();
                 List<String> strings = IOUtils.readLines(content, "UTF-8");
                 getLogger().error(String.join("\n", strings));
