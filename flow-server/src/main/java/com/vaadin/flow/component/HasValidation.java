@@ -34,11 +34,9 @@ public interface HasValidation extends Serializable {
      * {@link #setInvalid(boolean)} and {@link #setErrorMessage(String)}
      * methods. Manual mode is helpful when there is a need for a totally custom
      * validation logic that cannot be achieved with Binder.
-     *
      * <p>
      * Example:
      * </p>
-     *
      * <pre>
      * Field field = new Field();
      * field.setManualValidation(true);
@@ -51,7 +49,7 @@ public interface HasValidation extends Serializable {
      *     }
      * });
      * </pre>
-     *
+     * <p>
      * For components that don't have built-in validation, the method has no
      * effect.
      *
