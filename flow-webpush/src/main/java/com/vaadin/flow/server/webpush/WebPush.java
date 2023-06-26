@@ -81,9 +81,8 @@ public class WebPush {
     public WebPush(String publicKey, String privateKey, String subject) {
         if (!FeatureFlags.get(VaadinService.getCurrent().getContext())
                 .isEnabled(FeatureFlags.WEB_PUSH)) {
-            getLogger().error(
-                    "WebPush feature is not enabled. Enable feature through dev tools window or feature flags file.");
-            return;
+            throw new WebPushException("WebPush feature is not enabled. "
+                    + "Add `com.vaadin.experimental.webPush=true` to `vaadin-featureflags.properties`file in resources to enable feature.");
         }
         this.publicKey = publicKey;
 
