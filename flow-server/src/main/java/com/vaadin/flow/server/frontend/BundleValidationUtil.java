@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -553,10 +554,11 @@ public final class BundleValidationUtil {
                                 importString.lastIndexOf("?"))
                         : importString)
                 .collect(Collectors.toList());
+        LinkedHashSet<String> uniqueImports = new LinkedHashSet<>(imports);
         JsonArray statsBundle = statsJson.hasKey("bundleImports")
                 ? statsJson.getArray("bundleImports")
                 : Json.createArray();
-        final List<String> missingFromBundle = imports.stream().filter(
+        final List<String> missingFromBundle = uniqueImports.stream().filter(
                 importString -> !arrayContainsString(statsBundle, importString))
                 .collect(Collectors.toList());
 
@@ -569,14 +571,14 @@ public final class BundleValidationUtil {
         }
 
         String resourcePath = "generated/jar-resources/";
-        final List<String> jarImports = imports.stream()
+        final List<String> jarImports = uniqueImports.stream()
                 .filter(importString -> importString.contains(resourcePath))
                 .map(importString -> importString
                         .substring(importString.indexOf(resourcePath)
                                 + resourcePath.length()))
                 .collect(Collectors.toList());
 
-        final List<String> projectImports = imports.stream()
+        final List<String> projectImports = uniqueImports.stream()
                 .filter(importString -> importString
                         .startsWith(FrontendUtils.FRONTEND_FOLDER_ALIAS)
                         && !importString.contains(resourcePath))
