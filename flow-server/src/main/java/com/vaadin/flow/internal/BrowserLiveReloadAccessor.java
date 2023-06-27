@@ -20,6 +20,7 @@ import java.util.Optional;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
  * Provides API to access to the {@link BrowserLiveReload} instance by a
@@ -75,10 +76,13 @@ public interface BrowserLiveReloadAccessor {
      * @param context
      *            a Vaadin Context
      * @return an {@link Optional} containing a {@link BrowserLiveReload}
-     *         instance or <code>EMPTY</code> if disabled
+     *         instance or <code>EMPTY</code> if disabled or in production mode
      */
     static Optional<BrowserLiveReload> getLiveReloadFromContext(
             VaadinContext context) {
+        if (ApplicationConfiguration.get(context).isProductionMode()) {
+            return Optional.empty();
+        }
         return Optional.ofNullable(context)
                 .map(ctx -> ctx.getAttribute(Lookup.class))
                 .map(lu -> lu.lookup(BrowserLiveReloadAccessor.class))
