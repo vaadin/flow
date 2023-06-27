@@ -212,7 +212,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
              * index.html. The CSS override order has been specified so that the
              * theme should override all other CSS, so it must come last and we
              * must insert before that.
-             * 
+             *
              * We don't really know which link tag it is, if there are multiple,
              * so we use the first. Then all link tags override css imports.
              */
