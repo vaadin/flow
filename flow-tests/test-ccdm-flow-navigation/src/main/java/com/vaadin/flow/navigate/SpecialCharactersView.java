@@ -21,7 +21,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 
-@Route(value = "special åäö $%20'´`")
+@Route(value = "special åäö $'´`")
 public class SpecialCharactersView extends Span {
 
     public SpecialCharactersView() {
