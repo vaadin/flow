@@ -1089,8 +1089,8 @@ public class UIInternals implements Serializable {
      *         <code>false</code> otherwise
      */
     public boolean isDirty() {
-        return getStateTree().isDirty()
-                || getPendingJavaScriptInvocations().count() != 0;
+        return getStateTree().isDirty() || getPendingJavaScriptInvocations()
+                .anyMatch(invocation -> invocation.getOwner().isVisible());
     }
 
     /**
