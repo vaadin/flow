@@ -18,20 +18,45 @@ package com.vaadin.gradle
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.frontend.FrontendTools
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.TaskAction
 
 /**
  * This task checks that node and npm tools are installed, copies frontend
  * resources available inside `.jar` dependencies to `node_modules`, and creates
  * or updates `package.json` and `webpack.config.json` files.
+ * <p>
+ * Uses Gradle incremental builds feature, i.e. Gradle skips this tasks if
+ * all the inputs (config parameters, Node.js version) and outputs (generated
+ * files) are up-to-date and have the same values as for previous build.
  */
+@CacheableTask
 public open class VaadinPrepareFrontendTask : DefaultTask() {
+
+    private val extension: VaadinFlowPluginExtension
+
+    /**
+     * Defines an object containing all the inputs of this task.
+     */
+    @Nested
+    public open fun getTaskInputProperties(): PrepareFrontendInputProperties? {
+        return PrepareFrontendInputProperties(project)
+    }
+
+    /**
+     * Defines an object containing all the outputs of this task.
+     */
+    @Nested
+    public open fun getTaskOutputProperties(): PrepareFrontendOutputProperties? {
+        return PrepareFrontendOutputProperties(project)
+    }
 
     init {
         group = "Vaadin"
         description = "checks that node and npm tools are installed, copies frontend resources available inside `.jar` dependencies to `node_modules`, and creates or updates `package.json` and `webpack.config.json` files."
 
-        val extension: VaadinFlowPluginExtension = VaadinFlowPluginExtension.get(project)
+        extension = VaadinFlowPluginExtension.get(project)
         // Maven's task run in the LifecyclePhase.PROCESS_RESOURCES phase
 
         // the processResources copies stuff from build/vaadin-generated
@@ -47,7 +72,6 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
 
     @TaskAction
     public fun vaadinPrepareFrontend() {
-        val extension: VaadinFlowPluginExtension = VaadinFlowPluginExtension.get(project)
         // Remove Frontend/generated folder to get clean files copied/generated
         project.delete(extension.generatedTsFolder.absolutePath)
         logger.info("Running the vaadinPrepareFrontend task with effective configuration $extension")
