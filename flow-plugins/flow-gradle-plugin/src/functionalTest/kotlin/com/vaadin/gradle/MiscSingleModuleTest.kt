@@ -476,7 +476,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val classpath = classpathLines[0].dropWhile { it != '[' } .trim('[', ']') .split(',')
             .map { it.trim() } .sorted()
         // remove version numbers to make the test more stable: drop -2.7.4.jar from flow-dnd-2.7.4.jar
-        expect(listOf("flow-client-", "flow-commons-upload-", "flow-html-components-", "flow-lit-template-", "flow-push-", "flow-server-")) {
+        expect(listOf("flow-client-", "flow-commons-upload-", "flow-html-components-", "flow-lit-template-", "flow-push-", "flow-server-", "flow-webpush-")) {
             classpath.map { it.removeSuffix("-SNAPSHOT.jar").dropLastWhile { it != '-' } }
         }
     }

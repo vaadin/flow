@@ -19,12 +19,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import java.util.concurrent.locks.ReentrantLock;
+
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
@@ -220,8 +222,9 @@ public class AtmospherePushConnectionTest {
 
         Throwable threadError = threadErrorFuture.get(2, TimeUnit.SECONDS);
         if (threadError != null) {
-            Assert.fail("Disconnection on spawned thread failed: "
-                    + threadError.getMessage());
+            StringWriter sw = new StringWriter();
+            threadError.printStackTrace(new PrintWriter(sw));
+            Assert.fail("Disconnection on spawned thread failed: " + sw);
         }
         Assert.assertTrue("Disconnect calls not completed, missing "
                 + latch.getCount() + " call", latch.await(3, TimeUnit.SECONDS));

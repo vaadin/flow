@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -43,6 +44,7 @@ public class DevServerOutputTracker {
         private Pattern failure;
         private Consumer<Result> onMatch;
         private boolean started = false;
+        private RestartMonitor restartMonitor;
 
         private Finder(InputStream inputStream, Pattern success,
                 Pattern failure, Consumer<Result> onMatch) {
@@ -136,8 +138,24 @@ public class DevServerOutputTracker {
                 }
                 cumulativeOutput = new StringBuilder();
             }
+
+            if (restartMonitor != null) {
+                restartMonitor.parseLine(cleanLine);
+            }
         }
 
+    }
+
+    private static class FinderThread extends Thread {
+
+        private final Finder finder;
+
+        public FinderThread(Finder finder) {
+            super(finder);
+            setDaemon(true);
+            setName("dev-server-output");
+            this.finder = finder;
+        }
     }
 
     /**
@@ -191,16 +209,56 @@ public class DevServerOutputTracker {
             }
             monitor.countDown();
         });
+    }
 
+    /**
+     * Gets a guard object that blocks the current request to dev-server when
+     * dev-server is performing a restart operation.
+     *
+     * @param restartingPattern
+     *            a pattern to match with the output to determine that the
+     *            server is restarting.
+     * @param restartedPattern
+     *            a pattern to match with the output to determine that the
+     *            server has been restarted.
+     * @return a {@link Runnable} instance that blocks execution during dev
+     *         server restarts, never {@literal null}.
+     */
+    public Runnable serverRestartGuard(Pattern restartingPattern,
+            Pattern restartedPattern) {
+        Objects.requireNonNull(restartingPattern,
+                "Restarting pattern is required");
+        Objects.requireNonNull(restartedPattern,
+                "Restarted pattern is required");
+        finder.restartMonitor = new RestartMonitor(restartingPattern,
+                restartedPattern);
+        return finder.restartMonitor::waitForServerReady;
+    }
+
+    /**
+     * Gets the server restart guard object associated with the currently
+     * running output tracker thread.
+     *
+     * This method should be called to obtain the guard object when reusing an
+     * existing dev-server instance.
+     *
+     * @return a {@link Runnable} instance that blocks execution during
+     *         dev-server restarts, or {@literal null} if output tracker thread
+     *         is not active.
+     */
+    static Runnable activeServerRestartGuard() {
+        return Thread.getAllStackTraces().keySet().stream()
+                .filter(t -> FinderThread.class.equals(t.getClass()))
+                .findFirst().map(FinderThread.class::cast)
+                .map(t -> t.finder.restartMonitor)
+                .<Runnable> map(m -> m::waitForServerReady).orElse(null);
     }
 
     /**
      * Runs the find operation.
      */
     public void find() {
-        Thread finderThread = new Thread(finder);
-        finderThread.setDaemon(true);
-        finderThread.setName("dev-server-output");
+        Thread finderThread = new FinderThread(finder);
         finderThread.start();
     }
 

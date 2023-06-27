@@ -16,6 +16,9 @@
 package com.vaadin.flow.server;
 
 import javax.imageio.ImageIO;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -62,6 +65,8 @@ public class PwaIcon implements Serializable {
 
     private final Map<String, String> attributes = new HashMap<>();
     private String tag = "link";
+
+    private PwaRegistry registry;
 
     PwaIcon(int width, int height, String baseName) {
         this(width, height, baseName, Domain.HEADER);
@@ -209,6 +214,10 @@ public class PwaIcon implements Serializable {
         return domain;
     }
 
+    public void setRegistry(PwaRegistry registry) {
+        this.registry = registry;
+    }
+
     /**
      * Sets the image presenting the icon.
      *
@@ -234,6 +243,11 @@ public class PwaIcon implements Serializable {
      *            output stream to write the icon image to
      */
     public void write(OutputStream outputStream) {
+        if (data == null) {
+            // New image with wanted size
+            // Store byte array and hashcode of image (GeneratedImage)
+            setImage(drawIconImage(registry.getBaseImage()));
+        }
         try {
             outputStream.write(data);
         } catch (IOException ioe) {
@@ -243,4 +257,43 @@ public class PwaIcon implements Serializable {
         }
     }
 
+    private BufferedImage drawIconImage(BufferedImage baseImage) {
+        // Pick top-left pixel as fill color if needed for image
+        // resizing
+        int bgColor = baseImage.getRGB(0, 0);
+
+        BufferedImage bimage = new BufferedImage(this.getWidth(),
+                this.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        // Draw the image on to the buffered image
+        Graphics2D graphics = bimage.createGraphics();
+
+        // fill bg with fill-color
+        graphics.setBackground(new Color(bgColor, true));
+        graphics.clearRect(0, 0, this.getWidth(), this.getHeight());
+
+        // calculate ratio (bigger ratio) for resize
+        float ratio = (float) baseImage.getWidth()
+                / (float) this.getWidth() > (float) baseImage.getHeight()
+                        / (float) this.getHeight()
+                                ? (float) baseImage.getWidth()
+                                        / (float) this.getWidth()
+                                : (float) baseImage.getHeight()
+                                        / (float) this.getHeight();
+
+        // Forbid upscaling of image
+        ratio = ratio > 1.0f ? ratio : 1.0f;
+
+        // calculate sizes with ratio
+        int newWidth = Math.round(baseImage.getHeight() / ratio);
+        int newHeight = Math.round(baseImage.getWidth() / ratio);
+
+        // draw rescaled img in the center of created image
+        graphics.drawImage(
+                baseImage.getScaledInstance(newWidth, newHeight,
+                        Image.SCALE_SMOOTH),
+                (this.getWidth() - newWidth) / 2,
+                (this.getHeight() - newHeight) / 2, null);
+        graphics.dispose();
+        return bimage;
+    }
 }
