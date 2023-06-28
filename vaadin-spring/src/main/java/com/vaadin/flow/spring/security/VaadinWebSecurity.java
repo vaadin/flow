@@ -41,12 +41,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
-import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
@@ -120,7 +116,6 @@ public abstract class VaadinWebSecurity {
     private String servletContextPath;
 
     private final AuthenticationContext authenticationContext = new AuthenticationContext();
-    private LogoutConfigurer<HttpSecurity> logoutConfigurer;
 
     /**
      * Registers default {@link SecurityFilterChain} bean.
@@ -135,15 +130,14 @@ public abstract class VaadinWebSecurity {
     @Bean(name = "VaadinSecurityFilterChainBean")
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         configure(http);
-        logoutConfigurer = http.logout();
-        logoutConfigurer.invalidateHttpSession(true);
-        addLogoutHandlers(logoutConfigurer::addLogoutHandler);
-        DefaultSecurityFilterChain securityFilterChain = http.build();
+        http.logout(cfg -> {
+            cfg.invalidateHttpSession(true);
+            addLogoutHandlers(cfg::addLogoutHandler);
+            authenticationContext.setLogoutHandlers(
+                    cfg.getLogoutSuccessHandler(), cfg.getLogoutHandlers());
+        });
 
-        authenticationContext.setLogoutHandlers(
-                logoutConfigurer.getLogoutSuccessHandler(),
-                logoutConfigurer.getLogoutHandlers());
-        return securityFilterChain;
+        return http.build();
     }
 
     /**
@@ -171,45 +165,47 @@ public abstract class VaadinWebSecurity {
         // Respond with 401 Unauthorized HTTP status code for unauthorized
         // requests for protected Hilla endpoints, so that the response could
         // be handled on the client side using e.g. `InvalidSessionMiddleware`.
-        http.exceptionHandling()
-                .accessDeniedHandler(createAccessDeniedHandler())
-                .defaultAuthenticationEntryPointFor(
-                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                        requestUtil::isEndpointRequest);
+        http.exceptionHandling(
+                cfg -> cfg.accessDeniedHandler(createAccessDeniedHandler())
+                        .defaultAuthenticationEntryPointFor(
+                                new HttpStatusEntryPoint(
+                                        HttpStatus.UNAUTHORIZED),
+                                requestUtil::isEndpointRequest));
 
         // Vaadin has its own CSRF protection.
         // Spring CSRF is not compatible with Vaadin internal requests
-        http.csrf().ignoringRequestMatchers(
-                requestUtil::isFrameworkInternalRequest);
+        http.csrf(cfg -> cfg.ignoringRequestMatchers(
+                requestUtil::isFrameworkInternalRequest));
 
         // Ensure automated requests to e.g. closing push channels, service
         // workers,
         // endpoints are not counted as valid targets to redirect user to on
         // login
-        http.requestCache().requestCache(vaadinDefaultRequestCache);
+        http.requestCache(cfg -> cfg.requestCache(vaadinDefaultRequestCache));
 
-        AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry urlRegistry = http
-                .authorizeHttpRequests();
-        // Vaadin internal requests must always be allowed to allow public Flow
-        // pages
-        // and/or login page implemented using Flow.
-        urlRegistry.requestMatchers(requestUtil::isFrameworkInternalRequest)
-                .permitAll();
-        // Public endpoints are OK to access
-        urlRegistry.requestMatchers(requestUtil::isAnonymousEndpoint)
-                .permitAll();
-        // Public routes are OK to access
-        urlRegistry.requestMatchers(requestUtil::isAnonymousRoute).permitAll();
-        urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher(
-                requestUtil.getUrlMapping())).permitAll();
+        // AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
+        // urlRegistry =
+        http.authorizeHttpRequests(urlRegistry -> {
+            // Vaadin internal requests must always be allowed to allow public
+            // Flow pages and/or login page implemented using Flow.
+            urlRegistry.requestMatchers(requestUtil::isFrameworkInternalRequest)
+                    .permitAll();
+            // Public endpoints are OK to access
+            urlRegistry.requestMatchers(requestUtil::isAnonymousEndpoint)
+                    .permitAll();
+            // Public routes are OK to access
+            urlRegistry.requestMatchers(requestUtil::isAnonymousRoute)
+                    .permitAll();
+            urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher(
+                    requestUtil.getUrlMapping())).permitAll();
 
-        // matcher for Vaadin static (public) resources
-        urlRegistry.requestMatchers(
-                getDefaultWebSecurityIgnoreMatcher(requestUtil.getUrlMapping()))
-                .permitAll();
+            // matcher for Vaadin static (public) resources
+            urlRegistry.requestMatchers(getDefaultWebSecurityIgnoreMatcher(
+                    requestUtil.getUrlMapping())).permitAll();
 
-        // all other requests require authentication
-        urlRegistry.anyRequest().authenticated();
+            // all other requests require authentication
+            urlRegistry.anyRequest().authenticated();
+        });
 
         // Enable view access control
         viewAccessChecker.enable();
@@ -355,15 +351,18 @@ public abstract class VaadinWebSecurity {
      */
     protected void setLoginView(HttpSecurity http, String hillaLoginViewPath,
             String logoutSuccessUrl) throws Exception {
-        hillaLoginViewPath = applyUrlMapping(hillaLoginViewPath);
-        FormLoginConfigurer<HttpSecurity> formLogin = http.formLogin();
-        formLogin.loginPage(hillaLoginViewPath).permitAll();
-        formLogin.successHandler(
-                getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
+        String completeHillaLoginViewPath = applyUrlMapping(hillaLoginViewPath);
+        http.formLogin(formLogin -> {
+            formLogin.loginPage(completeHillaLoginViewPath).permitAll();
+            formLogin.successHandler(
+                    getVaadinSavedRequestAwareAuthenticationSuccessHandler(
+                            http));
+        });
         configureLogout(http, logoutSuccessUrl);
-        http.exceptionHandling().defaultAuthenticationEntryPointFor(
-                new LoginUrlAuthenticationEntryPoint(hillaLoginViewPath),
-                AnyRequestMatcher.INSTANCE);
+        http.exceptionHandling(cfg -> cfg.defaultAuthenticationEntryPointFor(
+                new LoginUrlAuthenticationEntryPoint(
+                        completeHillaLoginViewPath),
+                AnyRequestMatcher.INSTANCE));
         viewAccessChecker.setLoginView(hillaLoginViewPath);
     }
 
@@ -420,18 +419,20 @@ public abstract class VaadinWebSecurity {
         if (!loginPath.startsWith("/")) {
             loginPath = "/" + loginPath;
         }
-        loginPath = applyUrlMapping(loginPath);
+        String completeLoginPath = applyUrlMapping(loginPath);
 
         // Actually set it up
-        FormLoginConfigurer<HttpSecurity> formLogin = http.formLogin();
-        formLogin.loginPage(loginPath).permitAll();
-        formLogin.successHandler(
-                getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
-        http.csrf().ignoringRequestMatchers(loginPath);
+        http.formLogin(formLogin -> {
+            formLogin.loginPage(completeLoginPath).permitAll();
+            formLogin.successHandler(
+                    getVaadinSavedRequestAwareAuthenticationSuccessHandler(
+                            http));
+        });
+        http.csrf(cfg -> cfg.ignoringRequestMatchers(completeLoginPath));
         configureLogout(http, logoutSuccessUrl);
-        http.exceptionHandling().defaultAuthenticationEntryPointFor(
-                new LoginUrlAuthenticationEntryPoint(loginPath),
-                AnyRequestMatcher.INSTANCE);
+        http.exceptionHandling(cfg -> cfg.defaultAuthenticationEntryPointFor(
+                new LoginUrlAuthenticationEntryPoint(completeLoginPath),
+                AnyRequestMatcher.INSTANCE));
         viewAccessChecker.setLoginView(flowLoginView);
     }
 
@@ -450,9 +451,9 @@ public abstract class VaadinWebSecurity {
      */
     protected void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage)
             throws Exception {
-        http.oauth2Login().loginPage(oauth2LoginPage).successHandler(
+        http.oauth2Login(cfg -> cfg.loginPage(oauth2LoginPage).successHandler(
                 getVaadinSavedRequestAwareAuthenticationSuccessHandler(http))
-                .permitAll();
+                .permitAll());
         viewAccessChecker.setLoginView(servletContextPath + oauth2LoginPage);
     }
 
@@ -558,7 +559,7 @@ public abstract class VaadinWebSecurity {
         SimpleUrlLogoutSuccessHandler logoutSuccessHandler = new SimpleUrlLogoutSuccessHandler();
         logoutSuccessHandler.setDefaultTargetUrl(logoutSuccessUrl);
         logoutSuccessHandler.setRedirectStrategy(new UidlRedirectStrategy());
-        http.logout().logoutSuccessHandler(logoutSuccessHandler);
+        http.logout(cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler));
     }
 
     private String getDefaultLogoutUrl() {
