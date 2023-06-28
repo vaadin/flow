@@ -15,8 +15,15 @@
  */
 package com.vaadin.flow.internal;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,6 +121,11 @@ public class JsonUtilsTest {
 
     private static JsonArray createTestArray2() {
         return Stream.of(Json.create("bar"), Json.createArray())
+                .collect(JsonUtils.asArray());
+    }
+
+    private static JsonArray createNumberArray(double... items) {
+        return DoubleStream.of(items).mapToObj(Json::create)
                 .collect(JsonUtils.asArray());
     }
 
@@ -276,6 +288,24 @@ public class JsonUtilsTest {
         }
     }
 
+    public static class BeanWithTemporalFields {
+
+        public LocalTime localTime = LocalTime.of(10, 23, 55);
+
+        public LocalDate localDate = LocalDate.of(2023, 6, 26);
+
+        public LocalDateTime localDateTime = localDate.atTime(localTime);
+
+        public java.sql.Date sqlDate = java.sql.Date.valueOf(localDate);
+
+        public Date date = new Date(sqlDate.getTime());
+
+        public ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime,
+                ZoneId.of("Europe/Rome"));
+
+        public Duration duration = Duration.ofSeconds(10);
+    }
+
     public static class ListAndMapBean {
         private Map<String, Integer> integerMap = new HashMap<>();
         private Map<String, ChildBean> childBeanMap = new HashMap<>();
@@ -333,6 +363,30 @@ public class JsonUtilsTest {
         Assert.assertEquals("parent", json.getString("parentValue"));
         JsonObject child = json.getObject("child");
         Assert.assertEquals("child", child.getString("childValue"));
+    }
+
+    @Test
+    public void beanWithTimeFields() {
+        BeanWithTemporalFields bean = new BeanWithTemporalFields();
+        JsonObject json = JsonUtils.beanToJson(bean);
+
+        Assert.assertTrue("LocalTime not serialized as expected",
+                JsonUtils.jsonEquals(createNumberArray(10, 23, 55),
+                        json.getArray("localTime")));
+        Assert.assertTrue("LocalDate not serialized as expected",
+                JsonUtils.jsonEquals(createNumberArray(2023, 6, 26),
+                        json.getArray("localDate")));
+        Assert.assertTrue("LocalDateTime not serialized as expected",
+                JsonUtils.jsonEquals(createNumberArray(2023, 6, 26, 10, 23, 55),
+                        json.getArray("localDateTime")));
+        Assert.assertEquals("ZonedDateTime not serialized as expected",
+                bean.zonedDateTime.toEpochSecond(),
+                json.getNumber("zonedDateTime"), 0);
+        Assert.assertEquals("ZonedDateTime not serialized as expected",
+                bean.sqlDate.getTime(), json.getNumber("sqlDate"), 0);
+        Assert.assertEquals("ZonedDateTime not serialized as expected",
+                bean.date.getTime(), json.getNumber("date"), 0);
+        Assert.assertEquals(10.0, json.getNumber("duration"), 0);
     }
 
     @Test
