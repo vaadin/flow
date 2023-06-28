@@ -28,17 +28,21 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.NodeTestComponents.ExampleExperimentalComponent;
 import com.vaadin.flow.server.frontend.NodeTestComponents.FlagView;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -47,6 +51,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
 public class NodeTasksViteTest {
@@ -60,10 +65,12 @@ public class NodeTasksViteTest {
     private static String globalFrontendDirValue;
 
     private String userDir;
+    private File npmFolder;
 
     @Before
     public void setup() {
         userDir = temporaryFolder.getRoot().getAbsolutePath();
+        npmFolder = new File(userDir);
         System.setProperty(USER_DIR, userDir);
         System.clearProperty(PARAM_FRONTEND_DIR);
     }
@@ -90,12 +97,12 @@ public class NodeTasksViteTest {
         ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
         Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
 
-        Options options = new Options(mockedLookup, new File(userDir))
+        Options options = new Options(mockedLookup, npmFolder)
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
                 .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
-                .withJarFrontendResourcesFolder(
-                        getJarFrontendResourcesFolder());
+                .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
+                .withWebpack(npmFolder, npmFolder);
 
         assertEquals(1, finder.getAnnotatedClasses(JsModule.class).size());
         assertEquals(1, finder.getAnnotatedClasses(JavaScript.class).size());
@@ -129,13 +136,13 @@ public class NodeTasksViteTest {
         ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
         Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
 
-        Options options = new Options(mockedLookup, new File(userDir))
+        Options options = new Options(mockedLookup, npmFolder)
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
                 .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir)
-                .withJarFrontendResourcesFolder(
-                        getJarFrontendResourcesFolder());
+                .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
+                .withWebpack(npmFolder, npmFolder);
 
         new NodeTasks(options).execute();
         File importsFile = FrontendUtils
@@ -156,12 +163,12 @@ public class NodeTasksViteTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup, new File(userDir))
+        Options options = new Options(mockedLookup, npmFolder)
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
                 .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
-                .withJarFrontendResourcesFolder(
-                        getJarFrontendResourcesFolder());
+                .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
+                .withWebpack(npmFolder, npmFolder);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -179,12 +186,12 @@ public class NodeTasksViteTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup, new File(userDir))
+        Options options = new Options(mockedLookup, npmFolder)
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
                 .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
-                .withJarFrontendResourcesFolder(
-                        getJarFrontendResourcesFolder());
+                .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
+                .withWebpack(npmFolder, npmFolder);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -203,12 +210,12 @@ public class NodeTasksViteTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup, new File(userDir))
+        Options options = new Options(mockedLookup, npmFolder)
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
                 .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
-                .withJarFrontendResourcesFolder(
-                        getJarFrontendResourcesFolder());
+                .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
+                .withWebpack(npmFolder, npmFolder);
 
         Assert.assertEquals(
                 new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
@@ -235,16 +242,46 @@ public class NodeTasksViteTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup, new File(userDir))
+        Options options = new Options(mockedLookup, npmFolder)
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
                 .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
-                .withJarFrontendResourcesFolder(
-                        getJarFrontendResourcesFolder());
+                .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
+                .withWebpack(npmFolder, npmFolder);
         new NodeTasks(options).execute();
 
         Assert.assertTrue(new File(userDir, "tsconfig.json").exists());
         Assert.assertTrue(new File(userDir, "types.d.ts").exists());
+    }
+
+    @Test
+    public void should_copyPackageLockJson_When_frontendHotdeploy()
+            throws ExecutionFailedException {
+        Lookup mockedLookup = mock(Lookup.class);
+        Mockito.doReturn(
+                new DefaultClassFinder(this.getClass().getClassLoader()))
+                .when(mockedLookup).lookup(ClassFinder.class);
+        Options options = new Options(mockedLookup, npmFolder)
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false)
+                .withEmbeddableWebComponents(false)
+                .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
+                .withFrontendHotdeploy(true).withProductionMode(false)
+                .withWebpack(npmFolder, npmFolder);
+        try (MockedStatic<BundleUtils> bundleUtils = Mockito
+                .mockStatic(BundleUtils.class);
+                MockedStatic<BundleValidationUtil> validationUtil = Mockito
+                        .mockStatic(BundleValidationUtil.class)) {
+            new NodeTasks(options).execute();
+            bundleUtils.verify(
+                    () -> BundleUtils.copyPackageLockFromBundle(options),
+                    Mockito.times(1));
+            validationUtil.verify(
+                    () -> BundleValidationUtil.needsBuild(any(Options.class),
+                            any(FrontendDependenciesScanner.class),
+                            any(ClassFinder.class), any(Mode.class)),
+                    Mockito.never());
+        }
     }
 
     private static void setPropertyIfPresent(String key, String value) {
