@@ -188,14 +188,18 @@ public class AtmospherePushConnection implements PushConnection {
      *            false if it is a response to a client request.
      */
     public void push(boolean async) {
-        synchronized (lock) {
-            if (!isConnected()) {
-                if (async && state != State.RESPONSE_PENDING) {
-                    state = State.PUSH_PENDING;
-                } else {
-                    state = State.RESPONSE_PENDING;
-                }
+        if (disconnecting || !isConnected()) {
+            if (disconnecting) {
+                getLogger().debug(
+                        "Disconnection in progress, ignoring push request");
+            }
+            if (async && state != State.RESPONSE_PENDING) {
+                state = State.PUSH_PENDING;
             } else {
+                state = State.RESPONSE_PENDING;
+            }
+        } else {
+            synchronized (lock) {
                 try {
                     JsonObject response = new UidlWriter().createUidl(getUI(),
                             async);
@@ -325,47 +329,50 @@ public class AtmospherePushConnection implements PushConnection {
         }
 
         synchronized (lock) {
-            disconnecting = true;
-            assert isConnected();
-            if (resource == null) {
-                // Already disconnected. Should not happen but if it does,
-                // we
-                // don't
-                // want to cause NPEs
-                getLogger().debug(
-                        "AtmospherePushConnection.disconnect() called twice, this should not happen");
-                return;
-            }
-            if (resource.isResumed()) {
-                // This can happen for long polling because of
-                // http://dev.vaadin.com/ticket/16919
-                // Once that is fixed, this should never happen
-                connectionLost();
-                return;
-            }
-            if (outgoingMessage != null) {
-                // Wait for the last message to be sent before closing the
-                // connection (assumes that futures are completed in order)
-                try {
-                    outgoingMessage.get(1000, TimeUnit.MILLISECONDS);
-                } catch (TimeoutException e) {
-                    getLogger().info(
-                            "Timeout waiting for messages to be sent to client before disconnect",
-                            e);
-                } catch (Exception e) {
-                    getLogger().info(
-                            "Error waiting for messages to be sent to client before disconnect",
-                            e);
-                }
-                outgoingMessage = null;
-            }
             try {
-                resource.close();
-            } catch (IOException e) {
-                getLogger().info("Error when closing push connection", e);
+                disconnecting = true;
+                assert isConnected();
+                if (resource == null) {
+                    // Already disconnected. Should not happen but if it does,
+                    // we
+                    // don't
+                    // want to cause NPEs
+                    getLogger().debug(
+                            "AtmospherePushConnection.disconnect() called twice, this should not happen");
+                    return;
+                }
+                if (resource.isResumed()) {
+                    // This can happen for long polling because of
+                    // http://dev.vaadin.com/ticket/16919
+                    // Once that is fixed, this should never happen
+                    connectionLost();
+                    return;
+                }
+                if (outgoingMessage != null) {
+                    // Wait for the last message to be sent before closing the
+                    // connection (assumes that futures are completed in order)
+                    try {
+                        outgoingMessage.get(1000, TimeUnit.MILLISECONDS);
+                    } catch (TimeoutException e) {
+                        getLogger().info(
+                                "Timeout waiting for messages to be sent to client before disconnect",
+                                e);
+                    } catch (Exception e) {
+                        getLogger().info(
+                                "Error waiting for messages to be sent to client before disconnect",
+                                e);
+                    }
+                    outgoingMessage = null;
+                }
+                try {
+                    resource.close();
+                } catch (IOException e) {
+                    getLogger().info("Error when closing push connection", e);
+                }
+                connectionLost();
+            } finally {
+                disconnecting = false;
             }
-            connectionLost();
-            disconnecting = false;
         }
     }
 
