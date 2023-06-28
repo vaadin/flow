@@ -149,6 +149,8 @@ public class NodeTasks implements FallibleCommand {
                         UsageStatistics.markAsUsed("flow/dev-bundle", null);
                     }
                 }
+            } else if (options.isFrontendHotdeploy()) {
+                BundleUtils.copyPackageLockFromBundle(options);
             }
 
             if (options.isGenerateEmbeddableWebComponents()) {
