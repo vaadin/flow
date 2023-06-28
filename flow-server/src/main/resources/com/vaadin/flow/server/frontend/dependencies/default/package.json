@@ -16,7 +16,7 @@
     "lit": "2.7.5"
   },
   "devDependencies": {
-    "async": "3.2.2",
+    "async": "3.2.4",
     "glob": "7.2.3",
     "typescript": "5.0.4",
     "workbox-core": "7.0.0",
