@@ -437,11 +437,6 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void knownFaultyNpmVersionThrowsException() {
-        assertFaultyNpmVersion(new FrontendVersion(9, 2, 0));
-    }
-
-    @Test
     public void getPnpmExecutable_executableIsAvailable() {
         List<String> executable = tools.getPnpmExecutable();
         // command line should contain --shamefully-hoist=true option
@@ -887,21 +882,6 @@ public class FrontendToolsTest {
         assertThat(npmExecutable.get(0), containsString(path.get()));
         assertThat(npmExecutable.get(0), containsString(DEFAULT_NODE));
         assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
-    }
-
-    private void assertFaultyNpmVersion(FrontendVersion version) {
-        try {
-            tools.checkForFaultyNpmVersion(version);
-            Assert.fail("No exception was thrown for bad npm version");
-        } catch (IllegalStateException e) {
-            Assert.assertTrue(
-                    "Faulty version " + version.getFullVersion()
-                            + " returned wrong exception message",
-                    e.getMessage()
-                            .contains("Your installed 'npm' version ("
-                                    + version.getFullVersion()
-                                    + ") is known to have problems."));
-        }
     }
 
     private void createFakePnpm(String defaultPnpmVersion) throws Exception {

@@ -97,16 +97,6 @@ public class FrontendTools {
             + "or not a 'node' executable. Please check the %s directory and clean it up: remove '%s'."
             + "%n then run the application or Maven goal again." + MSG_SUFFIX;
 
-    private static final String BAD_VERSION = MSG_PREFIX
-            + "%nYour installed '%s' version (%s) is known to have problems." //
-            + "%nPlease update to a new one either:"
-            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
-            + "%s"
-            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + INSTALL_NODE_LOCALLY + "%n" //
-            + FrontendUtils.DISABLE_CHECK //
-            + MSG_SUFFIX;
-
     private static final List<FrontendVersion> BAD_NPM_VERSIONS = Collections
             .singletonList(new FrontendVersion("9.2.0"));
 
@@ -525,6 +515,17 @@ public class FrontendTools {
                 // Global node is not supported use alternative for everything
                 forceAlternativeNode = true;
                 return null;
+            } else if (BAD_NPM_VERSIONS.contains(installedNodeVersion)) {
+                getLogger().info(
+                        "{} Node.js version {} is known to have problems and can not be used. Using Node.js from {}.",
+                        nodeExecutable.getPath().startsWith(baseDir)
+                                ? "The project-specific"
+                                : "The globally installed",
+                        installedNodeVersion.getFullVersion(),
+                        alternativeDirGetter.get());
+                // Global node is not supported use alternative for everything
+                forceAlternativeNode = true;
+                return null;
             }
         } catch (UnknownVersionException e) {
             getLogger().error("Failed to get version for installed node.", e);
@@ -620,18 +621,6 @@ public class FrontendTools {
             throw ise;
         }
 
-        try {
-            FrontendVersion foundNpmVersion = getNpmVersion();
-            getLogger().debug("Using npm {} located at {}",
-                    foundNpmVersion.getFullVersion(),
-                    getNpmExecutable(false).get(0));
-            FrontendUtils.validateToolVersion("npm", foundNpmVersion,
-                    SUPPORTED_NPM_VERSION);
-            checkForFaultyNpmVersion(foundNpmVersion);
-        } catch (UnknownVersionException e) {
-            getLogger().warn("Error checking if npm is new enough", e);
-        }
-
     }
 
     /**
@@ -701,15 +690,6 @@ public class FrontendTools {
         proxyList.addAll(readProxySettingsFromEnvironmentVariables());
 
         return proxyList;
-    }
-
-    void checkForFaultyNpmVersion(FrontendVersion npmVersion) {
-        if (BAD_NPM_VERSIONS.contains(npmVersion)) {
-            String badNpmVersion = buildBadVersionString("npm",
-                    npmVersion.getFullVersion(),
-                    "by updating your global npm installation with `npm install -g npm@latest`");
-            throw new IllegalStateException(badNpmVersion);
-        }
     }
 
     /**
@@ -1101,17 +1081,6 @@ public class FrontendTools {
             getLogger().warn("version check '{}' failed", commandLine, e);
             return false;
         }
-    }
-
-    private String buildBadVersionString(String tool, String version,
-            String... extraUpdateInstructions) {
-        StringBuilder extraInstructions = new StringBuilder();
-        for (String instruction : extraUpdateInstructions) {
-            extraInstructions.append("%n  - or ").append(instruction);
-        }
-        return String.format(BAD_VERSION, tool, version,
-                extraInstructions.toString(),
-                FrontendUtils.PARAM_IGNORE_VERSION_CHECKS);
     }
 
     private String getAlternativeDir() {
