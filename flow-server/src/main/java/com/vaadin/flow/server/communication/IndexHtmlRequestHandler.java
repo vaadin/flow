@@ -124,7 +124,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureHiddenElementStyles(indexDocument);
 
-        addStyleTagReferences(indexDocument);
+        addStyleTagReferences(indexDocument, config.isProductionMode());
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
@@ -203,12 +203,30 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 .head().parent().attr("theme", theme.variant()));
     }
 
-    private void addStyleTagReferences(Document indexDocument) {
-        Comment cssImportComment = new Comment("CSSImport end");
-        indexDocument.head().appendChild(cssImportComment);
+    private void addStyleTagReferences(Document indexDocument,
+            boolean productionMode) {
+        int insertLocation = -1; // At the end
+        if (productionMode) {
+            /*
+             * In production mode, the theme css is included by Vite in
+             * index.html. The CSS override order has been specified so that the
+             * theme should override all other CSS, so it must come last and we
+             * must insert before that.
+             *
+             * We don't really know which link tag it is, if there are multiple,
+             * so we use the first. Then all link tags override css imports.
+             */
+            Elements links = indexDocument.head().getElementsByTag("link");
+            if (!links.isEmpty()) {
+                insertLocation = indexDocument.head().childNodes()
+                        .indexOf(links.first());
+            }
+        }
 
+        Comment cssImportComment = new Comment("CSSImport end");
         Comment stylesheetComment = new Comment("Stylesheet end");
-        indexDocument.head().appendChild(stylesheetComment);
+        indexDocument.head().insertChildren(insertLocation, cssImportComment,
+                stylesheetComment);
     }
 
     private void redirectToOldBrowserPageWhenNeeded(Document indexDocument) {
