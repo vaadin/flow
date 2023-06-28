@@ -111,4 +111,3 @@ In eclipse run .launch files from flow-client/eclipse in the order:
 > exception `Can't find any GWT Modules on this page.`
 
 More info about SuperDevMode: http://www.gwtproject.org/articles/superdevmode.html
-
