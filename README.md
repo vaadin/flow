@@ -12,16 +12,18 @@ Join Vaadin Flow community chat in https://discord.gg/MYFq5RTbBn
 
 Instructions on how to set up a working environment for developing the Flow project follow below.
 
-The `master` branch is the latest version (5.0) that will at some point be released in the [Vaadin platform 18.0](https://github.com/vaadin/platform). See other branches for other framework versions:
+The `main` branch is the latest version (24.2) that will at some point be released in the [Vaadin platform](https://github.com/vaadin/platform). See other branches for other framework versions:
 
 | Branch | [Platform Version](https://github.com/vaadin/platform/releases) | [Flow Version](https://github.com/vaadin/flow/releases) |
 |--------|-----------------------------------------------------------------|---------------------------------------------------------|
-|  1.0   |  10 (LTS)                                                       |  1.0                                                    |
-|  2.4   |  14.4.x (LTS)                                                   |  2.4.x                                                  |
-|  2.5   |  14.5.x (PRERELEASE)                                            |  2.5.x                                                  |
-|  2.6   |  14.6.x (PREPRERELEASE)                                         |  2.6.x                                                  |
-|  5.0   |  18.0.x (LATEST)                                                |  5.x                                                    |
-|  6.0   |  19.0.x (PRERELEASE until 3/3/21)                               |  6.x                                                    |
+| 1.0    | 10 (LTS)                                                        | 1.0                                                     |
+| 2.9    | 14.10.x (LTS)                                                   | 2.9.x                                                   |
+| 2.10   | 14.11.x (next LTS preparations)                                 | 2.10.x                                                  |
+| 9.1    | 22.1.x (LATEST with Java 8+ support, **Commercial support**)    | 9.1.x                                                   |
+| 23.3   | 23.3 (LATEST with Java 11+ support and Servlet 3)               | 23.3                                                    |
+| 24.0   | 24.0.x                                                          | 24.0                                                    |
+| 24.1   | 24.1 (LATEST release, Java 17+, Jakarta EE 10, Spring-boot 3.0) | 24.1                                                    |
+| main   | 24.2 (Vaadin 24.2 pre-release)                                  | 24.2                                                    |
 
 
 Setting up Eclipse to Develop Flow
@@ -109,4 +111,3 @@ In eclipse run .launch files from flow-client/eclipse in the order:
 > exception `Can't find any GWT Modules on this page.`
 
 More info about SuperDevMode: http://www.gwtproject.org/articles/superdevmode.html
-
