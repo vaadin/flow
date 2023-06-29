@@ -826,7 +826,17 @@ public class VaadinServletContextInitializer
                 throws IOException {
             List<Resource> resourcesList = new ArrayList<>();
             for (Resource resource : super.getResources(locationPattern)) {
-                String path = resource.getURL().getPath();
+                String path;
+                if (resource.getURL().getPath()
+                        .startsWith("file:///resources!")) {
+                    // It's a resource from a native build, remove the
+                    // prefix from URL path
+                    path = resource.getURL().getPath()
+                            .substring("file:///resources!".length());
+                } else {
+                    path = resource.getURL().getPath();
+                }
+
                 if (path.endsWith(".jar!/")) {
                     resourcesList.add(resource);
                 } else if (path.endsWith("/")) {
