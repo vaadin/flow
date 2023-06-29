@@ -183,8 +183,6 @@ public abstract class VaadinWebSecurity {
         // login
         http.requestCache(cfg -> cfg.requestCache(vaadinDefaultRequestCache));
 
-        // AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
-        // urlRegistry =
         http.authorizeHttpRequests(urlRegistry -> {
             // Vaadin internal requests must always be allowed to allow public
             // Flow pages and/or login page implemented using Flow.
