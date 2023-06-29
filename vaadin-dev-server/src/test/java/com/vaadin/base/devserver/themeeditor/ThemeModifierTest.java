@@ -5,7 +5,6 @@ import com.helger.css.decl.CSSStyleRule;
 import com.helger.css.decl.CascadingStyleSheet;
 import com.helger.css.reader.CSSReader;
 import com.vaadin.base.devserver.themeeditor.utils.CssRule;
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.testutil.TestUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -72,14 +71,6 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
         };
         assertEquals(ThemeModifier.State.MISSING_THEME,
                 themeModifier.getState());
-    }
-
-    @Test
-    public void themeEditorPropertyNotSet_stateDisabled() {
-        FeatureFlags.get(mockContext)
-                .setEnabled(FeatureFlags.THEME_EDITOR.getId(), false);
-        ThemeModifier themeModifier = new TestThemeModifier();
-        assertEquals(ThemeModifier.State.DISABLED, themeModifier.getState());
     }
 
     @Test
