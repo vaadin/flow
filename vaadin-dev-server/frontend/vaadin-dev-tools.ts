@@ -964,7 +964,7 @@ export class VaadinDevTools extends LitElement {
       if (isFlowApp && this.themeEditorState !== ThemeEditorState.disabled) {
         this.tabs.push({
           id: 'theme-editor',
-          title: 'Theme Editor (Free Preview)',
+          title: 'Theme Editor (Preview)',
           render: () => this.renderThemeEditor()
         });
         this.requestUpdate();

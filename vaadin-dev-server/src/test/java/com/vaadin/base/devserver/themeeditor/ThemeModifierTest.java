@@ -76,8 +76,6 @@ public class ThemeModifierTest extends AbstractThemeEditorTest {
 
     @Test
     public void themeEditorPropertyNotSet_stateDisabled() {
-        FeatureFlags.get(mockContext)
-                .setEnabled(FeatureFlags.THEME_EDITOR.getId(), false);
         ThemeModifier themeModifier = new TestThemeModifier();
         assertEquals(ThemeModifier.State.DISABLED, themeModifier.getState());
     }
