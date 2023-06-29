@@ -12,7 +12,6 @@ import com.helger.css.reader.CSSReader;
 import com.helger.css.writer.CSSWriter;
 import com.vaadin.base.devserver.themeeditor.utils.CssRule;
 import com.vaadin.base.devserver.themeeditor.utils.ThemeEditorException;
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -179,10 +178,6 @@ public class ThemeModifier {
     }
 
     protected State init() {
-        if (!FeatureFlags.get(context).isEnabled(FeatureFlags.THEME_EDITOR)) {
-            return State.DISABLED;
-        }
-
         try {
             getStyleSheetFile();
         } catch (Exception ex) {
