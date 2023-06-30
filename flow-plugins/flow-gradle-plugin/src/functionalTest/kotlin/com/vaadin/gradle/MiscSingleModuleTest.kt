@@ -445,6 +445,59 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         expect(false) { result.output.contains("org.reflections.ReflectionsException") }
     }
 
+    @Ignore("Fails, because 'Value of input property 'taskInputProperties.resourceOutputDirectory' has changed for task ':vaadinPrepareFrontend''")
+    @Test
+    fun prepareFrontendIncrementalBuilds() {
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'war'
+                id 'com.vaadin'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+        """)
+        var result = testProject.build("vaadinPrepareFrontend", debug = true)
+        expect(true) { result.output.contains(
+            "Task ':vaadinPrepareFrontend' is not up-to-date") }
+
+        result = testProject.build("vaadinPrepareFrontend", debug = true)
+        println("Caching: " + result.output)
+        expect(true) { result.output.contains(
+            "Skipping task ':vaadinPrepareFrontend' as it is up-to-date") }
+
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'war'
+                id 'com.vaadin'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+            vaadin {
+                frontendHotdeploy = true
+            }
+        """)
+        result = testProject.build("vaadinPrepareFrontend", debug = true)
+        println("Caching: " + result.output)
+        expect(true) { result.output.contains(
+            "Task ':vaadinPrepareFrontend' is not up-to-date") }
+    }
+
     @Test
     fun testIncludeExclude() {
         testProject.buildFile.writeText("""
