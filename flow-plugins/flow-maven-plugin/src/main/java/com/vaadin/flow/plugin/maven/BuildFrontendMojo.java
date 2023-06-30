@@ -134,6 +134,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
         if (generateBundle() && BundleValidationUtil
                 .needsBundleBuild(servletResourceOutputDirectory())) {
+            LicenseChecker.setStrictOffline(true);
+            BuildFrontendUtil.validateLicenses(this);
             try {
                 BuildFrontendUtil.runFrontendBuild(this);
                 if (cleanFrontendFiles()) {
@@ -145,8 +147,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                         exception);
             }
         }
-        LicenseChecker.setStrictOffline(true);
-        BuildFrontendUtil.validateLicenses(this);
 
         BuildFrontendUtil.updateBuildFile(this);
 
