@@ -40,6 +40,7 @@ import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SessionExpiredException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -137,6 +138,7 @@ public class PushHandlerTest {
         deploymentConfiguration.setProductionMode(false);
         deploymentConfiguration.setDevModeLiveReloadEnabled(true);
         deploymentConfiguration.setDevToolsEnabled(true);
+        setProductionMode(service, false);
 
         VaadinContext context = service.getContext();
         mockBrowserLiveReloadImpl(context);
@@ -231,16 +233,9 @@ public class PushHandlerTest {
     @Test
     public void debugWindowConnection_productionMode_mustNeverBeConnected()
             throws Exception {
-        ApplicationConfiguration applicationConfiguration = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(applicationConfiguration.isProductionMode())
-                .thenReturn(true);
-
         MockVaadinServletService service = Mockito
                 .spy(MockVaadinServletService.class);
-        VaadinContext context = service.getContext();
-        context.setAttribute(ApplicationConfiguration.class,
-                applicationConfiguration);
+        setProductionMode(service, true);
 
         runTest(service, (handler, resource) -> {
             Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
@@ -257,6 +252,19 @@ public class PushHandlerTest {
             Mockito.verify(handler, Mockito.never()).callWithUi(Mockito.any(),
                     Mockito.any());
         });
+
+    }
+
+    private void setProductionMode(VaadinService service,
+            boolean productionMode) {
+        ApplicationConfiguration applicationConfiguration = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(applicationConfiguration.isProductionMode())
+                .thenReturn(productionMode);
+
+        VaadinContext context = service.getContext();
+        context.setAttribute(ApplicationConfiguration.class,
+                applicationConfiguration);
 
     }
 
@@ -277,6 +285,7 @@ public class PushHandlerTest {
                 return null;
             }
         };
+        setProductionMode(service, false);
 
         if (setSession) {
             VaadinSession.setCurrent(session);
