@@ -574,29 +574,33 @@ public class BuildFrontendUtil {
             FrontendDependenciesScanner scanner) {
         Set<String> usedPackages = new HashSet<>();
         Set<String> npmPackages = scanner.getPackages().keySet();
+        Set<String> jsAndCssImports = new HashSet<String>();
         for (List<String> modules : scanner.getModules().values()) {
-            for (String module : modules) {
-                if (module.startsWith(".")) {
-                    continue;
-                }
-                if (module.contains("/")) {
-                    String[] parts = module.split("/");
-                    String potentialBasicPackage = parts[0];
-                    String potentialOrgPackage = parts[0] + "/" + parts[1];
-                    if (npmPackages.contains(potentialOrgPackage)) {
-                        usedPackages.add(potentialOrgPackage);
-                    } else if (npmPackages.contains(potentialBasicPackage)) {
-                        usedPackages.add(potentialBasicPackage);
-                    } else {
-                        getLogger()
-                                .debug("Module import from an unknown package: "
-                                        + module);
-                    }
+            jsAndCssImports.addAll(modules);
+        }
+        for (List<String> scripts : scanner.getScripts().values()) {
+            jsAndCssImports.addAll(scripts);
+        }
+        for (String importPath : jsAndCssImports) {
+            if (importPath.startsWith(".")) {
+                continue;
+            }
+            if (importPath.contains("/")) {
+                String[] parts = importPath.split("/");
+                String potentialBasicPackage = parts[0];
+                String potentialOrgPackage = parts[0] + "/" + parts[1];
+                if (npmPackages.contains(potentialOrgPackage)) {
+                    usedPackages.add(potentialOrgPackage);
+                } else if (npmPackages.contains(potentialBasicPackage)) {
+                    usedPackages.add(potentialBasicPackage);
+                } else {
+                    getLogger().debug(
+                            "Import from an unknown package: " + importPath);
                 }
             }
-
         }
         return usedPackages;
+
     }
 
     static List<Product> findCommercialJavaComponents(
