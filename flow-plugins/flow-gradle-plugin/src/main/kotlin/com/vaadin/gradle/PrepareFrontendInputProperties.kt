@@ -51,15 +51,16 @@ public class PrepareFrontendInputProperties public constructor(project: Project)
         return extension.productionMode
     }
 
-    @InputDirectory
+    @Input
     @Optional
-    @PathSensitive(PathSensitivity.NONE)
-    public fun getWebpackOutputDirectory(): File? {
+    public fun getWebpackOutputDirectory(): String? {
         val webpackOutputDirectory = extension.webpackOutputDirectory
         if (webpackOutputDirectory != null && !webpackOutputDirectory.exists()) {
             return null
+        } else if (webpackOutputDirectory == null) {
+            return null
         }
-        return webpackOutputDirectory
+        return webpackOutputDirectory.absolutePath
     }
 
     @Input
@@ -175,15 +176,14 @@ public class PrepareFrontendInputProperties public constructor(project: Project)
         return extension.nodeAutoUpdate
     }
 
-    @InputDirectory
-    @PathSensitive(PathSensitivity.ABSOLUTE)
+    @Input
     @Optional
-    public fun getResourceOutputDirectory(): File? {
+    public fun getResourceOutputDirectory(): String? {
         val resourceOutputDirectory = extension.resourceOutputDirectory
         if (!resourceOutputDirectory.exists()) {
             return null
         }
-        return resourceOutputDirectory
+        return resourceOutputDirectory.absolutePath
     }
 
     @Input
