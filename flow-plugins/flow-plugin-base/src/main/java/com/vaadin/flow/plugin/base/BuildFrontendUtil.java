@@ -43,6 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -519,7 +520,7 @@ public class BuildFrontendUtil {
         }
 
         FrontendDependenciesScanner scanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(true, adapter.getClassFinder(), true, null);
+                .createScanner(false, adapter.getClassFinder(), true, null);
         List<Product> commercialComponents = findCommercialFrontendComponents(
                 scanner, statsJsonContent);
         commercialComponents.addAll(findCommercialJavaComponents(adapter));
@@ -553,11 +554,11 @@ public class BuildFrontendUtil {
         List<Product> components = new ArrayList<>();
 
         final JsonObject statsJson = Json.parse(statsJsonContent);
-
+        Set<String> usedPackages = getUsedPackages(scanner);
         if (statsJson.hasKey("cvdlModules")) {
             final JsonObject cvdlModules = statsJson.getObject("cvdlModules");
             for (String key : cvdlModules.keys()) {
-                if (!scanner.getPackages().containsKey(key)) {
+                if (!usedPackages.contains(key)) {
                     // If product is not used do not collect it.
                     continue;
                 }
@@ -567,6 +568,35 @@ public class BuildFrontendUtil {
             }
         }
         return components;
+    }
+
+    private static Set<String> getUsedPackages(
+            FrontendDependenciesScanner scanner) {
+        Set<String> usedPackages = new HashSet<>();
+        Set<String> npmPackages = scanner.getPackages().keySet();
+        for (List<String> modules : scanner.getModules().values()) {
+            for (String module : modules) {
+                if (module.startsWith(".")) {
+                    continue;
+                }
+                if (module.contains("/")) {
+                    String[] parts = module.split("/");
+                    String potentialBasicPackage = parts[0];
+                    String potentialOrgPackage = parts[0] + "/" + parts[1];
+                    if (npmPackages.contains(potentialOrgPackage)) {
+                        usedPackages.add(potentialOrgPackage);
+                    } else if (npmPackages.contains(potentialBasicPackage)) {
+                        usedPackages.add(potentialBasicPackage);
+                    } else {
+                        getLogger()
+                                .debug("Module import from an unknown package: "
+                                        + module);
+                    }
+                }
+            }
+
+        }
+        return usedPackages;
     }
 
     static List<Product> findCommercialJavaComponents(
