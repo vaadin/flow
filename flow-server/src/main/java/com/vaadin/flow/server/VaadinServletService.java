@@ -211,6 +211,11 @@ public class VaadinServletService extends VaadinService {
     @Override
     protected PwaRegistry getPwaRegistry() {
         return Optional.ofNullable(getServlet())
+                // VaadinServlet.getServletConfig can return null if the servlet
+                // is not yet initialized or has been destroyed
+                // It may happen for example during Spring hot deploy restarts
+                // and in this case getServletContext will throw an NPE
+                .filter(s -> s.getServletConfig() != null)
                 .map(GenericServlet::getServletContext)
                 .map(PwaRegistry::getInstance).orElse(null);
     }
