@@ -60,13 +60,15 @@ public class WebPushIT extends ChromeBrowserTest {
         JavascriptExecutor jse = (JavascriptExecutor) driver;
         jse.executeScript(
                 """
-                      const registration = await navigator.serviceWorker.getRegistration();
-                      const subscription = await registration?.pushManager.getSubscription();
-                      if (subscription) {
-                        await subscription.unsubscribe();
-                      }
-                      return true;
-                      """);
+                        if(navigator.serviceWorker) {
+                          const registration = await navigator.serviceWorker.getRegistration();
+                          const subscription = await registration?.pushManager.getSubscription();
+                          if (subscription) {
+                            await subscription.unsubscribe();
+                          }
+                        }
+                        return true;
+                        """);
     }
 
     @Test
@@ -75,8 +77,12 @@ public class WebPushIT extends ChromeBrowserTest {
 
         JavascriptExecutor jse = (JavascriptExecutor) driver;
         Assert.assertFalse("WebPush should not be automatically loaded.",
-                Boolean.valueOf((String) jse.executeScript(
-                        "if(window.Vaadin.Flow.webPush){return 'true';} return 'false';")));
+                (boolean) jse.executeScript(
+                        "if(window.Vaadin.Flow.webPush){return true;} return false;"));
+
+        Assert.assertTrue("No service worker initiated",
+                (boolean) jse.executeScript(
+                        "if(navigator.serviceWorker)return true;return false;"));
 
         NativeButtonElement checkButton = $(NativeButtonElement.class)
                 .id(CHECK_ID);
