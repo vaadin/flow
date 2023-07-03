@@ -65,14 +65,10 @@ public class FileWatcher {
      * Starts the file watching.
      */
     public void start() {
-        CompletableFuture<Void> future = watcher.watchAsync();
-        if (future.isCompletedExceptionally()) {
-            try {
-                future.get();
-            } catch (Exception e) {
-                getLogger().error("Error starting file watcher", e);
-            }
-        }
+        watcher.watchAsync().exceptionally((e) -> {
+            getLogger().error("Error starting file watcher", e);
+            return null;
+        });
     }
 
     /**
@@ -85,8 +81,8 @@ public class FileWatcher {
         watcher.close();
     }
 
-    private Logger getLogger() {
-        return LoggerFactory.getLogger(getClass());
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(FileWatcher.class);
     }
 
 }
