@@ -17,10 +17,7 @@ package com.vaadin.base.devserver;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 import io.methvin.watcher.DirectoryWatcher;
 import org.slf4j.Logger;
