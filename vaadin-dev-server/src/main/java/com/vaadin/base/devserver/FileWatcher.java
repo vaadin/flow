@@ -19,8 +19,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import io.methvin.watcher.DirectoryWatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableConsumer;
 
@@ -61,7 +65,14 @@ public class FileWatcher {
      * Starts the file watching.
      */
     public void start() {
-        watcher.watchAsync();
+        CompletableFuture<Void> future = watcher.watchAsync();
+        if (future.isCompletedExceptionally()) {
+            try {
+                future.get();
+            } catch (Exception e) {
+                getLogger().error("Error starting file watcher", e);
+            }
+        }
     }
 
     /**
@@ -72,6 +83,10 @@ public class FileWatcher {
      */
     public void stop() throws IOException {
         watcher.close();
+    }
+
+    private Logger getLogger() {
+        return LoggerFactory.getLogger(getClass());
     }
 
 }
