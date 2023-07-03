@@ -95,6 +95,8 @@
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <jakarta.annotation.api.version>2.1.1</jakarta.annotation.api.version>
         <jaxb.version>4.0.3</jaxb.version>
+        <guava.version>32.1.0-jre</guava.version>
+        <jakarta.websocket>2.1.1</jakarta.websocket>
 
         <!-- Plugins -->
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
