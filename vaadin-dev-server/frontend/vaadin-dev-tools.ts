@@ -105,6 +105,7 @@ export class VaadinDevTools extends LitElement {
           -webkit-user-select: none;
           -moz-user-select: none;
           user-select: none;
+          color-scheme: dark;
 
           position: fixed;
           z-index: 20000;
