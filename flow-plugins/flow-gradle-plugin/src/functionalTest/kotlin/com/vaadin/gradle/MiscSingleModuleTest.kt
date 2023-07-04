@@ -446,7 +446,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     @Test
-    fun prepareFrontendIncrementalBuilds() {
+    fun prepareFrontendIncrementalBuilds_featureEnabled() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'war'
@@ -461,6 +461,9 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 implementation("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+            vaadin {
+                alwaysExecutePrepareFrontend = false
             }
         """)
         var result = testProject.build("vaadinPrepareFrontend", debug = true)
@@ -489,6 +492,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
+                alwaysExecutePrepareFrontend = false
                 frontendHotdeploy = true
             }
         """)
@@ -496,6 +500,36 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         println("Caching: " + result.output)
         expect(true) { result.output.contains(
             "Task ':vaadinPrepareFrontend' is not up-to-date") }
+    }
+
+    @Test
+    fun prepareFrontendIncrementalBuilds_disableByDefault() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'com.vaadin'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+        """
+        )
+        repeat(5) {
+            val result = testProject.build("vaadinPrepareFrontend", debug = true)
+            expect(true) {
+                result.output.contains(
+                    "Task ':vaadinPrepareFrontend' is not up-to-date"
+                )
+            }
+        }
     }
 
     @Test

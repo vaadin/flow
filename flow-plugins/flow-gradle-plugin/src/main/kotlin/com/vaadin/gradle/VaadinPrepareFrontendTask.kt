@@ -64,7 +64,7 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
         // Maven's task run in the LifecyclePhase.PROCESS_RESOURCES phase
 
         inputProperties = PrepareFrontendInputProperties(project)
-        inputProperties = PrepareFrontendOutputProperties(project)
+        outputProperties = PrepareFrontendOutputProperties(project)
 
         // the processResources copies stuff from build/vaadin-generated
         // (which is populated by this task) and therefore must run after this task.
