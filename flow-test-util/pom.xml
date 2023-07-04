@@ -16,7 +16,6 @@
         <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
         <sonar.skip>true</sonar.skip>
         <selenium.version>4.10.0</selenium.version>
-        <guava.version>32.1.1-jre</guava.version>
     </properties>
     <dependencies>
         <dependency>
