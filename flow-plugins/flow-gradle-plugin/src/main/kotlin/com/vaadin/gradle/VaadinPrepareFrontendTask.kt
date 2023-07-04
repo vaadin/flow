@@ -36,20 +36,24 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
 
     private val extension: VaadinFlowPluginExtension
 
+    private val inputProperties: PrepareFrontendInputProperties
+
+    private val outputProperties: PrepareFrontendOutputProperties
+
     /**
      * Defines an object containing all the inputs of this task.
      */
     @Nested
-    public open fun getTaskInputProperties(): PrepareFrontendInputProperties? {
-        return PrepareFrontendInputProperties(project)
+    public open fun getTaskInputProperties(): PrepareFrontendInputProperties {
+        return inputProperties
     }
 
     /**
      * Defines an object containing all the outputs of this task.
      */
     @Nested
-    public open fun getTaskOutputProperties(): PrepareFrontendOutputProperties? {
-        return PrepareFrontendOutputProperties(project)
+    public open fun getTaskOutputProperties(): PrepareFrontendOutputProperties {
+        return outputProperties
     }
 
     init {
@@ -58,6 +62,9 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
 
         extension = VaadinFlowPluginExtension.get(project)
         // Maven's task run in the LifecyclePhase.PROCESS_RESOURCES phase
+
+        inputProperties = PrepareFrontendInputProperties(project)
+        inputProperties = PrepareFrontendOutputProperties(project)
 
         // the processResources copies stuff from build/vaadin-generated
         // (which is populated by this task) and therefore must run after this task.
@@ -68,6 +75,10 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
         // https://github.com/vaadin/vaadin-gradle-plugin/issues/38
         // for more details.
         dependsOn(project.configurations.getByName(extension.dependencyScope!!).jars)
+
+        if (extension.alwaysExecutePrepareFrontend) {
+            doNotTrackState("State tracking is disabled (default). Use the 'alwaysExecutePrepareFrontend' plugin setting to enable the feature");
+        }
     }
 
     @TaskAction
