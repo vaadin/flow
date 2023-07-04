@@ -28,6 +28,7 @@ import org.gradle.api.tasks.PathSensitivity
 import java.io.File
 import java.net.URI
 import java.util.stream.Collectors
+import com.vaadin.experimental.FeatureFlags
 
 /**
  * Declaratively defines the inputs of the [VaadinPrepareFrontendTask]:
@@ -144,6 +145,17 @@ public class PrepareFrontendInputProperties public constructor(project: Project)
             return null
         }
         return openApiJsonFile
+    }
+
+    @InputFile
+    @Optional
+    @PathSensitive(PathSensitivity.ABSOLUTE)
+    public fun getFeatureFlagsFile(): File? {
+        val featureFlagsFile = extension.javaResourceFolder.resolve(FeatureFlags.PROPERTIES_FILENAME)
+        if (!featureFlagsFile.exists()) {
+            return null
+        }
+        return featureFlagsFile
     }
 
     @Input
