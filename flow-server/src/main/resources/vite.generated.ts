@@ -157,10 +157,12 @@ function buildSWPlugin(opts): PluginOption {
       }
     },
     async closeBundle() {
-      await build('write', [
-        injectManifestToSWPlugin(),
-        brotli(),
-      ]);
+      if (!devMode) {
+        await build('write', [
+          injectManifestToSWPlugin(),
+          brotli(),
+        ]);
+      }
     }
   }
 }
