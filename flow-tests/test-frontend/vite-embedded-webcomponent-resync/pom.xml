@@ -72,13 +72,13 @@
         <dependency>
             <groupId>jakarta.websocket</groupId>
             <artifactId>jakarta.websocket-api</artifactId>
-            <version>${jakarta.websocket}</version>
+            <version>${jakarta.websocket.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.websocket</groupId>
             <artifactId>jakarta.websocket-client-api</artifactId>
-            <version>${jakarta.websocket}</version>
+            <version>${jakarta.websocket.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
