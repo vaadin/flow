@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,7 @@ import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 import com.vaadin.flow.server.frontend.TaskRunNpmInstall;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.utils.LookupImpl;
@@ -143,32 +146,44 @@ public class BuildFrontendUtilTest {
     }
 
     @Test
-    public void detectsCommercialComponents() {
+    public void detectsUsedCommercialComponents() {
 
-        // @formatter:off
-        String statsJson = "{"
-                + " \"cvdlModules\": { "
-                + "  \"component\": {"
-                + "      \"name\": \"component\","
-                + "      \"version\":\"1.2.3\""
-                + "  }, "
-                + "  \"comm-component\": {"
-                + "      \"name\":\"comm-comp\","
-                + "      \"version\":\"4.6.5\""
-                + "  }"
-                + " }"
-                + "}";
-        // @formatter:on
+        String statsJson = """
+                    {
+                        "cvdlModules": {
+                        "component": {
+                            "name": "component",
+                            "version":"1.2.3"
+                           },
+                           "comm-component": {
+                            "name":"comm-comp",
+                            "version":"4.6.5"
+                           },
+                           "comm-component2": {
+                            "name":"comm-comp2",
+                            "version":"4.6.5"
+                           }
+                        }
+                    }
+                """;
 
         final FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Map<String, String> packages = new HashMap<>();
         packages.put("comm-component", "4.6.5");
+        packages.put("comm-component2", "4.6.5");
         packages.put("@vaadin/button", "1.2.1");
         Mockito.when(scanner.getPackages()).thenReturn(packages);
 
+        List<String> modules = new ArrayList<>();
+        modules.add("comm-component/foo.js");
+        Map<ChunkInfo, List<String>> modulesMap = Collections
+                .singletonMap(ChunkInfo.GLOBAL, modules);
+        Mockito.when(scanner.getModules()).thenReturn(modulesMap);
+
         List<Product> components = BuildFrontendUtil
                 .findCommercialFrontendComponents(scanner, statsJson);
+        // Two components are included, only one is used
         Assert.assertEquals(1, components.size());
         Assert.assertEquals("comm-comp", components.get(0).getName());
         Assert.assertEquals("4.6.5", components.get(0).getVersion());

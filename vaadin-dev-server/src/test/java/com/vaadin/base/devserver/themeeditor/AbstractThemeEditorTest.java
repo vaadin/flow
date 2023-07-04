@@ -159,9 +159,6 @@ public abstract class AbstractThemeEditorTest {
                 .thenReturn(new File("target/test-classes/java"));
         Mockito.when(configuration.getJavaResourceFolder())
                 .thenReturn(new File("src/test/resources"));
-
-        FeatureFlags.get(mockContext)
-                .setEnabled(FeatureFlags.THEME_EDITOR.getId(), true);
     }
 
     protected void copy(String from, String to) {
