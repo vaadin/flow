@@ -41,8 +41,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
@@ -133,11 +135,14 @@ public abstract class VaadinWebSecurity {
         http.logout(cfg -> {
             cfg.invalidateHttpSession(true);
             addLogoutHandlers(cfg::addLogoutHandler);
-            authenticationContext.setLogoutHandlers(
-                    cfg.getLogoutSuccessHandler(), cfg.getLogoutHandlers());
         });
-
-        return http.build();
+        DefaultSecurityFilterChain securityFilterChain = http.build();
+        LogoutConfigurer<?> logoutConfigurer = http
+                .getConfigurer(LogoutConfigurer.class);
+        authenticationContext.setLogoutHandlers(
+                logoutConfigurer.getLogoutSuccessHandler(),
+                logoutConfigurer.getLogoutHandlers());
+        return securityFilterChain;
     }
 
     /**
