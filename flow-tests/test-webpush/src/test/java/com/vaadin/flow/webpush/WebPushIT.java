@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
@@ -36,15 +37,20 @@ import static com.vaadin.flow.webpush.WebPushView.NOTIFY_ID;
 import static com.vaadin.flow.webpush.WebPushView.SUBSCRIBE_ID;
 import static com.vaadin.flow.webpush.WebPushView.UNSUBSCRIBE_ID;
 
-public class WebPushIT extends ChromeBrowserTest {
+public class WebPushIT
+        extends /* */ ChromeBrowserTest /* */ /* ChromeDeviceTest /* */ {
 
     @Override
     protected String getTestPath() {
         return "/";
     }
 
-    @Override
+    // @Override
     protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
+        // protected ChromeOptions customizeChromeOptions(ChromeOptions
+        // chromeOptions) {
+
+        //// chromeOptions = super.customizeChromeOptions(chromeOptions);
 
         // Create prefs map to store all preferences
         Map<String, Object> prefs = new HashMap<String, Object>();
@@ -52,6 +58,34 @@ public class WebPushIT extends ChromeBrowserTest {
         // Put this into prefs map to switch off browser notification
         prefs.put("profile.default_content_setting_values.notifications", 1);
         chromeOptions.setExperimentalOption("prefs", prefs);
+        //// return chromeOptions;
+    }
+
+    /*
+     * protected ChromeOptions customizeChromeOptions( ChromeOptions
+     * chromeOptions) {
+     * 
+     * chromeOptions = super.customizeChromeOptions(chromeOptions);
+     * 
+     * // Create prefs map to store all preferences Map<String, Object> prefs =
+     * new HashMap<String, Object>();
+     * 
+     * // Put this into prefs map to switch off browser notification
+     * //prefs.put("profile.default_content_setting_values.notifications", 1);
+     * chromeOptions.setExperimentalOption("prefs", prefs);
+     * chromeOptions.setExperimentalOption("mobileEmulation", new HashMap<>());
+     * return chromeOptions; }
+     */
+
+    @Override
+    public void setDesiredCapabilities(
+            DesiredCapabilities desiredCapabilities) {
+        ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.addArguments(String.format(
+                "--unsafely-treat-insecure-origin-as-secure=%s", getRootURL()));
+
+        desiredCapabilities = desiredCapabilities.merge(chromeOptions);
+        super.setDesiredCapabilities(desiredCapabilities);
     }
 
     @After
