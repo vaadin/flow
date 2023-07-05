@@ -80,6 +80,14 @@ public class WebPushIT extends ChromeBrowserTest {
                 (boolean) jse.executeScript(
                         "if(window.Vaadin.Flow.webPush){return true;} return false;"));
 
+        System.out.println(
+                "==========================================================\n"
+                        + jse.executeScript("return navigator.serviceWorker;")
+                        + "\n"
+                        + jse.executeScript(
+                                "if(navigator.serviceWorker)return true;return false;")
+                        + "\n"
+                        + "\n==========================================================");
         Assert.assertTrue("No service worker initiated",
                 (boolean) jse.executeScript(
                         "if(navigator.serviceWorker)return true;return false;"));
