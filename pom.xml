@@ -83,7 +83,6 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.version>5.3.27</spring.version>
         <spring.boot.version>2.7.13</spring.boot.version>
         <spring.security.version>5.7.9</spring.security.version>
         <gwt.version>2.9.0</gwt.version>
