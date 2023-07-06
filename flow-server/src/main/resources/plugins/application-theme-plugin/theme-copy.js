@@ -20,9 +20,7 @@
 
 import { readdirSync, statSync, mkdirSync, existsSync, copyFileSync } from 'fs';
 import { resolve, basename, relative, extname } from 'path';
-import glob from 'glob';
-
-const { sync } = glob;
+import { globSync } from 'glob';
 
 const ignoredFileExtensions = ['.css', '.js', '.json'];
 
@@ -145,7 +143,7 @@ function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputF
     const copyRules = assets[module];
     Object.keys(copyRules).forEach((copyRule) => {
       const nodeSources = resolve('node_modules/', module, copyRule);
-      const files = sync(nodeSources, { nodir: true });
+      const files = globSync(nodeSources, { nodir: true });
       const targetFolder = resolve(projectStaticAssetsOutputFolder, 'themes', themeName, copyRules[copyRule]);
 
       mkdirSync(targetFolder, {

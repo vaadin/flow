@@ -1,13 +1,9 @@
 import { existsSync, readFileSync } from 'fs';
 import { resolve, basename } from 'path';
-import glob from 'glob';
-
-// Desctructure sync from glob separately for ES module compatibility
-const { sync } = glob;
+import { globSync } from 'glob';
 
 // Collect groups [url(] ['|"]optional './|../', file part and end of url
 const urlMatcher = /(url\(\s*)(\'|\")?(\.\/|\.\.\/)(\S*)(\2\s*\))/g;
-
 
 function assetsContains(fileUrl, themeFolder, logger) {
   const themeProperties = getThemeProperties(themeFolder);
@@ -28,7 +24,7 @@ function assetsContains(fileUrl, themeFolder, logger) {
       // if file starts with copyRule target check if file with path after copy target can be found
       if (fileUrl.startsWith(copyRules[copyRule])) {
         const targetFile = fileUrl.replace(copyRules[copyRule], '');
-        const files = sync(resolve('node_modules/', module, copyRule), { nodir: true });
+        const files = globSync(resolve('node_modules/', module, copyRule), { nodir: true });
 
         for (let file of files) {
           if (file.endsWith(targetFile)) return true;
@@ -51,14 +47,11 @@ function getThemeProperties(themeFolder) {
   return JSON.parse(themePropertyFileAsString);
 }
 
-
 function rewriteCssUrls(source, handledResourceFolder, themeFolder, logger, options) {
   source = source.replace(urlMatcher, function (match, url, quoteMark, replace, fileUrl, endString) {
     let absolutePath = resolve(handledResourceFolder, replace, fileUrl);
     const existingThemeResource = absolutePath.startsWith(themeFolder) && existsSync(absolutePath);
-    if (
-      existingThemeResource || assetsContains(fileUrl, themeFolder, logger)
-    ) {
+    if (existingThemeResource || assetsContains(fileUrl, themeFolder, logger)) {
       // Adding ./ will skip css-loader, which should be done for asset files
       // In a production build, the css file is in VAADIN/build and static files are in VAADIN/static, so ../static needs to be added
       const replacement = options.devMode ? './' : '../static/';
@@ -74,7 +67,7 @@ function rewriteCssUrls(source, handledResourceFolder, themeFolder, logger, opti
       const pathResolved = absolutePath.substring(themeFolder.length).replace(/\\/g, '/');
 
       // keep the url the same except replace the ./ or ../ to themes/[themeFolder]
-      return url + (quoteMark??'') + frontendThemeFolder + pathResolved + endString;
+      return url + (quoteMark ?? '') + frontendThemeFolder + pathResolved + endString;
     } else if (options.devMode) {
       logger.log("No rewrite for '", match, "' as the file was not found.");
     } else {
