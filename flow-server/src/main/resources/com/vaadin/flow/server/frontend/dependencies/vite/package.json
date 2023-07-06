@@ -11,13 +11,12 @@
   "dependencies": {},
   "devDependencies": {
     "vite": "4.4.0",
-    "@vitejs/plugin-react": "4.0.0",
+    "@vitejs/plugin-react": "4.0.1",
     "@rollup/plugin-replace": "5.0.2",
     "@rollup/pluginutils": "5.0.2",
-    "rollup-plugin-visualizer": "5.9.0",
+    "rollup-plugin-visualizer": "5.9.2",
     "rollup-plugin-brotli": "3.1.0",
     "vite-plugin-checker": "0.6.0",
-    "mkdirp": "1.0.4",
     "workbox-build": "7.0.0",
     "transform-ast": "2.4.4"
   }
