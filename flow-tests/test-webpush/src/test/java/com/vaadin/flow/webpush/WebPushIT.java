@@ -76,6 +76,8 @@ public class WebPushIT extends ChromeDeviceTest {
 
     @Test
     public void testServletDeployed() {
+        System.out.println(
+                "============================== ROOT URL: " + getRootURL());
         open();
 
         JavascriptExecutor jse = (JavascriptExecutor) driver;
