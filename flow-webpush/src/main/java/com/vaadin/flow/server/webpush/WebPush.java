@@ -25,6 +25,16 @@ import java.security.Security;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import nl.martijndwars.webpush.Notification;
+import nl.martijndwars.webpush.PushService;
+import nl.martijndwars.webpush.Subscription;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jose4j.lang.JoseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
@@ -33,16 +43,6 @@ import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.VaadinService;
-
-import nl.martijndwars.webpush.Notification;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import nl.martijndwars.webpush.PushService;
-import nl.martijndwars.webpush.Subscription;
-import org.jose4j.lang.JoseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -192,7 +192,9 @@ public class WebPush {
      *            the callback to which the details are provided
      */
     public void subscribe(UI ui, WebPushSubscriptionResponse receiver) {
+        getLogger().info("============== WebPush::subscribe");
         final SerializableConsumer<JsonValue> resultHandler = json -> {
+            getLogger().info("============== WebPush::subscribe::callback");
             JsonObject responseJson = Json.parse(json.toJson());
             receiver.subscription(generateSubscription(responseJson));
         };
@@ -240,11 +242,17 @@ public class WebPush {
         } else {
             ComponentUtil.setData(ui, "webPushInitialized", true);
         }
+        getLogger().info("============== WebPush::initWebPushClient");
         Page page = ui.getPage();
         try (InputStream stream = WebPush.class.getClassLoader()
                 .getResourceAsStream("META-INF/frontend/FlowWebPush.js")) {
             page.executeJs(StringUtil.removeComments(
-                    IOUtils.toString(stream, StandardCharsets.UTF_8)));
+                    IOUtils.toString(stream, StandardCharsets.UTF_8)))
+                    .then(x -> getLogger()
+                            .info("============== WebPush::FlowWebPush OK"),
+                            err -> getLogger().info(
+                                    "============== WebPush::FlowWebPush ERR {}",
+                                    err));
         } catch (IOException ioe) {
             throw new WebPushException("Could not load webpush client code");
         }

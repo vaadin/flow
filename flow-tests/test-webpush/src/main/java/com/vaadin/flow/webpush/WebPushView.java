@@ -17,6 +17,7 @@
 package com.vaadin.flow.webpush;
 
 import nl.martijndwars.webpush.Subscription;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
@@ -57,6 +58,9 @@ public class WebPushView extends Div {
 
         subscribe = new NativeButton("Subscribe", event -> webPush
                 .subscribe(event.getSource().getUI().get(), result -> {
+                    LoggerFactory.getLogger(WebPushView.class).info(
+                            "============== WebPushView::subscribe callback {}",
+                            result);
                     addLogEntry("Subscribed " + result.endpoint);
                     subscription = result;
                 }));
