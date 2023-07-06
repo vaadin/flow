@@ -48,7 +48,8 @@ public final class Console {
      *            if an application is in the production mode or not
      */
     public static void setProductionMode(boolean isProductionMode) {
-        shouldLogToBrowserConsole = !isProductionMode;
+        //shouldLogToBrowserConsole = !isProductionMode;
+        shouldLogToBrowserConsole = true;
     }
 
     /**
