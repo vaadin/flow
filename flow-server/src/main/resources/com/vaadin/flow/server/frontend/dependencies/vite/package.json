@@ -11,7 +11,7 @@
   "dependencies": {},
   "devDependencies": {
     "vite": "4.3.9",
-    "@vitejs/plugin-react": "4.0.0",
+    "@vitejs/plugin-react": "4.0.1",
     "@rollup/plugin-replace": "5.0.2",
     "@rollup/pluginutils": "5.0.2",
     "rollup-plugin-visualizer": "5.9.0",
