@@ -22,7 +22,8 @@ public class BasicsIT extends ViteDevModeIT {
         Assert.assertEquals("good", executeScript("return window.bad()"));
         Thread.sleep(2000); // Checking is async so it sometimes needs some time
         Assert.assertFalse("There should be no error overlay",
-                $("vite-plugin-checker-error-overlay").exists());
+                $("vite-plugin-checker-error-overlay").first().$("main")
+                        .exists());
     }
 
     @Test
