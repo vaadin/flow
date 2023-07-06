@@ -111,6 +111,8 @@ public class WebPushIT extends ChromeDeviceTest {
                 .id(CHECK_ID);
         checkButton.click();
 
+        waitForServiceWorkerReady();
+
         DivElement eventLog = $(DivElement.class).id(EVENT_LOG_ID);
 
         waitUntil(driver -> eventLog.$(DivElement.class).all().size() == 1);
