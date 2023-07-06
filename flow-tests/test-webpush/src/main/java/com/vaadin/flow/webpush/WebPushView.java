@@ -64,7 +64,9 @@ public class WebPushView extends Div {
 
         unsubscribe = new NativeButton("Unsubscribe", event -> webPush
                 .unsubscribe(event.getSource().getUI().get(), result -> {
-                    addLogEntry("Unsubscribed " + result.endpoint);
+                    String endpoint = result != null ? result.endpoint
+                            : "<unknown>";
+                    addLogEntry("Unsubscribed " + endpoint);
                     subscription = null;
                 }));
         unsubscribe.setId(UNSUBSCRIBE_ID);
