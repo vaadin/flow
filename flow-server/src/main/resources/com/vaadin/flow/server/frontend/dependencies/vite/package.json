@@ -14,7 +14,7 @@
     "@vitejs/plugin-react": "4.0.0",
     "@rollup/plugin-replace": "5.0.2",
     "@rollup/pluginutils": "5.0.2",
-    "rollup-plugin-visualizer": "5.9.0",
+    "rollup-plugin-visualizer": "5.9.2",
     "rollup-plugin-brotli": "3.1.0",
     "vite-plugin-checker": "0.5.5",
     "mkdirp": "1.0.4",
