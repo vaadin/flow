@@ -46,6 +46,7 @@ import com.vaadin.flow.server.VaadinService;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
@@ -261,7 +262,13 @@ public class WebPush {
     private SerializableConsumer<JsonValue> handlePossiblyEmptySubscription(
             WebPushSubscriptionResponse receiver) {
         return json -> {
-            JsonObject responseJson = Json.parse(json.toJson());
+            JsonObject responseJson;
+            if (json.getType() == JsonType.STRING) {
+                responseJson = Json.createObject();
+                responseJson.put("message", json.asString());
+            } else {
+                responseJson = Json.parse(json.toJson());
+            }
             if (responseJson.hasKey("message")) {
                 receiver.subscription(null);
             } else {
