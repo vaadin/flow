@@ -25,6 +25,8 @@ import org.junit.Test;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.logging.LogEntry;
+import org.openqa.selenium.logging.Logs;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
@@ -38,6 +40,11 @@ import static com.vaadin.flow.webpush.WebPushView.UNSUBSCRIBE_ID;
 
 public class WebPushIT extends ChromeDeviceTest {
 
+    static {
+        System.setProperty("webdriver.chrome.logfile", "/dev/stdout");
+        System.setProperty("webdriver.chrome.loglevel", "ALL");
+    }
+
     @Override
     protected String getTestPath() {
         return "/";
@@ -47,7 +54,6 @@ public class WebPushIT extends ChromeDeviceTest {
             ChromeOptions chromeOptions) {
 
         chromeOptions = super.customizeChromeOptions(chromeOptions);
-
         // Create prefs map to store all preferences
         Map<String, Object> prefs = new HashMap<>();
 
@@ -59,6 +65,7 @@ public class WebPushIT extends ChromeDeviceTest {
 
     @After
     public void cleanup() {
+
         // Request remove subscription always after test.
         JavascriptExecutor jse = (JavascriptExecutor) driver;
         jse.executeScript(
@@ -74,6 +81,15 @@ public class WebPushIT extends ChromeDeviceTest {
                         """);
     }
 
+    private void printLogs() {
+        Logs logs = driver.manage().logs();
+        System.out.println("=========== LOGS " + logs.getAvailableLogTypes());
+        logs.getAvailableLogTypes().stream()
+                .flatMap(type -> logs.get(type).getAll().stream())
+                .map(LogEntry::toString).forEach(System.out::println);
+        System.out.println("=========== END LOGS");
+    }
+
     @Test
     public void testServletDeployed() {
         System.out.println(
@@ -81,6 +97,8 @@ public class WebPushIT extends ChromeDeviceTest {
         open();
 
         JavascriptExecutor jse = (JavascriptExecutor) driver;
+        jse.executeScript("console.log('hello')");
+
         Assert.assertFalse("WebPush should not be automatically loaded.",
                 (boolean) jse.executeScript(
                         "if(window.Vaadin.Flow.webPush){return true;} return false;"));
@@ -127,7 +145,9 @@ public class WebPushIT extends ChromeDeviceTest {
 
             waitUntil(driver -> isNotificationPresent(driver));
         } finally {
+            printLogs();
             $(NativeButtonElement.class).id(UNSUBSCRIBE_ID).click();
+
         }
         Assert.assertEquals("Unsubscribe should be logged", 4,
                 eventLog.$(DivElement.class).all().size());
