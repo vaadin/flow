@@ -65,6 +65,7 @@ public class WebPush {
     private String publicKey;
 
     private final SerializableConsumer<String> errorHandler = err -> {
+        getLogger().error("======================== WebPush ERROR: {}", err);
         throw new RuntimeException("Unable to retrieve extended "
                 + "client details. JS error is '" + err + "'");
     };
