@@ -19,7 +19,7 @@ window.Vaadin.Flow = window.Vaadin.Flow || {};
 window.Vaadin.Flow.webPush = window.Vaadin.Flow.webPush || {
     subscribe: async function (publicKey) {
         const notificationPermission = await Notification.requestPermission();
-
+        asdasdasd
         if (notificationPermission === 'granted') {
             const registration = await navigator.serviceWorker.getRegistration();
             const subscription = await registration?.pushManager.subscribe({
