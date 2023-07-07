@@ -367,9 +367,7 @@ public class NodeUpdaterTest {
                 .readFileToString(packageJson, StandardCharsets.UTF_8)));
         Assert.assertEquals(
                 "{" + "\"lit\":\"2.0.0\"," + "\"@vaadin/router\":\"1.7.5\","
-                        + "\"@polymer/polymer\":\"3.4.1\","
-                        + "\"css-loader\":\"4.2.1\","
-                        + "\"file-loader\":\"6.1.0\"" + "}",
+                        + "\"@polymer/polymer\":\"3.4.1\"" + "}",
                 nodeUpdater.versionsJson.toJson());
     }
 
