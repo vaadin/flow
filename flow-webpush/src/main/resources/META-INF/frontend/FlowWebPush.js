@@ -19,7 +19,6 @@ window.Vaadin.Flow = window.Vaadin.Flow || {};
 window.Vaadin.Flow.webPush = window.Vaadin.Flow.webPush || {
     subscribe: async function (publicKey) {
         const notificationPermission = await Notification.requestPermission();
-        asdasdasd
         if (notificationPermission === 'granted') {
             const registration = await navigator.serviceWorker.getRegistration();
             const subscription = await registration?.pushManager.subscribe({
@@ -30,10 +29,13 @@ window.Vaadin.Flow.webPush = window.Vaadin.Flow.webPush || {
             if (subscription) {
                 console.log(subscription);
                 // console.log(JSON.parse(JSON.stringify(subscription)));
+                beforeReturn
                 return JSON.parse(JSON.stringify(subscription));
             }
+            subscriptionFailed
             throw new Error("Subscription failed. See console for exception.");
         }
+        blockedNotification
         throw new Error("You have blocked notifications. You need to manually enable them in your browser.");
     },
 
