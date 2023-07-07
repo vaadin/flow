@@ -160,10 +160,6 @@ public class TaskUpdatePackages extends NodeUpdater {
             return true;
         }
 
-        if ("chokidar".equals(dependency)) {
-            // Explicitly lock this to avoid getting chokidar 2 with issues
-            return true;
-        }
         return false;
     }
 
