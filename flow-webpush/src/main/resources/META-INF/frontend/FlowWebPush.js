@@ -21,20 +21,24 @@ window.Vaadin.Flow.webPush = window.Vaadin.Flow.webPush || {
         const notificationPermission = await Notification.requestPermission();
         if (notificationPermission === 'granted') {
             const registration = await navigator.serviceWorker.getRegistration();
-            const subscription = await registration?.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: this.urlB64ToUint8Array(publicKey),
-            });
-            createdSubcription
 
-            if (subscription) {
-                console.log(subscription);
-                // console.log(JSON.parse(JSON.stringify(subscription)));
-                beforeReturn
-                return JSON.parse(JSON.stringify(subscription));
+            if (registration) {
+                const subscription = await registration?.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: this.urlB64ToUint8Array(publicKey),
+                });
+                createdSubcription
+
+                if (subscription) {
+                    console.log(subscription);
+                    // console.log(JSON.parse(JSON.stringify(subscription)));
+                    beforeReturn
+                    return JSON.parse(JSON.stringify(subscription));
+                }
+                subscriptionFailed
+                throw new Error("Subscription failed. See console for exception.");
             }
-            subscriptionFailed
-            throw new Error("Subscription failed. See console for exception.");
+            throw new Error("Cannot get registration from service worker.");
         }
         blockedNotification
         throw new Error("You have blocked notifications. You need to manually enable them in your browser.");
