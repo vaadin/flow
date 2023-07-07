@@ -21,10 +21,12 @@ window.Vaadin.Flow.webPush = window.Vaadin.Flow.webPush || {
         const notificationPermission = await Notification.requestPermission();
         if (notificationPermission === 'granted') {
             const registration = await navigator.serviceWorker.getRegistration();
+            gotRegistration
             const subscription = await registration?.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: this.urlB64ToUint8Array(publicKey),
             });
+            createdSubcription
 
             if (subscription) {
                 console.log(subscription);
