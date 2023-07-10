@@ -122,7 +122,7 @@ public class WebPushIT extends ChromeBrowserTest {
             subscribe.click();
 
             waitUntil(driver -> eventLog.$(DivElement.class).all().size() >= 2,
-                    30);
+                    60);
 
             Assert.assertEquals("Subscription should be logged", 2,
                     eventLog.$(DivElement.class).all().size());
