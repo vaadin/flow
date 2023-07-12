@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
@@ -45,17 +46,31 @@ public class WebPushIT extends ChromeBrowserTest {
 
     @Override
     protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
-
         // Create prefs map to store all preferences
-        Map<String, Object> prefs = new HashMap<String, Object>();
+        Map<String, Object> prefs = new HashMap<>();
 
         // Put this into prefs map to switch off browser notification
         prefs.put("profile.default_content_setting_values.notifications", 1);
         chromeOptions.setExperimentalOption("prefs", prefs);
     }
 
+    @Override
+    public void setDesiredCapabilities(
+            DesiredCapabilities desiredCapabilities) {
+        ChromeOptions opts = new ChromeOptions();
+        opts.addArguments(String.format(
+                "--unsafely-treat-insecure-origin-as-secure=%s", getRootURL()));
+        opts.addArguments("--disable-dev-shm-usage");
+
+        updateHeadlessChromeOptions(opts);
+
+        desiredCapabilities.merge(opts);
+        super.setDesiredCapabilities(desiredCapabilities);
+    }
+
     @After
     public void cleanup() {
+
         // Request remove subscription always after test.
         JavascriptExecutor jse = (JavascriptExecutor) driver;
         jse.executeScript(
@@ -106,7 +121,8 @@ public class WebPushIT extends ChromeBrowserTest {
         try {
             subscribe.click();
 
-            waitUntil(driver -> eventLog.$(DivElement.class).all().size() >= 2);
+            waitUntil(driver -> eventLog.$(DivElement.class).all().size() >= 2,
+                    60);
 
             Assert.assertEquals("Subscription should be logged", 2,
                     eventLog.$(DivElement.class).all().size());
