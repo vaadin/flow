@@ -114,13 +114,6 @@ public abstract class VaadinService implements Serializable {
             + PushMode.class.getSimpleName() + "." + PushMode.DISABLED.name()
             + "." + SEPARATOR;
 
-    public static final String CANNOT_ACQUIRE_CLASSLOADER_SEVERE = SEPARATOR
-            + "Vaadin was unable to acquire class loader from servlet container\n"
-            + "to load your application classes. Setup appropriate security\n"
-            + "policy to allow invoking Thread.getContextClassLoader() from\n"
-            + "VaadinService if you're not using custom class loader.\n"
-            + "NullPointerExceptions will be thrown later." + SEPARATOR;
-
     /**
      * Attribute name for telling
      * {@link VaadinSession#valueUnbound(jakarta.servlet.http.HttpSessionBindingEvent)}
@@ -2085,13 +2078,7 @@ public abstract class VaadinService implements Serializable {
      *             If current security policy forbids acquiring class loader
      */
     protected void setDefaultClassLoader() {
-        try {
-            setClassLoader(
-                    VaadinServiceClassLoaderUtil.findDefaultClassLoader());
-        } catch (SecurityException e) {
-            getLogger().error(CANNOT_ACQUIRE_CLASSLOADER_SEVERE, e);
-            throw e;
-        }
+        setClassLoader(Thread.currentThread().getContextClassLoader());
     }
 
     /**

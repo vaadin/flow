@@ -47,6 +47,6 @@
   },
   "dependencies": {
     "@vaadin/common-frontend": "0.0.18",
-    "lit": "2.6.1"
+    "lit": "2.7.6"
   }
 }

@@ -13,12 +13,12 @@
     "@vaadin/common-frontend": "0.0.18",
     "@vaadin/router": "1.7.5",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "2.7.4"
+    "lit": "2.7.6"
   },
   "devDependencies": {
-    "async": "3.2.2",
-    "glob": "7.2.3",
-    "typescript": "5.0.4",
+    "async": "3.2.4",
+    "glob": "9.3.5",
+    "typescript": "5.1.6",
     "workbox-core": "7.0.0",
     "workbox-precaching": "7.0.0",
     "strip-css-comments": "5.0.0"

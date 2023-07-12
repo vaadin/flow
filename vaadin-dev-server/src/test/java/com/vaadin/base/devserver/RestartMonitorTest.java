@@ -40,7 +40,7 @@ public class RestartMonitorTest {
         CompletableFuture.runAsync(() -> simulateTask(latch));
         Assert.assertTrue(
                 "Not restarting, execution should not have been blocked",
-                latch.await(5, TimeUnit.MILLISECONDS));
+                latch.await(10, TimeUnit.MILLISECONDS));
     }
 
     @Test

@@ -17,10 +17,11 @@ package com.vaadin.base.devserver;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Objects;
 
 import io.methvin.watcher.DirectoryWatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableConsumer;
 
@@ -61,7 +62,10 @@ public class FileWatcher {
      * Starts the file watching.
      */
     public void start() {
-        watcher.watchAsync();
+        watcher.watchAsync().exceptionally((e) -> {
+            getLogger().error("Error starting file watcher", e);
+            return null;
+        });
     }
 
     /**
@@ -72,6 +76,10 @@ public class FileWatcher {
      */
     public void stop() throws IOException {
         watcher.close();
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(FileWatcher.class);
     }
 
 }

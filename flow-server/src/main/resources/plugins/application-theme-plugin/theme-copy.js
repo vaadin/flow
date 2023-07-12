@@ -20,11 +20,7 @@
 
 import { readdirSync, statSync, mkdirSync, existsSync, copyFileSync } from 'fs';
 import { resolve, basename, relative, extname } from 'path';
-import glob from 'glob';
-import mkdirp from 'mkdirp';
-
-const { sync } = glob;
-const { sync: mkdirpSync } = mkdirp;
+import { globSync } from 'glob';
 
 const ignoredFileExtensions = ['.css', '.js', '.json'];
 
@@ -43,13 +39,13 @@ function copyThemeResources(themeFolder, projectStaticAssetsOutputFolder, logger
 
   // Only create assets folder if there are files to copy.
   if (collection.files.length > 0) {
-    mkdirpSync(staticAssetsThemeFolder);
+    mkdirSync(staticAssetsThemeFolder, { recursive: true });
     // create folders with
     collection.directories.forEach((directory) => {
       const relativeDirectory = relative(themeFolder, directory);
       const targetDirectory = resolve(staticAssetsThemeFolder, relativeDirectory);
 
-      mkdirpSync(targetDirectory);
+      mkdirSync(targetDirectory, { recursive: true });
     });
 
     collection.files.forEach((file) => {
@@ -147,7 +143,7 @@ function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputF
     const copyRules = assets[module];
     Object.keys(copyRules).forEach((copyRule) => {
       const nodeSources = resolve('node_modules/', module, copyRule);
-      const files = sync(nodeSources, { nodir: true });
+      const files = globSync(nodeSources, { nodir: true });
       const targetFolder = resolve(projectStaticAssetsOutputFolder, 'themes', themeName, copyRules[copyRule]);
 
       mkdirSync(targetFolder, {
@@ -195,12 +191,11 @@ function copyFileIfAbsentOrNewer(fileToCopy, copyTarget, logger) {
 // This may happen for example when an IDE creates a temporary file
 // and then immediately deletes it
 function handleNoSuchFileError(file, error, logger) {
-    if (error.code === 'ENOENT') {
-        logger.warn('Ignoring not existing file ' + file +
-            '. File may have been deleted during theme processing.');
-    } else {
-        throw error;
-    }
+  if (error.code === 'ENOENT') {
+    logger.warn('Ignoring not existing file ' + file + '. File may have been deleted during theme processing.');
+  } else {
+    throw error;
+  }
 }
 
-export {checkModules, copyStaticAssets, copyThemeResources};
+export { checkModules, copyStaticAssets, copyThemeResources };

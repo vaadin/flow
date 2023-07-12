@@ -7,9 +7,16 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
@@ -33,6 +41,7 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
@@ -553,6 +562,24 @@ public class ElementTest extends AbstractNodeTest {
         }
     }
 
+    public static class BeanWithTemporalFields {
+
+        public LocalTime localTime = LocalTime.of(10, 23, 55);
+
+        public LocalDate localDate = LocalDate.of(2023, 6, 26);
+
+        public LocalDateTime localDateTime = localDate.atTime(localTime);
+
+        public java.sql.Date sqlDate = java.sql.Date.valueOf(localDate);
+
+        public Date date = new Date(sqlDate.getTime());
+
+        public ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime,
+                ZoneId.of("Europe/Rome"));
+
+        public Duration duration = Duration.ofSeconds(10);
+    }
+
     @Test
     public void propertyRawValues() {
         Element element = ElementFactory.createDiv();
@@ -631,6 +658,33 @@ public class ElementTest extends AbstractNodeTest {
 
         element.removeProperty("foo");
         Assert.assertEquals(0, element.getPropertyNames().count());
+    }
+
+    @Test
+    public void setProperty_javaTimeObject() {
+        BeanWithTemporalFields bean = new BeanWithTemporalFields();
+        Element element = ElementFactory.createDiv();
+
+        element.setPropertyBean("bean", bean);
+        JsonObject json = (JsonObject) element.getPropertyRaw("bean");
+
+        Assert.assertTrue("LocalTime not serialized as expected",
+                JsonUtils.jsonEquals(createNumberArray(10, 23, 55),
+                        json.getArray("localTime")));
+        Assert.assertTrue("LocalDate not serialized as expected",
+                JsonUtils.jsonEquals(createNumberArray(2023, 6, 26),
+                        json.getArray("localDate")));
+        Assert.assertTrue("LocalDateTime not serialized as expected",
+                JsonUtils.jsonEquals(createNumberArray(2023, 6, 26, 10, 23, 55),
+                        json.getArray("localDateTime")));
+        Assert.assertEquals("ZonedDateTime not serialized as expected",
+                bean.zonedDateTime.toEpochSecond(),
+                json.getNumber("zonedDateTime"), 0);
+        Assert.assertEquals("ZonedDateTime not serialized as expected",
+                bean.sqlDate.getTime(), json.getNumber("sqlDate"), 0);
+        Assert.assertEquals("ZonedDateTime not serialized as expected",
+                bean.date.getTime(), json.getNumber("date"), 0);
+        Assert.assertEquals(10.0, json.getNumber("duration"), 0);
     }
 
     private static Element createPropertyAssertElement(Object value) {
@@ -2534,4 +2588,10 @@ public class ElementTest extends AbstractNodeTest {
                 actual.getParameters().toArray());
 
     }
+
+    private static JsonArray createNumberArray(double... items) {
+        return DoubleStream.of(items).mapToObj(Json::create)
+                .collect(JsonUtils.asArray());
+    }
+
 }
