@@ -15,18 +15,26 @@
  */
 package com.vaadin.gradle
 
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.util.GradleVersion
 
 /**
  * The main class of the Vaadin Gradle Plugin.
  * @author mavi@vaadin.com
  */
 public class VaadinPlugin : Plugin<Project> {
+    public companion object {
+        public const val GRADLE_MINIMUM_SUPPORTED_VERSION: String = "7.6.1"
+    }
+
     override fun apply(project: Project) {
+        verifyGradleVersion()
+
         // we need Java Plugin conventions so that we can ensure the order of tasks
         project.pluginManager.apply(JavaPlugin::class.java)
         var extensionName = "vaadin"
@@ -59,6 +67,18 @@ public class VaadinPlugin : Plugin<Project> {
                     task.dependsOn("vaadinBuildFrontend")
                 }
             }
+        }
+    }
+
+    private fun verifyGradleVersion() {
+        val currentVersion = GradleVersion.current();
+        val supportedVersion =
+            GradleVersion.version(GRADLE_MINIMUM_SUPPORTED_VERSION)
+        if (currentVersion < supportedVersion) {
+            throw GradleException(
+                "Vaadin plugin requires Gradle ${GRADLE_MINIMUM_SUPPORTED_VERSION} or later. "
+                        + "The current version is ${currentVersion.version}."
+            )
         }
     }
 }

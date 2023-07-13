@@ -211,7 +211,7 @@ object OsUtils {
  * Used to test the plugin. Contains helpful utility methods to manipulate folders
  * and files in the project.
  */
-class TestProject {
+class TestProject(val gradleVersion: String = VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION) {
     /**
      * The project root dir.
      */
@@ -227,12 +227,13 @@ class TestProject {
      */
     val settingsFile: File get() = File(dir, "settings.gradle")
 
+
     private fun createGradleRunner(): GradleRunner = GradleRunner.create()
         .withProjectDir(dir)
         .withPluginClasspath()
         .withDebug(true) // use --debug to catch ReflectionsException: https://github.com/vaadin/vaadin-gradle-plugin/issues/99
         .forwardOutput()   // a must, otherwise ./gradlew check freezes on windows!
-        .withGradleVersion("7.6.1")
+        .withGradleVersion(gradleVersion)
 
     override fun toString(): String = "TestProject(dir=$dir)"
 
