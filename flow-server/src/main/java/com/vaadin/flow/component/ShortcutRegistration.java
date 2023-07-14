@@ -886,9 +886,11 @@ public class ShortcutRegistration implements Registration, Serializable {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("[");
-        builder.append(Arrays.stream(listenOnComponents)
-                .map(component -> component.getClass().getSimpleName())
-                .collect(Collectors.joining(",")));
+        if (listenOnComponents != null) {
+            builder.append(Arrays.stream(listenOnComponents)
+                    .map(component -> component.getClass().getSimpleName())
+                    .collect(Collectors.joining(",")));
+        }
         builder.append("]");
         return String.format(
                 "%s [key = %s, modifiers = %s, owner = %s, listenOn = %s, "
