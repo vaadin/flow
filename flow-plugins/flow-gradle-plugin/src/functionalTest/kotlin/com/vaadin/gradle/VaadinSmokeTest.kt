@@ -328,30 +328,38 @@ class VaadinSmokeTest : AbstractGradleTest() {
 
     @Test
     fun pluginShouldFailWithUnsupportedGradleVersion() {
-        // Works with supported version
-        var result = testProject.build("vaadinClean")
-        result.expectTaskSucceded("vaadinClean")
-        testProject.delete()
+
+        fun setupProjectForGradleVersion(version: String) {
+            testProject.delete()
+            testProject = TestProject(version)
+            setup()
+        }
+
+        // Works with supported versions
+        for (supportedVersion in arrayOf(VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION, "7.6.2", "8.1", "8.2") ) {
+            setupProjectForGradleVersion(supportedVersion)
+            val result = testProject.build("vaadinClean")
+            result.expectTaskSucceded("vaadinClean")
+        }
 
         // Cannot test versions older than 7.6 because of Java version
         // incompatibilities with dependencies thar makes the build fail before
         //the plugin is applied
-        val unsupportedVersion = "7.6"
-        testProject = TestProject(unsupportedVersion)
-        setup()
-        result = testProject.buildAndFail("vaadinClean")
-        assertContains(
-            result.output,
-            "requires Gradle ${VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION} or later",
-            true,
-            "Expecting plugin execution to fail for version ${unsupportedVersion} " +
-                    "as it is lower than the supported one (${VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION})"
-        )
-        assertContains(
-            result.output,
-            "current version is ${unsupportedVersion}"
-        )
-        testProject.delete()
+        for (unsupportedVersion in arrayOf("7.6")) {
+            setupProjectForGradleVersion(unsupportedVersion)
+            val result = testProject.buildAndFail("vaadinClean")
+            assertContains(
+                result.output,
+                "requires Gradle ${VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION} or later",
+                true,
+                "Expecting plugin execution to fail for version ${unsupportedVersion} " +
+                        "as it is lower than the supported one (${VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION})"
+            )
+            assertContains(
+                result.output,
+                "current version is ${unsupportedVersion}"
+            )
+        }
     }
 
 }
