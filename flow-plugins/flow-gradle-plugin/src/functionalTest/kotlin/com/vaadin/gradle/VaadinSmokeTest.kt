@@ -344,7 +344,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
 
         // Cannot test versions older than 7.6 because of Java version
         // incompatibilities with dependencies thar makes the build fail before
-        //the plugin is applied
+        // the plugin is applied
         for (unsupportedVersion in arrayOf("7.6")) {
             setupProjectForGradleVersion(unsupportedVersion)
             val result = testProject.buildAndFail("vaadinClean")
