@@ -120,6 +120,7 @@ public class DataCommunicator<T> implements Serializable {
     private FlushRequest flushRequest;
     private FlushRequest flushUpdatedDataRequest;
     private boolean flushInProgress = false;
+    private boolean flushUpdatedDataInProgress = false;
 
     private CallbackDataProvider.CountCallback<T, ?> countCallback;
     private int itemCountEstimate = -1;
@@ -1109,14 +1110,6 @@ public class DataCommunicator<T> implements Serializable {
         if (!shouldRequestFlush(forced)) {
             return;
         }
-        if (flushRequest != null) {
-            // this cancels the previous request pushed into the queue,
-            // because a new one is going to be registered forcibly to cover
-            // @PreserveOnRefresh cases. Otherwise two flush requests in the
-            // pending queue may lead to a infinite loop, generating more
-            // and more new requests.
-            flushRequest.setCancelled();
-        }
         flushRequest = FlushRequest.register(stateNode, context -> {
             flushInProgress = true;
             if (!context.isClientSideInitialized()) {
@@ -1140,22 +1133,21 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlushUpdatedData() {
-        if (flushUpdatedDataRequest == null
-                || !flushUpdatedDataRequest.canExecute(stateNode)) {
-            if (flushUpdatedDataRequest != null) {
-                // this cancels the previous request pushed into the queue,
-                // because a new one is going to be registered forcibly to cover
-                // @PreserveOnRefresh cases. Otherwise two flush requests in the
-                // pending queue may lead to a infinite loop, generating more
-                // and more new requests.
-                flushUpdatedDataRequest.setCancelled();
-            }
-            flushUpdatedDataRequest = FlushRequest.register(stateNode,
-                    context -> {
-                        flushUpdatedData();
-                        flushUpdatedDataRequest = null;
-                    });
+        if (!shouldRequestFlushUpdatedData()) {
+            return;
         }
+        flushUpdatedDataRequest = FlushRequest.register(stateNode,
+                context -> {
+                    flushUpdatedDataInProgress = true;
+                    flushUpdatedData();
+                    flushUpdatedDataRequest = null;
+                    flushUpdatedDataInProgress = false;
+                });
+    }
+
+    private boolean shouldRequestFlushUpdatedData() {
+        return !flushUpdatedDataInProgress && (flushUpdatedDataRequest == null ||
+                !flushUpdatedDataRequest.canExecute(stateNode));
     }
 
     private void flush() {
@@ -1544,10 +1536,6 @@ public class DataCommunicator<T> implements Serializable {
 
         boolean canExecute(StateNode stateNode) {
             return owner instanceof NullOwner || owner == stateNode.getOwner();
-        }
-
-        void setCancelled() {
-            cancelled = true;
         }
     }
 
