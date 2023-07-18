@@ -246,6 +246,20 @@ public class DataCommunicatorTest {
     }
 
     @Test
+    public void rename() {
+        // No flush requests initially
+        fakeClientCommunication();
+        // Any flush request
+        dataCommunicator.reset();
+
+        element.removeFromTree();
+        dataCommunicator.reset();
+        ui.getElement().appendChild(element);
+
+        fakeClientCommunication();
+    }
+
+    @Test
     public void setDataProvider_keyMapperIsReset() {
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.setRequestedRange(0, 50);

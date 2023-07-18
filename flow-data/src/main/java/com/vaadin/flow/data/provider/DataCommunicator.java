@@ -119,6 +119,7 @@ public class DataCommunicator<T> implements Serializable {
     private HashSet<T> updatedData = new HashSet<>();
     private FlushRequest flushRequest;
     private FlushRequest flushUpdatedDataRequest;
+    private boolean flushInProgress = false;
 
     private CallbackDataProvider.CountCallback<T, ?> countCallback;
     private int itemCountEstimate = -1;
@@ -1105,6 +1106,9 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush(boolean forced) {
+        if (flushInProgress) {
+            return;
+        }
         if ((flushRequest == null || !flushRequest.canExecute(stateNode)
                 || forced) && fetchEnabled) {
             if (flushRequest != null) {
@@ -1116,12 +1120,14 @@ public class DataCommunicator<T> implements Serializable {
                 flushRequest.setCancelled();
             }
             flushRequest = FlushRequest.register(stateNode, context -> {
+                flushInProgress = true;
                 if (!context.isClientSideInitialized()) {
                     reset();
                     arrayUpdater.initialize();
                 }
                 flush();
                 flushRequest = null;
+                flushInProgress = false;
             });
         }
     }
