@@ -2,10 +2,8 @@ import { ComponentMetadata } from '../model';
 import {
   errorMessageProperties,
   helperTextProperties,
-  inputFieldProperties,
   labelProperties
 } from "./vaadin-text-field";
-import { iconProperties, shapeProperties, textProperties } from "./defaults";
 
 export default {
   tagName: 'vaadin-date-time-picker',
