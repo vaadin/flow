@@ -1106,30 +1106,37 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush(boolean forced) {
-        if (flushInProgress) {
+        if (!shouldRequestFlush(forced)) {
             return;
         }
-        if ((flushRequest == null || !flushRequest.canExecute(stateNode)
-                || forced) && fetchEnabled) {
-            if (flushRequest != null) {
-                // this cancels the previous request pushed into the queue,
-                // because a new one is going to be registered forcibly to cover
-                // @PreserveOnRefresh cases. Otherwise two flush requests in the
-                // pending queue may lead to a infinite loop, generating more
-                // and more new requests.
-                flushRequest.setCancelled();
-            }
-            flushRequest = FlushRequest.register(stateNode, context -> {
-                flushInProgress = true;
-                if (!context.isClientSideInitialized()) {
-                    reset();
-                    arrayUpdater.initialize();
-                }
-                flush();
-                flushRequest = null;
-                flushInProgress = false;
-            });
+        if (flushRequest != null) {
+            // this cancels the previous request pushed into the queue,
+            // because a new one is going to be registered forcibly to cover
+            // @PreserveOnRefresh cases. Otherwise two flush requests in the
+            // pending queue may lead to a infinite loop, generating more
+            // and more new requests.
+            flushRequest.setCancelled();
         }
+        flushRequest = FlushRequest.register(stateNode, context -> {
+            flushInProgress = true;
+            if (!context.isClientSideInitialized()) {
+                reset();
+                arrayUpdater.initialize();
+            }
+            flush();
+            flushRequest = null;
+            flushInProgress = false;
+        });
+    }
+
+    private boolean shouldRequestFlush(boolean forced) {
+        if (!fetchEnabled) {
+            return false;
+        }
+        if (forced) {
+            return true;
+        }
+        return !flushInProgress && (flushRequest == null || !flushRequest.canExecute(stateNode));
     }
 
     private void requestFlushUpdatedData() {
