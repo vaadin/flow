@@ -1129,6 +1129,9 @@ public class DataCommunicator<T> implements Serializable {
         if (forced) {
             return true;
         }
+        // New requests that are not forced are not registered while a flush
+        // is in progress. This prevents infinite loop in cases including
+        // @PreserveOnRefresh.
         return !flushInProgress && (flushRequest == null || !flushRequest.canExecute(stateNode));
     }
 
@@ -1146,6 +1149,8 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private boolean shouldRequestFlushUpdatedData() {
+        // New requests are not registered while a flush is in progress. This
+        // prevents infinite loop in cases including @PreserveOnRefresh.
         return !flushUpdatedDataInProgress && (flushUpdatedDataRequest == null ||
                 !flushUpdatedDataRequest.canExecute(stateNode));
     }
