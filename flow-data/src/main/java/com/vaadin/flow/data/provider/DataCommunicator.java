@@ -1132,27 +1132,27 @@ public class DataCommunicator<T> implements Serializable {
         // New requests that are not forced are not registered while a flush
         // is in progress. This prevents infinite loop in cases including
         // @PreserveOnRefresh.
-        return !flushInProgress && (flushRequest == null || !flushRequest.canExecute(stateNode));
+        return !flushInProgress && (flushRequest == null
+                || !flushRequest.canExecute(stateNode));
     }
 
     private void requestFlushUpdatedData() {
         if (!shouldRequestFlushUpdatedData()) {
             return;
         }
-        flushUpdatedDataRequest = FlushRequest.register(stateNode,
-                context -> {
-                    flushUpdatedDataInProgress = true;
-                    flushUpdatedData();
-                    flushUpdatedDataRequest = null;
-                    flushUpdatedDataInProgress = false;
-                });
+        flushUpdatedDataRequest = FlushRequest.register(stateNode, context -> {
+            flushUpdatedDataInProgress = true;
+            flushUpdatedData();
+            flushUpdatedDataRequest = null;
+            flushUpdatedDataInProgress = false;
+        });
     }
 
     private boolean shouldRequestFlushUpdatedData() {
         // New requests are not registered while a flush is in progress. This
         // prevents infinite loop in cases including @PreserveOnRefresh.
-        return !flushUpdatedDataInProgress && (flushUpdatedDataRequest == null ||
-                !flushUpdatedDataRequest.canExecute(stateNode));
+        return !flushUpdatedDataInProgress && (flushUpdatedDataRequest == null
+                || !flushUpdatedDataRequest.canExecute(stateNode));
     }
 
     private void flush() {

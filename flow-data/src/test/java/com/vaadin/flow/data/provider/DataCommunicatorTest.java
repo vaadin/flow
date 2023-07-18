@@ -248,9 +248,9 @@ public class DataCommunicatorTest {
     @Test
     public void setFlushRequest_remove_setFlushRequest_reattach_noEndlessFlushLoop() {
         AtomicInteger listenerInvocationCounter = new AtomicInteger(0);
-        dataCommunicator = new DataCommunicator<>(dataGenerator,
-                arrayUpdater, data -> {
-        }, element.getNode()) {
+        dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
+                data -> {
+                }, element.getNode()) {
             @Override
             public void reset() {
                 Assert.assertTrue("Should not fall into endless reset loop",
