@@ -37,7 +37,7 @@ public class SerializeShortcutView extends AbstractDivView {
         Shortcuts.addShortcutListener(input, event -> input.focus(), Key.KEY_F,
                 KeyModifier.META);
 
-        NativeButton button1 = createButton("Add Remove Shortcut Owner",
+        NativeButton button1 = createButton("Add Shortcut Owner",
                 "add-serialize", event -> {
                     UI ui = UI.getCurrent();
                     add(input);
