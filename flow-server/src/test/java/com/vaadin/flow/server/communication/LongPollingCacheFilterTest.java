@@ -89,7 +89,7 @@ public class LongPollingCacheFilterTest {
                 originalMessage, message);
         Assert.assertEquals(ACTION.CONTINUE, action.action());
         Assert.assertSame(
-                "Message should not be altered by filter if server sync id header is missing",
+                "Message should not be altered by filter if syncId check is disabled",
                 message, action.message());
         verifyMessageIsNotCached();
     }
