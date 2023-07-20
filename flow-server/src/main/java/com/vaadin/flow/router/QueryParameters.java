@@ -13,316 +13,328 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.router;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.vaadin.flow.internal.UrlUtil;
 import java.util.Optional;
+import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+/**
+ * Holds query parameters information.
+ *
+ * @author Vaadin Ltd
+ * @since 1.0.
+ */
+public class QueryParameters implements Serializable {
 
-public class QueryParametersTest {
+    private static final String PARAMETER_VALUES_SEPARATOR = "=";
+    private static final String PARAMETERS_SEPARATOR = "&";
 
-    private final String simpleInputQueryString = "one=1&two=2&three=3&four&five=4%2F5%266%2B7&six=one+%2B+one%20%3D%20two";
+    private final Map<String, List<String>> parameters;
 
-    private final String complexInputQueryString = "one=1&one=11&two=2&two=22&three=3&four&five=4%2F5%266%2B7&six=one+%2B+one%20%3D%20two";
-
-    private Map<String, String> getSimpleInputParameters() {
-        Map<String, String> inputParameters = new HashMap<>();
-        inputParameters.put("one", "1");
-        inputParameters.put("two", "2");
-        inputParameters.put("three", "3");
-        return inputParameters;
+    /**
+     * Creates query parameters from parameter map.
+     *
+     * @param parameters
+     *            the parameter map
+     */
+    public QueryParameters(Map<String, List<String>> parameters) {
+        this.parameters = Collections
+                .unmodifiableMap(parameters.entrySet().stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey,
+                                entry -> Collections.unmodifiableList(
+                                        new ArrayList<>(entry.getValue())))));
     }
 
-    private Map<String, String[]> getFullInputParameters() {
-        Map<String, String[]> inputParameters = new HashMap<>();
-        inputParameters.put("one", new String[] { "1", "11" });
-        inputParameters.put("two", new String[] { "2", "22" });
-        inputParameters.put("three", new String[] { "3" });
-        return inputParameters;
+    /**
+     * Creates an empty query parameters information.
+     *
+     * @return query parameters information
+     */
+    public static QueryParameters empty() {
+        return new QueryParameters(Collections.emptyMap());
     }
 
-    private void checkListsForImmutability(Collection<List<String>> lists) {
-        for (List<String> list : lists) {
-            try {
-                list.add("whatever");
-                fail("No list should have been mutable");
-            } catch (UnsupportedOperationException expected) {
-                // exception expected
-            }
+    /**
+     * Creates parameters from full representation, where each parameter name
+     * may correspond to multiple values.
+     *
+     * @param parameters
+     *            query parameters map
+     * @return query parameters information
+     */
+    public static QueryParameters full(Map<String, String[]> parameters) {
+        return new QueryParameters(convertArraysToLists(parameters));
+    }
+
+    private static Map<String, List<String>> convertArraysToLists(
+            Map<String, String[]> fullParameters) {
+        return fullParameters.entrySet().stream().collect(Collectors.toMap(
+                Map.Entry::getKey, entry -> Arrays.asList(entry.getValue())));
+    }
+
+    /**
+     * Creates parameters from simple representation, where each parameter name
+     * corresponds to a single value.
+     *
+     * @param parameters
+     *            query parameters map
+     * @return query parameters information
+     */
+    public static QueryParameters simple(Map<String, String> parameters) {
+        return new QueryParameters(toFullParameters(parameters));
+    }
+
+    private static Map<String, List<String>> toFullParameters(
+            Map<String, String> simpleParameters) {
+        return simpleParameters.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        entry -> Collections.singletonList(entry.getValue())));
+    }
+
+    /**
+     * Creates parameters from given key-value pair.
+     *
+     * @param key
+     *            the name of the parameter
+     * @param value
+     *            the value
+     * @return query parameters information
+     */
+    public static QueryParameters of(String key, String value) {
+        return simple(Collections.singletonMap(key, value));
+    }
+
+    /**
+     * Creates parameters from a query string.
+     * <p>
+     * Note that no length checking is done for the string. It is the
+     * responsibility of the caller (or the server) to limit the length of the
+     * query string.
+     *
+     * @param queryString
+     *            the query string
+     * @return query parameters information
+     */
+    public static QueryParameters fromString(String queryString) {
+        if (queryString == null) {
+            return empty();
+        }
+        return new QueryParameters(parseQueryString(queryString));
+    }
+
+    private static Map<String, List<String>> parseQueryString(String query) {
+        Map<String, List<String>> parsedParams = Arrays
+                .stream(query.split(PARAMETERS_SEPARATOR))
+                .map(QueryParameters::makeQueryParamList)
+                .collect(Collectors.toMap(list -> list.get(0),
+                        QueryParameters::getParameterValues,
+                        QueryParameters::mergeLists));
+        return parsedParams;
+    }
+
+    private static List<String> makeQueryParamList(String paramAndValue) {
+        int index = paramAndValue.indexOf('=');
+        if (index == -1) {
+            return Collections.singletonList(decode(paramAndValue));
+        }
+        String param = paramAndValue.substring(0, index);
+        String value = paramAndValue.substring(index + 1);
+        return Arrays.asList(decode(param), decode(value));
+    }
+
+    private static List<String> getParameterValues(List<String> paramAndValue) {
+        if (paramAndValue.size() == 1) {
+            return Collections.singletonList("");
+        } else {
+            return Collections.singletonList(paramAndValue.get(1));
         }
     }
 
-    @Test
-    public void emptyParameters() {
-        QueryParameters emptyParams = QueryParameters.empty();
+    private static List<String> mergeLists(List<String> list1,
+            List<String> list2) {
+        List<String> result = new ArrayList<>(list1);
+        if (result.isEmpty()) {
+            result.add(null);
+        }
+        if (list2.isEmpty()) {
+            result.add(null);
+        } else {
+            result.addAll(list2);
+        }
 
-        assertEquals(Collections.emptyMap(), emptyParams.getParameters());
+        return result;
     }
 
-    @Test
-    public void emptyParametersToQueryString() {
-        QueryParameters emptyParams = QueryParameters.empty();
-
-        assertEquals("", emptyParams.getQueryString());
+    /**
+     * Returns query parameters information with support for multiple values
+     * corresponding to single parameter name.
+     * <p>
+     * Example: {@code https://example.com/?one=1&two=2&one=3} will result in
+     * the corresponding map: {@code {"one" : [1, 3], "two": [2]}}
+     *
+     * @return query parameters information
+     */
+    public Map<String, List<String>> getParameters() {
+        return parameters;
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void underlyingMapUnmodifiable_empty() {
-        QueryParameters.empty().getParameters().put("one",
-                Collections.emptyList());
+    /**
+     * Returns query parameter values mapped with the given key.
+     * <p>
+     * Example: Calling the method with key "one" for a parameters like
+     * {@code https://example.com/?one=1&two=2&one=3} will result in the
+     * corresponding list: {@code [1, 3]}
+     *
+     * @param key
+     *            the key of query parameters to fetch
+     * @return query parameters or an empty list if there are no parameters with
+     *         the given key
+     */
+    public List<String> getParameters(String key) {
+        return parameters.getOrDefault(key, Collections.emptyList());
     }
 
-    @Test
-    public void simpleParameters() {
-        QueryParameters simpleParams = QueryParameters
-                .simple(getSimpleInputParameters());
-
-        Map<String, List<String>> expectedFullParams = new HashMap<>();
-        expectedFullParams.put("one", Collections.singletonList("1"));
-        expectedFullParams.put("two", Collections.singletonList("2"));
-        expectedFullParams.put("three", Collections.singletonList("3"));
-        assertEquals(expectedFullParams, simpleParams.getParameters());
+    /**
+     * Returns the first query parameter values mapped with the given key.
+     * <p>
+     * Example: Calling with key value "one" with
+     * {@code https://example.com/?one=1&two=2&one=3} will return {@code 1}
+     *
+     * @param key
+     *            the key of query parameters to fetch
+     * @return query parameter value or empty if there are no parameters with
+     *         the given key
+     */
+    public Optional<String> getSingleParameter(String key) {
+        return parameters.getOrDefault(key, Collections.emptyList()).stream()
+                .findFirst();
     }
 
-    @Test
-    public void simpleParametersFromQueryString() {
-        QueryParameters simpleParams = QueryParameters
-                .fromString(simpleInputQueryString);
-
-        Map<String, List<String>> expectedFullParams = new HashMap<>();
-        expectedFullParams.put("one", Collections.singletonList("1"));
-        expectedFullParams.put("two", Collections.singletonList("2"));
-        expectedFullParams.put("three", Collections.singletonList("3"));
-        expectedFullParams.put("four", Collections.singletonList(""));
-        expectedFullParams.put("five", Collections.singletonList("4/5&6+7"));
-        expectedFullParams.put("six",
-                Collections.singletonList("one + one = two"));
-        assertEquals(expectedFullParams, simpleParams.getParameters());
+    /**
+     * Returns a UTF-8 encoded query string containing all parameter names and
+     * values suitable for appending to a URL after the {@code ?} character.
+     * Parameters may appear in different order than in the query string they
+     * were originally parsed from, and may be differently encoded (for example,
+     * if a space was encoded as {@code +} in the initial URL it will be encoded
+     * as {@code %20} in the result.
+     *
+     * @return query string suitable for appending to a URL
+     * @see URLEncoder#encode(String, String)
+     */
+    public String getQueryString() {
+        return parameters.entrySet().stream()
+                .flatMap(this::getParameterAndValues)
+                .collect(Collectors.joining(PARAMETERS_SEPARATOR));
     }
 
-    @Test
-    public void simpleParametersToQueryString() {
-        QueryParameters simpleParams = QueryParameters
-                .simple(getSimpleInputParameters());
-
-        String queryString = simpleParams.getQueryString();
-        assertTrue(queryString.contains("one=1"));
-        assertTrue(queryString.contains("two=2"));
-        assertTrue(queryString.contains("three=3"));
-        assertTrue(queryString.contains("&"));
-        assertNumberOfOccurences(queryString, 2, "&");
+    /**
+     * Return new QueryParameters excluding given parameters by names.
+     * 
+     * @param keys
+     *            Names of the parameters to be excluded
+     * @return QueryParameters
+     */
+    public QueryParameters excluding(String... keys) {
+        Set<String> excludedKeys = Set.of(keys);
+        Map<String, List<String>> newParameters = new HashMap<>(
+                parameters.entrySet().stream()
+                        .filter(entry -> !excludedKeys.contains(entry.getKey()))
+                        .collect(Collectors.toMap(Map.Entry::getKey,
+                                entry -> new ArrayList<>(entry.getValue()))));
+        return new QueryParameters(newParameters);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void underlyingMapUnmodifiable_simple() {
-        QueryParameters params = QueryParameters
-                .simple(getSimpleInputParameters());
-        params.getParameters().put("one", Collections.emptyList());
+    /**
+     * Return new QueryParameters including given parameters.
+     * 
+     * @param key
+     *            Parameter name as String
+     * @param values
+     *            Values for the parameter as Strings
+     * @return QueryParameters.
+     */
+    public QueryParameters including(String key, String... values) {
+        Map<String, List<String>> newParameters = new HashMap<>(parameters);
+        List<String> newValues = List.of(values);
+        newParameters.put(key, newValues);
+        return new QueryParameters(newParameters);
     }
 
-    @Test
-    public void underlyingListsUnmodifiable_simple() {
-        checkListsForImmutability(QueryParameters
-                .simple(getSimpleInputParameters()).getParameters().values());
+    /**
+     * Return new QueryParameters including given parameters.
+     * 
+     * @param parameters
+     *            Map of new parameters to be included
+     * @return QueryParameters
+     */
+    public QueryParameters includingAll(Map<String, List<String>> parameters) {
+        Map<String, List<String>> newParameters = new HashMap<>(
+                this.parameters);
+        newParameters.putAll(parameters);
+        return new QueryParameters(newParameters);
     }
 
-    @Test
-    public void complexParameters() {
-        QueryParameters fullParams = QueryParameters
-                .full(getFullInputParameters());
-
-        Map<String, List<String>> expectedFullParams = new HashMap<>();
-        expectedFullParams.put("one", Arrays.asList("1", "11"));
-        expectedFullParams.put("two", Arrays.asList("2", "22"));
-        expectedFullParams.put("three", Collections.singletonList("3"));
-        assertEquals(expectedFullParams, fullParams.getParameters());
+    private Stream<String> getParameterAndValues(
+            Entry<String, List<String>> entry) {
+        String param = entry.getKey();
+        List<String> values = entry.getValue();
+        if (values.size() == 1 && "".equals(values.get(0))) {
+            return Stream.of(UrlUtil.encodeURIComponent(entry.getKey()));
+        }
+        return values.stream()
+                .map(value -> "".equals(value)
+                        ? UrlUtil.encodeURIComponent(param)
+                        : UrlUtil.encodeURIComponent(param)
+                                + PARAMETER_VALUES_SEPARATOR
+                                + UrlUtil.encodeURIComponent(value));
     }
 
-    @Test
-    public void complexParametersFromQueryString() {
-        QueryParameters fullParams = QueryParameters
-                .fromString(complexInputQueryString);
-
-        Map<String, List<String>> expectedFullParams = new HashMap<>();
-        expectedFullParams.put("one", Arrays.asList("1", "11"));
-        expectedFullParams.put("two", Arrays.asList("2", "22"));
-        expectedFullParams.put("three", Collections.singletonList("3"));
-        expectedFullParams.put("four", Collections.singletonList(""));
-        expectedFullParams.put("five", Collections.singletonList("4/5&6+7"));
-        expectedFullParams.put("six",
-                Collections.singletonList("one + one = two"));
-        assertEquals(expectedFullParams, fullParams.getParameters());
+    private static String decode(String parameter) {
+        try {
+            return URLDecoder.decode(parameter, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(
+                    "Unable to decode parameter: " + parameter, e);
+        }
     }
 
-    @Test
-    public void complexParametersToQueryString() {
-        QueryParameters fullParams = QueryParameters
-                .full(getFullInputParameters());
-
-        String queryString = fullParams.getQueryString();
-        assertTrue(queryString.contains("one=1"));
-        assertTrue(queryString.contains("one=11"));
-        assertTrue(queryString.contains("two=2"));
-        assertTrue(queryString.contains("two=22"));
-        assertTrue(queryString.contains("three=3"));
-        assertNumberOfOccurences(queryString, 4, "&");
+    @Override
+    public String toString() {
+        return "QueryParameters(" + getQueryString() + ")";
     }
 
-    private void assertNumberOfOccurences(String stringToCheck,
-            int expectedNumber, String element) {
-        assertEquals(1, element.length());
-        int actualNumbetOfOccurences = stringToCheck.length()
-                - stringToCheck.replace(element, "").length();
-        assertEquals(expectedNumber, actualNumbetOfOccurences);
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+
+        if (obj instanceof QueryParameters) {
+            QueryParameters o = (QueryParameters) obj;
+            return parameters.equals(o.parameters);
+        } else {
+            return false;
+        }
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void underlyingMapUnmodifiable_full() {
-        QueryParameters.full(getFullInputParameters()).getParameters()
-                .put("one", Collections.emptyList());
-    }
-
-    @Test
-    public void underlyingListsUnmodifiable_full() {
-        checkListsForImmutability(QueryParameters.full(getFullInputParameters())
-                .getParameters().values());
-    }
-
-    @Test
-    public void parameterWithoutValue() {
-        QueryParameters params = new QueryParameters(
-                Collections.singletonMap("foo", Collections.singletonList("")));
-        Assert.assertEquals("foo", params.getQueryString());
-
-        params = new QueryParameters(
-                Collections.singletonMap("foo", Arrays.asList("", "bar")));
-        Assert.assertEquals("foo&foo=bar", params.getQueryString());
-
-        params = new QueryParameters(
-                Collections.singletonMap("foo", Arrays.asList("bar", "")));
-        Assert.assertEquals("foo=bar&foo", params.getQueryString());
-    }
-
-    @Test
-    public void parameterWithEmptyValue() {
-        QueryParameters fullParams = new QueryParameters(
-                Collections.singletonMap("foo", Collections.singletonList("")));
-        Assert.assertEquals("foo", fullParams.getQueryString());
-    }
-
-    @Test
-    public void shortHands() {
-        QueryParameters qp1 = QueryParameters.of("foo", "bar");
-        Optional<String> singleParameter = qp1.getSingleParameter("foo");
-        Assert.assertEquals("bar", singleParameter.get());
-        Assert.assertTrue(qp1.getSingleParameter("bar").isEmpty());
-
-        List<String> parameters = qp1.getParameters("foo");
-        Assert.assertEquals("bar", parameters.get(0));
-        Assert.assertEquals(1, parameters.size());
-        Assert.assertTrue(qp1.getParameters("bar").isEmpty());
-    }
-
-    @Test
-    public void excluding() {
-        Map<String, List<String>> paramMap = new HashMap<>();
-        paramMap.put("one", Collections.singletonList("1"));
-        paramMap.put("two", Collections.singletonList("2"));
-        paramMap.put("three", Collections.singletonList("3"));
-
-        QueryParameters params = new QueryParameters(paramMap);
-        QueryParameters newParams = params.excluding("two");
-
-        Assert.assertEquals(2, newParams.getParameters().size());
-        Assert.assertEquals(Collections.singletonList("1"),
-                newParams.getParameters("one"));
-        Assert.assertEquals(Collections.emptyList(),
-                newParams.getParameters("two"));
-        Assert.assertEquals(Collections.singletonList("3"),
-                newParams.getParameters("three"));
-    }
-
-    @Test
-    public void including() {
-        Map<String, List<String>> paramMap = new HashMap<>();
-        paramMap.put("one", Collections.singletonList("1"));
-        paramMap.put("two", Collections.singletonList("2"));
-
-        QueryParameters params = new QueryParameters(paramMap);
-        QueryParameters newParams = params.including("three", "3");
-
-        Assert.assertEquals(3, newParams.getParameters().size());
-        Assert.assertEquals(Collections.singletonList("1"),
-                newParams.getParameters("one"));
-        Assert.assertEquals(Collections.singletonList("2"),
-                newParams.getParameters("two"));
-        Assert.assertEquals(Collections.singletonList("3"),
-                newParams.getParameters("three"));
-    }
-
-    @Test
-    public void includingMultiValue() {
-        Map<String, List<String>> paramMap = new HashMap<>();
-        paramMap.put("one", Collections.singletonList("1"));
-        paramMap.put("two", Collections.singletonList("2"));
-
-        QueryParameters params = new QueryParameters(paramMap);
-        QueryParameters newParams = params.including("three", "3", "3");
-
-        Assert.assertEquals(3, newParams.getParameters().size());
-        Assert.assertEquals(Collections.singletonList("1"),
-                newParams.getParameters("one"));
-        Assert.assertEquals(Collections.singletonList("2"),
-                newParams.getParameters("two"));
-        Assert.assertEquals(Arrays.asList("3", "3"),
-                newParams.getParameters("three"));
-    }
-
-    @Test
-    public void includingAll() {
-        Map<String, List<String>> paramMap = new HashMap<>();
-        paramMap.put("one", Collections.singletonList("1"));
-        paramMap.put("two", Collections.singletonList("2"));
-
-        QueryParameters params = new QueryParameters(paramMap);
-        QueryParameters newParams = params
-                .includingAll(Map.of("three", Collections.singletonList("3")));
-
-        Assert.assertEquals(3, newParams.getParameters().size());
-        Assert.assertEquals(Collections.singletonList("1"),
-                newParams.getParameters("one"));
-        Assert.assertEquals(Collections.singletonList("3"),
-                newParams.getParameters("three"));
-        Assert.assertEquals(Collections.singletonList("2"),
-                newParams.getParameters("two"));
-    }
-
-    @Test
-    public void toStringValidation() {
-        String toString = QueryParameters.of("foo", "bar").toString();
-        Assert.assertEquals("QueryParameters(foo=bar)", toString);
-    }
-
-    @Test
-    public void equalsAndHashCode() {
-        QueryParameters qp1 = QueryParameters.of("foo", "bar");
-        QueryParameters qp2 = QueryParameters.fromString("foo=bar");
-        QueryParameters qp3 = QueryParameters.fromString("bar=foo");
-        Assert.assertEquals(qp1, qp2);
-        Assert.assertNotEquals(qp3, qp2);
-        Assert.assertEquals(qp1.hashCode(), qp2.hashCode());
+    @Override
+    public int hashCode() {
+        return parameters.hashCode();
     }
 
 }
