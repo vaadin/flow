@@ -263,17 +263,17 @@ public class QueryParameters implements Serializable {
     /**
      * Return new QueryParameters including only the given parameters.
      *
-     * @param includedKeys
+     * @param keys
      *            Names of the parameters to be included
      * @return QueryParameters.
      */
-    public QueryParameters including(String... includedKeys) {
-        if (includedKeys == null || includedKeys.length == 0) {
+    public QueryParameters including(String... keys) {
+        if (keys == null || keys.length == 0) {
             return QueryParameters.empty();
         }
-        Set<String> excludedKeys = Set.of(includedKeys);
+        Set<String> includedKeys = Set.of(keys);
         Map<String, List<String>> newParameters = parameters.entrySet().stream()
-                .filter(entry -> excludedKeys.contains(entry.getKey()))
+                .filter(entry -> includedKeys.contains(entry.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         entry -> entry.getValue()));
         return new QueryParameters(newParameters);
