@@ -76,7 +76,10 @@ public class LongPollingCacheFilter
             String uuid = r.uuid();
             int lastSeenOnClient = session.getAttribute(SEEN_SERVER_SYNC_ID,
                     Integer.class);
-            if (pushMessage.alreadySeen(lastSeenOnClient)) {
+            if (lastSeenOnClient == -1) {
+                return new BroadcastAction(BroadcastAction.ACTION.CONTINUE,
+                        message);
+            } else if (pushMessage.alreadySeen(lastSeenOnClient)) {
                 getLogger().trace(
                         "Discarding message {} for resource {} as client already seen {}. {}",
                         pushMessage.serverSyncId, uuid, lastSeenOnClient,
