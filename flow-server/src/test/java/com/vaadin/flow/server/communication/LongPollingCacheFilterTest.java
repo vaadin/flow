@@ -82,6 +82,19 @@ public class LongPollingCacheFilterTest {
     }
 
     @Test
+    public void filter_syncIdCheckDisabled_continueWithCurrentMessage() {
+        setTransport(AtmosphereResource.TRANSPORT.LONG_POLLING);
+        setSeenServerSyncIdHeader(-1);
+        BroadcastAction action = filter.filter("broadcasterId", resource,
+                originalMessage, message);
+        Assert.assertEquals(ACTION.CONTINUE, action.action());
+        Assert.assertSame(
+                "Message should not be altered by filter if syncId check is disabled",
+                message, action.message());
+        verifyMessageIsNotCached();
+    }
+
+    @Test
     public void filter_missingLastSeenServerSyncId_continueWithCurrentMessage() {
         setTransport(AtmosphereResource.TRANSPORT.LONG_POLLING);
         simulatePushConnection();
