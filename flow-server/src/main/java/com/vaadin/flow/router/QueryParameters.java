@@ -251,11 +251,10 @@ public class QueryParameters implements Serializable {
      */
     public QueryParameters excluding(String... keys) {
         Set<String> excludedKeys = Set.of(keys);
-        Map<String, List<String>> newParameters = new HashMap<>(
-                parameters.entrySet().stream()
-                        .filter(entry -> !excludedKeys.contains(entry.getKey()))
-                        .collect(Collectors.toMap(Map.Entry::getKey,
-                                entry -> new ArrayList<>(entry.getValue()))));
+        Map<String, List<String>> newParameters = parameters.entrySet().stream()
+                .filter(entry -> !excludedKeys.contains(entry.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        entry -> new ArrayList<>(entry.getValue())));
         return new QueryParameters(newParameters);
     }
 
