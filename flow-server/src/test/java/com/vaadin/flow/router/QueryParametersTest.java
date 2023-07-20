@@ -255,6 +255,19 @@ public class QueryParametersTest {
     }
 
     @Test
+    public void excludingNone() {
+        Map<String, List<String>> paramMap = new HashMap<>();
+        paramMap.put("one", Collections.singletonList("1"));
+        paramMap.put("two", Collections.singletonList("2"));
+        paramMap.put("three", Collections.singletonList("3"));
+
+        QueryParameters params = new QueryParameters(paramMap);
+        QueryParameters newParams = params.excluding();
+
+        Assert.assertEquals(params, newParams);
+    }
+
+    @Test
     public void including() {
         Map<String, List<String>> paramMap = new HashMap<>();
         paramMap.put("one", Collections.singletonList("1"));
