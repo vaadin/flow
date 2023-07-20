@@ -254,7 +254,7 @@ public class QueryParameters implements Serializable {
         Map<String, List<String>> newParameters = parameters.entrySet().stream()
                 .filter(entry -> !excludedKeys.contains(entry.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey,
-                        entry -> new ArrayList<>(entry.getValue())));
+                        entry -> entry.getValue()));
         return new QueryParameters(newParameters);
     }
 
