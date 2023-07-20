@@ -263,7 +263,7 @@ public class QueryParameters implements Serializable {
     }
 
     /**
-     * Return new QueryParameters including given parameters.
+     * Return new QueryParameters including only the given parameters.
      *
      * @param key
      *            Parameter name as String
@@ -276,6 +276,27 @@ public class QueryParameters implements Serializable {
                 || values.length == 0) {
             throw new IllegalArgumentException("Parameter missing");
         }
+        Map<String, List<String>> newParameters = new HashMap<>();
+        List<String> newValues = List.of(values);
+        newParameters.put(key, newValues);
+        return new QueryParameters(newParameters);
+    }
+
+    /**
+     * Return new QueryParameters including given parameters and the existing
+     * ones.
+     *
+     * @param key
+     *            Parameter name as String
+     * @param values
+     *            Values for the parameter as Strings
+     * @return QueryParameters.
+     */
+    public QueryParameters merging(String key, String... values) {
+        if (key == null || key.isEmpty() || values == null
+                || values.length == 0) {
+            throw new IllegalArgumentException("Parameter missing");
+        }
         Map<String, List<String>> newParameters = new HashMap<>(parameters);
         List<String> newValues = List.of(values);
         newParameters.put(key, newValues);
@@ -283,13 +304,14 @@ public class QueryParameters implements Serializable {
     }
 
     /**
-     * Return new QueryParameters including given parameters.
+     * Return new QueryParameters including given parameters and the existing
+     * ones.
      *
      * @param parameters
      *            Map of new parameters to be included
      * @return QueryParameters
      */
-    public QueryParameters includingAll(Map<String, List<String>> parameters) {
+    public QueryParameters mergingAll(Map<String, List<String>> parameters) {
         Objects.requireNonNull(parameters);
         Map<String, List<String>> newParameters = new HashMap<>(
                 this.parameters);
