@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -250,6 +251,9 @@ public class QueryParameters implements Serializable {
      * @return QueryParameters
      */
     public QueryParameters excluding(String... keys) {
+        if (keys == null || keys.length == 0) {
+            return this;
+        }
         Set<String> excludedKeys = Set.of(keys);
         Map<String, List<String>> newParameters = parameters.entrySet().stream()
                 .filter(entry -> !excludedKeys.contains(entry.getKey()))
@@ -268,6 +272,10 @@ public class QueryParameters implements Serializable {
      * @return QueryParameters.
      */
     public QueryParameters including(String key, String... values) {
+        if (key == null || key.isEmpty() || values == null
+                || values.length == 0) {
+            throw new IllegalArgumentException("Parameter missing");
+        }
         Map<String, List<String>> newParameters = new HashMap<>(parameters);
         List<String> newValues = List.of(values);
         newParameters.put(key, newValues);
@@ -282,6 +290,7 @@ public class QueryParameters implements Serializable {
      * @return QueryParameters
      */
     public QueryParameters includingAll(Map<String, List<String>> parameters) {
+        Objects.requireNonNull(parameters);
         Map<String, List<String>> newParameters = new HashMap<>(
                 this.parameters);
         newParameters.putAll(parameters);
