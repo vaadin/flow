@@ -91,40 +91,45 @@ public class ShortcutRegistration implements Registration, Serializable {
     private List<Registration> registrations = new ArrayList<>();
 
     // beforeClientResponse callback
-    private final SerializableConsumer<ExecutionContext> beforeClientResponseConsumer = executionContext -> {
-        if (listenOnComponents == null) {
-            initListenOnComponent();
-        }
-        addListenOnDetachListeners();
+    // needs to be an anonymous class to prevent deserialization issues
+    // see #17201
+    private final SerializableConsumer<ExecutionContext> beforeClientResponseConsumer = new SerializableConsumer<>() {
+        @Override
+        public void accept(ExecutionContext executionContext) {
 
-        boolean reinit = false;
-        /*
-         * In PreserveOnRefersh case the UI instance is not detached immediately
-         * (once detach happens the initialization is rerun in
-         * initListenOnComponent via removeAllListenerRegistrations), so we may
-         * not rely on detach event only: the check whether UI is already marked
-         * as closing is done here which should rerun the initialization
-         * immediately.
-         */
-        for (Component component : listenOnComponents) {
-            if (component.getUI().isPresent()
-                    && component.getUI().get().isClosing()) {
-                reinit = true;
-                break;
+            if (listenOnComponents == null) {
+                initListenOnComponent();
             }
-        }
-        if (reinit) {
-            removeAllListenerRegistrations();
-            initListenOnComponent();
             addListenOnDetachListeners();
+
+            boolean reinit = false;
+            /*
+             * In PreserveOnRefersh case the UI instance is not detached
+             * immediately (once detach happens the initialization is rerun in
+             * initListenOnComponent via removeAllListenerRegistrations), so we
+             * may not rely on detach event only: the check whether UI is
+             * already marked as closing is done here which should rerun the
+             * initialization immediately.
+             */
+            for (Component component : listenOnComponents) {
+                if (component.getUI().isPresent()
+                        && component.getUI().get().isClosing()) {
+                    reinit = true;
+                    break;
+                }
+            }
+            if (reinit) {
+                removeAllListenerRegistrations();
+                initListenOnComponent();
+                addListenOnDetachListeners();
+            }
+
+            for (int i = 0; i < listenOnComponents.length; i++) {
+                updateHandlerListenerRegistration(i);
+            }
+
+            markClean();
         }
-
-        for (int i = 0; i < listenOnComponents.length; i++) {
-            updateHandlerListenerRegistration(i);
-        }
-
-        markClean();
-
     };
 
     /**
@@ -646,10 +651,13 @@ public class ShortcutRegistration implements Registration, Serializable {
         // since we are attached, UI should be available
         Registration attachRegistration = owner
                 .addAttachListener(e -> queueBeforeExecutionCallback());
-
         // remove shortcut listener when detached
-        Registration detachRegistration = owner
-                .addDetachListener(e -> removeLifecycleOwnerRegistrations());
+        Registration detachRegistration = owner.addDetachListener(e -> {
+            removeLifecycleOwnerRegistrations();
+            if (executionRegistration != null) {
+                executionRegistration.remove();
+            }
+        });
 
         lifecycleRegistration = new CompoundRegistration(attachRegistration,
                 detachRegistration);
