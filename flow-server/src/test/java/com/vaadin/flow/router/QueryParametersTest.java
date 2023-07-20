@@ -267,17 +267,47 @@ public class QueryParametersTest {
         Assert.assertEquals(params, newParams);
     }
 
+    @Test
     public void including() {
         Map<String, List<String>> paramMap = new HashMap<>();
         paramMap.put("one", Collections.singletonList("1"));
         paramMap.put("two", Collections.singletonList("2"));
+        paramMap.put("three", Collections.singletonList("3"));
 
         QueryParameters params = new QueryParameters(paramMap);
-        QueryParameters newParams = params.including("three", "3");
+        QueryParameters newParams = params.including("three", "two");
 
-        Assert.assertEquals(1, newParams.getParameters().size());
+        Assert.assertEquals(2, newParams.getParameters().size());
         Assert.assertEquals(Collections.singletonList("3"),
                 newParams.getParameters("three"));
+        Assert.assertEquals(Collections.singletonList("2"),
+                newParams.getParameters("two"));
+    }
+
+    @Test
+    public void includingNone() {
+        Map<String, List<String>> paramMap = new HashMap<>();
+        paramMap.put("one", Collections.singletonList("1"));
+        paramMap.put("two", Collections.singletonList("2"));
+        paramMap.put("three", Collections.singletonList("3"));
+
+        QueryParameters params = new QueryParameters(paramMap);
+        QueryParameters newParams = params.including();
+
+        Assert.assertEquals(0, newParams.getParameters().size());
+    }
+
+    @Test
+    public void includingNonExisting() {
+        Map<String, List<String>> paramMap = new HashMap<>();
+        paramMap.put("one", Collections.singletonList("1"));
+        paramMap.put("two", Collections.singletonList("2"));
+        paramMap.put("three", Collections.singletonList("3"));
+
+        QueryParameters params = new QueryParameters(paramMap);
+        QueryParameters newParams = params.including("four");
+
+        Assert.assertEquals(0, newParams.getParameters().size());
     }
 
     @Test
@@ -287,10 +317,11 @@ public class QueryParametersTest {
         paramMap.put("two", Collections.singletonList("2"));
 
         QueryParameters params = new QueryParameters(paramMap);
-        QueryParameters newParams = params.merging("three", "3");
+        QueryParameters newParams = params.merging("three", "3").merging("one",
+                "one");
 
         Assert.assertEquals(3, newParams.getParameters().size());
-        Assert.assertEquals(Collections.singletonList("1"),
+        Assert.assertEquals(Collections.singletonList("one"),
                 newParams.getParameters("one"));
         Assert.assertEquals(Collections.singletonList("2"),
                 newParams.getParameters("two"));
@@ -324,10 +355,11 @@ public class QueryParametersTest {
 
         QueryParameters params = new QueryParameters(paramMap);
         QueryParameters newParams = params
-                .mergingAll(Map.of("three", Collections.singletonList("3")));
+                .mergingAll(Map.of("three", Collections.singletonList("3")))
+                .mergingAll(Map.of("one", Collections.singletonList("one")));
 
         Assert.assertEquals(3, newParams.getParameters().size());
-        Assert.assertEquals(Collections.singletonList("1"),
+        Assert.assertEquals(Collections.singletonList("one"),
                 newParams.getParameters("one"));
         Assert.assertEquals(Collections.singletonList("3"),
                 newParams.getParameters("three"));
