@@ -244,7 +244,7 @@ public class QueryParameters implements Serializable {
 
     /**
      * Return new QueryParameters excluding given parameters by names.
-     * 
+     *
      * @param keys
      *            Names of the parameters to be excluded
      * @return QueryParameters
@@ -261,7 +261,7 @@ public class QueryParameters implements Serializable {
 
     /**
      * Return new QueryParameters including given parameters.
-     * 
+     *
      * @param key
      *            Parameter name as String
      * @param values
@@ -277,7 +277,7 @@ public class QueryParameters implements Serializable {
 
     /**
      * Return new QueryParameters including given parameters.
-     * 
+     *
      * @param parameters
      *            Map of new parameters to be included
      * @return QueryParameters
