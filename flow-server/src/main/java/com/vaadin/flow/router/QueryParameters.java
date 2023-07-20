@@ -271,20 +271,19 @@ public class QueryParameters implements Serializable {
      *            Values for the parameter as Strings
      * @return QueryParameters.
      */
-    public QueryParameters including(String key, String... values) {
-        if (key == null || key.isEmpty() || values == null
-                || values.length == 0) {
-            throw new IllegalArgumentException("Parameter missing");
-        }
-        Map<String, List<String>> newParameters = new HashMap<>();
-        List<String> newValues = List.of(values);
-        newParameters.put(key, newValues);
+    public QueryParameters including(String... keys) {
+        Set<String> excludedKeys = Set.of(keys);
+        Map<String, List<String>> newParameters = parameters.entrySet().stream()
+                .filter(entry -> excludedKeys.contains(entry.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        entry -> entry.getValue()));
         return new QueryParameters(newParameters);
     }
 
     /**
-     * Return new QueryParameters including given parameters and the existing
-     * ones.
+     * Return new QueryParameters adding given parameter to the existing ones.
+     * If a parameter with the same name is already present, its values will be
+     * replaced with the provided ones.
      *
      * @param key
      *            Parameter name as String
@@ -305,7 +304,7 @@ public class QueryParameters implements Serializable {
 
     /**
      * Return new QueryParameters including given parameters and the existing
-     * ones.
+     * ones. Existing parameters will be replaced by the provided ones.
      *
      * @param parameters
      *            Map of new parameters to be included
