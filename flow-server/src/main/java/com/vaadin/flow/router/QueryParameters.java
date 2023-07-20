@@ -255,24 +255,23 @@ public class QueryParameters implements Serializable {
             return this;
         }
         Set<String> excludedKeys = Set.of(keys);
-        Map<String, List<String>> newParameters = parameters.entrySet().stream()
-                .filter(entry -> !excludedKeys.contains(entry.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey,
-                        entry -> entry.getValue()));
+        Map<String, List<String>> newParameters = new HashMap<>(parameters);
+        Stream.of(keys).forEach(key -> newParameters.remove(key));
         return new QueryParameters(newParameters);
     }
 
     /**
      * Return new QueryParameters including only the given parameters.
      *
-     * @param key
-     *            Parameter name as String
-     * @param values
-     *            Values for the parameter as Strings
+     * @param includedKeys
+     *            Names of the parameters to be included
      * @return QueryParameters.
      */
-    public QueryParameters including(String... keys) {
-        Set<String> excludedKeys = Set.of(keys);
+    public QueryParameters including(String... includedKeys) {
+        if (includedKeys == null || includedKeys.length == 0) {
+            return QueryParameters.empty();
+        }
+        Set<String> excludedKeys = Set.of(includedKeys);
         Map<String, List<String>> newParameters = parameters.entrySet().stream()
                 .filter(entry -> excludedKeys.contains(entry.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey,
