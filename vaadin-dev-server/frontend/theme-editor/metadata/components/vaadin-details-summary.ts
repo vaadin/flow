@@ -2,12 +2,12 @@ import { ComponentMetadata } from '../model';
 import { iconProperties, shapeProperties, textProperties } from "./defaults";
 
 export default {
-  tagName: 'vaadin-accordion-heading',
-  displayName: 'AccordionHeading',
+  tagName: 'vaadin-details-summary',
+  displayName: 'DetailsSummary',
   elements: [
     {
-      selector: 'vaadin-accordion-heading',
-      displayName: 'Heading',
+      selector: 'vaadin-details-summary',
+      displayName: 'Summary',
       properties: [
         textProperties.textColor,
         textProperties.fontSize,
@@ -16,7 +16,7 @@ export default {
       ]
     },
     {
-      selector: 'vaadin-accordion-heading::part(toggle)',
+      selector: 'vaadin-details-summary::part(toggle)',
       displayName: 'Toggle',
       properties: [iconProperties.iconColor, iconProperties.iconSize]
     }
