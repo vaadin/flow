@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +37,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ExecutionContext;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
@@ -47,6 +49,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -628,6 +631,39 @@ public class ShortcutRegistrationTest {
 
         // the new UI should now also have expression with KeyA
         Assert.assertTrue(hasKeyAInKeyDownExpression(newUI));
+    }
+
+    @Test
+    public void attachAndDetachComponent_sameRoundTrip_beforeClientResponseListenerRemoved() {
+        UI ui = Mockito.spy(UI.class);
+        Component owner = new FakeComponent();
+
+        List<StateTree.ExecutionRegistration> beforeClientRegistrations = new ArrayList<>();
+        doAnswer(i -> {
+            StateTree.ExecutionRegistration registration = new StateTree.ExecutionRegistration() {
+                @Override
+                public void remove() {
+                    beforeClientRegistrations.remove(this);
+                }
+            };
+
+            beforeClientRegistrations.add(registration);
+            return registration;
+        }).when(ui).beforeClientResponse(eq(owner), any());
+
+        ui.add(owner);
+        Component[] components = new Component[] { ui };
+        new ShortcutRegistration(owner, () -> components, event -> {
+        }, Key.KEY_A);
+        Assert.assertEquals(1, beforeClientRegistrations.size());
+
+        ui.remove(owner);
+        Assert.assertEquals(0, beforeClientRegistrations.size());
+
+        ui.add(owner);
+        Assert.assertEquals(1, beforeClientRegistrations.size());
+        ui.remove(owner);
+        Assert.assertEquals(0, beforeClientRegistrations.size());
     }
 
     @Test
