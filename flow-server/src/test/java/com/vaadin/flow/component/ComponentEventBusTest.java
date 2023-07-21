@@ -740,4 +740,17 @@ public class ComponentEventBusTest {
             util.verifyNoInteractions();
         }
     }
+
+    @Test
+    public void addListener_nullListener_failFast() {
+        final TestButton button = new TestButton();
+        try {
+            button.addListener(ServerEvent.class, null);
+            Assert.fail(
+                    "Expecting an exception to be thrown for null listener");
+        } catch (IllegalArgumentException ex) {
+            Assert.assertTrue(
+                    ex.getMessage().contains("component event listener"));
+        }
+    }
 }
