@@ -83,8 +83,8 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.boot.version>2.7.13</spring.boot.version>
-        <spring.security.version>5.7.9</spring.security.version>
+        <spring.boot.version>2.7.14</spring.boot.version>
+        <spring.security.version>5.7.10</spring.security.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>6.2.5.Final</hibernate.validator.version>
         <slf4j.version>1.7.36</slf4j.version>
