@@ -22,14 +22,17 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.internal.UrlUtil;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Holds query parameters information.
@@ -238,6 +241,80 @@ public class QueryParameters implements Serializable {
         return parameters.entrySet().stream()
                 .flatMap(this::getParameterAndValues)
                 .collect(Collectors.joining(PARAMETERS_SEPARATOR));
+    }
+
+    /**
+     * Return new QueryParameters excluding given parameters by names.
+     *
+     * @param keys
+     *            Names of the parameters to be excluded
+     * @return QueryParameters
+     */
+    public QueryParameters excluding(String... keys) {
+        if (keys == null || keys.length == 0) {
+            return this;
+        }
+        Set<String> excludedKeys = Set.of(keys);
+        Map<String, List<String>> newParameters = new HashMap<>(parameters);
+        Stream.of(keys).forEach(key -> newParameters.remove(key));
+        return new QueryParameters(newParameters);
+    }
+
+    /**
+     * Return new QueryParameters including only the given parameters.
+     *
+     * @param keys
+     *            Names of the parameters to be included
+     * @return QueryParameters.
+     */
+    public QueryParameters including(String... keys) {
+        if (keys == null || keys.length == 0) {
+            return QueryParameters.empty();
+        }
+        Set<String> includedKeys = Set.of(keys);
+        Map<String, List<String>> newParameters = parameters.entrySet().stream()
+                .filter(entry -> includedKeys.contains(entry.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        entry -> entry.getValue()));
+        return new QueryParameters(newParameters);
+    }
+
+    /**
+     * Return new QueryParameters adding given parameter to the existing ones.
+     * If a parameter with the same name is already present, its values will be
+     * replaced with the provided ones.
+     *
+     * @param key
+     *            Parameter name as String
+     * @param values
+     *            Values for the parameter as Strings
+     * @return QueryParameters.
+     */
+    public QueryParameters merging(String key, String... values) {
+        if (key == null || key.isEmpty() || values == null
+                || values.length == 0) {
+            throw new IllegalArgumentException("Parameter missing");
+        }
+        Map<String, List<String>> newParameters = new HashMap<>(parameters);
+        List<String> newValues = List.of(values);
+        newParameters.put(key, newValues);
+        return new QueryParameters(newParameters);
+    }
+
+    /**
+     * Return new QueryParameters including given parameters and the existing
+     * ones. Existing parameters will be replaced by the provided ones.
+     *
+     * @param parameters
+     *            Map of new parameters to be included
+     * @return QueryParameters
+     */
+    public QueryParameters mergingAll(Map<String, List<String>> parameters) {
+        Objects.requireNonNull(parameters);
+        Map<String, List<String>> newParameters = new HashMap<>(
+                this.parameters);
+        newParameters.putAll(parameters);
+        return new QueryParameters(newParameters);
     }
 
     private Stream<String> getParameterAndValues(
