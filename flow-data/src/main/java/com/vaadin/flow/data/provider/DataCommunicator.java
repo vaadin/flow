@@ -1112,13 +1112,16 @@ public class DataCommunicator<T> implements Serializable {
         }
         flushRequest = FlushRequest.register(stateNode, context -> {
             flushInProgress = true;
-            if (!context.isClientSideInitialized()) {
-                reset();
-                arrayUpdater.initialize();
+            try {
+                if (!context.isClientSideInitialized()) {
+                    reset();
+                    arrayUpdater.initialize();
+                }
+                flush();
+                flushRequest = null;
+            } finally {
+                flushInProgress = false;
             }
-            flush();
-            flushRequest = null;
-            flushInProgress = false;
         });
     }
 
@@ -1142,9 +1145,12 @@ public class DataCommunicator<T> implements Serializable {
         }
         flushUpdatedDataRequest = FlushRequest.register(stateNode, context -> {
             flushUpdatedDataInProgress = true;
-            flushUpdatedData();
-            flushUpdatedDataRequest = null;
-            flushUpdatedDataInProgress = false;
+            try {
+                flushUpdatedData();
+                flushUpdatedDataRequest = null;
+            } finally {
+                flushUpdatedDataInProgress = false;
+            }
         });
     }
 
