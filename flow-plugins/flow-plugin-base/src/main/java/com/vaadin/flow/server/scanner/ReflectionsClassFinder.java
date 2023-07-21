@@ -30,6 +30,7 @@ import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -40,6 +41,8 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  * @since 2.0
  */
 public class ReflectionsClassFinder implements ClassFinder {
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(ReflectionsClassFinder.class);
     private final transient ClassLoader classLoader;
 
     private final transient Reflections reflections;
@@ -148,17 +151,13 @@ public class ReflectionsClassFinder implements ClassFinder {
                         try {
                             return Class.forName(type, false, classLoader);
                         } catch (Throwable ignored) {
-                            LoggerFactory
-                                    .getLogger(ReflectionsClassFinder.class)
-                                    .debug("Can't find class {}", type,
-                                            ignored);
+                            LOGGER.debug("Can't find class {}", type, ignored);
                         }
                     }
                     try {
                         return classLoader.loadClass(type);
                     } catch (Throwable ignored) {
-                        LoggerFactory.getLogger(ReflectionsClassFinder.class)
-                                .debug("Can't load class {}", type, ignored);
+                        LOGGER.debug("Can't load class {}", type, ignored);
                     }
                 }
                 return null;
