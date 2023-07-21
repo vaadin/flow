@@ -118,7 +118,8 @@ public class DevModeUsageStatistics {
                 globalData.setValue(StatisticsConstants.FIELD_MACHINE_ID,
                         MachineId.get());
             } catch (Throwable ex) {
-                globalData.setValue(StatisticsConstants.FIELD_MACHINE_ID, "");
+                globalData.setValue(StatisticsConstants.FIELD_MACHINE_ID,
+                        "ERROR");
                 getLogger().debug("Cannot get Machine ID", ex);
             }
 
