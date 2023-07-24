@@ -1118,8 +1118,8 @@ public class DataCommunicator<T> implements Serializable {
                     arrayUpdater.initialize();
                 }
                 flush();
-                flushRequest = null;
             } finally {
+                flushRequest = null;
                 flushInProgress = false;
             }
         });
@@ -1147,8 +1147,8 @@ public class DataCommunicator<T> implements Serializable {
             flushUpdatedDataInProgress = true;
             try {
                 flushUpdatedData();
-                flushUpdatedDataRequest = null;
             } finally {
+                flushUpdatedDataRequest = null;
                 flushUpdatedDataInProgress = false;
             }
         });
