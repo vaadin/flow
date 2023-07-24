@@ -11,7 +11,6 @@ export default {
       properties: [
         textProperties.textColor,
         textProperties.fontSize,
-        textProperties.fontWeight,
         shapeProperties.padding
       ]
     },
