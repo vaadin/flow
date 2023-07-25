@@ -41,7 +41,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.web.DefaultSecurityFilterChain;
@@ -69,6 +68,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
 
@@ -111,14 +111,14 @@ public abstract class VaadinWebSecurity {
     @Autowired
     private ApplicationContext applicationContext;
 
-    @Autowired
-    private ViewAccessChecker viewAccessChecker;
-
     @Autowired(required = false)
     private VaadinRolePrefixHolder vaadinRolePrefixHolder;
 
     @Value("#{servletContext.contextPath}")
     private String servletContextPath;
+
+    @Autowired
+    private NavigationAccessControl accessControl;
 
     private final AuthenticationContext authenticationContext = new AuthenticationContext();
 
@@ -143,12 +143,8 @@ public abstract class VaadinWebSecurity {
         Optional.ofNullable(vaadinRolePrefixHolder)
                 .ifPresent(vaadinRolePrefixHolder -> vaadinRolePrefixHolder
                         .resetRolePrefix(securityFilterChain));
-
-        LogoutConfigurer<?> logoutConfigurer = http
-                .getConfigurer(LogoutConfigurer.class);
-        authenticationContext.setLogoutHandlers(
-                logoutConfigurer.getLogoutSuccessHandler(),
-                logoutConfigurer.getLogoutHandlers());
+        AuthenticationContext.applySecurityConfiguration(http,
+                authenticationContext);
         return securityFilterChain;
     }
 
@@ -217,8 +213,7 @@ public abstract class VaadinWebSecurity {
             urlRegistry.anyRequest().authenticated();
         });
 
-        // Enable view access control
-        viewAccessChecker.enable();
+        accessControl.setEnabled(true);
     }
 
     /**
@@ -315,6 +310,32 @@ public abstract class VaadinWebSecurity {
     }
 
     /**
+     * Utility to create {@link RequestMatcher}s from ant patterns.
+     *
+     * @param patterns
+     *            ant patterns
+     * @return an array or {@link RequestMatcher} instances for the given
+     *         patterns.
+     */
+    public RequestMatcher[] antMatchers(String... patterns) {
+        return RequestUtil.antMatchers(patterns);
+    }
+
+    /**
+     * Utility to create {@link RequestMatcher}s for a Vaadin routes, using ant
+     * patterns and HTTP get method.
+     *
+     * @param patterns
+     *            ant patterns
+     * @return an array or {@link RequestMatcher} instances for the given
+     *         patterns.
+     */
+    public RequestMatcher[] routeMatchers(String... patterns) {
+        return RequestUtil.routeMatchers(Stream.of(patterns)
+                .map(this::applyUrlMapping).toArray(String[]::new));
+    }
+
+    /**
      * Sets up login for the application using form login with the given path
      * for the login view.
      * <p>
@@ -373,7 +394,7 @@ public abstract class VaadinWebSecurity {
                 new LoginUrlAuthenticationEntryPoint(
                         completeHillaLoginViewPath),
                 AnyRequestMatcher.INSTANCE));
-        viewAccessChecker.setLoginView(hillaLoginViewPath);
+        accessControl.setLoginView(hillaLoginViewPath);
     }
 
     /**
@@ -444,7 +465,7 @@ public abstract class VaadinWebSecurity {
         http.exceptionHandling(cfg -> cfg.defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint(completeLoginPath),
                 AnyRequestMatcher.INSTANCE));
-        viewAccessChecker.setLoginView(flowLoginView);
+        accessControl.setLoginView(flowLoginView);
     }
 
     /**
@@ -465,7 +486,7 @@ public abstract class VaadinWebSecurity {
         http.oauth2Login(cfg -> cfg.loginPage(oauth2LoginPage).successHandler(
                 getVaadinSavedRequestAwareAuthenticationSuccessHandler(http))
                 .permitAll());
-        viewAccessChecker.setLoginView(servletContextPath + oauth2LoginPage);
+        accessControl.setLoginView(servletContextPath + oauth2LoginPage);
     }
 
     /**
@@ -549,9 +570,32 @@ public abstract class VaadinWebSecurity {
      *
      * @return {@link ViewAccessChecker} bean used by this VaadinWebSecurity
      *         configuration.
+     * @deprecated ViewAccessChecker is not used anymore by VaadinWebSecurity,
+     *             and has been replaced by {@link NavigationAccessControl}.
+     *             Calling this method will throw an exception.
      */
+    @Deprecated(forRemoval = true, since = "24.3")
     protected ViewAccessChecker getViewAccessChecker() {
-        return viewAccessChecker;
+        throw new UnsupportedOperationException(
+                "ViewAccessChecker is not used anymore by VaadinWebSecurity "
+                        + "and has been replaced by NavigationAccessControl");
+    }
+
+    /**
+     * Vaadin navigation access control bean.
+     * <p>
+     * This getter can be used in implementing class to override logic of
+     * <code>VaadinWebSecurity.setLoginView</code> methods and call
+     * {@link NavigationAccessControl} methods explicitly.
+     * <p>
+     * Note that this bean is a field-autowired, thus this getter returns
+     * <code>null</code> when called from the constructor of implementing class.
+     *
+     * @return {@link NavigationAccessControl} bean used by this
+     *         VaadinWebSecurity configuration.
+     */
+    protected NavigationAccessControl getNavigationAccessControl() {
+        return accessControl;
     }
 
     /**

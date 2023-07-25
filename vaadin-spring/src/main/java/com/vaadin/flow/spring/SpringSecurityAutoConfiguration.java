@@ -15,22 +15,32 @@
  */
 package com.vaadin.flow.spring;
 
+import java.util.List;
 import java.util.Optional;
-
-import com.vaadin.flow.server.auth.AccessAnnotationChecker;
-import com.vaadin.flow.server.auth.ViewAccessChecker;
-import com.vaadin.flow.spring.security.RequestUtil;
-import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
-import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
-import com.vaadin.flow.spring.security.ViewAccessCheckerInitializer;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
+import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
+
+import com.vaadin.flow.server.auth.AccessAnnotationChecker;
+import com.vaadin.flow.server.auth.AccessPathChecker;
+import com.vaadin.flow.server.auth.AnnotatedViewAccessChecker;
+import com.vaadin.flow.server.auth.NavigationAccessChecker;
+import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.server.auth.RoutePathAccessChecker;
+import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
+import com.vaadin.flow.spring.security.NavigationAccessControlInitializer;
+import com.vaadin.flow.spring.security.RequestUtil;
+import com.vaadin.flow.spring.security.SpringAccessPathChecker;
+import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
+import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
+import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
 
 /**
  * Spring boot auto-configuration class for Flow.
@@ -54,26 +64,96 @@ public class SpringSecurityAutoConfiguration {
     }
 
     /**
-     * Makes the default view access check initializer available for security
-     * configuration.
+     * Makes the default navigation access control initializer available for
+     * security configuration.
      *
-     * @return the default access check initializer
+     * @return the default navigation access control initializer
      */
     @Bean
-    public ViewAccessCheckerInitializer viewAccessCheckerInitializer() {
-        return new ViewAccessCheckerInitializer();
+    public NavigationAccessControlInitializer navigationAccessControlInitializer(
+            NavigationAccessControl accessControl) {
+        return new NavigationAccessControlInitializer(accessControl);
     }
 
     /**
-     * Makes the default view access checker available for security
+     * Makes the default navigation access control available for security
      * configuration.
      *
+     * @return the default navigation access control.
+     */
+    @Bean
+    public NavigationAccessControl navigationAccessControl(
+            List<NavigationAccessChecker> accessCheckerList,
+            NavigationAccessControlConfigurer configurer) {
+        return configurer.build(SpringNavigationAccessControl::new,
+                accessCheckerList);
+    }
+
+    /**
+     * Makes the default configurer for navigation access control available.
+     * <p>
+     * The default configurer only enables annotated view access checker. It is
+     * disabled by default for backward compatibility, and it will be enabled by
+     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity}.
+     * <p>
+     * A custom bean can be provided to override default configuration or to
+     * configure navigation access control instance when used without
+     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity},
+     *
+     * @return the default configurer for navigation access control.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    NavigationAccessControlConfigurer navigationAccessControlConfigurerCustomizer() {
+        return new NavigationAccessControlConfigurer()
+                .withAnnotatedViewAccessChecker().disabled();
+    }
+
+    /**
+     * Makes the default annotation based view access checker available for
+     * security configuration.
+     *
+     * @param accessAnnotationChecker
+     *            the {@link AccessAnnotationChecker} bean to use
      * @return the default view access checker
      */
     @Bean
-    public ViewAccessChecker viewAccessChecker(
-            AccessAnnotationChecker accessAnnotationChecker) {
-        return new SpringViewAccessChecker(accessAnnotationChecker);
+    public AnnotatedViewAccessChecker annotatedViewAccessChecker(
+            @Lazy AccessAnnotationChecker accessAnnotationChecker) {
+        return new AnnotatedViewAccessChecker(accessAnnotationChecker);
+    }
+
+    /**
+     * Makes the default route path access checker available for security
+     * configuration.
+     *
+     * @param accessPathChecker
+     *            the {@link AccessPathChecker} bean to use
+     * @return the default route path access checker
+     */
+    @Bean
+    public RoutePathAccessChecker routePathAccessChecker(
+            @Lazy AccessPathChecker accessPathChecker) {
+        return new RoutePathAccessChecker(accessPathChecker);
+    }
+
+    /**
+     * Makes the default route path access checker available for security
+     * configuration.
+     *
+     * @param vaadinProperties
+     *            vaadin configuration properties
+     * @param evaluator
+     *            URI privileges evaluator
+     * @return the default route path access checker
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public AccessPathChecker accessPatchChecker(
+            VaadinConfigurationProperties vaadinProperties,
+            @Lazy WebInvocationPrivilegeEvaluator evaluator) {
+        return new SpringAccessPathChecker(vaadinProperties.getUrlMapping(),
+                evaluator);
     }
 
     /**

@@ -1,7 +1,24 @@
+/*
+ * Copyright 2000-2023 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.vaadin.flow.server.auth;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+
 import java.lang.reflect.Field;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -14,7 +31,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.Page;
@@ -31,7 +47,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAccessDeniedError;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.MockVaadinContext;
@@ -56,9 +71,12 @@ import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedAdminVie
 import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedUserView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.TestLoginView;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
+
+@Deprecated(forRemoval = true)
 public class ViewAccessCheckerTest {
 
-    private enum User {
+    enum User {
         USER_NO_ROLES, NORMAL_USER, ADMIN
     }
 
@@ -72,151 +90,166 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void anonymousAccessToAnonymousViewAllowed() {
-        Result result = checkAccess(AnonymousAllowedView.class, null);
+        TestNavigationResult result = checkAccess(AnonymousAllowedView.class,
+                null);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
     @Test
     public void anonymousAccessToNoAnnotationViewDenied() {
-        Result result = checkAccess(NoAnnotationView.class, null);
+        TestNavigationResult result = checkAccess(NoAnnotationView.class, null);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void anonymousAccessToPermitAllViewDenied() {
-        Result result = checkAccess(PermitAllView.class, null);
+        TestNavigationResult result = checkAccess(PermitAllView.class, null);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void anonymousAccessToDenyAllViewDenied() {
-        Result result = checkAccess(DenyAllView.class, null);
+        TestNavigationResult result = checkAccess(DenyAllView.class, null);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void anonymousAccessToRolesAllowedUserViewDenied() {
-        Result result = checkAccess(RolesAllowedUserView.class, null);
+        TestNavigationResult result = checkAccess(RolesAllowedUserView.class,
+                null);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void anonymousAccessToRolesAllowedAdminViewDenied() {
-        Result result = checkAccess(RolesAllowedAdminView.class, null);
+        TestNavigationResult result = checkAccess(RolesAllowedAdminView.class,
+                null);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInNoRolesAccessToAnonymousViewAllowed() {
-        Result result = checkAccess(AnonymousAllowedView.class,
+        TestNavigationResult result = checkAccess(AnonymousAllowedView.class,
                 User.USER_NO_ROLES);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInNoRolesAccessToNoAnnotationViewDenied() {
-        Result result = checkAccess(NoAnnotationView.class, User.USER_NO_ROLES);
+        TestNavigationResult result = checkAccess(NoAnnotationView.class,
+                User.USER_NO_ROLES);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInNoRolesAccessToPermitAllViewAllowed() {
-        Result result = checkAccess(PermitAllView.class, User.USER_NO_ROLES);
+        TestNavigationResult result = checkAccess(PermitAllView.class,
+                User.USER_NO_ROLES);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInNoRolesAccessToDenyAllViewDenied() {
-        Result result = checkAccess(DenyAllView.class, User.USER_NO_ROLES);
+        TestNavigationResult result = checkAccess(DenyAllView.class,
+                User.USER_NO_ROLES);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInNoRolesAccessToRolesAllowedUserViewDenied() {
-        Result result = checkAccess(RolesAllowedUserView.class,
+        TestNavigationResult result = checkAccess(RolesAllowedUserView.class,
                 User.USER_NO_ROLES);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInNoRolesAccessToRolesAllowedAdminViewDenied() {
-        Result result = checkAccess(RolesAllowedAdminView.class,
+        TestNavigationResult result = checkAccess(RolesAllowedAdminView.class,
                 User.USER_NO_ROLES);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInUserRoleAccessToAnonymousViewAllowed() {
-        Result result = checkAccess(AnonymousAllowedView.class,
+        TestNavigationResult result = checkAccess(AnonymousAllowedView.class,
                 User.NORMAL_USER);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInUserRoleAccessToNoAnnotationViewDenied() {
-        Result result = checkAccess(NoAnnotationView.class, User.NORMAL_USER);
+        TestNavigationResult result = checkAccess(NoAnnotationView.class,
+                User.NORMAL_USER);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInUserRoleAccessToPermitAllViewAllowed() {
-        Result result = checkAccess(PermitAllView.class, User.NORMAL_USER);
+        TestNavigationResult result = checkAccess(PermitAllView.class,
+                User.NORMAL_USER);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInUserRoleAccessToDenyAllViewDenied() {
-        Result result = checkAccess(DenyAllView.class, User.NORMAL_USER);
+        TestNavigationResult result = checkAccess(DenyAllView.class,
+                User.NORMAL_USER);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInUserRoleAccessToRolesAllowedUserViewAllowed() {
-        Result result = checkAccess(RolesAllowedUserView.class,
+        TestNavigationResult result = checkAccess(RolesAllowedUserView.class,
                 User.NORMAL_USER);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInUserRoleAccessToRolesAllowedAdminViewDenied() {
-        Result result = checkAccess(RolesAllowedAdminView.class,
+        TestNavigationResult result = checkAccess(RolesAllowedAdminView.class,
                 User.NORMAL_USER);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInAdminRoleAccessToAnonymousViewAllowed() {
-        Result result = checkAccess(AnonymousAllowedView.class, User.ADMIN);
+        TestNavigationResult result = checkAccess(AnonymousAllowedView.class,
+                User.ADMIN);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInAdminRoleAccessToNoAnnotationViewDenied() {
-        Result result = checkAccess(NoAnnotationView.class, User.ADMIN);
+        TestNavigationResult result = checkAccess(NoAnnotationView.class,
+                User.ADMIN);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInAdminRoleAccessToPermitAllViewAllowed() {
-        Result result = checkAccess(PermitAllView.class, User.ADMIN);
+        TestNavigationResult result = checkAccess(PermitAllView.class,
+                User.ADMIN);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInAdminRoleAccessToDenyAllViewDenied() {
-        Result result = checkAccess(DenyAllView.class, User.ADMIN);
+        TestNavigationResult result = checkAccess(DenyAllView.class,
+                User.ADMIN);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInAdminRoleAccessToRolesAllowedUserViewDenied() {
-        Result result = checkAccess(RolesAllowedUserView.class, User.ADMIN);
+        TestNavigationResult result = checkAccess(RolesAllowedUserView.class,
+                User.ADMIN);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInAdminRoleAccessToRolesAllowedAdminViewAllowed() {
-        Result result = checkAccess(RolesAllowedAdminView.class, User.ADMIN);
+        TestNavigationResult result = checkAccess(RolesAllowedAdminView.class,
+                User.ADMIN);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
@@ -234,7 +267,8 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void redirectUrlStoredForAnonymousUsers() {
-        Result result = checkAccess(RolesAllowedAdminView.class, null);
+        TestNavigationResult result = checkAccess(RolesAllowedAdminView.class,
+                null);
         Assert.assertFalse(result.wasTargetViewRendered());
         Assert.assertEquals(
                 AccessAnnotationCheckerTest.REQUEST_URL
@@ -248,7 +282,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void redirectUrlNotStoredForLoggedInUsers() {
-        Result result = checkAccess(RolesAllowedAdminView.class,
+        TestNavigationResult result = checkAccess(RolesAllowedAdminView.class,
                 User.NORMAL_USER);
         Assert.assertFalse(result.wasTargetViewRendered());
         Assert.assertNull(result.sessionAttributes
@@ -307,7 +341,8 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void openingRestrictedViewRedirectsAnonymousUserToLogin() {
-        Result result = checkAccess(RolesAllowedAdminView.class, null);
+        TestNavigationResult result = checkAccess(RolesAllowedAdminView.class,
+                null);
         Assert.assertEquals(TestLoginView.class, result.getForwardedTo());
     }
 
@@ -316,14 +351,15 @@ public class ViewAccessCheckerTest {
             throws Exception {
         resetLoginView();
         viewAccessChecker.setLoginView("/log-in");
-        Result result = checkAccess(RolesAllowedAdminView.class, null);
+        TestNavigationResult result = checkAccess(RolesAllowedAdminView.class,
+                null);
         Assert.assertFalse(result.wasTargetViewRendered());
         Assert.assertEquals("/log-in", result.getExternalForwardUrl());
     }
 
     @Test
     public void openingRestrictedViewShowsNotFoundForLoggedInUser() {
-        Result result = checkAccess(RolesAllowedAdminView.class,
+        TestNavigationResult result = checkAccess(RolesAllowedAdminView.class,
                 User.NORMAL_USER);
         Assert.assertEquals(AccessDeniedException.class,
                 result.getRerouteError());
@@ -332,7 +368,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void openingRestrictedViewShowsReasonInDevelopmentMode() {
-        Result result = checkAccess(RolesAllowedAdminView.class,
+        TestNavigationResult result = checkAccess(RolesAllowedAdminView.class,
                 User.NORMAL_USER, false);
         Assert.assertEquals(AccessDeniedException.class,
                 result.getRerouteError());
@@ -341,8 +377,8 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void openingNoAnnotationViewShowsReasonAndHintInDevelopmentMode() {
-        Result result = checkAccess(NoAnnotationView.class, User.NORMAL_USER,
-                false);
+        TestNavigationResult result = checkAccess(NoAnnotationView.class,
+                User.NORMAL_USER, false);
         Assert.assertEquals(AccessDeniedException.class,
                 result.getRerouteError());
         Assert.assertEquals(
@@ -354,7 +390,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void openingCustomAccessDeniedViewShowsReasonAndHintInDevelopmentMode() {
-        Result result = checkAccess(CustomAccessDeniedView.class,
+        TestNavigationResult result = checkAccess(CustomAccessDeniedView.class,
                 User.NORMAL_USER, false);
         Assert.assertEquals(NotFoundException.class, result.getRerouteError());
         Assert.assertEquals(
@@ -366,8 +402,8 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void openingNoAnnotationViewDoesNotShowAnyReasonAndHintInProductionMode() {
-        Result result = checkAccess(NoAnnotationView.class, User.NORMAL_USER,
-                true);
+        TestNavigationResult result = checkAccess(NoAnnotationView.class,
+                User.NORMAL_USER, true);
         Assert.assertEquals(AccessDeniedException.class,
                 result.getRerouteError());
         Assert.assertEquals("", result.getRerouteErrorMessage());
@@ -375,7 +411,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void openingCustomAccessDeniedViewDoesNotShowAnyReasonAndHintInProductionMode() {
-        Result result = checkAccess(CustomAccessDeniedView.class,
+        TestNavigationResult result = checkAccess(CustomAccessDeniedView.class,
                 User.NORMAL_USER, true);
         Assert.assertEquals(NotFoundException.class, result.getRerouteError());
         Assert.assertEquals("", result.getRerouteErrorMessage());
@@ -384,56 +420,57 @@ public class ViewAccessCheckerTest {
     @Test
     public void redirectWhenNoLoginSet() throws Exception {
         resetLoginView();
-        Result result = checkAccess(RolesAllowedAdminView.class, null);
+        TestNavigationResult result = checkAccess(RolesAllowedAdminView.class,
+                null);
         Assert.assertFalse(result.wasTargetViewRendered());
         Assert.assertEquals(NotFoundException.class, result.getRerouteError());
     }
 
     @Test
     public void anonymousAccess_to_noAnnotationAnonymousAllowedByParent_allowed() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationAnonymousAllowedByParentView.class, null);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
     @Test
     public void anonymousAccess_to_noAnnotationAnonymousAllowedByGrandParent_allowed() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationAnonymousAllowedByGrandParentView.class, null);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
     @Test
     public void anonymousAccess_to_noAnnotationPermitAllByGrandParentView_denied() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationPermitAllByGrandParentView.class, null);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void anonymousAccess_to_noAnnotationDenyAllByGrandParentView_denied() {
-        Result result = checkAccess(NoAnnotationDenyAllByGrandParentView.class,
-                null);
+        TestNavigationResult result = checkAccess(
+                NoAnnotationDenyAllByGrandParentView.class, null);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void anonymousAccess_to_noAnnotationRolesAllowedUserByGrandParentView_denied() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationRolesAllowedUserByGrandParentView.class, null);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void anonymousAccess_to_noAnnotationRolesAllowedAdminByGrandParentView_denied() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationRolesAllowedAdminByGrandParentView.class, null);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInNoRolesAccess_to_noAnnotationAnonymousAllowedByGrandParentView_allowed() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationAnonymousAllowedByGrandParentView.class,
                 User.USER_NO_ROLES);
         Assert.assertTrue(result.wasTargetViewRendered());
@@ -441,7 +478,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void loggedInNoRolesAccess_to_noAnnotationPermitAllByGrandParentView_allowed() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationPermitAllByGrandParentView.class,
                 User.USER_NO_ROLES);
         Assert.assertTrue(result.wasTargetViewRendered());
@@ -449,14 +486,14 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void loggedInNoRolesAccess_to_noAnnotationDenyAllByGrandParentView_denied() {
-        Result result = checkAccess(NoAnnotationDenyAllByGrandParentView.class,
-                User.USER_NO_ROLES);
+        TestNavigationResult result = checkAccess(
+                NoAnnotationDenyAllByGrandParentView.class, User.USER_NO_ROLES);
         Assert.assertFalse(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInNoRolesAccess_to_noAnnotationRolesAllowedUserByGrandParentView_denied() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationRolesAllowedUserByGrandParentView.class,
                 User.USER_NO_ROLES);
         Assert.assertFalse(result.wasTargetViewRendered());
@@ -464,7 +501,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void loggedInNoRolesAccess_to_noAnnotationRolesAllowedAdminByGrandParentView_denied() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationRolesAllowedAdminByGrandParentView.class,
                 User.USER_NO_ROLES);
         Assert.assertFalse(result.wasTargetViewRendered());
@@ -472,7 +509,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void loggedInUserRoleAccess_to_noAnnotationAnonymousAllowedByGrandParentView_allowed() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationAnonymousAllowedByGrandParentView.class,
                 User.NORMAL_USER);
         Assert.assertTrue(result.wasTargetViewRendered());
@@ -480,7 +517,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void loggedInUserRoleAccess_to_noAnnotationPermitAllByGrandParentView_allowed() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationPermitAllByGrandParentView.class, User.NORMAL_USER);
         Assert.assertTrue("Target view should have been rendered",
                 result.wasTargetViewRendered());
@@ -488,8 +525,8 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void loggedInUserRoleAccess_to_noAnnotationDenyAllByGrandParentView_denied() {
-        Result result = checkAccess(NoAnnotationDenyAllByGrandParentView.class,
-                User.NORMAL_USER);
+        TestNavigationResult result = checkAccess(
+                NoAnnotationDenyAllByGrandParentView.class, User.NORMAL_USER);
         Assert.assertFalse(result.wasTargetViewRendered());
         Assert.assertEquals(AccessDeniedException.class,
                 result.getRerouteError());
@@ -497,7 +534,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void loggedInUserRoleAccess_to_noAnnotationRolesAllowedUserByGrandParentView_allowed() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationRolesAllowedUserByGrandParentView.class,
                 User.NORMAL_USER);
         Assert.assertTrue(result.wasTargetViewRendered());
@@ -505,7 +542,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void loggedInUserRoleAccess_to_noAnnotationRolesAllowedAdminByGrandParentView_denied() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationRolesAllowedAdminByGrandParentView.class,
                 User.NORMAL_USER);
         Assert.assertFalse(result.wasTargetViewRendered());
@@ -515,7 +552,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void loggedInAdminRoleAccess_to_noAnnotationAnonymousAllowedByGrandParentView_allowed() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationAnonymousAllowedByGrandParentView.class,
                 User.ADMIN);
         Assert.assertTrue(result.wasTargetViewRendered());
@@ -523,15 +560,15 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void loggedInAdminRoleAccess_to_noAnnotationPermitAllByGrandParentView_allowed() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationPermitAllByGrandParentView.class, User.ADMIN);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
     @Test
     public void loggedInAdminRoleAccess_to_noAnnotationDenyAllByGrandParentView_denied() {
-        Result result = checkAccess(NoAnnotationDenyAllByGrandParentView.class,
-                User.ADMIN);
+        TestNavigationResult result = checkAccess(
+                NoAnnotationDenyAllByGrandParentView.class, User.ADMIN);
         Assert.assertFalse(result.wasTargetViewRendered());
         Assert.assertEquals(AccessDeniedException.class,
                 result.getRerouteError());
@@ -539,7 +576,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void loggedInAdminRoleAccess_to_noAnnotationRolesAllowedUserByGrandParentView_denied() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationRolesAllowedUserByGrandParentView.class,
                 User.ADMIN);
         Assert.assertFalse(result.wasTargetViewRendered());
@@ -548,7 +585,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void loggedInAdminRoleAccess_To_noAnnotationRolesAllowedAdminByGrandParentView_allowed() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationRolesAllowedAdminByGrandParentView.class,
                 User.ADMIN);
         Assert.assertTrue(result.wasTargetViewRendered());
@@ -575,7 +612,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void anonymousAccess_to_noAnnotationPermitAllByGrandParentAsInterfacesIgnoredView_denied() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationPermitAllByGrandParentAsInterfacesIgnoredView.class,
                 null);
         Assert.assertFalse(result.wasTargetViewRendered());
@@ -583,7 +620,7 @@ public class ViewAccessCheckerTest {
 
     @Test
     public void loggedInNoRolesAccess_to_noAnnotationPermitAllByGrandParentAsInterfacesIgnoredView_allowed() {
-        Result result = checkAccess(
+        TestNavigationResult result = checkAccess(
                 NoAnnotationPermitAllByGrandParentAsInterfacesIgnoredView.class,
                 User.USER_NO_ROLES);
         Assert.assertTrue(result.wasTargetViewRendered());
@@ -596,82 +633,21 @@ public class ViewAccessCheckerTest {
         f.set(this.viewAccessChecker, null);
     }
 
-    private static class Result {
-
-        public BeforeEnterEvent event;
-        public Map<String, Object> sessionAttributes;
-
-        public Class<? extends Component> getReroutedTo() {
-            if (!event.hasRerouteTarget()
-                    || event.getRerouteTarget() instanceof ErrorStateRenderer) {
-                return null;
-            }
-            return event.getRerouteTargetType();
-        }
-
-        public Class<? extends Component> getForwardedTo() {
-            if (!event.hasForwardTarget()) {
-                return null;
-            }
-            return event.getForwardTargetType();
-        }
-
-        public String getRerouteErrorMessage() {
-            if (!event.hasRerouteTarget() || !(event
-                    .getRerouteTarget() instanceof ErrorStateRenderer)) {
-                return null;
-            }
-
-            return event.getErrorParameter().getCustomMessage();
-        }
-
-        public Class<? extends Exception> getRerouteError() {
-            if (!event.hasRerouteTarget() || !(event
-                    .getRerouteTarget() instanceof ErrorStateRenderer)) {
-                return null;
-            }
-
-            return event.getErrorParameter().getException().getClass();
-        }
-
-        public String getRerouteURL() {
-            if (event.hasUnknownForward()) {
-                return event.getUnknownForward();
-            } else {
-                return null;
-            }
-        }
-
-        public String getExternalForwardUrl() {
-            if (event.hasExternalForwardUrl()) {
-                return event.getExternalForwardUrl();
-            } else {
-                return null;
-            }
-        }
-
-        public boolean wasTargetViewRendered() {
-            return getReroutedTo() == null && getForwardedTo() == null
-                    && getRerouteError() == null && getRerouteURL() == null
-                    && getExternalForwardUrl() == null;
-        }
-
-    }
-
-    private Result checkAccess(Class<?> viewClass, User user) {
+    private TestNavigationResult checkAccess(Class<?> viewClass, User user) {
         return checkAccess(viewClass, user, true);
     }
 
-    private Result checkAccess(Class<?> viewClass, User user,
+    private TestNavigationResult checkAccess(Class<?> viewClass, User user,
             boolean productionMode) {
-        Result result = setupRequest(viewClass, user, productionMode);
+        TestNavigationResult result = setupRequest(viewClass, user,
+                productionMode);
         BeforeEnterEvent event = result.event;
 
         this.viewAccessChecker.beforeEnter(event);
         return result;
     }
 
-    private Result setupRequest(Class navigationTarget, User user,
+    static TestNavigationResult setupRequest(Class navigationTarget, User user,
             boolean productionMode) {
         CurrentInstance.clearAll();
 
@@ -702,11 +678,18 @@ public class ViewAccessCheckerTest {
                 .thenAnswer(answer -> httpServletRequest.getUserPrincipal());
         Mockito.when(vaadinServletRequest.getSession())
                 .thenAnswer(answer -> httpServletRequest.getSession());
+        Mockito.when(vaadinServletRequest.getSession(anyBoolean())).thenAnswer(
+                answer -> httpServletRequest.getSession(answer.getArgument(0)));
         Mockito.when(vaadinServletRequest.isUserInRole(Mockito.any()))
                 .thenAnswer(answer -> httpServletRequest
                         .isUserInRole(answer.getArgument(0)));
         Mockito.when(vaadinServletRequest.getRequestURL()).thenReturn(
                 new StringBuffer(AccessAnnotationCheckerTest.REQUEST_URL));
+
+        Mockito.when(vaadinServletRequest.getWrappedSession())
+                .thenCallRealMethod();
+        Mockito.when(vaadinServletRequest.getWrappedSession(anyBoolean()))
+                .thenCallRealMethod();
 
         CurrentInstance.set(VaadinRequest.class, vaadinServletRequest);
 
@@ -765,6 +748,8 @@ public class ViewAccessCheckerTest {
         HttpSession session = Mockito.mock(HttpSession.class);
         Map<String, Object> sessionAttributes = new HashMap<>();
         Mockito.when(httpServletRequest.getSession()).thenReturn(session);
+        Mockito.when(httpServletRequest.getSession(anyBoolean()))
+                .thenReturn(session);
         Mockito.doAnswer(invocation -> {
             String key = (String) invocation.getArguments()[0];
             Object value = invocation.getArguments()[1];
@@ -774,14 +759,14 @@ public class ViewAccessCheckerTest {
             return null;
         }).when(session).setAttribute(Mockito.anyString(), Mockito.any());
 
-        Result info = new Result();
+        TestNavigationResult info = new TestNavigationResult();
         info.event = event;
         info.sessionAttributes = sessionAttributes;
 
         return info;
     }
 
-    private String getRoute(Class<?> navigationTarget) {
+    static String getRoute(Class<?> navigationTarget) {
         Optional<Route> route = AnnotationReader
                 .getAnnotationFor(navigationTarget, Route.class);
 

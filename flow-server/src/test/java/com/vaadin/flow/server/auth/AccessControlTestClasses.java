@@ -1,3 +1,19 @@
+/*
+ * Copyright 2000-2023 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.vaadin.flow.server.auth;
 
 import jakarta.annotation.security.DenyAll;
@@ -5,8 +21,17 @@ import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RoutePrefix;
+import com.vaadin.flow.router.RouterLayout;
 
 public class AccessControlTestClasses {
 
@@ -255,7 +280,43 @@ public class AccessControlTestClasses {
 
     @AnonymousAllowed
     @Route("anon")
+    @RouteAlias("anon-alias")
+    @RouteAlias("anon-alias-wildcard/:path*")
+    @RouteAlias("anon-alias-template/:identifier/:category?/resource/:id([0-9]*)")
     public static class AnonymousAllowedView extends Component {
+    }
+
+    @AnonymousAllowed
+    @Route("anon-url-parameter")
+    public static class AnonymousAllowedUrlParameterView extends Component
+            implements HasUrlParameter<String> {
+        @Override
+        public void setParameter(BeforeEvent event, String parameter) {
+
+        }
+    }
+
+    @AnonymousAllowed
+    @Route("anon-wildcard/:path*")
+    public static class AnonymousAllowedWildcardView extends Component {
+    }
+
+    @AnonymousAllowed
+    @Route("anon-template/:identifier/:category?/resource/:id([0-9]*)")
+    @RouteAlias("anon-template-same-params/:identifier/:category?/resource/:id([0-9]*)")
+    public static class AnonymousAllowedTemplateView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @RoutePrefix("parent")
+    public static class RoutePrefixParent extends Component
+            implements RouterLayout {
+    }
+
+    @AnonymousAllowed
+    @Route(value = "anon-with-parent", layout = RoutePrefixParent.class)
+    @RouteAlias(value = "alias-with-parent", layout = RoutePrefixParent.class)
+    public static class AnonymousAllowedWithParent extends Component {
     }
 
     @PermitAll
@@ -356,4 +417,28 @@ public class AccessControlTestClasses {
     public static class NoAnnotationPermitAllByGrandParentAsInterfacesIgnoredView
             extends PermitAllParentView implements CustomComponent {
     }
+
+    @Tag(Tag.DIV)
+    @AnonymousAllowed
+    public static class CustomErrorView
+            implements HasErrorParameter<NotFoundException> {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<NotFoundException> parameter) {
+            return 0;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class NotAnnotatedCustomErrorView
+            implements HasErrorParameter<NotFoundException> {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<NotFoundException> parameter) {
+            return 0;
+        }
+    }
+
 }

@@ -16,24 +16,34 @@
 
 package com.vaadin.flow.spring.security;
 
-import java.util.List;
-import java.util.Optional;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.security.config.annotation.ObjectPostProcessor;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.configuration.ObjectPostProcessorConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.web.authentication.logout.CompositeLogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.vaadin.flow.component.UI;
@@ -45,8 +55,14 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletResponse;
 
 @RunWith(SpringRunner.class)
-// @ContextConfiguration
+@ContextConfiguration(classes = ObjectPostProcessorConfiguration.class)
 public class AuthenticationContextTest {
+
+    @Autowired
+    ObjectPostProcessor<Object> postProcessor;
+
+    @Autowired
+    ApplicationContext appCtx;
 
     private final AuthenticationContext authContext = new AuthenticationContext();
 
@@ -158,4 +174,58 @@ public class AuthenticationContextTest {
             CurrentInstance.clearAll();
         }
     }
+
+    @Test
+    public void applySecurityConfiguration_logoutHandlerConfigured()
+            throws Exception {
+        LogoutSuccessHandler logoutSuccessHandler = Mockito
+                .mock(LogoutSuccessHandler.class);
+        LogoutHandler handler1 = Mockito.mock(LogoutHandler.class);
+        LogoutHandler handler2 = Mockito.mock(LogoutHandler.class);
+
+        HttpSecurity httpSecurity = new HttpSecurity(postProcessor,
+                new AuthenticationManagerBuilder(postProcessor),
+                Map.of(ApplicationContext.class, appCtx));
+        httpSecurity
+                .logout(cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler)
+                        .addLogoutHandler(handler1).addLogoutHandler(handler2));
+        httpSecurity.build();
+        AuthenticationContext authCtx = new AuthenticationContext();
+        AuthenticationContext.applySecurityConfiguration(httpSecurity, authCtx);
+
+        Assert.assertNotNull(authCtx.getLogoutSuccessHandler());
+        Assert.assertNotNull(authCtx.getLogoutHandler());
+
+        CompositeLogoutHandler composite = authCtx.getLogoutHandler();
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+        Authentication authentication = Mockito.mock(Authentication.class);
+        composite.logout(request, response, authentication);
+        Mockito.verify(handler2).logout(request, response, authentication);
+        Mockito.verify(handler1).logout(request, response, authentication);
+    }
+
+    @Test
+    public void applySecurityConfiguration_unbuiltHttpSecurity_throws()
+            throws Exception {
+        LogoutSuccessHandler logoutSuccessHandler = Mockito
+                .mock(LogoutSuccessHandler.class);
+        LogoutHandler handler1 = Mockito.mock(LogoutHandler.class);
+        LogoutHandler handler2 = Mockito.mock(LogoutHandler.class);
+        HttpSecurity httpSecurity = new HttpSecurity(postProcessor,
+                new AuthenticationManagerBuilder(postProcessor),
+                Map.of(ApplicationContext.class, appCtx));
+        httpSecurity
+                .logout(cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler)
+                        .addLogoutHandler(handler1).addLogoutHandler(handler2));
+
+        AuthenticationContext authCtx = new AuthenticationContext();
+
+        IllegalStateException exception = Assert.assertThrows(
+                IllegalStateException.class, () -> AuthenticationContext
+                        .applySecurityConfiguration(httpSecurity, authCtx));
+        Assert.assertEquals("This object has not been built",
+                exception.getMessage());
+    }
+
 }

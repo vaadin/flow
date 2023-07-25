@@ -15,17 +15,19 @@
  */
 package com.vaadin.flow.spring.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 /**
  * Helper for checking access to views.
+ *
+ * @deprecated ViewAccessChecker has been replaced by
+ *             {@link com.vaadin.flow.server.auth.NavigationAccessControl}.
  */
-@Component
+@Deprecated(forRemoval = true, since = "24.3")
 public class ViewAccessCheckerInitializer implements VaadinServiceInitListener {
 
     @Autowired

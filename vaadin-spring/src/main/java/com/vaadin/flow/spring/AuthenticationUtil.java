@@ -1,6 +1,7 @@
 package com.vaadin.flow.spring;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -66,4 +67,5 @@ public class AuthenticationUtil {
                             .getAuthority().equals(roleWithPrefix));
         };
     }
+
 }

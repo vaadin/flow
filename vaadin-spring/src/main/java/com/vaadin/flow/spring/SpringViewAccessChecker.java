@@ -14,7 +14,11 @@ import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
 /**
  * A Spring specific view access checker that falls back to Spring mechanisms
  * when the generic mechanisms do not work.
+ *
+ * @deprecated ViewAccessChecker has been replaced by
+ *             {@link com.vaadin.flow.server.auth.NavigationAccessControl}.
  */
+@Deprecated(forRemoval = true, since = "24.3")
 public class SpringViewAccessChecker extends ViewAccessChecker {
 
     /**
@@ -24,6 +28,8 @@ public class SpringViewAccessChecker extends ViewAccessChecker {
      *
      * @param accessAnnotationChecker
      *            the annotation checker to use
+     *
+     * @see #enable()
      */
     public SpringViewAccessChecker(
             AccessAnnotationChecker accessAnnotationChecker) {
