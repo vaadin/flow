@@ -1,6 +1,6 @@
 import { aTimeout, elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import '@vaadin/select';
-import { ThemeEditorState, ThemeScope } from './model';
+import {ThemeEditorLicense, ThemeEditorSettings, ThemeEditorState, ThemeScope} from './model';
 import { ThemeEditor } from './editor';
 import './editor';
 import { PickerOptions, PickerProvider } from '../component-picker';
@@ -42,6 +42,10 @@ describe('theme-editor', () => {
       onMessage: sinon.spy(),
       send: sinon.spy()
     };
+    const settings: ThemeEditorSettings = {
+      state: ThemeEditorState.enabled,
+      license: ThemeEditorLicense.ok
+    }
     testComponentRef = { nodeId: 123, uiId: 456, element: testElement };
     const pickerMock = {
       open: (options: PickerOptions) => {
@@ -51,6 +55,7 @@ describe('theme-editor', () => {
     const pickerProvider: PickerProvider = () => pickerMock as any;
     const editor = (await fixture(html` <vaadin-dev-tools-theme-editor
       .expanded=${true}
+      .settings="${settings}"
       .pickerProvider=${pickerProvider}
       .connection=${connectionMock}
     ></vaadin-dev-tools-theme-editor>`)) as ThemeEditor;
@@ -241,11 +246,37 @@ describe('theme-editor', () => {
     });
 
     it('should show missing theme notice in theme missing state', async () => {
-      editor.themeEditorState = ThemeEditorState.missing_theme;
+      editor.settings = {
+        state: ThemeEditorState.missing_theme,
+        license: ThemeEditorLicense.ok
+      };
       await elementUpdated(editor);
-
       expect(findPickerButton()).to.not.exist;
       expect(editor.shadowRoot!.innerHTML).to.contain('It looks like you have not set up a custom theme yet');
+    });
+  });
+  describe('theme editor license checker state', () => {
+    it('should show component picker in default state ', async () => {
+      editor.settings = {
+        state: ThemeEditorState.enabled,
+        license: ThemeEditorLicense.ok
+      }
+      await elementUpdated(editor);
+      expect(findPickerButton()).to.exist;
+      expect(editor.shadowRoot!.innerHTML).to.not.contain('Theme editor requires a Vaadin Pro (or higher) subscription');
+    });
+    it('should show license requirement message', async ()=> {
+      editor.settings = {
+        state: ThemeEditorState.enabled,
+        license: ThemeEditorLicense.invalid,
+        licenseUrl: 'https://vaadin.com/pro/validate-license'
+
+      }
+      await elementUpdated(editor);
+      expect(findPickerButton()).to.not.exist;
+      expect(editor.shadowRoot!.innerHTML).to.contain('Theme editor requires a Vaadin Pro (or higher) subscription');
+      expect(editor.shadowRoot!.querySelector('a')).to.be.exist;
+      expect(editor.shadowRoot!.querySelector('a')!['href']).to.contain('https://vaadin.com/pro/validate-license');
     });
   });
 

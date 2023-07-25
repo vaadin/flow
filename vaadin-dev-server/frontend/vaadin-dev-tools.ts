@@ -6,7 +6,7 @@ import { Overlay, OverlayOutsideClickEvent } from '@vaadin/overlay';
 import { ComponentPicker } from './component-picker';
 import { ComponentReference, deepContains } from './component-util';
 import './theme-editor/editor';
-import { ThemeEditorState } from './theme-editor/model';
+import {ThemeEditorLicense, ThemeEditorSettings, ThemeEditorState} from './theme-editor/model';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
@@ -837,7 +837,10 @@ export class VaadinDevTools extends LitElement {
   componentPickActive: boolean = false;
 
   @state()
-  themeEditorState: ThemeEditorState = ThemeEditorState.disabled;
+  themeEditorSettings: ThemeEditorSettings = {
+    state: ThemeEditorState.disabled,
+    license: ThemeEditorLicense.notChecked
+  }
 
   private javaConnection?: Connection;
   private frontendConnection?: Connection;
@@ -909,6 +912,7 @@ export class VaadinDevTools extends LitElement {
       this.frontendStatus = status;
     };
     frontendConnection.onMessage = (message: any) => this.handleFrontendMessage(message);
+    frontendConnection.onLicenseCheckResult = (message: any) => this.handleLicenseResultMessage(message);
     this.frontendConnection = frontendConnection;
 
     let javaConnection: Connection;
@@ -954,6 +958,25 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
+  handleLicenseResultMessage(message: any) {
+    if (message?.command === 'license-check-ok' && message.data.name === 'vaadin-dev-tools-theme-editor') {
+      this.themeEditorSettings = {
+        ...this.themeEditorSettings,
+        license: ThemeEditorLicense.ok
+      }
+      this.requestUpdate();
+    } else if (
+        message?.command === 'license-check-nokey' &&
+        message.data.product.name === 'vaadin-dev-tools-theme-editor'
+    ) {
+      this.themeEditorSettings = {
+        ...this.themeEditorSettings,
+        license: ThemeEditorLicense.invalid,
+        licenseUrl: message.data.message
+      }
+    }
+  }
+
   handleFrontendMessage(message: any) {
     if (message?.command === 'serverInfo') {
       this.serverInfo = message.data as ServerInfo;
@@ -961,12 +984,16 @@ export class VaadinDevTools extends LitElement {
       this.features = message.data.features as Feature[];
     } else if (message?.command === 'themeEditorState') {
       const isFlowApp = !!(window as any).Vaadin.Flow;
-      this.themeEditorState = message.data;
-      if (isFlowApp && this.themeEditorState !== ThemeEditorState.disabled) {
+      this.themeEditorSettings = {
+        ...this.themeEditorSettings,
+        state: message.data,
+      }
+      if (isFlowApp && this.themeEditorSettings.state !== ThemeEditorState.disabled) {
         this.tabs.push({
           id: 'theme-editor',
           title: 'Theme Editor (Preview)',
-          render: () => this.renderThemeEditor()
+          render: () => this.renderThemeEditor(),
+          activate: () => this.checkLicense({name: 'vaadin-dev-tools-theme-editor', version: '0.0.1'})
         });
         this.requestUpdate();
       }
@@ -1520,7 +1547,7 @@ export class VaadinDevTools extends LitElement {
   renderThemeEditor() {
     return html` <vaadin-dev-tools-theme-editor
       .expanded=${this.expanded}
-      .themeEditorState=${this.themeEditorState}
+      .settings="${this.themeEditorSettings}"
       .pickerProvider=${() => this.componentPicker}
       .connection=${this.frontendConnection}
     ></vaadin-dev-tools-theme-editor>`;

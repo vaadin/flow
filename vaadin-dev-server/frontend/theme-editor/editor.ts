@@ -10,6 +10,8 @@ import {
   generateThemeRuleCss,
   SelectorScope,
   ThemeContext,
+  ThemeEditorLicense,
+  ThemeEditorSettings,
   ThemeEditorState,
   ThemeScope
 } from './model';
@@ -42,7 +44,7 @@ export class ThemeEditor extends LitElement {
   @property({})
   public expanded: boolean = false;
   @property({})
-  public themeEditorState: ThemeEditorState = ThemeEditorState.enabled;
+  public settings!: ThemeEditorSettings;
   @property({})
   public pickerProvider!: PickerProvider;
   @property({})
@@ -224,8 +226,24 @@ export class ThemeEditor extends LitElement {
     this.removeElementHighlight(this.context?.component.element);
   }
 
+  renderMissingLicenseNotice() {
+    return html`
+      <div class="notice">
+        Theme editor requires a Vaadin Pro (or higher) subscription.
+        <br />
+        Please
+        <a href=${this.settings.licenseUrl}>log in or sign up for an account</a>.
+      </div>
+    `;
+  }
   render() {
-    if (this.themeEditorState === ThemeEditorState.missing_theme) {
+    if(this.settings.license === ThemeEditorLicense.notChecked){
+      return null;
+    }
+    if(this.settings.license === ThemeEditorLicense.invalid){
+      return this.renderMissingLicenseNotice();
+    }
+    if (this.settings.state === ThemeEditorState.missing_theme) {
       return this.renderMissingThemeNotice();
     }
 

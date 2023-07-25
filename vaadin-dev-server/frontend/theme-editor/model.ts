@@ -12,7 +12,17 @@ export enum ThemeScope {
   local = 'local',
   global = 'global'
 }
+export enum ThemeEditorLicense {
+  notChecked,
+  ok,
+  invalid
+}
 
+export interface ThemeEditorSettings {
+  state: ThemeEditorState;
+  license: ThemeEditorLicense;
+  licenseUrl?: string;
+}
 export interface SelectorScope {
   themeScope: ThemeScope;
   localClassName?: string;

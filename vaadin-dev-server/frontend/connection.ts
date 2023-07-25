@@ -60,6 +60,9 @@ export class Connection extends Object {
     // eslint-disable-next-line no-console
     console.error('Unknown message received from the live reload server:', message);
   }
+  onLicenseCheckResult(_: any) {
+    // Intentionally empty.
+  }
 
   handleMessage(msg: any) {
     let json;
@@ -82,10 +85,13 @@ export class Connection extends Object {
       }
     } else if (json.command === 'license-check-ok') {
       licenseCheckOk(json.data);
+      this.onLicenseCheckResult(json);
     } else if (json.command === 'license-check-failed') {
       licenseCheckFailed(json.data);
+      this.onLicenseCheckResult(json);
     } else if (json.command === 'license-check-nokey') {
       licenseCheckNoKey(json.data);
+      this.onLicenseCheckResult(json);
     } else {
       this.onMessage(json);
     }
