@@ -229,7 +229,7 @@ export class ThemeEditor extends LitElement {
   renderMissingLicenseNotice() {
     return html`
       <div class="notice">
-        Theme editor requires a Vaadin Pro (or higher) subscription.
+        Theme Editor requires a Vaadin Prime (or higher) subscription.
         <br />
         Please
         <a href=${this.settings.licenseUrl}>log in or sign up for an account</a>.

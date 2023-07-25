@@ -263,7 +263,7 @@ describe('theme-editor', () => {
       }
       await elementUpdated(editor);
       expect(findPickerButton()).to.exist;
-      expect(editor.shadowRoot!.innerHTML).to.not.contain('Theme editor requires a Vaadin Pro (or higher) subscription');
+      expect(editor.shadowRoot!.innerHTML).to.not.contain('Theme Editor requires a Vaadin Prime (or higher) subscription');
     });
     it('should show license requirement message', async ()=> {
       editor.settings = {
@@ -274,7 +274,7 @@ describe('theme-editor', () => {
       }
       await elementUpdated(editor);
       expect(findPickerButton()).to.not.exist;
-      expect(editor.shadowRoot!.innerHTML).to.contain('Theme editor requires a Vaadin Pro (or higher) subscription');
+      expect(editor.shadowRoot!.innerHTML).to.contain('Theme Editor requires a Vaadin Prime (or higher) subscription');
       expect(editor.shadowRoot!.querySelector('a')).to.be.exist;
       expect(editor.shadowRoot!.querySelector('a')!['href']).to.contain('https://vaadin.com/pro/validate-license');
     });
