@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -66,6 +67,19 @@ import net.bytebuddy.jar.asm.ClassReader;
  * @since 2.0
  */
 public class FrontendDependencies extends AbstractDependenciesScanner {
+
+    //@formatter:off
+    private static final Pattern VISITABLE_CLASS_PATTERN = Pattern.compile("(^$|"
+            + ".*(slf4j).*|"
+            // #5803
+            + "^(java|sun|oracle|elemental|javax|jakarta|oshi|"
+            + "org\\.(apache|atmosphere|jsoup|jboss|w3c|spring|joda|hibernate|glassfish|hsqldb|osgi|jooq)|"
+            + "com\\.(helger|spring|gwt|lowagie|fasterxml|sun|nimbusds|googlecode)|"
+            + "net\\.(sf|bytebuddy)"
+            + ").*|"
+            + ".*(Exception)$"
+            + ")");
+    //@formatter:on
 
     private final HashMap<String, EndPointData> endPoints = new HashMap<>();
     private ThemeDefinition themeDefinition;
@@ -631,15 +645,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // factories. This is the reason of having just a blacklist of some
         // common name-spaces that would not have components.
         // We also exclude Feature-Flag classes
-        return className != null && // @formatter:off
-                !isExperimental(className) &&
-                !className.matches(
-                    "(^$|"
-                    + ".*(slf4j).*|"
-                    // #5803
-                    + "^(java|sun|elemental|javax|jakarta|oshi|org.(apache|atmosphere|jsoup|jboss|w3c|spring|joda|hibernate|glassfish|hsqldb)|com.(helger|spring|gwt|lowagie|fasterxml|sun|nimbusds)|net.(sf|bytebuddy)).*|"
-                    + ".*(Exception)$"
-                    + ")"); // @formatter:on
+        return className != null && !isExperimental(className)
+                && !VISITABLE_CLASS_PATTERN.matcher(className).matches();
     }
 
     private URL getUrl(String className) {
