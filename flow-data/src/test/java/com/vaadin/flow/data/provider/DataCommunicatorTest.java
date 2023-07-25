@@ -246,6 +246,33 @@ public class DataCommunicatorTest {
     }
 
     @Test
+    public void setFlushRequest_remove_setFlushRequest_reattach_noEndlessFlushLoop() {
+        AtomicInteger listenerInvocationCounter = new AtomicInteger(0);
+        dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
+                data -> {
+                }, element.getNode()) {
+            @Override
+            public void reset() {
+                Assert.assertTrue("Should not fall into endless reset loop",
+                        listenerInvocationCounter.incrementAndGet() < 5);
+                super.reset();
+            }
+        };
+
+        // No flush requests initially
+        fakeClientCommunication();
+
+        dataCommunicator.reset();
+        element.removeFromTree();
+        dataCommunicator.reset();
+        ui.getElement().appendChild(element);
+
+        listenerInvocationCounter.set(0);
+
+        fakeClientCommunication();
+    }
+
+    @Test
     public void setDataProvider_keyMapperIsReset() {
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.setRequestedRange(0, 50);

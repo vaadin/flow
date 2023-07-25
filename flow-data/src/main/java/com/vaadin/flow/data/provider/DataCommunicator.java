@@ -119,6 +119,8 @@ public class DataCommunicator<T> implements Serializable {
     private HashSet<T> updatedData = new HashSet<>();
     private FlushRequest flushRequest;
     private FlushRequest flushUpdatedDataRequest;
+    private boolean flushInProgress = false;
+    private boolean flushUpdatedDataInProgress = false;
 
     private CallbackDataProvider.CountCallback<T, ?> countCallback;
     private int itemCountEstimate = -1;
@@ -1105,44 +1107,58 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush(boolean forced) {
-        if ((flushRequest == null || !flushRequest.canExecute(stateNode)
-                || forced) && fetchEnabled) {
-            if (flushRequest != null) {
-                // this cancels the previous request pushed into the queue,
-                // because a new one is going to be registered forcibly to cover
-                // @PreserveOnRefresh cases. Otherwise two flush requests in the
-                // pending queue may lead to a infinite loop, generating more
-                // and more new requests.
-                flushRequest.setCancelled();
-            }
-            flushRequest = FlushRequest.register(stateNode, context -> {
+        if (!shouldRequestFlush(forced)) {
+            return;
+        }
+        flushRequest = FlushRequest.register(stateNode, context -> {
+            flushInProgress = true;
+            try {
                 if (!context.isClientSideInitialized()) {
                     reset();
                     arrayUpdater.initialize();
                 }
                 flush();
+            } finally {
                 flushRequest = null;
-            });
+                flushInProgress = false;
+            }
+        });
+    }
+
+    private boolean shouldRequestFlush(boolean forced) {
+        if (!fetchEnabled) {
+            return false;
         }
+        if (forced) {
+            return true;
+        }
+        // New requests that are not forced are not registered while a flush
+        // is in progress. This prevents infinite loop in cases including
+        // @PreserveOnRefresh.
+        return !flushInProgress && (flushRequest == null
+                || !flushRequest.canExecute(stateNode));
     }
 
     private void requestFlushUpdatedData() {
-        if (flushUpdatedDataRequest == null
-                || !flushUpdatedDataRequest.canExecute(stateNode)) {
-            if (flushUpdatedDataRequest != null) {
-                // this cancels the previous request pushed into the queue,
-                // because a new one is going to be registered forcibly to cover
-                // @PreserveOnRefresh cases. Otherwise two flush requests in the
-                // pending queue may lead to a infinite loop, generating more
-                // and more new requests.
-                flushUpdatedDataRequest.setCancelled();
-            }
-            flushUpdatedDataRequest = FlushRequest.register(stateNode,
-                    context -> {
-                        flushUpdatedData();
-                        flushUpdatedDataRequest = null;
-                    });
+        if (!shouldRequestFlushUpdatedData()) {
+            return;
         }
+        flushUpdatedDataRequest = FlushRequest.register(stateNode, context -> {
+            flushUpdatedDataInProgress = true;
+            try {
+                flushUpdatedData();
+            } finally {
+                flushUpdatedDataRequest = null;
+                flushUpdatedDataInProgress = false;
+            }
+        });
+    }
+
+    private boolean shouldRequestFlushUpdatedData() {
+        // New requests are not registered while a flush is in progress. This
+        // prevents infinite loop in cases including @PreserveOnRefresh.
+        return !flushUpdatedDataInProgress && (flushUpdatedDataRequest == null
+                || !flushUpdatedDataRequest.canExecute(stateNode));
     }
 
     private void flush() {
@@ -1531,10 +1547,6 @@ public class DataCommunicator<T> implements Serializable {
 
         boolean canExecute(StateNode stateNode) {
             return owner instanceof NullOwner || owner == stateNode.getOwner();
-        }
-
-        void setCancelled() {
-            cancelled = true;
         }
     }
 
