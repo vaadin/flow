@@ -1,5 +1,5 @@
 import { ComponentMetadata } from '../model';
-import { shapeProperties } from "./defaults";
+import { shapeProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-accordion-panel',
@@ -12,7 +12,7 @@ export default {
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,
         shapeProperties.borderWidth,
-        shapeProperties.borderRadius,
+        shapeProperties.borderRadius
       ]
     }
   ]

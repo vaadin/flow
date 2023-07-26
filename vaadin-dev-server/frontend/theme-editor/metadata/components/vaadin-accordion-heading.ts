@@ -1,5 +1,5 @@
 import { ComponentMetadata } from '../model';
-import { iconProperties, shapeProperties, textProperties } from "./defaults";
+import { iconProperties, shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-accordion-heading',
@@ -8,11 +8,7 @@ export default {
     {
       selector: 'vaadin-accordion-heading',
       displayName: 'Heading',
-      properties: [
-        textProperties.textColor,
-        textProperties.fontSize,
-        shapeProperties.padding
-      ]
+      properties: [textProperties.textColor, textProperties.fontSize, shapeProperties.padding]
     },
     {
       selector: 'vaadin-accordion-heading::part(toggle)',

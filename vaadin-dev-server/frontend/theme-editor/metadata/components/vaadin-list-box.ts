@@ -1,5 +1,5 @@
 import { ComponentMetadata } from '../model';
-import {fieldProperties, shapeProperties, textProperties} from "./defaults";
+import { fieldProperties, shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-list-box',
