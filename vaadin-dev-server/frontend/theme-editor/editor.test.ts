@@ -371,7 +371,7 @@ describe('theme-editor', () => {
 
       const propertyList = editor.shadowRoot!.querySelector('.property-list');
       expect(propertyList).to.not.exist;
-      expect(editor.shadowRoot!.textContent).to.contain('The selected Test element can not be styled locally');
+      expect(editor.shadowRoot!.textContent).to.contain('The selected Test element cannot be styled locally');
     });
 
     it('should show local class name editor if instance is accessible', async () => {
