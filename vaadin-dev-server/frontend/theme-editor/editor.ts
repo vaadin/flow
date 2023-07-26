@@ -313,7 +313,7 @@ export class ThemeEditor extends LitElement {
             </div>`
           : ''}
         <div class="notice">
-          The selected ${componentName} can not be styled locally. Currently, theme editor only supports styling
+          The selected ${componentName} cannot be styled locally. Currently, Theme Editor only supports styling
           instances that are assigned to a local variable, like so:
           <pre><code>Button saveButton = new Button("Save");</code></pre>
           If you want to modify the code so that it satisfies this requirement,
