@@ -1,5 +1,5 @@
 import { ComponentMetadata } from '../model';
-import { iconProperties } from './defaults';
+import { iconProperties, shapeProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-icon',
@@ -7,10 +7,14 @@ export default {
   elements: [
     {
       selector: 'vaadin-icon',
-      displayName: 'Host',
+      displayName: 'Icon',
       properties: [
         iconProperties.iconColor,
         iconProperties.iconSize,
+        shapeProperties.backgroundColor,
+        shapeProperties.borderColor,
+        shapeProperties.borderWidth,
+        shapeProperties.borderRadius
       ]
     }
   ]
