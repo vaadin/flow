@@ -2,17 +2,18 @@ import { ComponentMetadata } from '../model';
 import { shapeProperties } from './defaults';
 
 export default {
-  tagName: 'vaadin-accordion-panel',
-  displayName: 'AccordionPanel',
+  tagName: 'vaadin-form-layout',
+  displayName: 'FormLayout',
   elements: [
     {
-      selector: 'vaadin-accordion-panel',
-      displayName: 'Panel',
+      selector: 'vaadin-form-layout',
+      displayName: 'Layout',
       properties: [
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,
         shapeProperties.borderWidth,
-        shapeProperties.borderRadius
+        shapeProperties.borderRadius,
+        shapeProperties.padding
       ]
     }
   ]
