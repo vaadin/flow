@@ -108,7 +108,7 @@ export class ComponentTheme {
 
     metadata.elements.forEach((element) => {
       const scopedSelector = createScopedSelector(element, scope);
-      const elementRule = rules.find((rule) => rule.selector === scopedSelector);
+      const elementRule = rules.find((rule) => rule.selector === scopedSelector.replace(/ > /g, '>'));
 
       if (elementRule) {
         element.properties.forEach((property) => {
