@@ -1,11 +1,7 @@
-import { ComponentMetadata } from '../model';
-import {
-  errorMessageProperties,
-  helperTextProperties,
-  inputFieldProperties,
-  labelProperties
-} from './vaadin-text-field';
-import { iconProperties, shapeProperties, textProperties } from './defaults';
+import {ComponentMetadata} from '../model';
+import {errorMessageProperties, helperTextProperties, inputFieldProperties, labelProperties} from './vaadin-text-field';
+import {iconProperties, shapeProperties, textProperties} from './defaults';
+import {ComponentReference} from "../../../component-util";
 
 export default {
   tagName: 'vaadin-combo-box',
@@ -65,12 +61,37 @@ export default {
     comboBox.items = [{ label: 'Item', value: 'value' }];
     // Select value
     comboBox.value = 'value';
-    // Open overlay
-    comboBox.opened = true;
     // Wait for overlay to open
     await new Promise((resolve) => setTimeout(resolve, 10));
   },
-  async cleanupElement(comboBox: any) {
-    comboBox.opened = false;
+  openOverlay(component: ComponentReference){
+    if(!component || !component.element){
+      return;
+    }
+    const element = component.element as any;
+    //opening overlay
+    element.open();
+    //preventing should remove focus to keep overlay opened.
+    element._storedShouldRemoveFocus = element._shouldRemoveFocus;
+    element._shouldRemoveFocus = (event: FocusEvent) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return false;
+    }
+    // preventing overlay to be closed while editing
+    element.overlayCloseOverrideEvent = element._overlayElement.addEventListener('vaadin-overlay-close', (e: CustomEvent) => {
+      e.preventDefault();
+    });
+  },
+  hideOverlay(component: ComponentReference) {
+    if(component && component.element){
+      // restoring overridden listeners and methods.
+      const element = component.element as any;
+      element._shouldRemoveFocus = element._storedShouldRemoveFocus;
+      delete element._storedShouldRemoveFocus;
+      element.removeEventListener('vaadin-overlay-close', element.overlayCloseOverrideEvent);
+      delete element.overlayCloseOverrideEvent;
+      element.close();
+    }
   }
 } as ComponentMetadata;

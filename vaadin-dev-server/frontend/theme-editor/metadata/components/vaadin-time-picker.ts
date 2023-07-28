@@ -6,6 +6,7 @@ import {
   labelProperties
 } from './vaadin-text-field';
 import { iconProperties, shapeProperties, textProperties } from './defaults';
+import {ComponentReference} from "../../../component-util";
 
 export default {
   tagName: 'vaadin-time-picker',
@@ -63,12 +64,28 @@ export default {
     timePicker.overlayClass = timePicker.getAttribute('class');
     // Select value
     timePicker.value = '00:00';
-    // Open overlay
-    timePicker.opened = true;
     // Wait for overlay to open
     await new Promise((resolve) => setTimeout(resolve, 10));
   },
-  async cleanupElement(timePicker: any) {
-    timePicker.opened = false;
+  openOverlay(component: ComponentReference) {
+    if(!component || !component.element){
+      return;
+    }
+    const element = component.element as any;
+    //opening overlay
+    element.open();
+    element.modeless = true;
+  },
+  hideOverlay(component: ComponentReference) {
+    if(component && component.element){
+      // restoring overridden listeners and methods.
+      const element = component.element as any;
+      element._shouldRemoveFocus = element._storedShouldRemoveFocus;
+      delete element._storedShouldRemoveFocus;
+      element.removeEventListener('vaadin-overlay-close', element.overlayCloseOverrideEvent);
+      delete element.overlayCloseOverrideEvent;
+      element.close();
+    }
   }
+
 } as ComponentMetadata;

@@ -6,6 +6,7 @@ import {
   labelProperties
 } from './vaadin-text-field';
 import { iconProperties, shapeProperties, textProperties } from './defaults';
+import {ComponentReference} from "../../../component-util";
 
 export default {
   tagName: 'vaadin-date-picker',
@@ -91,5 +92,19 @@ export default {
         textProperties.fontStyle
       ]
     }
-  ]
+  ],
+  openOverlay(component: ComponentReference) {
+    if(!component.element){
+      return;
+    }
+    const element = component.element as any;
+    element.open();
+  },
+  hideOverlay(component: ComponentReference){
+    if(!component.element){
+      return;
+    }
+    const element = component.element as any;
+    element.close();
+  }
 } as ComponentMetadata;
