@@ -3,11 +3,11 @@ import { shapeProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-tabsheet',
-  displayName: 'Sheet',
+  displayName: 'TabSheet',
   elements: [
     {
       selector: 'vaadin-tabsheet',
-      displayName: 'Sheet',
+      displayName: 'TabSheet',
       properties: [
         shapeProperties.padding,
         shapeProperties.backgroundColor,

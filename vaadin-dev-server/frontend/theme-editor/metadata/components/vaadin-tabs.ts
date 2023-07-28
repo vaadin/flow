@@ -33,6 +33,11 @@ export default {
       ]
     },
     {
+      selector: 'vaadin-tabs > vaadin-tab::before',
+      displayName: 'Selection indicator',
+      properties: [shapeProperties.backgroundColor]
+    },
+    {
       selector: 'vaadin-tabs::part(back-button)',
       displayName: 'Back button',
       properties: [iconProperties.iconColor, iconProperties.iconSize]
@@ -41,11 +46,6 @@ export default {
       selector: 'vaadin-tabs::part(forward-button)',
       displayName: 'Forward button',
       properties: [iconProperties.iconColor, iconProperties.iconSize]
-    },
-    {
-      selector: 'vaadin-tabs > vaadin-tab::before',
-      displayName: 'Selection indicator',
-      properties: [shapeProperties.backgroundColor]
     }
   ]
 } as ComponentMetadata;
