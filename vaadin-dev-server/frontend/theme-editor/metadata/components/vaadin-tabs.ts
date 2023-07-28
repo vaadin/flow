@@ -14,6 +14,18 @@ export default {
       selector: 'vaadin-tabs vaadin-tab',
       displayName: 'Tab item',
       properties: [
+        textProperties.textColor,
+        textProperties.fontSize,
+        textProperties.fontWeight,
+        shapeProperties.backgroundColor,
+        shapeProperties.padding
+      ]
+    },
+    {
+      selector: 'vaadin-tabs > vaadin-tab[selected]',
+      displayName: 'Tab item (selected)',
+      properties: [
+        textProperties.textColor,
         textProperties.fontSize,
         textProperties.fontWeight,
         shapeProperties.backgroundColor,
@@ -29,6 +41,11 @@ export default {
       selector: 'vaadin-tabs::part(forward-button)',
       displayName: 'Forward button',
       properties: [iconProperties.iconColor, iconProperties.iconSize]
+    },
+    {
+      selector: 'vaadin-tabs > vaadin-tab::before',
+      displayName: 'Selection indicator',
+      properties: [shapeProperties.backgroundColor]
     }
   ]
 } as ComponentMetadata;
