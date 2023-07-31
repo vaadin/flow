@@ -6,8 +6,19 @@ export default {
   displayName: 'MessageList',
   elements: [
     {
+      selector: 'vaadin-message-list',
+      displayName: 'Root element',
+      properties: [
+        shapeProperties.backgroundColor,
+        shapeProperties.borderColor,
+        shapeProperties.borderWidth,
+        shapeProperties.borderRadius,
+        shapeProperties.padding
+      ]
+    },
+    {
       selector: 'vaadin-message-list::part(list)',
-      displayName: 'List',
+      displayName: 'Internal list layout',
       properties: [
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,
@@ -50,6 +61,27 @@ export default {
     {
       selector: 'vaadin-message-list vaadin-message::part(message)',
       displayName: 'Text',
+      properties: [
+        textProperties.textColor,
+        textProperties.fontSize,
+        textProperties.fontWeight,
+        textProperties.fontStyle
+      ]
+    },
+    {
+      selector: 'vaadin-message-list vaadin-message > vaadin-avatar',
+      displayName: 'Avatar',
+      properties: [
+        shapeProperties.backgroundColor,
+        shapeProperties.borderColor,
+        shapeProperties.borderWidth,
+        shapeProperties.borderRadius,
+        shapeProperties.padding
+      ]
+    },
+    {
+      selector: 'vaadin-message-list vaadin-message > vaadin-avatar::part(abbr)',
+      displayName: 'Avatar abbreviation',
       properties: [
         textProperties.textColor,
         textProperties.fontSize,
