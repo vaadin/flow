@@ -19,12 +19,12 @@ package com.vaadin.base.devserver.stats;
 import java.io.File;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.vaadin.pro.licensechecker.MachineId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.ServerInfo;
 import com.vaadin.flow.server.Version;
+import com.vaadin.pro.licensechecker.MachineId;
 
 import elemental.json.JsonObject;
 
@@ -114,8 +114,14 @@ public class DevModeUsageStatistics {
                     ProjectHelpers.getProKey());
             globalData.setValue(StatisticsConstants.FIELD_USER_KEY,
                     ProjectHelpers.getUserKey());
-            globalData.setValue(StatisticsConstants.FIELD_MACHINE_ID,
-                    MachineId.get());
+            try {
+                globalData.setValue(StatisticsConstants.FIELD_MACHINE_ID,
+                        MachineId.get());
+            } catch (Throwable ex) {
+                globalData.setValue(StatisticsConstants.FIELD_MACHINE_ID,
+                        "ERROR");
+                getLogger().debug("Cannot get Machine ID", ex);
+            }
 
             // Update basic project statistics and save
             projectData.setValue(StatisticsConstants.FIELD_FLOW_VERSION,
