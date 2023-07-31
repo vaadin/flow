@@ -431,6 +431,8 @@ public class HandlerHelper implements Serializable {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("An error occurred during decoding URL.",
                     e);
+        } catch (IllegalArgumentException ex) {
+            // Ignore: the path is not URLEncoded, check it as is
         }
         return PARENT_DIRECTORY_REGEX.matcher(path).find();
     }
