@@ -4,8 +4,8 @@ import {
   helperTextProperties,
   inputFieldProperties,
   labelProperties
-} from "./vaadin-text-field";
-import { iconProperties, shapeProperties, textProperties } from "./defaults";
+} from './vaadin-text-field';
+import { iconProperties, shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-date-picker',

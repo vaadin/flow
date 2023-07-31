@@ -1,9 +1,5 @@
 import { ComponentMetadata } from '../model';
-import {
-  errorMessageProperties,
-  helperTextProperties,
-  labelProperties
-} from "./vaadin-text-field";
+import { errorMessageProperties, helperTextProperties, labelProperties } from './vaadin-text-field';
 
 export default {
   tagName: 'vaadin-date-time-picker',
@@ -23,6 +19,6 @@ export default {
       selector: 'vaadin-date-time-picker::part(error-message)',
       displayName: 'Error message',
       properties: errorMessageProperties
-    },
+    }
   ]
 } as ComponentMetadata;

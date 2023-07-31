@@ -1,5 +1,5 @@
 import { ComponentMetadata } from '../model';
-import { iconProperties, shapeProperties, textProperties } from "./defaults";
+import { iconProperties, shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-details-summary',
@@ -8,11 +8,7 @@ export default {
     {
       selector: 'vaadin-details-summary',
       displayName: 'Summary',
-      properties: [
-        textProperties.textColor,
-        textProperties.fontSize,
-        shapeProperties.padding
-      ]
+      properties: [textProperties.textColor, textProperties.fontSize, shapeProperties.padding]
     },
     {
       selector: 'vaadin-details-summary::part(toggle)',

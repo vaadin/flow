@@ -89,6 +89,17 @@ export class ThemeEditor extends LitElement {
         color: var(--dev-tools-text-color-emphasis);
       }
 
+      .hint vaadin-icon {
+        color: var(--dev-tools-green-color);
+        font-size: var(--lumo-icon-size-m);
+      }
+
+      .hint {
+        display: flex;
+        align-items: center;
+        gap: var(--theme-editor-section-horizontal-padding);
+      }
+
       .header {
         flex: 0 0 auto;
         border-bottom: solid 1px rgba(0, 0, 0, 0.2);
@@ -295,8 +306,14 @@ export class ThemeEditor extends LitElement {
     if (inaccessible) {
       const componentName = this.context.metadata.displayName;
       return html`
+        ${this.context.metadata.notAccessibleDescription && this.context.scope === ThemeScope.local
+          ? html`<div class="notice hint" style="padding-bottom: 0;">
+              <vaadin-icon icon="vaadin:lightbulb"></vaadin-icon>
+              <div>${this.context.metadata.notAccessibleDescription}</div>
+            </div>`
+          : ''}
         <div class="notice">
-          The selected ${componentName} can not be styled locally. Currently, theme editor only supports styling
+          The selected ${componentName} cannot be styled locally. Currently, Theme Editor only supports styling
           instances that are assigned to a local variable, like so:
           <pre><code>Button saveButton = new Button("Save");</code></pre>
           If you want to modify the code so that it satisfies this requirement,
@@ -307,13 +324,19 @@ export class ThemeEditor extends LitElement {
       `;
     }
 
-    return html` <vaadin-dev-tools-theme-property-list
-      class="property-list"
-      .metadata=${this.context.metadata}
-      .theme=${this.effectiveTheme}
-      @theme-property-value-change=${this.handlePropertyChange}
-      @open-css=${this.handleOpenCss}
-    ></vaadin-dev-tools-theme-property-list>`;
+    return html` ${this.context.metadata.description && this.context.scope === ThemeScope.local
+        ? html`<div class="notice hint">
+            <vaadin-icon icon="vaadin:lightbulb"></vaadin-icon>
+            <div>${this.context.metadata.description}</div>
+          </div>`
+        : ''}
+      <vaadin-dev-tools-theme-property-list
+        class="property-list"
+        .metadata=${this.context.metadata}
+        .theme=${this.effectiveTheme}
+        @theme-property-value-change=${this.handlePropertyChange}
+        @open-css=${this.handleOpenCss}
+      ></vaadin-dev-tools-theme-property-list>`;
   }
 
   handleShowComponent() {

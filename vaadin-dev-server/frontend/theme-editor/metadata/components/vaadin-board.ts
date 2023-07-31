@@ -1,35 +1,30 @@
 import { ComponentMetadata } from '../model';
-import { fieldProperties, shapeProperties, textProperties } from './defaults';
+import { shapeProperties } from './defaults';
 
 export default {
-  tagName: 'vaadin-list-box',
-  displayName: 'ListBox',
+  tagName: 'vaadin-board',
+  displayName: 'Board',
   elements: [
     {
-      selector: 'vaadin-list-box',
-      displayName: 'List Box',
+      selector: 'vaadin-board',
+      displayName: 'Layout',
       properties: [
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,
         shapeProperties.borderWidth,
         shapeProperties.borderRadius,
-        fieldProperties.paddingInline
+        shapeProperties.padding
       ]
     },
     {
-      selector: 'vaadin-list-box > hr',
-      displayName: 'Divider',
-      properties: [shapeProperties.backgroundColor]
-    },
-    {
-      selector: 'vaadin-list-box > vaadin-item',
-      displayName: 'Item',
+      selector: 'vaadin-board vaadin-board-row',
+      displayName: 'Row',
       properties: [
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,
         shapeProperties.borderWidth,
         shapeProperties.borderRadius,
-        fieldProperties.paddingInline
+        shapeProperties.padding
       ]
     }
   ]
