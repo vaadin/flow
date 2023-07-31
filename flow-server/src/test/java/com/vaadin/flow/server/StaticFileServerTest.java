@@ -1036,6 +1036,26 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
+    public void serveStaticResource_uriWithPercent_isServed()
+            throws IOException {
+        String pathInfo = "/VAADIN/build/100%.pdf";
+        setupRequestURI("", "", pathInfo);
+        String fileData = "contents";
+        ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
+        Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
+
+        Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
+                .thenReturn(createFileURLWithDataAndLength(
+                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+
+        mockStatsBundles(mockLoader);
+        mockConfigurationPolyfills();
+
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertEquals(fileData, out.getOutputString());
+    }
+
+    @Test
     public void customStaticBuildResource_isServed() throws IOException {
         String pathInfo = "/VAADIN/build/my-text.txt";
         setupRequestURI("", "", pathInfo);
