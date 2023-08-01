@@ -311,7 +311,7 @@ export class ThemeEditor extends LitElement {
     if (inaccessible) {
       const componentName = this.context.metadata.displayName;
       return html`
-        ${this.context.metadata.notAccessibleDescription
+        ${this.context.metadata.notAccessibleDescription && this.context.scope === ThemeScope.local
           ? html`<div class="notice hint" style="padding-bottom: 0;">
               <vaadin-icon icon="vaadin:lightbulb"></vaadin-icon>
               <div>${this.context.metadata.notAccessibleDescription}</div>
@@ -329,7 +329,7 @@ export class ThemeEditor extends LitElement {
       `;
     }
 
-    return html` ${this.context.metadata.description
+    return html` ${this.context.metadata.description && this.context.scope === ThemeScope.local
         ? html`<div class="notice hint">
             <vaadin-icon icon="vaadin:lightbulb"></vaadin-icon>
             <div>${this.context.metadata.description}</div>
