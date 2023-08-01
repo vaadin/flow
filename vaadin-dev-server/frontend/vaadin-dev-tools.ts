@@ -848,8 +848,6 @@ export class VaadinDevTools extends LitElement {
 
   private transitionDuration: number = 0;
 
-  disableLiveReloadTimeout: number | null = null;
-
   elementTelemetry() {
     let data = {};
     try {
@@ -1517,12 +1515,22 @@ export class VaadinDevTools extends LitElement {
     </div>`;
   }
 
+  disableJavaLiveReload() {
+    this.javaConnection?.setActive(false);
+  }
+
+  enableJavaLiveReload() {
+    this.javaConnection?.setActive(true);
+  }
+
   renderThemeEditor() {
     return html` <vaadin-dev-tools-theme-editor
       .expanded=${this.expanded}
       .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
       .connection=${this.frontendConnection}
+      @before-open=${this.disableJavaLiveReload}
+      @after-close=${this.enableJavaLiveReload}
     ></vaadin-dev-tools-theme-editor>`;
   }
 
