@@ -15,7 +15,7 @@
     <properties>
         <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
         <sonar.skip>true</sonar.skip>
-        <selenium.version>4.10.0</selenium.version>
+        <selenium.version>4.11.0</selenium.version>
     </properties>
     <dependencies>
         <dependency>
