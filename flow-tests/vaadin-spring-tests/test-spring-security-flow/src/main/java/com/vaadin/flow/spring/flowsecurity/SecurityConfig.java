@@ -57,15 +57,13 @@ public class SecurityConfig extends VaadinWebSecurity {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests()
+        http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(new AntPathRequestMatcher("/admin-only/**"))
-                .hasAnyRole(ROLE_ADMIN);
-        http.authorizeHttpRequests()
+                .hasAnyRole(ROLE_ADMIN)
                 .requestMatchers(new AntPathRequestMatcher("/public/**"))
-                .permitAll();
-        http.authorizeHttpRequests()
+                .permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/error"))
-                .permitAll();
+                .permitAll());
 
         super.configure(http);
         if (getLogoutSuccessUrl().equals("/")) {
@@ -74,11 +72,13 @@ public class SecurityConfig extends VaadinWebSecurity {
         } else {
             setLoginView(http, LoginView.class, getLogoutSuccessUrl());
         }
-        http.logout().addLogoutHandler((request, response, authentication) -> {
-            UI ui = UI.getCurrent();
-            ui.accessSynchronously(() -> ui.getPage().setLocation(UrlUtil
-                    .getServletPathRelative(getLogoutSuccessUrl(), request)));
-        });
+        http.logout(cfg -> cfg
+                .addLogoutHandler((request, response, authentication) -> {
+                    UI ui = UI.getCurrent();
+                    ui.accessSynchronously(() -> ui.getPage()
+                            .setLocation(UrlUtil.getServletPathRelative(
+                                    getLogoutSuccessUrl(), request)));
+                }));
     }
 
     @Bean
