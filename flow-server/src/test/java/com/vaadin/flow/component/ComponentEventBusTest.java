@@ -21,7 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -40,6 +42,9 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 public class ComponentEventBusTest {
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     private static class EventTracker<T extends ComponentEvent<?>>
             implements ComponentEventListener<T> {
@@ -739,5 +744,14 @@ public class ComponentEventBusTest {
             });
             util.verifyNoInteractions();
         }
+    }
+
+    @Test
+    public void addListener_nullListener_failFast() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("component event listener cannot be null");
+
+        final TestButton button = new TestButton();
+        button.addListener(ServerEvent.class, null);
     }
 }
