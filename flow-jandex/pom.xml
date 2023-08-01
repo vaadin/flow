@@ -102,9 +102,9 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>io.smallrye</groupId>
+                <groupId>org.jboss.jandex</groupId>
                 <artifactId>jandex-maven-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>1.1.1</version>
                 <executions>
                     <execution>
                         <id>make-index</id>
