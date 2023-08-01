@@ -1,5 +1,5 @@
 import { ComponentMetadata } from '../model';
-import {iconProperties, shapeProperties, textProperties} from './defaults';
+import { iconProperties, shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-side-nav-item',
@@ -19,10 +19,7 @@ export default {
     {
       selector: 'vaadin-side-nav-item > [slot="prefix"]',
       displayName: 'Nav item icon',
-      properties: [
-        iconProperties.iconSize,
-        iconProperties.iconColor
-      ]
+      properties: [iconProperties.iconSize, iconProperties.iconColor]
     },
     {
       selector: 'vaadin-side-nav-item::part(item)',
