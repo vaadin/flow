@@ -176,6 +176,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     }
 
     void doStartDevModeServer() throws ExecutionFailedException {
+        waitForRestart = DevServerOutputTracker.activeServerRestartGuard();
+        if (waitForRestart != null) {
+            getLogger().debug("RestartMonitor is active");
+        }
         // If port is defined, means that the dev server is already running
         if (port > 0) {
             if (!checkConnection()) {
@@ -537,10 +541,6 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         // Save running port for next usage
         saveRunningDevServerPort();
         watchDog.set(null);
-        waitForRestart = DevServerOutputTracker.activeServerRestartGuard();
-        if (waitForRestart != null) {
-            getLogger().debug("RestartMonitor is active");
-        }
     }
 
     private void saveRunningDevServerPort() {

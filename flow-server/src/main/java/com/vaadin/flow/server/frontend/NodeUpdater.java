@@ -551,16 +551,9 @@ public abstract class NodeUpdater implements FallibleCommand {
         JsonObject versionsJson = Json.createObject();
         // if we don't have versionsJson lock package dependency versions.
         final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
-        final JsonObject devDependencies = packageJson
-                .getObject(DEV_DEPENDENCIES);
         if (dependencies != null) {
             for (String key : dependencies.keys()) {
                 versionsJson.put(key, dependencies.getString(key));
-            }
-        }
-        if (devDependencies != null) {
-            for (String key : devDependencies.keys()) {
-                versionsJson.put(key, devDependencies.getString(key));
             }
         }
 

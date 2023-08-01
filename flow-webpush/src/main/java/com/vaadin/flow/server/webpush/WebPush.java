@@ -25,6 +25,16 @@ import java.security.Security;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import nl.martijndwars.webpush.Notification;
+import nl.martijndwars.webpush.PushService;
+import nl.martijndwars.webpush.Subscription;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jose4j.lang.JoseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
@@ -34,18 +44,9 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.VaadinService;
 
-import nl.martijndwars.webpush.Notification;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import nl.martijndwars.webpush.PushService;
-import nl.martijndwars.webpush.Subscription;
-import org.jose4j.lang.JoseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
@@ -244,7 +245,12 @@ public class WebPush {
         try (InputStream stream = WebPush.class.getClassLoader()
                 .getResourceAsStream("META-INF/frontend/FlowWebPush.js")) {
             page.executeJs(StringUtil.removeComments(
-                    IOUtils.toString(stream, StandardCharsets.UTF_8)));
+                    IOUtils.toString(stream, StandardCharsets.UTF_8)))
+                    .then(unused -> getLogger()
+                            .debug("Webpush client code initialized"),
+                            err -> getLogger().error(
+                                    "Webpush client code initialization failed: {}",
+                                    err));
         } catch (IOException ioe) {
             throw new WebPushException("Could not load webpush client code");
         }
@@ -253,7 +259,14 @@ public class WebPush {
     private SerializableConsumer<JsonValue> handlePossiblyEmptySubscription(
             WebPushSubscriptionResponse receiver) {
         return json -> {
-            JsonObject responseJson = Json.parse(json.toJson());
+            JsonObject responseJson;
+            // It may happen that an error is sent as a plain string
+            if (json.getType() == JsonType.STRING) {
+                responseJson = Json.createObject();
+                responseJson.put("message", json.asString());
+            } else {
+                responseJson = Json.parse(json.toJson());
+            }
             if (responseJson.hasKey("message")) {
                 receiver.subscription(null);
             } else {

@@ -408,6 +408,12 @@ public abstract class ComponentTest {
     private void assertProperty(PropertyDescriptor descriptor) {
         if (descriptor.getReadMethod() != null
                 && descriptor.getWriteMethod() != null) {
+            // JDK 21 detects properties also from interface default methods
+            // Test setup can safely ignore properties from mixin interfaces
+            if (descriptor.getReadMethod().isDefault()
+                    && descriptor.getWriteMethod().isDefault()) {
+                return;
+            }
             if (!hasProperty(descriptor.getName())) {
                 throw new IllegalStateException("Property information for '"
                         + descriptor.getName() + "' missing");

@@ -28,8 +28,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ThemeModifier {
@@ -116,11 +114,13 @@ public class ThemeModifier {
      * @return list of {@link CssRule}
      */
     public List<CssRule> getCssRules(List<String> selectors) {
+        List<CSSSelector> cssSelectors = selectors.stream()
+                .map(this::parseSelector).toList();
         CascadingStyleSheet styleSheet = getCascadingStyleSheet();
         return styleSheet.getAllStyleRules().stream()
                 .filter(rule -> rule.getSelectorCount() > 0)
-                .filter(rule -> selectors
-                        .contains(rule.getSelectorAtIndex(0).getAsCSSString()))
+                .filter(rule -> cssSelectors
+                        .contains(rule.getSelectorAtIndex(0)))
                 .map(this::toCssRule).toList();
     }
 
@@ -142,11 +142,12 @@ public class ThemeModifier {
     /**
      * Gets location line of rule with given selector
      *
-     * @param selector
+     * @param selectorString
      * @return line number when located, -1 otherwise
      */
-    public int getRuleLocationLine(String selector) {
+    public int getRuleLocationLine(String selectorString) {
         CascadingStyleSheet styleSheet = getCascadingStyleSheet();
+        CSSSelector selector = parseSelector(selectorString);
         CSSStyleRule rule = findRuleBySelector(styleSheet, selector);
         if (rule == null) {
             return -1;
@@ -322,12 +323,10 @@ public class ThemeModifier {
     }
 
     protected CSSStyleRule findRuleBySelector(CascadingStyleSheet styleSheet,
-            String selector) {
-        Predicate<CSSSelector> selectorPredicate = s -> Objects.equals(selector,
-                s.getAsCSSString());
+            CSSSelector selector) {
         return styleSheet.getAllStyleRules().stream()
-                .filter(r -> r.getAllSelectors().containsAny(selectorPredicate))
-                .findFirst().orElse(null);
+                .filter(r -> r.getAllSelectors().contains(selector)).findFirst()
+                .orElse(null);
     }
 
     protected void replaceClassName(CascadingStyleSheet styleSheet,
@@ -405,6 +404,12 @@ public class ThemeModifier {
                         cssDeclaration.getProperty(),
                         cssDeclaration.getExpressionAsCSSString()));
         return new CssRule(selector.getAsCSSString(), properties);
+    }
+
+    protected CSSSelector parseSelector(String selector) {
+        CascadingStyleSheet css = CSSReader.readFromString(selector + "{}",
+                ECSSVersion.LATEST);
+        return css.getAllStyleRules().getFirst().getSelectorAtIndex(0);
     }
 
 }

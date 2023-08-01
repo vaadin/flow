@@ -45,7 +45,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 public class JavaScriptBootstrapUITest {
 
-    private static final String CLIENT_PUSHSTATE_TO = "setTimeout(() => window.history.pushState($0, '', $1))";
+    private static final String CLIENT_PUSHSTATE_TO = "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'})); })";
 
     private MockServletServiceSessionSetup mocks;
     private UI ui;

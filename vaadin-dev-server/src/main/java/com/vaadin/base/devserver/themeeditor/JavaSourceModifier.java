@@ -1,5 +1,6 @@
 package com.vaadin.base.devserver.themeeditor;
 
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.comments.LineComment;
@@ -345,7 +346,11 @@ public class JavaSourceModifier extends Editor {
     protected CompilationUnit getCompilationUnit(Component component) {
         ComponentTracker.Location createLocation = getCreateLocation(component);
         File sourceFolder = getSourceFolder(createLocation);
-        SourceRoot root = new SourceRoot(sourceFolder.toPath());
+        ParserConfiguration parserConfiguration = new ParserConfiguration();
+        parserConfiguration
+                .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
+        SourceRoot root = new SourceRoot(sourceFolder.toPath(),
+                parserConfiguration);
         return LexicalPreservingPrinter
                 .setup(root.parse("", createLocation.filename()));
     }
