@@ -36,24 +36,24 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
 
     private val extension: VaadinFlowPluginExtension
 
-    private val taskInputProperties: PrepareFrontendInputProperties
+    private val inputProperties: PrepareFrontendInputProperties
 
-    private val taskOutputProperties: PrepareFrontendOutputProperties
+    private val outputProperties: PrepareFrontendOutputProperties
 
     /**
      * Defines an object containing all the inputs of this task.
      */
     @Nested
-    public open fun getTaskInputProperties(): PrepareFrontendInputProperties? {
-        return taskInputProperties
+    public open fun getTaskInputProperties(): PrepareFrontendInputProperties {
+        return inputProperties
     }
 
     /**
      * Defines an object containing all the outputs of this task.
      */
     @Nested
-    public open fun getTaskOutputProperties(): PrepareFrontendOutputProperties? {
-        return taskOutputProperties
+    public open fun getTaskOutputProperties(): PrepareFrontendOutputProperties {
+        return outputProperties
     }
 
     init {
@@ -61,10 +61,10 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
         description = "checks that node and npm tools are installed, copies frontend resources available inside `.jar` dependencies to `node_modules`, and creates or updates `package.json` and `webpack.config.json` files."
 
         extension = VaadinFlowPluginExtension.get(project)
-        taskInputProperties = PrepareFrontendInputProperties(project)
-        taskOutputProperties = PrepareFrontendOutputProperties(project)
-
         // Maven's task run in the LifecyclePhase.PROCESS_RESOURCES phase
+
+        inputProperties = PrepareFrontendInputProperties(project)
+        outputProperties = PrepareFrontendOutputProperties(project)
 
         // the processResources copies stuff from build/vaadin-generated
         // (which is populated by this task) and therefore must run after this task.
@@ -75,6 +75,10 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
         // https://github.com/vaadin/vaadin-gradle-plugin/issues/38
         // for more details.
         dependsOn(project.configurations.getByName(extension.dependencyScope!!).jars)
+
+        if (extension.alwaysExecutePrepareFrontend) {
+            doNotTrackState("State tracking is disabled. Use the 'alwaysExecutePrepareFrontend' plugin setting to enable the feature");
+        }
     }
 
     @TaskAction
