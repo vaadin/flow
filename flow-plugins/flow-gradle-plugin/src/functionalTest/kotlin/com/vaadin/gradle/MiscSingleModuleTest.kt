@@ -462,9 +462,6 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
-            vaadin {
-                alwaysExecutePrepareFrontend = false
-            }
         """)
         var result = testProject.build("vaadinPrepareFrontend", debug = true)
         expect(true) { result.output.contains(
@@ -492,7 +489,6 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
-                alwaysExecutePrepareFrontend = false
                 frontendHotdeploy = true
             }
         """)
@@ -503,7 +499,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     @Test
-    fun prepareFrontendIncrementalBuilds_disableByDefault() {
+    fun prepareFrontendIncrementalBuilds_disableWithProperty() {
         testProject.buildFile.writeText(
             """
             plugins {
@@ -519,6 +515,9 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 implementation("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+            vaadin {
+                alwaysExecutePrepareFrontend = true
             }
         """
         )

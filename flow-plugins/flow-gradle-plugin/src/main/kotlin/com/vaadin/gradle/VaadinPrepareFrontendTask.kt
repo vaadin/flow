@@ -77,7 +77,7 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
         dependsOn(project.configurations.getByName(extension.dependencyScope!!).jars)
 
         if (extension.alwaysExecutePrepareFrontend) {
-            doNotTrackState("State tracking is disabled (default). Use the 'alwaysExecutePrepareFrontend' plugin setting to enable the feature");
+            doNotTrackState("State tracking is disabled. Set the 'alwaysExecutePrepareFrontend=true' plugin setting to always run the prepare frontend task");
         }
     }
 

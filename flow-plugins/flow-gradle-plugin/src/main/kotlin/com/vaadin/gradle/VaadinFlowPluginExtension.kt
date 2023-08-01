@@ -242,13 +242,12 @@ public open class VaadinFlowPluginExtension(project: Project) {
      * Prevents tracking state of the `vaadinPrepareFrontend` task, so that it
      * will re-run every time it is called.
      *
-     * Setting this to `false` allows to skip the task execution when its
-     * outcomes are up-to-date, improving the overall build time.
+     * Setting this to `true` allows to always execute `vaadinPrepareFrontend`.
      *
-     * Defaults to `true`, meaning that `vaadinPrepareFrontend` is always
-     * executed.
+     * Defaults to `false`, meaning that the task execution is skipped when its
+     * outcomes are up-to-date, improving the overall build time.
      */
-    public var alwaysExecutePrepareFrontend: Boolean = true
+    public var alwaysExecutePrepareFrontend: Boolean = false
 
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>? = null): ClasspathFilter {
         if (block != null) {
