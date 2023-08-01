@@ -36,12 +36,16 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
 
     private val extension: VaadinFlowPluginExtension
 
+    private val taskInputProperties: PrepareFrontendInputProperties
+
+    private val taskOutputProperties: PrepareFrontendOutputProperties
+
     /**
      * Defines an object containing all the inputs of this task.
      */
     @Nested
     public open fun getTaskInputProperties(): PrepareFrontendInputProperties? {
-        return PrepareFrontendInputProperties(project)
+        return taskInputProperties
     }
 
     /**
@@ -49,7 +53,7 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
      */
     @Nested
     public open fun getTaskOutputProperties(): PrepareFrontendOutputProperties? {
-        return PrepareFrontendOutputProperties(project)
+        return taskOutputProperties
     }
 
     init {
@@ -57,6 +61,9 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
         description = "checks that node and npm tools are installed, copies frontend resources available inside `.jar` dependencies to `node_modules`, and creates or updates `package.json` and `webpack.config.json` files."
 
         extension = VaadinFlowPluginExtension.get(project)
+        taskInputProperties = PrepareFrontendInputProperties(project)
+        taskOutputProperties = PrepareFrontendOutputProperties(project)
+
         // Maven's task run in the LifecyclePhase.PROCESS_RESOURCES phase
 
         // the processResources copies stuff from build/vaadin-generated

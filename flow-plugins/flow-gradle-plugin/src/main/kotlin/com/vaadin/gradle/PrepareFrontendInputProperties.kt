@@ -177,16 +177,6 @@ public class PrepareFrontendInputProperties public constructor(project: Project)
     }
 
     @Input
-    @Optional
-    public fun getResourceOutputDirectory(): String? {
-        val resourceOutputDirectory = extension.resourceOutputDirectory
-        if (!resourceOutputDirectory.exists()) {
-            return null
-        }
-        return resourceOutputDirectory.absolutePath
-    }
-
-    @Input
     public fun getProjectBuildDir(): String {
         return extension.projectBuildDir
     }

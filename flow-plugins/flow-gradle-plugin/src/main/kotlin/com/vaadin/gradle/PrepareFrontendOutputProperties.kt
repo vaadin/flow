@@ -40,37 +40,37 @@ public class PrepareFrontendOutputProperties public constructor(project: Project
     }
 
     @OutputFile
-    public fun getPackageJson(): File? {
+    public fun getPackageJson(): File {
         return File(project.projectDir, Constants.PACKAGE_JSON)
     }
 
     @OutputFile
-    public fun getPackageLockJson(): File? {
+    public fun getPackageLockJson(): File {
         return File(project.projectDir, Constants.PACKAGE_LOCK_JSON)
     }
 
     @OutputFile
-    public fun getPackageLockYaml(): File? {
+    public fun getPackageLockYaml(): File {
         return File(project.projectDir, Constants.PACKAGE_LOCK_YAML)
     }
 
     @OutputFile
-    public fun getViteConfig(): File? {
+    public fun getViteConfig(): File {
         return File(project.projectDir, FrontendUtils.VITE_CONFIG)
     }
 
     @OutputFile
-    public fun getViteGeneratedConfig(): File? {
+    public fun getViteGeneratedConfig(): File {
         return File(project.projectDir, FrontendUtils.VITE_GENERATED_CONFIG)
     }
 
     @OutputFile
-    public fun getTsConfig(): File? {
+    public fun getTsConfig(): File {
         return File(project.projectDir, "tsconfig.json")
     }
 
     @OutputFile
-    public fun getTsDefinition(): File? {
+    public fun getTsDefinition(): File {
         return File(project.projectDir, "types.d.ts")
     }
 
@@ -82,5 +82,10 @@ public class PrepareFrontendOutputProperties public constructor(project: Project
     @OutputDirectory
     public fun getGeneratedTsFolder(): File {
         return extension.generatedTsFolder
+    }
+
+    @OutputDirectory
+    public fun getResourceOutputDirectory(): File {
+        return extension.resourceOutputDirectory
     }
 }
