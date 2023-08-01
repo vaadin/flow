@@ -1,8 +1,9 @@
 package com.vaadin.flow.spring.flowsecurity;
 
+import jakarta.servlet.ServletContext;
+
 import java.util.stream.Collectors;
 
-import jakarta.servlet.ServletContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -60,12 +61,11 @@ public class SecurityConfig extends VaadinWebSecurity {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests()
+        http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(new AntPathRequestMatcher("/admin-only/**"))
-                .hasAnyRole(ROLE_ADMIN);
-        http.authorizeHttpRequests()
+                .hasAnyRole(ROLE_ADMIN)
                 .requestMatchers(new AntPathRequestMatcher("/public/**"))
-                .permitAll();
+                .permitAll());
         super.configure(http);
         if (getLogoutSuccessUrl().equals("/")) {
             // Test the default url with empty context path
@@ -73,11 +73,13 @@ public class SecurityConfig extends VaadinWebSecurity {
         } else {
             setLoginView(http, LoginView.class, getLogoutSuccessUrl());
         }
-        http.logout().addLogoutHandler((request, response, authentication) -> {
-            UI ui = UI.getCurrent();
-            ui.accessSynchronously(() -> ui.getPage().setLocation(UrlUtil
-                    .getServletPathRelative(getLogoutSuccessUrl(), request)));
-        });
+        http.logout(cfg -> cfg
+                .addLogoutHandler((request, response, authentication) -> {
+                    UI ui = UI.getCurrent();
+                    ui.accessSynchronously(() -> ui.getPage()
+                            .setLocation(UrlUtil.getServletPathRelative(
+                                    getLogoutSuccessUrl(), request)));
+                }));
     }
 
     @Bean
