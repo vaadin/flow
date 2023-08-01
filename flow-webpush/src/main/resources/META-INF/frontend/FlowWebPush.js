@@ -19,20 +19,26 @@ window.Vaadin.Flow = window.Vaadin.Flow || {};
 window.Vaadin.Flow.webPush = window.Vaadin.Flow.webPush || {
     subscribe: async function (publicKey) {
         const notificationPermission = await Notification.requestPermission();
-
         if (notificationPermission === 'granted') {
             const registration = await navigator.serviceWorker.getRegistration();
-            const subscription = await registration?.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: this.urlB64ToUint8Array(publicKey),
-            });
 
-            if (subscription) {
-                console.log(subscription);
-                // console.log(JSON.parse(JSON.stringify(subscription)));
-                return JSON.parse(JSON.stringify(subscription));
+            if (registration) {
+                if (registration?.pushManager) {
+                    const subscription = await registration?.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: this.urlB64ToUint8Array(publicKey),
+                    });
+
+                    if (subscription) {
+                        console.log(subscription);
+                        // console.log(JSON.parse(JSON.stringify(subscription)));
+                        return JSON.parse(JSON.stringify(subscription));
+                    }
+                    throw new Error("Subscription failed. See console for exception.");
+                }
+                throw new Error("Cannot get push manager from registration.");
             }
-            throw new Error("Subscription failed. See console for exception.");
+            throw new Error("Cannot get registration from service worker.");
         }
         throw new Error("You have blocked notifications. You need to manually enable them in your browser.");
     },
@@ -48,23 +54,23 @@ window.Vaadin.Flow.webPush = window.Vaadin.Flow.webPush || {
         return '{ "message": "No active subscription" }';
     },
 
-    registrationStatus: async function() {
+    registrationStatus: async function () {
         const registration = await navigator.serviceWorker.getRegistration();
         return !!(await registration?.pushManager.getSubscription());
     },
 
-    notificationDenied: async function() {
+    notificationDenied: async function () {
         return Notification.permission === 'denied';
     },
 
-    notificationGranted: async function() {
+    notificationGranted: async function () {
         return Notification.permission === 'granted';
     },
 
-    getSubscription: async  function() {
+    getSubscription: async function () {
         const registration = await navigator.serviceWorker.getRegistration();
         const subscription = await registration?.pushManager.getSubscription();
-        if(subscription) {
+        if (subscription) {
             return subscription;
         }
         return '{ "message": "No active subscription" }';
