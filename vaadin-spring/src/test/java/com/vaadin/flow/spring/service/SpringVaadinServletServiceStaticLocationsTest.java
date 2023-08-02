@@ -16,7 +16,7 @@
 
 package com.vaadin.flow.spring.service;
 
-import jakarta.servlet.ServletException;
+import javax.servlet.ServletException;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
