@@ -10,7 +10,7 @@ import { standardButtonProperties } from './vaadin-button';
 
 export default {
   tagName: 'vaadin-login-overlay',
-  displayName: 'Cookie Consent',
+  displayName: 'Login Overlay',
   elements: [
     {
       selector: 'vaadin-login-overlay-wrapper::part(backdrop)',
