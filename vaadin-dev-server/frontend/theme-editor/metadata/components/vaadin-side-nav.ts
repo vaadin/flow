@@ -27,14 +27,38 @@ export default {
       ]
     },
     {
-      selector: 'vaadin-side-nav::part(label)::after',
-      displayName: 'Expand/collapse icon',
+      selector: 'vaadin-side-nav vaadin-side-nav-item > [slot="prefix"]',
+      displayName: 'Nav item icon',
       properties: [iconProperties.iconSize, iconProperties.iconColor]
     },
     {
-      selector: 'vaadin-side-nav > vaadin-side-nav-item',
+      selector: 'vaadin-side-nav vaadin-side-nav-item[active] > [slot="prefix"]',
+      displayName: 'Nav item icon (active)',
+      properties: [iconProperties.iconSize, iconProperties.iconColor]
+    },
+    {
+      selector: 'vaadin-side-nav vaadin-side-nav-item::part(item)',
       displayName: 'Nav item',
       properties: [
+        shapeProperties.backgroundColor,
+        shapeProperties.borderColor,
+        shapeProperties.borderWidth,
+        shapeProperties.borderRadius,
+        shapeProperties.padding,
+        textProperties.textColor,
+        textProperties.fontSize,
+        textProperties.fontWeight,
+        textProperties.fontStyle
+      ]
+    },
+    {
+      selector: 'vaadin-side-nav vaadin-side-nav-item[active]::part(item)',
+      displayName: 'Nav item (active)',
+      properties: [
+        textProperties.textColor,
+        textProperties.fontSize,
+        textProperties.fontWeight,
+        textProperties.fontStyle,
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,
         shapeProperties.borderWidth,
@@ -43,19 +67,14 @@ export default {
       ]
     },
     {
-      selector: 'vaadin-side-nav > vaadin-side-nav-item > [slot="prefix"]',
-      displayName: 'Nav item icon',
+      selector: 'vaadin-side-nav vaadin-side-nav-item::part(toggle-button)::before',
+      displayName: 'Expand/collapse icon',
       properties: [iconProperties.iconSize, iconProperties.iconColor]
     },
     {
-      selector: 'vaadin-side-nav > vaadin-side-nav-item::part(item)',
-      displayName: 'Nav item label',
-      properties: [
-        textProperties.textColor,
-        textProperties.fontSize,
-        textProperties.fontWeight,
-        textProperties.fontStyle
-      ]
+      selector: 'vaadin-side-nav vaadin-side-nav-item[active]::part(toggle-button)::before',
+      displayName: 'Expand/collapse icon (active)',
+      properties: [iconProperties.iconSize, iconProperties.iconColor]
     }
   ]
 } as ComponentMetadata;
