@@ -4,6 +4,7 @@ import { ComponentReference, getComponents } from './component-util.js';
 import './shim.js';
 import { Shim } from './shim.js';
 import { popupStyles } from './styles';
+import { componentResolver } from './theme-editor/components/component-resolver';
 
 export interface PickerOptions {
   infoTemplate: TemplateResult;
@@ -143,7 +144,7 @@ export class ComponentPicker extends LitElement {
     }
   }
   shimMove(e: CustomEvent) {
-    const targetElement = e.detail.target;
+    const targetElement = componentResolver.resolveElement(e.detail.target);
 
     this.components = getComponents(targetElement);
     this.selected = this.components.length - 1;

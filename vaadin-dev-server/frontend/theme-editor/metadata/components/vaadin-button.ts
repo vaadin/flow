@@ -1,8 +1,8 @@
 import { ComponentMetadata, CssPropertyMetadata, EditorType } from '../model';
 import { presets } from './presets';
-import { fieldProperties, shapeProperties, textProperties } from './defaults';
+import { fieldProperties, shapeProperties, standardTextProperties } from './defaults';
 
-export const buttonProperties: CssPropertyMetadata[] = [
+export const standardButtonProperties: CssPropertyMetadata[] = [
   shapeProperties.backgroundColor,
   shapeProperties.borderColor,
   shapeProperties.borderWidth,
@@ -24,12 +24,12 @@ export default {
     {
       selector: 'vaadin-button',
       displayName: 'Host',
-      properties: buttonProperties
+      properties: standardButtonProperties
     },
     {
       selector: 'vaadin-button::part(label)',
       displayName: 'Label',
-      properties: [textProperties.textColor, textProperties.fontSize, textProperties.fontWeight]
+      properties: standardTextProperties
     }
   ]
 } as ComponentMetadata;
