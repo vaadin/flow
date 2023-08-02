@@ -16,6 +16,7 @@
 package com.vaadin.flow.spring;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -138,8 +139,14 @@ public class SpringVaadinServletService extends VaadinServletService {
                 org.springframework.boot.autoconfigure.web.WebProperties.class)
                 .getResources().getStaticLocations()) {
             Resource resource = context.getResource(getFullPath(path, prefix));
-            if (resource != null) {
+            if (resource != null && resource.exists()) {
                 try {
+                    URI uri = resource.getURI();
+                    if (uri.isOpaque() && resource.isFile()) {
+                        // Prevents 'URI is not hierarchical' error
+                        return resource.getFile().getAbsoluteFile().toURI()
+                                .toURL();
+                    }
                     return resource.getURL();
                 } catch (IOException e) {
                     // NO-OP file was not found.
