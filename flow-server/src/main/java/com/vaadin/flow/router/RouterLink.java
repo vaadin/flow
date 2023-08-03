@@ -429,7 +429,8 @@ public class RouterLink extends Component implements HasText, HasComponents,
             url = url.substring(0, startOfQuery);
         }
         url = UrlUtil.encodeURI(url);
-        if (queryParameters != null) {
+        if (queryParameters != null
+                && !queryParameters.getParameters().isEmpty()) {
             url += '?' + queryParameters.getQueryString();
         }
         HREF.set(this, url);
