@@ -127,7 +127,7 @@ public class QueryParameters implements Serializable {
      * @return query parameters information
      */
     public static QueryParameters fromString(String queryString) {
-        if (queryString == null) {
+        if (queryString == null || queryString.isBlank()) {
             return empty();
         }
         return new QueryParameters(parseQueryString(queryString));
