@@ -585,10 +585,10 @@ public class ShortcutRegistrationTest {
 
         Registration registration = Mockito.mock(Registration.class);
         AtomicInteger count = new AtomicInteger();
-        Mockito.when(ui.addDetachListener(any())).thenAnswer(invocation -> {
+        Mockito.doAnswer(invocation -> {
             count.incrementAndGet();
             return registration;
-        });
+        }).when(ui).addDetachListener(any());
 
         Component[] components = new Component[] { ui };
 

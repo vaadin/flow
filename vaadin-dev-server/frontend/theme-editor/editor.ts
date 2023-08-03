@@ -215,6 +215,8 @@ export class ThemeEditor extends LitElement {
       themePreview.clear();
       this.refreshTheme();
     });
+
+    this.dispatchEvent(new CustomEvent('before-open'));
   }
 
   protected update(changedProperties: PropertyValues) {
@@ -238,6 +240,7 @@ export class ThemeEditor extends LitElement {
     this.removeElementHighlight(this.context?.component.element);
     componentOverlayManager.hideOverlay();
     componentOverlayManager.reset();
+    this.dispatchEvent(new CustomEvent('after-close'));
   }
 
   render() {
