@@ -72,7 +72,7 @@ public class FrontendTools {
      */
     public static final String DEFAULT_NPM_VERSION = "9.5.1";
 
-    public static final String DEFAULT_PNPM_VERSION = "8.3.1";
+    public static final String DEFAULT_PNPM_VERSION = "8.6.11";
 
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
             + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
