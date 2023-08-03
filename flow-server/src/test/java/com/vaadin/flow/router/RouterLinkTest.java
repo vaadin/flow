@@ -459,6 +459,11 @@ public class RouterLinkTest extends HasCurrentService {
         link.setQueryParameters(null);
         href = link.getHref();
         Assert.assertEquals("foo", href);
+
+        link.setQueryParameters(QueryParameters.empty());
+        href = link.getHref();
+        Assert.assertEquals("foo", href);
+
     }
 
     @Test
