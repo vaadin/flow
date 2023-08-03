@@ -15,6 +15,7 @@
  */
 package com.vaadin.gradle
 
+import com.vaadin.flow.internal.UsageStatistics
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.frontend.FrontendTools
 import org.gradle.api.DefaultTask
@@ -77,7 +78,8 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
         dependsOn(project.configurations.getByName(extension.dependencyScope!!).jars)
 
         if (extension.alwaysExecutePrepareFrontend) {
-            doNotTrackState("State tracking is disabled. Use the 'alwaysExecutePrepareFrontend' plugin setting to enable the feature");
+            UsageStatistics.markAsUsed("flow/always-execute-prepare-frontend", null)
+            doNotTrackState("State tracking is disabled. Use the 'alwaysExecutePrepareFrontend=false' plugin setting to enable the feature")
         }
     }
 
