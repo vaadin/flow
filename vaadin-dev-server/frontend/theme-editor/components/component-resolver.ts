@@ -4,6 +4,10 @@
  * Used with overlays that have different HTMLElements visible than present in node tree.
  *
  * Resolvers cannot be added to component metadata as component metadata is dynamically imported after being picked.
+ *
+ * Using Polymer __dataHost property to get base Vaadin component.
+ *
+ * TODO: Refactor required after moving to Lit components
  */
 
 type Resolver = {
@@ -23,14 +27,15 @@ const _loginFormOverlayResolver: Resolver = {
   resolve: (element: HTMLElement) => {
     const matcher = (element: HTMLElement) => element.localName === 'vaadin-login-overlay-wrapper';
     const matched = _isMatchingRecursive(matcher, element);
-    return matched ? <HTMLElement>document.querySelector('vaadin-login-overlay') : undefined;
+    // @ts-ignore explicit usage of Polymer property
+    return matched ? <HTMLElement>matched['__dataHost'] : undefined;
   }
 };
 
 const _dialogOverlayResolver: Resolver = {
   resolve: (element: HTMLElement) => {
     // @ts-ignore explicit usage of Polymer property
-    return element.localName === 'vaadin-dialog-overlay' ? <HTMLElement>_element['__dataHost'] : undefined;
+    return element.localName === 'vaadin-dialog-overlay' ? <HTMLElement>element['__dataHost'] : undefined;
   }
 };
 
@@ -52,12 +57,44 @@ const _notificationOverlayResolver: Resolver = {
   }
 };
 
+// order is important
 const _resolvers = <Resolver[]>[
   _cookieConsentResolver,
   _loginFormOverlayResolver,
   _dialogOverlayResolver,
   _confirmDialogOverlayResolver,
   _notificationOverlayResolver
+];
+
+const _cookieConsentHighlightResolver: Resolver = {
+  resolve: (element: HTMLElement) => {
+    const matcher = (element: HTMLElement) => element.classList.contains('cc-banner');
+    return _isMatchingRecursive(matcher, element);
+  }
+};
+
+const _overlayHighlightResolver: Resolver = {
+  resolve: (element: HTMLElement) => {
+    const matcher = (element: HTMLElement) => element.shadowRoot?.querySelector('[part=overlay]') != undefined;
+    const matched = _isMatchingRecursive(matcher, element);
+    return <HTMLElement>matched?.shadowRoot?.querySelector('[part=overlay]');
+  }
+};
+
+const _loginFormOverlayHighlightResolver: Resolver = {
+  resolve: (element: HTMLElement) => {
+    const matcher = (element: HTMLElement) => element.localName === 'vaadin-login-overlay-wrapper';
+    const matched = _isMatchingRecursive(matcher, element);
+    // @ts-ignore explicit usage of Polymer property
+    return <HTMLElement>matched?.shadowRoot?.querySelector('[part=card]');
+  }
+};
+
+// order is important
+const _highlightResolvers = <Resolver[]>[
+  _loginFormOverlayHighlightResolver,
+  _cookieConsentHighlightResolver,
+  _overlayHighlightResolver
 ];
 
 // finds matching element or its parent
@@ -86,4 +123,18 @@ class ComponentResolver {
   }
 }
 
+class ComponentHighlightResolver {
+  resolveElement(element: HTMLElement) {
+    for (const i in _highlightResolvers) {
+      let resolved: HTMLElement | undefined = element;
+      if ((resolved = _highlightResolvers[i].resolve(element)) !== undefined) {
+        return resolved;
+      }
+    }
+    return element;
+  }
+}
+
 export const componentResolver = new ComponentResolver();
+
+export const componentHighlightResolver = new ComponentHighlightResolver();

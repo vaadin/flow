@@ -4,7 +4,7 @@ import { ComponentReference, getComponents } from './component-util.js';
 import './shim.js';
 import { Shim } from './shim.js';
 import { popupStyles } from './styles';
-import { componentResolver } from './theme-editor/components/component-resolver';
+import { componentHighlightResolver, componentResolver } from './theme-editor/components/component-resolver';
 
 export interface PickerOptions {
   infoTemplate: TemplateResult;
@@ -109,7 +109,7 @@ export class ComponentPicker extends LitElement {
   update(changedProperties: PropertyValues): void {
     super.update(changedProperties);
     if (changedProperties.has('selected') || changedProperties.has('components')) {
-      this.highlight(this.components[this.selected]?.element);
+      this.highlight(this.components[this.selected]);
     }
     if (changedProperties.has('active')) {
       const wasActive = changedProperties.get('active');
@@ -148,6 +148,7 @@ export class ComponentPicker extends LitElement {
 
     this.components = getComponents(targetElement);
     this.selected = this.components.length - 1;
+    this.components[this.selected].highlightElement = componentHighlightResolver.resolveElement(e.detail.target);
   }
   shimClick(_e: CustomEvent) {
     this.pickSelectedComponent();
@@ -166,7 +167,8 @@ export class ComponentPicker extends LitElement {
     this.close();
   }
 
-  highlight(element: HTMLElement | undefined) {
+  highlight(componentRef: ComponentReference | undefined) {
+    let element = componentRef?.highlightElement ?? componentRef?.element;
     if (this.highlighted !== element) {
       if (element) {
         const clientRect = element.getBoundingClientRect();
