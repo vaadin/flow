@@ -100,6 +100,13 @@ public class EmailValidatorTest extends ValidatorTestBase {
                 false));
     }
 
+    @Test
+    public void testDomainWithDotDotFails() {
+        EmailValidator v = validator("domains containing dot dot should fail");
+        assertFails("hello@sample..com", v);
+        assertFails("hello@samp..le..com", v);
+    }
+
     private EmailValidator validator(String errorMessage) {
         return new EmailValidator(errorMessage);
     }
