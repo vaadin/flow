@@ -1,5 +1,5 @@
 import { ComponentMetadata } from '../model';
-import { buttonProperties } from './vaadin-button';
+import { standardButtonProperties } from './vaadin-button';
 import { shapeProperties, textProperties } from './defaults';
 
 export default {
@@ -9,7 +9,7 @@ export default {
     {
       selector: 'vaadin-upload > vaadin-button',
       displayName: 'Upload button',
-      properties: buttonProperties
+      properties: standardButtonProperties
     },
     {
       selector: 'vaadin-upload > vaadin-button::part(label)',

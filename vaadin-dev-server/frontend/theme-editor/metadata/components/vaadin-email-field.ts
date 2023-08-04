@@ -1,11 +1,11 @@
 import { ComponentMetadata } from '../model';
 import {
-  clearButtonProperties,
   errorMessageProperties,
   helperTextProperties,
   inputFieldProperties,
   labelProperties
 } from './vaadin-text-field';
+import { standardButtonProperties } from './vaadin-button';
 
 export default {
   tagName: 'vaadin-email-field',
@@ -34,7 +34,7 @@ export default {
     {
       selector: 'vaadin-email-field::part(clear-button)',
       displayName: 'Clear button',
-      properties: clearButtonProperties
+      properties: standardButtonProperties
     }
   ]
 } as ComponentMetadata;

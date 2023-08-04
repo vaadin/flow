@@ -2,6 +2,7 @@ export type ComponentReference = {
   nodeId: number;
   uiId: number;
   element?: HTMLElement;
+  highlightElement?: HTMLElement;
 };
 
 export function getComponents(element: HTMLElement): ComponentReference[] {

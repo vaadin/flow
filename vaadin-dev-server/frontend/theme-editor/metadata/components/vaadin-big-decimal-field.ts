@@ -1,11 +1,11 @@
 import { ComponentMetadata } from '../model';
 import {
-  clearButtonProperties,
   errorMessageProperties,
   helperTextProperties,
   inputFieldProperties,
   labelProperties
 } from './vaadin-text-field';
+import { standardButtonProperties } from './vaadin-button';
 
 export default {
   tagName: 'vaadin-big-decimal-field',
@@ -34,7 +34,7 @@ export default {
     {
       selector: 'vaadin-big-decimal-field::part(clear-button)',
       displayName: 'Clear button',
-      properties: clearButtonProperties
+      properties: standardButtonProperties
     }
   ]
 } as ComponentMetadata;
