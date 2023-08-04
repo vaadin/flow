@@ -26,6 +26,7 @@ import com.vaadin.flow.dom.ElementConstants;
  * <p>
  * Example of a web component as a root element with a structure that supports
  * the 'label' property:
+ *
  * <pre>{@code
  *     <field-with-label>
  *         <shadow-root>

@@ -25,6 +25,7 @@ import com.vaadin.flow.dom.Element;
  * <p>
  * Root element should be a web component that uses slot for example in the
  * following way:
+ *
  * <pre>{@code
  *     <field-with-helper>
  *         <shadow-root>
@@ -35,6 +36,7 @@ import com.vaadin.flow.dom.Element;
  *         <span slot="helper">${helperText}</span>
  *     </field-with-helper>
  * }</pre>
+ *
  * @author Vaadin Ltd
  * @since 2.4
  */

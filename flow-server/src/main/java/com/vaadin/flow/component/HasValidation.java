@@ -21,8 +21,8 @@ import java.io.Serializable;
 /**
  * A component that supports input validation.
  * <p>
- * {@link HasValidation} should be implemented by component when used with
- * a Binder and input is validated with a Binder.
+ * {@link HasValidation} should be implemented by component when used with a
+ * Binder and input is validated with a Binder.
  *
  * @author Vaadin Ltd
  * @since 1.0.
