@@ -1,6 +1,7 @@
 import { ComponentMetadata } from '../model';
 import { fieldProperties, iconProperties, shapeProperties, textProperties } from './defaults';
 import { errorMessageProperties, helperTextProperties, labelProperties } from './vaadin-text-field';
+import { defaultHideOverlay, defaultShowOverlay } from '../../components/component-overlay-manager';
 
 export default {
   tagName: 'vaadin-select',
@@ -68,16 +69,7 @@ export default {
   async setupElement(select: any) {
     // Apply overlay class name
     select.overlayClass = select.getAttribute('class');
-    // Setup items
-    select.items = [{ label: 'Item', value: 'value' }];
-    // Select value
-    select.value = 'value';
-    // Open overlay
-    select.opened = true;
-    // Wait for overlay to open
-    await new Promise((resolve) => setTimeout(resolve, 10));
   },
-  async cleanupElement(select: any) {
-    select.opened = false;
-  }
+  openOverlay: defaultShowOverlay,
+  hideOverlay: defaultHideOverlay
 } as ComponentMetadata;

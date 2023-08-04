@@ -6,7 +6,8 @@ import {
   labelProperties
 } from './vaadin-text-field';
 import { iconProperties, shapeProperties, textProperties } from './defaults';
-import {ComponentReference} from "../../../component-util";
+import { ComponentReference } from '../../../component-util';
+import { defaultHideOverlay, defaultShowOverlay } from '../../components/component-overlay-manager';
 
 export default {
   tagName: 'vaadin-time-picker',
@@ -67,25 +68,15 @@ export default {
     // Wait for overlay to open
     await new Promise((resolve) => setTimeout(resolve, 10));
   },
+  // TODO overlay is opened but hidden on outside click
   openOverlay(component: ComponentReference) {
-    if(!component || !component.element){
-      return;
-    }
-    const element = component.element as any;
-    //opening overlay
-    element.open();
-    element.modeless = true;
+    defaultShowOverlay(<ComponentReference>{
+      element: component?.element?.shadowRoot.querySelector('vaadin-time-picker-combo-box')
+    });
   },
   hideOverlay(component: ComponentReference) {
-    if(component && component.element){
-      // restoring overridden listeners and methods.
-      const element = component.element as any;
-      element._shouldRemoveFocus = element._storedShouldRemoveFocus;
-      delete element._storedShouldRemoveFocus;
-      element.removeEventListener('vaadin-overlay-close', element.overlayCloseOverrideEvent);
-      delete element.overlayCloseOverrideEvent;
-      element.close();
-    }
+    defaultHideOverlay(<ComponentReference>{
+      element: component?.element?.shadowRoot.querySelector('vaadin-time-picker-combo-box')
+    });
   }
-
 } as ComponentMetadata;
