@@ -596,6 +596,18 @@ public class ShortcutRegistrationTest {
         Assert.assertTrue(hasKeyAInKeyDownExpression(newUI));
     }
 
+    @Test
+    public void toString_listenOnComponentsNotInitialized_doesNotFail() {
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, event -> {
+                }, Key.KEY_A);
+        Assert.assertTrue(registration.toString().contains("listenOn = []"));
+
+        clientResponse();
+        Assert.assertTrue(
+                registration.toString().matches(".*listenOn = \\[[^]]+],.*"));
+    }
+
     private Element mockLifecycle(boolean visible) {
         Mockito.when(lifecycleOwner.isVisible()).thenReturn(visible);
         Element element = ElementFactory.createAnchor();

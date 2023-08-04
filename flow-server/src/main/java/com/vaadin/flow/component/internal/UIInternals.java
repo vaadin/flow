@@ -597,11 +597,11 @@ public class UIInternals implements Serializable {
                             node.addDetachListener(detachListener));
                     return detachListener;
                 });
-        listener.invocationList.add(invocation);
-
-        SerializableConsumer callback = unused -> listener
-                .onInvocationCompleted(invocation);
-        invocation.then(callback, callback);
+        if (listener.invocationList.add(invocation)) {
+            SerializableConsumer callback = unused -> listener
+                    .onInvocationCompleted(invocation);
+            invocation.then(callback, callback);
+        }
     }
 
     private class PendingJavaScriptInvocationDetachListener implements Command {
@@ -1151,8 +1151,8 @@ public class UIInternals implements Serializable {
      *         <code>false</code> otherwise
      */
     public boolean isDirty() {
-        return getStateTree().isDirty()
-                || getPendingJavaScriptInvocations().count() != 0;
+        return getStateTree().isDirty() || getPendingJavaScriptInvocations()
+                .anyMatch(invocation -> invocation.getOwner().isVisible());
     }
 
     /**
