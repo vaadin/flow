@@ -16,10 +16,6 @@
 
 package com.vaadin.flow.router;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +25,10 @@ import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class QueryParametersTest {
 
@@ -237,4 +237,21 @@ public class QueryParametersTest {
         Assert.assertEquals(qp1.hashCode(), qp2.hashCode());
     }
 
+    @Test
+    public void fromString_emptyString_getsEmptyParameters() {
+        QueryParameters params = QueryParameters.fromString("");
+        assertEquals(Collections.emptyMap(), params.getParameters());
+    }
+
+    @Test
+    public void fromString_blankString_getsEmptyParameters() {
+        QueryParameters params = QueryParameters.fromString("    ");
+        assertEquals(Collections.emptyMap(), params.getParameters());
+    }
+
+    @Test
+    public void fromString_nullString_getsEmptyParameters() {
+        QueryParameters params = QueryParameters.fromString(null);
+        assertEquals(Collections.emptyMap(), params.getParameters());
+    }
 }
