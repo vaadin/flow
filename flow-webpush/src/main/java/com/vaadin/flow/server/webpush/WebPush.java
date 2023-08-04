@@ -65,7 +65,7 @@ public class WebPush {
     private String publicKey;
 
     private final SerializableConsumer<String> errorHandler = err -> {
-        throw new RuntimeException("Unable execute web push "
+        throw new RuntimeException("Unable to execute web push "
                 + "command. JS error is '" + err + "'");
     };
 
