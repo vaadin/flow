@@ -38,7 +38,7 @@ import elemental.json.JsonObject;
 @Category(SlowTests.class)
 public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
-    private static final String PINNED_VERSION = "3.2.17";
+    private static final String PINNED_VERSION = "3.5.1";
 
     @Override
     @Before

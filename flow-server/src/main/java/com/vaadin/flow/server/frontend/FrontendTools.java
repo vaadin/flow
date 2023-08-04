@@ -61,7 +61,7 @@ public class FrontendTools {
      */
     public static final String DEFAULT_NPM_VERSION = "8.19.3";
 
-    public static final String DEFAULT_PNPM_VERSION = "5.18.10";
+    public static final String DEFAULT_PNPM_VERSION = "7.33.5";
 
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
             + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
@@ -107,8 +107,8 @@ public class FrontendTools {
     private static final FrontendVersion WHITESPACE_ACCEPTING_NPM_VERSION = new FrontendVersion(
             7, 0);
 
-    private static final int SUPPORTED_NODE_MAJOR_VERSION = 12;
-    private static final int SUPPORTED_NODE_MINOR_VERSION = 22;
+    private static final int SUPPORTED_NODE_MAJOR_VERSION = 14;
+    private static final int SUPPORTED_NODE_MINOR_VERSION = 21;
     private static final int SUPPORTED_NPM_MAJOR_VERSION = 6;
     private static final int SUPPORTED_NPM_MINOR_VERSION = 14;
     private static final int SHOULD_WORK_NODE_MAJOR_VERSION = 8;
