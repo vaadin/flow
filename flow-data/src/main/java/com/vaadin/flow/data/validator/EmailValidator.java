@@ -26,9 +26,9 @@ package com.vaadin.flow.data.validator;
 @SuppressWarnings("serial")
 public class EmailValidator extends RegexpValidator {
 
-    private static final String PATTERN = "^" + "([a-zA-Z0-9_\\.\\-+])+" // local
-            + "@" + "[a-zA-Z0-9-.]+" // domain
-            + "\\." + "[a-zA-Z0-9-]{2,}" // tld
+    public static final String PATTERN = "^" + "([a-zA-Z0-9_\\.\\-+])+" // local
+            + "@" + "([a-zA-Z0-9-]+\\.)+" // domain with the dot separator
+            + "[a-zA-Z0-9-]{2,}" // before tld
             + "$";
 
     private final boolean allowEmptyValue;
