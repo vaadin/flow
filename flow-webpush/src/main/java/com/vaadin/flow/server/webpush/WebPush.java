@@ -65,8 +65,8 @@ public class WebPush {
     private String publicKey;
 
     private final SerializableConsumer<String> errorHandler = err -> {
-        throw new RuntimeException("Unable to retrieve extended "
-                + "client details. JS error is '" + err + "'");
+        throw new RuntimeException("Unable to execute web push "
+                + "command. JS error is '" + err + "'");
     };
 
     /**
