@@ -22,7 +22,19 @@ import com.vaadin.flow.dom.Element;
 /**
  * Mixin interface for field components that have helper text as property and
  * slots for inserting components.
- *
+ * <p>
+ * Root element should be a web component that uses slot for example in the
+ * following way:
+ * <pre>{@code
+ *     <field-with-helper>
+ *         <shadow-root>
+ *             ...
+ *             <slot name="helper"></slot>
+ *             ...
+ *         </shadow-root>
+ *         <span slot="helper">${helperText}</span>
+ *     </field-with-helper>
+ * }</pre>
  * @author Vaadin Ltd
  * @since 2.4
  */

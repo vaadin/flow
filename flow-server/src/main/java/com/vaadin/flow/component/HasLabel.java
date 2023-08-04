@@ -23,7 +23,17 @@ import com.vaadin.flow.dom.ElementConstants;
  * The default implementations set the label of the component to the given text
  * for {@link #getElement()}. Override all methods in this interface if the text
  * should be added to some other element.
- *
+ * <p>
+ * Example of a web component as a root element with a structure that supports
+ * the 'label' property:
+ * <pre>{@code
+ *     <field-with-label>
+ *         <shadow-root>
+ *             <input type="checkbox" id="input"/>
+ *             <label for="input">${label}</label>
+ *         </shadow-root>
+ *     </field-with-label>
+ * }</pre>
  *
  * @author Vaadin Ltd
  * @since
