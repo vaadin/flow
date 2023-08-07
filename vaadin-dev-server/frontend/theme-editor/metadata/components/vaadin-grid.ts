@@ -1,4 +1,4 @@
-import { ComponentMetadata, CssPropertyMetadata, EditorType } from '../model';
+import { ComponentMetadata, CssPropertyMetadata } from '../model';
 import { iconProperties, shapeProperties, textProperties } from './defaults';
 import { checkboxElement, checkedCheckboxElement } from './vaadin-checkbox';
 
@@ -20,11 +20,6 @@ export default {
       properties: [shapeProperties.borderColor, shapeProperties.borderWidth]
     },
     {
-      selector: 'vaadin-grid::part(cell)',
-      displayName: 'Cell (any)',
-      properties: cellProperties
-    },
-    {
       selector: 'vaadin-grid::part(header-cell)',
       displayName: 'Header row cell',
       properties: [
@@ -35,6 +30,11 @@ export default {
         textProperties.fontStyle,
         shapeProperties.backgroundColor
       ]
+    },
+    {
+      selector: 'vaadin-grid::part(body-cell)',
+      displayName: 'Body cell',
+      properties: cellProperties
     },
     {
       selector: 'vaadin-grid::part(even-row-cell)',

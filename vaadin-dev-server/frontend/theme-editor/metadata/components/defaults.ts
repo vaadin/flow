@@ -1,4 +1,4 @@
-import { EditorType } from '../model';
+import { CssPropertyMetadata, EditorType } from '../model';
 import { presets } from './presets';
 
 export const textProperties = {
@@ -102,3 +102,20 @@ export const iconProperties = {
     icon: 'font'
   }
 };
+
+export const standardShapeProperties = <CssPropertyMetadata[]>[
+  shapeProperties.backgroundColor,
+  shapeProperties.borderColor,
+  shapeProperties.borderWidth,
+  shapeProperties.borderRadius,
+  shapeProperties.padding
+];
+
+export const standardTextProperties = <CssPropertyMetadata[]>[
+  textProperties.textColor,
+  textProperties.fontSize,
+  textProperties.fontWeight,
+  textProperties.fontStyle
+];
+
+export const standardIconProperties = <CssPropertyMetadata[]>[iconProperties.iconColor, iconProperties.iconSize];
