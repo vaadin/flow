@@ -24,7 +24,7 @@ import com.vaadin.flow.dom.Style;
 /**
  * Represents {@link Component} which has class attribute and inline styles.
  * <p>
- * Interface can be used with any root element.
+ * Implementation of {@link #getElement()} may return any type of element.
  *
  * @author Vaadin Ltd
  * @since 1.0
