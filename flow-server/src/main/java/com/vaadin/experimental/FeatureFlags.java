@@ -69,6 +69,12 @@ public class FeatureFlags implements Serializable {
             "https://github.com/vaadin/docs/pull/2442/files", true,
             "com.vaadin.flow.server.webpush.WebPush");
 
+    public static final Feature FORM_FILLER_ADDON = new Feature(
+            "Form Filler addon (Experimental feature: can be removed or altered without prior notice in future versions.)",
+            "formFillerAddon",
+            "https://github.com/vaadin/form-filler-addon", true,
+            "com.vaadin.flow.ai.formfiller");
+
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -89,6 +95,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
         features.add(new Feature(SIDE_NAV_COMPONENT));
         features.add(new Feature(WEB_PUSH));
+        features.add(new Feature(FORM_FILLER_ADDON));
         loadProperties();
     }
 
