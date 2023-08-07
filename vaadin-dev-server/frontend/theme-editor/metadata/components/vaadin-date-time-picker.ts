@@ -3,7 +3,7 @@ import { errorMessageProperties, helperTextProperties, labelProperties } from '.
 
 export default {
   tagName: 'vaadin-date-time-picker',
-  displayName: 'DateTimePicker',
+  displayName: 'Date Time Picker',
   elements: [
     {
       selector: 'vaadin-date-time-picker::part(label)',

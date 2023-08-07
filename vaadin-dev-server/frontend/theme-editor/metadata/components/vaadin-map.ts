@@ -7,7 +7,7 @@ export default {
   elements: [
     {
       selector: 'vaadin-map',
-      displayName: 'Map',
+      displayName: 'Root element',
       properties: [
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,

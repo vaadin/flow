@@ -9,7 +9,7 @@ import { iconProperties, shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-time-picker',
-  displayName: 'TimePicker',
+  displayName: 'Time Picker',
   elements: [
     {
       selector: 'vaadin-time-picker::part(input-field)',

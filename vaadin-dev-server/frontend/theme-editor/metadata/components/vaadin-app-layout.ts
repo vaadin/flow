@@ -3,7 +3,7 @@ import { shapeProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-app-layout',
-  displayName: 'AppLayout',
+  displayName: 'App Layout',
   elements: [
     {
       selector: 'vaadin-app-layout',
@@ -17,7 +17,7 @@ export default {
     },
     {
       selector: 'vaadin-app-layout::part(navbar)',
-      displayName: 'Nav bar',
+      displayName: 'Navbar',
       properties: [shapeProperties.backgroundColor, shapeProperties.padding]
     }
   ]

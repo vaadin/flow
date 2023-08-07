@@ -10,7 +10,7 @@ import { standardButtonProperties } from './vaadin-button';
 
 export default {
   tagName: 'vaadin-integer-field',
-  displayName: 'IntegerField',
+  displayName: 'Integer Field',
   elements: [
     {
       selector: 'vaadin-integer-field::part(input-field)',

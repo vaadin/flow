@@ -5,7 +5,7 @@ import { presets } from './presets';
 
 export default {
   tagName: 'vaadin-radio-group',
-  displayName: 'RadioButtonGroup',
+  displayName: 'Radio Button Group',
   elements: [
     {
       selector: 'vaadin-radio-group',
