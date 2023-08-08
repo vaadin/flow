@@ -8,7 +8,7 @@ export default {
   elements: [
     {
       selector: 'vaadin-avatar',
-      displayName: 'Host',
+      displayName: 'Root element',
       properties: [
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,

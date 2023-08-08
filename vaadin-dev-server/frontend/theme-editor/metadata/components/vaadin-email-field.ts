@@ -9,7 +9,7 @@ import { standardButtonProperties } from './vaadin-button';
 
 export default {
   tagName: 'vaadin-email-field',
-  displayName: 'EmailField',
+  displayName: 'Email Field',
   elements: [
     {
       selector: 'vaadin-email-field::part(input-field)',

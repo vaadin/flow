@@ -33,7 +33,7 @@ export const errorMessageProperties: CssPropertyMetadata[] = [
 
 export default {
   tagName: 'vaadin-text-field',
-  displayName: 'TextField',
+  displayName: 'Text Field',
   elements: [
     {
       selector: 'vaadin-text-field::part(input-field)',

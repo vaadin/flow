@@ -10,7 +10,7 @@ import { standardButtonProperties } from './vaadin-button';
 
 export default {
   tagName: 'vaadin-password-field',
-  displayName: 'PasswordField',
+  displayName: 'Password Field',
   elements: [
     {
       selector: 'vaadin-password-field::part(input-field)',

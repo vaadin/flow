@@ -9,7 +9,7 @@ import { iconProperties, shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-combo-box',
-  displayName: 'ComboBox',
+  displayName: 'Combo Box',
   elements: [
     {
       selector: 'vaadin-combo-box::part(input-field)',

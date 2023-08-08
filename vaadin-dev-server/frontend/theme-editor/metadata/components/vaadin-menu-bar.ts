@@ -4,7 +4,7 @@ import { fieldProperties, shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-menu-bar',
-  displayName: 'MenuBar',
+  displayName: 'Menu Bar',
   elements: [
     {
       selector: 'vaadin-menu-bar vaadin-menu-bar-button',
