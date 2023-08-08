@@ -64,10 +64,9 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>${project.basedir}/node_modules</directory>
+                            <directory>${project.basedir}</directory>
                             <includes>
-                                <include>@polymer/**/*</include>
-                                <include>@vaadin/**/*</include>
+                                <include>/node_modules/**</include>
                             </includes>
                             <followSymlinks>false</followSymlinks>
                         </fileset>
