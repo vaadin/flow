@@ -3,11 +3,11 @@ import { iconProperties, shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-side-nav',
-  displayName: 'SideNav',
+  displayName: 'Side Navigation',
   elements: [
     {
       selector: 'vaadin-side-nav',
-      displayName: 'Side nav',
+      displayName: 'Root element',
       properties: [
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,

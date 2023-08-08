@@ -9,7 +9,7 @@ import { iconProperties, shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-date-picker',
-  displayName: 'DatePicker',
+  displayName: 'Date Picker',
   elements: [
     {
       selector: 'vaadin-date-picker::part(input-field)',

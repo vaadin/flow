@@ -3,7 +3,7 @@ import { errorMessageProperties, helperTextProperties, labelProperties } from '.
 
 export default {
   tagName: 'vaadin-custom-field',
-  displayName: 'CustomField',
+  displayName: 'Custom Field',
   elements: [
     {
       selector: 'vaadin-custom-field::part(label)',

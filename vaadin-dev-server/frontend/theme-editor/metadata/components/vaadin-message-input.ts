@@ -5,7 +5,7 @@ import { presets } from './presets';
 
 export default {
   tagName: 'vaadin-message-input',
-  displayName: 'MessageInput',
+  displayName: 'Message Input',
   elements: [
     {
       selector: 'vaadin-message-input vaadin-text-area::part(input-field)',

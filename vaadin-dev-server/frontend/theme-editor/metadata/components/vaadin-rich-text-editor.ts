@@ -3,7 +3,7 @@ import { shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-rich-text-editor',
-  displayName: 'RichTextEditor',
+  displayName: 'Rich Text Editor',
   elements: [
     {
       selector: 'vaadin-rich-text-editor',
