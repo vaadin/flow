@@ -97,6 +97,7 @@ export default {
     if(!overlay){
       return;
     }
+    overlay.close();
     overlay.modeless = overlay._storedModeless;
     delete overlay._storedModeless;
     document.documentElement.addEventListener('click', subMenu.__itemsOutsideClickListener);

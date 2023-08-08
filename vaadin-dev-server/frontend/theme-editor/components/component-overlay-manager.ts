@@ -63,7 +63,9 @@ export const defaultHideOverlay = (component: ComponentReference) => {
   if (component && component.element) {
     // restoring overridden listeners and methods.
     const element = component.element as any;
-    element._shouldRemoveFocus = element._storedShouldRemoveFocus;
+    if(element._storedShouldRemoveFocus){
+      element._shouldRemoveFocus = element._storedShouldRemoveFocus;
+    }
     delete element._storedShouldRemoveFocus;
     if (element._overlayElement) {
       element.removeEventListener('vaadin-overlay-close', element.overlayCloseOverrideEvent);
@@ -72,3 +74,41 @@ export const defaultHideOverlay = (component: ComponentReference) => {
     element.opened = false;
   }
 };
+
+export const defaultShowOverlayComboBoxMixin = (component: ComponentReference) => {
+  if (!component || !component.element) {
+    return;
+  }
+  const element = component.element as any;
+  //opening overlay
+  element.opened = true;
+
+  const comboBox = element.$.comboBox;
+  const overlay = comboBox.$.overlay;
+  if(!comboBox || !overlay){
+    return;
+  }
+  overlay._storedOutsideClickListener = (e: any) => {
+    e.stopPropagation();
+    e.preventDefault();
+    return false;
+  };
+  overlay.addEventListener('vaadin-overlay-outside-click', overlay._storedOutsideClickListener);
+  comboBox.removeEventListener('focusout', comboBox._boundOnFocusout);
+}
+export const defaultHideOverlayComboBoxMixin = (component: ComponentReference) => {
+  if (!component || !component.element) {
+    return;
+  }
+  const element = component.element as any;
+  //closing the overlay
+  element.opened = false;
+  const comboBox = element.$.comboBox;
+  const overlay = comboBox.$.overlay;
+  if(!comboBox || !overlay){
+    return;
+  }
+  overlay.removeEventListener('vaadin-overlay-outside-click', overlay._storedOutsideClickListener);
+  delete overlay._storedOutsideClickListener;
+  comboBox.addEventListener('focusout', comboBox._boundOnFocusout);
+}

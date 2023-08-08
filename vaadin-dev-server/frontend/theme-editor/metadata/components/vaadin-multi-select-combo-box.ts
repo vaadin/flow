@@ -6,6 +6,10 @@ import {
   labelProperties
 } from './vaadin-text-field';
 import { iconProperties, shapeProperties, textProperties } from './defaults';
+import {
+  defaultHideOverlayComboBoxMixin,
+  defaultShowOverlayComboBoxMixin
+} from "../../components/component-overlay-manager";
 
 export default {
   tagName: 'vaadin-multi-select-combo-box',
@@ -104,5 +108,7 @@ export default {
   },
   async cleanupElement(comboBox: any) {
     comboBox.opened = false;
-  }
+  },
+  openOverlay: defaultShowOverlayComboBoxMixin,
+  hideOverlay: defaultHideOverlayComboBoxMixin,
 } as ComponentMetadata;

@@ -1,7 +1,10 @@
 import {ComponentMetadata} from '../model';
 import {errorMessageProperties, helperTextProperties, inputFieldProperties, labelProperties} from './vaadin-text-field';
 import {iconProperties, shapeProperties, textProperties} from './defaults';
-import {ComponentReference} from '../../../component-util';
+import {
+  defaultHideOverlayComboBoxMixin,
+  defaultShowOverlayComboBoxMixin
+} from "../../components/component-overlay-manager";
 
 export default {
   tagName: 'vaadin-time-picker',
@@ -62,40 +65,6 @@ export default {
     // Wait for overlay to open
     await new Promise((resolve) => setTimeout(resolve, 10));
   },
-  openOverlay(component: ComponentReference) {
-    if (!component || !component.element) {
-      return;
-    }
-    const element = component.element as any;
-    //opening overlay
-    element.opened = true;
-    const comboBox = element.$.comboBox;
-    const overlay = comboBox.$.overlay;
-    if(!comboBox || !overlay){
-      return;
-    }
-    overlay._storedOutsideClickListener = e => {
-      e.stopPropagation();
-      e.preventDefault();
-      return false;
-    };
-    overlay.addEventListener('vaadin-overlay-outside-click', overlay._storedOutsideClickListener);
-    comboBox.removeEventListener('focusout', comboBox._boundOnFocusout);
-  },
-  hideOverlay(component: ComponentReference) {
-    if (!component || !component.element) {
-      return;
-    }
-    const element = component.element as any;
-    //closing the overlay
-    element.opened = false;
-    const comboBox = element.$.comboBox;
-    const overlay = comboBox.$.overlay;
-    if(!comboBox || !overlay){
-      return;
-    }
-    overlay.removeEventListener('vaadin-overlay-outside-click', overlay._storedOutsideClickListener);
-    delete overlay._storedOutsideClickListener;
-    comboBox.addEventListener('focusout', comboBox._boundOnFocusout);
-  }
+  openOverlay: defaultShowOverlayComboBoxMixin,
+  hideOverlay: defaultHideOverlayComboBoxMixin,
 } as ComponentMetadata;
