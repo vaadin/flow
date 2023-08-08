@@ -1,4 +1,5 @@
 import { ComponentMetadata, EditorType } from '../model';
+import { standardShapeProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-chart',
@@ -6,7 +7,12 @@ export default {
   elements: [
     {
       selector: 'vaadin-chart',
-      displayName: 'Chart',
+      displayName: 'Root element',
+      properties: standardShapeProperties
+    },
+    {
+      selector: 'vaadin-chart',
+      displayName: 'Data series',
       properties: [
         {
           propertyName: '--vaadin-charts-color-0',
