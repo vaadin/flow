@@ -3,16 +3,16 @@ import { iconProperties, shapeProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-crud',
-  displayName: 'Crud',
+  displayName: 'CRUD',
   elements: [
     {
       selector: 'vaadin-crud',
-      displayName: 'Crud',
+      displayName: 'Root element',
       properties: [shapeProperties.borderColor, shapeProperties.borderWidth]
     },
     {
       selector: 'vaadin-crud::part(toolbar)',
-      displayName: 'Toolbar',
+      displayName: 'Toolbar below grid',
       properties: [
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,
@@ -22,17 +22,17 @@ export default {
     },
     {
       selector: 'vaadin-crud::part(editor)',
-      displayName: 'Editor',
+      displayName: 'Editor panel',
       properties: [shapeProperties.backgroundColor]
     },
     {
       selector: 'vaadin-crud vaadin-crud-edit',
-      displayName: 'Edit button',
+      displayName: 'Edit button in grid',
       properties: [shapeProperties.backgroundColor, shapeProperties.borderColor, shapeProperties.borderWidth]
     },
     {
       selector: 'vaadin-crud vaadin-crud-edit::part(icon)::before',
-      displayName: 'Edit button icon',
+      displayName: 'Edit button in grid icon',
       properties: [iconProperties.iconColor, iconProperties.iconSize]
     }
   ]

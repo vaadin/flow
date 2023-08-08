@@ -9,7 +9,7 @@ import { standardButtonProperties } from './vaadin-button';
 
 export default {
   tagName: 'vaadin-text-area',
-  displayName: 'TextArea',
+  displayName: 'Text Area',
   elements: [
     {
       selector: 'vaadin-text-area::part(input-field)',

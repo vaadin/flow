@@ -4,7 +4,7 @@ import { iconProperties, shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-accordion-heading',
-  displayName: 'AccordionHeading',
+  displayName: 'Accordion Heading',
   description: html`You are trying to style selected heading only, if you wish to style all panel headings of given
     accordion please pick <code>vaadin-accordion</code> instead.`,
   notAccessibleDescription: html`If you wish to style all panel headings of current accordion please pick

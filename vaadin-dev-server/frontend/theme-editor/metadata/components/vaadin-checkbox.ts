@@ -19,7 +19,7 @@ export const hostElement = {
 
 export const checkboxElement = {
   selector: 'vaadin-checkbox::part(checkbox)',
-  displayName: 'Checkmark box',
+  displayName: 'Checkbox box',
   properties: [
     shapeProperties.backgroundColor,
     shapeProperties.borderColor,
@@ -31,7 +31,7 @@ export const checkboxElement = {
 export const checkedCheckboxElement = {
   selector: 'vaadin-checkbox[checked]::part(checkbox)',
   stateAttribute: 'checked',
-  displayName: 'Checkmark box (when checked)',
+  displayName: 'Checkbox box (when checked)',
   properties: [
     shapeProperties.backgroundColor,
     shapeProperties.borderColor,

@@ -11,7 +11,7 @@ export default {
   elements: [
     {
       selector: 'vaadin-grid-pro',
-      displayName: 'Grid',
+      displayName: 'Root element',
       properties: [shapeProperties.borderColor, shapeProperties.borderWidth]
     },
     {

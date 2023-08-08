@@ -3,7 +3,7 @@ import { iconProperties, shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-details-summary',
-  displayName: 'DetailsSummary',
+  displayName: 'Details Summary',
   elements: [
     {
       selector: 'vaadin-details-summary',

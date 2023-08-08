@@ -23,7 +23,7 @@ export default {
   elements: [
     {
       selector: 'vaadin-button',
-      displayName: 'Host',
+      displayName: 'Root element',
       properties: standardButtonProperties
     },
     {
