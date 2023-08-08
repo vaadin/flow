@@ -1,16 +1,16 @@
 import { ComponentMetadata } from '../model';
 import {
-  clearButtonProperties,
   errorMessageProperties,
   helperTextProperties,
   inputFieldProperties,
   labelProperties
 } from './vaadin-text-field';
 import { iconProperties } from './defaults';
+import { standardButtonProperties } from './vaadin-button';
 
 export default {
   tagName: 'vaadin-password-field',
-  displayName: 'PasswordField',
+  displayName: 'Password Field',
   elements: [
     {
       selector: 'vaadin-password-field::part(input-field)',
@@ -35,7 +35,7 @@ export default {
     {
       selector: 'vaadin-password-field::part(clear-button)',
       displayName: 'Clear button',
-      properties: clearButtonProperties
+      properties: standardButtonProperties
     },
     {
       selector: 'vaadin-password-field::part(reveal-button)',

@@ -3,7 +3,7 @@ import { shapeProperties, textProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-message-list',
-  displayName: 'MessageList',
+  displayName: 'Message List',
   elements: [
     {
       selector: 'vaadin-message-list',

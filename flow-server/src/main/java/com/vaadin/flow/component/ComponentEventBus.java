@@ -141,6 +141,11 @@ public class ComponentEventBus implements Serializable {
             Class<T> eventType, ComponentEventListener<T> listener,
             Consumer<DomListenerRegistration> domListenerConsumer) {
 
+        if (listener == null) {
+            throw new IllegalArgumentException(
+                    "component event listener cannot be null");
+        }
+
         ListenerWrapper<T> wrapper = new ListenerWrapper<>(listener);
 
         boolean isDomEvent = addDomTriggerIfNeeded(eventType, wrapper);

@@ -1,5 +1,6 @@
 package com.vaadin.base.devserver.themeeditor;
 
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.comments.LineComment;
@@ -9,6 +10,7 @@ import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithBlockStmt;
 import com.github.javaparser.ast.nodeTypes.NodeWithExpression;
+import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
@@ -43,7 +45,7 @@ public class JavaSourceModifier extends Editor {
     public static final LineComment LOCAL_CLASSNAME_COMMENT = new LineComment(
             "<theme-editor-local-classname>");
 
-    private VaadinContext context;
+    private final VaadinContext context;
 
     private static class FinalsHolder {
         boolean accessible;
@@ -125,7 +127,7 @@ public class JavaSourceModifier extends Editor {
      *            uiId of target component's UI
      * @param nodeId
      *            nodeIf of target component
-     * @return
+     * @return tag name of given element
      */
     public String getTag(Integer uiId, Integer nodeId) {
         assert uiId != null && nodeId != null;
@@ -335,7 +337,7 @@ public class JavaSourceModifier extends Editor {
             int nodeId) {
         Element element = session.findElement(uiId, nodeId);
         Optional<Component> c = element.getComponent();
-        if (!c.isPresent()) {
+        if (c.isEmpty()) {
             throw new ThemeEditorException(
                     "Only component locations are tracked. The given node id refers to an element and not a component.");
         }
@@ -345,7 +347,11 @@ public class JavaSourceModifier extends Editor {
     protected CompilationUnit getCompilationUnit(Component component) {
         ComponentTracker.Location createLocation = getCreateLocation(component);
         File sourceFolder = getSourceFolder(createLocation);
-        SourceRoot root = new SourceRoot(sourceFolder.toPath());
+        ParserConfiguration parserConfiguration = new ParserConfiguration();
+        parserConfiguration
+                .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
+        SourceRoot root = new SourceRoot(sourceFolder.toPath(),
+                parserConfiguration);
         return LexicalPreservingPrinter
                 .setup(root.parse("", createLocation.filename()));
     }
@@ -355,8 +361,27 @@ public class JavaSourceModifier extends Editor {
         ComponentTracker.Location createLocation = getCreateLocation(component);
         SimpleName scope = findLocalVariableOrField(cu,
                 createLocation.lineNumber());
-        return cu.accept(new LocalClassNameVisitor(overlay),
+        Node parentBlockNode = findParentBlockNode(cu, component);
+        return parentBlockNode.accept(new LocalClassNameVisitor(overlay),
                 scope != null ? scope.getIdentifier() : null);
+    }
+
+    protected Node findParentBlockNode(CompilationUnit cu,
+            Component component) {
+        ComponentTracker.Location createLocation = getCreateLocation(component);
+        Node node = cu.accept(new LineNumberVisitor(),
+                createLocation.lineNumber());
+        if (node instanceof BlockStmt) {
+            return node;
+        }
+        while (node.getParentNode().isPresent()) {
+            node = node.getParentNode().get();
+            if (node instanceof BlockStmt blockStmt) {
+                return blockStmt;
+            }
+        }
+        // fallback to CU
+        return cu;
     }
 
     protected Where findModificationWhere(CompilationUnit cu,

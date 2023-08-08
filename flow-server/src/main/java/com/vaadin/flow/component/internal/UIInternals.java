@@ -590,14 +590,15 @@ public class UIInternals implements Serializable {
             return Collections.emptyList();
         }
 
-        List<PendingJavaScriptInvocation> readyToSend = getPendingJavaScriptInvocations()
-                .filter(invocation -> invocation.getOwner().isVisible())
-                .peek(PendingJavaScriptInvocation::setSentToBrowser)
-                .collect(Collectors.toList());
+        Map<Boolean, List<PendingJavaScriptInvocation>> partition = getPendingJavaScriptInvocations()
+                .collect(Collectors.partitioningBy(
+                        invocation -> invocation.getOwner().isVisible()));
 
-        pendingJsInvocations = getPendingJavaScriptInvocations()
-                .filter(invocation -> !invocation.getOwner().isVisible())
-                .collect(Collectors.toCollection(ArrayList::new));
+        List<PendingJavaScriptInvocation> readyToSend = partition.get(true);
+        readyToSend.forEach(PendingJavaScriptInvocation::setSentToBrowser);
+
+        // ensure collection is mutable
+        pendingJsInvocations = new ArrayList<>(partition.get(false));
         pendingJsInvocations
                 .forEach(this::registerDetachListenerForPendingInvocation);
         return readyToSend;

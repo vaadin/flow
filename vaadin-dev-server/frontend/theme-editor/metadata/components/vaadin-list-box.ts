@@ -1,13 +1,13 @@
 import { ComponentMetadata } from '../model';
-import { fieldProperties, shapeProperties, textProperties } from './defaults';
+import { fieldProperties, shapeProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-list-box',
-  displayName: 'ListBox',
+  displayName: 'List Box',
   elements: [
     {
       selector: 'vaadin-list-box',
-      displayName: 'List Box',
+      displayName: 'Root element',
       properties: [
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,

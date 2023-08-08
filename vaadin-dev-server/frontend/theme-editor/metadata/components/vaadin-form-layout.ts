@@ -3,7 +3,7 @@ import { shapeProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-form-layout',
-  displayName: 'FormLayout',
+  displayName: 'Form Layout',
   elements: [
     {
       selector: 'vaadin-form-layout',
