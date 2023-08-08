@@ -1,6 +1,7 @@
 import { ComponentMetadata, EditorType } from '../model';
 import { presets } from './presets';
 import { fieldProperties, shapeProperties, textProperties } from './defaults';
+import {ComponentReference} from "../../../component-util";
 
 export default {
   tagName: 'vaadin-menu-bar',
@@ -63,8 +64,6 @@ export default {
         ]
       }
     ];
-    // Open overlay
-    menuBar.querySelector('vaadin-menu-bar-button').click();
     // Wait for overlay to open
     await new Promise((resolve) => setTimeout(resolve, 10));
   },
@@ -72,5 +71,34 @@ export default {
     // Menu bar does not close / remove its overlay when it is removed from DOM,
     // so we need to do it manually
     menuBar._close();
+  },
+  openOverlay(component: ComponentReference) {
+    // Open overlay
+    (component.element as any).querySelector('vaadin-menu-bar-button').click();
+    const subMenu = (component.element as any).shadowRoot.querySelector('vaadin-menu-bar-submenu');
+    if(!subMenu){
+      return;
+    }
+    const overlay = subMenu.$.overlay;
+    if(!overlay){
+      return;
+    }
+    overlay._storedModeless = overlay.modeless;
+    // overlay must be modeless for not preventing theme editor clicks.
+    overlay.modeless = true;
+    document.documentElement.removeEventListener('click', subMenu.__itemsOutsideClickListener);
+  },
+  hideOverlay(component: ComponentReference) {
+    const subMenu = (component.element as any).shadowRoot.querySelector('vaadin-menu-bar-submenu');
+    if(!subMenu){
+      return;
+    }
+    const overlay = subMenu.$.overlay;
+    if(!overlay){
+      return;
+    }
+    overlay.modeless = overlay._storedModeless;
+    delete overlay._storedModeless;
+    document.documentElement.addEventListener('click', subMenu.__itemsOutsideClickListener);
   }
 } as ComponentMetadata;
