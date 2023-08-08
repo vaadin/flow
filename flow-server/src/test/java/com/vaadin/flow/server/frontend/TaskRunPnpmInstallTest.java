@@ -43,7 +43,7 @@ import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.ToolStubInfo;
 
 public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
-    private static final String PINNED_VERSION = "3.2.17";
+    private static final String PINNED_VERSION = "3.5.1";
 
     @Override
     @Before
