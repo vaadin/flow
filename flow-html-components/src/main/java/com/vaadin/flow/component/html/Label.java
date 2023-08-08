@@ -50,14 +50,15 @@ import org.slf4j.LoggerFactory;
  *             <code>&lt;label&gt;</code> element, which is normally not needed
  *             within a Vaadin Flow application's high-level components. To use
  *             a Label that works in the older style of Vaadin 8 or Java Swing,
- *             and can be used both to label a component and to display loose 
- *             text, an alternative is the Label available in Classic 
- *             Components. This {@link Label} component / 
- *             <code>&lt;label&gt;</code> element is not meant for loose text 
- *             in the page - it should only be coupled with another component
- *             by using the {@link #setFor(Component)} or by adding them to
- *             it with the {@link #add(Component...)} method, for example if
- *             you use {@link Input}. 
+ *             and can be used both to label a component and to display loose
+ *             text, an alternative is the Label available in
+ *             <a href="https://vaadin.com/classic-components">Classic
+ *             Components</a>. This {@link Label} component /
+ *             <code>&lt;label&gt;</code> element is not meant for loose text in
+ *             the page - it should only be coupled with another component by
+ *             using the {@link #setFor(Component)} or by adding them to it with
+ *             the {@link #add(Component...)} method, for example if you use
+ *             {@link Input}.
  *
  */
 @Tag(Tag.LABEL)
