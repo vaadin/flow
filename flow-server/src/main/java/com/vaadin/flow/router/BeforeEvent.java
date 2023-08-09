@@ -473,7 +473,7 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Forward the navigation to show the given component with given route
+     * Forward the navigation to show the given component with given query
      * parameters instead of the component that is currently about to be
      * displayed.
      * <p>
