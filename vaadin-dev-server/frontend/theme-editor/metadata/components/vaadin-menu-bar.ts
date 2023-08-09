@@ -33,7 +33,7 @@ export default {
     },
     {
       selector: 'vaadin-menu-bar-overlay::part(overlay)',
-      displayName: 'Menus',
+      displayName: 'Overlay',
       properties: [
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,
@@ -44,7 +44,7 @@ export default {
     },
     {
       selector: 'vaadin-menu-bar-overlay vaadin-menu-bar-item',
-      displayName: 'Menu items',
+      displayName: 'Menu Items',
       properties: [textProperties.textColor, textProperties.fontSize, textProperties.fontWeight]
     }
   ],
