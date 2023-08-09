@@ -29,7 +29,7 @@ import { injectGlobalCss } from './styles';
 import { ComponentMetadata } from './metadata/model';
 import { ClassNameChangeEvent } from './components/class-name-editor';
 import { OpenCssEvent } from './components/property-list';
-import {componentOverlayManager} from "./components/component-overlay-manager";
+import { componentOverlayManager } from './components/component-overlay-manager';
 
 injectGlobalCss(css`
   .vaadin-theme-editor-highlight {
@@ -233,7 +233,6 @@ export class ThemeEditor extends LitElement {
       }
     }
   }
-
 
   disconnectedCallback() {
     super.disconnectedCallback();
