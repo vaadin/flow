@@ -47,7 +47,6 @@ public class Debouncer {
     private Timer idleTimer;
     private Timer intermediateTimer;
 
-    private boolean fireTrailing = false;
     private Consumer<String> lastCommand;
 
     private Debouncer(Node element, String identifier, double timeout) {
@@ -69,45 +68,68 @@ public class Debouncer {
      *         delaying
      */
     public boolean trigger(JsSet<String> phases, Consumer<String> command) {
-        lastCommand = command;
-        boolean triggerImmediately = false;
-        if (idleTimer == null) {
-            triggerImmediately = phases.has(JsonConstants.EVENT_PHASE_LEADING);
-            idleTimer = new Timer() {
-                @Override
-                public void run() {
-                    if (intermediateTimer != null) {
-                        intermediateTimer.cancel();
-                    }
-
-                    if (fireTrailing) {
-                        lastCommand.accept(JsonConstants.EVENT_PHASE_TRAILING);
-                    }
-
-                    unregister();
-                }
-            };
+        // If "leading" events are requested and no timers created yet,
+        // this is considered the leading event that is triggered immediately
+        // and there is no need to save it
+        final boolean triggerImmediately = phases
+                .has(JsonConstants.EVENT_PHASE_LEADING) && idleTimer == null
+                && intermediateTimer == null;
+        if (triggerImmediately) {
+            // this is the default on server side, but making it explicit
+            // costs only couple of bytes in the payload
+            command.accept(JsonConstants.EVENT_PHASE_LEADING);
+        } else {
+            // last command is saved for timers unless this is "leading" event
+            lastCommand = command;
         }
-
-        idleTimer.cancel();
-        idleTimer.schedule((int) timeout);
+        if (phases.has(JsonConstants.EVENT_PHASE_TRAILING)) {
+            if (idleTimer == null) {
+                idleTimer = new Timer() {
+                    @Override
+                    public void run() {
+                        if (lastCommand != null) {
+                            lastCommand
+                                    .accept(JsonConstants.EVENT_PHASE_TRAILING);
+                            lastCommand = null;
+                        }
+                        unregister(); // unregister to releease memory
+                    }
+                };
+            }
+            idleTimer.cancel();
+            idleTimer.schedule((int) timeout);
+        }
 
         if (intermediateTimer == null
                 && phases.has(JsonConstants.EVENT_PHASE_INTERMEDIATE)) {
             intermediateTimer = new Timer() {
                 @Override
                 public void run() {
-                    lastCommand.accept(JsonConstants.EVENT_PHASE_INTERMEDIATE);
+                    if (lastCommand != null) {
+                        lastCommand
+                                .accept(JsonConstants.EVENT_PHASE_INTERMEDIATE);
+                        lastCommand = null;
+                    } else {
+                        // no new last command during the period, stop timer
+                        // and unregister to avoid memory leaks
+                        unregister();
+                    }
                 }
             };
             intermediateTimer.scheduleRepeating((int) timeout);
         }
-
-        fireTrailing |= phases.has(JsonConstants.EVENT_PHASE_TRAILING);
         return triggerImmediately;
     }
 
     private void unregister() {
+        if (intermediateTimer != null) {
+            intermediateTimer.cancel();
+            intermediateTimer = null;
+        }
+        if (idleTimer != null) {
+            idleTimer.cancel();
+            idleTimer = null;
+        }
         JsMap<String, JsMap<Double, Debouncer>> elementMap = debouncers
                 .get(element);
         if (elementMap == null) {
@@ -183,17 +205,27 @@ public class Debouncer {
                     Node key) {
                 jsmap.mapValues().forEach(value -> {
                     value.mapValues().forEach(debouncer -> {
-                        debouncer.lastCommand.accept(null);
-                        executedCommands.add(debouncer.lastCommand);
-                        // Reschedule the idleTimer so as if an event has been
-                        // triggered
-                        // and let the intermediateTimer continue to work as
-                        // expected
                         if (debouncer.idleTimer != null) {
-                            debouncer.idleTimer.cancel();
-                            debouncer.idleTimer
-                                    .schedule((int) debouncer.timeout);
+                            // if there is trailing timer, consider as extra
+                            // trailing event
+                            debouncer.lastCommand
+                                    .accept(JsonConstants.EVENT_PHASE_TRAILING);
+                        } else {
+                            // Otherwise, must be an extra intermediate event.
+                            // Because of an other triggered event, this now
+                            // comes bit early, but most likely this is better
+                            // than in wrong order
+                            debouncer.lastCommand.accept(
+                                    JsonConstants.EVENT_PHASE_INTERMEDIATE);
+                            // Restart intermediate timer so that there won't
+                            // be triggering more than one event "quicker than
+                            // orderd" in the orginal schedule.
+                            debouncer.intermediateTimer
+                                    .scheduleRepeating((int) debouncer.timeout);
                         }
+                        executedCommands.add(debouncer.lastCommand);
+                        // clean so that idle timer can't fire it again
+                        debouncer.lastCommand = null;
                     });
                 });
             }
