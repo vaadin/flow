@@ -24,7 +24,7 @@ import com.vaadin.flow.dom.ElementConstants;
  * for {@link #getElement()}. Override all methods in this interface if the text
  * should be added to some other element.
  * <p>
- * Example of a web component as a root element with a structure that supports
+ * Root element should be a web component with a structure that supports
  * the 'label' property:
  *
  * <pre>{@code
