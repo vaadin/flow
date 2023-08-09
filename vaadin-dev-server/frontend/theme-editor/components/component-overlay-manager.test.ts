@@ -7,7 +7,6 @@ import '../editor';
 import {PickerOptions, PickerProvider} from "../../component-picker";
 import {ComponentReference} from "../../component-util";
 import VaadinComboBox from "../metadata/components/vaadin-combo-box";
-import {ComponentMetadata} from "../metadata/model";
 import VaadinSelect from "../metadata/components/vaadin-select";
 import VaadinDatePicker from "../metadata/components/vaadin-date-picker";
 import VaadinMenuBar from "../metadata/components/vaadin-menu-bar";
@@ -88,7 +87,7 @@ const componentsWithOverlay = [
 describe('component overlay manager', () => {
     let editor: ThemeEditor;
     let currentComponentReference: ComponentReference;
-    let apiMock;
+    let apiMock: any;
     beforeEach(async () => {
         const connectionMock = {
             onMessage: sinon.spy(),
@@ -131,8 +130,8 @@ describe('component overlay manager', () => {
     componentsWithOverlay.forEach(componentDefinition => {
        it(`Overlay must be visible after picking for the ${componentDefinition.name}`, async () => {
            const component = await createComponent(componentDefinition.name);
-           component.focus();
-           await pickComponent(component);
+           component!.focus();
+           await pickComponent(component!);
            const overlay = document.getElementsByTagName(componentDefinition.overlayTagName).item(0);
            expect(overlay).not.null;
            expect(overlay).to.be.exist;
@@ -140,39 +139,39 @@ describe('component overlay manager', () => {
 
         it(`Overlay must be hidden when hide overlay method is called for the ${componentDefinition.name}`, async () => {
             const component = await createComponent(componentDefinition.name);
-            await pickComponent(component);
+            await pickComponent(component!);
             const overlay = document.getElementsByTagName(componentDefinition.overlayTagName).item(0);
             componentOverlayManager.hideOverlay();
             //waiting overlay to be hidden.
             await aTimeout(50);
-            const openedAttribute = overlay.hasAttribute('opened');
+            const openedAttribute = overlay!.hasAttribute('opened');
             expect(openedAttribute).to.be.false;
         }).timeout(5000);
         it(`Expanding editor must show/hide the overlay for the ${componentDefinition.name}`, async () => {
             const component = await createComponent(componentDefinition.name);
-            await pickComponent(component);
+            await pickComponent(component!);
             editor.expanded = false;
             await elementUpdated(editor);
             const overlay = document.getElementsByTagName(componentDefinition.overlayTagName).item(0);
             //waiting overlay to be hidden.
             await aTimeout(50);
-            const openedAttribute = overlay.hasAttribute('opened');
+            const openedAttribute = overlay!.hasAttribute('opened');
             expect(openedAttribute).to.be.false;
             editor.expanded = true;
             await elementUpdated(editor);
             await aTimeout(50);
-            expect(overlay.hasAttribute('opened')).to.be.true;
+            expect(overlay!.hasAttribute('opened')).to.be.true;
         }).timeout(5000);
         it(`Overlay must be visible when clicking on the theme editor panel ${componentDefinition.name}`, async () => {
             const component = await createComponent(componentDefinition.name);
-            await pickComponent(component);
-            let element = editor.shadowRoot.querySelector('vaadin-dev-tools-theme-class-name-editor') as HTMLElement;
+            await pickComponent(component!);
+            let element = editor.shadowRoot!.querySelector('vaadin-dev-tools-theme-class-name-editor') as HTMLElement;
             element.click();
             const overlay = document.getElementsByTagName(componentDefinition.overlayTagName).item(0);
             //waiting overlay to be hidden.
             expect(overlay).not.null;
             expect(overlay).to.be.exist;
-            expect(overlay.hasAttribute('opened')).to.be.true;
+            expect(overlay!.hasAttribute('opened')).to.be.true;
         }).timeout(5000);
     });
 
@@ -189,5 +188,4 @@ describe('component overlay manager', () => {
         await elementUpdated(element);
         return element;
     }
-    const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 });
