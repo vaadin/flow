@@ -17,7 +17,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 
 @Tag("paper-input")
-@NpmPackage(value = "@polymer/paper-input", version = "3.0.2")
+@NpmPackage(value = "@polymer/paper-input", version = "3.2.1")
 @JsModule("@polymer/paper-input/paper-input.js")
 public class PaperInput extends Component {
     private static final PropertyDescriptor<String, String> valueDescriptor = PropertyDescriptors
