@@ -15,6 +15,14 @@
     "@rollup/plugin-typescript": "^11.1.1",
     "@types/chai": "^4.3.4",
     "@types/sinon": "^10.0.13",
+    "@vaadin/combo-box": "24.1.4",
+    "@vaadin/multi-select-combo-box": "24.1.4",
+    "@vaadin/date-picker": "24.1.4",
+    "@vaadin/menu-bar": "24.1.4",
+    "@vaadin/overlay": "24.1.4",
+    "@vaadin/select": "24.1.4",
+    "@vaadin/time-picker": "24.1.4",
+    "@vaadin/component-base": "24.1.4",
     "@web/dev-server": "^0.1.35",
     "@web/dev-server-esbuild": "^0.3.3",
     "@web/test-runner": "^0.15.0",
@@ -25,9 +33,9 @@
     "vite": "^4.1.4"
   },
   "dependencies": {
-    "@vaadin/button": "24.0.0",
-    "@vaadin/overlay": "24.0.0",
-    "@vaadin/select": "24.0.0",
+    "@vaadin/button": "24.1.4",
+    "@vaadin/overlay": "24.1.4",
+    "@vaadin/select": "24.1.4",
     "construct-style-sheets-polyfill": "^3.1.0",
     "lit": "^2.6.1",
     "vanilla-colorful": "^0.7.2"
