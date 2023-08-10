@@ -176,9 +176,9 @@ abstract class AbstractUpdateImports implements Runnable {
         }
 
         for (Entry<ChunkInfo, List<CssData>> entry : css.entrySet()) {
-            boolean hasLegacyStyling = entry.getValue().stream()
+            boolean hasThemeFor = entry.getValue().stream()
                     .anyMatch(cssData -> cssData.getThemefor() != null);
-            if (isLazyRoute(entry.getKey()) && !hasLegacyStyling) {
+            if (isLazyRoute(entry.getKey()) && !hasThemeFor) {
                 List<String> cssLines = getCssLines(entry.getValue());
                 if (!cssLines.isEmpty()) {
                     lazyCss.put(entry.getKey(), cssLines);

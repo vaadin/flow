@@ -87,7 +87,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     }
 
-    @Route(value = "themeform")
+    @Route(value = "themefor")
     @CssImport(value = "./foo.css", themeFor = "something")
     public static class ThemeForCssImport extends Component {
 
