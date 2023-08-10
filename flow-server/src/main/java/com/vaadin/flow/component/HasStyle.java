@@ -24,7 +24,10 @@ import com.vaadin.flow.dom.Style;
 /**
  * Represents {@link Component} which has class attribute and inline styles.
  * <p>
- * Implementation of {@link #getElement()} may return any type of element.
+ * Implementation of {@link #getElement()} should return HTML element or web
+ * component that supports <a href=
+ * "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style">inline
+ * style attribute</a>.
  *
  * @author Vaadin Ltd
  * @since 1.0
