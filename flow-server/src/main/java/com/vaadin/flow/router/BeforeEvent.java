@@ -1034,6 +1034,15 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
+     * Check if we have query parameters for forwarded and rerouted URL.
+     *
+     * @return query parameters exists
+     */
+    public boolean hasRedirectQueryParameters() {
+        return redirectQueryParameters != null;
+    }
+
+    /**
      * Gets the query parameters for forwarded and rerouted URL. {@code null}
      * means that query parameters of the event are preserved in the forwarded
      * and rerouted URL.

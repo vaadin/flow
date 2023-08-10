@@ -754,7 +754,7 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         QueryParameters queryParameters = beforeNavigation
-                .getRedirectQueryParameters() != null
+                .hasRedirectQueryParameters()
                         ? beforeNavigation.getRedirectQueryParameters()
                         : event.getLocation().getQueryParameters();
 
