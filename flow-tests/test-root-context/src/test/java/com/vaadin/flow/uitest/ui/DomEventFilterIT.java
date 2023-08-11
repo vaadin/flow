@@ -49,7 +49,7 @@ public class DomEventFilterIT extends ChromeBrowserTest {
         /*
          * Note, the client side implementation "merges" all these settings in
          * the single "Debouncer" (per element-eventtype-timeout, not per server
-         * side listenr). This is probably an issue in the original
+         * side listener). This is probably an issue in the original
          * implementation that could maybe be refactored in some upcoming
          * release, but then we should create identifiers for server side
          * listeners and handle those somehow separately. My hunch is That it is
