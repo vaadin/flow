@@ -78,27 +78,30 @@ public class Debouncer {
             // this is the default on server side, but making it explicit
             // costs only couple of bytes in the payload
             command.accept(JsonConstants.EVENT_PHASE_LEADING);
-        } else {
-            // last command is saved for timers unless this is "leading" event
+        }
+        if (!triggerImmediately
+                && (phases.has(JsonConstants.EVENT_PHASE_TRAILING) || phases
+                        .has(JsonConstants.EVENT_PHASE_INTERMEDIATE))) {
+            // last command is saved for timers unless this is a "leading" event
             lastCommand = command;
         }
-        if (phases.has(JsonConstants.EVENT_PHASE_TRAILING)) {
-            if (idleTimer == null) {
-                idleTimer = new Timer() {
-                    @Override
-                    public void run() {
-                        if (lastCommand != null) {
-                            lastCommand
-                                    .accept(JsonConstants.EVENT_PHASE_TRAILING);
-                            lastCommand = null;
-                        }
-                        unregister(); // unregister to releease memory
+        // idleTimer is used for trailing/leading, should always be there?
+        if ((phases.has(JsonConstants.EVENT_PHASE_LEADING)
+                || phases.has(JsonConstants.EVENT_PHASE_TRAILING))
+                && idleTimer == null) {
+            idleTimer = new Timer() {
+                @Override
+                public void run() {
+                    if (lastCommand != null) {
+                        lastCommand.accept(JsonConstants.EVENT_PHASE_TRAILING);
+                        lastCommand = null;
                     }
-                };
-            }
-            idleTimer.cancel();
-            idleTimer.schedule((int) timeout);
+                    unregister(); // unregister to releease memory
+                }
+            };
         }
+        idleTimer.cancel();
+        idleTimer.schedule((int) timeout);
 
         if (intermediateTimer == null
                 && phases.has(JsonConstants.EVENT_PHASE_INTERMEDIATE)) {

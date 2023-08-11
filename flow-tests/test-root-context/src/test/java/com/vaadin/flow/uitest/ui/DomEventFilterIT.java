@@ -24,8 +24,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import java.time.Instant;
-import java.time.LocalDateTime;
 
 public class DomEventFilterIT extends ChromeBrowserTest {
 
@@ -88,6 +86,27 @@ public class DomEventFilterIT extends ChromeBrowserTest {
         // even though timer didn't yet fire for debouncing
         assertMessages(nextMsg++, "input:abc, phase:TRAILING", "click");
         nextMsg++; // two events came in one batch
+
+        WebElement leading = findElement(By.id("leading"));
+
+        leading.sendKeys("a");
+        assertMessages(nextMsg++, "input:a, phase:LEADING");
+
+        // new events should be ignored until the timeout
+        leading.sendKeys("b");
+        assertMessages(nextMsg);
+        Thread.sleep(200);
+        leading.sendKeys("c");
+        assertMessages(nextMsg);
+
+        Thread.sleep(1250);
+        // even still should be just the original event reported
+        assertMessages(nextMsg);
+
+        // but now the beginning of "next burst" again should be synced right
+        // away
+        leading.sendKeys("d");
+        assertMessages(nextMsg++, "input:abcd, phase:LEADING");
 
         // This element now has "throttling" ~ leading event and then somewhat
         // fixed rate. Still, if another event, like click, happens, the queue
