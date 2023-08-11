@@ -52,7 +52,7 @@ public class DomEventFilterIT extends ChromeBrowserTest {
          * side listener). This is probably an issue in the original
          * implementation that could maybe be refactored in some upcoming
          * release, but then we should create identifiers for server side
-         * listeners and handle those somehow separately. My hunch is That it is
+         * listeners and handle those somehow separately. My hunch is that it is
          * better just to documenta the limitations and focus on somethign that
          * actually benefits users. Today, real world use cases seem to be
          * somewhat in good shape.
