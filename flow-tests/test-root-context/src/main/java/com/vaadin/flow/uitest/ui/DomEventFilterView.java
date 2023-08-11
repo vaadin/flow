@@ -78,9 +78,9 @@ public class DomEventFilterView extends AbstractDivView {
         Element debounce = new Element("input");
         debounce.setAttribute("id", "debounce");
         debounce.addEventListener("input", e -> {
-            addMessage("input:%s, phase:%s".formatted(e.getEventData().getString("element.value"), e.getPhase()));
-        }).addEventData("element.value")
-                .debounce(1000);
+            addMessage("input:%s, phase:%s".formatted(
+                    e.getEventData().getString("element.value"), e.getPhase()));
+        }).addEventData("element.value").debounce(1000);
         debounce.addEventListener("click", e -> {
             addMessage("click");
         });
@@ -88,14 +88,18 @@ public class DomEventFilterView extends AbstractDivView {
         Element leadingAndTrailing = new Element("input");
         leadingAndTrailing.setAttribute("id", "leading-trailing");
         leadingAndTrailing.addEventListener("input", e -> {
-            addMessage("input:%s, phase:%s".formatted(e.getEventData().getString("element.value"), e.getPhase()));
-        }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING, DebouncePhase.TRAILING);
-        
+            addMessage("input:%s, phase:%s".formatted(
+                    e.getEventData().getString("element.value"), e.getPhase()));
+        }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING,
+                DebouncePhase.TRAILING);
+
         Element throttle = new Element("input");
         throttle.setAttribute("id", "throttle");
         throttle.addEventListener("input", e -> {
-            addMessage("input:%s, phase:%s".formatted(e.getEventData().getString("element.value"), e.getPhase()));
-        }).addEventData("element.value").throttle(2000); // this is leading + intermediate
+            addMessage("input:%s, phase:%s".formatted(
+                    e.getEventData().getString("element.value"), e.getPhase()));
+        }).addEventData("element.value").throttle(2000); // this is leading +
+                                                         // intermediate
         throttle.addEventListener("click", e -> {
             addMessage("click");
         });
@@ -106,8 +110,8 @@ public class DomEventFilterView extends AbstractDivView {
                 e -> addMessage("Component: " + e.getValue()), 2000);
 
         messages.setAttribute("id", "messages");
-        getElement().appendChild(space, debounce, leadingAndTrailing, throttle, component.getElement(),
-                messages);
+        getElement().appendChild(space, debounce, leadingAndTrailing, throttle,
+                component.getElement(), messages);
 
         // tests for#5090
         final AtomicReference<DomListenerRegistration> atomicReference = new AtomicReference<>();

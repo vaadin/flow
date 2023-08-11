@@ -49,16 +49,16 @@ public class DomEventFilterIT extends ChromeBrowserTest {
         open();
 
         /*
-         * Note, the client side implementation "merges" all these settings
-         * in the single "Debouncer" (per element-eventtype-timeout, not per
-         * server side listenr). This is probably an issue in the 
-         * original implementation that could maybe be refactored in some
-         * upcoming release, but then we should create identifiers for server 
-         * side listeners and handle those somehow separately. My hunch is
-         * That it is better just to documenta the limitations and focus on
-         * somethign that actually benefits users. Today, real world use cases
-         * seem to be somewhat in good shape.
-         * 
+         * Note, the client side implementation "merges" all these settings in
+         * the single "Debouncer" (per element-eventtype-timeout, not per server
+         * side listenr). This is probably an issue in the original
+         * implementation that could maybe be refactored in some upcoming
+         * release, but then we should create identifiers for server side
+         * listeners and handle those somehow separately. My hunch is That it is
+         * better just to documenta the limitations and focus on somethign that
+         * actually benefits users. Today, real world use cases seem to be
+         * somewhat in good shape.
+         *
          * Thus, even though the element can be configured to have both trailing
          * and intermediate configured for the same element, for different
          * listeners, only one settings are currently supported. leading phase
@@ -76,7 +76,7 @@ public class DomEventFilterIT extends ChromeBrowserTest {
          * Wait untill the idle timer fires
          */
         Thread.sleep(1250);
-        
+
         int nextMsg = 0;
 
         assertMessages(nextMsg++, "input:ab, phase:TRAILING");
@@ -86,7 +86,7 @@ public class DomEventFilterIT extends ChromeBrowserTest {
 
         // Ensure the server got both events, in correct order and immediately,
         // even though timer didn't yet fire for debouncing
-        assertMessages(nextMsg++, "input:abc, phase:TRAILING","click");
+        assertMessages(nextMsg++, "input:abc, phase:TRAILING", "click");
         nextMsg++; // two events came in one batch
 
         // This element now has "throttling" ~ leading event and then somewhat
@@ -109,25 +109,26 @@ public class DomEventFilterIT extends ChromeBrowserTest {
         // new leading should be triggered
         throttle.sendKeys("b");
         assertMessages(nextMsg++, "input:ab, phase:LEADING");
-        
-        // This should hold in queue and send together with the next after 
+
+        // This should hold in queue and send together with the next after
         // 1000ms from the latest leading
         throttle.sendKeys("c");
         Thread.sleep(10);
         throttle.sendKeys("d");
-        
-        long millisToNextIntermediate = ((burstStart + 2000) - System.currentTimeMillis());
-        
+
+        long millisToNextIntermediate = ((burstStart + 2000)
+                - System.currentTimeMillis());
+
         Thread.sleep(millisToNextIntermediate + 100);
 
         // now only one event should have arrived
         assertMessages(nextMsg++, "input:abcd, phase:INTERMEDIATE");
-        
-        
+
         WebElement leadingTrailing = findElement(By.id("leading-trailing"));
 
         leadingTrailing.sendKeys("a");
-        assertMessages(nextMsg++, "input:a, phase:LEADING"); // leading should come right away
+        assertMessages(nextMsg++, "input:a, phase:LEADING"); // leading should
+                                                             // come right away
 
         leadingTrailing.sendKeys("b");
         Thread.sleep(500);
@@ -150,22 +151,24 @@ public class DomEventFilterIT extends ChromeBrowserTest {
     @Test
     public void componentWithDebounce() throws InterruptedException {
         open();
-        
+
         // note for maintainers:
-        // sendkeys can be rather slow initially, especially in local environments
+        // sendkeys can be rather slow initially, especially in local
+        // environments
         // Thus the test debounce latency is upped to 2000ms to avoid timing
         // issues
 
         WebElement input = findElement(By.id("debounce-component"));
-        
+
         input.sendKeys("a");
         assertMessages(0);
         Thread.sleep(500);
         input.sendKeys("b");
         assertMessages(0);
 
-        Thread.sleep(2001); // should be more than enough as the cmd itsel is slot
-        
+        Thread.sleep(2001); // should be more than enough as the cmd itsel is
+                            // slot
+
         assertMessages(0, "Component: ab");
 
         input.sendKeys("c");
