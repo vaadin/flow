@@ -74,11 +74,6 @@ public class Debouncer {
         final boolean triggerImmediately = phases
                 .has(JsonConstants.EVENT_PHASE_LEADING) && idleTimer == null
                 && intermediateTimer == null;
-        if (triggerImmediately) {
-            // this is the default on server side, but making it explicit
-            // costs only couple of bytes in the payload
-            command.accept(JsonConstants.EVENT_PHASE_LEADING);
-        }
         if (!triggerImmediately
                 && (phases.has(JsonConstants.EVENT_PHASE_TRAILING) || phases
                         .has(JsonConstants.EVENT_PHASE_INTERMEDIATE))) {
@@ -86,22 +81,23 @@ public class Debouncer {
             lastCommand = command;
         }
         // idleTimer is used for trailing/leading, should always be there?
-        if ((phases.has(JsonConstants.EVENT_PHASE_LEADING)
-                || phases.has(JsonConstants.EVENT_PHASE_TRAILING))
-                && idleTimer == null) {
-            idleTimer = new Timer() {
-                @Override
-                public void run() {
-                    if (lastCommand != null) {
-                        lastCommand.accept(JsonConstants.EVENT_PHASE_TRAILING);
-                        lastCommand = null;
+        if (phases.has(JsonConstants.EVENT_PHASE_LEADING) 
+                || phases.has(JsonConstants.EVENT_PHASE_TRAILING)) {
+            if(idleTimer == null) {
+                idleTimer = new Timer() {
+                    @Override
+                    public void run() {
+                        if (lastCommand != null) {
+                            lastCommand.accept(JsonConstants.EVENT_PHASE_TRAILING);
+                            lastCommand = null;
+                        }
+                        unregister(); // unregister to releease memory
                     }
-                    unregister(); // unregister to releease memory
-                }
-            };
+                };
+            }
+            idleTimer.cancel();
+            idleTimer.schedule((int) timeout);
         }
-        idleTimer.cancel();
-        idleTimer.schedule((int) timeout);
 
         if (intermediateTimer == null
                 && phases.has(JsonConstants.EVENT_PHASE_INTERMEDIATE)) {
@@ -209,10 +205,14 @@ public class Debouncer {
                 jsmap.mapValues().forEach(value -> {
                     value.mapValues().forEach(debouncer -> {
                         if (debouncer.idleTimer != null) {
-                            // if there is trailing timer, consider as extra
-                            // trailing event
-                            debouncer.lastCommand
-                                    .accept(JsonConstants.EVENT_PHASE_TRAILING);
+                            if(debouncer.lastCommand != null) {
+                                // if there is trailing timer, consider as extra
+                                // trailing event
+                                debouncer.lastCommand
+                                        .accept(JsonConstants.EVENT_PHASE_TRAILING);
+                            } else {
+                                // "Debouncer was in queue, but no command. Likely a leading only subscription."
+                            }
                         } else {
                             // Otherwise, must be an extra intermediate event.
                             // Because of an other triggered event, this now
@@ -226,9 +226,11 @@ public class Debouncer {
                             debouncer.intermediateTimer
                                     .scheduleRepeating((int) debouncer.timeout);
                         }
-                        executedCommands.add(debouncer.lastCommand);
-                        // clean so that idle timer can't fire it again
-                        debouncer.lastCommand = null;
+                        if(debouncer.lastCommand != null) {
+                            executedCommands.add(debouncer.lastCommand);
+                            // clean so that idle timer can't fire it again
+                            debouncer.lastCommand = null;
+                        }
                     });
                 });
             }
