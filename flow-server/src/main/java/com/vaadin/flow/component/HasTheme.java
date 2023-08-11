@@ -22,6 +22,8 @@ import com.vaadin.flow.dom.ThemeList;
 
 /**
  * Represents {@link Component} which has theme attribute.
+ * <p>
+ * Implementation of {@link #getElement()} may return any type of element.
  *
  * @author Vaadin Ltd
  * @since 1.0

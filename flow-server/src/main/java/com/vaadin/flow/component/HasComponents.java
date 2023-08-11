@@ -32,6 +32,10 @@ import com.vaadin.flow.dom.Element;
  * interface provides an explicit API for components that explicitly supports
  * adding and removing arbitrary child components.
  * <p>
+ * {@link HasComponents} is generally implemented by layouts or components whose
+ * primary function is to host child components. It isn't for example
+ * implemented by non-layout components such as fields.
+ * <p>
  * The default implementations assume that children are attached to
  * {@link #getElement()}. Override all methods in this interface if the
  * components should be added to some other element.
