@@ -135,7 +135,7 @@ public interface DomListenerRegistration extends Registration {
      * <dd>In this case you only get notified of this event once right away on
      * the server side. Other events of the same type will be ignored until the
      * timeout has passed.</dd>
-     * <dt>DebouncePhase.LEADING + DebouncePhase.TIMEOUT</dt>
+     * <dt>DebouncePhase.LEADING + DebouncePhase.TRAILING</dt>
      * <dd>This works like with the basic DebouncePhase.TRAILING, but in
      * addition the first event of the burst gets reported rightaway. This is
      * good if your want normal debouncing, but you are also interested to know

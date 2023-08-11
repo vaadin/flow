@@ -50,7 +50,9 @@ public enum DebouncePhase {
      * keystroke, but still want periodic updates. This is sometimes useful in
      * combination with {@link #LEADING} so that the first event is sent
      * immediately. Can also be combined with {@link #TRAILING} to get a
-     * separate event when the input has stopped.
+     * separate event when the input has stopped, although the functionality
+     * cannot be guaranteed (in case INTERMEDIATE timer clears the event queue,
+     * last event will not be reported twice).
      */
     INTERMEDIATE(JsonConstants.EVENT_PHASE_INTERMEDIATE),
 
