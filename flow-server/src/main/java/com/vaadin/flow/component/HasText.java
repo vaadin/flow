@@ -22,12 +22,12 @@ import java.util.stream.Stream;
 /**
  * A component that supports text content.
  * <p>
- * {@link HasText} should be implemented by components whose primary function is
- * to have textual content. It shouldn't be implemented for example by layouts
- * since {@link #setText(String)} will remove all existing child components and
- * child elements. To mix text and child components in a component that also
- * supports child components, use {@link HasComponents#add(Component...)} with
- * the {@link Text} component for the textual parts.
+ * {@link HasText} is generally implemented by components whose primary function
+ * is to have textual content. It isn't implemented for example by layouts since
+ * {@link #setText(String)} will remove all existing child components and child
+ * elements. To mix text and child components in a component that also supports
+ * child components, use {@link HasComponents#add(Component...)} with the
+ * {@link Text} component for the textual parts.
  * <p>
  * The default implementations set the text as text content of
  * {@link #getElement()}. Override all methods in this interface if the text
