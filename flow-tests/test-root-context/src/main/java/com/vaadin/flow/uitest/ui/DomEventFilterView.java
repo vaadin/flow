@@ -77,27 +77,36 @@ public class DomEventFilterView extends AbstractDivView {
 
         Element debounce = new Element("input");
         debounce.setAttribute("id", "debounce");
+        debounce.addEventListener("input", e -> {
+            addMessage("input:%s, phase:%s".formatted(e.getEventData().getString("element.value"), e.getPhase()));
+        }).addEventData("element.value")
+                .debounce(1000);
+        debounce.addEventListener("click", e -> {
+            addMessage("click");
+        });
 
-        debounce.addEventListener("input",
-                e -> addMessage("Trailing: "
-                        + e.getEventData().getString("element.value")))
-                .debounce(1000).addEventData("element.value");
-        debounce.addEventListener("input",
-                e -> addMessage("Leading: "
-                        + e.getEventData().getString("element.value")))
-                .debounce(1000, DebouncePhase.LEADING);
-        debounce.addEventListener("input",
-                e -> addMessage("Throttle: "
-                        + e.getEventData().getString("element.value")))
-                .throttle(1000);
+        Element leadingAndTrailing = new Element("input");
+        leadingAndTrailing.setAttribute("id", "leading-trailing");
+        leadingAndTrailing.addEventListener("input", e -> {
+            addMessage("input:%s, phase:%s".formatted(e.getEventData().getString("element.value"), e.getPhase()));
+        }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING, DebouncePhase.TRAILING);
+        
+        Element throttle = new Element("input");
+        throttle.setAttribute("id", "throttle");
+        throttle.addEventListener("input", e -> {
+            addMessage("input:%s, phase:%s".formatted(e.getEventData().getString("element.value"), e.getPhase()));
+        }).addEventData("element.value").throttle(2000); // this is leading + intermediate
+        throttle.addEventListener("click", e -> {
+            addMessage("click");
+        });
 
         DebounceComponent component = new DebounceComponent();
         component.setId("debounce-component");
         component.addInputListener(
-                e -> addMessage("Component: " + e.getValue()), 1000);
+                e -> addMessage("Component: " + e.getValue()), 2000);
 
         messages.setAttribute("id", "messages");
-        getElement().appendChild(space, debounce, component.getElement(),
+        getElement().appendChild(space, debounce, leadingAndTrailing, throttle, component.getElement(),
                 messages);
 
         // tests for#5090

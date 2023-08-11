@@ -24,6 +24,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import java.time.Instant;
+import java.time.LocalDateTime;
 
 public class DomEventFilterIT extends ChromeBrowserTest {
 
@@ -46,52 +48,124 @@ public class DomEventFilterIT extends ChromeBrowserTest {
     public void debounce() throws InterruptedException {
         open();
 
-        WebElement input = findElement(By.id("debounce"));
+        /*
+         * Note, the client side implementation "merges" all these settings
+         * in the single "Debouncer" (per element-eventtype-timeout, not per
+         * server side listenr). This is probably an issue in the 
+         * original implementation that could maybe be refactored in some
+         * upcoming release, but then we should create identifiers for server 
+         * side listeners and handle those somehow separately. My hunch is
+         * That it is better just to documenta the limitations and focus on
+         * somethign that actually benefits users. Today, real world use cases
+         * seem to be somewhat in good shape.
+         * 
+         * Thus, even though the element can be configured to have both trailing
+         * and intermediate configured for the same element, for different
+         * listeners, only one settings are currently supported. leading phase
+         * can be configured with either.
+         */
+        WebElement debounce = findElement(By.id("debounce"));
 
-        input.sendKeys("a");
-        assertMessages(0, "Leading: a", "Throttle: a");
+        debounce.sendKeys("a");
 
-        // Halfway into the idle interval
+        // Halfway into the idle interval, no event should be fired yet
         Thread.sleep(500);
-        input.sendKeys("b");
+        debounce.sendKeys("b");
 
         /*
-         * Wait until t = 1250: halfway between t = 1000 when the throttle
-         * triggers and t = 1500 when the idle triggers
+         * Wait untill the idle timer fires
          */
-        Thread.sleep(750);
+        Thread.sleep(1250);
+        
+        int nextMsg = 0;
 
-        assertMessages(2, "Throttle: ab");
+        assertMessages(nextMsg++, "input:ab, phase:TRAILING");
+
+        debounce.sendKeys("c");
+        debounce.click();
+
+        // Ensure the server got both events, in correct order and immediately,
+        // even though timer didn't yet fire for debouncing
+        assertMessages(nextMsg++, "input:abc, phase:TRAILING","click");
+        nextMsg++; // two events came in one batch
+
+        // This element now has "throttling" ~ leading event and then somewhat
+        // fixed rate. Still, if another event, like click, happens, the queue
+        // should be emptied at that point.
+        WebElement throttle = findElement(By.id("throttle"));
+
+        throttle.sendKeys("a");
+        assertMessages(nextMsg++, "input:a, phase:LEADING");
 
         /*
-         * Wait until t = 1750: halfway between t = 1500 when the idle triggers
-         * and t = 2000 when a new throttle would trigger
+         * Wait untill the idle timer fires
          */
-        Thread.sleep(500);
-        assertMessages(3, "Trailing: ab");
+        Thread.sleep(2250);
 
-        /*
-         * Wait until t = 2250: 250 beyond 2000 when a new throttle would
-         * trigger if the idle hadn't triggered
-         */
+        // There should be no new events, but burst should be considered "done"
+        assertMessages(nextMsg);
+
+        long burstStart = System.currentTimeMillis();
+        // new leading should be triggered
+        throttle.sendKeys("b");
+        assertMessages(nextMsg++, "input:ab, phase:LEADING");
+        
+        // This should hold in queue and send together with the next after 
+        // 1000ms from the latest leading
+        throttle.sendKeys("c");
+        Thread.sleep(10);
+        throttle.sendKeys("d");
+        
+        long millisToNextIntermediate = ((burstStart + 2000) - System.currentTimeMillis());
+        
+        Thread.sleep(millisToNextIntermediate + 100);
+
+        // now only one event should have arrived
+        assertMessages(nextMsg++, "input:abcd, phase:INTERMEDIATE");
+        
+        
+        WebElement leadingTrailing = findElement(By.id("leading-trailing"));
+
+        leadingTrailing.sendKeys("a");
+        assertMessages(nextMsg++, "input:a, phase:LEADING"); // leading should come right away
+
+        leadingTrailing.sendKeys("b");
         Thread.sleep(500);
-        assertMessages(4);
+
+        leadingTrailing.sendKeys("c");
+        Thread.sleep(500);
+
+        leadingTrailing.sendKeys("d");
+        Thread.sleep(500);
+
+        // only leading should still be reported to the server...
+        assertMessages((nextMsg - 1), "input:a, phase:LEADING");
+
+        // wait for the trailing event to land
+        Thread.sleep(600);
+        assertMessages(nextMsg++, "input:abcd, phase:TRAILING");
+
     }
 
     @Test
     public void componentWithDebounce() throws InterruptedException {
         open();
+        
+        // note for maintainers:
+        // sendkeys can be rather slow initially, especially in local environments
+        // Thus the test debounce latency is upped to 2000ms to avoid timing
+        // issues
 
         WebElement input = findElement(By.id("debounce-component"));
-
+        
         input.sendKeys("a");
         assertMessages(0);
-
-        Thread.sleep(750);
+        Thread.sleep(500);
         input.sendKeys("b");
         assertMessages(0);
 
-        Thread.sleep(1100);
+        Thread.sleep(2001); // should be more than enough as the cmd itsel is slot
+        
         assertMessages(0, "Component: ab");
 
         input.sendKeys("c");
@@ -101,7 +175,7 @@ public class DomEventFilterIT extends ChromeBrowserTest {
         input.sendKeys("d");
         Thread.sleep(800);
         assertMessages(1);
-        Thread.sleep(300);
+        Thread.sleep(1200);
         assertMessages(1, "Component: abcd");
 
     }
