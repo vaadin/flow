@@ -32,7 +32,7 @@ import static com.vaadin.flow.navigate.HelloWorldView.NAVIGATE_ABOUT;
 public class NavigateBetweenViewsIT extends ChromeBrowserTest {
 
     private static final String PARAM_VALUE_SPECIAL_CHARACTERS = "a=b%20  `'¨åäö";
-    private static final String ROUTE_SPECIAL_CHARACTERS = "special åäö $%20'´`";
+    private static final String ROUTE_SPECIAL_CHARACTERS = "special åäö $'´`";
 
     @Test
     public void openFlowView_navigateToTsView_navigationSuccessful() {
