@@ -32,6 +32,7 @@ import com.vaadin.flow.shared.Registration;
  * @since 1.0
  */
 public interface DomListenerRegistration extends Registration {
+
     /**
      * Add a JavaScript expression for extracting event data. When an event is
      * fired in the browser, the expression is evaluated and its value is sent
@@ -157,10 +158,9 @@ public interface DomListenerRegistration extends Registration {
      * arrive bit late. Do not expect debouncing to be perfectly deterministic!
      * <p>
      * Also note that due to the client-side implementation, de-bounce settings
-     * are global for "element-to-event-type" pairs. Behavior is unspecified if
-     * you configure multiple debouncing rules for the same event on the same
-     * element.
-     *
+     * are global for keys formed of "element-to-event-type-to-timeout".
+     * Behavior is unspecified if you configure multiple debouncing rules for
+     * the same event on the same element.
      *
      * @see DebouncePhase
      *
