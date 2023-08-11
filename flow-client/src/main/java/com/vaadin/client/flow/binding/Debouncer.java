@@ -47,7 +47,8 @@ public class Debouncer {
     private Timer idleTimer;
     private Timer intermediateTimer;
 
-    private Consumer<String> lastCommand;
+    private Consumer<String> bufferedCommand;
+    private Consumer<String> potentialTrailingWithBothTrailingAndIntermediate;
 
     private Debouncer(Node element, String identifier, double timeout) {
         this.element = element;
@@ -78,18 +79,32 @@ public class Debouncer {
                 && (phases.has(JsonConstants.EVENT_PHASE_TRAILING) || phases
                         .has(JsonConstants.EVENT_PHASE_INTERMEDIATE))) {
             // last command is saved for timers unless this is a "leading" event
-            lastCommand = command;
+            bufferedCommand = command;
+            potentialTrailingWithBothTrailingAndIntermediate = null;
         }
         // idleTimer is used for trailing/leading, should always be there?
-        if (phases.has(JsonConstants.EVENT_PHASE_LEADING) 
+        if (phases.has(JsonConstants.EVENT_PHASE_LEADING)
                 || phases.has(JsonConstants.EVENT_PHASE_TRAILING)) {
-            if(idleTimer == null) {
+            if (idleTimer == null) {
                 idleTimer = new Timer() {
                     @Override
                     public void run() {
-                        if (lastCommand != null) {
-                            lastCommand.accept(JsonConstants.EVENT_PHASE_TRAILING);
-                            lastCommand = null;
+                        if (bufferedCommand != null) {
+                            bufferedCommand
+                                    .accept(JsonConstants.EVENT_PHASE_TRAILING);
+                            bufferedCommand = null;
+                        } else if (potentialTrailingWithBothTrailingAndIntermediate != null) {
+                            /*
+                             * This happens if both trailing & intermediate are
+                             * configured and e.g. typing has stopped. Then we
+                             * wait for one additional timeout and if no new
+                             * commands are there, we re-post the SAME event to
+                             * the server. Documented in DebouncePhase. This is
+                             * ugly but maybe handy for some people in some
+                             * situations.
+                             */
+                            potentialTrailingWithBothTrailingAndIntermediate
+                                    .accept(JsonConstants.EVENT_PHASE_TRAILING);
                         }
                         unregister(); // unregister to releease memory
                     }
@@ -104,10 +119,13 @@ public class Debouncer {
             intermediateTimer = new Timer() {
                 @Override
                 public void run() {
-                    if (lastCommand != null) {
-                        lastCommand
+                    if (bufferedCommand != null) {
+                        bufferedCommand
                                 .accept(JsonConstants.EVENT_PHASE_INTERMEDIATE);
-                        lastCommand = null;
+                        if (phases.has(JsonConstants.EVENT_PHASE_TRAILING)) {
+                            potentialTrailingWithBothTrailingAndIntermediate = bufferedCommand;
+                        }
+                        bufferedCommand = null;
                     } else {
                         // no new last command during the period, stop timer
                         // and unregister to avoid memory leaks
@@ -205,20 +223,21 @@ public class Debouncer {
                 jsmap.mapValues().forEach(value -> {
                     value.mapValues().forEach(debouncer -> {
                         if (debouncer.idleTimer != null) {
-                            if(debouncer.lastCommand != null) {
+                            if (debouncer.bufferedCommand != null) {
                                 // if there is trailing timer, consider as extra
                                 // trailing event
-                                debouncer.lastCommand
-                                        .accept(JsonConstants.EVENT_PHASE_TRAILING);
+                                debouncer.bufferedCommand.accept(
+                                        JsonConstants.EVENT_PHASE_TRAILING);
                             } else {
-                                // "Debouncer was in queue, but no command. Likely a leading only subscription."
+                                // "Debouncer was in queue, but no command.
+                                // Likely a leading only subscription."
                             }
                         } else {
                             // Otherwise, must be an extra intermediate event.
                             // Because of an other triggered event, this now
                             // comes bit early, but most likely this is better
                             // than in wrong order
-                            debouncer.lastCommand.accept(
+                            debouncer.bufferedCommand.accept(
                                     JsonConstants.EVENT_PHASE_INTERMEDIATE);
                             // Restart intermediate timer so that there won't
                             // be triggering more than one event "quicker than
@@ -226,10 +245,10 @@ public class Debouncer {
                             debouncer.intermediateTimer
                                     .scheduleRepeating((int) debouncer.timeout);
                         }
-                        if(debouncer.lastCommand != null) {
-                            executedCommands.add(debouncer.lastCommand);
+                        if (debouncer.bufferedCommand != null) {
+                            executedCommands.add(debouncer.bufferedCommand);
                             // clean so that idle timer can't fire it again
-                            debouncer.lastCommand = null;
+                            debouncer.bufferedCommand = null;
                         }
                     });
                 });

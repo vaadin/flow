@@ -165,6 +165,32 @@ public class DomEventFilterIT extends ChromeBrowserTest {
         Thread.sleep(600);
         assertMessages(nextMsg++, "input:abcd, phase:TRAILING");
 
+        /*
+         * This is the special weirdomode, we get all the phases. As
+         * INTERMEDIATE will practically always fire after TRAILING. We will
+         * re-send the last event twice to server, the last just with different
+         * phase.
+         *
+         * Might be in theor handy if actual events are not relevant, but the
+         * activity time and still somewhat fresh content is needed during the
+         * burst from time to time.
+         *
+         * The best would be to investigate if somebody is actually usign this
+         * feature and remove if not (or rare). Makes the whole system very
+         * complex and fragile (although not the only thing causing that).
+         */
+        WebElement godMode = findElement(By.id("godMode"));
+        godMode.sendKeys("a");
+        assertMessages(nextMsg++, "godmode:a, phase:LEADING");
+
+        Thread.sleep(200);
+        godMode.sendKeys("b");
+        Thread.sleep(50);
+        godMode.sendKeys("c");
+        Thread.sleep(2000);
+        assertMessages(nextMsg++, "godmode:abc, phase:INTERMEDIATE",
+                "godmode:abc, phase:TRAILING");
+
     }
 
     @Test

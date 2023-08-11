@@ -35,7 +35,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DomEventFilterView", layout = ViewTestLayout.class)
 public class DomEventFilterView extends AbstractDivView {
@@ -112,6 +111,16 @@ public class DomEventFilterView extends AbstractDivView {
             addMessage("click");
         });
 
+        Element godMode = new Element("input");
+        godMode.setAttribute("id", "godMode");
+        godMode.addEventListener("input", e -> {
+            addMessage("godmode:%s, phase:%s".formatted(
+                    e.getEventData().getString("element.value"), e.getPhase()));
+        }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING,
+                DebouncePhase.TRAILING, DebouncePhase.INTERMEDIATE); // this is
+                                                                     // leading
+                                                                     // +
+
         DebounceComponent component = new DebounceComponent();
         component.setId("debounce-component");
         component.addInputListener(
@@ -119,7 +128,7 @@ public class DomEventFilterView extends AbstractDivView {
 
         messages.setAttribute("id", "messages");
         getElement().appendChild(space, debounce, leading, leadingAndTrailing,
-                throttle, component.getElement(), messages);
+                throttle, godMode, component.getElement(), messages);
 
         // tests for#5090
         final AtomicReference<DomListenerRegistration> atomicReference = new AtomicReference<>();
