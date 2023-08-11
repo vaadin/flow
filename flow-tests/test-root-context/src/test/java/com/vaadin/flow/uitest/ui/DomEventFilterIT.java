@@ -53,7 +53,7 @@ public class DomEventFilterIT extends ChromeBrowserTest {
          * implementation that could maybe be refactored in some upcoming
          * release, but then we should create identifiers for server side
          * listeners and handle those somehow separately. My hunch is that it is
-         * better just to documenta the limitations and focus on somethign that
+         * better just to document the limitations and focus on something that
          * actually benefits users. Today, real world use cases seem to be
          * somewhat in good shape.
          *
