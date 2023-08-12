@@ -83,6 +83,12 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     }
 
+    @Route(value = "themefor")
+    @CssImport(value = "./foo.css", themeFor = "something")
+    public static class ThemeForCssImport extends Component {
+
+    }
+
     @Route(value = "simplecss")
     @CssImport("./bar.css")
     public static class BarCssImport extends Component {
@@ -453,6 +459,29 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         assertOnce("import $cssFromFile_0 from",
                 output.get(flowGeneratedImports));
         assertOnce("import $cssFromFile_1 from",
+                output.get(flowGeneratedImports));
+    }
+
+    @Test
+    public void themeForCssImports_eagerLoaded() throws Exception {
+        Class<?>[] testClasses = { ThemeForCssImport.class, UI.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                options);
+        updater.run();
+
+        Map<File, List<String>> output = updater.getOutput();
+
+        File flowGeneratedImports = FrontendUtils
+                .getFlowGeneratedImports(frontendDirectory);
+
+        assertOnce("import { injectGlobalCss } from",
+                output.get(flowGeneratedImports));
+        assertOnce("import { css, unsafeCSS, registerStyles } from",
+                output.get(flowGeneratedImports));
+        assertOnce("from 'Frontend/foo.css?inline';",
+                output.get(flowGeneratedImports));
+        assertOnce("import $cssFromFile_0 from",
                 output.get(flowGeneratedImports));
     }
 
