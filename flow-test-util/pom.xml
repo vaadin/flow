@@ -47,6 +47,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-testbench-core</artifactId>
+            <version>${testbench.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.guava</groupId>
