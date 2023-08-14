@@ -8,7 +8,7 @@ export default {
     <code>vaadin-board</code> instead.`,
   notAccessibleDescription: html`If you wish to style all rows of current board please pick
     <code>vaadin-board</code> instead.`,
-  displayName: 'BoardRow',
+  displayName: 'Board Row',
   elements: [
     {
       selector: 'vaadin-board-row',

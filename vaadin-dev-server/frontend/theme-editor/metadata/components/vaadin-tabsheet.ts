@@ -3,7 +3,7 @@ import { shapeProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-tabsheet',
-  displayName: 'TabSheet',
+  displayName: 'Tab Sheet',
   elements: [
     {
       selector: 'vaadin-tabsheet',

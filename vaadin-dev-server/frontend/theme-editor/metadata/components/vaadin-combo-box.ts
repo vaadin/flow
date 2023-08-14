@@ -6,10 +6,12 @@ import {
   labelProperties
 } from './vaadin-text-field';
 import { iconProperties, shapeProperties, textProperties } from './defaults';
+import { hideOverlayMixin, showOverlayMixin } from '../../components/component-overlay-manager';
+import { ComponentReference } from '../../../component-util';
 
 export default {
   tagName: 'vaadin-combo-box',
-  displayName: 'ComboBox',
+  displayName: 'Combo Box',
   elements: [
     {
       selector: 'vaadin-combo-box::part(input-field)',
@@ -61,16 +63,15 @@ export default {
   async setupElement(comboBox: any) {
     // Apply overlay class name
     comboBox.overlayClass = comboBox.getAttribute('class');
-    // Setup items
-    comboBox.items = [{ label: 'Item', value: 'value' }];
-    // Select value
-    comboBox.value = 'value';
-    // Open overlay
-    comboBox.opened = true;
-    // Wait for overlay to open
-    await new Promise((resolve) => setTimeout(resolve, 10));
   },
-  async cleanupElement(comboBox: any) {
-    comboBox.opened = false;
+  openOverlay: (component: ComponentReference) => {
+    const element = component.element as any;
+    const overlay = element.$.overlay;
+    showOverlayMixin(element, element, overlay);
+  },
+  hideOverlay: (component: ComponentReference) => {
+    const element = component.element as any;
+    const overlay = element.$.overlay;
+    hideOverlayMixin(element, element, overlay);
   }
 } as ComponentMetadata;

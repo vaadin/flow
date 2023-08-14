@@ -1,10 +1,12 @@
 import { ComponentMetadata, EditorType } from '../model';
 import { presets } from './presets';
 import { fieldProperties, shapeProperties, textProperties } from './defaults';
+import { ComponentReference } from '../../../component-util';
+import { createDocumentClickEvent } from '../../components/component-overlay-manager';
 
 export default {
   tagName: 'vaadin-menu-bar',
-  displayName: 'MenuBar',
+  displayName: 'Menu Bar',
   elements: [
     {
       selector: 'vaadin-menu-bar vaadin-menu-bar-button',
@@ -31,7 +33,7 @@ export default {
     },
     {
       selector: 'vaadin-menu-bar-overlay::part(overlay)',
-      displayName: 'Menus',
+      displayName: 'Overlay',
       properties: [
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,
@@ -42,7 +44,7 @@ export default {
     },
     {
       selector: 'vaadin-menu-bar-overlay vaadin-menu-bar-item',
-      displayName: 'Menu items',
+      displayName: 'Menu Items',
       properties: [textProperties.textColor, textProperties.fontSize, textProperties.fontWeight]
     }
   ],
@@ -63,8 +65,6 @@ export default {
         ]
       }
     ];
-    // Open overlay
-    menuBar.querySelector('vaadin-menu-bar-button').click();
     // Wait for overlay to open
     await new Promise((resolve) => setTimeout(resolve, 10));
   },
@@ -72,5 +72,38 @@ export default {
     // Menu bar does not close / remove its overlay when it is removed from DOM,
     // so we need to do it manually
     menuBar._close();
+  },
+  openOverlay(component: ComponentReference) {
+    // Open overlay
+    (component.element as any).querySelector('vaadin-menu-bar-button').click();
+    const subMenu = (component.element as any).shadowRoot.querySelector('vaadin-menu-bar-submenu');
+    if (!subMenu) {
+      return;
+    }
+    const overlay = subMenu.$.overlay;
+    if (!overlay) {
+      return;
+    }
+    overlay._storedModeless = overlay.modeless;
+    overlay.modeless = true;
+    (document as any)._themeEditorDocClickListener = createDocumentClickEvent(subMenu, overlay);
+    document.addEventListener('click', (document as any)._themeEditorDocClickListener);
+    document.documentElement.removeEventListener('click', subMenu.__itemsOutsideClickListener);
+  },
+  hideOverlay(component: ComponentReference) {
+    const subMenu = (component.element as any).shadowRoot.querySelector('vaadin-menu-bar-submenu');
+    if (!subMenu) {
+      return;
+    }
+    const overlay = subMenu.$.overlay;
+    if (!overlay) {
+      return;
+    }
+    overlay.close();
+    overlay.modeless = overlay._storedModeless;
+    delete overlay._storedModeless;
+    document.removeEventListener('click', (document as any)._themeEditorDocClickListener);
+    document.documentElement.addEventListener('click', subMenu.__itemsOutsideClickListener);
+    delete (document as any)._themeEditorDocClickListener;
   }
 } as ComponentMetadata;

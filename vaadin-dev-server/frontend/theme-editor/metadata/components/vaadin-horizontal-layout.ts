@@ -3,7 +3,7 @@ import { shapeProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-horizontal-layout',
-  displayName: 'HorizontalLayout',
+  displayName: 'Horizontal Layout',
   elements: [
     {
       selector: 'vaadin-horizontal-layout',

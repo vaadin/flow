@@ -1,4 +1,5 @@
 import { TemplateResult } from 'lit';
+import { ComponentReference } from '../../component-util';
 
 export enum EditorType {
   text = 'text',
@@ -35,4 +36,6 @@ export interface ComponentMetadata {
   elements: ComponentElementMetadata[];
   setupElement?: (element: any) => Promise<void>;
   cleanupElement?: (element: any) => Promise<void>;
+  openOverlay?: (component: ComponentReference) => void;
+  hideOverlay?: (component: ComponentReference) => void;
 }

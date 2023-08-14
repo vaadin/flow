@@ -6,10 +6,12 @@ import {
   labelProperties
 } from './vaadin-text-field';
 import { iconProperties, shapeProperties, textProperties } from './defaults';
+import { ComponentReference } from '../../../component-util';
+import { hideOverlayMixin, showOverlayMixin } from '../../components/component-overlay-manager';
 
 export default {
   tagName: 'vaadin-date-picker',
-  displayName: 'DatePicker',
+  displayName: 'Date Picker',
   elements: [
     {
       selector: 'vaadin-date-picker::part(input-field)',
@@ -91,5 +93,16 @@ export default {
         textProperties.fontStyle
       ]
     }
-  ]
+  ],
+  openOverlay: (component: ComponentReference) => {
+    if (!component || !component.element) {
+      return;
+    }
+    const element = component.element as any;
+    showOverlayMixin(element, element, element);
+  },
+  hideOverlay: (component: ComponentReference) => {
+    const element = component.element as any;
+    hideOverlayMixin(element, element, element);
+  }
 } as ComponentMetadata;

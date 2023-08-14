@@ -9,7 +9,7 @@ import { standardButtonProperties } from './vaadin-button';
 
 export default {
   tagName: 'vaadin-big-decimal-field',
-  displayName: 'BigDecimalField',
+  displayName: 'BigDecimal Field',
   elements: [
     {
       selector: 'vaadin-big-decimal-field::part(input-field)',

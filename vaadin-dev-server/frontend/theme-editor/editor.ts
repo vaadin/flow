@@ -29,6 +29,7 @@ import { injectGlobalCss } from './styles';
 import { ComponentMetadata } from './metadata/model';
 import { ClassNameChangeEvent } from './components/class-name-editor';
 import { OpenCssEvent } from './components/property-list';
+import { componentOverlayManager } from './components/component-overlay-manager';
 
 injectGlobalCss(css`
   .vaadin-theme-editor-highlight {
@@ -225,7 +226,9 @@ export class ThemeEditor extends LitElement {
     if (changedProperties.has('expanded')) {
       if (this.expanded) {
         this.highlightElement(this.context?.component.element);
+        componentOverlayManager.showOverlay();
       } else {
+        componentOverlayManager.hideOverlay();
         this.removeElementHighlight(this.context?.component.element);
       }
     }
@@ -233,9 +236,9 @@ export class ThemeEditor extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-
     this.removeElementHighlight(this.context?.component.element);
-
+    componentOverlayManager.hideOverlay();
+    componentOverlayManager.reset();
     this.dispatchEvent(new CustomEvent('after-close'));
   }
 
@@ -438,8 +441,8 @@ export class ThemeEditor extends LitElement {
   }
 
   private async pickComponent() {
+    componentOverlayManager.hideOverlay();
     this.removeElementHighlight(this.context?.component.element);
-
     this.pickerProvider().open({
       infoTemplate: html`
         <div>
@@ -458,9 +461,10 @@ export class ThemeEditor extends LitElement {
           this.effectiveTheme = null;
           return;
         }
-
+        await componentOverlayManager.componentPicked(component, metadata);
         this.highlightElement(component.element);
         this.refreshComponentAndTheme(component, metadata);
+        componentOverlayManager.showOverlay();
       }
     });
   }

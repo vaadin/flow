@@ -4,7 +4,7 @@ import { html } from 'lit';
 
 export default {
   tagName: 'vaadin-side-nav-item',
-  displayName: 'SideNavItem',
+  displayName: 'Side Navigation Item',
   description: html`You are styling selected item only, if you wish to style all items of given SideNav component please
     pick <code>vaadin-side-nav</code> instead.`,
   notAccessibleDescription: html`If you wish to style all items of current SideNav component please pick
