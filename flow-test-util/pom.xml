@@ -17,7 +17,7 @@
         <sonar.skip>true</sonar.skip>
         <!-- needed for dependencyConvergence rule -->
         <selenium.version>4.11.0</selenium.version>
-        <guava.version>31.1.2-jre</guava.version>
+        <guava.version>31.1-jre</guava.version>
     </properties>
     <dependencies>
         <dependency>
