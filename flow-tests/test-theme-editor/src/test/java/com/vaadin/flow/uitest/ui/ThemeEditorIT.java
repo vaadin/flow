@@ -49,10 +49,11 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
     public void testButton() throws IOException {
         Gson gson = new Gson();
 
-        File parentFolder = new File(Objects.requireNonNull(
-                getClass().getClassLoader().getResource("")).getPath());
-        Path metadataFilePath =
-                Paths.get(parentFolder.getParentFile().getParent(), "metadata",
+        File parentFolder = new File(Objects
+                .requireNonNull(getClass().getClassLoader().getResource(""))
+                .getPath());
+        Path metadataFilePath = Paths.get(
+                parentFolder.getParentFile().getParent(), "metadata",
                 "vaadin-button.txt");
 
         Reader reader = Files.newBufferedReader(metadataFilePath);
