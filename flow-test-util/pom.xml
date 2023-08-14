@@ -15,6 +15,7 @@
     <properties>
         <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
         <sonar.skip>true</sonar.skip>
+        <selenium.version>4.11.0</selenium.version>
     </properties>
 
     <dependencies>
@@ -51,7 +52,7 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-remote-driver</artifactId>
-            <selenium.version>4.11.0</selenium.version>
+            <selenium.version>${selenium.version}</selenium.version>
             <exclusions>
                 <exclusion>
                     <groupId>io.netty</groupId>
