@@ -1,7 +1,7 @@
 import { UserConfigFn } from 'vite';
 import { overrideVaadinConfig } from './vite.generated';
 
-import { writeFileSync } from 'fs';
+import { writeFile, existsSync, rmSync, mkdirSync } from 'fs';
 import buttonMetadata from '../../vaadin-dev-server/frontend/theme-editor/metadata/components/vaadin-button'
 
 const customConfig: UserConfigFn = (env) => ({
@@ -11,8 +11,18 @@ const customConfig: UserConfigFn = (env) => ({
 
 export default overrideVaadinConfig(customConfig);
 
-const run = (cmd) => {
+const run = () => {
+    const metadataFolder = './metadata'
+
+    if (existsSync(metadataFolder)) {
+        rmSync(metadataFolder, { recursive: true, force: true });
+    }
+	
+	mkdirSync(metadataFolder);
+	
     const buttonMetadataString = JSON.stringify(buttonMetadata.elements, null, 2);
-    writeFileSync('./target/test-classes/vaadin-button.txt', buttonMetadataString, {flag: 'w'});
+    writeFile(`${metadataFolder}/vaadin-button.txt`, buttonMetadataString, (err) => {
+        if(err !== null) console.log(err);
+    });
 };
-run('parseClientRoutes');
+run();

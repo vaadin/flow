@@ -15,15 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.lang.reflect.Type;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.junit.Test;
@@ -47,15 +46,16 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
     }
 
     @Test
-    public void testButton() throws IOException, URISyntaxException {
+    public void testButton() throws IOException {
         Gson gson = new Gson();
 
-        Reader reader = Files
-                .newBufferedReader(
-                        Paths.get(Objects
-                                .requireNonNull(getClass().getClassLoader()
-                                        .getResource("./vaadin-button.txt"))
-                                .toURI()));
+        File parentFolder = new File(Objects.requireNonNull(
+                getClass().getClassLoader().getResource("")).getPath());
+        Path metadataFilePath =
+                Paths.get(parentFolder.getParentFile().getParent(), "metadata",
+                "vaadin-button.txt");
+
+        Reader reader = Files.newBufferedReader(metadataFilePath);
         List<Metadata> buttonMetadata = gson.fromJson(reader,
                 new TypeToken<ArrayList<Metadata>>() {
                 }.getType());
