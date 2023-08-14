@@ -25,6 +25,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
@@ -83,6 +84,21 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
                     "Couldn't locate '{}' for plugin '{}'. Plugin will not be installed.",
                     PACKAGE_JSON, pluginName);
             return;
+        }
+
+        if (pluginTargetFolder.exists()
+                && new File(pluginTargetFolder, PACKAGE_JSON).exists()) {
+            String packageFile = FileUtils.readFileToString(
+                    new File(pluginTargetFolder, PACKAGE_JSON),
+                    StandardCharsets.UTF_8);
+            final JsonObject targetJson = Json.parse(packageFile);
+            if (targetJson.hasKey("update")
+                    && !targetJson.getBoolean("update")) {
+                // This is used only while developing the plugins inside the
+                // Flow project and the attribute is then added manually to
+                // package.json
+                return;
+            }
         }
 
         // Create target folder if necessary
