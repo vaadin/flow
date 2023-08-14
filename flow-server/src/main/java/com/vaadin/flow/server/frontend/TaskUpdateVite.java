@@ -89,7 +89,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                         webComponentTags == null || webComponentTags.isEmpty()
                                 ? ""
                                 : String.join(";", webComponentTags));
-        FileUtils.write(generatedConfigFile, template, StandardCharsets.UTF_8);
+        FileIOUtils.writeIfChanged(generatedConfigFile, template);
         log().debug("Created vite generated configuration file: '{}'",
                 generatedConfigFile);
     }
