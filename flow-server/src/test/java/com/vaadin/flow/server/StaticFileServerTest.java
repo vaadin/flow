@@ -79,6 +79,7 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS
 public class StaticFileServerTest implements Serializable {
 
     private static final String WEBAPP_RESOURCE_PREFIX = "META-INF/VAADIN/webapp";
+    private CapturingServletOutputStream out;
 
     private static class CapturingServletOutputStream
             extends ServletOutputStream {
