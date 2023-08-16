@@ -146,8 +146,15 @@ async function cherryPickCommits(){
       continue;
     }
     await exec(`git push origin HEAD:${branchName}`);
+    try{
+        await createPR(arrTitle[i], branchName, arrBranch[i]);	    
+    } catch (err) {
+        console.error(`Cannot create PR from ${branchName}, error : ${err}`);
+        await labelCommit(arrURL[i], `cannot create PR from ${branchName}`);
+        await postComment(arrURL[i], arrUser[i], arrMergedBy[i], arrBranch[i], err);
+        continue;
+    }
     
-    await createPR(arrTitle[i], branchName, arrBranch[i]);
     await exec(`git checkout main`);
     await exec(`git branch -D ${branchName}`);
     await labelCommit(arrURL[i], `cherry-picked-${arrBranch[i]}`);
