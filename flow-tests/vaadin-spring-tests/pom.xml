@@ -329,8 +329,19 @@
 
                 <module>test-spring-boot-only-prepare</module>
                 <module>test-spring-white-list</module>
+
             </modules>
         </profile>
+
+        <profile>
+            <!-- Modules for performance benchmark -->
+            <id>benchmark</id>
+
+            <modules>
+                <module>test-spring-boot-reload-time</module>
+            </modules>
+        </profile>
+
     </profiles>
 
 </project>
