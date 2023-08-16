@@ -20,8 +20,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -79,7 +77,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS
 public class StaticFileServerTest implements Serializable {
 
     private static final String WEBAPP_RESOURCE_PREFIX = "META-INF/VAADIN/webapp";
-    private CapturingServletOutputStream out;
 
     private static class CapturingServletOutputStream
             extends ServletOutputStream {
@@ -1047,15 +1044,18 @@ public class StaticFileServerTest implements Serializable {
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
 
-        Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
+        Mockito.when(mockLoader.getResource("META-INF" + pathInfo))
                 .thenReturn(createFileURLWithDataAndLength(
-                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+                        "META-INF" + pathInfo, fileData.getBytes(StandardCharsets.UTF_8)));
 
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
 
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(out);
+
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertEquals(fileData, out.getOutputString());
+        Assert.assertArrayEquals(fileData.getBytes(StandardCharsets.UTF_8), out.getOutput());
     }
 
     @Test
@@ -1145,7 +1145,7 @@ public class StaticFileServerTest implements Serializable {
 
     /**
      * Returns a byte array for a valid stats.json containing only chunks
-     * 
+     *
      * @return
      */
     public byte[] getStatsData() {
