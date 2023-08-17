@@ -29,39 +29,37 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
     @Test
     public void testSpringBootReloadTime_withNativeButton() {
-        getDriver().get(
-                getTestURL(getRootURL(), "/reload-nativebutton-test", null));
-        waitForDevServer();
+        open("/reload-nativebutton-test");
 
         waitForElementPresent(By.id("start-button"));
-
-        findElement(By.id("start-button")).click(); // trigger for reload
-
+        triggerReload();
         waitForElementVisible(By.id("result"));
-
-        String reloadTimeInMs = assertAndGetReloadTimeResult();
 
         System.out.printf(
                 "##teamcity[buildStatisticValue key='nativebutton,spring-boot-devtools-reload-time' value='%s']%n",
-                reloadTimeInMs);
+                assertAndGetReloadTimeResult());
     }
 
     @Test
     public void testSpringBootReloadTime_withHorizontalLayout() {
-        getDriver().get(getTestURL(getRootURL(), "/reload-layout-test", null));
-        waitForDevServer();
+        open("/reload-layout-test");
 
         waitForElementPresent(By.id("start-button"));
-
-        findElement(By.id("start-button")).click(); // trigger for reload
-
+        triggerReload();
         waitForElementVisible(By.id("result"));
-
-        String reloadTimeInMs = assertAndGetReloadTimeResult();
 
         System.out.printf(
                 "##teamcity[buildStatisticValue key='orderedlayout,spring-boot-devtools-reload-time' value='%s']%n",
-                reloadTimeInMs);
+                assertAndGetReloadTimeResult());
+    }
+
+    private void triggerReload() {
+        findElement(By.id("start-button")).click(); // trigger for reload
+    }
+
+    private void open(String testPath) {
+        getDriver().get(getTestURL(getRootURL(), testPath, null));
+        waitForDevServer();
     }
 
     private String assertAndGetReloadTimeResult() {
