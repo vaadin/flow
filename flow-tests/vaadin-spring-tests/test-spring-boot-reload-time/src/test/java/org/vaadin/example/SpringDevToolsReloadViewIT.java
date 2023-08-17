@@ -27,14 +27,11 @@ import org.openqa.selenium.By;
  */
 public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
-    @Override
-    protected String getTestPath() {
-        return "/reload-test";
-    }
-
     @Test
-    public void testSpringBootReloadTime() {
-        open();
+    public void testSpringBootReloadTime_withNativeButton() {
+        getDriver().get(
+                getTestURL(getRootURL(), "/reload-nativebutton-test", null));
+        waitForDevServer();
 
         waitForElementPresent(By.id("start-button"));
 
@@ -42,16 +39,37 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
         waitForElementVisible(By.id("result"));
 
+        String reloadTimeInMs = assertAndGetReloadTimeResult();
+
+        System.out.printf(
+                "##teamcity[buildStatisticValue key='nativebutton,spring-boot-devtools-reload-time' value='%s']%n",
+                reloadTimeInMs);
+    }
+
+    @Test
+    public void testSpringBootReloadTime_withHorizontalLayout() {
+        getDriver().get(getTestURL(getRootURL(), "/reload-layout-test", null));
+        waitForDevServer();
+
+        waitForElementPresent(By.id("start-button"));
+
+        findElement(By.id("start-button")).click(); // trigger for reload
+
+        waitForElementVisible(By.id("result"));
+
+        String reloadTimeInMs = assertAndGetReloadTimeResult();
+
+        System.out.printf(
+                "##teamcity[buildStatisticValue key='orderedlayout,spring-boot-devtools-reload-time' value='%s']%n",
+                reloadTimeInMs);
+    }
+
+    private String assertAndGetReloadTimeResult() {
         String reloadTimeInMsText = findElement(By.id("result")).getText();
         Assert.assertNotNull(reloadTimeInMsText);
 
-        String reloadTimeInMs = reloadTimeInMsText.substring(
-                reloadTimeInMsText.indexOf("[") + 1,
+        return reloadTimeInMsText.substring(reloadTimeInMsText.indexOf("[") + 1,
                 reloadTimeInMsText.indexOf("]"));
-
-        System.out.printf(
-                "##teamcity[buildStatisticValue key='small,spring-boot-devtools-reload-time' value='%s']%n",
-                reloadTimeInMs);
     }
 
 }
