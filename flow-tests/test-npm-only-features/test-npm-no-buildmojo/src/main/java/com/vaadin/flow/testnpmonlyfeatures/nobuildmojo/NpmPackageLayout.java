@@ -5,6 +5,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.RouterLayout;
 
 @NpmPackage(value = "@polymer/paper-input", version = "3.2.1")
-@NpmPackage(value = "@polymer/paper-checkbox", version = "3.0.1")
+@NpmPackage(value = "@polymer/paper-checkbox", version = "3.1.0")
 public class NpmPackageLayout extends Div implements RouterLayout {
 }
