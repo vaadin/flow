@@ -15,17 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import java.util.logging.Level;
-
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.logging.LogEntry;
-import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -34,16 +28,6 @@ public class TemplateInTemplateIT extends ChromeBrowserTest {
     @Test
     public void childTemplateInstanceHandlesEvent() {
         open();
-
-        for (LogEntry logEntry : getLogEntries(Level.SEVERE)) {
-            LoggerFactory.getLogger(TemplateInTemplateIT.class).error(
-                    "TemplateInTemplateIT severe messages: {}", logEntry.toString());
-        }
-
-        for (LogEntry logEntry : getLogEntries(Level.WARNING)) {
-            LoggerFactory.getLogger(TemplateInTemplateIT.class).error(
-                    "TemplateInTemplateIT warn messages: {}", logEntry.toString());
-        }
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
         TestBenchElement child = template.$(TestBenchElement.class).id("child");
