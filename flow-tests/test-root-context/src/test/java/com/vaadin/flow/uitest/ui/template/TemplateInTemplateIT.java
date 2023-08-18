@@ -35,8 +35,14 @@ public class TemplateInTemplateIT extends ChromeBrowserTest {
     public void childTemplateInstanceHandlesEvent() {
         open();
 
-        for (LogEntry logEntry : getLogEntries(Level.ALL)) {
-            LoggerFactory.getLogger(TemplateInTemplateIT.class).error(logEntry.toString());
+        for (LogEntry logEntry : getLogEntries(Level.SEVERE)) {
+            LoggerFactory.getLogger(TemplateInTemplateIT.class).error(
+                    "TemplateInTemplateIT severe messages: {}", logEntry.toString());
+        }
+
+        for (LogEntry logEntry : getLogEntries(Level.WARNING)) {
+            LoggerFactory.getLogger(TemplateInTemplateIT.class).error(
+                    "TemplateInTemplateIT warn messages: {}", logEntry.toString());
         }
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
