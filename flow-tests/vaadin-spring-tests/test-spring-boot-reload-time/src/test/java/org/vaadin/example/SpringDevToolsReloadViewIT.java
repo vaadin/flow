@@ -15,6 +15,7 @@
  */
 package org.vaadin.example;
 
+import com.vaadin.flow.server.Version;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import org.junit.Assert;
@@ -36,8 +37,8 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
         waitForElementVisible(By.id("result"));
 
         System.out.printf(
-                "##teamcity[buildStatisticValue key='nativebutton,spring-boot-devtools-reload-time' value='%s']%n",
-                assertAndGetReloadTimeResult());
+                "##teamcity[buildStatisticValue key='%s,nativebutton,spring-boot-devtools-reload-time' value='%s']%n",
+                getVaadinMajorMinorVersion(), assertAndGetReloadTimeResult());
     }
 
     @Test
@@ -49,8 +50,8 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
         waitForElementVisible(By.id("result"));
 
         System.out.printf(
-                "##teamcity[buildStatisticValue key='orderedlayout,spring-boot-devtools-reload-time' value='%s']%n",
-                assertAndGetReloadTimeResult());
+                "##teamcity[buildStatisticValue key='%s,orderedlayout,spring-boot-devtools-reload-time' value='%s']%n",
+                getVaadinMajorMinorVersion(), assertAndGetReloadTimeResult());
     }
 
     private void triggerReload() {
@@ -70,4 +71,7 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
                 reloadTimeInMsText.indexOf("]"));
     }
 
+    private String getVaadinMajorMinorVersion() {
+        return Version.getMajorVersion() + "." + Version.getMinorVersion();
+    }
 }
