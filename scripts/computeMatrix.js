@@ -7,7 +7,8 @@ const globalExclusions = [
   'flow-tests/servlet-containers/tomcat10',
   'flow-tests/test-multi-war/test-war1',
   'flow-tests/test-multi-war/test-war2',
-  'flow-tests/test-webpush'
+  'flow-tests/test-webpush',
+  'flow-tests/vaadin-spring-tests/test-spring-boot-reload-time'
 ];
 // Set modules or tests weights and fixed slice position for better distribution
 //  weight: it's time in half-minutes, default 1 = 30secs
