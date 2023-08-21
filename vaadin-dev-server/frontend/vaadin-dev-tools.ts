@@ -18,17 +18,11 @@ import './vaadin-dev-tools-info';
  */
 export interface DevToolsInterface {
   send(command: string, data: any): void;
-  get renderRoot(): HTMLElement | ShadowRoot;
-  addTab(id: string, render: () => TemplateResult): void;
-  getContent(): HTMLElement | null;
-  /**
-   * Adds a listener for messages from the server.
-   *
-   * @param listener the listener to add
-   */
-  addMessageListener(listener: ServerMessageListener): void;
+  addTab(id: string, tag: string): void;
 }
-
+export interface MessageHandler {
+  handleMessage(message: ServerMessage): boolean;
+}
 export interface ServerMessage {
   /**
    * The command
@@ -41,21 +35,18 @@ export interface ServerMessage {
 }
 
 /**
- * A message listener.
- */
-interface ServerMessageListener {
-  /**
-   * Handles an event. Returns true if the event was handled.
-   */
-  (message: ServerMessage): boolean;
-}
-
-/**
- * To register a plugin, use
+ * To create and register a plugin, use e.g.
  * @example
+ * export class MyTab extends LitElement implements MessageHandler {
+ *   render() {
+ *     return html`<div>Here I am</div>`;
+ *   }
+ * }
+ * customElements.define('my-tab', MyTab);
+ *
  * const plugin: DevToolsPlugin = {
  *   init: function (devToolsInterface: DevToolsInterface): void {
- *     // Your code here
+ *     devToolsInterface.addTab('Tab title', 'my-tab')
  *   }
  * };
  *
@@ -84,7 +75,7 @@ interface Tab {
   render: (() => TemplateResult) | string;
   element?: HTMLElement;
   activate?: () => void;
-  handleMessage?: (message: any) => boolean;
+  handleMessage?: MessageHandler;
 }
 
 export enum MessageType {
@@ -108,7 +99,6 @@ interface Message {
 @customElement('vaadin-dev-tools')
 export class VaadinDevTools extends LitElement {
   static MAX_LOG_ROWS = 1000;
-  messageListeners: ServerMessageListener[] = [];
   unhandledMessages: ServerMessage[] = [];
 
   static get styles() {
@@ -996,10 +986,13 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
-  handleFrontendMessage(message: any) {
+  tabHandleMessage(tabElement: HTMLElement, message: ServerMessage): boolean {
+    const handler = tabElement as any as MessageHandler;
+    return handler.handleMessage && handler.handleMessage.call(tabElement, message);
+  }
+  handleFrontendMessage(message: ServerMessage) {
     for (const tab of this.tabs) {
-      const handler = (tab as any).element?.handleMessage;
-      if (handler && handler.call(tab.element, message)) {
+      if (tab.element && this.tabHandleMessage(tab.element, message)) {
         // Fully handled
         return;
       }
@@ -1115,38 +1108,19 @@ export class VaadinDevTools extends LitElement {
       Array.from(anyVaadin.devToolsPlugins as DevToolsPlugin[]).forEach((plugin) => this.initPlugin(plugin));
       anyVaadin.devToolsPlugins = { push: (plugin: DevToolsPlugin) => this.initPlugin(plugin) };
     }
+
     this.openWebSocketConnection();
     licenseInit();
   }
 
-  initPlugin(plugin: DevToolsPlugin) {
+  async initPlugin(plugin: DevToolsPlugin) {
     const devTools = this;
     plugin.init({
-      addTab: (title, render) => {
-        devTools.tabs.push({ id: title, title, render });
-      },
-      get renderRoot() {
-        return devTools.renderRoot;
-      },
-      getContent: () => {
-        const toolbar = devTools.renderRoot.querySelector('.window-toolbar');
-        if (!toolbar) {
-          return null;
-        }
-        return toolbar.nextElementSibling as HTMLElement;
+      addTab: (title, tag) => {
+        devTools.tabs.push({ id: title, title, render: tag });
       },
       send: function (command: string, data: any): void {
         devTools.frontendConnection!.send(command, data);
-      },
-      addMessageListener: function (listener) {
-        devTools.messageListeners.push(listener);
-        for (var i = 0; i < devTools.unhandledMessages.length; i++) {
-          const handled = listener(devTools.unhandledMessages[i]);
-          if (handled) {
-            devTools.unhandledMessages.splice(i, 1);
-            i--;
-          }
-        }
       }
     });
   }
@@ -1492,6 +1466,8 @@ export class VaadinDevTools extends LitElement {
 
     const tabContainer = this.renderRoot.querySelector('#tabContainer')! as HTMLElement;
 
+    const newTabElements: HTMLElement[] = [];
+
     // Ensure each tab has an element, either a container <div> for render functions or the requested tag
     this.tabs.forEach((tab) => {
       if (tab.element) {
@@ -1504,6 +1480,7 @@ export class VaadinDevTools extends LitElement {
         tab.element = document.createElement(tab.render);
         (tab.element as any)._devTools = this;
       }
+      newTabElements.push(tab.element);
     });
 
     // Ensure tabs are in the correct order in the tab container
@@ -1533,6 +1510,16 @@ export class VaadinDevTools extends LitElement {
       }
       const active = tab.id === this.activeTab;
       tab.element!.hidden = !active;
+    }
+
+    // Send any unhandled messages
+    for (const tabElement of newTabElements) {
+      for (var i = 0; i < this.unhandledMessages.length; i++) {
+        if (this.tabHandleMessage(tabElement, this.unhandledMessages[i])) {
+          this.unhandledMessages.splice(i, 1);
+          i--;
+        }
+      }
     }
   }
 
