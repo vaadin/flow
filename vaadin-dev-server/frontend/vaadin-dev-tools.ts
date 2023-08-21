@@ -7,21 +7,11 @@ import { ComponentPicker } from './component-picker';
 import { ComponentReference, deepContains } from './component-util';
 import './theme-editor/editor';
 import { ThemeEditorState } from './theme-editor/model';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { copy } from './copy-to-clipboard.js';
 import { licenseCheckFailed, licenseInit, Product } from './License';
 import { Connection, ConnectionStatus } from './connection';
 import { popupStyles } from './styles';
 import './vaadin-dev-tools-log';
-
-interface ServerInfo {
-  vaadinVersion: string;
-  flowVersion: string;
-  javaVersion: string;
-  osVersion: string;
-  productName: string;
-}
+import './vaadin-dev-tools-info';
 
 interface Feature {
   id: string;
@@ -37,9 +27,10 @@ interface Tab {
   render: (() => TemplateResult) | string;
   element?: HTMLElement;
   activate?: () => void;
+  handleMessage?: (message: any) => boolean;
 }
 
-enum MessageType {
+export enum MessageType {
   LOG = 'log',
   INFORMATION = 'information',
   WARNING = 'warning',
@@ -808,21 +799,12 @@ export class VaadinDevTools extends LitElement {
   @state()
   private tabs: Tab[] = [
     { id: 'log', title: 'Log', render: 'vaadin-dev-tools-log' },
-    { id: 'info', title: 'Info', render: () => this.renderInfo() },
+    { id: 'info', title: 'Info', render: 'vaadin-dev-tools-info' },
     { id: 'features', title: 'Feature Flags', render: () => this.renderFeatures() }
   ];
 
   @state()
   private activeTab: string = 'log';
-
-  @state()
-  private serverInfo: ServerInfo = {
-    flowVersion: '',
-    vaadinVersion: '',
-    javaVersion: '',
-    osVersion: '',
-    productName: ''
-  };
 
   @state()
   private features: Feature[] = [];
@@ -956,9 +938,15 @@ export class VaadinDevTools extends LitElement {
   }
 
   handleFrontendMessage(message: any) {
-    if (message?.command === 'serverInfo') {
-      this.serverInfo = message.data as ServerInfo;
-    } else if (message?.command === 'featureFlags') {
+    for (const tab of this.tabs) {
+      const handler = (tab as any).element?.handleMessage;
+      if (handler && handler.call(tab.element, message)) {
+        // Fully handled
+        return;
+      }
+    }
+
+    if (message?.command === 'featureFlags') {
       this.features = message.data.features as Feature[];
     } else if (message?.command === 'themeEditorState') {
       const isFlowApp = !!(window as any).Vaadin.Flow;
@@ -1408,20 +1396,39 @@ export class VaadinDevTools extends LitElement {
     super.updated(_changedProperties);
 
     const tabContainer = this.renderRoot.querySelector('#tabContainer')! as HTMLElement;
-    if (tabContainer?.childElementCount !== this.tabs.length) {
-      tabContainer.innerHTML = '';
 
-      this.tabs.forEach((tab) => {
-        if (typeof tab.render === 'function') {
-          tab.element = document.createElement('div');
-          tabContainer.appendChild(tab.element);
+    // Ensure each tab has an element, either a container <div> for render functions or the requested tag
+    this.tabs.forEach((tab) => {
+      if (tab.element) {
+        return;
+      }
+
+      if (typeof tab.render === 'function') {
+        tab.element = document.createElement('div');
+      } else {
+        tab.element = document.createElement(tab.render);
+        (tab.element as any)._devTools = this;
+      }
+    });
+
+    // Ensure tabs are in the correct order in the tab container
+    if (tabContainer?.childElementCount !== this.tabs.length) {
+      for (let i = 0; i < this.tabs.length; i++) {
+        const tab = this.tabs[i];
+        if (tabContainer.childElementCount > i && tabContainer.children[i] === tab.element) {
+          // ok
         } else {
-          tab.element = document.createElement(tab.render);
-          (tab.element as any)._devTools = this;
-          tabContainer.appendChild(tab.element);
+          // insert at i
+          tabContainer.insertBefore(tab.element!, tabContainer.children[i]);
         }
-      });
+      }
+      // Remove extra elements
+      while (tabContainer?.childElementCount > this.tabs.length) {
+        tabContainer.lastElementChild?.remove();
+      }
     }
+
+    // Render or request an update for each tab
     for (const tab of this.tabs) {
       if (typeof tab.render === 'function') {
         render(tab.render(), tab.element!);
@@ -1476,47 +1483,6 @@ export class VaadinDevTools extends LitElement {
     </div>`;
   }
 
-  renderInfo() {
-    return html`<div class="info-tray">
-      <button class="button copy" @click=${this.copyInfoToClipboard}>Copy</button>
-      <dl>
-        <dt>${this.serverInfo.productName}</dt>
-        <dd>${this.serverInfo.vaadinVersion}</dd>
-        <dt>Flow</dt>
-        <dd>${this.serverInfo.flowVersion}</dd>
-        <dt>Java</dt>
-        <dd>${this.serverInfo.javaVersion}</dd>
-        <dt>OS</dt>
-        <dd>${this.serverInfo.osVersion}</dd>
-        <dt>Browser</dt>
-        <dd>${navigator.userAgent}</dd>
-        <dt>
-          Live reload
-          <label class="switch">
-            <input
-              id="toggle"
-              type="checkbox"
-              ?disabled=${this.liveReloadDisabled ||
-              ((this.frontendStatus === ConnectionStatus.UNAVAILABLE ||
-                this.frontendStatus === ConnectionStatus.ERROR) &&
-                (this.javaStatus === ConnectionStatus.UNAVAILABLE || this.javaStatus === ConnectionStatus.ERROR))}
-              ?checked="${this.frontendStatus === ConnectionStatus.ACTIVE ||
-              this.javaStatus === ConnectionStatus.ACTIVE}"
-              @change=${(e: InputEvent) => this.setActive((e.target as HTMLInputElement).checked)}
-            />
-            <span class="slider"></span>
-          </label>
-        </dt>
-        <dd class="live-reload-status" style="--status-color: ${this.getStatusColor(this.javaStatus)}">
-          Java ${this.javaStatus} ${this.backend ? `(${VaadinDevTools.BACKEND_DISPLAY_NAME[this.backend]})` : ''}
-        </dd>
-        <dd class="live-reload-status" style="--status-color: ${this.getStatusColor(this.frontendStatus)}">
-          Front end ${this.frontendStatus}
-        </dd>
-      </dl>
-    </div>`;
-  }
-
   private renderFeatures() {
     return html`<div class="features-tray">
       ${this.features.map(
@@ -1555,22 +1521,6 @@ export class VaadinDevTools extends LitElement {
       @before-open=${this.disableJavaLiveReload}
       @after-close=${this.enableJavaLiveReload}
     ></vaadin-dev-tools-theme-editor>`;
-  }
-
-  copyInfoToClipboard() {
-    const items = this.renderRoot.querySelectorAll('.info-tray dt, .info-tray dd');
-    const text = Array.from(items)
-      .map((message) => (message.localName === 'dd' ? ': ' : '\n') + message.textContent!.trim())
-      .join('')
-      .replace(/^\n/, '');
-    copy(text);
-    this.showNotification(
-      MessageType.INFORMATION,
-      'Environment information copied to clipboard',
-      undefined,
-      undefined,
-      'versionInfoCopied'
-    );
   }
 
   toggleFeatureFlag(e: Event, feature: Feature) {
