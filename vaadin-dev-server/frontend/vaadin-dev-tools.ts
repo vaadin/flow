@@ -1331,7 +1331,7 @@ export class VaadinDevTools extends LitElement {
             </svg>
           </button>
         </div>
-        ${this.tabs.map((tab) => (this.activeTab === tab.id ? tab.render() : nothing))}
+        ${this.tabs.map((tab) => html`<div ?hidden=${this.activeTab !== tab.id}>${tab.render()}</div>`}
       </div>
 
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
