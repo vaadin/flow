@@ -1,5 +1,5 @@
 import 'construct-style-sheets-polyfill';
-import { css, html, LitElement, nothing, TemplateResult } from 'lit';
+import { css, html, LitElement, nothing, PropertyValueMap, render, TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { Overlay, OverlayOutsideClickEvent } from '@vaadin/overlay';
@@ -33,7 +33,8 @@ interface Feature {
 interface Tab {
   id: 'log' | 'info' | 'features' | 'code' | 'theme-editor';
   title: string;
-  render: () => TemplateResult;
+  render: (() => TemplateResult) | string;
+  element?: HTMLElement;
   activate?: () => void;
 }
 
@@ -804,7 +805,7 @@ export class VaadinDevTools extends LitElement {
 
   @state()
   private tabs: Tab[] = [
-    { id: 'log', title: 'Log', render: () => this.renderLog(), activate: this.activateLog },
+    { id: 'log', title: 'Log', render: 'vaadin-dev-tools-log', activate: this.activateLog },
     { id: 'info', title: 'Info', render: () => this.renderInfo() },
     { id: 'features', title: 'Feature Flags', render: () => this.renderFeatures() }
   ];
@@ -1331,7 +1332,7 @@ export class VaadinDevTools extends LitElement {
             </svg>
           </button>
         </div>
-        ${this.tabs.map((tab) => (this.activeTab === tab.id ? tab.render() : nothing))}
+        <div id="tabContainer"></div>
       </div>
 
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
@@ -1398,9 +1399,37 @@ export class VaadinDevTools extends LitElement {
       </div>`;
   }
 
-  renderLog() {
-    return html`<div class="message-tray">${this.messages.map((msg) => this.renderMessage(msg))}</div>`;
+  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    super.updated(_changedProperties);
+
+    const tabContainer = this.renderRoot.querySelector('#tabContainer')! as HTMLElement;
+    if (tabContainer?.childElementCount !== this.tabs.length) {
+      tabContainer.innerHTML = '';
+
+      this.tabs.forEach((tab) => {
+        if (typeof tab.render === 'function') {
+          tab.element = document.createElement('div');
+          (tab.element as any)._devTools = this;
+          tabContainer.appendChild(tab.element);
+        } else {
+          tab.element = document.createElement(tab.render);
+          (tab.element as any)._devTools = this;
+          tabContainer.appendChild(tab.element);
+        }
+      });
+    }
+    for (const tab of this.tabs) {
+      if (typeof tab.render === 'function') {
+        render(tab.render(), tab.element!);
+      } else if ((tab.element as any).requestUpdate) {
+        // To re-render log when messages are updated
+        (tab.element as any).requestUpdate();
+      }
+      const active = tab.id === this.activeTab;
+      tab.element!.hidden = !active;
+    }
   }
+
   activateLog() {
     this.unreadErrors = false;
     this.updateComplete.then(() => {
@@ -1567,6 +1596,21 @@ export class VaadinDevTools extends LitElement {
   }
 }
 
+export class VaadinDevToolsLog extends LitElement {
+  @property({ type: Object })
+  _devTools!: VaadinDevTools;
+
+  protected createRenderRoot(): Element | ShadowRoot {
+    return this;
+  }
+  render() {
+    return html`<div class="message-tray">
+      ${this._devTools.messages.map((msg) => this._devTools.renderMessage(msg))}
+    </div>`;
+  }
+}
+
 if (customElements.get('vaadin-dev-tools') === undefined) {
   customElements.define('vaadin-dev-tools', VaadinDevTools);
+  customElements.define('vaadin-dev-tools-log', VaadinDevToolsLog);
 }
