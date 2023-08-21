@@ -1,6 +1,6 @@
 import 'construct-style-sheets-polyfill';
 import { css, html, LitElement, nothing, PropertyValueMap, render, TemplateResult } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { Overlay, OverlayOutsideClickEvent } from '@vaadin/overlay';
 import { ComponentPicker } from './component-picker';
@@ -13,6 +13,7 @@ import { copy } from './copy-to-clipboard.js';
 import { licenseCheckFailed, licenseInit, Product } from './License';
 import { Connection, ConnectionStatus } from './connection';
 import { popupStyles } from './styles';
+import './vaadin-dev-tools-log';
 
 interface ServerInfo {
   vaadinVersion: string;
@@ -56,6 +57,7 @@ interface Message {
   deleted: boolean;
 }
 
+@customElement('vaadin-dev-tools')
 export class VaadinDevTools extends LitElement {
   static MAX_LOG_ROWS = 1000;
 
@@ -805,7 +807,7 @@ export class VaadinDevTools extends LitElement {
 
   @state()
   private tabs: Tab[] = [
-    { id: 'log', title: 'Log', render: 'vaadin-dev-tools-log', activate: this.activateLog },
+    { id: 'log', title: 'Log', render: 'vaadin-dev-tools-log' },
     { id: 'info', title: 'Info', render: () => this.renderInfo() },
     { id: 'features', title: 'Feature Flags', render: () => this.renderFeatures() }
   ];
@@ -826,7 +828,7 @@ export class VaadinDevTools extends LitElement {
   private features: Feature[] = [];
 
   @state()
-  private unreadErrors = false;
+  unreadErrors = false;
 
   @query('.window')
   private root!: HTMLElement;
@@ -1313,7 +1315,10 @@ export class VaadinDevTools extends LitElement {
                 id="${tab.id}"
                 @click=${() => {
                   this.activeTab = tab.id;
-                  if (tab.activate) tab.activate.call(this);
+                  const activateMethod = (tab.element as any).activate;
+                  if (activateMethod) {
+                    activateMethod.call(tab.element);
+                  }
                 }}
               >
                 ${tab.title}
@@ -1409,7 +1414,6 @@ export class VaadinDevTools extends LitElement {
       this.tabs.forEach((tab) => {
         if (typeof tab.render === 'function') {
           tab.element = document.createElement('div');
-          (tab.element as any)._devTools = this;
           tabContainer.appendChild(tab.element);
         } else {
           tab.element = document.createElement(tab.render);
@@ -1428,16 +1432,6 @@ export class VaadinDevTools extends LitElement {
       const active = tab.id === this.activeTab;
       tab.element!.hidden = !active;
     }
-  }
-
-  activateLog() {
-    this.unreadErrors = false;
-    this.updateComplete.then(() => {
-      const lastMessage = this.renderRoot.querySelector('.message-tray .message:last-child');
-      if (lastMessage) {
-        lastMessage.scrollIntoView();
-      }
-    });
   }
 
   renderCode() {
@@ -1594,23 +1588,4 @@ export class VaadinDevTools extends LitElement {
       this.log(MessageType.ERROR, `Unable to toggle feature ${feature.title}: No server connection available`);
     }
   }
-}
-
-export class VaadinDevToolsLog extends LitElement {
-  @property({ type: Object })
-  _devTools!: VaadinDevTools;
-
-  protected createRenderRoot(): Element | ShadowRoot {
-    return this;
-  }
-  render() {
-    return html`<div class="message-tray">
-      ${this._devTools.messages.map((msg) => this._devTools.renderMessage(msg))}
-    </div>`;
-  }
-}
-
-if (customElements.get('vaadin-dev-tools') === undefined) {
-  customElements.define('vaadin-dev-tools', VaadinDevTools);
-  customElements.define('vaadin-dev-tools-log', VaadinDevToolsLog);
 }

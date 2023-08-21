@@ -23,6 +23,6 @@
     "declarationDir": "src/main/resources/META-INF/frontend/vaadin-dev-tools",
     "emitDeclarationOnly": true
   },
-  "include": ["frontend/vaadin-dev-tools.ts"],
+  "include": ["frontend/vaadin-dev-tools*.ts"],
   "exclude": []
 }
