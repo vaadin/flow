@@ -15,12 +15,14 @@
  */
 package com.vaadin.client.flow;
 
+import com.google.gwt.user.client.Timer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ClientEngineTestBase;
+import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.InitialPropertiesHandler;
 import com.vaadin.client.Registry;
@@ -191,6 +193,7 @@ public abstract class GwtPropertyElementBinderTest
     }
 
     public void testFlushPendingChangesOnDomEvent() {
+        Console.log("testFlushPendingChangesOnDomEvent");
         Browser.getDocument().getBody().appendChild(element);
         Binder.bind(node, element);
 
@@ -199,12 +202,8 @@ public abstract class GwtPropertyElementBinderTest
                 300);
         debouncer.trigger(JsCollections.<String> set()
                 .add(JsonConstants.EVENT_PHASE_TRAILING), phase -> {
-                    if (phase == null) {
-                        commandExecution.incrementAndGet();
-                    } else if (JsonConstants.EVENT_PHASE_TRAILING
-                            .equals(phase)) {
-                        finishTest();
-                    }
+                    Console.log("PHASE:" + phase);
+                    commandExecution.incrementAndGet();
                 });
 
         String constantPoolKey = "expressionsKey";
@@ -220,14 +219,18 @@ public abstract class GwtPropertyElementBinderTest
 
         dispatchEvent("event1");
 
+        // Note for future heroes: if this assert fails, you'll get very 
+        // cryptic class cast exception.
         assertEquals("Changes should have not been flushed", 0,
                 commandExecution.get());
 
-        // Wait for debouncer to be unregistered
-        delayTestFinish(1000);
+        waitForDebouncerToCleanUp();
+        
     }
 
     public void testDoNotFlushPendingChangesOnPropertySynchronization() {
+        Console.log("testDoNotFlushPendingChangesOnPropertySynchronization");
+
         Browser.getDocument().getBody().appendChild(element);
         Binder.bind(node, element);
 
@@ -236,12 +239,8 @@ public abstract class GwtPropertyElementBinderTest
                 300);
         debouncer.trigger(JsCollections.<String> set()
                 .add(JsonConstants.EVENT_PHASE_TRAILING), phase -> {
-                    if (phase == null) {
-                        commandExecution.incrementAndGet();
-                    } else if (JsonConstants.EVENT_PHASE_TRAILING
-                            .equals(phase)) {
-                        finishTest();
-                    }
+                    Console.log("PHASE:" + phase);
+                    commandExecution.incrementAndGet();
                 });
 
         String constantPoolKey = "expressionsKey";
@@ -255,11 +254,31 @@ public abstract class GwtPropertyElementBinderTest
 
         dispatchEvent("event1");
 
+        // Note for future heroes: if this assert fails, you'll get very 
+        // cryptic class cast exception.
         assertEquals("Changes should have been flushed", 1,
                 commandExecution.get());
+        
+        waitForDebouncerToCleanUp();
 
+    }
+    
+    /**
+     * Waits a while to so that cached Debouncers are cleared by timer for a stable
+     * startup situation for next tests. If there are existing debouncers, you
+     * will apparently get very weird looking class cast exceptions because of GWT bugs
+     * and our hacky workarounds.
+     */
+    private void waitForDebouncerToCleanUp() {
+        new Timer() {
+            @Override
+            public void run() {
+                finishTest();
+            }
+        }.schedule(900);
         // Wait for debouncer to be unregistered
         delayTestFinish(1000);
+        
     }
 
     protected StateNode createNode() {
