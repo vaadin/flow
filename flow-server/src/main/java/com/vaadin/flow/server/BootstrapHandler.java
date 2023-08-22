@@ -132,7 +132,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String DEFER_ATTRIBUTE = "defer";
     static final String VIEWPORT = "viewport";
     private static final String META_TAG = "meta";
-    private static final String SCRIPT_TAG = "script";
+    protected static final String SCRIPT_TAG = "script";
 
     /**
      * Location of client nocache file, relative to the context root.
@@ -1595,15 +1595,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         setupPwa(document, service.getPwaRegistry());
     }
 
-    protected static void addGeneratedIndexContent(
-            DeploymentConfiguration config, Document targetDocument)
+    protected static JsonObject getStatsJson(DeploymentConfiguration config)
             throws IOException {
         String statsJson = DevBundleUtils
                 .findBundleStatsJson(config.getProjectFolder());
         Objects.requireNonNull(statsJson,
                 "Frontend development bundle is expected to be in the project"
                         + " or on the classpath, but not found.");
-        addGeneratedIndexContent(targetDocument, Json.parse(statsJson));
+        return Json.parse(statsJson);
     }
 
     /**
@@ -1672,33 +1671,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     "Unable to read theme file from " + fileName, e);
         }
         return element;
-    }
-
-    private static void addGeneratedIndexContent(Document targetDocument,
-            JsonObject statsJson) {
-        JsonArray indexHtmlGeneratedRows = statsJson
-                .getArray("indexHtmlGenerated");
-        List<String> toAdd = new ArrayList<>();
-
-        Optional<String> webComponentScript = JsonUtils
-                .stream(statsJson.getArray("entryScripts"))
-                .map(value -> value.asString())
-                .filter(script -> script.contains("webcomponenthtml"))
-                .findFirst();
-
-        if (webComponentScript.isPresent()) {
-            Element elm = new Element(SCRIPT_TAG);
-            elm.attr("type", "module");
-            elm.attr("src", webComponentScript.get());
-            toAdd.add(elm.outerHtml());
-        } else {
-            toAdd.addAll(JsonUtils.stream(indexHtmlGeneratedRows)
-                    .map(value -> value.asString()).toList());
-        }
-
-        for (String row : toAdd) {
-            targetDocument.head().append(row);
-        }
     }
 
     private static void setupPwa(Document document, PwaRegistry registry) {
