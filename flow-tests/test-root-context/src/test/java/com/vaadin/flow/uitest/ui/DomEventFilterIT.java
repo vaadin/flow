@@ -190,6 +190,11 @@ public class DomEventFilterIT extends ChromeBrowserTest {
         Thread.sleep(2000);
         assertMessages(nextMsg++, "godmode:abc, phase:INTERMEDIATE",
                 "godmode:abc, phase:TRAILING");
+        nextMsg++;
+
+        WebElement twoEvents = findElement(By.id("twoEvents"));
+        twoEvents.sendKeys("asdfg");
+        assertMessages(nextMsg++, "k-event 5.0 phase: TRAILING", "g-event 5.0");
 
     }
 

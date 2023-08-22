@@ -121,6 +121,39 @@ public class DomEventFilterView extends AbstractDivView {
                                                                      // leading
                                                                      // +
 
+                                                                     
+        Element twoEvents = new Element("input");
+        twoEvents.setAttribute("id", "twoEvents");
+        // keydown fires k-event always, g-event if g is pressed down
+        twoEvents.executeJs("""
+                const el = this;
+                var id = 0;
+                this.addEventListener('keydown', function(event) {
+                    id++;
+                    const ke = new Event("k-event");
+                    ke.id = id;
+                    el.dispatchEvent(ke);
+
+                    if(event.key == 'g') {
+                        const ge = new Event("g-event");
+                        ge.id = id;
+                        el.dispatchEvent(ge);
+                    }
+                });
+        """);
+        DomListenerRegistration keyreg = twoEvents.addEventListener("k-event", e -> {
+            addMessage("k-event " + e.getEventData().getNumber("event.id") + " phase: " + e.getPhase());
+        });
+        keyreg.addEventData("event.id");
+        // lazily listen k-events
+        keyreg.debounce(3000);
+        
+        DomListenerRegistration greg = twoEvents.addEventListener("g-event", e -> {
+            addMessage("g-event " + e.getEventData().getNumber("event.id"));
+        });
+        // this are listened eagerly, k-events should still come before
+        greg.addEventData("event.id");
+    
         DebounceComponent component = new DebounceComponent();
         component.setId("debounce-component");
         component.addInputListener(
@@ -128,7 +161,7 @@ public class DomEventFilterView extends AbstractDivView {
 
         messages.setAttribute("id", "messages");
         getElement().appendChild(space, debounce, leading, leadingAndTrailing,
-                throttle, godMode, component.getElement(), messages);
+                throttle, godMode, twoEvents, component.getElement(), messages);
 
         // tests for#5090
         final AtomicReference<DomListenerRegistration> atomicReference = new AtomicReference<>();
