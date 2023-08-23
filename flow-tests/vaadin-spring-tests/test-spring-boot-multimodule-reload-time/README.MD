@@ -7,7 +7,7 @@ See list of properties ahead to configure generator.
 How to build `test-spring-boot-multimodule-reload-time` locally:
 
 ```
-cd flow/tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time
+cd flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time
 mvn clean install -pl :test-spring-boot-multimodule-reload-time-ui -am -P benchmark -DskipTests
 ```
 
