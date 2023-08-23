@@ -16,9 +16,9 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.orderedlayout.Scroller;
-import com.vaadin.flow.component.sidenav.SideNav;
-import com.vaadin.flow.component.sidenav.SideNavItem;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 /**
@@ -56,16 +56,15 @@ public class MainLayout extends AppLayout {
         addToDrawer(header, scroller, createFooter());
     }
 
-    private SideNav createNavigation() {
-        SideNav nav = new SideNav();
-
+    private VerticalLayout createNavigation() {
+        VerticalLayout layout = new VerticalLayout();
         UI.getCurrent().getInternals().getRouter().getRegistry()
                 .getRegisteredRoutes().forEach(route -> {
-                    nav.addItem(new SideNavItem(route.getTemplate(),
+                    layout.add(new RouterLink(route.getTemplate(),
                             route.getNavigationTarget()));
                 });
 
-        return nav;
+        return layout;
     }
 
     private Footer createFooter() {
