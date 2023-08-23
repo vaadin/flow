@@ -268,12 +268,10 @@ export class ThemeEditor extends LitElement {
   renderMissingThemeNotice() {
     return html`
       <div class="notice">
-        It looks like you have not set up a custom theme yet. Theme editor requires an existing theme to work with.
-        Please check our
-        <a href="https://vaadin.com/docs/latest/styling/custom-theme/creating-custom-theme" target="_blank"
-          >documentation</a
-        >
-        on how to set up a custom theme.
+        It looks like you have not set up an application theme yet. Theme editor requires an existing theme to work
+        with. Please check our
+        <a href="https://vaadin.com/docs/latest/styling/application-theme" target="_blank">documentation</a>
+        on how to set up an application theme.
       </div>
     `;
   }
