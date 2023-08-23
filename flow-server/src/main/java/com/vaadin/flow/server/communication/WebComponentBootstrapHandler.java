@@ -28,6 +28,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -132,7 +133,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     // directly from the frontend folder and the JS
                     // entrypoint(s) need
                     // to be added
-                    addJavaScriptEntryPoints(deploymentConfiguration, document);
+                    addGeneratedIndexContent(document,
+                            getStatsJson(deploymentConfiguration));
                 }
 
                 // Specify the application ID for scripts of the
@@ -172,6 +174,28 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             } else {
                 return super.getChunkKeys(chunks);
             }
+        }
+    }
+
+    protected static void addGeneratedIndexContent(Document targetDocument,
+            JsonObject statsJson) {
+        List<String> toAdd = new ArrayList<>();
+
+        Optional<String> webComponentScript = JsonUtils
+                .stream(statsJson.getArray("entryScripts"))
+                .map(value -> value.asString())
+                .filter(script -> script.contains("webcomponenthtml"))
+                .findFirst();
+
+        if (webComponentScript.isPresent()) {
+            Element elm = new Element(SCRIPT_TAG);
+            elm.attr("type", "module");
+            elm.attr("src", webComponentScript.get());
+            toAdd.add(elm.outerHtml());
+        }
+
+        for (String row : toAdd) {
+            targetDocument.head().append(row);
         }
     }
 

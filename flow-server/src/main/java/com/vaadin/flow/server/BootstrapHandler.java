@@ -53,7 +53,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.servlet.ServletRegistration;
 import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -131,7 +130,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String DEFER_ATTRIBUTE = "defer";
     static final String VIEWPORT = "viewport";
     private static final String META_TAG = "meta";
-    private static final String SCRIPT_TAG = "script";
+    protected static final String SCRIPT_TAG = "script";
 
     /**
      * Location of client nocache file, relative to the context root.
@@ -1594,8 +1593,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         setupPwa(document, service.getPwaRegistry());
     }
 
-    protected static void addJavaScriptEntryPoints(
-            DeploymentConfiguration config, Document targetDocument)
+    protected static JsonObject getStatsJson(DeploymentConfiguration config)
             throws IOException {
         URL statsJsonUrl = FrontendUtils
                 .findBundleFile(config.getProjectFolder(), "config/stats.json");
@@ -1604,7 +1602,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         + " or on the classpath, but not found.");
         String statsJson = IOUtils.toString(statsJsonUrl,
                 StandardCharsets.UTF_8);
-        addEntryScripts(targetDocument, Json.parse(statsJson));
+        return Json.parse(statsJson);
     }
 
     /**
@@ -1716,34 +1714,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         element.attr("type", "text/css");
         element.attr("href", getThemeFilePath(themeName, fileName));
         return element;
-    }
-
-    private static void addEntryScripts(Document targetDocument,
-            JsonObject statsJson) {
-        boolean addIndexHtml = true;
-        Element indexHtmlScript = null;
-        JsonArray entryScripts = statsJson.getArray("entryScripts");
-        for (int i = 0; i < entryScripts.length(); i++) {
-            String entryScript = entryScripts.getString(i);
-            Element elm = new Element(SCRIPT_TAG);
-            elm.attr("type", "module");
-            elm.attr("src", entryScript);
-            targetDocument.head().appendChild(elm);
-
-            if (entryScript.contains("indexhtml")) {
-                indexHtmlScript = elm;
-            }
-
-            if (entryScript.contains("webcomponenthtml")) {
-                addIndexHtml = false;
-            }
-        }
-
-        // If a reference to webcomponenthtml is present, the embedded
-        // components are used, thus we don't need to serve indexhtml script
-        if (!addIndexHtml && indexHtmlScript != null) {
-            indexHtmlScript.remove();
-        }
     }
 
     private static void setupPwa(Document document, PwaRegistry registry) {
