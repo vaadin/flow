@@ -47,7 +47,7 @@ public interface DevToolsMessageHandler {
      * @return {@code true} if the message was handled and should not be passed
      *         on to further handlers
      */
-    public boolean handleDevToolsMessage(String command, JsonObject data,
+    public boolean handleMessage(String command, JsonObject data,
             DevToolsInterface devToolsInterface);
 
 }

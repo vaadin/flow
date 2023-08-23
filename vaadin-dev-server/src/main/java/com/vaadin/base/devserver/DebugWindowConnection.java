@@ -321,7 +321,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         } else {
             boolean handled = false;
             for (DevToolsMessageHandler plugin : plugins) {
-                handled = plugin.handleDevToolsMessage(command, data,
+                handled = plugin.handleMessage(command, data,
                         getDevToolsInterface(resource));
                 if (handled) {
                     break;
