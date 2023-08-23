@@ -9,7 +9,11 @@ const globalExclusions = [
   'flow-tests/test-multi-war/test-war2',
   'flow-tests/test-webpush',
   'flow-tests/vaadin-spring-tests/test-spring-boot-reload-time',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time'
+  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time',
+  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/generator',
+  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/library',
+  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/theme',
+  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/ui'
 ];
 // Set modules or tests weights and fixed slice position for better distribution
 //  weight: it's time in half-minutes, default 1 = 30secs
