@@ -77,28 +77,95 @@ public class DomEventFilterView extends AbstractDivView {
 
         Element debounce = new Element("input");
         debounce.setAttribute("id", "debounce");
+        debounce.addEventListener("input", e -> {
+            addMessage("input:%s, phase:%s".formatted(
+                    e.getEventData().getString("element.value"), e.getPhase()));
+        }).addEventData("element.value").debounce(1000);
+        debounce.addEventListener("click", e -> {
+            addMessage("click");
+        });
 
-        debounce.addEventListener("input",
-                e -> addMessage("Trailing: "
-                        + e.getEventData().getString("element.value")))
-                .debounce(1000).addEventData("element.value");
-        debounce.addEventListener("input",
-                e -> addMessage("Leading: "
-                        + e.getEventData().getString("element.value")))
-                .debounce(1000, DebouncePhase.LEADING);
-        debounce.addEventListener("input",
-                e -> addMessage("Throttle: "
-                        + e.getEventData().getString("element.value")))
-                .throttle(1000);
+        Element leading = new Element("input");
+        leading.setAttribute("id", "leading");
+        leading.addEventListener("input", e -> {
+            addMessage("input:%s, phase:%s".formatted(
+                    e.getEventData().getString("element.value"), e.getPhase()));
+        }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING);
+
+        Element leadingAndTrailing = new Element("input");
+        leadingAndTrailing.setAttribute("id", "leading-trailing");
+        leadingAndTrailing.addEventListener("input", e -> {
+            addMessage("input:%s, phase:%s".formatted(
+                    e.getEventData().getString("element.value"), e.getPhase()));
+        }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING,
+                DebouncePhase.TRAILING);
+
+        Element throttle = new Element("input");
+        throttle.setAttribute("id", "throttle");
+        throttle.addEventListener("input", e -> {
+            addMessage("input:%s, phase:%s".formatted(
+                    e.getEventData().getString("element.value"), e.getPhase()));
+        }).addEventData("element.value").throttle(2000); // this is leading +
+                                                         // intermediate
+        throttle.addEventListener("click", e -> {
+            addMessage("click");
+        });
+
+        Element godMode = new Element("input");
+        godMode.setAttribute("id", "godMode");
+        godMode.addEventListener("input", e -> {
+            addMessage("godmode:%s, phase:%s".formatted(
+                    e.getEventData().getString("element.value"), e.getPhase()));
+        }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING,
+                DebouncePhase.TRAILING, DebouncePhase.INTERMEDIATE); // this is
+                                                                     // leading
+                                                                     // +
+
+        Element twoEvents = new Element("input");
+        twoEvents.setAttribute("id", "twoEvents");
+        // keydown fires k-event always, g-event if g is pressed down
+        twoEvents.executeJs("""
+                        const el = this;
+                        var id = 0;
+                        this.addEventListener('keydown', function(event) {
+                            id++;
+                            const ke = new Event("k-event");
+                            ke.id = id;
+                            el.dispatchEvent(ke);
+
+                            if(event.key == 'g') {
+                                const ge = new Event("g-event");
+                                ge.id = id;
+                                el.dispatchEvent(ge);
+                            }
+                        });
+                """);
+        DomListenerRegistration keyreg = twoEvents.addEventListener("k-event",
+                e -> {
+                    addMessage(
+                            "k-event " + e.getEventData().getNumber("event.id")
+                                    + " phase: " + e.getPhase());
+                });
+        keyreg.addEventData("event.id");
+        // lazily listen k-events
+        keyreg.debounce(3000);
+
+        DomListenerRegistration greg = twoEvents.addEventListener("g-event",
+                e -> {
+                    addMessage("g-event "
+                            + e.getEventData().getNumber("event.id"));
+                });
+        // this are listened eagerly, k-events should still come before
+        greg.addEventData("event.id");
 
         DebounceComponent component = new DebounceComponent();
         component.setId("debounce-component");
         component.addInputListener(
-                e -> addMessage("Component: " + e.getValue()), 1000);
+                e -> addMessage("Component: " + e.getValue()), 2000);
 
         messages.setAttribute("id", "messages");
-        getElement().appendChild(space, debounce, component.getElement(),
-                messages);
+        getElement().appendChild(space, debounce, leading, leadingAndTrailing,
+                throttle, godMode, twoEvents, component.getElement(), messages);
 
         // tests for#5090
         final AtomicReference<DomListenerRegistration> atomicReference = new AtomicReference<>();
