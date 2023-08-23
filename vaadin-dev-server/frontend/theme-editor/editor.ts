@@ -72,6 +72,8 @@ export class ThemeEditor extends LitElement {
   @state()
   private effectiveTheme: ComponentTheme | null = null;
 
+  private undoRedoListener;
+
   static get styles() {
     return css`
       :host {
@@ -208,6 +210,19 @@ export class ThemeEditor extends LitElement {
     this.historyActions = this.history.allowedActions;
     this.api.markAsUsed();
 
+    this.undoRedoListener = (evt: KeyboardEvent) => {
+      const isZKey = evt.key === 'Z' || evt.key === 'z';
+      if (isZKey && (evt.ctrlKey || evt.metaKey) && evt.shiftKey) {
+        if (this.historyActions?.allowRedo) {
+          this.handleRedo();
+        }
+      } else if (isZKey && (evt.ctrlKey || evt.metaKey)) {
+        if (this.historyActions?.allowUndo) {
+          this.handleUndo();
+        }
+      }
+    }
+
     // When the theme is updated due to HMR, remove optimistic updates from
     // theme preview. Also refresh the base theme as default property values may
     // have changed.
@@ -215,6 +230,8 @@ export class ThemeEditor extends LitElement {
       themePreview.clear();
       this.refreshTheme();
     });
+
+    document.addEventListener('keydown', this.undoRedoListener);
 
     this.dispatchEvent(new CustomEvent('before-open'));
   }
@@ -237,8 +254,12 @@ export class ThemeEditor extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeElementHighlight(this.context?.component.element);
+
     componentOverlayManager.hideOverlay();
     componentOverlayManager.reset();
+
+    document.removeEventListener('keydown', this.undoRedoListener);
+
     this.dispatchEvent(new CustomEvent('after-close'));
   }
 
