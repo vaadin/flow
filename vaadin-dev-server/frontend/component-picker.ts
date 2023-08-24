@@ -52,6 +52,10 @@ export class ComponentPicker extends LitElement {
       }
     `
   ];
+  constructor() {
+    super();
+    this.mouseMoveEvent = this.mouseMoveEvent.bind(this);
+  }
 
   connectedCallback() {
     super.connectedCallback();
@@ -64,10 +68,15 @@ export class ComponentPicker extends LitElement {
       background: rgba(158,44,198,0.25);
     }`);
     document.adoptedStyleSheets = [...document.adoptedStyleSheets, globalStyles];
-
     this.overlayElement = document.createElement('div');
     this.overlayElement.classList.add('vaadin-dev-tools-highlight-overlay');
+    this.addEventListener('mousemove', this.mouseMoveEvent);
   }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('mousemove', this.mouseMoveEvent);
+  }
+
   render() {
     if (!this.active) {
       this.style.display = 'none';
@@ -120,6 +129,27 @@ export class ComponentPicker extends LitElement {
         requestAnimationFrame(() => this.shim.focus());
       } else if (wasActive && !isActive) {
         this.highlight(undefined);
+      }
+    }
+  }
+
+  mouseMoveEvent(e: MouseEvent) {
+    if (!this.active) {
+      this.style.display = 'none';
+      return;
+    }
+    const pickerInfo = this.shadowRoot?.querySelector('.component-picker-info');
+    if (pickerInfo) {
+      const pickerRect = pickerInfo.getBoundingClientRect();
+      if (
+        e.x > pickerRect.x &&
+        e.x < pickerRect.x + pickerRect.width &&
+        e.y > pickerRect.y &&
+        e.y <= pickerRect.y + pickerRect.height
+      ) {
+        (pickerInfo as HTMLElement).style.opacity = '0.1';
+      } else {
+        (pickerInfo as HTMLElement).style.opacity = '1.0';
       }
     }
   }
