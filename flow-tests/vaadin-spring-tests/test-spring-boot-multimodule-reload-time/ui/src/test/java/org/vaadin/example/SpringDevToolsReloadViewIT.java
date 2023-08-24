@@ -55,7 +55,7 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
     private void printTestResultToLog(String result) {
         System.out.printf(
-                "##teamcity[buildStatisticValue key='%s,app,%s-routes,%s-services-per-route,spring-boot-devtools-reload-time' value='%s']%n",
+                "##teamcity[buildStatisticValue key='%s,app%s,%s-routes,%s-services-per-route%s%s,spring-boot-devtools-reload-time' value='%s']%n",
                 getVaadinMajorMinorVersion(),
                 (hasRouteHierarchy() ? ",route-hierarchy-enabled" : ""),
                 getNumberOfGeneratedRoutesProperty(),
