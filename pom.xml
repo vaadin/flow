@@ -97,6 +97,8 @@
         <jaxb.version>4.0.3</jaxb.version>
         <guava.version>32.1.2-jre</guava.version>
         <jakarta.websocket.version>2.1.1</jakarta.websocket.version>
+        <micrometer.version>1.12.0-SNAPSHOT</micrometer.version>
+        <micrometer-tracing.version>1.2.0-SNAPSHOT</micrometer-tracing.version>
 
         <!-- Plugins -->
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>

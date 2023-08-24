@@ -16,13 +16,18 @@
 package com.vaadin.flow.spring;
 
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ObservedVaadinFilter;
 import com.vaadin.flow.server.VaadinFilter;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotProcessor;
+import io.micrometer.jakarta.instrument.binder.http.HttpJakartaServerServletRequestObservationConvention;
+import io.micrometer.observation.ObservationRegistry;
 import jakarta.servlet.MultipartConfigElement;
 import org.atmosphere.cpr.ApplicationConfig;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
@@ -132,4 +137,14 @@ public class SpringBootAutoConfiguration {
         return new VaadinWebsocketEndpointExporter();
     }
 
+    @Configuration(proxyBeanMethods = false)
+    @AutoConfigureAfter(ObservationAutoConfiguration.class)
+    @ConditionalOnClass(ObservationRegistry.class)
+    static class ObservabilityConfig {
+
+        @Bean
+        ObservedVaadinFilter observedVaadinFilter(ObservationRegistry observationRegistry, ObjectProvider<HttpJakartaServerServletRequestObservationConvention> convention) {
+            return new ObservedVaadinFilter(observationRegistry, convention.getIfAvailable(() -> null));
+        }
+    }
 }
