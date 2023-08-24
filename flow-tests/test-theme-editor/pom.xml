@@ -37,7 +37,6 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-core-internal</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
