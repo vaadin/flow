@@ -33,3 +33,10 @@ Default is 0.
 in `frontend/generated-js` folder. Javascript in the file defines a simple
 web-component with
 Lit. Web component is added to the DOM of the route. Default is 0.
+
+### Other properties for the integration test
+
+`route.hierarchy.enabled`: When 'true', adds a route with hierarchical
+structure.
+Route is mapped like '
+catalog/product/0' (or with alias 'catalog/prod/0'). 'false' by default.

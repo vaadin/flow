@@ -16,6 +16,8 @@
 package org.vaadin.example;
 
 import com.vaadin.flow.server.Version;
+import com.vaadin.flow.spring.test.AppShell;
+import com.vaadin.flow.spring.test.SpringDevToolsReloadUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import org.junit.Assert;
@@ -36,14 +38,24 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
         triggerReload();
         waitForElementVisible(By.id("result"));
 
+        printTestResultToLog();
+    }
+
+    private void printTestResultToLog() {
         System.out.printf(
                 "##teamcity[buildStatisticValue key='%s,app,%s-routes,%s-services-per-route,spring-boot-devtools-reload-time' value='%s']%n",
                 getVaadinMajorMinorVersion(),
-                System.getProperty("vaadin.test.codegen.maven.plugin.routes",
-                        "500"),
-                System.getProperty(
-                        "vaadin.test.codegen.maven.plugin.services.per.route",
-                        "1"),
+                (hasRouteHierarchy() ? ",route-hierarchy-enabled" : ""),
+                getNumberOfGeneratedRoutesProperty(),
+                getNumberOfGeneratedServicesPerRouteProperty(),
+                (hasCssImports()
+                        ? "," + getNumberOfGeneratedCssImportsPerRouteProperty()
+                                + "-css-imports-per-route"
+                        : ""),
+                (hasJsModules()
+                        ? "," + getNumberOfGeneratedJsModulesPerRouteProperty()
+                                + "-js-modules-per-route"
+                        : ""),
                 assertAndGetReloadTimeResult());
     }
 
@@ -66,5 +78,40 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
     private String getVaadinMajorMinorVersion() {
         return Version.getMajorVersion() + "." + Version.getMinorVersion();
+    }
+
+    private String getNumberOfGeneratedRoutesProperty() {
+        return System.getProperty("vaadin.test.codegen.maven.plugin.routes",
+                "500");
+    }
+
+    private String getNumberOfGeneratedServicesPerRouteProperty() {
+        return System.getProperty(
+                "vaadin.test.codegen.maven.plugin.services.per.route", "1");
+    }
+
+    private String getNumberOfGeneratedCssImportsPerRouteProperty() {
+        return System.getProperty(
+                "vvaadin.test.codegen.maven.plugin.cssimports.per.route", "0");
+    }
+
+    private String getNumberOfGeneratedJsModulesPerRouteProperty() {
+        return System.getProperty(
+                "vaadin.test.codegen.maven.plugin.jsmodules.per.route", "0");
+    }
+
+    private boolean hasCssImports() {
+        String value = getNumberOfGeneratedCssImportsPerRouteProperty();
+        return Integer.parseInt(value) > 0;
+    }
+
+    private boolean hasJsModules() {
+        String value = getNumberOfGeneratedJsModulesPerRouteProperty();
+        return Integer.parseInt(value) > 0;
+    }
+
+    private boolean hasRouteHierarchy() {
+        return "true".equalsIgnoreCase(
+                System.getProperty("route.hierarchy.enabled", "false"));
     }
 }
