@@ -1,5 +1,8 @@
 package com.vaadin.flow.uitest.ui;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Property {
 
     private String propertyName;

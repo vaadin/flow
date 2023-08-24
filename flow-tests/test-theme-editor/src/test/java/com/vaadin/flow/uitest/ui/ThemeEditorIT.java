@@ -15,9 +15,20 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.testutil.DevToolsElement;
+import com.vaadin.testbench.TestBenchElement;
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,18 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.vaadin.flow.testutil.DevToolsElement;
-import com.vaadin.testbench.TestBenchElement;
-
 import static junit.framework.TestCase.fail;
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class ThemeEditorIT extends AbstractThemeEditorIT {
@@ -47,8 +47,6 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
 
     @Test
     public void testButton() throws IOException {
-        Gson gson = new Gson();
-
         File parentFolder = new File(Objects
                 .requireNonNull(getClass().getClassLoader().getResource(""))
                 .getPath());
@@ -56,10 +54,7 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
                 parentFolder.getParentFile().getParent(), "metadata",
                 "vaadin-button.txt");
 
-        Reader reader = Files.newBufferedReader(metadataFilePath);
-        List<Metadata> buttonMetadata = gson.fromJson(reader,
-                new TypeToken<ArrayList<Metadata>>() {
-                }.getType());
+        List<Metadata> buttonMetadata = extractMetadata(metadataFilePath);
 
         open();
 
@@ -93,5 +88,14 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
                 }
             }
         }
+    }
+
+    private List<Metadata> extractMetadata(Path metadataFilePath)
+            throws IOException {
+        String content = Files.readString(metadataFilePath);
+        JsonArray jsonArray = Json.instance().parse(content);
+        return JsonUtils.stream(jsonArray).map(
+                m -> JsonUtils.readToObject((JsonObject) m, Metadata.class))
+                .toList();
     }
 }
