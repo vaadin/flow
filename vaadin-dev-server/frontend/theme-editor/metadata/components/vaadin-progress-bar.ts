@@ -3,7 +3,7 @@ import { shapeProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-progress-bar',
-  displayName: 'ProgressBar',
+  displayName: 'Progress Bar',
   elements: [
     {
       selector: 'vaadin-progress-bar::part(bar)',

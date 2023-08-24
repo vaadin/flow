@@ -289,7 +289,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 packageJson);
         Assert.assertEquals(
                 "Generated versions json should have keys for each dependency",
-                3, versionsJson.keys().length);
+                2, versionsJson.keys().length);
         Assert.assertEquals("Overlay should be pinned to user version",
                 customOverlayVersion,
                 versionsJson.getString("@vaadin/vaadin-overlay"));
@@ -343,7 +343,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 packageJson);
         Assert.assertEquals(
                 "Generated versions json should have keys for package.json dependencies (also dev)",
-                3, versionsJson.keys().length);
+                2, versionsJson.keys().length);
         Assert.assertEquals("Overlay should be pinned to user version",
                 customOverlayVersion,
                 versionsJson.getString("@vaadin/vaadin-overlay"));

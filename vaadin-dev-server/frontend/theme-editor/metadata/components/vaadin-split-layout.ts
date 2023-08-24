@@ -3,7 +3,7 @@ import { shapeProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-split-layout',
-  displayName: 'SplitLayout',
+  displayName: 'Split Layout',
   elements: [
     {
       selector: 'vaadin-split-layout',

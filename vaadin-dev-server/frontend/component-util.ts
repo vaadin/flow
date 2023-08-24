@@ -2,6 +2,7 @@ export type ComponentReference = {
   nodeId: number;
   uiId: number;
   element?: HTMLElement;
+  highlightElement?: HTMLElement;
 };
 
 export function getComponents(element: HTMLElement): ComponentReference[] {
@@ -21,7 +22,7 @@ export function getComponents(element: HTMLElement): ComponentReference[] {
   return components.reverse();
 }
 
-function getComponent(element: HTMLElement): ComponentReference {
+export function getComponent(element: HTMLElement): ComponentReference {
   const vaadin = (window as any).Vaadin;
   if (vaadin && vaadin.Flow) {
     const { clients } = vaadin.Flow;

@@ -146,6 +146,31 @@ public class VaadinServletServiceTest {
         Assert.assertSame(loader, service.getClassLoader());
     }
 
+    @Test
+    public void getPwaRegistry_servletInitialized_getsRegistry() {
+        MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito
+                .spy(mocks.getServlet());
+        // Restore original behavior of getServletContext
+        Mockito.when(vaadinServlet.getServletContext()).thenAnswer(
+                i -> vaadinServlet.getServletConfig().getServletContext());
+        VaadinServletService service = new VaadinServletService(vaadinServlet,
+                mocks.getDeploymentConfiguration());
+        Assert.assertNotNull(service.getPwaRegistry());
+    }
+
+    @Test
+    public void getPwaRegistry_servletNotInitialized_getsNull() {
+        MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito
+                .spy(mocks.getServlet());
+        // Restore original behavior of getServletContext
+        Mockito.when(vaadinServlet.getServletContext()).thenAnswer(
+                i -> vaadinServlet.getServletConfig().getServletContext());
+        VaadinServletService service = new VaadinServletService(vaadinServlet,
+                mocks.getDeploymentConfiguration());
+        vaadinServlet.destroy();
+        Assert.assertNull(service.getPwaRegistry());
+    }
+
     private String testLocation(String base, String contextPath,
             String servletPath, String pathInfo) throws Exception {
 

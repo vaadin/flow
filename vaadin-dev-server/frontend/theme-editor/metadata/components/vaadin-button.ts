@@ -1,6 +1,21 @@
-import { ComponentMetadata, EditorType } from '../model';
+import { ComponentMetadata, CssPropertyMetadata, EditorType } from '../model';
 import { presets } from './presets';
-import { fieldProperties, shapeProperties, textProperties } from './defaults';
+import { fieldProperties, shapeProperties, standardTextProperties } from './defaults';
+
+export const standardButtonProperties: CssPropertyMetadata[] = [
+  shapeProperties.backgroundColor,
+  shapeProperties.borderColor,
+  shapeProperties.borderWidth,
+  shapeProperties.borderRadius,
+  {
+    propertyName: '--lumo-button-size',
+    displayName: 'Size',
+    editorType: EditorType.range,
+    presets: presets.lumoSize,
+    icon: 'square'
+  },
+  fieldProperties.paddingInline
+];
 
 export default {
   tagName: 'vaadin-button',
@@ -8,26 +23,13 @@ export default {
   elements: [
     {
       selector: 'vaadin-button',
-      displayName: 'Host',
-      properties: [
-        shapeProperties.backgroundColor,
-        shapeProperties.borderColor,
-        shapeProperties.borderWidth,
-        shapeProperties.borderRadius,
-        {
-          propertyName: '--lumo-button-size',
-          displayName: 'Size',
-          editorType: EditorType.range,
-          presets: presets.lumoSize,
-          icon: 'square'
-        },
-        fieldProperties.paddingInline
-      ]
+      displayName: 'Root element',
+      properties: standardButtonProperties
     },
     {
       selector: 'vaadin-button::part(label)',
       displayName: 'Label',
-      properties: [textProperties.textColor, textProperties.fontSize, textProperties.fontWeight]
+      properties: standardTextProperties
     }
   ]
 } as ComponentMetadata;

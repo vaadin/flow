@@ -1,3 +1,6 @@
+import { TemplateResult } from 'lit';
+import { ComponentReference } from '../../component-util';
+
 export enum EditorType {
   text = 'text',
   checkbox = 'checkbox',
@@ -28,8 +31,11 @@ export interface ComponentElementMetadata {
 export interface ComponentMetadata {
   tagName: string;
   displayName: string;
-  description?: string;
+  description?: TemplateResult;
+  notAccessibleDescription?: TemplateResult;
   elements: ComponentElementMetadata[];
   setupElement?: (element: any) => Promise<void>;
   cleanupElement?: (element: any) => Promise<void>;
+  openOverlay?: (component: ComponentReference) => void;
+  hideOverlay?: (component: ComponentReference) => void;
 }

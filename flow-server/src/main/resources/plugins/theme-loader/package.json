@@ -16,5 +16,8 @@
   "files": [
     "theme-loader.js",
     "theme-loader-utils.js"
-  ]
+  ],
+  "dependencies": {
+    "glob": "10.3.3"
+  }
 }

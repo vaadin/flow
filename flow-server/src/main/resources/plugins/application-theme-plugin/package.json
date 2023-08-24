@@ -16,7 +16,7 @@
   "type": "module",
   "dependencies": {
     "mkdirp": "0.5.6",
-    "glob": "7.2.3"
+    "glob": "10.3.3"
   },
   "files": [
     "application-theme-plugin.js",

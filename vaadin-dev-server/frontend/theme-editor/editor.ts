@@ -29,6 +29,7 @@ import { injectGlobalCss } from './styles';
 import { ComponentMetadata } from './metadata/model';
 import { ClassNameChangeEvent } from './components/class-name-editor';
 import { OpenCssEvent } from './components/property-list';
+import { componentOverlayManager } from './components/component-overlay-manager';
 
 injectGlobalCss(css`
   .vaadin-theme-editor-highlight {
@@ -71,6 +72,8 @@ export class ThemeEditor extends LitElement {
   @state()
   private effectiveTheme: ComponentTheme | null = null;
 
+  private undoRedoListener;
+
   static get styles() {
     return css`
       :host {
@@ -87,6 +90,17 @@ export class ThemeEditor extends LitElement {
 
       .notice a {
         color: var(--dev-tools-text-color-emphasis);
+      }
+
+      .hint vaadin-icon {
+        color: var(--dev-tools-green-color);
+        font-size: var(--lumo-icon-size-m);
+      }
+
+      .hint {
+        display: flex;
+        align-items: center;
+        gap: var(--theme-editor-section-horizontal-padding);
       }
 
       .header {
@@ -196,6 +210,19 @@ export class ThemeEditor extends LitElement {
     this.historyActions = this.history.allowedActions;
     this.api.markAsUsed();
 
+    this.undoRedoListener = (evt: KeyboardEvent) => {
+      const isZKey = evt.key === 'Z' || evt.key === 'z';
+      if (isZKey && (evt.ctrlKey || evt.metaKey) && evt.shiftKey) {
+        if (this.historyActions?.allowRedo) {
+          this.handleRedo();
+        }
+      } else if (isZKey && (evt.ctrlKey || evt.metaKey)) {
+        if (this.historyActions?.allowUndo) {
+          this.handleUndo();
+        }
+      }
+    }
+
     // When the theme is updated due to HMR, remove optimistic updates from
     // theme preview. Also refresh the base theme as default property values may
     // have changed.
@@ -203,6 +230,10 @@ export class ThemeEditor extends LitElement {
       themePreview.clear();
       this.refreshTheme();
     });
+
+    document.addEventListener('keydown', this.undoRedoListener);
+
+    this.dispatchEvent(new CustomEvent('before-open'));
   }
 
   protected update(changedProperties: PropertyValues) {
@@ -212,7 +243,9 @@ export class ThemeEditor extends LitElement {
     if (changedProperties.has('expanded')) {
       if (this.expanded) {
         this.highlightElement(this.context?.component.element);
+        componentOverlayManager.showOverlay();
       } else {
+        componentOverlayManager.hideOverlay();
         this.removeElementHighlight(this.context?.component.element);
       }
     }
@@ -220,8 +253,14 @@ export class ThemeEditor extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-
     this.removeElementHighlight(this.context?.component.element);
+
+    componentOverlayManager.hideOverlay();
+    componentOverlayManager.reset();
+
+    document.removeEventListener('keydown', this.undoRedoListener);
+
+    this.dispatchEvent(new CustomEvent('after-close'));
   }
 
   render() {
@@ -268,12 +307,10 @@ export class ThemeEditor extends LitElement {
   renderMissingThemeNotice() {
     return html`
       <div class="notice">
-        It looks like you have not set up a custom theme yet. Theme editor requires an existing theme to work with.
-        Please check our
-        <a href="https://vaadin.com/docs/latest/styling/custom-theme/creating-custom-theme" target="_blank"
-          >documentation</a
-        >
-        on how to set up a custom theme.
+        It looks like you have not set up an application theme yet. Theme editor requires an existing theme to work
+        with. Please check our
+        <a href="https://vaadin.com/docs/latest/styling/application-theme" target="_blank">documentation</a>
+        on how to set up an application theme.
       </div>
     `;
   }
@@ -295,8 +332,14 @@ export class ThemeEditor extends LitElement {
     if (inaccessible) {
       const componentName = this.context.metadata.displayName;
       return html`
+        ${this.context.metadata.notAccessibleDescription && this.context.scope === ThemeScope.local
+          ? html`<div class="notice hint" style="padding-bottom: 0;">
+              <vaadin-icon icon="vaadin:lightbulb"></vaadin-icon>
+              <div>${this.context.metadata.notAccessibleDescription}</div>
+            </div>`
+          : ''}
         <div class="notice">
-          The selected ${componentName} can not be styled locally. Currently, theme editor only supports styling
+          The selected ${componentName} cannot be styled locally. Currently, Theme Editor only supports styling
           instances that are assigned to a local variable, like so:
           <pre><code>Button saveButton = new Button("Save");</code></pre>
           If you want to modify the code so that it satisfies this requirement,
@@ -307,13 +350,19 @@ export class ThemeEditor extends LitElement {
       `;
     }
 
-    return html` <vaadin-dev-tools-theme-property-list
-      class="property-list"
-      .metadata=${this.context.metadata}
-      .theme=${this.effectiveTheme}
-      @theme-property-value-change=${this.handlePropertyChange}
-      @open-css=${this.handleOpenCss}
-    ></vaadin-dev-tools-theme-property-list>`;
+    return html` ${this.context.metadata.description && this.context.scope === ThemeScope.local
+        ? html`<div class="notice hint">
+            <vaadin-icon icon="vaadin:lightbulb"></vaadin-icon>
+            <div>${this.context.metadata.description}</div>
+          </div>`
+        : ''}
+      <vaadin-dev-tools-theme-property-list
+        class="property-list"
+        .metadata=${this.context.metadata}
+        .theme=${this.effectiveTheme}
+        @theme-property-value-change=${this.handlePropertyChange}
+        @open-css=${this.handleOpenCss}
+      ></vaadin-dev-tools-theme-property-list>`;
   }
 
   handleShowComponent() {
@@ -411,8 +460,8 @@ export class ThemeEditor extends LitElement {
   }
 
   private async pickComponent() {
+    componentOverlayManager.hideOverlay();
     this.removeElementHighlight(this.context?.component.element);
-
     this.pickerProvider().open({
       infoTemplate: html`
         <div>
@@ -431,9 +480,10 @@ export class ThemeEditor extends LitElement {
           this.effectiveTheme = null;
           return;
         }
-
+        await componentOverlayManager.componentPicked(component, metadata);
         this.highlightElement(component.element);
         this.refreshComponentAndTheme(component, metadata);
+        componentOverlayManager.showOverlay();
       }
     });
   }

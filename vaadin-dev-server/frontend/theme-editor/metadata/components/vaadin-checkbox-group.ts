@@ -11,11 +11,11 @@ import {
 
 export default {
   tagName: 'vaadin-checkbox-group',
-  displayName: 'CheckboxGroup',
+  displayName: 'Checkbox Group',
   elements: [
     {
       selector: 'vaadin-checkbox-group',
-      displayName: 'Group',
+      displayName: 'Root element',
       properties: [
         shapeProperties.backgroundColor,
         shapeProperties.borderColor,

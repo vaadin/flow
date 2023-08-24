@@ -105,7 +105,7 @@ public class ChromeDeviceTest extends ViewOrUITest {
         if (getDeploymentHostname().equals("localhost")) {
             // Use headless Chrome for running locally
             if (!isJavaInDebugMode()) {
-                chromeOptions.addArguments("--headless", "--disable-gpu");
+                chromeOptions.addArguments("--headless=new", "--disable-gpu");
             }
         } else {
             // Enable service workers over http remote connection

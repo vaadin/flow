@@ -1,16 +1,16 @@
 import { ComponentMetadata } from '../model';
 import {
-  clearButtonProperties,
   errorMessageProperties,
   helperTextProperties,
   inputFieldProperties,
   labelProperties
 } from './vaadin-text-field';
 import { iconProperties } from './defaults';
+import { standardButtonProperties } from './vaadin-button';
 
 export default {
   tagName: 'vaadin-number-field',
-  displayName: 'NumberField',
+  displayName: 'Number Field',
   elements: [
     {
       selector: 'vaadin-number-field::part(input-field)',
@@ -35,7 +35,7 @@ export default {
     {
       selector: 'vaadin-number-field::part(clear-button)',
       displayName: 'Clear button',
-      properties: clearButtonProperties
+      properties: standardButtonProperties
     },
     {
       selector: 'vaadin-number-field::part(increase-button)',

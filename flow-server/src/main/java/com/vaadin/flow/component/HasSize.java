@@ -22,8 +22,10 @@ import com.vaadin.flow.dom.ElementConstants;
 
 /**
  * Any component implementing this interface supports setting the size of the
- * component using {@link #setWidth(String)} and {@link #setHeight(String)}. The
- * sizes are set on the element as inline styles, i.e. using
+ * component using {@link #setWidth(String)}, {@link #setHeight(String)},
+ * {@link #setMaxWidth(String)}, {@link #setMaxHeight(String)},
+ * {@link #setMinWidth(String)}, and {@link #setMinHeight(String)}. The sizes
+ * are set on the element as inline styles, i.e. using
  * {@link Element#getStyle()}.
  *
  * @author Vaadin Ltd

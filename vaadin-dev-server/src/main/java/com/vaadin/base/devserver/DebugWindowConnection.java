@@ -16,12 +16,14 @@
 package com.vaadin.base.devserver;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
@@ -74,6 +76,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private ThemeEditorMessageHandler themeEditorMessageHandler;
 
+    private List<DevToolsMessageHandler> plugins;
+
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
                 "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener"));
@@ -94,6 +98,17 @@ public class DebugWindowConnection implements BrowserLiveReload {
         this.ideIntegration = new IdeIntegration(
                 ApplicationConfiguration.get(context));
         this.themeEditorMessageHandler = new ThemeEditorMessageHandler(context);
+
+        findPlugins();
+    }
+
+    private void findPlugins() {
+        ServiceLoader<DevToolsMessageHandler> loader = ServiceLoader
+                .load(DevToolsMessageHandler.class, classLoader);
+        this.plugins = new ArrayList<>();
+        for (DevToolsMessageHandler s : loader) {
+            this.plugins.add(s);
+        }
     }
 
     @Override
@@ -129,12 +144,46 @@ public class DebugWindowConnection implements BrowserLiveReload {
         this.backend = backend;
     }
 
+    /** Implementation of the development tools interface. */
+    public static class DevToolsInterfaceImpl implements DevToolsInterface {
+        private DebugWindowConnection debugWindowConnection;
+        private AtmosphereResource resource;
+
+        private DevToolsInterfaceImpl(
+                DebugWindowConnection debugWindowConnection,
+                AtmosphereResource resource) {
+            this.debugWindowConnection = debugWindowConnection;
+            this.resource = resource;
+        }
+
+        @Override
+        public void send(String command, JsonObject data) {
+            JsonObject msg = Json.createObject();
+            msg.put("command", command);
+            if (data != null) {
+                msg.put("data", data);
+            }
+
+            debugWindowConnection.send(resource, msg.toJson());
+        }
+
+    }
+
+    private DevToolsInterface getDevToolsInterface(
+            AtmosphereResource resource) {
+        return new DevToolsInterfaceImpl(this, resource);
+    }
+
     @Override
     public void onConnect(AtmosphereResource resource) {
         resource.suspend(-1);
         atmosphereResources.add(new WeakReference<>(resource));
         resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
                 resource);
+
+        for (DevToolsMessageHandler plugin : plugins) {
+            plugin.handleConnect(getDevToolsInterface(resource));
+        }
 
         send(resource, "serverInfo", new ServerInfo());
         send(resource, "featureFlags", new FeatureFlagMessage(FeatureFlags
@@ -151,11 +200,16 @@ public class DebugWindowConnection implements BrowserLiveReload {
     private void send(AtmosphereResource resource, String command,
             Object data) {
         try {
-            resource.getBroadcaster().broadcast(objectMapper.writeValueAsString(
-                    new DebugWindowMessage(command, data)), resource);
+            send(resource, objectMapper
+                    .writeValueAsString(new DebugWindowMessage(command, data)));
         } catch (Exception e) {
             getLogger().error("Error sending message", e);
         }
+
+    }
+
+    private void send(AtmosphereResource resource, String json) {
+        resource.getBroadcaster().broadcast(json, resource);
     }
 
     @Override
@@ -265,7 +319,18 @@ public class DebugWindowConnection implements BrowserLiveReload {
                     .handleDebugMessageData(command, data);
             send(resource, ThemeEditorCommand.RESPONSE, resultData);
         } else {
-            getLogger().info("Unknown command from the browser: " + command);
+            boolean handled = false;
+            for (DevToolsMessageHandler plugin : plugins) {
+                handled = plugin.handleMessage(command, data,
+                        getDevToolsInterface(resource));
+                if (handled) {
+                    break;
+                }
+            }
+            if (!handled) {
+                getLogger()
+                        .info("Unknown command from the browser: " + command);
+            }
         }
     }
 

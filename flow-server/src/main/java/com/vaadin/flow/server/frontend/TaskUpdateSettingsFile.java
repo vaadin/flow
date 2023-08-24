@@ -123,8 +123,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
                 buildDirectory + "/" + DEV_SETTINGS_FILE);
 
         try {
-            FileUtils.write(settingsFile, stringify(settings, 2),
-                    StandardCharsets.UTF_8);
+            FileIOUtils.writeIfChanged(settingsFile, stringify(settings, 2));
         } catch (IOException e) {
             log().error("Failed to write file: {}", settingsFile, e);
         }

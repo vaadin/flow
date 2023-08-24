@@ -135,7 +135,6 @@ public class NodeUpdaterTest {
         expectedDependencies.add("@rollup/pluginutils");
         expectedDependencies.add("rollup-plugin-visualizer");
         expectedDependencies.add("vite-plugin-checker");
-        expectedDependencies.add("mkdirp");
         expectedDependencies.add("workbox-build");
         expectedDependencies.add("transform-ast");
         expectedDependencies.add("strip-css-comments");
@@ -205,7 +204,7 @@ public class NodeUpdaterTest {
                 "7.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("7.2.3", packageJson
+        Assert.assertEquals("10.3.3", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("glob"));
     }
 
@@ -368,9 +367,7 @@ public class NodeUpdaterTest {
                 .readFileToString(packageJson, StandardCharsets.UTF_8)));
         Assert.assertEquals(
                 "{" + "\"lit\":\"2.0.0\"," + "\"@vaadin/router\":\"1.7.5\","
-                        + "\"@polymer/polymer\":\"3.4.1\","
-                        + "\"css-loader\":\"4.2.1\","
-                        + "\"file-loader\":\"6.1.0\"" + "}",
+                        + "\"@polymer/polymer\":\"3.4.1\"" + "}",
                 nodeUpdater.versionsJson.toJson());
     }
 

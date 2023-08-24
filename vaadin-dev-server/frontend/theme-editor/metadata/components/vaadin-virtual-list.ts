@@ -3,7 +3,7 @@ import { shapeProperties } from './defaults';
 
 export default {
   tagName: 'vaadin-virtual-list',
-  displayName: 'VirtualList',
+  displayName: 'Virtual List',
   elements: [
     {
       selector: 'vaadin-virtual-list',
