@@ -1,0 +1,116 @@
+[
+  {
+    "selector": "vaadin-button",
+    "displayName": "Root element",
+    "properties": [
+      {
+        "propertyName": "background-color",
+        "displayName": "Background color",
+        "editorType": "color"
+      },
+      {
+        "propertyName": "border-color",
+        "displayName": "Border color",
+        "editorType": "color"
+      },
+      {
+        "propertyName": "border-width",
+        "displayName": "Border width",
+        "editorType": "range",
+        "presets": [
+          "0px",
+          "1px",
+          "2px",
+          "3px"
+        ],
+        "icon": "square"
+      },
+      {
+        "propertyName": "border-radius",
+        "displayName": "Border radius",
+        "editorType": "range",
+        "presets": [
+          "0",
+          "--lumo-border-radius-m",
+          "--lumo-border-radius-l"
+        ],
+        "icon": "square"
+      },
+      {
+        "propertyName": "--lumo-button-size",
+        "displayName": "Size",
+        "editorType": "range",
+        "presets": [
+          "--lumo-size-xs",
+          "--lumo-size-s",
+          "--lumo-size-m",
+          "--lumo-size-l",
+          "--lumo-size-xl"
+        ],
+        "icon": "square"
+      },
+      {
+        "propertyName": "padding-inline",
+        "displayName": "Padding",
+        "editorType": "range",
+        "presets": [
+          "--lumo-space-xs",
+          "--lumo-space-s",
+          "--lumo-space-m",
+          "--lumo-space-l",
+          "--lumo-space-xl"
+        ],
+        "icon": "square"
+      }
+    ]
+  },
+  {
+    "selector": "vaadin-button::part(label)",
+    "displayName": "Label",
+    "properties": [
+      {
+        "propertyName": "color",
+        "displayName": "Text color",
+        "editorType": "color",
+        "presets": [
+          "--lumo-header-text-color",
+          "--lumo-body-text-color",
+          "--lumo-secondary-text-color",
+          "--lumo-tertiary-text-color",
+          "--lumo-disabled-text-color",
+          "--lumo-primary-text-color",
+          "--lumo-error-text-color",
+          "--lumo-success-text-color"
+        ]
+      },
+      {
+        "propertyName": "font-size",
+        "displayName": "Font size",
+        "editorType": "range",
+        "presets": [
+          "--lumo-font-size-xxs",
+          "--lumo-font-size-xs",
+          "--lumo-font-size-s",
+          "--lumo-font-size-m",
+          "--lumo-font-size-l",
+          "--lumo-font-size-xl",
+          "--lumo-font-size-xxl",
+          "--lumo-font-size-xxxl"
+        ],
+        "icon": "font"
+      },
+      {
+        "propertyName": "font-weight",
+        "displayName": "Bold",
+        "editorType": "checkbox",
+        "checkedValue": "bold"
+      },
+      {
+        "propertyName": "font-style",
+        "displayName": "Italic",
+        "editorType": "checkbox",
+        "checkedValue": "italic"
+      }
+    ]
+  }
+]
