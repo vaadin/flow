@@ -90,7 +90,7 @@ public class DevToolsElement extends TestBenchElement {
         }
     }
 
-    private void showTab(String id) {
+    public void showTab(String id) {
         $("button").attributeContains("class", "tab").id(id).click();
     }
 
