@@ -15,15 +15,38 @@
  */
 package {{packages}};
 
+import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 
+{{#jsModules}}
+@JsModule("{{value}}")
+{{/jsModules}}
+{{#cssImports}}
+@CssImport("{{value}}")
+{{/cssImports}}
 @Route("{{route}}")
 public class {{className}} extends Div {
 
     {{#services}}
-        @Autowired
-        private {{packages}}.{{className}} {{variableName}};
+    @Autowired
+    private {{packages}}.{{className}} {{variableName}};
     {{/services}}
+
+    public {{className}}() {
+        {{#styleName}}
+        addClassName("{{styleName}}");
+        {{/styleName}}
+
+        {{#cssImports}}
+        addClassName("{{targetStyleName}}");
+        {{/cssImports}}
+
+        {{#jsModules}}
+        getElement().appendChild(new Element("{{tag}}"));
+        {{/jsModules}}
+    }
 }
