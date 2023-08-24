@@ -50,7 +50,7 @@ export class ThemeEditorApi {
   private wrappedConnection: Connection;
   private pendingRequests: { [key: string]: RequestHandle } = {};
   private requestCounter: number = 0;
-  private globalUiId: number = this.getGlobalUiId();
+  private globalUiId: number | undefined;
 
   constructor(wrappedConnection: Connection) {
     this.wrappedConnection = wrappedConnection;
@@ -66,7 +66,7 @@ export class ThemeEditorApi {
 
   private sendRequest(command: string, data: any) {
     const requestId = (this.requestCounter++).toString();
-    const uiId = data['uiId'] ?? this.globalUiId;
+    const uiId = data['uiId'] ?? this.getGlobalUiId();
 
     return new Promise<any>((resolve, reject) => {
       this.wrappedConnection.send(command, {
@@ -130,17 +130,21 @@ export class ThemeEditorApi {
   }
 
   private getGlobalUiId(): number {
-    const vaadin = (window as any).Vaadin;
-    if (vaadin && vaadin.Flow) {
-      const { clients } = vaadin.Flow;
-      const appIds = Object.keys(clients);
-      for (const appId of appIds) {
-        const client = clients[appId];
-        if (client.getNodeId) {
-          return client.getUIId();
+    if (this.globalUiId === undefined) {
+      const vaadin = (window as any).Vaadin;
+      if (vaadin && vaadin.Flow) {
+        const { clients } = vaadin.Flow;
+        const appIds = Object.keys(clients);
+        for (const appId of appIds) {
+          const client = clients[appId];
+          if (client.getNodeId) {
+            this.globalUiId = client.getUIId();
+            break;
+          }
         }
       }
     }
-    return -1;
+
+    return this.globalUiId ?? -1;
   }
 }
