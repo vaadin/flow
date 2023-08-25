@@ -184,7 +184,7 @@ public class CodeGeneratorMojo extends AbstractMojo {
             throws IOException {
         JavaSpringServiceContext context = new JavaSpringServiceContext();
         context.setPackages(apiPackage);
-        context.setClassName("Service" + owner.getClassName() + index);
+        context.setClassName("Service" + owner.getClassName() + "_" + index);
         context.setScope(scope);
         context.setVariableName("serviceVariable" + index);
 
