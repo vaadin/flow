@@ -182,7 +182,7 @@ public class ThemeModifier {
     protected State init() {
         try {
             getThemeFile();
-        } catch (ApplicationThemeNotAccessibleException ex) {
+        } catch (Exception ex) {
             return State.MISSING_THEME;
         }
         return State.ENABLED;
