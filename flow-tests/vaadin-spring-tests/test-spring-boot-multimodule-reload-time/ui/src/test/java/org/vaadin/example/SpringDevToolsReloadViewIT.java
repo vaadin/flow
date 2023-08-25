@@ -16,7 +16,6 @@
 package org.vaadin.example;
 
 import com.vaadin.flow.server.Version;
-import com.vaadin.flow.spring.test.AppShell;
 import com.vaadin.flow.spring.test.SpringDevToolsReloadUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -32,16 +31,25 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
     @Test
     public void testSpringBootReloadTime_withLargerApp() {
-        open("/app");
+        printTestResultToLog(SpringDevToolsReloadUtils
+                .runAndCalculateAverageResult(5, this::runTestReturnResult));
+    }
+
+    private String runTestReturnResult() {
+        if (hasRouteHierarchy()) {
+            open("/catalog/prod/0");
+        } else {
+            open("/app");
+        }
 
         waitForElementPresent(By.id("start-button"));
         triggerReload();
         waitForElementVisible(By.id("result"));
 
-        printTestResultToLog();
+        return assertAndGetReloadTimeResult();
     }
 
-    private void printTestResultToLog() {
+    private void printTestResultToLog(String result) {
         System.out.printf(
                 "##teamcity[buildStatisticValue key='%s,app,%s-routes,%s-services-per-route,spring-boot-devtools-reload-time' value='%s']%n",
                 getVaadinMajorMinorVersion(),
@@ -56,7 +64,7 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
                         ? "," + getNumberOfGeneratedJsModulesPerRouteProperty()
                                 + "-js-modules-per-route"
                         : ""),
-                assertAndGetReloadTimeResult());
+                result);
     }
 
     private void triggerReload() {
@@ -92,7 +100,7 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
     private String getNumberOfGeneratedCssImportsPerRouteProperty() {
         return System.getProperty(
-                "vvaadin.test.codegen.maven.plugin.cssimports.per.route", "0");
+                "vaadin.test.codegen.maven.plugin.cssimports.per.route", "0");
     }
 
     private String getNumberOfGeneratedJsModulesPerRouteProperty() {
