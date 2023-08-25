@@ -107,8 +107,9 @@ public class CodeGeneratorMojo extends AbstractMojo {
         // start by deleting existing package
         FileUtils.deleteDirectory(new File(
                 output.toString() + "/" + apiPackage.replace(".", "/")));
-        // ... and generated frontend css
+        // ... and generated frontend css and js
         FileUtils.deleteDirectory(new File(project.getBasedir().toString() + "/frontend/generated-css"));
+        FileUtils.deleteDirectory(new File(project.getBasedir().toString() + "/frontend/generated-js"));
 
         int servicesGeneratedTotal = 0;
         int cssImportsGeneratedTotal = 0;
