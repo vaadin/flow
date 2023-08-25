@@ -10,6 +10,7 @@ import com.helger.css.decl.CascadingStyleSheet;
 import com.helger.css.decl.ICSSSelectorMember;
 import com.helger.css.reader.CSSReader;
 import com.helger.css.writer.CSSWriter;
+import com.vaadin.base.devserver.themeeditor.utils.ApplicationThemeNotAccessibleException;
 import com.vaadin.base.devserver.themeeditor.utils.CssRule;
 import com.vaadin.base.devserver.themeeditor.utils.ThemeEditorException;
 import com.vaadin.flow.server.VaadinContext;
@@ -180,8 +181,8 @@ public class ThemeModifier {
 
     protected State init() {
         try {
-            getStyleSheetFile();
-        } catch (Exception ex) {
+            getThemeFile();
+        } catch (ApplicationThemeNotAccessibleException ex) {
             return State.MISSING_THEME;
         }
         return State.ENABLED;
@@ -192,12 +193,20 @@ public class ThemeModifier {
                 FrontendUtils.PROJECT_BASEDIR, null), "frontend");
     }
 
-    public File getStyleSheetFile() {
+    protected File getThemeFile() {
         File themes = new File(getFrontendFolder(), "themes");
         String themeName = getThemeName(themes);
         File theme = new File(themes, themeName);
-        File themeEditorStyles = new File(theme, getCssFileName());
 
+        if (!theme.exists() || !theme.canWrite()) {
+            throw new ApplicationThemeNotAccessibleException();
+        }
+
+        return theme;
+    }
+
+    public File getStyleSheetFile() {
+        File themeEditorStyles = new File(getThemeFile(), getCssFileName());
         if (!themeEditorStyles.exists()) {
             try {
                 if (!themeEditorStyles.createNewFile()) {
