@@ -1,22 +1,25 @@
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.theme.AbstractTheme;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collections;
-import java.util.List;
-
+import jakarta.servlet.http.HttpSession;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
-import com.vaadin.flow.theme.AbstractTheme;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Test class for testing es6 resolution by browser capability. This is valid
@@ -220,6 +223,9 @@ public class VaadinServletServiceTest {
             String servletPath, String pathInfo) throws MalformedURLException {
         URL url = new URL(base + contextPath + pathInfo);
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("null.lock", new ReentrantLock()); // for session
+        attributes.put("requestStartTime", System.currentTimeMillis()); // for request end
         Mockito.when(request.isSecure())
                 .thenReturn(url.getProtocol().equalsIgnoreCase("https"));
         Mockito.when(request.getServerName()).thenReturn(url.getHost());
@@ -228,8 +234,85 @@ public class VaadinServletServiceTest {
         Mockito.when(request.getContextPath()).thenReturn(contextPath);
         Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
         Mockito.when(request.getServletPath()).thenReturn(servletPath);
-
+        HttpSession session = Mockito.mock(HttpSession.class);
+        Mockito.when(request.getSession()).thenReturn(session);
+        Mockito.when(request.getSession(Mockito.anyBoolean())).thenReturn(session);
+        stubSessionAttributes(session, attributes);
+        stubAttributes(request, attributes);
         return request;
     }
 
+    private static void stubSessionAttributes(HttpSession session,
+            Map<String, Object> attributes) {
+        Mockito.when(
+                session.getAttribute(Mockito.anyString())).thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0), invocation.getArgument(1))).when(
+                session).setAttribute(Mockito.anyString(), Mockito.anyString());
+    }
+
+    private static void stubAttributes(HttpServletRequest request,
+            Map<String, Object> attributes) {
+        Mockito.when(
+                request.getAttribute(Mockito.anyString())).thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0), invocation.getArgument(1))).when(
+                request).setAttribute(Mockito.anyString(), Mockito.anyString());
+    }
+
+    @Test
+    public void filtersAreCalledWhenHandlingARequest()
+            throws MalformedURLException {
+        VaadinRequest request = servlet.createVaadinRequest(createRequest("http://dummy.host:8080/", "/contextpath", "/servlet", "/"));
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        service.setVaadinFilters(Collections.singletonList(new MyFilter()));
+        service.getRequestHandlers().clear();
+        service.getRequestHandlers().add(new ExceptionThrowingRequestHandler());
+
+        try {
+            service.handleRequest(request, response);
+        } catch (ServiceException ex) {
+            Assert.assertTrue("The exception was the one coming from RequestHandler", ex.getMessage().contains("BOOM!"));
+        }
+
+        Assert.assertEquals("Filter was called on request start", "true", request.getAttribute("started"));
+        Assert.assertEquals("Filter was called on exception handling", "true", request.getAttribute("exception handled"));
+        Assert.assertEquals("Filter was called in the finally block", "true", request.getAttribute("ended"));
+    }
+
+    static class ExceptionThrowingRequestHandler implements RequestHandler {
+
+        @Override
+        public boolean handleRequest(VaadinSession session,
+                VaadinRequest request, VaadinResponse response)
+                throws IOException {
+            throw new IllegalStateException("BOOM!");
+        }
+    }
+
+    static class MyFilter implements VaadinFilter {
+
+        @Override
+        public void requestStart(VaadinRequest request,
+                VaadinResponse response) {
+            request.setAttribute("started", "true");
+            // An exception thrown here will not be caught by other methods of the filter!
+        }
+
+        @Override
+        public void handleException(VaadinRequest request,
+                VaadinResponse response, VaadinSession vaadinSession,
+                Exception t) {
+            if (t instanceof IllegalStateException ex) {
+                Assert.assertEquals("BOOM!", ex.getMessage());
+                request.setAttribute("exception handled", "true");
+                return;
+            }
+            throw new AssertionError("Invalid exception thrown. Wanted <IllegalStateException> got <" + t.getClass() + ">", t);
+        }
+
+        @Override
+        public void requestEnd(VaadinRequest request, VaadinResponse response,
+                VaadinSession session) {
+            request.setAttribute("ended", "true");
+        }
+    }
 }
