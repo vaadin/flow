@@ -16,41 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
@@ -64,26 +29,30 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
-import com.vaadin.flow.server.communication.AtmospherePushConnection;
-import com.vaadin.flow.server.communication.HeartbeatHandler;
-import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
-import com.vaadin.flow.server.communication.IndexHtmlResponse;
-import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
-import com.vaadin.flow.server.communication.PwaHandler;
-import com.vaadin.flow.server.communication.SessionRequestHandler;
-import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.server.communication.UidlRequestHandler;
-import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
-import com.vaadin.flow.server.communication.WebComponentProvider;
+import com.vaadin.flow.server.communication.*;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-
 import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -113,6 +82,8 @@ public abstract class VaadinService implements Serializable {
             + " is included on the classpath.\n" + "Will fall back to using "
             + PushMode.class.getSimpleName() + "." + PushMode.DISABLED.name()
             + "." + SEPARATOR;
+
+    private List<VaadinFilter> vaadinFilters = new ArrayList<>();
 
     /**
      * Attribute name for telling
@@ -1433,6 +1404,7 @@ public abstract class VaadinService implements Serializable {
         }
         setCurrentInstances(request, response);
         request.setAttribute(REQUEST_START_TIME_ATTRIBUTE, System.nanoTime());
+        vaadinFilters.forEach(vaadinFilter -> vaadinFilter.requestStart(request, response));
     }
 
     /**
@@ -1449,6 +1421,7 @@ public abstract class VaadinService implements Serializable {
      */
     public void requestEnd(VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
+        vaadinFilters.forEach(vaadinFilter -> vaadinFilter.requestEnd(request, response, session));
         if (session != null) {
             assert VaadinSession.getCurrent() == session;
             session.lock();
@@ -1544,6 +1517,15 @@ public abstract class VaadinService implements Serializable {
             vaadinSession.lock();
         }
         try {
+            try {
+                vaadinFilters.forEach(vaadinFilter -> vaadinFilter.handleException(request,
+                        response, vaadinSession, t));
+            } catch (Exception ex) {
+                // An exception occurred while handling an exception. Log
+                // it and continue handling only the original error.
+                getLogger().warn(
+                        "Failed to handle an exception using filters", ex);
+            }
             if (vaadinSession != null) {
                 vaadinSession.getErrorHandler().error(new ErrorEvent(t));
             }
@@ -2372,6 +2354,14 @@ public abstract class VaadinService implements Serializable {
     public static String getCsrfTokenAttributeName() {
         return VaadinSession.class.getName() + "."
                 + ApplicationConstants.CSRF_TOKEN;
+    }
+
+    public List<VaadinFilter> getVaadinFilters() {
+        return vaadinFilters;
+    }
+
+    public void setVaadinFilters(List<VaadinFilter> vaadinFilters) {
+        this.vaadinFilters = vaadinFilters;
     }
 
     private void doSetClassLoader() {
