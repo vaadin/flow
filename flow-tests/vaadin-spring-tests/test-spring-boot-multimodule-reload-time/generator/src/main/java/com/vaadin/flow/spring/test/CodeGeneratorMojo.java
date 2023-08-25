@@ -123,6 +123,10 @@ public class CodeGeneratorMojo extends AbstractMojo {
         getLog().info(String.format(
                 "Generated %s route(s) / %s Spring service(s) / %s CssImport(s) / %s JsModule(s) in total.",
                 numberOfRoutes, servicesGeneratedTotal, cssImportsGeneratedTotal, jsModulesGeneratedTotal));
+        if(numberOfRoutes > 0 && (cssImportsGeneratedTotal > 0 || jsModulesGeneratedTotal > 0)) {
+            getLog().info("Frontend files generated in "
+                    + project.getBasedir().toString() + "/frontend");
+        }
     }
 
     private List<JavaSpringServiceContext> generateServices(
