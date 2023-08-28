@@ -32,6 +32,7 @@ import com.vaadin.flow.shared.Registration;
  * @since 1.0
  */
 public interface DomListenerRegistration extends Registration {
+
     /**
      * Add a JavaScript expression for extracting event data. When an event is
      * fired in the browser, the expression is evaluated and its value is sent
@@ -116,11 +117,50 @@ public interface DomListenerRegistration extends Registration {
     /**
      * Configures the debouncing phases for which this listener should be
      * triggered. Debouncing is disabled and the set phases are ignored if
-     * <code>timeout</code> is set to 0.
+     * <code>timeout</code> is set to 0 (the default).
      * <p>
      * This methods overrides the settings previously set through
      * {@link #debounce(int)}, {@link #throttle(int)} or
      * {@link #debounce(int, DebouncePhase, DebouncePhase...)}.
+     * <p>
+     * The tested and supported combinations of phases are:
+     *
+     * <dl>
+     * <dt>DebouncePhase.TRAILING</dt>
+     * <dd>The server side is notified once after the event hasn't been
+     * triggered within the timeout. For example only the last keydown event is
+     * fired if a person continuously types without pauses longer than the
+     * timeout. This is the most commonly used mode. There is
+     * {@link #debounce(int)} shorthand for this mode.</dd>
+     * <dt>DebouncePhase.LEADING</dt>
+     * <dd>In this case you only get notified of this event once right away on
+     * the server side. Other events of the same type will be ignored until the
+     * timeout has passed.</dd>
+     * <dt>DebouncePhase.LEADING + DebouncePhase.TRAILING</dt>
+     * <dd>This works like with the basic DebouncePhase.TRAILING, but in
+     * addition the first event of the burst gets reported rightaway. This is
+     * good if your want normal debouncing, but you are also interested to know
+     * if the user input has started.</dd>
+     * <dt>DebouncePhase.TIMEOUT</dt>
+     * <dd>In this case the listener is triggered only after the given timeout.
+     * If there are multiple events during that period, only the last one is
+     * reported.</dd>
+     * <dt>DebouncePhase.LEADING + DebouncePhase.TIMEOUT</dt>
+     * <dd>In this case the listener is triggered when an event burst starts,
+     * but afterwards only after the given timeout has passed. There is
+     * {@link #throttle(int)} shorthand for this mode.</dd>
+     * </dl>
+     * <p>
+     * In case another event in the UI triggers a "server roundtrip" from the
+     * client-side, events possibly queued by the debouncer are fired before
+     * that. Thus, events may occur before than expected. Also in the otherway
+     * around, due to the client-server nature of the web apps, events may
+     * arrive bit late. Do not expect debouncing to be perfectly deterministic!
+     * <p>
+     * Also note that due to the client-side implementation, de-bounce settings
+     * are global for keys formed of "element-to-event-type-to-timeout".
+     * Behavior is unspecified if you configure multiple debouncing rules for
+     * the same event on the same element.
      *
      * @see DebouncePhase
      *
@@ -128,9 +168,15 @@ public interface DomListenerRegistration extends Registration {
      *            the debounce timeout in milliseconds, or 0 to disable
      *            debouncing
      * @param firstPhase
-     *            the first phase to use
+     *            the first phase to use. If you are interested about the first
+     *            event in the burst, you should give DebouncePhase.TRAILING as
+     *            a parameter here. Otherwise either DebouncePhase.TRAILING or
+     *            DebouncePhase.INTERMEDIATE.
      * @param rest
-     *            any remaining phases to use
+     *            any remaining phases to use. In practice, only either
+     *            DebouncePhase.TRAILING and DebouncePhase.INTERMEDIATE should
+     *            be given here, if DebouncePhase.LEADING is given as a
+     *            firstPhase.
      * @return this registration, for chaining
      */
     // (first, ... rest) looks slightly weird, but is needed for EnumSet.of
@@ -143,11 +189,11 @@ public interface DomListenerRegistration extends Registration {
      * event was triggered. This is useful for cases such as text input where
      * it's only relevant to know the result once the user stops typing.
      * <p>
-     * Debouncing is disabled if the <code>timeout</code> is set to 0.
-     * <p>
-     * This methods overrides the settings previously set through
-     * {@link #debounce(int)}, {@link #throttle(int)} or
-     * {@link #debounce(int, DebouncePhase, DebouncePhase...)}.
+     * This is a shorthand for
+     * {@link #debounce(int, DebouncePhase, DebouncePhase...)} with only
+     * DebouncePhase.TRAILING specified. See
+     * {@link #debounce(int, DebouncePhase, DebouncePhase...)} for complete
+     * documentation!
      *
      * @param timeout
      *            the debounce timeout in milliseconds, or 0 to disable
@@ -164,9 +210,11 @@ public interface DomListenerRegistration extends Registration {
      * <p>
      * Throttling is disabled if the <code>period</code> is set to 0.
      * <p>
-     * This methods overrides the settings previously set through
-     * {@link #debounce(int)}, {@link #throttle(int)} or
-     * {@link #debounce(int, DebouncePhase, DebouncePhase...)}.
+     * This is a shorthand for
+     * {@link #debounce(int, DebouncePhase, DebouncePhase...)} with
+     * DebouncePhase.LEADING and DebouncePhase.INTERMEDIATE specified. See
+     * {@link #debounce(int, DebouncePhase, DebouncePhase...)} for complete
+     * documentation!
      *
      * @param period
      *            the minimum period between listener invocations, or 0 to

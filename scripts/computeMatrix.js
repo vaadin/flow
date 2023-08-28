@@ -124,6 +124,7 @@ const moduleWeights = {
   'flow-tests/test-pwa/pom-production.xml': { weight: 3 },
   'flow-tests/test-servlet': { weight: 3 },
   'flow-tests/test-themes': { weight: 3 },
+  'flow-tests/test-theme-editor': { weight: 3 },
   'flow-tests/test-npm-only-features/test-npm-custom-frontend-directory': { weight: 3 },
   'flow-tests/test-frontend/vite-pwa-custom-offline-path/pom-production.xml': { weight: 3 },
   'flow-tests/test-embedding/test-embedding-theme-variant': { weight: 2 },

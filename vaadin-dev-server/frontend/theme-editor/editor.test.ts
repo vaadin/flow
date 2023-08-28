@@ -245,7 +245,7 @@ describe('theme-editor', () => {
       await elementUpdated(editor);
 
       expect(findPickerButton()).to.not.exist;
-      expect(editor.shadowRoot!.innerHTML).to.contain('It looks like you have not set up a custom theme yet');
+      expect(editor.shadowRoot!.innerHTML).to.contain('It looks like you have not set up an application theme yet');
     });
   });
 

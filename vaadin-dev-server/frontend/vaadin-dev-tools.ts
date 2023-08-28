@@ -13,6 +13,54 @@ import { popupStyles } from './styles';
 import './vaadin-dev-tools-log';
 import './vaadin-dev-tools-info';
 
+/**
+ * Plugin API for the dev tools window.
+ */
+export interface DevToolsInterface {
+  send(command: string, data: any): void;
+  addTab(id: string, tag: string): void;
+}
+export interface MessageHandler {
+  handleMessage(message: ServerMessage): boolean;
+}
+export interface ServerMessage {
+  /**
+   * The command
+   */
+  command: string;
+  /**
+   * the data for the command
+   */
+  data: any;
+}
+
+/**
+ * To create and register a plugin, use e.g.
+ * @example
+ * export class MyTab extends LitElement implements MessageHandler {
+ *   render() {
+ *     return html`<div>Here I am</div>`;
+ *   }
+ * }
+ * customElements.define('my-tab', MyTab);
+ *
+ * const plugin: DevToolsPlugin = {
+ *   init: function (devToolsInterface: DevToolsInterface): void {
+ *     devToolsInterface.addTab('Tab title', 'my-tab')
+ *   }
+ * };
+ *
+ * (window as any).Vaadin.devToolsPlugins.push(plugin);
+ */
+export interface DevToolsPlugin {
+  /**
+   * Called once to initialize the plugin.
+   *
+   * @param devToolsInterface provides methods to interact with the dev tools
+   */
+  init(devToolsInterface: DevToolsInterface): void;
+}
+
 interface Feature {
   id: string;
   title: string;
@@ -22,12 +70,12 @@ interface Feature {
 }
 
 interface Tab {
-  id: 'log' | 'info' | 'features' | 'code' | 'theme-editor';
+  id: string;
   title: string;
   render: (() => TemplateResult) | string;
   element?: HTMLElement;
   activate?: () => void;
-  handleMessage?: (message: any) => boolean;
+  handleMessage?: MessageHandler;
 }
 
 export enum MessageType {
@@ -51,6 +99,7 @@ interface Message {
 @customElement('vaadin-dev-tools')
 export class VaadinDevTools extends LitElement {
   static MAX_LOG_ROWS = 1000;
+  unhandledMessages: ServerMessage[] = [];
 
   static get styles() {
     return [
@@ -937,10 +986,13 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
-  handleFrontendMessage(message: any) {
+  tabHandleMessage(tabElement: HTMLElement, message: ServerMessage): boolean {
+    const handler = tabElement as any as MessageHandler;
+    return handler.handleMessage && handler.handleMessage.call(tabElement, message);
+  }
+  handleFrontendMessage(message: ServerMessage) {
     for (const tab of this.tabs) {
-      const handler = (tab as any).element?.handleMessage;
-      if (handler && handler.call(tab.element, message)) {
+      if (tab.element && this.tabHandleMessage(tab.element, message)) {
         // Fully handled
         return;
       }
@@ -960,8 +1012,7 @@ export class VaadinDevTools extends LitElement {
         this.requestUpdate();
       }
     } else {
-      // eslint-disable-next-line no-console
-      console.error('Unknown message from front-end connection:', JSON.stringify(message));
+      this.unhandledMessages.push(message);
     }
   }
 
@@ -1012,7 +1063,6 @@ export class VaadinDevTools extends LitElement {
     this.disableEventListener = (_: any) => this.demoteSplashMessage();
     document.body.addEventListener('focus', this.disableEventListener);
     document.body.addEventListener('click', this.disableEventListener);
-    this.openWebSocketConnection();
 
     const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     if (lastReload) {
@@ -1033,8 +1083,6 @@ export class VaadinDevTools extends LitElement {
     windowAny.Vaadin = windowAny.Vaadin || {};
     windowAny.Vaadin.devTools = Object.assign(this, windowAny.Vaadin.devTools);
 
-    licenseInit();
-
     // Prevent application overlays from closing when interacting with the dev tools
     document.documentElement.addEventListener('vaadin-overlay-outside-click', (event: Event) => {
       // We don't want to prevent closing the overlay if the overlay owner is
@@ -1052,6 +1100,27 @@ export class VaadinDevTools extends LitElement {
       const composedPath = sourceEvent.composedPath();
       if (composedPath.includes(this)) {
         event.preventDefault();
+      }
+    });
+
+    const anyVaadin = window.Vaadin as any;
+    if (anyVaadin.devToolsPlugins) {
+      Array.from(anyVaadin.devToolsPlugins as DevToolsPlugin[]).forEach((plugin) => this.initPlugin(plugin));
+      anyVaadin.devToolsPlugins = { push: (plugin: DevToolsPlugin) => this.initPlugin(plugin) };
+    }
+
+    this.openWebSocketConnection();
+    licenseInit();
+  }
+
+  async initPlugin(plugin: DevToolsPlugin) {
+    const devTools = this;
+    plugin.init({
+      addTab: (title, tag) => {
+        devTools.tabs.push({ id: title, title, render: tag });
+      },
+      send: function (command: string, data: any): void {
+        devTools.frontendConnection!.send(command, data);
       }
     });
   }
@@ -1397,6 +1466,8 @@ export class VaadinDevTools extends LitElement {
 
     const tabContainer = this.renderRoot.querySelector('#tabContainer')! as HTMLElement;
 
+    const newTabElements: HTMLElement[] = [];
+
     // Ensure each tab has an element, either a container <div> for render functions or the requested tag
     this.tabs.forEach((tab) => {
       if (tab.element) {
@@ -1409,6 +1480,7 @@ export class VaadinDevTools extends LitElement {
         tab.element = document.createElement(tab.render);
         (tab.element as any)._devTools = this;
       }
+      newTabElements.push(tab.element);
     });
 
     // Ensure tabs are in the correct order in the tab container
@@ -1438,6 +1510,16 @@ export class VaadinDevTools extends LitElement {
       }
       const active = tab.id === this.activeTab;
       tab.element!.hidden = !active;
+    }
+
+    // Send any unhandled messages
+    for (const tabElement of newTabElements) {
+      for (var i = 0; i < this.unhandledMessages.length; i++) {
+        if (this.tabHandleMessage(tabElement, this.unhandledMessages[i])) {
+          this.unhandledMessages.splice(i, 1);
+          i--;
+        }
+      }
     }
   }
 
