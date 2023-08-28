@@ -117,18 +117,49 @@ abstract class AbstractUpdateImports implements Runnable {
 
     @Override
     public void run() {
+        getLogger().debug("Start updating imports file and chunk files.");
+        long start = System.nanoTime();
+
         Map<ChunkInfo, List<CssData>> css = scanner.getCss();
-        Map<ChunkInfo, List<String>> javascript;
-        if (options.isProductionMode()) {
-            javascript = mergeJavascript(scanner.getModules(),
-                    scanner.getScripts());
-        } else {
-            javascript = mergeJavascript(scanner.getModules(),
-                    scanner.getModulesDevelopment(), scanner.getScripts(),
-                    scanner.getScriptsDevelopment());
-        }
+        Map<ChunkInfo, List<String>> javascript = getMergedJavascript();
+
         Map<File, List<String>> output = process(css, javascript);
         writeOutput(output);
+
+        long ms = (System.nanoTime() - start) / 1000000;
+        getLogger().debug("Imports and chunks update took {} ms.", ms);
+    }
+
+    private Map<ChunkInfo, List<String>> getMergedJavascript() {
+        getLogger().debug("Start collecting scanned JS modules and scripts.");
+        long start = System.nanoTime();
+
+        Map<ChunkInfo, List<String>> javascript;
+        Map<ChunkInfo, List<String>> modules = scanner.getModules();
+        Map<ChunkInfo, List<String>> scripts = scanner.getScripts();
+
+        if (options.isProductionMode()) {
+            getLogger().debug("Found {} modules, and {} scripts.", modules,
+                    scripts);
+            javascript = mergeJavascript(modules, scripts);
+        } else {
+            Map<ChunkInfo, List<String>> modulesDevelopment = scanner
+                    .getModulesDevelopment();
+            Map<ChunkInfo, List<String>> scriptsDevelopment = scanner
+                    .getScriptsDevelopment();
+
+            getLogger().debug(
+                    "Found {} modules, {} scripts, {} devmode modules and {} devmode scripts.",
+                    modules, scripts, modulesDevelopment, scriptsDevelopment);
+
+            javascript = mergeJavascript(modules, modulesDevelopment, scripts,
+                    scriptsDevelopment);
+        }
+
+        long ms = (System.nanoTime() - start) / 1000000;
+        getLogger().debug("JS modules and scripts collected in {} ms.", ms);
+
+        return javascript;
     }
 
     protected void writeOutput(Map<File, List<String>> outputFiles) {
@@ -161,6 +192,9 @@ abstract class AbstractUpdateImports implements Runnable {
      */
     private Map<File, List<String>> process(Map<ChunkInfo, List<CssData>> css,
             Map<ChunkInfo, List<String>> javascript) {
+        getLogger().debug("Start sorting imports to lazy and eager.");
+        long start = System.nanoTime();
+
         Map<File, List<String>> files = new HashMap<>();
 
         Map<ChunkInfo, List<String>> lazyJavascript = new LinkedHashMap<>();
@@ -188,18 +222,50 @@ abstract class AbstractUpdateImports implements Runnable {
             }
         }
 
+        long ms = (System.nanoTime() - start) / 1000000;
+        getLogger().debug("Imports sorting took {} ms.", ms);
+
         List<String> chunkLoader = new ArrayList<>();
+
         if (!lazyJavascript.isEmpty() || !lazyCss.isEmpty()) {
+            getLogger().debug("Start generating lazy loaded chunks.");
+            start = System.nanoTime();
+
             chunkLoader.add("");
             chunkLoader.add("const loadOnDemand = (key) => {");
             chunkLoader.add("  const pending = [];");
-            for (ChunkInfo chunkInfo : merge(lazyJavascript.keySet(),
-                    lazyCss.keySet())) {
-                String routeHash = BundleUtils.getChunkId(chunkInfo.getName());
-                String chunkFilename = "chunk-" + routeHash + ".js";
+            Set<ChunkInfo> mergedChunkKeys = merge(lazyJavascript.keySet(),
+                    lazyCss.keySet());
+            Map<String, List<String>> lazyChunks = new HashMap<>(
+                    mergedChunkKeys.size());
+
+            for (ChunkInfo chunkInfo : mergedChunkKeys) {
+
+                List<String> chunkLines = new ArrayList<>();
+                if (lazyJavascript.containsKey(chunkInfo)) {
+                    chunkLines.addAll(
+                            getModuleLines(lazyJavascript.get(chunkInfo)));
+                }
+                if (lazyCss.containsKey(chunkInfo)) {
+                    chunkLines.add(IMPORT_INJECT);
+                    chunkLines.add(THEMABLE_MIXIN_IMPORT);
+                    chunkLines.addAll(lazyCss.get(chunkInfo));
+                }
+
+                Collections.sort(chunkLines);
+                String chunkContentHash = StringUtil.getHash(
+                        String.join(";", chunkLines), StandardCharsets.UTF_8);
+
+                boolean chunkNotExist = !lazyChunks
+                        .containsKey(chunkContentHash);
+                if (chunkNotExist) {
+                    lazyChunks.put(chunkContentHash, chunkLines);
+                }
+
+                String chunkFilename = "chunk-" + chunkContentHash + ".js";
 
                 String ifClauses = chunkInfo.getDependencyTriggers().stream()
-                        .map(cls -> BundleUtils.getChunkId(cls))
+                        .map(BundleUtils::getChunkId)
                         .map(hash -> "key === '" + hash + "'")
                         .collect(Collectors.joining(" || "));
                 chunkLoader.add("  if (" + ifClauses + ") {");
@@ -207,23 +273,18 @@ abstract class AbstractUpdateImports implements Runnable {
                         + chunkFilename + "'));");
                 chunkLoader.add("  }");
 
-                List<String> chunkLines = new ArrayList<>();
-                if (lazyJavascript.containsKey(chunkInfo)) {
-                    chunkLines
-                            .addAll(getModuleLines(javascript.get(chunkInfo)));
+                if (chunkNotExist) {
+                    File chunkFile = new File(chunkFolder, chunkFilename);
+                    files.put(chunkFile, chunkLines);
                 }
-                if (lazyCss.containsKey(chunkInfo)) {
-                    chunkLines.add(IMPORT_INJECT);
-                    chunkLines.add(THEMABLE_MIXIN_IMPORT);
-                    chunkLines.addAll(lazyCss.get(chunkInfo));
-                }
-                File chunkFile = new File(chunkFolder, chunkFilename);
-                files.put(chunkFile, chunkLines);
             }
 
             chunkLoader.add("  return Promise.all(pending);");
             chunkLoader.add("}");
             chunkLoader.add("");
+
+            ms = (System.nanoTime() - start) / 1000000;
+            getLogger().debug("Lazy chunks generation took {} ms.", ms);
         } else {
             chunkLoader.add(
                     "const loadOnDemand = (key) => { return Promise.resolve(0); }");
