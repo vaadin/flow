@@ -40,6 +40,7 @@ import org.apache.maven.project.MavenProject;
 public class CodeGeneratorMojo extends AbstractMojo {
 
     public static final String ROUTE_JAVA_TEMPLATE = "route-java.mustache";
+    public static final String ADDONS_ROUTE_JAVA_TEMPLATE = "addons-route-java.mustache";
     public static final String SERVICE_JAVA_TEMPLATE = "service-java.mustache";
     public static final String CSS_IMPORT_TEMPLATE = "css-import.mustache";
     public static final String JS_MODULE_TEMPLATE = "js-module.mustache";
@@ -67,6 +68,9 @@ public class CodeGeneratorMojo extends AbstractMojo {
 
     @Parameter(name = "numberOfGeneratedJsModulesPerRoute", property = "vaadin.test.codegen.maven.plugin.jsmodules.per.route", defaultValue = "0")
     private int numberOfGeneratedJsModulesPerRoute;
+
+    @Parameter(name = "includeAddons", property = "vaadin.test.codegen.maven.plugin.include.addons", defaultValue = "false")
+    private boolean includeAddons;
 
     /**
      * Skip the execution.
@@ -122,12 +126,18 @@ public class CodeGeneratorMojo extends AbstractMojo {
             cssImportsGeneratedTotal += context.getCssImports().size();
             jsModulesGeneratedTotal += context.getJsModules().size();
         }
+        if (includeAddons) {
+            generateAddonsRoute();
+        }
+
         getLog().info(String.format(
-                "Generated %s route(s) / %s Spring service(s) / %s CssImport(s) / %s JsModule(s) in total.",
-                numberOfRoutes, servicesGeneratedTotal,
-                cssImportsGeneratedTotal, jsModulesGeneratedTotal));
-        if (numberOfRoutes > 0 && (cssImportsGeneratedTotal > 0
-                || jsModulesGeneratedTotal > 0)) {
+                "Generated %s route(s) / %s Spring service(s) / %s CssImport(s) / %s JsModule(s) in total.%s",
+                numberOfRoutes,
+                servicesGeneratedTotal,
+                cssImportsGeneratedTotal,
+                jsModulesGeneratedTotal,
+                (includeAddons) ? " Generated 'addons' route." : ""));
+        if(numberOfRoutes > 0 && (cssImportsGeneratedTotal > 0 || jsModulesGeneratedTotal > 0)) {
             getLog().info("Frontend files generated in "
                     + project.getBasedir().toString() + "/frontend");
         }
@@ -183,6 +193,16 @@ public class CodeGeneratorMojo extends AbstractMojo {
         generateJavaFileByMustacheTemplate(context, ROUTE_JAVA_TEMPLATE);
 
         return context;
+    }
+
+    private void generateAddonsRoute()
+            throws IOException {
+
+        JavaRouteContext context = new JavaRouteContext();
+        context.setPackages(apiPackage);
+        context.setClassName("AddonsRoute");
+
+        generateJavaFileByMustacheTemplate(context, ADDONS_ROUTE_JAVA_TEMPLATE);
     }
 
     private JavaSpringServiceContext generateSpringComponent(
