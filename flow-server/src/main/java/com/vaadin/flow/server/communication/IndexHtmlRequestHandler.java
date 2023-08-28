@@ -18,6 +18,8 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -35,6 +37,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
@@ -54,6 +57,7 @@ import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
@@ -153,8 +157,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (!config.isProductionMode()) {
             // Ensure no older tools incorrectly detect a bundle as production
             // mode
-            addScript(indexDocument,
-                    "window.Vaadin = window.Vaadin || {}; window.Vaadin.developmentMode = true;");
+            addScript(indexDocument, """
+                    window.Vaadin = window.Vaadin || {};
+                    window.Vaadin.developmentMode = true;
+                    window.Vaadin.devToolsPlugins = [];
+                    """);
         }
 
         addDevBundleTheme(indexDocument, context);
@@ -436,10 +443,25 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             // When running without a frontend server, the index.html comes
             // directly from the frontend folder and the JS entrypoint(s) need
             // to be added
-            addGeneratedIndexContent(config, indexHtmlDocument);
+            addGeneratedIndexContent(indexHtmlDocument, getStatsJson(config));
         }
         modifyIndexHtmlForVite(indexHtmlDocument);
         return indexHtmlDocument;
+    }
+
+    protected static void addGeneratedIndexContent(Document targetDocument,
+            JsonObject statsJson) {
+
+        JsonArray indexHtmlGeneratedRows = statsJson
+                .getArray("indexHtmlGenerated");
+        List<String> toAdd = new ArrayList<>();
+
+        toAdd.addAll(JsonUtils.stream(indexHtmlGeneratedRows)
+                .map(value -> value.asString()).toList());
+
+        for (String row : toAdd) {
+            targetDocument.head().append(row);
+        }
     }
 
     private static void modifyIndexHtmlForVite(Document indexHtmlDocument) {

@@ -49,16 +49,19 @@ public enum DebouncePhase {
      * as text input when you don't want to receive an event for each individual
      * keystroke, but still want periodic updates. This is sometimes useful in
      * combination with {@link #LEADING} so that the first event is sent
-     * immediately. Can also be combined with {@link #TRAILING} to get a
-     * separate event when the input has stopped.
+     * immediately. Can also for special cases be combined with
+     * {@link #TRAILING} to get a separate event when the input has stopped, but
+     * this combination should be handled with care: the exact same event is
+     * sent twice in the end. First with INTERMEDIATE phase and then with
+     * TRAILING.
      */
     INTERMEDIATE(JsonConstants.EVENT_PHASE_INTERMEDIATE),
 
     /**
-     * Debounce phase that is sent to the server once there have been at least
-     * one debounce timeout period since the last event of the same type. This
-     * is useful for cases such as text input when you are only want to react to
-     * the text when the user pauses typing.
+     * Trailing phase that is sent to the server once there have been at least
+     * one timeout period since the last event of the same type. This is useful
+     * for cases such as text input when you are only want to react to the text
+     * when the user pauses typing.
      */
     TRAILING(JsonConstants.EVENT_PHASE_TRAILING);
 

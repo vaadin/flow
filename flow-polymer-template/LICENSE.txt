@@ -219,11 +219,12 @@ License as set forth herein and in the applicable Order.
 
 4.3. Developer License
 4.3.1 General Provisions
-4.3.1.2 This Section 4.3 contains the terms and conditions of Vaadin’s
+4.3.1.1 This Section 4.3 contains the terms and conditions of Vaadin’s
 developer License (“Developer License”), under which Vaadin licenses
 development components for use by a Developer.
-Vaadin grants to Customer, based on full payment of the Subscription fee, a
-worldwide, royalty-free, non-exclusive, limited License to Use Licensed
+
+4.3.1.2 Vaadin grants to Customer, based on full payment of the Subscription
+fee, a worldwide, royalty-free, non-exclusive, limited License to Use Licensed
 Software in Project(s).
 
 4.3.1.3 Customer must procure the right to Use Licensed Software for each
@@ -309,7 +310,7 @@ in the applicable Order.
 4.4.3. Customer may grant licenses, for free or based on a payment, to the
 Authorized Application(s) including Licensed Software, whether regarded as
 derivative works or not, as long as Customer has obtained from Vaadin a valid
-Runtime License for and on behalf of Customer’s own Customers (that Use
+Runtime License for and on behalf of Customer’s own customers (that Use
 Licensed Software), or Customer clearly communicates that anyone Using Licensed
 Software needs to obtain a valid Runtime License from Vaadin prior to
 installation and use of the Authorized Application(s) including Licensed
@@ -446,10 +447,6 @@ does not authorize the continuation of the service request at their expense.
 Software to be fixed. There can be only one open warranty request at a time per
 Subscription. Vaadin reserves the right to choose, at its sole discretion,
 which warranty requests will be fixed.
-During the Support Hours, the resolution of a support request will be started
-within two (2) business days. If Vaadin fails to start the resolution as
-agreed, Customer will be compensated with one (1) free Expert on Demand hour
-that is added to the time balance.
 
 6.6.2. During the Support Hours, the resolution of a support request will be
 started within two (2) business days. If Vaadin fails to start the resolution
@@ -491,7 +488,8 @@ and corresponds with the deliverables and which product or service is offered
 for use to Customer by Vaadin without separate charge. The aforesaid indemnity
 obligation of Vaadin shall, however, always be limited to an amount equal to
 three times the yearly Subscription fee, and Vaadin’s liability for indemnified
-claims shall be limited to this Section 6.9.
+claims shall be limited to this Section 6.8.
+
 
 6.9. Extended Maintenance for Vaadin
 6.9.1. The extended maintenance for Vaadin Service extends the coverage of the
@@ -506,7 +504,7 @@ that the latest minor versions of Vaadin platform versions 10, 14, and 23+ are
 covered for the duration of the Subscription term.
 
 6.9.3. Any and all changes to the software covered by Extended Maintenance may
-be published under commercial or non-commercial License and will be made
+be published under a commercial or non-commercial License and will be made
 available exclusively to Customers that have subscribed to the extended
 maintenance for Vaadin Service.
 
@@ -530,6 +528,23 @@ that is added to the time balance.
 
 6.10.3. Vaadin will build a new version of the Custom Build on demand basis,
 however, at most once a month.
+
+6.11. Technical Success Manager
+6.11.1 Technical Success Manager (“TSM”) is a technical expert allocated to
+help Customer to use Vaadin’s products and services in a productive manner.
+TSM's areas of expertise include, but are not limited to, answering technical
+questions, disseminating best practices, and coordinating work between Customer
+and Vaadin.
+
+6.11.2. Customer may request regular meetings with the TSM with a maximum
+monthly total of four (4) hours of active meeting time. Preparation and
+coordination time related to the meetings is not included in the above
+mentioned monthly total.
+
+6.11.3. Software programming and project management are not included in the
+scope of this TSM service referred to in this Section 6.11. Programming and
+project management services are provided under Expert on Demand and Consulting
+services.
 
 7. Consulting
 7.1. Delivery of Consulting
@@ -584,7 +599,7 @@ of this Section and is not to be interpreted as a penalty or punishment
 therefor.
 
 7.4. Sponsored Development
-The Parties may agree upon the delivery of Sponsored Development in an
+7.4.1 The Parties may agree upon the delivery of Sponsored Development in an
 Agreement. This Service is provided as Consulting in accordance with this
 Section 7. Intellectual Property Rights to Sponsored Development results are
 regulated by Section 11 below.
@@ -651,14 +666,20 @@ or other Agreement document. As regards Trial Licenses, no Subscription fee is
 charged.
 
 10.2. Consulting
-10.2.1. The applicable prices and hourly rates are detailed in the Agreement
+10.2.1. All cost and effort estimates given by Vaadin to Customer are
+indicative by nature and do not affect the calculation of the fees. If not
+otherwise specified in the Agreement, the Services are provided on
+time-and-material basis. The fee is determined by multiplying the hourly rates
+set forth in the Agreement by the hours that Vaadin has worked on the Services.
+
+10.2.2. The applicable prices and hourly rates are detailed in the Agreement
 and/or its appendices. If a price for a Service has not been agreed, the price
 in Vaadin’s price list effective on the order date shall apply.
 
-10.2.2. Vaadin shall be entitled to adjust its prices with thirty (30) days’
+10.2.3. Vaadin shall be entitled to adjust its prices with thirty (30) days’
 notice to Customer.
 
-10.2.3. Vaadin shall, if pre-approved by Customer, be entitled to charge for
+10.2.4. Vaadin shall, if pre-approved by Customer, be entitled to charge for
 customary and reasonable travel and accommodation costs as well as other travel
 costs relating to Services. Traveling time shall be charged as 50% of the
 agreed hourly rates.
@@ -971,6 +992,7 @@ PURPOSE, ANY IMPLIED WARRANTY THAT ANY SOFTWARE, PRODUCT OR SERVICE WILL MEET
 ALL NEEDS AND EXPECTATIONS, BE ERROR-FREE, OR BE OF CERTAIN CONDITION, QUALITY
 OR DURABILITY, OR FUNCTION OR PERFORM IN A CERTAIN WAY. ALL SUCH WARRANTIES,
 CONDITIONS, UNDERTAKINGS AND TERMS ARE HEREBY EXCLUDED.
+
 23. Limitation of Liability
 23.1. VAADIN AND ITS AFFILIATES AND SUPPLIERS SHALL NOT BE LIABLE FOR ANY
 INDIRECT, SPECIAL, INCIDENTAL, PUNITIVE OR CONSEQUENTIAL DAMAGES, INCLUDING BUT
@@ -985,9 +1007,9 @@ A PARTY TOWARDS THE OTHER PARTY IN RELATION TO THE AGREEMENT IS LIMITED TO A
 MAXIMUM OF 50 % OF THE PRICE PAYABLE FOR THE AGREED SUBSCRIPTION, PRODUCT OR
 SERVICE DIRECTLY RELATED TO THE CAUSE OF ACTION ASSERTED UNDER THE RELEVANT
 AGREEMENT. IN CASE OF SUBSCRIPTIONS, THE AFOREMENTIONED 50 % LIMIT IS
-CALCULATED BASED ON THE SUBSRPTION FEE FOR THE MOST RECENT SUBSCRIPTION TERM.
-IN CASE OF CONSULTING CARRIED OUT OUTSIDE A SUBSCRIPTION, THE AFOREMENTIONED
-50 % LIMIT IS CALCULATED BASED ON THE TOTAL VALUE OF THE CONSULTING UNDER THE
+CALCULATED BASED ON THE SUBSCRIPTION FEE FOR THE MOST RECENT SUBSCRIPTION TERM.
+IN CASE OF CONSULTING CARRIED OUT OUTSIDE A SUBSCRIPTION, THE AFOREMENTIONED 50
+% LIMIT IS CALCULATED BASED ON THE TOTAL VALUE OF THE CONSULTING UNDER THE
 RELEVANT SOW.
 
 23.3. THIS LIMITATION OF LIABILITY SHALL APPLY REGARDLESS OF THE CAUSE OF
@@ -1105,8 +1127,8 @@ Agreement.
 statements required hereby shall be in English.
 
 27.10. Changes to these Commercial Terms
-Vaadin may change these Commercial Terms at any time, upon thirty (30) days
-prior written notice. The changed Commercial Terms shall apply to any new
+27.10.1 Vaadin may change these Commercial Terms at any time, upon thirty (30)
+days prior written notice. The changed Commercial Terms shall apply to any new
 Orders and Agreements entered into after the effective date of the change. As
 regards Subscriptions, the changed Commercial Terms shall apply from the
 beginning of a renewed Subscription term, provided that Vaadin has notified

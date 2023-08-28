@@ -1,25 +1,64 @@
 import 'construct-style-sheets-polyfill';
-import { css, html, LitElement, nothing, TemplateResult } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { css, html, LitElement, nothing, PropertyValueMap, render, TemplateResult } from 'lit';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { Overlay, OverlayOutsideClickEvent } from '@vaadin/overlay';
 import { ComponentPicker } from './component-picker';
 import { ComponentReference, deepContains } from './component-util';
 import './theme-editor/editor';
 import { ThemeEditorState } from './theme-editor/model';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { copy } from './copy-to-clipboard.js';
 import { licenseCheckFailed, licenseInit, Product } from './License';
 import { Connection, ConnectionStatus } from './connection';
 import { popupStyles } from './styles';
+import './vaadin-dev-tools-log';
+import './vaadin-dev-tools-info';
 
-interface ServerInfo {
-  vaadinVersion: string;
-  flowVersion: string;
-  javaVersion: string;
-  osVersion: string;
-  productName: string;
+/**
+ * Plugin API for the dev tools window.
+ */
+export interface DevToolsInterface {
+  send(command: string, data: any): void;
+  addTab(id: string, tag: string): void;
+}
+export interface MessageHandler {
+  handleMessage(message: ServerMessage): boolean;
+}
+export interface ServerMessage {
+  /**
+   * The command
+   */
+  command: string;
+  /**
+   * the data for the command
+   */
+  data: any;
+}
+
+/**
+ * To create and register a plugin, use e.g.
+ * @example
+ * export class MyTab extends LitElement implements MessageHandler {
+ *   render() {
+ *     return html`<div>Here I am</div>`;
+ *   }
+ * }
+ * customElements.define('my-tab', MyTab);
+ *
+ * const plugin: DevToolsPlugin = {
+ *   init: function (devToolsInterface: DevToolsInterface): void {
+ *     devToolsInterface.addTab('Tab title', 'my-tab')
+ *   }
+ * };
+ *
+ * (window as any).Vaadin.devToolsPlugins.push(plugin);
+ */
+export interface DevToolsPlugin {
+  /**
+   * Called once to initialize the plugin.
+   *
+   * @param devToolsInterface provides methods to interact with the dev tools
+   */
+  init(devToolsInterface: DevToolsInterface): void;
 }
 
 interface Feature {
@@ -31,13 +70,15 @@ interface Feature {
 }
 
 interface Tab {
-  id: 'log' | 'info' | 'features' | 'code' | 'theme-editor';
+  id: string;
   title: string;
-  render: () => TemplateResult;
+  render: (() => TemplateResult) | string;
+  element?: HTMLElement;
   activate?: () => void;
+  handleMessage?: MessageHandler;
 }
 
-enum MessageType {
+export enum MessageType {
   LOG = 'log',
   INFORMATION = 'information',
   WARNING = 'warning',
@@ -55,8 +96,10 @@ interface Message {
   deleted: boolean;
 }
 
+@customElement('vaadin-dev-tools')
 export class VaadinDevTools extends LitElement {
   static MAX_LOG_ROWS = 1000;
+  unhandledMessages: ServerMessage[] = [];
 
   static get styles() {
     return [
@@ -804,8 +847,8 @@ export class VaadinDevTools extends LitElement {
 
   @state()
   private tabs: Tab[] = [
-    { id: 'log', title: 'Log', render: () => this.renderLog(), activate: this.activateLog },
-    { id: 'info', title: 'Info', render: () => this.renderInfo() },
+    { id: 'log', title: 'Log', render: 'vaadin-dev-tools-log' },
+    { id: 'info', title: 'Info', render: 'vaadin-dev-tools-info' },
     { id: 'features', title: 'Feature Flags', render: () => this.renderFeatures() }
   ];
 
@@ -813,19 +856,10 @@ export class VaadinDevTools extends LitElement {
   private activeTab: string = 'log';
 
   @state()
-  private serverInfo: ServerInfo = {
-    flowVersion: '',
-    vaadinVersion: '',
-    javaVersion: '',
-    osVersion: '',
-    productName: ''
-  };
-
-  @state()
   private features: Feature[] = [];
 
   @state()
-  private unreadErrors = false;
+  unreadErrors = false;
 
   @query('.window')
   private root!: HTMLElement;
@@ -952,10 +986,19 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
-  handleFrontendMessage(message: any) {
-    if (message?.command === 'serverInfo') {
-      this.serverInfo = message.data as ServerInfo;
-    } else if (message?.command === 'featureFlags') {
+  tabHandleMessage(tabElement: HTMLElement, message: ServerMessage): boolean {
+    const handler = tabElement as any as MessageHandler;
+    return handler.handleMessage && handler.handleMessage.call(tabElement, message);
+  }
+  handleFrontendMessage(message: ServerMessage) {
+    for (const tab of this.tabs) {
+      if (tab.element && this.tabHandleMessage(tab.element, message)) {
+        // Fully handled
+        return;
+      }
+    }
+
+    if (message?.command === 'featureFlags') {
       this.features = message.data.features as Feature[];
     } else if (message?.command === 'themeEditorState') {
       const isFlowApp = !!(window as any).Vaadin.Flow;
@@ -969,8 +1012,7 @@ export class VaadinDevTools extends LitElement {
         this.requestUpdate();
       }
     } else {
-      // eslint-disable-next-line no-console
-      console.error('Unknown message from front-end connection:', JSON.stringify(message));
+      this.unhandledMessages.push(message);
     }
   }
 
@@ -1021,7 +1063,6 @@ export class VaadinDevTools extends LitElement {
     this.disableEventListener = (_: any) => this.demoteSplashMessage();
     document.body.addEventListener('focus', this.disableEventListener);
     document.body.addEventListener('click', this.disableEventListener);
-    this.openWebSocketConnection();
 
     const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     if (lastReload) {
@@ -1042,8 +1083,6 @@ export class VaadinDevTools extends LitElement {
     windowAny.Vaadin = windowAny.Vaadin || {};
     windowAny.Vaadin.devTools = Object.assign(this, windowAny.Vaadin.devTools);
 
-    licenseInit();
-
     // Prevent application overlays from closing when interacting with the dev tools
     document.documentElement.addEventListener('vaadin-overlay-outside-click', (event: Event) => {
       // We don't want to prevent closing the overlay if the overlay owner is
@@ -1061,6 +1100,27 @@ export class VaadinDevTools extends LitElement {
       const composedPath = sourceEvent.composedPath();
       if (composedPath.includes(this)) {
         event.preventDefault();
+      }
+    });
+
+    const anyVaadin = window.Vaadin as any;
+    if (anyVaadin.devToolsPlugins) {
+      Array.from(anyVaadin.devToolsPlugins as DevToolsPlugin[]).forEach((plugin) => this.initPlugin(plugin));
+      anyVaadin.devToolsPlugins = { push: (plugin: DevToolsPlugin) => this.initPlugin(plugin) };
+    }
+
+    this.openWebSocketConnection();
+    licenseInit();
+  }
+
+  async initPlugin(plugin: DevToolsPlugin) {
+    const devTools = this;
+    plugin.init({
+      addTab: (title, tag) => {
+        devTools.tabs.push({ id: title, title, render: tag });
+      },
+      send: function (command: string, data: any): void {
+        devTools.frontendConnection!.send(command, data);
       }
     });
   }
@@ -1312,7 +1372,10 @@ export class VaadinDevTools extends LitElement {
                 id="${tab.id}"
                 @click=${() => {
                   this.activeTab = tab.id;
-                  if (tab.activate) tab.activate.call(this);
+                  const activateMethod = (tab.element as any).activate;
+                  if (activateMethod) {
+                    activateMethod.call(tab.element);
+                  }
                 }}
               >
                 ${tab.title}
@@ -1331,7 +1394,7 @@ export class VaadinDevTools extends LitElement {
             </svg>
           </button>
         </div>
-        ${this.tabs.map((tab) => (this.activeTab === tab.id ? tab.render() : nothing))}
+        <div id="tabContainer"></div>
       </div>
 
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
@@ -1398,17 +1461,66 @@ export class VaadinDevTools extends LitElement {
       </div>`;
   }
 
-  renderLog() {
-    return html`<div class="message-tray">${this.messages.map((msg) => this.renderMessage(msg))}</div>`;
-  }
-  activateLog() {
-    this.unreadErrors = false;
-    this.updateComplete.then(() => {
-      const lastMessage = this.renderRoot.querySelector('.message-tray .message:last-child');
-      if (lastMessage) {
-        lastMessage.scrollIntoView();
+  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    super.updated(_changedProperties);
+
+    const tabContainer = this.renderRoot.querySelector('#tabContainer')! as HTMLElement;
+
+    const newTabElements: HTMLElement[] = [];
+
+    // Ensure each tab has an element, either a container <div> for render functions or the requested tag
+    this.tabs.forEach((tab) => {
+      if (tab.element) {
+        return;
       }
+
+      if (typeof tab.render === 'function') {
+        tab.element = document.createElement('div');
+      } else {
+        tab.element = document.createElement(tab.render);
+        (tab.element as any)._devTools = this;
+      }
+      newTabElements.push(tab.element);
     });
+
+    // Ensure tabs are in the correct order in the tab container
+    if (tabContainer?.childElementCount !== this.tabs.length) {
+      for (let i = 0; i < this.tabs.length; i++) {
+        const tab = this.tabs[i];
+        if (tabContainer.childElementCount > i && tabContainer.children[i] === tab.element) {
+          // ok
+        } else {
+          // insert at i
+          tabContainer.insertBefore(tab.element!, tabContainer.children[i]);
+        }
+      }
+      // Remove extra elements
+      while (tabContainer?.childElementCount > this.tabs.length) {
+        tabContainer.lastElementChild?.remove();
+      }
+    }
+
+    // Render or request an update for each tab
+    for (const tab of this.tabs) {
+      if (typeof tab.render === 'function') {
+        render(tab.render(), tab.element!);
+      } else if ((tab.element as any).requestUpdate) {
+        // To re-render log when messages are updated
+        (tab.element as any).requestUpdate();
+      }
+      const active = tab.id === this.activeTab;
+      tab.element!.hidden = !active;
+    }
+
+    // Send any unhandled messages
+    for (const tabElement of newTabElements) {
+      for (var i = 0; i < this.unhandledMessages.length; i++) {
+        if (this.tabHandleMessage(tabElement, this.unhandledMessages[i])) {
+          this.unhandledMessages.splice(i, 1);
+          i--;
+        }
+      }
+    }
   }
 
   renderCode() {
@@ -1453,47 +1565,6 @@ export class VaadinDevTools extends LitElement {
     </div>`;
   }
 
-  renderInfo() {
-    return html`<div class="info-tray">
-      <button class="button copy" @click=${this.copyInfoToClipboard}>Copy</button>
-      <dl>
-        <dt>${this.serverInfo.productName}</dt>
-        <dd>${this.serverInfo.vaadinVersion}</dd>
-        <dt>Flow</dt>
-        <dd>${this.serverInfo.flowVersion}</dd>
-        <dt>Java</dt>
-        <dd>${this.serverInfo.javaVersion}</dd>
-        <dt>OS</dt>
-        <dd>${this.serverInfo.osVersion}</dd>
-        <dt>Browser</dt>
-        <dd>${navigator.userAgent}</dd>
-        <dt>
-          Live reload
-          <label class="switch">
-            <input
-              id="toggle"
-              type="checkbox"
-              ?disabled=${this.liveReloadDisabled ||
-              ((this.frontendStatus === ConnectionStatus.UNAVAILABLE ||
-                this.frontendStatus === ConnectionStatus.ERROR) &&
-                (this.javaStatus === ConnectionStatus.UNAVAILABLE || this.javaStatus === ConnectionStatus.ERROR))}
-              ?checked="${this.frontendStatus === ConnectionStatus.ACTIVE ||
-              this.javaStatus === ConnectionStatus.ACTIVE}"
-              @change=${(e: InputEvent) => this.setActive((e.target as HTMLInputElement).checked)}
-            />
-            <span class="slider"></span>
-          </label>
-        </dt>
-        <dd class="live-reload-status" style="--status-color: ${this.getStatusColor(this.javaStatus)}">
-          Java ${this.javaStatus} ${this.backend ? `(${VaadinDevTools.BACKEND_DISPLAY_NAME[this.backend]})` : ''}
-        </dd>
-        <dd class="live-reload-status" style="--status-color: ${this.getStatusColor(this.frontendStatus)}">
-          Front end ${this.frontendStatus}
-        </dd>
-      </dl>
-    </div>`;
-  }
-
   private renderFeatures() {
     return html`<div class="features-tray">
       ${this.features.map(
@@ -1534,22 +1605,6 @@ export class VaadinDevTools extends LitElement {
     ></vaadin-dev-tools-theme-editor>`;
   }
 
-  copyInfoToClipboard() {
-    const items = this.renderRoot.querySelectorAll('.info-tray dt, .info-tray dd');
-    const text = Array.from(items)
-      .map((message) => (message.localName === 'dd' ? ': ' : '\n') + message.textContent!.trim())
-      .join('')
-      .replace(/^\n/, '');
-    copy(text);
-    this.showNotification(
-      MessageType.INFORMATION,
-      'Environment information copied to clipboard',
-      undefined,
-      undefined,
-      'versionInfoCopied'
-    );
-  }
-
   toggleFeatureFlag(e: Event, feature: Feature) {
     const enabled = (e.target! as HTMLInputElement).checked;
     if (this.frontendConnection) {
@@ -1565,8 +1620,4 @@ export class VaadinDevTools extends LitElement {
       this.log(MessageType.ERROR, `Unable to toggle feature ${feature.title}: No server connection available`);
     }
   }
-}
-
-if (customElements.get('vaadin-dev-tools') === undefined) {
-  customElements.define('vaadin-dev-tools', VaadinDevTools);
 }
