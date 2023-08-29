@@ -43,7 +43,9 @@ public class JavaRouteContext extends JavaClassContext {
     }
 
     public void setJsModules(List<JsModuleContext> jsModules) {
-        this.jsModules = jsModules != null ? jsModules : Collections.emptyList();;
+        this.jsModules = jsModules != null ? jsModules
+                : Collections.emptyList();
+        ;
     }
 
     public String getStyleName() {
@@ -67,6 +69,7 @@ public class JavaRouteContext extends JavaClassContext {
     }
 
     public void setCssImports(List<CssImportContext> cssImports) {
-        this.cssImports = cssImports != null ? cssImports : Collections.emptyList();
+        this.cssImports = cssImports != null ? cssImports
+                : Collections.emptyList();
     }
 }

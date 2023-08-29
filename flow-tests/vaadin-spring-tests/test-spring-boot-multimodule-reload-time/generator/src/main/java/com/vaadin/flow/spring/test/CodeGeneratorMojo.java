@@ -108,8 +108,10 @@ public class CodeGeneratorMojo extends AbstractMojo {
         FileUtils.deleteDirectory(new File(
                 output.toString() + "/" + apiPackage.replace(".", "/")));
         // ... and generated frontend css and js
-        FileUtils.deleteDirectory(new File(project.getBasedir().toString() + "/frontend/generated-css"));
-        FileUtils.deleteDirectory(new File(project.getBasedir().toString() + "/frontend/generated-js"));
+        FileUtils.deleteDirectory(new File(
+                project.getBasedir().toString() + "/frontend/generated-css"));
+        FileUtils.deleteDirectory(new File(
+                project.getBasedir().toString() + "/frontend/generated-js"));
 
         int servicesGeneratedTotal = 0;
         int cssImportsGeneratedTotal = 0;
@@ -122,8 +124,10 @@ public class CodeGeneratorMojo extends AbstractMojo {
         }
         getLog().info(String.format(
                 "Generated %s route(s) / %s Spring service(s) / %s CssImport(s) / %s JsModule(s) in total.",
-                numberOfRoutes, servicesGeneratedTotal, cssImportsGeneratedTotal, jsModulesGeneratedTotal));
-        if(numberOfRoutes > 0 && (cssImportsGeneratedTotal > 0 || jsModulesGeneratedTotal > 0)) {
+                numberOfRoutes, servicesGeneratedTotal,
+                cssImportsGeneratedTotal, jsModulesGeneratedTotal));
+        if (numberOfRoutes > 0 && (cssImportsGeneratedTotal > 0
+                || jsModulesGeneratedTotal > 0)) {
             getLog().info("Frontend files generated in "
                     + project.getBasedir().toString() + "/frontend");
         }
@@ -138,8 +142,8 @@ public class CodeGeneratorMojo extends AbstractMojo {
         return result;
     }
 
-    private List<CssImportContext> generateCssImports(
-            JavaClassContext owner, int numberOfCssImports) throws IOException {
+    private List<CssImportContext> generateCssImports(JavaClassContext owner,
+            int numberOfCssImports) throws IOException {
         var result = new ArrayList<CssImportContext>();
         for (int index = 0; index < numberOfCssImports; index++) {
             result.add(generateCssImport(owner, index));
@@ -147,8 +151,8 @@ public class CodeGeneratorMojo extends AbstractMojo {
         return result;
     }
 
-    private List<JsModuleContext> generateJsModules(
-            JavaClassContext owner, int numberOfJsModules) throws IOException {
+    private List<JsModuleContext> generateJsModules(JavaClassContext owner,
+            int numberOfJsModules) throws IOException {
         var result = new ArrayList<JsModuleContext>();
         for (int index = 0; index < numberOfJsModules; index++) {
             result.add(generateJsModule(owner, index));
@@ -168,10 +172,12 @@ public class CodeGeneratorMojo extends AbstractMojo {
                 numberOfGeneratedServicesPerRoute);
         context.setServices(services);
 
-        var cssImports = generateCssImports(context, numberOfGeneratedCssImportsPerRoute);
+        var cssImports = generateCssImports(context,
+                numberOfGeneratedCssImportsPerRoute);
         context.setCssImports(cssImports);
 
-        var jsModules = generateJsModules(context, numberOfGeneratedJsModulesPerRoute);
+        var jsModules = generateJsModules(context,
+                numberOfGeneratedJsModulesPerRoute);
         context.setJsModules(jsModules);
 
         generateJavaFileByMustacheTemplate(context, ROUTE_JAVA_TEMPLATE);
@@ -192,28 +198,33 @@ public class CodeGeneratorMojo extends AbstractMojo {
         return context;
     }
 
-    private CssImportContext generateCssImport(
-            JavaClassContext owner, int index)
-            throws IOException {
+    private CssImportContext generateCssImport(JavaClassContext owner,
+            int index) throws IOException {
         CssImportContext context = new CssImportContext();
-        context.setTargetStyleName("css-import-" + owner.getClassName().toLowerCase(Locale.ROOT) + "-" + index);
-        context.setValue("./generated-css/" + context.getTargetStyleName() + ".css");
+        context.setTargetStyleName("css-import-"
+                + owner.getClassName().toLowerCase(Locale.ROOT) + "-" + index);
+        context.setValue(
+                "./generated-css/" + context.getTargetStyleName() + ".css");
 
-        generateFrontendFileByMustacheTemplate(context, CSS_IMPORT_TEMPLATE, getFrontendPath(context.getValue()));
+        generateFrontendFileByMustacheTemplate(context, CSS_IMPORT_TEMPLATE,
+                getFrontendPath(context.getValue()));
         return context;
     }
 
-    private JsModuleContext generateJsModule(
-            JavaClassContext owner, int index)
+    private JsModuleContext generateJsModule(JavaClassContext owner, int index)
             throws IOException {
         JsModuleContext context = new JsModuleContext();
-        context.setTag("js-module-" + owner.getClassName().toLowerCase(Locale.ROOT) + "-" + index);
+        context.setTag("js-module-"
+                + owner.getClassName().toLowerCase(Locale.ROOT) + "-" + index);
         context.setValue("./generated-js/" + context.getTag() + ".js");
-        context.setName(Stream.of(context.getTag().split("-"))
-                .map(str -> str.substring(0, 1).toUpperCase(Locale.ROOT) + str.substring(1))
-                .collect(Collectors.joining()));
+        context.setName(
+                Stream.of(context.getTag().split("-"))
+                        .map(str -> str.substring(0, 1).toUpperCase(Locale.ROOT)
+                                + str.substring(1))
+                        .collect(Collectors.joining()));
 
-        generateFrontendFileByMustacheTemplate(context, JS_MODULE_TEMPLATE, getFrontendPath(context.getValue()));
+        generateFrontendFileByMustacheTemplate(context, JS_MODULE_TEMPLATE,
+                getFrontendPath(context.getValue()));
         return context;
     }
 
@@ -229,13 +240,16 @@ public class CodeGeneratorMojo extends AbstractMojo {
         return value.startsWith("./") ? value.substring(2) : value;
     }
 
-    private void generateFrontendFileByMustacheTemplate(Object context, String templateFileName, String frontEndFilePath) throws IOException {
-        File newFile = new File(
-                project.getBasedir().toString() + "/frontend/" + frontEndFilePath);
+    private void generateFrontendFileByMustacheTemplate(Object context,
+            String templateFileName, String frontEndFilePath)
+            throws IOException {
+        File newFile = new File(project.getBasedir().toString() + "/frontend/"
+                + frontEndFilePath);
         generateFileByMustacheTemplate(context, templateFileName, newFile);
     }
 
-    private void generateFileByMustacheTemplate(Object context, String templateFileName, File newFile) throws IOException {
+    private void generateFileByMustacheTemplate(Object context,
+            String templateFileName, File newFile) throws IOException {
         newFile.getParentFile().mkdirs();
         try (FileWriter writer = new FileWriter(newFile,
                 StandardCharsets.UTF_8)) {
