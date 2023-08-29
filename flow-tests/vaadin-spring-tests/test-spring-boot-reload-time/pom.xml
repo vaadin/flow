@@ -90,7 +90,9 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring.boot.version}</version>
                 <configuration>
-                    <jvmArguments>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5825</jvmArguments>
+                    <jvmArguments>-Xdebug
+                        -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5825
+                    </jvmArguments>
                     <wait>500</wait>
                     <maxAttempts>240</maxAttempts>
                     <jmxPort>9009</jmxPort>
