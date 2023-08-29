@@ -147,7 +147,7 @@ export class ComponentPicker extends LitElement {
         e.y > pickerRect.y &&
         e.y <= pickerRect.y + pickerRect.height
       ) {
-        (pickerInfo as HTMLElement).style.opacity = '0.1';
+        (pickerInfo as HTMLElement).style.opacity = '0.05';
       } else {
         (pickerInfo as HTMLElement).style.opacity = '1.0';
       }
