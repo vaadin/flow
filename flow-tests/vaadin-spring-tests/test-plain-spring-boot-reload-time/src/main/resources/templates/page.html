@@ -1,0 +1,36 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml" lang="en">
+
+<head>
+    <title>Page</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+</head>
+<body>
+    Greetings from Spring Boot!
+    <br/>
+    <br/>
+    <button id="start-button" onclick="onStart()">Click to Start</button>
+    <br/>
+    <span id="result"></span>
+
+    <script src="/benchmark.js"></script>
+    <script>
+        function onStart() {
+            fetch("/start", {
+            method: "POST"
+            })
+            .then((json) => {
+                window.benchmark.start();
+                console.log('Benchmark started.');
+                window.location.reload();
+            });
+        }
+
+        document.getElementById("start-button").addEventListener("componentready", event => {
+            console.log("componentready: " + event.detail.result);
+            document.getElementById("result").textContent = "Reload time by class change was [" + event.detail.result + "] ms";
+        });
+        window.benchmark.measureRender(document.getElementById("start-button"));
+    </script>
+</body>
+</html>
