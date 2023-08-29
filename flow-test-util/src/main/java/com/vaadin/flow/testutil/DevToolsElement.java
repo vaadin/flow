@@ -98,6 +98,10 @@ public class DevToolsElement extends TestBenchElement {
         showTab("features");
     }
 
+    public void showThemeEditor() {
+        showTab("theme-editor");
+    }
+
     public List<String> listExperimentalFeatures() {
         return (List<String>) executeScript(
                 "return Array.from(arguments[0].shadowRoot.querySelectorAll('.features-tray .feature label')).map(e => e.textContent.trim())",
