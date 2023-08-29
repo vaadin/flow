@@ -23,8 +23,8 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 
 /**
- * Class for testing reload time of "larger" (size is configurable and test is meant for large apps) Vaadin app triggered by spring-boot Dev
- * Tool.
+ * Class for testing reload time of "larger" (size is configurable and test is
+ * meant for large apps) Vaadin app triggered by spring-boot Dev Tool.
  */
 public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
@@ -39,8 +39,11 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
         System.out.printf(
                 "##teamcity[buildStatisticValue key='%s,app,%s-routes,%s-services-per-route,spring-boot-devtools-reload-time' value='%s']%n",
                 getVaadinMajorMinorVersion(),
-                System.getProperty("vaadin.test.codegen.maven.plugin.routes", "500"),
-                System.getProperty("vaadin.test.codegen.maven.plugin.services.per.route", "1"),
+                System.getProperty("vaadin.test.codegen.maven.plugin.routes",
+                        "500"),
+                System.getProperty(
+                        "vaadin.test.codegen.maven.plugin.services.per.route",
+                        "1"),
                 assertAndGetReloadTimeResult());
     }
 

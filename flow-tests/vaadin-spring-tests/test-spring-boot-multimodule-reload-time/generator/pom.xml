@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>test-spring-boot-multimodule-reload-time</artifactId>
@@ -9,7 +9,9 @@
         <version>24.2-SNAPSHOT</version>
     </parent>
     <artifactId>test-spring-boot-multimodule-reload-time-generator</artifactId>
-    <name>The code generator Maven plugin for a Spring boot multimodule reload time project</name>
+    <name>The code generator Maven plugin for a Spring boot multimodule reload
+        time project
+    </name>
 
     <packaging>maven-plugin</packaging>
     <properties>
@@ -38,7 +40,7 @@
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
-			<scope>provided</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -49,7 +51,7 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
-	</dependencies>
+    </dependencies>
 
     <build>
         <pluginManagement>
@@ -59,7 +61,8 @@
                     <artifactId>maven-plugin-plugin</artifactId>
                     <version>3.9.0</version>
                     <configuration>
-                        <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+                        <skipErrorNoDescriptorsFound>true
+                        </skipErrorNoDescriptorsFound>
                     </configuration>
                     <executions>
                         <execution>
@@ -76,16 +79,19 @@
                     <artifactId>maven-jar-plugin</artifactId>
                     <configuration>
                         <archive>
-                            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                            <manifestFile>
+                                ${project.build.outputDirectory}/META-INF/MANIFEST.MF
+                            </manifestFile>
                             <index>false</index>
                             <manifest>
-                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                                <addDefaultImplementationEntries>true
+                                </addDefaultImplementationEntries>
                             </manifest>
                         </archive>
                     </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
-	</build>
+    </build>
 
 </project>
