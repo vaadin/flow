@@ -22,9 +22,11 @@ import java.util.List;
 public class JavaRouteContext extends JavaClassContext {
     String route;
     List<JavaSpringServiceContext> services = Collections.emptyList();
+
     public List<JavaSpringServiceContext> getServices() {
         return services;
     }
+
     public void setServices(List<JavaSpringServiceContext> services) {
         this.services = services;
         if (this.services == null) {
