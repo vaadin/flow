@@ -236,7 +236,7 @@ abstract class AbstractUpdateImports implements Runnable {
             chunkLoader.add("  const pending = [];");
             Set<ChunkInfo> mergedChunkKeys = merge(lazyJavascript.keySet(),
                     lazyCss.keySet());
-            Map<String, List<String>> lazyChunks = new HashMap<>(
+            Set<String> processedChunkHashes = new HashSet<>(
                     mergedChunkKeys.size());
 
             for (ChunkInfo chunkInfo : mergedChunkKeys) {
@@ -253,14 +253,7 @@ abstract class AbstractUpdateImports implements Runnable {
                 }
 
                 Collections.sort(chunkLines);
-                String chunkContentHash = StringUtil.getHash(
-                        String.join(";", chunkLines), StandardCharsets.UTF_8);
-
-                boolean chunkNotExist = !lazyChunks
-                        .containsKey(chunkContentHash);
-                if (chunkNotExist) {
-                    lazyChunks.put(chunkContentHash, chunkLines);
-                }
+                String chunkContentHash = BundleUtils.getChunkHash(chunkLines);
 
                 String chunkFilename = "chunk-" + chunkContentHash + ".js";
 
@@ -273,6 +266,8 @@ abstract class AbstractUpdateImports implements Runnable {
                         + chunkFilename + "'));");
                 chunkLoader.add("  }");
 
+                boolean chunkNotExist = processedChunkHashes
+                        .add(chunkContentHash);
                 if (chunkNotExist) {
                     File chunkFile = new File(chunkFolder, chunkFilename);
                     files.put(chunkFile, chunkLines);

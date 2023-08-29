@@ -22,7 +22,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,6 +45,8 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 public class UpdateImportsWithByteCodeScannerTest
         extends AbstractUpdateImportsTest {
+
+    private final static String CHUNK_PATTERN = "[\\s\\S]+chunks\\/chunk-[\\s\\S]+.js[\\s\\S]+";
 
     @Override
     protected FrontendDependenciesScanner getScanner(ClassFinder finder) {
@@ -141,16 +145,18 @@ public class UpdateImportsWithByteCodeScannerTest
         File flowGeneratedImportsDTs = new File(flowGeneratedFolder,
                 FrontendUtils.IMPORTS_D_TS_NAME);
 
-        File lazyChunk = new File(new File(flowGeneratedFolder, "chunks"),
-                "chunk-" + StringUtil.getHash(LazyRoute.class.getName(),
-                        StandardCharsets.UTF_8) + ".js");
+        Assert.assertTrue(output.containsKey(flowGeneratedImports));
+        Assert.assertTrue(output.containsKey(flowGeneratedImportsDTs));
 
-        Assert.assertEquals(Set.of(flowGeneratedImports,
-                flowGeneratedImportsDTs, lazyChunk), output.keySet());
+        Optional<File> chunkFile = output.keySet().stream()
+                .filter(file -> file.getName().contains("chunk-")).findAny();
+        Assert.assertTrue(chunkFile.isPresent());
+        Assert.assertTrue(output.containsKey(chunkFile.get()));
 
         String mainImportContent = String.join("\n",
                 output.get(flowGeneratedImports));
-        String lazyChunkContent = String.join("\n", output.get(lazyChunk));
+        String lazyChunkContent = String.join("\n",
+                output.get(chunkFile.get()));
 
         assertImports(mainImportContent, lazyChunkContent,
                 new String[] { "Frontend/local-p3-template.js", },
@@ -179,16 +185,18 @@ public class UpdateImportsWithByteCodeScannerTest
         File flowGeneratedImportsDTs = new File(flowGeneratedFolder,
                 FrontendUtils.IMPORTS_D_TS_NAME);
 
-        File lazyChunk = new File(new File(flowGeneratedFolder, "chunks"),
-                "chunk-" + StringUtil.getHash(LazyRoute.class.getName(),
-                        StandardCharsets.UTF_8) + ".js");
+        Assert.assertTrue(output.containsKey(flowGeneratedImports));
+        Assert.assertTrue(output.containsKey(flowGeneratedImportsDTs));
 
-        Assert.assertEquals(Set.of(flowGeneratedImports,
-                flowGeneratedImportsDTs, lazyChunk), output.keySet());
+        Optional<File> chunkFile = output.keySet().stream()
+                .filter(file -> file.getName().contains("chunk-")).findAny();
+        Assert.assertTrue(chunkFile.isPresent());
+        Assert.assertTrue(output.containsKey(chunkFile.get()));
 
         String mainImportContent = String.join("\n",
                 output.get(flowGeneratedImports));
-        String lazyChunkContent = String.join("\n", output.get(lazyChunk));
+        String lazyChunkContent = String.join("\n",
+                output.get(chunkFile.get()));
 
         assertImports(mainImportContent, lazyChunkContent,
                 new String[] { "Frontend/eager-component-cssimport.css",
@@ -235,15 +243,15 @@ public class UpdateImportsWithByteCodeScannerTest
         String mainImportContent = String.join("\n",
                 output.get(flowGeneratedImports));
 
+        // Chunk named after route
+        Assert.assertTrue(mainImportContent.matches(CHUNK_PATTERN));
+
+        // Trigger is only trigger and not route
         String routeHash = StringUtil.getHash(
                 LazyRouteWithOtherTrigger.class.getName(),
                 StandardCharsets.UTF_8);
         String triggerHash = StringUtil.getHash(TriggerClass1.class.getName(),
                 StandardCharsets.UTF_8);
-        // Chunk named after route
-        Assert.assertTrue(mainImportContent
-                .contains("chunks/chunk-" + routeHash + ".js"));
-        // Trigger is only trigger and not route
         Assert.assertTrue(
                 mainImportContent.contains("key === '" + triggerHash + "'"));
         Assert.assertFalse(
@@ -276,8 +284,8 @@ public class UpdateImportsWithByteCodeScannerTest
         String trigger2Hash = StringUtil.getHash(TriggerClass2.class.getName(),
                 StandardCharsets.UTF_8);
         // Chunk named after route
-        Assert.assertTrue(mainImportContent
-                .contains("chunks/chunk-" + routeHash + ".js"));
+        Assert.assertTrue(mainImportContent.matches(CHUNK_PATTERN));
+
         // Trigger is only trigger and not route
         Assert.assertTrue(
                 mainImportContent.contains("key === '" + trigger1Hash + "'"));
@@ -289,7 +297,6 @@ public class UpdateImportsWithByteCodeScannerTest
 
     @Test
     public void cssInLazyChunkWorks() throws Exception {
-        createExpectedImport(frontendDirectory, nodeModulesPath, "./bar.css");
         Class<?>[] testClasses = { FooCssImport.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
@@ -298,14 +305,18 @@ public class UpdateImportsWithByteCodeScannerTest
 
         Map<File, List<String>> output = updater.getOutput();
 
-        File flowGenerated = FrontendUtils
-                .getFlowGeneratedFolder(frontendDirectory);
-        File chunk = new File(new File(flowGenerated, "chunks"), "chunk-"
-                + BundleUtils.getChunkId(FooCssImport.class.getName()) + ".js");
+        Assert.assertNotNull(output);
+        Assert.assertEquals(3, output.size());
 
-        assertOnce("import { injectGlobalCss } from", output.get(chunk));
-        assertOnce("from 'Frontend/foo.css?inline';", output.get(chunk));
-        assertOnce("import $cssFromFile_0 from", output.get(chunk));
+        Optional<File> chunkFile = output.keySet().stream()
+                .filter(file -> file.getName().contains("chunk-")).findAny();
+        Assert.assertTrue(chunkFile.isPresent());
+
+        assertOnce("import { injectGlobalCss } from",
+                output.get(chunkFile.get()));
+        assertOnce("from 'Frontend/foo.css?inline';",
+                output.get(chunkFile.get()));
+        assertOnce("import $cssFromFile_0 from", output.get(chunkFile.get()));
     }
 
     private void assertImports(String mainImportContent,
