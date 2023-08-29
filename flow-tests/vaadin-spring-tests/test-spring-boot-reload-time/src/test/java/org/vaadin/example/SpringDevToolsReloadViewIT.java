@@ -16,6 +16,7 @@
 package org.vaadin.example;
 
 import com.vaadin.flow.server.Version;
+import com.vaadin.flow.spring.test.SpringDevToolsReloadUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import org.junit.Assert;
@@ -30,28 +31,38 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
     @Test
     public void testSpringBootReloadTime_withNativeButton() {
-        open("/reload-nativebutton-test");
+        String result = SpringDevToolsReloadUtils
+                .runAndCalculateAverageResult(5, () -> {
+                    open("/reload-nativebutton-test");
 
-        waitForElementPresent(By.id("start-button"));
-        triggerReload();
-        waitForElementVisible(By.id("result"));
+                    waitForElementPresent(By.id("start-button"));
+                    triggerReload();
+                    waitForElementVisible(By.id("result"));
+
+                    return assertAndGetReloadTimeResult();
+                });
 
         System.out.printf(
                 "##teamcity[buildStatisticValue key='%s,nativebutton,spring-boot-devtools-reload-time' value='%s']%n",
-                getVaadinMajorMinorVersion(), assertAndGetReloadTimeResult());
+                getVaadinMajorMinorVersion(), result);
     }
 
     @Test
     public void testSpringBootReloadTime_withHorizontalLayout() {
-        open("/reload-layout-test");
+        String result = SpringDevToolsReloadUtils
+                .runAndCalculateAverageResult(5, () -> {
+                    open("/reload-layout-test");
 
-        waitForElementPresent(By.id("start-button"));
-        triggerReload();
-        waitForElementVisible(By.id("result"));
+                    waitForElementPresent(By.id("start-button"));
+                    triggerReload();
+                    waitForElementVisible(By.id("result"));
+
+                    return assertAndGetReloadTimeResult();
+                });
 
         System.out.printf(
                 "##teamcity[buildStatisticValue key='%s,orderedlayout,spring-boot-devtools-reload-time' value='%s']%n",
-                getVaadinMajorMinorVersion(), assertAndGetReloadTimeResult());
+                getVaadinMajorMinorVersion(), result);
     }
 
     private void triggerReload() {

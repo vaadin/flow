@@ -13,6 +13,7 @@
     <packaging>jar</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <route.hierarchy.enabled>false</route.hierarchy.enabled>
     </properties>
 
     <dependencies>
@@ -94,6 +95,9 @@
                     <wait>500</wait>
                     <maxAttempts>240</maxAttempts>
                     <jmxPort>9009</jmxPort>
+                    <systemPropertyVariables>
+                        <route.hierarchy.enabled>${route.hierarchy.enabled}</route.hierarchy.enabled>
+                    </systemPropertyVariables>
                 </configuration>
                 <executions>
                     <execution>

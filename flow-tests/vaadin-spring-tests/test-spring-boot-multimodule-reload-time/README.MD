@@ -16,7 +16,27 @@ How to run tests locally:
 mvn verify -pl :test-spring-boot-multimodule-reload-time-ui -Pbenchmark -Dvaadin.test.codegen.maven.plugin.routes=1000
 ```
 
-Properties for code generator:
+### Properties for code generator
 
 `vaadin.test.codegen.maven.plugin.routes`: number of generated routes. Default is 500.
+
 `vaadin.test.codegen.maven.plugin.services.per.route`: number of generated Spring components per route. Default is 1.
+
+`vaadin.test.codegen.maven.plugin.cssimports.per.route`: number of generated
+@CssImport + .css combos per route. CSS files are generated
+in `frontend/generated-css` folder. CSS file has a rule that is used by the
+route.
+Default is 0.
+
+`vaadin.test.codegen.maven.plugin.jsmodules.per.route`: number of generated
+@JsModule + .js combos per route. JS files are generated
+in `frontend/generated-js` folder. Javascript in the file defines a simple
+web-component with
+Lit. Web component is added to the DOM of the route. Default is 0.
+
+### Other properties for the integration test
+
+`route.hierarchy.enabled`: When 'true', adds a route with hierarchical
+structure.
+Route is mapped like '
+catalog/product/0' (or with alias 'catalog/prod/0'). 'false' by default.
