@@ -24,7 +24,21 @@
             method: "POST"
             })
             .then((json) => {
-                window.location.reload();
+                let waituntilReady;
+                waituntilReady = () => {
+                    setTimeout(() => {
+                        fetch("/isready", { method: "GET" })
+                        .then(response => response.text())
+                        .then((res) => {
+                            if(res === "true") {
+                                window.location.reload();
+                            } else {
+                                waituntilReady();
+                            }
+                        });
+                    }, 20);
+                };
+                waituntilReady();
             });
         }
 

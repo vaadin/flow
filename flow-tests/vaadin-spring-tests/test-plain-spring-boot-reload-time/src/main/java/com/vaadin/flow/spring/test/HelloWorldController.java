@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.spring.test;
 
-import org.springframework.boot.devtools.classpath.ClassPathChangedEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,10 +30,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * Java file.
  */
 @Controller
-public class HelloWorldController
-        implements ApplicationListener<ClassPathChangedEvent> {
+public class HelloWorldController {
 
-    private boolean reloadTriggered = false;
+    private final ReadyStatusController readyStatusController;
+
+    public HelloWorldController(ReadyStatusController readyStatusController) {
+        this.readyStatusController = readyStatusController;
+    }
 
     @GetMapping("/")
     public String page(Model model) {
@@ -44,38 +45,15 @@ public class HelloWorldController
 
     /**
      * Triggers reload by touching Application Java file. As browser is not
-     * reloading itself, this method waits and returns response only after
-     * Spring boot sends a {@link ClassPathChangedEvent} on reload and notifies
-     * listener in this controller. Browser reload is done immediately when
-     * response is received.
+     * reloading itself, this method marks {@link ReadyStatusController} ready
+     * state to false. Client starts polling '/isready' until bean is reloaded
+     * and returns true and then client reloads itself.
      */
     @PostMapping("/start")
     @ResponseStatus(HttpStatus.OK)
     public void start() {
-        reloadTriggered = false;
+        readyStatusController.setReady(false);
         Application.triggerReload();
-        try {
-            int waitedTimeMs = 0;
-            int timeToWaitMs = 1;
-            while (true) {
-                waitedTimeMs += timeToWaitMs;
-                Thread.sleep(timeToWaitMs);
-                if (reloadTriggered) {
-                    return;
-                }
-                if (waitedTimeMs > 5000) {
-                    throw new RuntimeException(
-                            "Gave up waiting reload event after five seconds.");
-                }
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
-    @Override
-    public void onApplicationEvent(ClassPathChangedEvent event) {
-        System.out.println("Reload triggered");
-        reloadTriggered = true;
-    }
 }
