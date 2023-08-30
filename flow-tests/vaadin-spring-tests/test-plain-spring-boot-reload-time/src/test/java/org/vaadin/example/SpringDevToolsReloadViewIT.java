@@ -22,6 +22,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 /**
  * Class for testing reload time of tiny Spring app triggered by spring-boot Dev
@@ -35,9 +36,11 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
                 .runAndCalculateAverageResult(5, () -> {
                     open("/");
 
-                    waitForElementPresent(By.id("start-button"));
+                    waitUntil(ExpectedConditions.presenceOfElementLocated(
+                            By.id("start-button")), 20);
                     triggerReload();
-                    waitForElementVisible(By.id("result"));
+                    waitUntil(ExpectedConditions
+                            .visibilityOfElementLocated(By.id("result")), 20);
 
                     return assertAndGetReloadTimeResult();
                 });
