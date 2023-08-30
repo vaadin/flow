@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>test-spring-boot-multimodule-reload-time</artifactId>
+        <groupId>com.vaadin</groupId>
+        <version>24.2-SNAPSHOT</version>
+    </parent>
+    <artifactId>test-spring-boot-multimodule-reload-time-theme</artifactId>
+    <name>The theme module for a Spring boot multimodule reload time project
+    </name>
+
+    <packaging>jar</packaging>
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
+</project>
