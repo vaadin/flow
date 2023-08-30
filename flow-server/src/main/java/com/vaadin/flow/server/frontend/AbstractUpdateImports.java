@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -126,8 +127,8 @@ abstract class AbstractUpdateImports implements Runnable {
         Map<File, List<String>> output = process(css, javascript);
         writeOutput(output);
 
-        long ms = (System.nanoTime() - start) / 1000000;
-        getLogger().debug("Imports and chunks update took {} ms.", ms);
+        getLogger().debug("Imports and chunks update took {} ms.",
+                TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
     }
 
     private Map<ChunkInfo, List<String>> getMergedJavascript() {
@@ -139,8 +140,10 @@ abstract class AbstractUpdateImports implements Runnable {
         Map<ChunkInfo, List<String>> scripts = scanner.getScripts();
 
         if (options.isProductionMode()) {
-            getLogger().debug("Found {} modules, and {} scripts.", modules,
-                    scripts);
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("Found {} modules, and {} scripts.",
+                        modules.size(), scripts.size());
+            }
             javascript = mergeJavascript(modules, scripts);
         } else {
             Map<ChunkInfo, List<String>> modulesDevelopment = scanner
@@ -148,16 +151,19 @@ abstract class AbstractUpdateImports implements Runnable {
             Map<ChunkInfo, List<String>> scriptsDevelopment = scanner
                     .getScriptsDevelopment();
 
-            getLogger().debug(
-                    "Found {} modules, {} scripts, {} devmode modules and {} devmode scripts.",
-                    modules, scripts, modulesDevelopment, scriptsDevelopment);
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug(
+                        "Found {} modules, {} scripts, {} dev-mode modules and {} dev-mode scripts.",
+                        modules.size(), scripts.size(),
+                        modulesDevelopment.size(), scriptsDevelopment.size());
+            }
 
             javascript = mergeJavascript(modules, modulesDevelopment, scripts,
                     scriptsDevelopment);
         }
 
-        long ms = (System.nanoTime() - start) / 1000000;
-        getLogger().debug("JS modules and scripts collected in {} ms.", ms);
+        getLogger().debug("JS modules and scripts collected in {} ms.",
+                TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
 
         return javascript;
     }
@@ -222,8 +228,8 @@ abstract class AbstractUpdateImports implements Runnable {
             }
         }
 
-        long ms = (System.nanoTime() - start) / 1000000;
-        getLogger().debug("Imports sorting took {} ms.", ms);
+        getLogger().debug("Imports sorting took {} ms.",
+                TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
 
         List<String> chunkLoader = new ArrayList<>();
 
@@ -263,11 +269,12 @@ abstract class AbstractUpdateImports implements Runnable {
 
                 String ifClauses = chunkInfo.getDependencyTriggers().stream()
                         .map(BundleUtils::getChunkId)
-                        .map(hash -> "key === '" + hash + "'")
+                        .map(hash -> String.format("key === '%s'", hash))
                         .collect(Collectors.joining(" || "));
-                chunkLoader.add("  if (" + ifClauses + ") {");
-                chunkLoader.add("    pending.push(import('./chunks/"
-                        + chunkFilename + "'));");
+                chunkLoader.add(String.format("  if (%s) {", ifClauses));
+                chunkLoader.add(String.format(
+                        "    pending.push(import('./chunks/%s'));",
+                        chunkFilename));
                 chunkLoader.add("  }");
 
                 boolean chunkNotExist = processedChunkHashes
@@ -282,8 +289,8 @@ abstract class AbstractUpdateImports implements Runnable {
             chunkLoader.add("}");
             chunkLoader.add("");
 
-            ms = (System.nanoTime() - start) / 1000000;
-            getLogger().debug("Lazy chunks generation took {} ms.", ms);
+            getLogger().debug("Lazy chunks generation took {} ms.",
+                    TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
         } else {
             chunkLoader.add(
                     "const loadOnDemand = (key) => { return Promise.resolve(0); }");
