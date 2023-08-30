@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Assert;
@@ -46,7 +45,10 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 public class UpdateImportsWithByteCodeScannerTest
         extends AbstractUpdateImportsTest {
 
-    private final static String CHUNK_PATTERN = "[\\s\\S]+chunks\\/chunk-[\\s\\S]+.js[\\s\\S]+";
+    private final static String CHUNK_PATTERN_STRING = "chunks\\/chunk-";
+
+    private final static Pattern CHUNK_PATTERN = Pattern
+            .compile(CHUNK_PATTERN_STRING);
 
     @Override
     protected FrontendDependenciesScanner getScanner(ClassFinder finder) {
@@ -148,8 +150,7 @@ public class UpdateImportsWithByteCodeScannerTest
         Assert.assertTrue(output.containsKey(flowGeneratedImports));
         Assert.assertTrue(output.containsKey(flowGeneratedImportsDTs));
 
-        Optional<File> chunkFile = output.keySet().stream()
-                .filter(file -> file.getName().contains("chunk-")).findAny();
+        Optional<File> chunkFile = findOptionalChunkFile(output);
         Assert.assertTrue(chunkFile.isPresent());
         Assert.assertTrue(output.containsKey(chunkFile.get()));
 
@@ -188,8 +189,7 @@ public class UpdateImportsWithByteCodeScannerTest
         Assert.assertTrue(output.containsKey(flowGeneratedImports));
         Assert.assertTrue(output.containsKey(flowGeneratedImportsDTs));
 
-        Optional<File> chunkFile = output.keySet().stream()
-                .filter(file -> file.getName().contains("chunk-")).findAny();
+        Optional<File> chunkFile = findOptionalChunkFile(output);
         Assert.assertTrue(chunkFile.isPresent());
         Assert.assertTrue(output.containsKey(chunkFile.get()));
 
@@ -244,7 +244,8 @@ public class UpdateImportsWithByteCodeScannerTest
                 output.get(flowGeneratedImports));
 
         // Chunk named after route
-        Assert.assertTrue(mainImportContent.matches(CHUNK_PATTERN));
+        Assert.assertEquals(1,
+                CHUNK_PATTERN.matcher(mainImportContent).results().count());
 
         // Trigger is only trigger and not route
         String routeHash = StringUtil.getHash(
@@ -284,7 +285,8 @@ public class UpdateImportsWithByteCodeScannerTest
         String trigger2Hash = StringUtil.getHash(TriggerClass2.class.getName(),
                 StandardCharsets.UTF_8);
         // Chunk named after route
-        Assert.assertTrue(mainImportContent.matches(CHUNK_PATTERN));
+        Assert.assertEquals(1,
+                CHUNK_PATTERN.matcher(mainImportContent).results().count());
 
         // Trigger is only trigger and not route
         Assert.assertTrue(
@@ -308,8 +310,7 @@ public class UpdateImportsWithByteCodeScannerTest
         Assert.assertNotNull(output);
         Assert.assertEquals(3, output.size());
 
-        Optional<File> chunkFile = output.keySet().stream()
-                .filter(file -> file.getName().contains("chunk-")).findAny();
+        Optional<File> chunkFile = findOptionalChunkFile(output);
         Assert.assertTrue(chunkFile.isPresent());
 
         assertOnce("import { injectGlobalCss } from",
@@ -317,6 +318,12 @@ public class UpdateImportsWithByteCodeScannerTest
         assertOnce("from 'Frontend/foo.css?inline';",
                 output.get(chunkFile.get()));
         assertOnce("import $cssFromFile_0 from", output.get(chunkFile.get()));
+    }
+
+    private static Optional<File> findOptionalChunkFile(
+            Map<File, List<String>> output) {
+        return output.keySet().stream()
+                .filter(file -> file.getName().contains("chunk-")).findAny();
     }
 
     private void assertImports(String mainImportContent,
@@ -350,7 +357,14 @@ public class UpdateImportsWithByteCodeScannerTest
     }
 
     @Route("other")
+    @JavaScript("./lazy-component-javascript.js")
     public static class OtherView extends Component {
+
+    }
+
+    @Route("clone")
+    @JavaScript("./lazy-component-javascript.js")
+    public static class CloneView extends Component {
 
     }
 
@@ -368,37 +382,46 @@ public class UpdateImportsWithByteCodeScannerTest
 
         Map<File, List<String>> output = updater.getOutput();
 
-        assertEagerRoute(output, LoginView.class);
-        assertEagerRoute(output, RootView.class);
-        assertLazyRoute(output, OtherView.class);
-    }
+        List<File> lazyChunks = output.keySet().stream()
+                .filter(file -> file.getName().contains("chunk-")).toList();
 
-    private void assertLazyRoute(Map<File, List<String>> output,
-            Class<?> routeClass) {
-        assertRoute(true, output, routeClass);
-    }
+        Assert.assertEquals(1, lazyChunks.size());
 
-    private void assertEagerRoute(Map<File, List<String>> output,
-            Class<?> routeClass) {
-        assertRoute(false, output, routeClass);
-    }
-
-    private void assertRoute(boolean lazy, Map<File, List<String>> output,
-            Class<?> routeClass) {
         File flowGeneratedImports = FrontendUtils
                 .getFlowGeneratedImports(frontendDirectory);
         String mainImportContent = String.join("\n",
                 output.get(flowGeneratedImports));
 
-        String hash = StringUtil.getHash(routeClass.getName(),
-                StandardCharsets.UTF_8);
+        Assert.assertEquals(1,
+                CHUNK_PATTERN.matcher(mainImportContent).results().count());
+    }
 
-        String chunkName = "chunks/chunk-" + hash + ".js";
-        File chunkFile = new File(
-                FrontendUtils.getFlowGeneratedFolder(frontendDirectory),
-                chunkName);
-        Assert.assertEquals(lazy, output.containsKey(chunkFile));
-        Assert.assertEquals(lazy, mainImportContent.contains(chunkName));
+    @Test
+    public void onlyOneChunkForLazyViewsWithSameContent() throws Exception {
+        createExpectedLazyImports();
+
+        Class<?>[] testClasses = { OtherView.class, CloneView.class };
+
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                options);
+        updater.run();
+
+        Map<File, List<String>> output = updater.getOutput();
+
+        List<File> lazyChunks = output.keySet().stream()
+                .filter(file -> file.getName().contains("chunk-")).toList();
+
+        // One chunk file is expected and two imports referring the same chunk
+        Assert.assertEquals(1, lazyChunks.size());
+
+        File flowGeneratedImports = FrontendUtils
+                .getFlowGeneratedImports(frontendDirectory);
+        String mainImportContent = String.join("\n",
+                output.get(flowGeneratedImports));
+
+        Assert.assertEquals(2,
+                CHUNK_PATTERN.matcher(mainImportContent).results().count());
     }
 
 }

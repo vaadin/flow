@@ -252,6 +252,10 @@ abstract class AbstractUpdateImports implements Runnable {
                     chunkLines.addAll(lazyCss.get(chunkInfo));
                 }
 
+                if (chunkLines.isEmpty()) {
+                    continue;
+                }
+
                 Collections.sort(chunkLines);
                 String chunkContentHash = BundleUtils.getChunkHash(chunkLines);
 
