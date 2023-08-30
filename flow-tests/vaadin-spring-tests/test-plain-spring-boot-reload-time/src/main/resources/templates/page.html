@@ -16,12 +16,14 @@
     <script src="/benchmark.js"></script>
     <script>
         function onStart() {
+            document.getElementById("result").hidden = true;
+            console.log('Benchmark started.');
+            window.benchmark.start();
+
             fetch("/start", {
             method: "POST"
             })
             .then((json) => {
-                window.benchmark.start();
-                console.log('Benchmark started.');
                 window.location.reload();
             });
         }
@@ -29,6 +31,7 @@
         document.getElementById("start-button").addEventListener("componentready", event => {
             console.log("componentready: " + event.detail.result);
             document.getElementById("result").textContent = "Reload time by class change was [" + event.detail.result + "] ms";
+            document.getElementById("result").hidden = false;
         });
         window.benchmark.measureRender(document.getElementById("start-button"));
     </script>
