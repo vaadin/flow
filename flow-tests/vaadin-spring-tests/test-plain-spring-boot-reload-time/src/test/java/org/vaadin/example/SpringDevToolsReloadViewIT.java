@@ -56,7 +56,6 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
     private void open(String testPath) {
         getDriver().get(getTestURL(getRootURL(), testPath, null));
-        waitForDevServer();
     }
 
     private String assertAndGetReloadTimeResult() {
