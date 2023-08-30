@@ -12,6 +12,9 @@
     <button id="start-button" onclick="onStart()">Click to Start</button>
     <br/>
     <span id="result"></span>
+    <br/>
+    <br/>
+    <span id="log"></span>
 
     <script src="/benchmark.js"></script>
     <script>
@@ -26,12 +29,18 @@
             .then((json) => {
                 let waituntilReady;
                 waituntilReady = () => {
+                    document.getElementById("log").textContent = "Waiting page reload...";
                     setTimeout(() => {
                         fetch("/isready", { method: "GET" })
                         .then(response => response.text())
                         .then((res) => {
                             if(res === "true") {
-                                window.location.reload();
+                                document.getElementById("log").textContent = "Reloading page.";
+                                try {
+                                    window.location.reload();
+                                } catch(error) {
+                                    document.getElementById("log").textContent = error;
+                                }
                             } else {
                                 waituntilReady();
                             }
