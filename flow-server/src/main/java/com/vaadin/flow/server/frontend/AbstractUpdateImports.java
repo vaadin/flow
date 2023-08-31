@@ -130,8 +130,8 @@ abstract class AbstractUpdateImports implements Runnable {
                     modules.size(), scripts.size(), css.size());
         }
 
-        Map<ChunkInfo, List<String>> javascript = mergeJavascript(
-                modules, scripts);
+        Map<ChunkInfo, List<String>> javascript = mergeJavascript(modules,
+                scripts);
         Map<File, List<String>> output = process(css, javascript);
         writeOutput(output);
 
