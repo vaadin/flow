@@ -1572,6 +1572,13 @@ public class Binder<BEAN> implements Serializable {
             } catch (BindingException exception) {
                 throw exception;
             } catch (Exception exception) {
+                if(binder == null) {
+                    // field was already unregistered
+                    // before swallowing the exception by
+                    // throwing an NPE, just rethrow 
+                    // the original exception
+                    throw exception;
+                }    
                 BindingExceptionHandler handler = binder
                         .getBindingExceptionHandler();
                 Optional<BindingException> bindingException = handler
