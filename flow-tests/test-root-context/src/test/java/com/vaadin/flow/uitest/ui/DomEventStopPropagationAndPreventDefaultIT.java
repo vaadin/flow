@@ -25,7 +25,8 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class DomEventStopPropagationAndPreventDefaultIT extends ChromeBrowserTest {
+public class DomEventStopPropagationAndPreventDefaultIT
+        extends ChromeBrowserTest {
 
     @Test
     public void preventDefault() throws InterruptedException {
@@ -39,7 +40,6 @@ public class DomEventStopPropagationAndPreventDefaultIT extends ChromeBrowserTes
         assertMessages(nextMsg++, "event:btn");
 
     }
-
 
     private void assertMessages(int skip, String... expectedTail) {
         List<WebElement> messages = getMessages();

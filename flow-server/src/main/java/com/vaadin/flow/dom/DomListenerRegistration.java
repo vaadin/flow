@@ -363,29 +363,32 @@ public interface DomListenerRegistration extends Registration {
 
     /**
      * Stops propagation of the event to upper level DOM elements.
-     * 
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation
-     * 
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation">MDN
+     *      docs for related JS DOM API</a>
+     *
      * @return the DomListenerRegistration for further configuration
      */
     default public DomListenerRegistration stopPropagation() {
         addEventData("event.stopPropagation()");
         return this;
     };
-    
+
     /**
      * Tries to prevent the default behavior of the event in the browser, such
      * as shortcut action on key press or context menu on "right click". This
      * might not be possible for some events.
-     * 
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault
-     * 
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault">MDN
+     *      docs for related JS DOM API</a>
+     *
      * @return the DomListenerRegistration for further configuration
      */
     default public DomListenerRegistration preventDefault() {
         addEventData("event.preventDefault()");
         return this;
     }
-    
-    
+
 }

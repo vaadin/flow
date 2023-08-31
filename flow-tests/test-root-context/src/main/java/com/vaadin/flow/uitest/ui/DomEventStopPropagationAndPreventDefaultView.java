@@ -21,36 +21,37 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DomEventStopPropagationAndPreventDefaultView", layout = ViewTestLayout.class)
-public class DomEventStopPropagationAndPreventDefaultView extends AbstractDivView {
+public class DomEventStopPropagationAndPreventDefaultView
+        extends AbstractDivView {
 
     private final Element messages = new Element("div");
 
     public DomEventStopPropagationAndPreventDefaultView() {
-        
+
         Element div = new Element("div");
         div.setAttribute("id", "btn");
         div.setText("btn");
-        
+
         DomListenerRegistration reg = div.addEventListener("click", e -> {
             addMessage("event:btn");
         });
-        
+
         reg.stopPropagation();
-                
+
         // DomListenerRegistration.preventDefault()
         // This should not be received if the btn is clicked
         // as stopPropagation is called
         getElement().addEventListener("click", e -> {
             addMessage("event:div");
         });
-       
+
         // Note: no good way to test this using selenium, test manually instead
         div.addEventListener("contextmenu", e -> {
             addMessage("event:contextmenu");
         }).preventDefault(); // now browser should not show default context menu
-        
+
         getElement().appendChild(div);
-        
+
         getElement().appendChild(messages);
 
     }
