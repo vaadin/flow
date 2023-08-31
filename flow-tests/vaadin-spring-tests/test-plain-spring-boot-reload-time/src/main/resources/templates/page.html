@@ -52,7 +52,9 @@
                             }
                         })
                         .catch((error) => {
+                            document.getElementById("log").textContent += ".";
                             document.getElementById("error").innerHTML += `Exception: ${error.message}<br/>`;
+                            waituntilReady();
                         });
                     }, 40);
                 };
