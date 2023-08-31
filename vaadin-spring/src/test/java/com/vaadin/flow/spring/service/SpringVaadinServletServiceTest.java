@@ -96,7 +96,8 @@ public class SpringVaadinServletServiceTest {
     }
 
     @Test
-    public void filtersAreRegisteredOnTheServlet() throws ServletException {
+    public void requestInterceptorsAreRegisteredOnTheService()
+            throws ServletException {
         VaadinService service = SpringInstantiatorTest.getService(context,
                 new Properties());
 
