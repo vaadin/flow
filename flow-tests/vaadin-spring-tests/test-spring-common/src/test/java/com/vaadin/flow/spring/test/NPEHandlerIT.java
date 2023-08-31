@@ -38,6 +38,9 @@ public class NPEHandlerIT extends AbstractSpringTest {
 
     @Test
     public void noRouteIsHandledByExistingFlowComponent() {
+        // This will wait for dev server to load first
+        open();
+
         String nonExistingRoutePath = "non-existing-route";
         getDriver().get(getTestURL(getRootURL(),
                 getContextPath() + '/' + nonExistingRoutePath, new String[0]));
