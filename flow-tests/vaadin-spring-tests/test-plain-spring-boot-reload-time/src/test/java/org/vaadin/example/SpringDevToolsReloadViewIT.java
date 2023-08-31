@@ -39,10 +39,6 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
                     waitUntil(ExpectedConditions.presenceOfElementLocated(
                             By.id("start-button")), 10);
                     triggerReload();
-
-                    waitUntil(ExpectedConditions.textToBe(By.id("log"), "Reload page now."), 10);
-                    open("/"); // browser refresh
-
                     waitUntil(ExpectedConditions
                             .visibilityOfElementLocated(By.id("result")), 10);
 

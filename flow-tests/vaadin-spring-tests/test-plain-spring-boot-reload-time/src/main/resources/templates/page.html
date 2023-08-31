@@ -42,6 +42,7 @@
                         .then((text) => {
                             if(text === "true") {
                                 document.getElementById("log").textContent = "Reload page now.";
+                                window.location.reload();
                             } else if(text === "false") {
                                 document.getElementById("log").textContent += ".";
                                 waituntilReady();
