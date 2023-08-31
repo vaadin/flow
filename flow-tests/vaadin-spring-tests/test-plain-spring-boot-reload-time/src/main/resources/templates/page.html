@@ -15,6 +15,8 @@
     <br/>
     <br/>
     <span id="log"></span>
+    <br/>
+    <span id="error" style="color:red;"></span>
 
     <script src="/benchmark.js"></script>
     <script>
@@ -26,15 +28,19 @@
             fetch("/start", {
             method: "POST"
             })
-            .then((json) => {
+            .then((resp) => {
+                document.getElementById("log").textContent = "Waiting page reload...";
                 let waituntilReady;
                 waituntilReady = () => {
-                    document.getElementById("log").textContent = "Waiting page reload...";
                     setTimeout(() => {
+                        let error = false;
                         fetch("/isready", { method: "GET" })
-                        .then(response => response.text())
-                        .then((res) => {
-                            if(res === "true") {
+                        .then(response => {
+                            error = !response.ok;
+                            return response.text();
+                        })
+                        .then((text) => {
+                            if(text === "true") {
                                 document.getElementById("log").textContent = "Reloading page.";
                                 try {
                                     window.location.reload();
@@ -42,10 +48,14 @@
                                     document.getElementById("log").textContent = error;
                                 }
                             } else {
+                                document.getElementById("log").textContent += ".";
+                                if(error) {
+                                    document.getElementById("error").innerHTML += text + "<br/>";
+                                }
                                 waituntilReady();
                             }
                         });
-                    }, 20);
+                    }, 40);
                 };
                 waituntilReady();
             });

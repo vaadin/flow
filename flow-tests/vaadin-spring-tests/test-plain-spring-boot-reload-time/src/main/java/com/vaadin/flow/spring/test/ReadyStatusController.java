@@ -24,8 +24,13 @@ public class ReadyStatusController {
 
     private boolean ready = true;
 
+    public ReadyStatusController() {
+        System.out.println("ReadyStatusController created.");
+    }
+
     public void setReady(boolean ready) {
         this.ready = ready;
+        System.out.println("ReadyStatusController.setReady(" + ready + ")");
     }
 
     @GetMapping("/isready")
