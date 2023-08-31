@@ -16,6 +16,20 @@
 
 package com.vaadin.flow.server;
 
+import jakarta.servlet.GenericServlet;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
@@ -24,18 +38,6 @@ import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
-import jakarta.servlet.GenericServlet;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 /**
  * A service implementation connected to a {@link VaadinServlet}.
@@ -64,9 +66,6 @@ public class VaadinServletService extends VaadinService {
             DeploymentConfiguration deploymentConfiguration) {
         super(deploymentConfiguration);
         this.servlet = servlet;
-        if (servlet != null) {
-            setVaadinFilters(servlet.getVaadinFilters());
-        }
     }
 
     /**
@@ -158,7 +157,7 @@ public class VaadinServletService extends VaadinService {
         return type == null
                 || ApplicationConstants.REQUEST_TYPE_INIT.equals(type)
                 || ApplicationConstants.REQUEST_TYPE_WEBCOMPONENT_RESYNC
-                .equals(type);
+                        .equals(type);
     }
 
     public static HttpServletRequest getCurrentServletRequest() {

@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.di;
 
-import java.io.Serializable;
-import java.util.ServiceLoader;
-import java.util.stream.Stream;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
@@ -30,6 +26,11 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.UidlWriter;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.ServiceLoader;
+import java.util.stream.Stream;
 
 /**
  * Delegate for discovering, creating and managing instances of various types
@@ -115,6 +116,24 @@ public interface Instantiator extends Serializable {
      * @return an instance of the given type
      */
     <T> T getOrCreate(Class<T> type);
+
+    /**
+     * Provides all instances of any given type, this is an abstraction that
+     * allows to make use of DI-frameworks from add-ons.
+     * <p>
+     * How the object is created and whether it is being cached or not is up to
+     * the implementation.
+     *
+     * @param type
+     *            the instance type to fetch
+     * @param <T>
+     *            the type of the instance to fetch
+     *
+     * @return all instances of the given type
+     */
+    default <T> Stream<T> getAll(Class<T> type) {
+        return (Stream<T>) Collections.emptyList().stream();
+    }
 
     /**
      * Creates an instance of a navigation target or router layout. This method

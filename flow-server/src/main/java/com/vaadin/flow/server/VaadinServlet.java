@@ -15,6 +15,19 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -24,6 +37,7 @@ import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.JsonConstants;
+
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -31,13 +45,6 @@ import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.*;
 
 /**
  * The main servlet, which handles all incoming requests to the application.
@@ -64,8 +71,6 @@ public class VaadinServlet extends HttpServlet {
     private static String frontendMapping = null;
 
     private static List<Runnable> whenFrontendMappingAvailable = new ArrayList<>();
-
-    private List<VaadinFilter> vaadinFilters = new ArrayList<>();
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -584,9 +589,9 @@ public class VaadinServlet extends HttpServlet {
         final URL reqURL = new URL((request.isSecure() ? "https://" : "http://")
                 + request.getServerName()
                 + ((request.isSecure() && request.getServerPort() == 443)
-                || (!request.isSecure()
-                && request.getServerPort() == 80) ? ""
-                : ":" + request.getServerPort())
+                        || (!request.isSecure()
+                                && request.getServerPort() == 80) ? ""
+                                        : ":" + request.getServerPort())
                 + request.getRequestURI());
         String servletPath;
         if (request
@@ -596,7 +601,7 @@ public class VaadinServlet extends HttpServlet {
                     .getAttribute("jakarta.servlet.include.context_path")
                     .toString()
                     + request.getAttribute(
-                    "jakarta.servlet.include.servlet_path");
+                            "jakarta.servlet.include.servlet_path");
 
         } else {
             servletPath = request.getContextPath() + request.getServletPath();
@@ -640,14 +645,6 @@ public class VaadinServlet extends HttpServlet {
             initializer.initialize(vaadinServletContext);
         }
         return vaadinServletContext;
-    }
-
-    public List<VaadinFilter> getVaadinFilters() {
-        return vaadinFilters;
-    }
-
-    public void setVaadinFilters(List<VaadinFilter> vaadinFilters) {
-        this.vaadinFilters = vaadinFilters;
     }
 
     /**

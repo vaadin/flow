@@ -15,13 +15,17 @@
  */
 package com.vaadin.flow.spring.service;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.VaadinRequestInterceptor;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 import jakarta.servlet.ServletException;
-
-import java.util.Properties;
-import java.util.stream.Stream;
-
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -29,26 +33,28 @@ import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @RunWith(SpringRunner.class)
 @Import(TestServletConfiguration.class)
 public class SpringVaadinServletServiceTest {
 
     @Autowired
-    private ApplicationContext context;
+    private ApplicationContext context;;
 
     @Component
     public static class TestInstantiator implements Instantiator {
 
+        @Autowired
+        private ApplicationContext context;
+
         @Override
         public Stream<VaadinServiceInitListener> getServiceInitListeners() {
-            return Stream.of();
+            return context.getBeansOfType(VaadinServiceInitListener.class)
+                    .values().stream();
         }
 
         @Override
@@ -87,6 +93,22 @@ public class SpringVaadinServletServiceTest {
 
         Assert.assertEquals(1, listener.events.size());
         Assert.assertSame(ui, listener.events.get(0).getUI());
+    }
+
+    @Test
+    public void filtersAreRegisteredOnTheServlet() throws ServletException {
+        VaadinService service = SpringInstantiatorTest.getService(context,
+                new Properties());
+
+        List<VaadinRequestInterceptor> interceptors = StreamSupport
+                .stream(service.getVaadinRequestInterceptors().spliterator(),
+                        false)
+                .toList();
+        Assertions.assertEquals(1, interceptors.size(),
+                "There should be 1 filter");
+        Assertions.assertInstanceOf(
+                TestServletConfiguration.MyRequestInterceptor.class,
+                interceptors.get(0), "MyFilter should be registered");
     }
 
 }

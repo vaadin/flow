@@ -330,6 +330,8 @@ public class MockServletServiceSessionSetup {
                             .getResource("/" + invocation.getArgument(0));
                 });
 
+        configureLookup(lookup);
+
         servlet.init(servletConfig);
 
         if (sessionAvailable) {
@@ -364,6 +366,10 @@ public class MockServletServiceSessionSetup {
         }
 
         Mockito.when(request.getServletPath()).thenReturn("");
+    }
+
+    protected void configureLookup(Lookup lookup) {
+
     }
 
     public TestVaadinServletService getService() {

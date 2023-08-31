@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
+
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
-
-import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 
 /**
  * Event fired to {@link VaadinServiceInitListener} when a {@link VaadinService}
@@ -38,6 +38,7 @@ public class ServiceInitEvent extends EventObject {
     private List<RequestHandler> addedRequestHandlers = new ArrayList<>();
     private List<IndexHtmlRequestListener> addedIndexHtmlRequestListeners = new ArrayList<>();
     private List<DependencyFilter> addedDependencyFilters = new ArrayList<>();
+    private List<VaadinRequestInterceptor> addedVaadinRequestInterceptors = new ArrayList<>();
 
     /**
      * Creates a new service init event for a given {@link VaadinService} and
@@ -93,6 +94,20 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
+     * Adds a new request interceptor that will be used by this service.
+     *
+     * @param vaadinRequestInterceptor
+     *            the request interceptor to add, not <code>null</code>
+     */
+    public void addVaadinRequestInterceptor(
+            VaadinRequestInterceptor vaadinRequestInterceptor) {
+        Objects.requireNonNull(vaadinRequestInterceptor,
+                "Request Interceptor cannot be null");
+
+        addedVaadinRequestInterceptors.add(vaadinRequestInterceptor);
+    }
+
+    /**
      * Gets a stream of all custom request handlers that have been added for the
      * service.
      *
@@ -120,6 +135,16 @@ public class ServiceInitEvent extends EventObject {
      */
     public Stream<DependencyFilter> getAddedDependencyFilters() {
         return addedDependencyFilters.stream();
+    }
+
+    /**
+     * Gets a stream of all Vaadin request interceptors that have been added for
+     * the service.
+     *
+     * @return the stream of added request interceptors
+     */
+    public Stream<VaadinRequestInterceptor> getAddedVaadinRequestInterceptor() {
+        return addedVaadinRequestInterceptors.stream();
     }
 
     @Override
