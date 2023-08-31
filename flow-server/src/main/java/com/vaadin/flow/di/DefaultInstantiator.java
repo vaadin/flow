@@ -15,11 +15,6 @@
  */
 package com.vaadin.flow.di;
 
-import java.util.ServiceLoader;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
@@ -28,6 +23,12 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.InvalidI18NConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
+
+import java.util.Collection;
+import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Default instantiator that is used if no other instantiator has been
@@ -61,6 +62,16 @@ public class DefaultInstantiator implements Instantiator {
         Lookup lookup = service.getContext().getAttribute(Lookup.class);
         T result = lookup == null ? null : lookup.lookup(type);
         return result == null ? create(type) : result;
+    }
+
+    @Override
+    public <T> Stream<T> getAll(Class<T> type) {
+        if (service == null) {
+            return Stream.empty();
+        }
+        Lookup lookup = service.getContext().getAttribute(Lookup.class);
+        Collection<T> result = lookup == null ? null : lookup.lookupAll(type);
+        return result == null ? Stream.empty() : result.stream();
     }
 
     @Override

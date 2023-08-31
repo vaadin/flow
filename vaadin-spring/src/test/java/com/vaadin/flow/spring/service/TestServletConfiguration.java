@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.spring.service;
 
+import com.vaadin.flow.server.*;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,4 +27,38 @@ import org.springframework.context.annotation.Configuration;
 @SpringBootConfiguration
 public class TestServletConfiguration {
 
+    @Configuration(proxyBeanMethods = false)
+    static class TestConfig {
+        @Bean
+        MyRequestInterceptor myFilter() {
+            return new MyRequestInterceptor();
+        }
+
+        @Bean
+        VaadinRequestInterceptorServiceInitListener vaadinRequestInterceptorServiceInitListener(
+                ObjectProvider<VaadinRequestInterceptor> interceptors) {
+            return new VaadinRequestInterceptorServiceInitListener(
+                    interceptors);
+        }
+    }
+
+    static class MyRequestInterceptor implements VaadinRequestInterceptor {
+
+        @Override
+        public void requestStart(VaadinRequest request,
+                VaadinResponse response) {
+
+        }
+
+        @Override
+        public void handleException(VaadinRequest request,
+                VaadinResponse response, VaadinSession vaadinSession,
+                Exception t) {
+        }
+
+        @Override
+        public void requestEnd(VaadinRequest request, VaadinResponse response,
+                VaadinSession session) {
+        }
+    }
 }

@@ -41,14 +41,33 @@ import elemental.json.impl.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
+import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -82,8 +101,6 @@ public abstract class VaadinService implements Serializable {
             + " is included on the classpath.\n" + "Will fall back to using "
             + PushMode.class.getSimpleName() + "." + PushMode.DISABLED.name()
             + "." + SEPARATOR;
-
-    private List<VaadinFilter> vaadinFilters = new ArrayList<>();
 
     /**
      * Attribute name for telling
@@ -152,6 +169,8 @@ public abstract class VaadinService implements Serializable {
 
     private VaadinContext vaadinContext;
 
+    private Iterable<VaadinRequestInterceptor> vaadinRequestInterceptors;
+
     /**
      * Creates a new vaadin service based on a deployment configuration.
      *
@@ -192,6 +211,11 @@ public abstract class VaadinService implements Serializable {
 
         List<RequestHandler> handlers = createRequestHandlers();
 
+        // If the user has already provided interceptors we will add them to the
+        // list
+        // and append ones from the ServiceInitEvent
+        List<VaadinRequestInterceptor> requestInterceptors = createVaadinRequestInterceptors();
+
         ServiceInitEvent event = new ServiceInitEvent(this);
 
         // allow service init listeners and DI to use thread local access to
@@ -205,6 +229,14 @@ public abstract class VaadinService implements Serializable {
             Collections.reverse(handlers);
 
             requestHandlers = Collections.unmodifiableCollection(handlers);
+
+            event.getAddedVaadinRequestInterceptor()
+                    .forEach(requestInterceptors::add);
+
+            Collections.reverse(requestInterceptors);
+
+            vaadinRequestInterceptors = Collections
+                    .unmodifiableCollection(requestInterceptors);
 
             dependencyFilters = Collections.unmodifiableCollection(instantiator
                     .getDependencyFilters(event.getAddedDependencyFilters())
@@ -292,6 +324,22 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new WebComponentBootstrapHandler());
 
         return handlers;
+    }
+
+    /**
+     * Called during initialization to add the request handlers for the service.
+     * Note that the returned list will be reversed so the last interceptor will
+     * be called first. This enables overriding this method and using add on the
+     * returned list to add a custom request interceptors which overrides any
+     * predefined handler.
+     *
+     * @return The list of request handlers used by this service.
+     * @throws ServiceException
+     *             if a problem occurs when creating the request interceptors
+     */
+    protected List<VaadinRequestInterceptor> createVaadinRequestInterceptors()
+            throws ServiceException {
+        return new ArrayList<>();
     }
 
     /**
@@ -1404,7 +1452,9 @@ public abstract class VaadinService implements Serializable {
         }
         setCurrentInstances(request, response);
         request.setAttribute(REQUEST_START_TIME_ATTRIBUTE, System.nanoTime());
-        vaadinFilters.forEach(vaadinFilter -> vaadinFilter.requestStart(request, response));
+        vaadinRequestInterceptors
+                .forEach(requestInterceptor -> requestInterceptor
+                        .requestStart(request, response));
     }
 
     /**
@@ -1421,7 +1471,9 @@ public abstract class VaadinService implements Serializable {
      */
     public void requestEnd(VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
-        vaadinFilters.forEach(vaadinFilter -> vaadinFilter.requestEnd(request, response, session));
+        vaadinRequestInterceptors
+                .forEach(requestInterceptor -> requestInterceptor
+                        .requestEnd(request, response, session));
         if (session != null) {
             assert VaadinSession.getCurrent() == session;
             session.lock();
@@ -1447,6 +1499,19 @@ public abstract class VaadinService implements Serializable {
      */
     public Iterable<RequestHandler> getRequestHandlers() {
         return requestHandlers;
+    }
+
+    /**
+     * Returns the request interceptors that are registered with this service.
+     * The iteration order of the returned collection is the same as the order
+     * in which the request handlers will be invoked when a request is handled.
+     *
+     * @return a collection of request interceptors in the order they are
+     *         invoked
+     * @see #createVaadinRequestInterceptors()
+     */
+    public Iterable<VaadinRequestInterceptor> getVaadinRequestInterceptors() {
+        return vaadinRequestInterceptors;
     }
 
     /**
@@ -1518,13 +1583,16 @@ public abstract class VaadinService implements Serializable {
         }
         try {
             try {
-                vaadinFilters.forEach(vaadinFilter -> vaadinFilter.handleException(request,
-                        response, vaadinSession, t));
+                vaadinRequestInterceptors
+                        .forEach(requestInterceptor -> requestInterceptor
+                                .handleException(request, response,
+                                        vaadinSession, t));
             } catch (Exception ex) {
                 // An exception occurred while handling an exception. Log
                 // it and continue handling only the original error.
                 getLogger().warn(
-                        "Failed to handle an exception using filters", ex);
+                        "Failed to handle an exception using request interceptors",
+                        ex);
             }
             if (vaadinSession != null) {
                 vaadinSession.getErrorHandler().error(new ErrorEvent(t));
@@ -2354,14 +2422,6 @@ public abstract class VaadinService implements Serializable {
     public static String getCsrfTokenAttributeName() {
         return VaadinSession.class.getName() + "."
                 + ApplicationConstants.CSRF_TOKEN;
-    }
-
-    public List<VaadinFilter> getVaadinFilters() {
-        return vaadinFilters;
-    }
-
-    public void setVaadinFilters(List<VaadinFilter> vaadinFilters) {
-        this.vaadinFilters = vaadinFilters;
     }
 
     private void doSetClassLoader() {

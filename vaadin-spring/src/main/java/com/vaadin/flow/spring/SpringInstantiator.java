@@ -126,4 +126,9 @@ public class SpringInstantiator extends DefaultInstantiator {
             return context.getAutowireCapableBeanFactory().createBean(type);
         }
     }
+
+    @Override
+    public <T> Stream<T> getAll(Class<T> type) {
+        return context.getBeansOfType(type).values().stream();
+    }
 }

@@ -16,7 +16,8 @@
 package com.vaadin.flow.spring;
 
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.VaadinFilter;
+import com.vaadin.flow.server.VaadinRequestInterceptor;
+import com.vaadin.flow.server.VaadinRequestInterceptorServiceInitListener;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotProcessor;
 import jakarta.servlet.MultipartConfigElement;
@@ -37,7 +38,6 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -85,7 +85,6 @@ public class SpringBootAutoConfiguration {
     @Bean
     public ServletRegistrationBean<SpringServlet> servletRegistrationBean(
             ObjectProvider<MultipartConfigElement> multipartConfig,
-            ObjectProvider<List<VaadinFilter>> vaadinFilters,
             VaadinConfigurationProperties configurationProperties) {
         String mapping = configurationProperties.getUrlMapping();
         Map<String, String> initParameters = new HashMap<>();
@@ -103,10 +102,8 @@ public class SpringBootAutoConfiguration {
 
         initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH, pushUrl);
 
-        SpringServlet springServlet = new SpringServlet(context, rootMapping);
-        vaadinFilters.ifAvailable(springServlet::setVaadinFilters);
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
-                springServlet, mapping);
+                new SpringServlet(context, rootMapping), mapping);
         registration.setInitParameters(initParameters);
         registration
                 .setAsyncSupported(configurationProperties.isAsyncSupported());
@@ -120,6 +117,13 @@ public class SpringBootAutoConfiguration {
         registration.setLoadOnStartup(
                 configurationProperties.isLoadOnStartup() ? 1 : -1);
         return registration;
+    }
+
+    @Bean
+    public VaadinRequestInterceptorServiceInitListener vaadinRequestInterceptorServiceInitListener(
+            ObjectProvider<VaadinRequestInterceptor> interceptors) {
+        return new VaadinRequestInterceptorServiceInitListener(
+                interceptors.stream().toList());
     }
 
     /**
