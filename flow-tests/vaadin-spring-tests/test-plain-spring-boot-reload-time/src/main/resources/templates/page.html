@@ -42,13 +42,17 @@
                         .then((text) => {
                             if(text === "true") {
                                 document.getElementById("log").textContent = "Reload page now.";
+                            } else if(text === "false") {
+                                document.getElementById("log").textContent += ".";
+                                waituntilReady();
                             } else {
                                 document.getElementById("log").textContent += ".";
-                                if(error) {
-                                    document.getElementById("error").innerHTML += text + "<br/>";
-                                }
+                                document.getElementById("error").innerHTML += (error ? "Error: " : "Body: ") + `${text}<br/>`;
                                 waituntilReady();
                             }
+                        })
+                        .catch((error) => {
+                            document.getElementById("error").innerHTML += `Exception: ${error.message}<br/>`;
                         });
                     }, 40);
                 };
