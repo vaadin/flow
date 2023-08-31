@@ -30,7 +30,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 public final class Constants implements Serializable {
 
     // Keep the version number in sync with flow-push/pom.xml
-    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.7.3.slf4jvaadin4";
+    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.7.3.slf4jvaadin5";
 
     /**
      * The prefix used for System property parameters.
