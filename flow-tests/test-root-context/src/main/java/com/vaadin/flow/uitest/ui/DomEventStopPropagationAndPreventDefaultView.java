@@ -27,6 +27,7 @@ public class DomEventStopPropagationAndPreventDefaultView
     private final Element messages = new Element("div");
 
     public DomEventStopPropagationAndPreventDefaultView() {
+        messages.setAttribute("id", "messages");
 
         Element div = new Element("div");
         div.setAttribute("id", "btn");
