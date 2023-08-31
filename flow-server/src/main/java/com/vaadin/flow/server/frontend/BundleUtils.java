@@ -21,6 +21,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -115,6 +116,20 @@ public final class BundleUtils {
      */
     public static String getChunkId(String className) {
         return StringUtil.getHash(className, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Calculates a hash for bundle JavaScript chunk containing given string
+     * lines.
+     *
+     * @param chunkLines
+     *            content of the chunk, collection of string lines
+     * @return chunk's hash
+     */
+    public static String getChunkHash(List<String> chunkLines) {
+        Collections.sort(chunkLines);
+        return StringUtil.getHash(String.join(";", chunkLines),
+                StandardCharsets.UTF_8);
     }
 
     /**
