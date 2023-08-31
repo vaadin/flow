@@ -37,10 +37,14 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
                     open("/");
 
                     waitUntil(ExpectedConditions.presenceOfElementLocated(
-                            By.id("start-button")), 20);
+                            By.id("start-button")), 10);
                     triggerReload();
+
+                    waitUntil(ExpectedConditions.textToBe(By.id("log"), "Reload page now."), 10);
+                    open("/"); // browser refresh
+
                     waitUntil(ExpectedConditions
-                            .visibilityOfElementLocated(By.id("result")), 20);
+                            .visibilityOfElementLocated(By.id("result")), 10);
 
                     return assertAndGetReloadTimeResult();
                 });

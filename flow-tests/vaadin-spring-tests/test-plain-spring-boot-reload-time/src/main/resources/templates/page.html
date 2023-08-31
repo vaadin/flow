@@ -41,12 +41,7 @@
                         })
                         .then((text) => {
                             if(text === "true") {
-                                document.getElementById("log").textContent = "Reloading page.";
-                                try {
-                                    window.location.reload();
-                                } catch(error) {
-                                    document.getElementById("log").textContent = error;
-                                }
+                                document.getElementById("log").textContent = "Reload page now.";
                             } else {
                                 document.getElementById("log").textContent += ".";
                                 if(error) {
