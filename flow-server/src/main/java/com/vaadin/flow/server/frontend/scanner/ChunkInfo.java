@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend.scanner;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Identifier for a chunk or part of the JS bundle.
@@ -65,36 +66,31 @@ public class ChunkInfo {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        int result = type != null ? type.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result
+                + (dependencyTriggers != null ? dependencyTriggers.hashCode()
+                        : 0);
+        result = 31 * result + (eager ? 1 : 0);
         return result;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object o) {
+        if (this == o)
             return true;
-        }
-        if (obj == null) {
+        if (o == null || getClass() != o.getClass())
             return false;
-        }
-        if (getClass() != obj.getClass()) {
+
+        ChunkInfo chunkInfo = (ChunkInfo) o;
+
+        if (eager != chunkInfo.eager)
             return false;
-        }
-        ChunkInfo other = (ChunkInfo) obj;
-        if (type != other.type) {
+        if (type != chunkInfo.type)
             return false;
-        }
-        if (name == null) {
-            if (other.name != null) {
-                return false;
-            }
-        } else if (!name.equals(other.name)) {
+        if (!Objects.equals(name, chunkInfo.name))
             return false;
-        }
-        return true;
+        return Objects.equals(dependencyTriggers, chunkInfo.dependencyTriggers);
     }
 
     public List<String> getDependencyTriggers() {
