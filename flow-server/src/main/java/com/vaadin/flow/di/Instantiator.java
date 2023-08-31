@@ -28,7 +28,6 @@ import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.UidlWriter;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
@@ -132,7 +131,7 @@ public interface Instantiator extends Serializable {
      * @return all instances of the given type
      */
     default <T> Stream<T> getAll(Class<T> type) {
-        return (Stream<T>) Collections.emptyList().stream();
+        return Stream.empty();
     }
 
     /**
