@@ -17,4 +17,15 @@ public class ErrorHandlingIT extends AbstractErrorIT {
                 "An error occurred: java.lang.IllegalStateException: Intentional fail in click handler");
     }
 
+    @Test
+    public void exceptionInBeforeClientResponseDoesNotCauseInternalError() {
+        open();
+        $(NativeButtonElement.class).id("clientResponseButton").click();
+
+        assertNoSystemErrors();
+
+        assertErrorReported(
+                "An error occurred: java.lang.IllegalStateException: Intentional fail in beforeClientResponse");
+    }
+
 }
