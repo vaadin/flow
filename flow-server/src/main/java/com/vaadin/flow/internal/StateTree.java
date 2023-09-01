@@ -33,6 +33,8 @@ import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
+import com.vaadin.flow.server.DefaultErrorHandler;
+import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.shared.Registration;
@@ -387,9 +389,20 @@ public class StateTree implements NodeOwner {
             }
             callbacks.stream().filter(entry -> entry.canExecute(getUI()))
                     .forEach(entry -> {
-                        ExecutionContext context = new ExecutionContext(getUI(),
-                                entry.getStateNode().isClientSideInitialized());
-                        entry.getExecution().accept(context);
+                        try {
+                            ExecutionContext context = new ExecutionContext(
+                                    getUI(), entry.getStateNode()
+                                            .isClientSideInitialized());
+                            entry.getExecution().accept(context);
+                        } catch (Exception e) {
+                            if (getUI().getSession().getErrorHandler()
+                                    .getClass()
+                                    .equals(DefaultErrorHandler.class)) {
+                                throw e;
+                            }
+                            getUI().getSession().getErrorHandler()
+                                    .error(new ErrorEvent(e));
+                        }
                     });
         }
     }
