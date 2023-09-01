@@ -73,6 +73,20 @@ public class CssBundlerTest {
                 "background-image: url('VAADIN/themes/my-theme/foo/bar.png');",
                 CssBundler.inlineImports(themeFolder,
                         getThemeFile("styles.css")));
+
+        writeCss("background-image: url(\"foo/bar.png\");", "styles.css");
+
+        Assert.assertEquals(
+                "background-image: url('VAADIN/themes/my-theme/foo/bar.png');",
+                CssBundler.inlineImports(themeFolder,
+                        getThemeFile("styles.css")));
+
+        writeCss("background-image: url(foo/bar.png);", "styles.css");
+
+        Assert.assertEquals(
+                "background-image: url('VAADIN/themes/my-theme/foo/bar.png');",
+                CssBundler.inlineImports(themeFolder,
+                        getThemeFile("styles.css")));
     }
 
     @Test
