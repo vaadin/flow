@@ -49,7 +49,7 @@ import elemental.json.JsonValue;
  * Events can either be fired manually through
  * {@link #fireEvent(ComponentEvent)} or automatically based on a DOM event (see
  * {@link DomEvent}). Automatically fired events must have a suitable
- *         constructor, as defined in {@link DomEvent}.
+ * constructor, as defined in {@link DomEvent}.
  *
  * @author Vaadin Ltd
  * @since 1.0
