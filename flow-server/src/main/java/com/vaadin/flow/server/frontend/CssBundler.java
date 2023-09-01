@@ -58,7 +58,7 @@ public class CssBundler {
 
         Matcher urlMatcher = urlPattern.matcher(content);
         content = urlMatcher.replaceAll(result -> {
-            String url = getNonNullGroup(result, 2, 3);
+            String url = getNonNullGroup(result, 2, 3, 4);
             if (url == null || url.trim().endsWith(".css")) {
                 // These are handled below
                 return Matcher.quoteReplacement(urlMatcher.group());
