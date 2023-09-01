@@ -79,9 +79,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             + ".*(slf4j).*|"
             // #5803
             + "^(java|sun|oracle|elemental|javax|jakarta|oshi|"
-            + "org\\.(apache|atmosphere|jsoup|jboss|w3c|spring|joda|hibernate|glassfish|hsqldb|osgi|jooq)|"
-            + "com\\.(helger|spring|gwt|lowagie|fasterxml|sun|nimbusds|googlecode)|"
-            + "net\\.(sf|bytebuddy)"
+            + "org\\.(apache|atmosphere|jsoup|jboss|w3c|spring|joda|hibernate|glassfish|hsqldb|osgi|jooq)\\b|"
+            + "com\\.(helger|spring|gwt|lowagie|fasterxml|sun|nimbusds|googlecode)\\b|"
+            + "net\\.(sf|bytebuddy)\\b"
             + ").*|"
             + ".*(Exception)$"
             + ")");
@@ -815,7 +815,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         }
     }
 
-    private boolean shouldVisit(String className) {
+    protected boolean shouldVisit(String className) {
         // We should visit only those classes that might have NpmPackage,
         // JsImport, JavaScript and HtmlImport annotations, basically
         // HasElement, and AbstractTheme classes, but that prevents the usage of

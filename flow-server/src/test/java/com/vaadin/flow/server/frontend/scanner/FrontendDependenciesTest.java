@@ -298,6 +298,31 @@ public class FrontendDependenciesTest {
                 "@vaadin/common-frontend/ConnectionIndicator.js");
     }
 
+    @Test // #9861
+    public void shouldVisit_shouldNotMatchOnPartOfPackage() {
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, true);
+
+        Assert.assertTrue(
+                "second package should match fully not as starts with 'spring != springframework'",
+                dependencies.shouldVisit("org.springframework.samples"));
+        Assert.assertTrue(
+                "second package should match fully not as starts with 'spring != springframework'",
+                dependencies.shouldVisit("org.springframework"));
+        Assert.assertFalse("should not visit with only 2 packages 'org.spring'",
+                dependencies.shouldVisit("org.spring"));
+
+        Assert.assertTrue(
+                "second package should match fully not as starts with 'sun != sunny'",
+                dependencies.shouldVisit("com.sunny.app"));
+        Assert.assertTrue(
+                "second package should match fully not as starts with 'sun != sunny'",
+                dependencies.shouldVisit("com.sunny"));
+        Assert.assertFalse("should not visit with only 2 packages 'com.sun'",
+                dependencies.shouldVisit("com.sun"));
+    }
+
     public static class MyComponent extends Component {
     }
 
