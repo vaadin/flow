@@ -11,6 +11,15 @@ public class ErrorHandlingView extends AbstractErrorHandlerView {
                     throw new IllegalStateException(
                             "Intentional fail in click handler");
                 }));
+        add(createButton("Throw exception in beforeClientResponse",
+                "clientResponseButton", e -> {
+                    e.getSource().getUI().get().getInternals().getStateTree()
+                            .beforeClientResponse(getElement().getNode(),
+                                    executionContext -> {
+                                        throw new IllegalStateException(
+                                                "Intentional fail in beforeClientResponse");
+                                    });
+                }));
     }
 
 }
