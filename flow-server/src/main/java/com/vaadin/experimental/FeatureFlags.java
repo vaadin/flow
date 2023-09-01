@@ -72,7 +72,7 @@ public class FeatureFlags implements Serializable {
     public static final Feature FORM_FILLER_ADDON = new Feature(
             "Form Filler Add-on (This is an experimental feature. It may be removed, altered, or limited to commercial subscribers in future releases.\n)",
             "formFillerAddon", "https://github.com/vaadin/form-filler-addon",
-            true, "com.vaadin.flow.ai.formfiller");
+            true, "com.vaadin.flow.ai.formfiller.FormFiller");
 
     private List<Feature> features = new ArrayList<>();
 
