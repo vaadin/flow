@@ -29,6 +29,7 @@ import { injectGlobalCss } from './styles';
 import { ComponentMetadata } from './metadata/model';
 import { ClassNameChangeEvent } from './components/class-name-editor';
 import { OpenCssEvent } from './components/property-list';
+import { componentOverlayManager } from './components/component-overlay-manager';
 
 injectGlobalCss(css`
   .vaadin-theme-editor-highlight {
@@ -70,6 +71,8 @@ export class ThemeEditor extends LitElement {
    */
   @state()
   private effectiveTheme: ComponentTheme | null = null;
+
+  private undoRedoListener;
 
   static get styles() {
     return css`
@@ -207,6 +210,19 @@ export class ThemeEditor extends LitElement {
     this.historyActions = this.history.allowedActions;
     this.api.markAsUsed();
 
+    this.undoRedoListener = (evt: KeyboardEvent) => {
+      const isZKey = evt.key === 'Z' || evt.key === 'z';
+      if (isZKey && (evt.ctrlKey || evt.metaKey) && evt.shiftKey) {
+        if (this.historyActions?.allowRedo) {
+          this.handleRedo();
+        }
+      } else if (isZKey && (evt.ctrlKey || evt.metaKey)) {
+        if (this.historyActions?.allowUndo) {
+          this.handleUndo();
+        }
+      }
+    }
+
     // When the theme is updated due to HMR, remove optimistic updates from
     // theme preview. Also refresh the base theme as default property values may
     // have changed.
@@ -214,6 +230,8 @@ export class ThemeEditor extends LitElement {
       themePreview.clear();
       this.refreshTheme();
     });
+
+    document.addEventListener('keydown', this.undoRedoListener);
 
     this.dispatchEvent(new CustomEvent('before-open'));
   }
@@ -225,7 +243,9 @@ export class ThemeEditor extends LitElement {
     if (changedProperties.has('expanded')) {
       if (this.expanded) {
         this.highlightElement(this.context?.component.element);
+        componentOverlayManager.showOverlay();
       } else {
+        componentOverlayManager.hideOverlay();
         this.removeElementHighlight(this.context?.component.element);
       }
     }
@@ -233,8 +253,12 @@ export class ThemeEditor extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-
     this.removeElementHighlight(this.context?.component.element);
+
+    componentOverlayManager.hideOverlay();
+    componentOverlayManager.reset();
+
+    document.removeEventListener('keydown', this.undoRedoListener);
 
     this.dispatchEvent(new CustomEvent('after-close'));
   }
@@ -283,12 +307,10 @@ export class ThemeEditor extends LitElement {
   renderMissingThemeNotice() {
     return html`
       <div class="notice">
-        It looks like you have not set up a custom theme yet. Theme editor requires an existing theme to work with.
-        Please check our
-        <a href="https://vaadin.com/docs/latest/styling/custom-theme/creating-custom-theme" target="_blank"
-          >documentation</a
-        >
-        on how to set up a custom theme.
+        It looks like you have not set up an application theme yet. Theme editor requires an existing theme to work
+        with. Please check our
+        <a href="https://vaadin.com/docs/latest/styling/application-theme" target="_blank">documentation</a>
+        on how to set up an application theme.
       </div>
     `;
   }
@@ -438,8 +460,8 @@ export class ThemeEditor extends LitElement {
   }
 
   private async pickComponent() {
+    componentOverlayManager.hideOverlay();
     this.removeElementHighlight(this.context?.component.element);
-
     this.pickerProvider().open({
       infoTemplate: html`
         <div>
@@ -458,9 +480,10 @@ export class ThemeEditor extends LitElement {
           this.effectiveTheme = null;
           return;
         }
-
+        await componentOverlayManager.componentPicked(component, metadata);
         this.highlightElement(component.element);
         this.refreshComponentAndTheme(component, metadata);
+        componentOverlayManager.showOverlay();
       }
     });
   }

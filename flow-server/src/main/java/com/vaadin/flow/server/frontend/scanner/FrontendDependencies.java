@@ -419,6 +419,16 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             addInternalEntryPoint(appShell);
         }
 
+        try {
+            for (Class<?> devToolsMessageHandler : getFinder()
+                    .getSubTypesOf(getFinder().loadClass(
+                            "com.vaadin.base.devserver.DevToolsMessageHandler"))) {
+                addInternalEntryPoint(devToolsMessageHandler);
+            }
+        } catch (Exception e) {
+            // Will fail if dev tools is not on the classpath
+        }
+
         for (Class<?> errorParameters : getFinder().getSubTypesOf(
                 getFinder().loadClass(HasErrorParameter.class.getName()))) {
             addInternalEntryPoint(errorParameters);

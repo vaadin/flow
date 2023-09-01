@@ -290,6 +290,7 @@
                 <module>test-live-reload</module>
                 <module>test-live-reload-multimodule</module>
                 <module>test-live-reload-multimodule/pom-devbundle.xml</module>
+                <module>test-theme-editor</module>
                 <module>test-redeployment</module>
 
                 <module>test-scalability</module>
@@ -334,6 +335,12 @@
             <id>nightly</id>
             <modules>
                 <module>test-webpush</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>benchmark</id>
+            <modules>
+                <module>vaadin-spring-tests</module>
             </modules>
         </profile>
         <profile>

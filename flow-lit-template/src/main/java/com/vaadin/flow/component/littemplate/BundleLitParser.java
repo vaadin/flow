@@ -60,14 +60,14 @@ public final class BundleLitParser {
      * <p>
      * <code>render\(\)[\s]*\{</code> finds the template getter method
      * <p>
-     * <code>[\s]*return[\s]*html[\s]*(\`)</code> finds the return statement
+     * <code>[\s\S]*return[\s]*html[\s]*(\`)</code> finds the return statement
      * <p>
      * </p>
      * <code>([\s\S]*)</code> captures all text until we encounter the end
      * character with <code>\1;}</code> e.g. <code>';}</code>
      */
     private static final Pattern LIT_TEMPLATE_PATTERN = Pattern.compile(
-            "render\\(\\)[\\s]*\\{[\\s]*return[\\s]*html[\\s]*(\\`)([\\s\\S]*?)\\1;[\\s]*\\}");
+            "render\\(\\)[\\s]*\\{[\\s\\S]*return[\\s]*html[\\s]*(\\`)([\\s\\S]*?)\\1;[\\s]*\\}");
 
     private static final String TEMPLATE_TAG_NAME = "template";
 

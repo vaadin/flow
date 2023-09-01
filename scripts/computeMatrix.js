@@ -7,7 +7,13 @@ const globalExclusions = [
   'flow-tests/servlet-containers/tomcat10',
   'flow-tests/test-multi-war/test-war1',
   'flow-tests/test-multi-war/test-war2',
-  'flow-tests/test-webpush'
+  'flow-tests/test-webpush',
+  'flow-tests/vaadin-spring-tests/test-spring-boot-reload-time',
+  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time',
+  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/generator',
+  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/library',
+  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/theme',
+  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/ui'
 ];
 // Set modules or tests weights and fixed slice position for better distribution
 //  weight: it's time in half-minutes, default 1 = 30secs
@@ -124,6 +130,7 @@ const moduleWeights = {
   'flow-tests/test-pwa/pom-production.xml': { weight: 3 },
   'flow-tests/test-servlet': { weight: 3 },
   'flow-tests/test-themes': { weight: 3 },
+  'flow-tests/test-theme-editor': { weight: 3 },
   'flow-tests/test-npm-only-features/test-npm-custom-frontend-directory': { weight: 3 },
   'flow-tests/test-frontend/vite-pwa-custom-offline-path/pom-production.xml': { weight: 3 },
   'flow-tests/test-embedding/test-embedding-theme-variant': { weight: 2 },

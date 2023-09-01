@@ -75,11 +75,6 @@ public class PrepareFrontendOutputProperties public constructor(project: Project
     }
 
     @OutputDirectory
-    public fun getFrontendDirectory(): File {
-        return extension.frontendDirectory
-    }
-
-    @OutputDirectory
     public fun getGeneratedTsFolder(): File {
         return extension.generatedTsFolder
     }

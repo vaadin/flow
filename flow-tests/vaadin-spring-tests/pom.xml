@@ -15,7 +15,7 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <component.version>24.1.3</component.version>
+        <component.version>24.1.7</component.version>
         <nimbus-jose-jwt.version>9.31</nimbus-jose-jwt.version>
     </properties>
 
@@ -171,7 +171,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.3.0</version>
+                    <version>3.4.0</version>
                     <dependencies>
                         <dependency>
                             <groupId>de.skuzzle.enforcer</groupId>
@@ -329,8 +329,20 @@
 
                 <module>test-spring-boot-only-prepare</module>
                 <module>test-spring-white-list</module>
+
             </modules>
         </profile>
+
+        <profile>
+            <!-- Modules for performance benchmark -->
+            <id>benchmark</id>
+
+            <modules>
+                <module>test-spring-boot-reload-time</module>
+                <module>test-spring-boot-multimodule-reload-time</module>
+            </modules>
+        </profile>
+
     </profiles>
 
 </project>

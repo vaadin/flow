@@ -56,6 +56,15 @@ const _notificationOverlayResolver: Resolver = {
     return matched ? <HTMLElement>matched['__dataHost'] : undefined;
   }
 };
+const _menuBarItemResolver: Resolver = {
+  resolve: (element: HTMLElement) => {
+    if (element.localName !== 'vaadin-menu-bar-item') {
+      return;
+    }
+    const matcher = (element: HTMLElement) => element.localName === 'vaadin-menu-bar';
+    return _isMatchingRecursive(matcher, element);
+  }
+};
 
 // order is important
 const _resolvers = <Resolver[]>[
@@ -63,7 +72,8 @@ const _resolvers = <Resolver[]>[
   _loginFormOverlayResolver,
   _dialogOverlayResolver,
   _confirmDialogOverlayResolver,
-  _notificationOverlayResolver
+  _notificationOverlayResolver,
+  _menuBarItemResolver
 ];
 
 const _cookieConsentHighlightResolver: Resolver = {

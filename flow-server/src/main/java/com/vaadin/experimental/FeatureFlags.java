@@ -58,11 +58,6 @@ public class FeatureFlags implements Serializable {
             "Collaboration Kit backend for clustering support",
             "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
-    public static final Feature SIDE_NAV_COMPONENT = new Feature(
-            "SideNav component (Production ready but tweaks to at least the internal DOM will still take place)",
-            "sideNavComponent",
-            "https://vaadin.com/docs/latest/components/side-nav", true,
-            "com.vaadin.flow.component.sidenav.SideNav");
 
     public static final Feature WEB_PUSH = new Feature(
             "Server side WebPush API", "webPush",
@@ -92,7 +87,6 @@ public class FeatureFlags implements Serializable {
         this.lookup = lookup;
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
-        features.add(new Feature(SIDE_NAV_COMPONENT));
         features.add(new Feature(WEB_PUSH));
         features.add(new Feature(FORM_FILLER_ADDON));
         loadProperties();
