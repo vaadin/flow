@@ -24,7 +24,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.interactions.Actions;
 
 public class DomEventStopPropagationAndPreventDefaultIT
         extends ChromeBrowserTest {
@@ -41,8 +40,7 @@ public class DomEventStopPropagationAndPreventDefaultIT
         assertMessages(nextMsg++, "event:btn");
 
         WebElement component = findElement(By.id("component"));
-        Actions actions = new Actions(getDriver());
-        actions.contextClick(component);
+        component.click();
         // There would be another message if the event was propagated
         // Should not be propagated because of the DomEvent config
         assertMessages(nextMsg++, "event:component");

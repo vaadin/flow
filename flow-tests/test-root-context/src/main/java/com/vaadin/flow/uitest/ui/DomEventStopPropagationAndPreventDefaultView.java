@@ -38,16 +38,16 @@ public class DomEventStopPropagationAndPreventDefaultView
             setId("component");
         }
 
-        public Registration addCtxClickListener(
-                ComponentEventListener<CtxClickEvent> listener) {
-            return getEventBus().addListener(CtxClickEvent.class, listener);
+        public Registration addClickListener(
+                ComponentEventListener<ClickEvent> listener) {
+            return getEventBus().addListener(ClickEvent.class, listener);
         }
     }
 
-    @DomEvent(value = "contextmenu", stopPropagation = true, preventDefault = true)
-    public static class CtxClickEvent extends ComponentEvent<DivComponent> {
+    @DomEvent(value = "click", stopPropagation = true, preventDefault = true)
+    public static class ClickEvent extends ComponentEvent<DivComponent> {
 
-        public CtxClickEvent(DivComponent source, boolean fromClient) {
+        public ClickEvent(DivComponent source, boolean fromClient) {
             super(source, fromClient);
         }
     }
@@ -86,7 +86,7 @@ public class DomEventStopPropagationAndPreventDefaultView
         getElement().appendChild(div);
 
         DivComponent divComponent = new DivComponent();
-        divComponent.addCtxClickListener(e -> {
+        divComponent.addClickListener(e -> {
             addMessage("event:component");
         });
 
