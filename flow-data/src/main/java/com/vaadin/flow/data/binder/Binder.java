@@ -1572,6 +1572,10 @@ public class Binder<BEAN> implements Serializable {
             } catch (BindingException exception) {
                 throw exception;
             } catch (Exception exception) {
+                if (binder == null) {
+                    throw new IllegalStateException(
+                            "This binding is already unbound", exception);
+                }
                 BindingExceptionHandler handler = binder
                         .getBindingExceptionHandler();
                 Optional<BindingException> bindingException = handler
