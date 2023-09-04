@@ -413,4 +413,9 @@ public class BuildDevBundleMojo extends AbstractMojo
         // Explicitly building dev bundle so no skipping allowed here.
         return false;
     }
+
+    @Override
+    public boolean isPrepareFrontendCacheDisabled() {
+        return false;
+    }
 }

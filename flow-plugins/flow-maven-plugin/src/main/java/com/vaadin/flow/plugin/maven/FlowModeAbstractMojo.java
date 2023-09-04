@@ -437,4 +437,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     public boolean skipDevBundleBuild() {
         return skipDevBundleRebuild;
     }
+
+    @Override
+    public boolean isPrepareFrontendCacheDisabled() {
+        return false;
+    }
 }
