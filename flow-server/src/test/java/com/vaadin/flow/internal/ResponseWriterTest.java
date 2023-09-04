@@ -35,13 +35,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
+import org.apache.commons.fileupload2.core.MultipartInput;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-import com.vaadin.external.apache.commons.fileupload2.MultipartStream;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
@@ -570,8 +570,9 @@ public class ResponseWriterTest {
                 .substring(contentType.get().indexOf("=") + 1);
 
         @SuppressWarnings("deprecation")
-        MultipartStream mps = new MultipartStream(
-                new ByteArrayInputStream(output), boundary.getBytes());
+        MultipartInput mps = MultipartInput.builder()
+                .setInputStream(new ByteArrayInputStream(output))
+                .setBoundary(boundary.getBytes()).get();
         for (Pair<String[], byte[]> expected : expectedHeadersAndBytes) {
             String[] expectedHeaders = expected.getFirst();
             String actualHeaders = mps.readHeaders();
