@@ -47,8 +47,8 @@ import elemental.json.JsonValue;
  * {@link ComponentEvent}.
  * <p>
  * Events can either be fired manually through
- * {@link #fireEvent(ComponentEvent)} or automatically based on a DOM event
- * (see @{@link DomEvent}). Automatically fired events must have a suitable
+ * {@link #fireEvent(ComponentEvent)} or automatically based on a DOM event (see
+ * {@link DomEvent}). Automatically fired events must have a suitable
  * constructor, as defined in {@link DomEvent}.
  *
  * @author Vaadin Ltd
@@ -62,6 +62,7 @@ public class ComponentEventBus implements Serializable {
      */
     private static class ListenerWrapper<T extends ComponentEvent<?>>
             implements Serializable {
+
         private ComponentEventListener<T> listener;
         private DomListenerRegistration domRegistration;
 
@@ -327,6 +328,13 @@ public class ComponentEventBus implements Serializable {
             System.arraycopy(phases, 1, rest, 0, rest.length);
 
             registration.debounce(debounceTimeout, phases[0], rest);
+        }
+
+        if (annotation.stopPropagation()) {
+            registration.stopPropagation();
+        }
+        if (annotation.preventDefault()) {
+            registration.preventDefault();
         }
     }
 

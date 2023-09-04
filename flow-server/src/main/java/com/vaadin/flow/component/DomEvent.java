@@ -95,4 +95,19 @@ public @interface DomEvent {
      * @return the debounce settings
      */
     DebounceSettings debounce() default @DebounceSettings(timeout = 0, phases = DebouncePhase.LEADING);
+
+    /**
+     * Controls if the event is let to propagate to parent elements.
+     *
+     * @return true if the event is not let to propagate to parent elements
+     */
+    public boolean stopPropagation() default false;
+
+    /**
+     * Controls if the browser is asked to prevent the default browser behavior.
+     *
+     * @return true if default behavior is should be prevented
+     */
+    public boolean preventDefault() default false;
+
 }
