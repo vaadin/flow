@@ -30,7 +30,9 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
@@ -49,11 +51,16 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
+import com.vaadin.flow.server.ErrorHandler;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.JsonObject;
 
 public class StateTreeTest {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     private StateTree tree = new UI().getInternals().getStateTree();
 
@@ -554,6 +561,54 @@ public class StateTreeTest {
                 results.get(2).intValue());
         Assert.assertEquals("The result at index '3' should be 2", 2,
                 results.get(3).intValue());
+    }
+
+    @Test
+    public void beforeClientResponse_failingExecutionWithNullErrorHandler_NoNPE() {
+        thrown.expect(IllegalStateException.class);
+        thrown.reportMissingExceptionWithMessage(
+                "Failure should be thrown again for no errorhandler");
+
+        StateNode rootNode = tree.getRootNode();
+        tree.beforeClientResponse(rootNode, context -> {
+            throw new IllegalStateException("Throw before client response");
+        });
+
+        Assert.assertNull(tree.getUI().getSession());
+
+        VaadinSession mockSession = Mockito.mock(VaadinSession.class);
+        Mockito.when(mockSession.getErrorHandler()).thenReturn(null);
+
+        try {
+            tree.getUI().getInternals().setSession(mockSession);
+            tree.beforeClientResponse(rootNode, context -> {
+                throw new IllegalStateException("Throw before client response");
+            });
+
+            tree.runExecutionsBeforeClientResponse();
+        } finally {
+            tree.getUI().getInternals().setSession(null);
+        }
+    }
+
+    @Test
+    public void beforeClientResponse_failingExecutionWithNullSession_NoNPE() {
+        thrown.expect(IllegalStateException.class);
+        thrown.reportMissingExceptionWithMessage(
+                "Failure should be thrown again for no errorhandler");
+
+        StateNode rootNode = tree.getRootNode();
+        tree.beforeClientResponse(rootNode, context -> {
+            throw new IllegalStateException("Throw before client response");
+        });
+
+        Assert.assertNull(tree.getUI().getSession());
+
+        tree.beforeClientResponse(rootNode, context -> {
+            throw new IllegalStateException("Throw before client response");
+        });
+
+        tree.runExecutionsBeforeClientResponse();
     }
 
     @Test
