@@ -35,6 +35,7 @@ import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.server.DefaultErrorHandler;
 import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.shared.Registration;
@@ -395,8 +396,7 @@ public class StateTree implements NodeOwner {
                                             .isClientSideInitialized());
                             entry.getExecution().accept(context);
                         } catch (Exception e) {
-                            if (getUI().getSession().getErrorHandler()
-                                    .getClass()
+                            if (getErrorHandlerClass()
                                     .equals(DefaultErrorHandler.class)) {
                                 throw e;
                             }
@@ -405,6 +405,15 @@ public class StateTree implements NodeOwner {
                         }
                     });
         }
+    }
+
+    private Class<? extends ErrorHandler> getErrorHandlerClass() {
+        UI ui = getUI();
+        VaadinSession session = ui == null ? null : ui.getSession();
+        ErrorHandler errorHandler = session == null ? null
+                : session.getErrorHandler();
+        return errorHandler == null ? DefaultErrorHandler.class
+                : errorHandler.getClass();
     }
 
     private List<StateTree.BeforeClientResponseEntry> flushCallbacks() {
