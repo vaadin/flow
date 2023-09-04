@@ -299,6 +299,12 @@ public final class Constants implements Serializable {
     public static final String NEEDS_BUNDLE_BUILD_FILE = Constants.VAADIN_CONFIGURATION
             + "needs-build";
 
+    /**
+     * Key for storing the value of `alwaysExecutePrepareFrontend` flag of
+     * Gradle builds in a build info (token) file.
+     */
+    public static final String DISABLE_PREPARE_FRONTEND_CACHE = "disable.prepare.frontend.cache";
+
     private Constants() {
         // prevent instantiation constants class only
     }
