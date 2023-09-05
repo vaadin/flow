@@ -59,6 +59,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 
@@ -192,7 +193,8 @@ public class WebComponentProviderTest {
                 provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.verify(response).getOutputStream();
-        Mockito.verify(out).write(Mockito.any());
+        Mockito.verify(out).write(Mockito.any(), Mockito.anyInt(),
+                Mockito.anyInt());
 
     }
 
@@ -223,7 +225,8 @@ public class WebComponentProviderTest {
                 provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.verify(response, times(2)).getOutputStream();
-        Mockito.verify(out, times(2)).write(captor.capture());
+        Mockito.verify(out, times(2)).write(captor.capture(), Mockito.anyInt(),
+                Mockito.anyInt());
 
         byte[] first = captor.getAllValues().get(0);
         byte[] second = captor.getAllValues().get(1);
