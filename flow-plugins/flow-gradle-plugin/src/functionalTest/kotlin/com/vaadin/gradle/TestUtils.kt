@@ -15,6 +15,7 @@
  */
 package com.vaadin.gradle
 
+import org.gradle.api.JavaVersion
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.BuildTask
 import org.gradle.testkit.runner.GradleRunner
@@ -211,7 +212,7 @@ object OsUtils {
  * Used to test the plugin. Contains helpful utility methods to manipulate folders
  * and files in the project.
  */
-class TestProject(val gradleVersion: String = VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION) {
+class TestProject(val gradleVersion: String = if(JavaVersion.current().majorVersion.toInt() >= 20) "8.3" else VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION) {
     /**
      * The project root dir.
      */
