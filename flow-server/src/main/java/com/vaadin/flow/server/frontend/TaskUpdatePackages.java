@@ -327,9 +327,18 @@ public class TaskUpdatePackages extends NodeUpdater {
         // packages exist at this point
         assert vaadinDeps != null : "vaadin{ dependencies { } } should exist";
         assert packageJsonDeps != null : "dependencies { } should exist";
+
+        FrontendVersion packageJsonVersion;
+        try {
+            packageJsonVersion = new FrontendVersion(
+                    packageJsonDeps.getString(pkg));
+        } catch (Exception e) {
+            // Overridden to a file link in package.json, do not change
+            return false;
+        }
+
         if (!packageJsonDeps.hasKey(pkg) || !vaadinDeps.hasKey(pkg)
-                || !platformPinnedVersion.equals(
-                        new FrontendVersion(packageJsonDeps.getString(pkg)))
+                || !platformPinnedVersion.equals(packageJsonVersion)
                 || !platformPinnedVersion.equals(
                         new FrontendVersion(vaadinDeps.getString(pkg)))) {
             packageJsonDeps.put(pkg, platformPinnedVersion.getFullVersion());
