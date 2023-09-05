@@ -20,8 +20,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -1036,6 +1034,29 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
+    public void serveStaticResource_uriWithPercent_isServed()
+            throws IOException {
+        String pathInfo = "/VAADIN/build/100%.pdf";
+        setupRequestURI("", "", pathInfo);
+        String fileData = "contents";
+        ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
+        Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
+
+        Mockito.when(mockLoader.getResource("META-INF" + pathInfo))
+                .thenReturn(createFileURLWithDataAndLength(
+                        "META-INF" + pathInfo, fileData.getBytes(StandardCharsets.UTF_8)));
+
+        mockStatsBundles(mockLoader);
+        mockConfigurationPolyfills();
+
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(out);
+
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertArrayEquals(fileData.getBytes(StandardCharsets.UTF_8), out.getOutput());
+    }
+
+    @Test
     public void customStaticBuildResource_isServed() throws IOException {
         String pathInfo = "/VAADIN/build/my-text.txt";
         setupRequestURI("", "", pathInfo);
@@ -1122,7 +1143,7 @@ public class StaticFileServerTest implements Serializable {
 
     /**
      * Returns a byte array for a valid stats.json containing only chunks
-     * 
+     *
      * @return
      */
     public byte[] getStatsData() {
