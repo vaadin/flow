@@ -8,7 +8,7 @@ plugins {
 	id 'maven-publish'
     id 'idea'
     id 'com.gradle.plugin-publish' version '0.11.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.7.20'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.0'
     id 'org.jetbrains.dokka' version '1.8.20'
 }
 
@@ -183,7 +183,7 @@ publishing {
  *
  **********************************************************************************************************************/
 wrapper {
-    gradleVersion = '7.5.1'
+    gradleVersion = '8.3'
     distributionType = Wrapper.DistributionType.ALL
 }
 
