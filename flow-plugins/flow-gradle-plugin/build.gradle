@@ -8,7 +8,7 @@ plugins {
 	id 'maven-publish'
     id 'idea'
     id 'com.gradle.plugin-publish' version '0.11.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.7.20'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.0'
     id 'org.jetbrains.dokka' version '1.8.20'
 }
 
@@ -23,8 +23,8 @@ defaultTasks('jar', 'test')
 group pom.parent.groupId
 version = project.hasProperty('vaadin.version') ? project.getProperty('vaadin.version') : pom.parent.version
 archivesBaseName = pom.artifactId
-sourceCompatibility = 17
-targetCompatibility = 17
+sourceCompatibility = 20
+targetCompatibility = 20
 
 /***********************************************************************************************************************
  *
@@ -183,7 +183,7 @@ publishing {
  *
  **********************************************************************************************************************/
 wrapper {
-    gradleVersion = '7.5.1'
+    gradleVersion = '8.3'
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -201,6 +201,6 @@ kotlin {
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "20"
     }
 }

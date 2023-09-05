@@ -21,6 +21,7 @@ import kotlin.test.expect
 import com.vaadin.flow.server.InitParameters
 import elemental.json.JsonObject
 import elemental.json.impl.JsonUtil
+import org.gradle.api.JavaVersion
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
@@ -335,11 +336,18 @@ class VaadinSmokeTest : AbstractGradleTest() {
             setup()
         }
 
-        // Works with supported versions
-        for (supportedVersion in arrayOf(VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION, "7.6.2", "8.1", "8.2") ) {
-            setupProjectForGradleVersion(supportedVersion)
+        if(JavaVersion.current().majorVersion.toInt() >= 20) {
+            // JDK 20 needs 8.3+
+            setupProjectForGradleVersion("8.3")
             val result = testProject.build("vaadinClean")
             result.expectTaskSucceded("vaadinClean")
+        } else {
+            // Works with supported versions
+            for (supportedVersion in arrayOf(VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION, "7.6.2", "8.1", "8.2", "8.3") ) {
+                setupProjectForGradleVersion(supportedVersion)
+                val result = testProject.build("vaadinClean")
+                result.expectTaskSucceded("vaadinClean")
+            }
         }
 
         // Cannot test versions older than 7.6 because of Java version
