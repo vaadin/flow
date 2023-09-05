@@ -10,6 +10,7 @@
 
     <artifactId>flow-webpush</artifactId>
     <name>Flow WebPush</name>
+    <description>${name}</description>
     <packaging>jar</packaging>
 
     <properties>

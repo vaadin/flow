@@ -10,6 +10,7 @@
 
     <artifactId>flow-test-util</artifactId>
     <name>Testing utilities for Flow</name>
+    <description>${name}</description>
     <packaging>jar</packaging>
 
     <properties>
