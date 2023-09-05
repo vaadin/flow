@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.naming.SizeLimitExceededException;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedWriter;
@@ -629,7 +627,7 @@ public class StreamReceiverHandler implements Serializable {
     }
 
     protected FileItemInputIterator getItemIterator(VaadinRequest request)
-            throws FileUploadException, IOException {
+            throws IOException {
         JakartaServletFileUpload upload = new JakartaServletFileUpload();
         upload.setSizeMax(requestSizeMax);
         upload.setFileSizeMax(fileSizeMax);

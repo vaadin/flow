@@ -392,12 +392,8 @@ public class TestBenchHelpers extends ParallelTest {
         private static String loadDndScript(String scriptLocation) {
             InputStream stream = TestBenchHelpers.class
                     .getResourceAsStream(scriptLocation);
-            try {
-                return IOUtils.readLines(stream, StandardCharsets.UTF_8)
-                        .stream().collect(Collectors.joining("\n"));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            return IOUtils.readLines(stream, StandardCharsets.UTF_8).stream()
+                    .collect(Collectors.joining("\n"));
         }
     }
 }
