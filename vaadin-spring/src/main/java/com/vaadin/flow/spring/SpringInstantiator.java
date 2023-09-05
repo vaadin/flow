@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanInstantiationException;
+import org.springframework.boot.SpringBootVersion;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.SpringVersion;
 
@@ -56,8 +57,13 @@ public class SpringInstantiator extends DefaultInstantiator {
         this.context = context;
 
         UsageStatistics.markAsUsed("flow/SpringInstantiator", null);
-        UsageStatistics.markAsUsed("SpringFramework", Optional
-                .ofNullable(SpringVersion.getVersion()).orElse("unknown"));
+        if (SpringUtil.isSpringBoot()) {
+            UsageStatistics.markAsUsed("SpringBoot",
+                    SpringBootVersion.getVersion());
+        } else {
+            UsageStatistics.markAsUsed("SpringFramework", Optional
+                    .ofNullable(SpringVersion.getVersion()).orElse("unknown"));
+        }
     }
 
     @Override
