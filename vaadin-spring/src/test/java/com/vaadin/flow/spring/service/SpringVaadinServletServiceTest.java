@@ -43,7 +43,7 @@ import java.util.stream.StreamSupport;
 public class SpringVaadinServletServiceTest {
 
     @Autowired
-    private ApplicationContext context;;
+    private ApplicationContext context;
 
     @Component
     public static class TestInstantiator implements Instantiator {
