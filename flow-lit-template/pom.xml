@@ -10,6 +10,7 @@
     </parent>
     <artifactId>flow-lit-template</artifactId>
     <name>Flow Lit Templates Support</name>
+    <description>${name}</description>
     <packaging>jar</packaging>
 
     <properties>

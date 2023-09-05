@@ -9,6 +9,7 @@
     </parent>
     <artifactId>flow-server</artifactId>
     <name>Flow Server</name>
+    <description>${name}</description>
     <packaging>jar</packaging>
 
     <dependencies>

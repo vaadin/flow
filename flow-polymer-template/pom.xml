@@ -10,6 +10,7 @@
     </parent>
     <artifactId>flow-polymer-template</artifactId>
     <name>Flow Polymer Templates Support</name>
+    <description>${name}</description>
     <packaging>jar</packaging>
 
     <licenses>
