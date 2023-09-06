@@ -46,6 +46,13 @@ public class StreamResourceIT extends AbstractStreamResourceIT {
     }
 
     @Test
+    public void getDynamicVaadinPercentResource() throws IOException {
+        open();
+
+        assertDownloadedContent("percent-link", "file%25.jpg");
+    }
+
+    @Test
     public void detact_attachALink_getDynamicVaadinResource()
             throws IOException {
         open();
