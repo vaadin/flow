@@ -82,9 +82,6 @@ class VersionsJsonFilter {
                             versions.getString(key));
                 }
                 json.put(key, userManagedDependencies.getString(key));
-            } else if (vaadinDepsVersion != null
-                    && vaadinDepsVersion.isNewerThan(version)) {
-                json.put(key, vaadinVersions.getString(key));
             } else {
                 json.put(key, versions.getString(key));
             }
