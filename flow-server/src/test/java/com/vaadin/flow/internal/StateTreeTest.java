@@ -27,6 +27,8 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.change.ListAddChange;
 import com.vaadin.flow.internal.change.ListRemoveChange;
@@ -41,6 +43,7 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.JsonObject;
@@ -664,5 +667,88 @@ public class StateTreeTest {
         Assert.assertTrue(
                 remaining.hasFeature(PushConfigurationParametersMap.class));
 
+    }
+
+    @Test
+    public void pendingJavascriptExecutionForInitiallyInvisibleNode() {
+        UI ui = new UI();
+        VaadinSession mockSession = Mockito.mock(VaadinSession.class);
+        ui.getInternals().setSession(mockSession);
+        StateTree initialTree = ui.getInternals().getStateTree();
+
+        Element element = ElementFactory.createAnchor();
+        element.setVisible(false);
+        ui.getElement().appendChild(element);
+
+        element.executeJs("js");
+        initialTree.runExecutionsBeforeClientResponse();
+        Assert.assertEquals(0,
+                ui.getInternals().dumpPendingJavaScriptInvocations().size());
+
+        // Pending execution removed when node is detached
+        element.removeFromParent();
+        initialTree.collectChanges(nodeChange -> {
+        });
+        initialTree.runExecutionsBeforeClientResponse();
+        Assert.assertFalse("Pending JS executions are not removed on detach",
+                ui.getInternals().isDirty());
+    }
+
+    @Test
+    public void pendingJavascriptExecutionForVisibleAndInvisibleNode() {
+        UI ui = new UI();
+        VaadinSession mockSession = Mockito.mock(VaadinSession.class);
+        ui.getInternals().setSession(mockSession);
+        StateTree initialTree = ui.getInternals().getStateTree();
+
+        Element element = ElementFactory.createAnchor();
+        ui.getElement().appendChild(element);
+
+        // Check that execution will be dumped for visible node
+        element.executeJs("js");
+        initialTree.runExecutionsBeforeClientResponse();
+        Assert.assertEquals(1,
+                ui.getInternals().dumpPendingJavaScriptInvocations().size());
+
+        // Check that execution will not be dumped for invisible node
+        element.setVisible(false);
+        element.executeJs("js");
+        initialTree.runExecutionsBeforeClientResponse();
+        Assert.assertEquals(0,
+                ui.getInternals().dumpPendingJavaScriptInvocations().size());
+
+        // Check that execution will be dumped once the visibility changes to
+        // true
+        element.setVisible(true);
+        initialTree.runExecutionsBeforeClientResponse();
+        Assert.assertEquals(1,
+                ui.getInternals().dumpPendingJavaScriptInvocations().size());
+    }
+
+    @Test
+    public void pendingJavascriptExecutionForVisibleAndInvisibleParentNode() {
+        UI ui = new UI();
+        VaadinSession mockSession = Mockito.mock(VaadinSession.class);
+        ui.getInternals().setSession(mockSession);
+        StateTree initialTree = ui.getInternals().getStateTree();
+
+        Element element = ElementFactory.createAnchor();
+        Element parentElement = ElementFactory.createDiv();
+        ui.getElement().appendChild(parentElement);
+        parentElement.appendChild(element);
+
+        // Check that execution will not be dumped when parent node is invisible
+        parentElement.setVisible(false);
+        element.executeJs("js");
+        initialTree.runExecutionsBeforeClientResponse();
+        Assert.assertEquals(0,
+                ui.getInternals().dumpPendingJavaScriptInvocations().size());
+
+        // Check that execution will be dumped once the parent node visibility
+        // changes to true
+        parentElement.setVisible(true);
+        initialTree.runExecutionsBeforeClientResponse();
+        Assert.assertEquals(1,
+                ui.getInternals().dumpPendingJavaScriptInvocations().size());
     }
 }

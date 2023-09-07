@@ -209,7 +209,7 @@ public class StateNodeTest {
 
     /**
      * Test for #252: stack overflow exception
-     *
+     * <p>
      * Firefox won't show elements nested more than 200 levels deep, thus makes
      * no sense to test insane depth.
      */
@@ -229,7 +229,7 @@ public class StateNodeTest {
 
     /**
      * Test for #252: stack overflow exception
-     *
+     * <p>
      * Firefox won't show elements nested more than 200 levels deep, thus makes
      * no sense to test insane depth.
      */
@@ -672,6 +672,111 @@ public class StateNodeTest {
                     visibility.setVisible(isVisible);
                     parent.updateActiveState();
                 });
+    }
+
+    @Test
+    public void recursiveAndStandAloneVisibility() {
+        StateNode parentNode = new StateNode(ElementPropertyMap.class,
+                ElementData.class, ElementChildrenList.class);
+        StateNode childNode = new StateNode(ElementPropertyMap.class,
+                ElementData.class);
+        parentNode.getFeature(ElementChildrenList.class).add(0, childNode);
+
+        Assert.assertTrue(childNode.isVisible());
+        childNode.getFeature(ElementData.class).setVisible(false);
+        Assert.assertFalse(childNode.isVisible());
+
+        childNode.getFeature(ElementData.class).setVisible(true);
+        Assert.assertTrue(parentNode.isVisible());
+        parentNode.getFeature(ElementData.class).setVisible(false);
+        Assert.assertFalse(parentNode.isVisible());
+        Assert.assertFalse(childNode.isVisible());
+    }
+
+    @Test
+    public void invisibleNodeNoExtraChanges() {
+        Element element = ElementFactory.createAnchor();
+        StateNode node = element.getNode();
+
+        // attach the node to be able to get changes
+        TestStateTree tree = new TestStateTree();
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(0, node);
+
+        // Check that only allowed properties are returned for invisible child
+        // node
+        List<NodeChange> changes = new ArrayList<>();
+        node.getFeature(ElementPropertyMap.class).setProperty("foo", "bar");
+        node.getFeature(ElementData.class).setVisible(false);
+        node.collectChanges(changes::add);
+
+        Assert.assertEquals(1, changes.stream()
+                .filter(c -> c instanceof NodeAttachChange).count());
+        Assert.assertEquals(2, changes.stream()
+                .filter(c -> c instanceof MapPutChange).count());
+        List<String> changedMapKeys = changes.stream()
+                .filter(c -> c instanceof MapPutChange)
+                .map(c -> ((MapPutChange) c).getKey())
+                .collect(Collectors.toList());
+        Assert.assertTrue(changedMapKeys.contains("visible"));
+        Assert.assertTrue(changedMapKeys.contains("tag"));
+
+        // Check that previously changed property is returned when visibility
+        // changes to true
+        changes.clear();
+        node.getFeature(ElementData.class).setVisible(true);
+        node.collectChanges(changes::add);
+        Assert.assertEquals(2, changes.stream()
+                .filter(c -> c instanceof MapPutChange).count());
+        changedMapKeys = changes.stream().filter(c -> c instanceof MapPutChange)
+                .map(c -> ((MapPutChange) c).getKey())
+                .collect(Collectors.toList());
+        Assert.assertTrue(changedMapKeys.contains("visible"));
+        Assert.assertTrue(changedMapKeys.contains("foo"));
+    }
+
+    @Test
+    public void invisibleParentNodeNoExtraChanges() {
+        Element parentElement = ElementFactory.createDiv();
+        StateNode parentNode = parentElement.getNode();
+
+        Element childElement = ElementFactory.createAnchor();
+        StateNode childNode = childElement.getNode();
+        parentNode.getFeature(ElementChildrenList.class).add(0, childNode);
+
+        // attach the parent node to be able to get changes
+        TestStateTree tree = new TestStateTree();
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
+                parentNode);
+
+        // Make sure that only allowed properties are returned for visible child
+        // node of invisible parent node
+        List<NodeChange> changes = new ArrayList<>();
+        childNode.getFeature(ElementPropertyMap.class).setProperty("foo",
+                "bar");
+        parentNode.getFeature(ElementData.class).setVisible(false);
+        childNode.collectChanges(changes::add);
+
+        Assert.assertEquals(1, changes.stream()
+                .filter(c -> c instanceof NodeAttachChange).count());
+        Assert.assertEquals(1, changes.stream()
+                .filter(c -> c instanceof MapPutChange).count());
+        List<String> changedMapKeys = changes.stream()
+                .filter(c -> c instanceof MapPutChange)
+                .map(c -> ((MapPutChange) c).getKey())
+                .collect(Collectors.toList());
+        Assert.assertTrue(changedMapKeys.contains("tag"));
+
+        // Check that previously changed property is returned when visibility
+        // changes to true
+        changes.clear();
+        parentNode.getFeature(ElementData.class).setVisible(true);
+        childNode.collectChanges(changes::add);
+        Assert.assertEquals(1, changes.stream()
+                .filter(c -> c instanceof MapPutChange).count());
+        changedMapKeys = changes.stream().filter(c -> c instanceof MapPutChange)
+                .map(c -> ((MapPutChange) c).getKey())
+                .collect(Collectors.toList());
+        Assert.assertTrue(changedMapKeys.contains("foo"));
     }
 
     /**
