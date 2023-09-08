@@ -594,6 +594,27 @@ public class TaskUpdatePackagesNpmTest {
                 vaadinVersion.isPresent());
     }
 
+    @Test
+    public void oldVersionsJson_shouldDowngrade() throws IOException {
+        // run the basic test to produce an existing package.json
+        runTestWithoutPreexistingPackageJson();
+        // write new versions json and scanned deps
+        final String oldPlatformVersion = "1.0.0";
+        createVaadinVersionsJson(oldPlatformVersion, oldPlatformVersion,
+                oldPlatformVersion);
+
+        final Map<String, String> applicationDependencies = createApplicationDependencies();
+        final String appDependencyVersion = "1.5.0";
+        applicationDependencies.put(VAADIN_DIALOG, appDependencyVersion);
+        final TaskUpdatePackages task = createTask(applicationDependencies);
+        task.execute();
+        Assert.assertTrue("Updates not picked", task.modified);
+
+        verifyVersions(appDependencyVersion, oldPlatformVersion,
+                oldPlatformVersion);
+        verifyVersionLockingWithNpmOverrides(true, true, true);
+    }
+
     private void createBasicVaadinVersionsJson() {
         createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
                 PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
