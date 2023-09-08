@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,7 +23,7 @@ import java.util.Set;
  * A class for holding development-time cached data. Static fields survive a
  * Spring Boot DevTools reload, so the cached data can be used after reload.
  */
-class ReloadCache {
+class ReloadCache implements Serializable {
     static Set<Class<?>> appShellClasses;
     static Set<Class<?>> lookupClasses;
     static Set<String> validResources = new HashSet<>();

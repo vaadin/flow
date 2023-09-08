@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,7 +23,7 @@ import java.util.Set;
  * This event is fired by {@link ReloadListener} when Spring Boot DevTools is
  * about to trigger a reload.
  */
-public class ReloadEvent {
+class ReloadEvent implements Serializable {
 
     private final Set<String> addedClasses = new HashSet<>();
     private final Set<String> changedClasses = new HashSet<>();
