@@ -600,7 +600,8 @@ public class TaskUpdatePackagesNpmTest {
         runTestWithoutPreexistingPackageJson();
         // write new versions json and scanned deps
         final String oldPlatformVersion = "1.0.0";
-        createVaadinVersionsJson(oldPlatformVersion, oldPlatformVersion, oldPlatformVersion);
+        createVaadinVersionsJson(oldPlatformVersion, oldPlatformVersion,
+                oldPlatformVersion);
 
         final Map<String, String> applicationDependencies = createApplicationDependencies();
         final String appDependencyVersion = "1.5.0";
@@ -609,7 +610,8 @@ public class TaskUpdatePackagesNpmTest {
         task.execute();
         Assert.assertTrue("Updates not picked", task.modified);
 
-        verifyVersions(appDependencyVersion, oldPlatformVersion, oldPlatformVersion);
+        verifyVersions(appDependencyVersion, oldPlatformVersion,
+                oldPlatformVersion);
         verifyVersionLockingWithNpmOverrides(true, true, true);
     }
 
