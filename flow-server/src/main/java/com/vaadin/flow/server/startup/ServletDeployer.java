@@ -182,43 +182,6 @@ public class ServletDeployer implements ServletContextListener {
             logger.info(servletCreationMessage);
             ServletRegistration vaadinServlet = findVaadinServlet(
                     servletContext);
-            logAppStartupToConsole(servletContext,
-                    servletCreation == VaadinServletCreation.SERVLET_CREATED
-                            || vaadinServlet != null
-                                    && "com.vaadin.cdi.CdiServletDeployer"
-                                            .equals(vaadinServlet.getName()));
-        }
-    }
-
-    /**
-     * Prints to sysout a notification to the user that the application has been
-     * deployed.
-     * <p>
-     * This method is public so that it can be called in add-ons that map
-     * servlet automatically but don't use this class for that.
-     *
-     * @param servletContext
-     *            the deployed servlet context
-     * @param servletAutomaticallyCreated
-     *            whether the servlet was automatically created
-     * @since
-     */
-    public static void logAppStartupToConsole(ServletContext servletContext,
-            boolean servletAutomaticallyCreated) {
-        // non-production mode - highlight that application is available
-        if (servletAutomaticallyCreated) {
-            // context path is either "" or "/something"
-            String contextPath = servletContext.getContextPath();
-            contextPath = contextPath.isEmpty() ? "/" : contextPath;
-
-            FrontendUtils.console(FrontendUtils.BRIGHT_BLUE, String.format(
-                    "Vaadin application has been deployed and started to the context path \"%s\".%n",
-                    contextPath));
-        } else {
-            // if the user has mapped their own servlet, they will know where to
-            // find it
-            FrontendUtils.console(FrontendUtils.BRIGHT_BLUE, String.format(
-                    "Vaadin application has been deployed and started.%n"));
         }
     }
 
