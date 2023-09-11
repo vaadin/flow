@@ -233,7 +233,6 @@ abstract class AbstractUpdateImports implements Runnable {
                     continue;
                 }
 
-                Collections.sort(chunkLines);
                 String chunkContentHash = BundleUtils.getChunkHash(chunkLines);
 
                 String chunkFilename = "chunk-" + chunkContentHash + ".js";
