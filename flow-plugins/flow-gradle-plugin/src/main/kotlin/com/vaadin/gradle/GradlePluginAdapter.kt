@@ -187,4 +187,6 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
     override fun skipDevBundleBuild(): Boolean = extension.skipDevBundleBuild
 
     override fun forceProductionBuild(): Boolean = extension.forceProductionBuild
+
+    override fun isPrepareFrontendCacheDisabled(): Boolean = extension.alwaysExecutePrepareFrontend
 }

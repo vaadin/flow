@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication;
 
+import javax.naming.SizeLimitExceededException;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedWriter;
@@ -29,16 +31,16 @@ import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.apache.commons.fileupload2.core.FileItemInput;
+import org.apache.commons.fileupload2.core.FileItemInputIterator;
+import org.apache.commons.fileupload2.core.FileUploadByteCountLimitException;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.core.FileUploadFileCountLimitException;
+import org.apache.commons.fileupload2.core.FileUploadSizeException;
+import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.external.apache.commons.fileupload2.pub.FileCountLimitExceededException;
-import com.vaadin.external.apache.commons.fileupload2.FileItemIterator;
-import com.vaadin.external.apache.commons.fileupload2.FileItemStream;
-import com.vaadin.external.apache.commons.fileupload2.pub.FileSizeLimitExceededException;
-import com.vaadin.external.apache.commons.fileupload2.pub.SizeLimitExceededException;
-import com.vaadin.external.apache.commons.fileupload2.FileUploadException;
-import com.vaadin.external.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StateNode;
@@ -263,11 +265,11 @@ public class StreamReceiverHandler implements Serializable {
         boolean success = true;
         long contentLength = request.getContentLengthLong();
         // Parse the request
-        FileItemIterator iter;
+        FileItemInputIterator iter;
         try {
             iter = getItemIterator(request);
             while (iter.hasNext()) {
-                FileItemStream item = iter.next();
+                FileItemInput item = iter.next();
                 boolean itemSuccess = handleStream(session, streamReceiver,
                         owner, contentLength, item);
                 success = success && itemSuccess;
@@ -279,12 +281,12 @@ public class StreamReceiverHandler implements Serializable {
                     + "added to request handlers with "
                     + "ServiceInitEvent::addRequestHandler in an extension of "
                     + "VaadinServiceInitListener.";
-            if (e instanceof SizeLimitExceededException) {
+            if (e instanceof FileUploadByteCountLimitException) {
                 getLogger().warn(limitInfoStr, "Request size",
                         "getRequestSizeMax");
-            } else if (e instanceof FileSizeLimitExceededException) {
+            } else if (e instanceof FileUploadSizeException) {
                 getLogger().warn(limitInfoStr, "File size", "getFileSizeMax");
-            } else if (e instanceof FileCountLimitExceededException) {
+            } else if (e instanceof FileUploadFileCountLimitException) {
                 getLogger().warn(limitInfoStr, "File count", "getFileCountMax");
             }
             success = false;
@@ -310,9 +312,9 @@ public class StreamReceiverHandler implements Serializable {
 
     private boolean handleStream(VaadinSession session,
             StreamReceiver streamReceiver, StateNode owner, long contentLength,
-            FileItemStream item) throws IOException {
+            FileItemInput item) throws IOException {
         String name = item.getName();
-        InputStream stream = item.openStream();
+        InputStream stream = item.getInputStream();
         try {
             return handleFileUploadValidationAndData(session, stream,
                     streamReceiver, name, item.getContentType(), contentLength,
@@ -617,7 +619,7 @@ public class StreamReceiverHandler implements Serializable {
     }
 
     protected boolean isMultipartUpload(VaadinRequest request) {
-        return request instanceof HttpServletRequest && JakSrvltFileUpload
+        return request instanceof HttpServletRequest && JakartaServletFileUpload
                 .isMultipartContent((HttpServletRequest) request);
     }
 
@@ -626,9 +628,9 @@ public class StreamReceiverHandler implements Serializable {
         return ((HttpServletRequest) request).getParts();
     }
 
-    protected FileItemIterator getItemIterator(VaadinRequest request)
+    protected FileItemInputIterator getItemIterator(VaadinRequest request)
             throws FileUploadException, IOException {
-        JakSrvltFileUpload upload = new JakSrvltFileUpload();
+        JakartaServletFileUpload upload = new JakartaServletFileUpload();
         upload.setSizeMax(requestSizeMax);
         upload.setFileSizeMax(fileSizeMax);
         upload.setFileCountMax(fileCountMax);

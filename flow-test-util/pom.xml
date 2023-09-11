@@ -10,12 +10,13 @@
 
     <artifactId>flow-test-util</artifactId>
     <name>Testing utilities for Flow</name>
+    <description>${name}</description>
     <packaging>jar</packaging>
 
     <properties>
         <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
         <sonar.skip>true</sonar.skip>
-        <selenium.version>4.11.0</selenium.version>
+        <selenium.version>4.12.0</selenium.version>
     </properties>
 
     <dependencies>

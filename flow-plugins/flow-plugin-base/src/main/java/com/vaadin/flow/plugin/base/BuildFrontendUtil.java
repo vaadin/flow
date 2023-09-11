@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.base;
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.DISABLE_PREPARE_FRONTEND_CACHE;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.JAVA_RESOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
@@ -250,6 +251,10 @@ public class BuildFrontendUtil {
                 adapter.requireHomeNodeExec());
 
         buildInfo.put(InitParameters.BUILD_FOLDER, adapter.buildFolder());
+
+        if (adapter.isPrepareFrontendCacheDisabled()) {
+            buildInfo.put(DISABLE_PREPARE_FRONTEND_CACHE, true);
+        }
 
         try {
             FileUtils.forceMkdir(token.getParentFile());

@@ -10,6 +10,7 @@
     </parent>
     <artifactId>flow-polymer2lit</artifactId>
     <name>Polymer to Lit converter</name>
+    <description>${name}</description>
     <packaging>jar</packaging>
 
     <properties>

@@ -10,6 +10,7 @@
     </parent>
     <artifactId>flow-html-components</artifactId>
     <name>Flow HTML Components</name>
+    <description>${name}</description>
     <packaging>jar</packaging>
 
     <properties>

@@ -279,4 +279,18 @@ public interface PluginAdapterBase {
      * @return {@code true} to skip dev bundle rebuild
      */
     boolean skipDevBundleBuild();
+
+    /**
+     * Prevents tracking state of the `vaadinPrepareFrontend` task in Gradle
+     * builds, so that it will re-run every time it is called.
+     * <p>
+     * Returns `true` if Gradle should always execute `vaadinPrepareFrontend`.
+     * <p>
+     * Defaults to `false`, meaning that the task execution is skipped when its
+     * outcomes are up-to-date, improving the overall build time.
+     * <p>
+     * For Maven builds this is always `false`, because no caching of
+     * `prepare-frontend` goal is supported.
+     */
+    boolean isPrepareFrontendCacheDisabled();
 }
