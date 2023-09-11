@@ -3972,6 +3972,35 @@ public class RouterTest extends RoutingTestBase {
                 ForwardSetParameterView.backBeforeEnterInvoked);
     }
 
+    @Route(value = "forward/:path*")
+    @Tag("div")
+    public static class ForwardView extends Component
+            implements BeforeEnterObserver {
+
+        static String path = "";
+
+        public ForwardView() {
+            path = "";
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            if (event.getLocation().getSegments().size() == 1) {
+                event.forwardTo("forward/default_sub_route");
+            }
+            path = event.getLocation().getPath();
+        }
+    }
+
+    @Test // #15876
+    public void forward_toSameTarget_withDifferentURL() {
+        setNavigationTargets(ForwardView.class);
+
+        navigate("forward");
+
+        Assert.assertEquals("forward/default_sub_route", ForwardView.path);
+    }
+
     @Test
     public void forwardToExternalUrl_preventsViewFromBeingCreated() {
         setNavigationTargets(RedirectToExternalUrl.class);
