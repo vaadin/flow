@@ -224,9 +224,11 @@ public class VersionsJsonFilterTest {
         Assert.assertEquals(
                 "'upload' should be the same in package and versions", "4.2.2",
                 filteredJson.getString("@vaadin/vaadin-upload"));
-        Assert.assertEquals("'enforced' version should come from platform",
+        Assert.assertEquals(
+                "'enforced' version should come from platform (upgrade)",
                 "1.5.0", filteredJson.getString("enforced"));
-        Assert.assertEquals("'iron-list' should be framework defined version",
-                "3.0.2", filteredJson.getString("@polymer/iron-list"));
+        Assert.assertEquals(
+                "'iron-list' version should come from platform (downgrade)",
+                "2.0.19", filteredJson.getString("@polymer/iron-list"));
     }
 }

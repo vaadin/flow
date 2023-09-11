@@ -530,7 +530,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runPnpmInstall_frameworkCollectedVersionNewerThanPinned_installedOverlayVersionIsNotSpecifiedByPlatform()
+    public void runPnpmInstall_frameworkCollectedVersionNewerThanPinned_installedOverlayVersionIsSpecifiedByPlatform()
             throws IOException, ExecutionFailedException {
         File packageJson = new File(npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
@@ -570,11 +570,10 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         File overlayPackageJson = new File(options.getNodeModulesFolder(),
                 "@vaadin/vaadin-overlay/package.json");
 
-        // The resulting version should be the one collected from the
-        // annotations in the project
+        // The resulting version should be the one defined by the platform
         JsonObject overlayPackage = Json.parse(FileUtils
                 .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
-        Assert.assertEquals(customOverlayVersion,
+        Assert.assertEquals(PINNED_VERSION,
                 overlayPackage.getString("version"));
     }
 
