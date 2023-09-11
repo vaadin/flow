@@ -313,11 +313,18 @@ public class UpdateImportsWithByteCodeScannerTest
         Optional<File> chunkFile = findOptionalChunkFile(output);
         Assert.assertTrue(chunkFile.isPresent());
 
-        assertOnce("import { injectGlobalCss } from",
-                output.get(chunkFile.get()));
-        assertOnce("from 'Frontend/foo.css?inline';",
-                output.get(chunkFile.get()));
-        assertOnce("import $cssFromFile_0 from", output.get(chunkFile.get()));
+        List<String> chunkLines = output.get(chunkFile.get());
+        assertOnce("import { injectGlobalCss } from", chunkLines);
+        assertOnce("from 'Frontend/foo.css?inline';", chunkLines);
+        assertOnce("import $cssFromFile_0 from", chunkLines);
+
+        // assert lines order is preserved
+        Assert.assertEquals(
+                "import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n",
+                chunkLines.get(0));
+        Assert.assertEquals(
+                "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';",
+                chunkLines.get(1));
     }
 
     private static Optional<File> findOptionalChunkFile(
