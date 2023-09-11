@@ -361,7 +361,7 @@ public class TaskUpdatePackagesNpmTest {
 
         verifyVersions(PLATFORM_DIALOG_VERSION, "file:../foobar",
                 PLATFORM_OVERLAY_VERSION);
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersionLockingWithNpmOverrides(true, false, true);
     }
 
     // #11025
