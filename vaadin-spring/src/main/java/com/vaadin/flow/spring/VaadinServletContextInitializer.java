@@ -477,10 +477,6 @@ public class VaadinServletContextInitializer
                 throw new RuntimeException(
                         "Unable to initialize Vaadin DevModeHandler", e);
             }
-            // to make sure the user knows the application is ready, show
-            // notification to the user
-            ServletDeployer.logAppStartupToConsole(event.getServletContext(),
-                    true);
 
             // Make live reload port available for index.html handler
             event.getServletContext().setAttribute(
