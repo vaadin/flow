@@ -664,20 +664,30 @@ public class VaadinServletContextInitializer
             Class.forName(
                     "org.springframework.boot.devtools.livereload.LiveReloadServer");
             if (appContext instanceof ConfigurableApplicationContext) {
-                getLogger().info(
-                        "Spring Boot DevTools found. Enabling scanned class caching.");
-                devModeCachingEnabled = true;
-                ((ConfigurableApplicationContext) appContext)
-                        .addApplicationListener(new ReloadListener(e -> {
-                            // Updates cached white list and route packages
-                            Set<String> addedPackages = new HashSet<>();
-                            e.getAddedClasses().forEach(c -> {
-                                addedPackages.add(
-                                        c.substring(0, c.lastIndexOf(".")));
-                            });
-                            ReloadCache.dynamicWhiteList.addAll(addedPackages);
-                            ReloadCache.routePackages.addAll(addedPackages);
-                        }));
+                String devModeCachingProperty = appContext.getEnvironment()
+                        .getProperty("vaadin.devmode-caching");
+                if (devModeCachingProperty != null
+                        && !"true".equals(devModeCachingProperty)) {
+                    getLogger().info(
+                            "Disabling dev mode scanned class caching since "
+                                    + "vaadin.devmode-caching was set to a non-true value.");
+                } else {
+                    getLogger().info(
+                            "Spring Boot DevTools found. Enabling scanned class caching.");
+                    devModeCachingEnabled = true;
+                    ((ConfigurableApplicationContext) appContext)
+                            .addApplicationListener(new ReloadListener(e -> {
+                                // Updates cached white list and route packages
+                                Set<String> addedPackages = new HashSet<>();
+                                e.getAddedClasses().forEach(c -> {
+                                    addedPackages.add(
+                                            c.substring(0, c.lastIndexOf(".")));
+                                });
+                                ReloadCache.dynamicWhiteList
+                                        .addAll(addedPackages);
+                                ReloadCache.routePackages.addAll(addedPackages);
+                            }));
+                }
             }
         } catch (ClassNotFoundException e) {
             getLogger().info(
