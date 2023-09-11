@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -127,8 +128,9 @@ public final class BundleUtils {
      * @return chunk's hash
      */
     public static String getChunkHash(List<String> chunkLines) {
-        Collections.sort(chunkLines);
-        return StringUtil.getHash(String.join(";", chunkLines),
+        List<String> sortedChunkLines = new ArrayList<>(chunkLines);
+        Collections.sort(sortedChunkLines);
+        return StringUtil.getHash(String.join(";", sortedChunkLines),
                 StandardCharsets.UTF_8);
     }
 
