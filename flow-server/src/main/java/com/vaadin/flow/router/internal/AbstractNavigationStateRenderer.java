@@ -671,14 +671,18 @@ public abstract class AbstractNavigationStateRenderer
             return Optional.of(forwardToExternalUrl(event, beforeEvent));
         }
         if (beforeEvent.hasForwardTarget()
-                && !isSameNavigationState(beforeEvent.getForwardTargetType(),
-                        beforeEvent.getForwardTargetRouteParameters())) {
+                && (!isSameNavigationState(beforeEvent.getForwardTargetType(),
+                        beforeEvent.getForwardTargetRouteParameters())
+                        || !navigationState.getResolvedPath()
+                                .equals(beforeEvent.getForwardUrl()))) {
             return Optional.of(forward(event, beforeEvent));
         }
 
         if (beforeEvent.hasRerouteTarget()
-                && !isSameNavigationState(beforeEvent.getRerouteTargetType(),
-                        beforeEvent.getRerouteTargetRouteParameters())) {
+                && (!isSameNavigationState(beforeEvent.getRerouteTargetType(),
+                        beforeEvent.getRerouteTargetRouteParameters())
+                        || !navigationState.getResolvedPath()
+                                .equals(beforeEvent.getRerouteUrl()))) {
             return Optional.of(reroute(event, beforeEvent));
         }
 
