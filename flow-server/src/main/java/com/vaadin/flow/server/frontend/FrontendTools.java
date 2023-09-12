@@ -91,6 +91,10 @@ public class FrontendTools {
             + "%nInstall pnpm by following the instruction at https://pnpm.io/installation "
             + "%nor exclude 'pnpm.global' from the configuration or set it to false."
             + MSG_SUFFIX;
+    private static final String BUN_NOT_FOUND = MSG_PREFIX
+            + "%nVaadin is configured to use a globally installed bun, but bun was not found on your system."
+            + "%nInstall bun by following the instruction at https://bun.sh "
+            + MSG_SUFFIX;
 
     private static final String LOCAL_NODE_NOT_FOUND = MSG_PREFIX
             + "%nVaadin requires Node.js and npm to be installed. The %s directory already contains 'node' but it's either not a file "
@@ -1102,7 +1106,7 @@ public class FrontendTools {
                 .tryLocateTool(BuildTool.BUN.getCommand())
                 .map(File::getAbsolutePath).map(Collections::singletonList)
                 .orElseThrow(() -> new IllegalStateException(
-                        String.format(PNPM_NOT_FOUND)));
+                        String.format(BUN_NOT_FOUND)));
         bunCommand = Stream.of(bunCommand).filter(this::validateBunVersion)
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(
