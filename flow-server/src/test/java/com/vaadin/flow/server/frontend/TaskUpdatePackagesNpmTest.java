@@ -343,11 +343,11 @@ public class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    public void npmIsInUse_packageJsonHasBadVersion_pinnedVersionUsed()
+    public void npmIsInUse_packageJsonHasNonNumericVersion_versionNotOverridden()
             throws IOException {
         final JsonObject packageJson = getOrCreatePackageJson();
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
-        dependencies.put(VAADIN_ELEMENT_MIXIN, "asdfasagqae4rat");
+        dependencies.put(VAADIN_ELEMENT_MIXIN, "file:../foobar");
         FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
                 packageJson.toJson(), StandardCharsets.UTF_8);
 
@@ -359,9 +359,9 @@ public class TaskUpdatePackagesNpmTest {
 
         Assert.assertTrue("Updates not picked", task.modified);
 
-        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
+        verifyVersions(PLATFORM_DIALOG_VERSION, "file:../foobar",
                 PLATFORM_OVERLAY_VERSION);
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+        verifyVersionLockingWithNpmOverrides(true, false, true);
     }
 
     // #11025
