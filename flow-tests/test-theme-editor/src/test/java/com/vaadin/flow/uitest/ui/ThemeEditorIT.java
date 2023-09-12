@@ -155,7 +155,8 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
         }
     }
 
-    private Optional<String> updateProperty(TestBenchElement container, Property property) {
+    private Optional<String> updateProperty(TestBenchElement container,
+            Property property) {
         TestBenchElement element = container.$("*")
                 .attribute("data-testid", property.getPropertyName()).first();
         switch (property.getEditorType()) {
