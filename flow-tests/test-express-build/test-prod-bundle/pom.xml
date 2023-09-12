@@ -72,7 +72,7 @@
                 </executions>
                 <configuration>
                     <forceProductionBuild>true</forceProductionBuild>
-                    <enableBun>false</enableBun>
+                    <bunEnable>false</bunEnable>
                 </configuration>
             </plugin>
             <plugin>
