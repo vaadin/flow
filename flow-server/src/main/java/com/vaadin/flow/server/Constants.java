@@ -78,6 +78,11 @@ public final class Constants implements Serializable {
     public static final String PACKAGE_LOCK_YAML = "pnpm-lock.yaml";
 
     /**
+     * Name of the <code>bun</code> version locking ile.
+     */
+    public static final String PACKAGE_LOCK_BUN = "bun.lockb";
+
+    /**
      * Target folder constant.
      */
     public static final String TARGET = "target";
@@ -113,6 +118,11 @@ public final class Constants implements Serializable {
      * Constant for whether pnpm is default or not.
      */
     public static final boolean ENABLE_PNPM_DEFAULT = false;
+
+    /**
+     * Constant for whether bun is default or not.
+     */
+    public static final boolean ENABLE_BUN_DEFAULT = false;
 
     /**
      * Constant for setting the pinned supported version of pnpm to be used by

@@ -473,13 +473,6 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
     }
 
-    private void deletePnpmLockFile() throws IOException {
-        File lockFile = new File(options.getNpmFolder(), "pnpm-lock.yaml");
-        if (lockFile.exists()) {
-            FileUtils.forceDelete(lockFile);
-        }
-    }
-
     /**
      * Generate hash for package dependencies. This will consider both
      * 'dependencies' and 'devDependencies' of the packageJson format

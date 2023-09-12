@@ -97,10 +97,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        String toolName = options.isEnablePnpm() ? "pnpm" : "npm";
+        String toolName = getToolName(options);
         String command = "install";
         if (options.isCiBuild()) {
-            if (options.isEnablePnpm()) {
+            if (options.isEnablePnpm() || options.isEnableBun()) {
                 command += " --frozen-lockfile";
             } else {
                 command = "ci";
@@ -248,7 +248,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
             if (options.isRequireHomeNodeExec()) {
                 tools.forceAlternativeNodeExecutable();
             }
-            if (options.isEnablePnpm()) {
+            if (options.isEnableBun()) {
+                npmExecutable = tools.getBunExecutable();
+            } else if (options.isEnablePnpm()) {
                 validateInstalledNpm(tools);
                 npmExecutable = tools.getPnpmExecutable();
             } else {
@@ -267,7 +269,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         npmInstallCommand.add("--ignore-scripts");
 
         if (options.isCiBuild()) {
-            if (options.isEnablePnpm()) {
+            if (options.isEnablePnpm() || options.isEnableBun()) {
                 npmInstallCommand.add("install");
                 npmInstallCommand.add("--frozen-lockfile");
             } else {
@@ -286,7 +288,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                             npmInstallCommand));
         }
 
-        String toolName = options.isEnablePnpm() ? "pnpm" : "npm";
+        String toolName = getToolName(options);
 
         String commandString = npmInstallCommand.stream()
                 .collect(Collectors.joining(" "));
@@ -298,7 +300,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
         // missing as "npm install" in this case can take minutes
         // https://github.com/vaadin/flow/issues/12825
         File packageLockFile = packageUpdater.getPackageLockFile();
-        if (!options.isEnablePnpm() && !packageLockFile.exists()) {
+        if (!options.isEnableBun() && !options.isEnablePnpm()
+                && !packageLockFile.exists()) {
             packageUpdater.log().warn("package-lock.json is missing from this "
                     + "project. This may cause the npm package installation to "
                     + "take several minutes. It is recommended to keep the "
@@ -399,6 +402,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + postinstallPackage + "'",
                         e);
             }
+        }
+    }
+
+    static String getToolName(Options options) {
+        if (options.isEnableBun()) {
+            return "bun";
+        } else if (options.isEnablePnpm()) {
+            return "pnpm";
+        } else {
+            return "npm";
         }
     }
 

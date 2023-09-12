@@ -70,7 +70,7 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
      * Setting this to true will run {@code npm ci} instead of
      * {@code npm install} when using npm.
      *
-     * If using pnpm, the installation will be run with
+     * If using pnpm or bun, the installation will be run with
      * {@code --frozen-lockfile} parameter.
      *
      * This makes sure that the package lock file will not be overwritten.

@@ -271,6 +271,9 @@ public abstract class VaadinService implements Serializable {
         if (getDeploymentConfiguration().isPnpmEnabled()) {
             UsageStatistics.markAsUsed("flow/pnpm", null);
         }
+        if (getDeploymentConfiguration().isBunEnabled()) {
+            UsageStatistics.markAsUsed("flow/bun", null);
+        }
 
         initialized = true;
     }

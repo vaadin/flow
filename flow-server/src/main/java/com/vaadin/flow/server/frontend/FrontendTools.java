@@ -50,7 +50,7 @@ import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 
 /**
- * Provides access to frontend tools (Node.js and npm, pnpm) and optionally
+ * Provides access to frontend tools (Node.js and npm, pnpm, bun) and optionally
  * installs the tools if needed.
  * <p>
  * <b>WARNING:</b> This class is intended for internal usage only. May be
@@ -90,6 +90,10 @@ public class FrontendTools {
             + "%nVaadin is configured to use a globally installed pnpm ('pnpm.global=true'), but pnpm was not found on your system."
             + "%nInstall pnpm by following the instruction at https://pnpm.io/installation "
             + "%nor exclude 'pnpm.global' from the configuration or set it to false."
+            + MSG_SUFFIX;
+    private static final String BUN_NOT_FOUND = MSG_PREFIX
+            + "%nVaadin is configured to use a globally installed bun, but bun was not found on your system."
+            + "%nInstall bun by following the instruction at https://bun.sh "
             + MSG_SUFFIX;
 
     private static final String LOCAL_NODE_NOT_FOUND = MSG_PREFIX
@@ -139,9 +143,12 @@ public class FrontendTools {
 
     private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
             SUPPORTED_PNPM_MAJOR_VERSION, SUPPORTED_PNPM_MINOR_VERSION);
+    private static final FrontendVersion SUPPORTED_BUN_VERSION = new FrontendVersion(
+            1, 0, 6); // Bun 1.0.6 is the first version with "overrides" support
 
     private enum BuildTool {
-        NPM("npm", "npm-cli.js"), NPX("npx", "npx-cli.js"), PNPM("pnpm", null);
+        NPM("npm", "npm-cli.js"), NPX("npx", "npx-cli.js"), PNPM("pnpm",
+                null), BUN("bun", null);
 
         private final String name;
         private final String script;
@@ -590,6 +597,19 @@ public class FrontendTools {
         pnpmCommand = new ArrayList<>(pnpmCommand);
         pnpmCommand.add("--shamefully-hoist=true");
         return pnpmCommand;
+    }
+
+    /**
+     * Locate <code>bun</code> executable.
+     *
+     * @return the list of all commands in sequence that need to be executed to
+     *         have bun running
+     */
+    public List<String> getBunExecutable() {
+        List<String> bunCommand = getSuitableBun();
+        assert !bunCommand.isEmpty();
+        bunCommand = new ArrayList<>(bunCommand);
+        return bunCommand;
     }
 
     /**
@@ -1080,6 +1100,21 @@ public class FrontendTools {
         return pnpmCommand;
     }
 
+    List<String> getSuitableBun() {
+        List<String> bunCommand;
+        bunCommand = frontendToolsLocator
+                .tryLocateTool(BuildTool.BUN.getCommand())
+                .map(File::getAbsolutePath).map(Collections::singletonList)
+                .orElseThrow(() -> new IllegalStateException(
+                        String.format(BUN_NOT_FOUND)));
+        bunCommand = Stream.of(bunCommand).filter(this::validateBunVersion)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(
+                        "Found too old globally installed 'bun'. Please upgrade 'bun' to at least "
+                                + SUPPORTED_BUN_VERSION.getFullVersion()));
+        return bunCommand;
+    }
+
     private boolean validatePnpmVersion(List<String> pnpmCommand) {
         String commandLine = String.join(" ", pnpmCommand);
         try {
@@ -1095,6 +1130,29 @@ public class FrontendTools {
                         "pnpm '{}' is version {} which is not supported (expected >={})",
                         commandLine, pnpmVersion.getFullVersion(),
                         SUPPORTED_PNPM_VERSION.getFullVersion());
+            }
+            return versionAccepted;
+        } catch (UnknownVersionException e) {
+            getLogger().warn("version check '{}' failed", commandLine, e);
+            return false;
+        }
+    }
+
+    private boolean validateBunVersion(List<String> bunCommand) {
+        String commandLine = String.join(" ", bunCommand);
+        try {
+            List<String> versionCmd = new ArrayList<>(bunCommand);
+            versionCmd.add("--version"); // NOSONAR
+            FrontendVersion bunVersion = FrontendUtils.getVersion("bun",
+                    versionCmd);
+            boolean versionNewEnough = FrontendUtils
+                    .isVersionAtLeast(bunVersion, SUPPORTED_BUN_VERSION);
+            boolean versionAccepted = ignoreVersionChecks || versionNewEnough;
+            if (!versionAccepted) {
+                getLogger().warn(
+                        "bun '{}' is version {} which is not supported (expected >={})",
+                        commandLine, bunVersion.getFullVersion(),
+                        SUPPORTED_BUN_VERSION.getFullVersion());
             }
             return versionAccepted;
         } catch (UnknownVersionException e) {

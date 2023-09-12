@@ -91,6 +91,16 @@ public open class VaadinFlowPluginExtension(project: Project) {
     public var pnpmEnable: Boolean = Constants.ENABLE_PNPM_DEFAULT
 
     /**
+     * Instructs to use bun for installing npm frontend resources. Default is false.
+     *
+     * bun, is a better front-end dependency management option.
+     * With bun, packages are cached locally by default and linked (instead of
+     * downloaded) for every project. This results in reduced disk space usage
+     * and faster recurring builds when compared to npm.
+     */
+    public var bunEnable: Boolean = Constants.ENABLE_BUN_DEFAULT
+
+    /**
      * Whether the globally installed pnpm tool is used. By default, the
      * pinned supported version of pnpm is used, see [FrontendTools
      * .DEFAULT_PNPM_VERSION].
@@ -303,6 +313,11 @@ public open class VaadinFlowPluginExtension(project: Project) {
             pnpmEnable = pnpmEnableProperty
         }
 
+        val bunEnableProperty: Boolean? = project.getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_BUN)
+        if (bunEnableProperty != null) {
+            bunEnable = bunEnableProperty
+        }
+
         val ciBuildProperty: Boolean? = project.getBooleanProperty(InitParameters.CI_BUILD)
         if (ciBuildProperty != null) {
             ciBuild = ciBuildProperty
@@ -348,6 +363,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "frontendResourcesDirectory=$frontendResourcesDirectory, " +
             "optimizeBundle=$optimizeBundle, " +
             "pnpmEnable=$pnpmEnable, " +
+            "bunEnable=$bunEnable, " +
             "ciBuild=$ciBuild, " +
             "forceProductionBuild=$forceProductionBuild, " +
             "useGlobalPnpm=$useGlobalPnpm, " +

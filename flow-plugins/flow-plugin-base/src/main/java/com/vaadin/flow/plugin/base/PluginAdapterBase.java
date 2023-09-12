@@ -217,6 +217,14 @@ public interface PluginAdapterBase {
     boolean pnpmEnable();
 
     /**
+     * Instructs to use bun for installing npm frontend resources.
+     *
+     * @return boolean
+     */
+
+    boolean bunEnable();
+
+    /**
      * Instructs to use globally installed pnpm tool or the default supported
      * pnpm version.
      *

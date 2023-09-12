@@ -136,7 +136,7 @@ function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputF
       "Missing npm modules '" +
         missingModules.join("', '") +
         "' for assets marked in 'theme.json'.\n" +
-        "Install package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'"
+        "Install package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm/bun i'"
     );
   }
   Object.keys(assets).forEach((module) => {

@@ -166,6 +166,14 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
+    public boolean isBunEnabled() {
+        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_ENABLE_BUN)) {
+            return super.isBunEnabled();
+        }
+        return parentConfig.isBunEnabled();
+    }
+
+    @Override
     public boolean isErrorRedirectEnabled() {
         if (isOwnProperty(InitParameters.ERROR_HANDLER_REDIRECT_ENABLED)) {
             return super.isErrorRedirectEnabled();

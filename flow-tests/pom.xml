@@ -126,6 +126,7 @@
                     <version>${project.version}</version>
                     <configuration>
                         <pnpmEnable>${vaadin.pnpm.enable}</pnpmEnable>
+                        <bunEnable>${vaadin.bun.enable}</bunEnable>
                     </configuration>
                     <executions>
                         <execution>
@@ -441,6 +442,7 @@
                                         <include>types.d.ts</include>
                                         <include>tsconfig.json</include>
                                         <include>pnpm-lock.yaml</include>
+                                        <include>bun.lockb</include>
                                         <include>node_modules/**</include>
                                     </includes>
                                 </fileset>
