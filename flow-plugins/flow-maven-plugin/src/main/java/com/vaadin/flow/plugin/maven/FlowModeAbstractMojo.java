@@ -143,6 +143,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private boolean pnpmEnable;
 
     /**
+     * Instructs to use bun for installing npm frontend resources.
+     */
+    @Parameter(property = InitParameters.SERVLET_PARAMETER_ENABLE_BUN, defaultValue = "false")
+    private boolean bunEnable;
+
+    /**
      * Instructs to use globally installed pnpm tool or the default supported
      * pnpm version.
      */
@@ -377,6 +383,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     public boolean pnpmEnable() {
 
         return pnpmEnable;
+    }
+
+    @Override
+    public boolean bunEnable() {
+
+        return bunEnable;
     }
 
     @Override

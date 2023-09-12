@@ -137,6 +137,8 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
 
     override fun pnpmEnable(): Boolean = extension.pnpmEnable
 
+    override fun bunEnable(): Boolean = extension.bunEnable
+
     override fun useGlobalPnpm(): Boolean = extension.useGlobalPnpm
 
     override fun projectBaseDirectory(): Path = project.projectDir.toPath()

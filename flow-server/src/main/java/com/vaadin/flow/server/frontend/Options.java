@@ -61,6 +61,7 @@ public class Options implements Serializable {
     private File tokenFile;
 
     private boolean enablePnpm = Constants.ENABLE_PNPM_DEFAULT;
+    private boolean enableBun = false;
 
     private boolean ciBuild;
 
@@ -392,6 +393,20 @@ public class Options implements Serializable {
      */
     public Options withEnablePnpm(boolean enable) {
         enablePnpm = enable;
+        return this;
+    }
+
+    /**
+     * Enables bun tool.
+     * <p>
+     * "bun" will be used instead of "npm".
+     *
+     * @param enable
+     *            enables bun.
+     * @return the builder, for chaining
+     */
+    public Options withEnableBun(boolean enable) {
+        enableBun = enable;
         return this;
     }
 
@@ -728,6 +743,10 @@ public class Options implements Serializable {
         return enablePnpm;
     }
 
+    public boolean isEnableBun() {
+        return enableBun;
+    }
+
     public boolean isCiBuild() {
         return ciBuild;
     }
@@ -816,4 +835,5 @@ public class Options implements Serializable {
     public boolean isSkipDevBundle() {
         return skipDevBundle;
     }
+
 }
