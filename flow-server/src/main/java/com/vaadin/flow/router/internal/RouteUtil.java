@@ -284,7 +284,11 @@ public class RouteUtil {
         RoutePathProvider provider = null;
         Lookup lookup = context.getAttribute(Lookup.class);
         if (lookup != null) {
-            provider = lookup.lookup(RoutePathProvider.class);
+            provider = context.getAttribute(RoutePathProvider.class);
+            if (provider == null) {
+                provider = lookup.lookup(RoutePathProvider.class);
+                context.setAttribute(RoutePathProvider.class, provider);
+            }
             assert provider != null;
         }
         if (provider == null) {
