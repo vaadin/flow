@@ -115,6 +115,11 @@ public final class Constants implements Serializable {
     public static final boolean ENABLE_PNPM_DEFAULT = false;
 
     /**
+     * Constant for whether bun is default or not.
+     */
+    public static final boolean ENABLE_BUN_DEFAULT = true;
+
+    /**
      * Constant for setting the pinned supported version of pnpm to be used by
      * default (see
      * {@link com.vaadin.flow.server.frontend.FrontendTools#DEFAULT_PNPM_VERSION}).

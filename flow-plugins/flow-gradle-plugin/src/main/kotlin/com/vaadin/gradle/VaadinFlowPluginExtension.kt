@@ -98,7 +98,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
      * downloaded) for every project. This results in reduced disk space usage
      * and faster recurring builds when compared to npm.
      */
-    public var bunEnable: Boolean = false
+    public var bunEnable: Boolean = Constants.ENABLE_BUN_DEFAULT
 
     /**
      * Whether the globally installed pnpm tool is used. By default, the
