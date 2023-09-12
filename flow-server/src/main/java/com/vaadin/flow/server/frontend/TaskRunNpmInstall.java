@@ -97,7 +97,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        String toolName = options.isEnablePnpm() ? "pnpm" : "npm";
+        String toolName = options.isEnableBun() ? "bun"
+                : options.isEnablePnpm() ? "pnpm" : "npm";
         String command = "install";
         if (options.isCiBuild()) {
             if (options.isEnablePnpm()) {
@@ -248,7 +249,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
             if (options.isRequireHomeNodeExec()) {
                 tools.forceAlternativeNodeExecutable();
             }
-            if (options.isEnablePnpm()) {
+            if (options.isEnableBun()) {
+                npmExecutable = tools.getBunExecutable();
+            } else if (options.isEnablePnpm()) {
                 validateInstalledNpm(tools);
                 npmExecutable = tools.getPnpmExecutable();
             } else {
