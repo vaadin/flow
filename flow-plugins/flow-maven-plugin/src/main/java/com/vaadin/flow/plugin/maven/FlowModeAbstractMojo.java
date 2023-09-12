@@ -145,7 +145,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Instructs to use bun for installing npm frontend resources.
      */
-    @Parameter(property = InitParameters.SERVLET_PARAMETER_ENABLE_BUN, defaultValue = "false")
+    @Parameter(property = InitParameters.SERVLET_PARAMETER_ENABLE_BUN, defaultValue = ""
+            + Constants.ENABLE_BUN_DEFAULT)
     private boolean bunEnable;
 
     /**
