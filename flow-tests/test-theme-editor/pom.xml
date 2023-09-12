@@ -47,7 +47,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-button-flow</artifactId>
-            <version>24.1.8</version>
+            <version>24.1.9</version>
         </dependency>
     </dependencies>
 
