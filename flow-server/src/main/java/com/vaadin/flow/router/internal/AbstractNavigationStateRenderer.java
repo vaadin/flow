@@ -658,19 +658,18 @@ public abstract class AbstractNavigationStateRenderer
         if (beforeEvent.hasExternalForwardUrl()) {
             return Optional.of(forwardToExternalUrl(event, beforeEvent));
         }
-        if (beforeEvent.hasForwardTarget()
-                && (!isSameNavigationState(beforeEvent.getForwardTargetType(),
-                        beforeEvent.getForwardTargetRouteParameters())
-                        || !navigationState.getResolvedPath()
-                                .equals(beforeEvent.getForwardUrl()))) {
+        if (beforeEvent.hasForwardTarget() && (!isSameNavigationState(
+                beforeEvent.getForwardTargetType(),
+                beforeEvent.getForwardTargetRouteParameters())
+                || !(navigationState.getResolvedPath() != null
+                        && navigationState.getResolvedPath()
+                                .equals(beforeEvent.getForwardUrl())))) {
             return Optional.of(forward(event, beforeEvent));
         }
 
         if (beforeEvent.hasRerouteTarget()
-                && (!isSameNavigationState(beforeEvent.getRerouteTargetType(),
-                        beforeEvent.getRerouteTargetRouteParameters())
-                        || !navigationState.getResolvedPath()
-                                .equals(beforeEvent.getRerouteUrl()))) {
+                && !isSameNavigationState(beforeEvent.getRerouteTargetType(),
+                        beforeEvent.getRerouteTargetRouteParameters())) {
             return Optional.of(reroute(event, beforeEvent));
         }
 

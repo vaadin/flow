@@ -258,12 +258,6 @@ public class VaadinServletContextInitializerTest {
         }).when(servletContext)
                 .addListener(Mockito.any(ServletContextListener.class));
 
-        servletDeployerMock.when(() -> ServletDeployer
-                .logAppStartupToConsole(Mockito.any(), Mockito.anyBoolean()))
-                .then(answer -> {
-                    return null;
-                });
-
         return vaadinServletContextInitializerMock;
     }
 
