@@ -34,6 +34,11 @@ in `frontend/generated-js` folder. Javascript in the file defines a simple
 web-component with
 Lit. Web component is added to the DOM of the route. Default is 0.
 
+`vaadin.test.codegen.maven.plugin.include.addons`: When 'true', generates '
+addons' route that
+uses various Vaadin addons in its constructor. Only use together
+with `benchmark-directory-addons` Maven profile.
+
 ### Other properties for the integration test
 
 `route.hierarchy.enabled`: When 'true', adds a route with hierarchical
