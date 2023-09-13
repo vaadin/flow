@@ -666,12 +666,9 @@ public abstract class AbstractNavigationStateRenderer
             return Optional.of(forward(event, beforeEvent));
         }
 
-        if (beforeEvent.hasRerouteTarget() && (!isSameNavigationState(
-                beforeEvent.getRerouteTargetType(),
-                beforeEvent.getRerouteTargetRouteParameters())
-                || !(navigationState.getResolvedPath() != null
-                        && navigationState.getResolvedPath()
-                                .equals(beforeEvent.getRerouteUrl())))) {
+        if (beforeEvent.hasRerouteTarget()
+                && !isSameNavigationState(beforeEvent.getRerouteTargetType(),
+                        beforeEvent.getRerouteTargetRouteParameters())) {
             return Optional.of(reroute(event, beforeEvent));
         }
 
