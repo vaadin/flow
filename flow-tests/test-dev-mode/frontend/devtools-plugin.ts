@@ -11,7 +11,6 @@ let devTools: DevToolsInterface;
 
 @customElement('my-tool')
 export class MyTool extends LitElement implements MessageHandler {
-
   @property({ type: Array })
   messages: string[] = [];
 
@@ -44,6 +43,12 @@ export class MyTool extends LitElement implements MessageHandler {
       uiId: realClients[0].getUIId(),
       text: 'Hello from dev tools plugin'
     });
+  }
+  activate() {
+    this.messages.push('activate called');
+  }
+  deactivate() {
+    this.messages.push('deactivate called');
   }
 }
 

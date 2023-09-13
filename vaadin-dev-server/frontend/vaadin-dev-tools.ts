@@ -1371,6 +1371,13 @@ export class VaadinDevTools extends LitElement {
                 })}
                 id="${tab.id}"
                 @click=${() => {
+                  const currentTab = this.tabs.find((tab) => tab.id === this.activeTab);
+                  if (currentTab && currentTab.element) {
+                    const deactivateMethod = (currentTab.element as any)?.deactivate;
+                    if (deactivateMethod) {
+                      deactivateMethod.call(currentTab.element);
+                    }
+                  }
                   this.activeTab = tab.id;
                   const activateMethod = (tab.element as any).activate;
                   if (activateMethod) {
