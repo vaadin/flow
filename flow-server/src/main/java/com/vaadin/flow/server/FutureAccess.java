@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.server;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 /**
  * Encapsulates a {@link Command} submitted using
@@ -31,6 +34,8 @@ import org.slf4j.LoggerFactory;
 public class FutureAccess extends FutureTask<Void> {
     private final VaadinSession session;
     private final Command command;
+    private final Iterable<VaadinCommandInterceptor> interceptors;
+    private final Map<Object, Object> context = new HashMap<>(); // TODO: ConcurrentHashMap?
 
     /**
      * Creates an instance for the given command.
@@ -40,10 +45,17 @@ public class FutureAccess extends FutureTask<Void> {
      * @param command
      *            the command to run when this task is purged from the queue
      */
-    public FutureAccess(VaadinSession session, Command command) {
+    public FutureAccess(Iterable<VaadinCommandInterceptor> interceptors, VaadinSession session, Command command) {
         super(command::execute, null);
         this.session = session;
         this.command = command;
+        this.interceptors = interceptors;
+    }
+
+    @Override
+    public void run() {
+        this.interceptors.forEach(interceptor -> interceptor.commandExecutionStart(context, command));
+        super.run();
     }
 
     @Override
@@ -59,7 +71,9 @@ public class FutureAccess extends FutureTask<Void> {
          * easier to detect potential problems.
          */
         VaadinService.verifyNoOtherSessionLocked(session);
-        return super.get();
+        Void unused = super.get();
+        interceptors.forEach(interceptor -> interceptor.commandExecutionEnd(context, command));
+        return unused;
     }
 
     /**
@@ -70,6 +84,7 @@ public class FutureAccess extends FutureTask<Void> {
      */
     public void handleError(Exception exception) {
         try {
+            interceptors.forEach(interceptor -> interceptor.handleException(context, command, exception));
             if (command instanceof ErrorHandlingCommand) {
                 ErrorHandlingCommand errorHandlingCommand = (ErrorHandlingCommand) command;
 
@@ -88,6 +103,8 @@ public class FutureAccess extends FutureTask<Void> {
             }
         } catch (Exception e) {
             getLogger().error(e.getMessage(), e);
+        } finally {
+            interceptors.forEach(interceptor -> interceptor.commandExecutionEnd(context, command));
         }
     }
 

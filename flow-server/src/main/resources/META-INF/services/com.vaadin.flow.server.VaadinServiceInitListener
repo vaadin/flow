@@ -1,1 +1,1 @@
-com.vaadin.flow.server.VaadinRequestInterceptorServiceInitListener
+com.vaadin.flow.server.VaadinInterceptorsServiceInitListener

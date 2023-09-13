@@ -18,7 +18,7 @@ package com.vaadin.flow.server;
 import java.util.Collections;
 
 /**
- * Sets all {@link VaadinRequestInterceptor} on an {@link ServiceInitEvent}.
+ * Sets all Vaadin interceptors on an {@link ServiceInitEvent}.
  *
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -27,20 +27,25 @@ import java.util.Collections;
  * @author Marcin Grzejszczak
  * @since 24.2
  */
-public class VaadinRequestInterceptorServiceInitListener
+public class VaadinInterceptorsServiceInitListener
         implements VaadinServiceInitListener {
 
-    private final Iterable<VaadinRequestInterceptor> interceptors;
+    private final Iterable<VaadinRequestInterceptor> requestInterceptors;
+    private final Iterable<VaadinCommandInterceptor> commandInterceptors;
 
     /**
      * For DI based mechanisms like e.g. Spring.
      *
-     * @param interceptors
+     * @param requestInterceptors
      *            request interceptors
+     * @param commandInterceptors
+     *            command interceptors
      */
-    public VaadinRequestInterceptorServiceInitListener(
-            Iterable<VaadinRequestInterceptor> interceptors) {
-        this.interceptors = interceptors;
+    public VaadinInterceptorsServiceInitListener(
+            Iterable<VaadinRequestInterceptor> requestInterceptors,
+            Iterable<VaadinCommandInterceptor> commandInterceptors) {
+        this.requestInterceptors = requestInterceptors;
+        this.commandInterceptors = commandInterceptors;
     }
 
     /**
@@ -48,16 +53,21 @@ public class VaadinRequestInterceptorServiceInitListener
      *
      * @see com.vaadin.flow.di.DefaultInstantiator
      */
-    public VaadinRequestInterceptorServiceInitListener() {
-        this.interceptors = VaadinService.getCurrent() != null
+    public VaadinInterceptorsServiceInitListener() {
+        this.requestInterceptors = VaadinService.getCurrent() != null
                 ? VaadinService.getCurrent().getInstantiator()
                         .getAll(VaadinRequestInterceptor.class).toList()
+                : Collections.emptyList();
+        this.commandInterceptors = VaadinService.getCurrent() != null
+                ? VaadinService.getCurrent().getInstantiator()
+                        .getAll(VaadinCommandInterceptor.class).toList()
                 : Collections.emptyList();
     }
 
     @Override
     public void serviceInit(ServiceInitEvent event) {
-        interceptors.forEach(event::addVaadinRequestInterceptor);
+        requestInterceptors.forEach(event::addVaadinRequestInterceptor);
+        commandInterceptors.forEach(event::addVaadinCommandInterceptor);
     }
 
 }

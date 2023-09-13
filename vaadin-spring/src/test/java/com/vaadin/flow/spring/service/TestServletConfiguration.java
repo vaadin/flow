@@ -22,6 +22,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Map;
+
 @Configuration
 @ComponentScan
 @SpringBootConfiguration
@@ -35,10 +37,16 @@ public class TestServletConfiguration {
         }
 
         @Bean
-        VaadinRequestInterceptorServiceInitListener vaadinRequestInterceptorServiceInitListener(
-                ObjectProvider<VaadinRequestInterceptor> interceptors) {
-            return new VaadinRequestInterceptorServiceInitListener(
-                    interceptors);
+        MyVaadinComandInterceptor myVaadinComandInterceptor() {
+            return new MyVaadinComandInterceptor();
+        }
+
+        @Bean
+        VaadinInterceptorsServiceInitListener vaadinRequestInterceptorServiceInitListener(
+                ObjectProvider<VaadinRequestInterceptor> requestInterceptors,
+                ObjectProvider<VaadinCommandInterceptor> commandInterceptors) {
+            return new VaadinInterceptorsServiceInitListener(
+                    requestInterceptors, commandInterceptors);
         }
     }
 
@@ -59,6 +67,27 @@ public class TestServletConfiguration {
         @Override
         public void requestEnd(VaadinRequest request, VaadinResponse response,
                 VaadinSession session) {
+        }
+    }
+
+    static class MyVaadinComandInterceptor implements VaadinCommandInterceptor {
+
+        @Override
+        public void commandExecutionStart(Map<Object, Object> context,
+                Command command) {
+
+        }
+
+        @Override
+        public void handleException(Map<Object, Object> context,
+                Command command, Exception t) {
+
+        }
+
+        @Override
+        public void commandExecutionEnd(Map<Object, Object> context,
+                Command command) {
+
         }
     }
 }

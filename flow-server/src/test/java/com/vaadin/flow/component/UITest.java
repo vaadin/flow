@@ -16,31 +16,6 @@
 
 package com.vaadin.flow.component;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
@@ -54,43 +29,32 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.router.AfterNavigationEvent;
-import com.vaadin.flow.router.AfterNavigationListener;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterListener;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.BeforeLeaveEvent;
-import com.vaadin.flow.router.BeforeLeaveListener;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.ListenerPriority;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.NotFoundException;
-import com.vaadin.flow.router.QueryParameters;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.router.RouteNotFoundError;
-import com.vaadin.flow.router.RouteParam;
-import com.vaadin.flow.router.RouteParameters;
-import com.vaadin.flow.router.RoutePrefix;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
-import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.MockVaadinContext;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.*;
 import com.vaadin.flow.server.frontend.MockLogger;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.junit.Assert.*;
 
 public class UITest {
 
@@ -173,6 +137,30 @@ public class UITest {
         }
     }
 
+    static class MyInterceptor implements VaadinCommandInterceptor {
+
+        Map<Object, Object> map;
+
+        @Override
+        public void commandExecutionStart(Map<Object, Object> context,
+                Command command) {
+            map = context;
+            context.put("observation.started", true);
+        }
+
+        @Override
+        public void handleException(Map<Object, Object> context,
+                Command command, Exception t) {
+            context.put("observation.error", t);
+        }
+
+        @Override
+        public void commandExecutionEnd(Map<Object, Object> context,
+                Command command) {
+            context.put("observation.end", true);
+        }
+    }
+
     @After
     public void tearDown() {
         CurrentInstance.clearAll();
@@ -209,7 +197,12 @@ public class UITest {
     }
 
     private static void initUI(UI ui, String initialLocation,
-            ArgumentCaptor<Integer> statusCodeCaptor)
+            ArgumentCaptor<Integer> statusCodeCaptor) {
+        initUI(ui, initialLocation, statusCodeCaptor, null);
+    }
+
+    private static void initUI(UI ui, String initialLocation,
+            ArgumentCaptor<Integer> statusCodeCaptor, MyInterceptor myInterceptor)
             throws InvalidRouteConfigurationException {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
@@ -227,6 +220,15 @@ public class UITest {
             @Override
             public VaadinContext getContext() {
                 return new MockVaadinContext();
+            }
+
+            @Override
+            protected List<VaadinCommandInterceptor> createVaadinCommandInterceptor()
+                    throws ServiceException {
+                if (myInterceptor != null) {
+                    return Collections.singletonList(myInterceptor);
+                }
+                return super.createVaadinCommandInterceptor();
             }
         };
         service.setCurrentInstances(request, response);
@@ -606,6 +608,26 @@ public class UITest {
                 "No UIDetachedException should be logged but got: "
                         + logOutputNoDebug,
                 logOutputNoDebug.contains("UIDetachedException"));
+    }
+
+    @Test
+    public void unsetSession_commandInterceptorGetsExecuted() throws IOException {
+        MyInterceptor myInterceptor = new MyInterceptor();
+        UI ui = createTestUI();
+        initUI(ui, "", null, myInterceptor);
+
+        ui.getSession().access(() -> ui.getInternals().setSession(null));
+        ui.access(() -> {
+            Assert.fail("We should never get here because the UI is detached");
+        });
+
+        // Unlock to run pending access tasks
+        ui.getSession().unlock();
+
+        Map<Object, Object> map = myInterceptor.map;
+        Assert.assertTrue("Listener must be called on command start", map.containsKey("observation.started"));
+        Assert.assertTrue("Listener must be called on command error", map.containsKey("observation.error"));
+        Assert.assertTrue("Listener must be called on command end", map.containsKey("observation.end"));
     }
 
     @Test
