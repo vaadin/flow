@@ -340,6 +340,7 @@
             <modules>
                 <module>test-spring-boot-reload-time</module>
                 <module>test-spring-boot-multimodule-reload-time</module>
+                <module>test-plain-spring-boot-reload-time</module>
             </modules>
         </profile>
 

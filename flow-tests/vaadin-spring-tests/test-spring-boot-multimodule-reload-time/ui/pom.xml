@@ -79,7 +79,78 @@
             </artifactId>
             <version>${project.version}</version>
         </dependency>
+
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>benchmark-directory-addons</id>
+<!--            Profile is meant only for measuring reload time of application with -->
+<!--            multiple dependencies to add-ons for Vaadin 24.   -->
+            <dependencies>
+                <dependency>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>vaadin-core</artifactId>
+                    <version>${component.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.vaadin.addons.componentfactory</groupId>
+                    <artifactId>vcf-input-mask</artifactId>
+                    <version>2.0.0</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>com.vaadin</groupId>
+                            <artifactId>vaadin-core</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+                <dependency>
+                    <groupId>com.vaadin.componentfactory</groupId>
+                    <artifactId>idle-notification</artifactId>
+                    <version>2.0.1</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>com.vaadin</groupId>
+                            <artifactId>vaadin-core</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+                <dependency>
+                    <groupId>com.vaadin.componentfactory</groupId>
+                    <artifactId>autocomplete</artifactId>
+                    <version>24.1.5</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>com.vaadin</groupId>
+                            <artifactId>vaadin-core</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+                <dependency>
+                    <groupId>com.vaadin.componentfactory</groupId>
+                    <artifactId>lookup-field-flow</artifactId>
+                    <version>24.0.2</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>com.vaadin</groupId>
+                            <artifactId>vaadin-core</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+                <dependency>
+                    <groupId>com.vaadin.componentfactory</groupId>
+                    <artifactId>togglebutton</artifactId>
+                    <version>3.0.0</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>com.vaadin</groupId>
+                            <artifactId>vaadin-core</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
     <build>
         <defaultGoal>spring-boot:run</defaultGoal>

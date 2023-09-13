@@ -55,9 +55,10 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
     private void printTestResultToLog(String result) {
         System.out.printf(
-                "##teamcity[buildStatisticValue key='%s,app,%s-routes,%s-services-per-route,spring-boot-devtools-reload-time' value='%s']%n",
+                "##teamcity[buildStatisticValue key='%s,app%s%s,%s-routes,%s-services-per-route%s%s,spring-boot-devtools-reload-time' value='%s']%n",
                 getVaadinMajorMinorVersion(),
                 (hasRouteHierarchy() ? ",route-hierarchy-enabled" : ""),
+                (hasIncludeAddons() ? ",include-addons" : ""),
                 getNumberOfGeneratedRoutesProperty(),
                 getNumberOfGeneratedServicesPerRouteProperty(),
                 (hasCssImports()
@@ -125,5 +126,10 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
     private boolean hasRouteHierarchy() {
         return "true".equalsIgnoreCase(
                 System.getProperty("route.hierarchy.enabled", "false"));
+    }
+
+    private boolean hasIncludeAddons() {
+        return "true".equalsIgnoreCase(System.getProperty(
+                "vaadin.test.codegen.maven.plugin.include.addons", "false"));
     }
 }

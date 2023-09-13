@@ -1,0 +1,74 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml" lang="en">
+
+<head>
+    <title>Page</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+</head>
+<body>
+    Greetings from Spring Boot!
+    <br/>
+    <br/>
+    <button id="start-button" onclick="onStart()">Click to Start</button>
+    <br/>
+    <span id="result"></span>
+    <br/>
+    <br/>
+    <span id="log"></span>
+    <br/>
+    <span id="error" style="color:red;"></span>
+
+    <script src="/benchmark.js"></script>
+    <script>
+        function onStart() {
+            document.getElementById("result").hidden = true;
+            console.log('Benchmark started.');
+            window.benchmark.start();
+
+            fetch("/start", {
+            method: "POST"
+            })
+            .then((resp) => {
+                document.getElementById("log").textContent = "Waiting page reload...";
+                let waituntilReady;
+                waituntilReady = () => {
+                    setTimeout(() => {
+                        let error = false;
+                        fetch("/isready", { method: "GET" })
+                        .then(response => {
+                            error = !response.ok;
+                            return response.text();
+                        })
+                        .then((text) => {
+                            if(text === "true") {
+                                document.getElementById("log").textContent = "Reload page now.";
+                                window.location.reload();
+                            } else if(text === "false") {
+                                document.getElementById("log").textContent += ".";
+                                waituntilReady();
+                            } else {
+                                document.getElementById("log").textContent += ".";
+                                document.getElementById("error").innerHTML += (error ? "Error: " : "Body: ") + `${text}<br/>`;
+                                waituntilReady();
+                            }
+                        })
+                        .catch((error) => {
+                            document.getElementById("log").textContent += ".";
+                            document.getElementById("error").innerHTML += `Exception: ${error.message}<br/>`;
+                            waituntilReady();
+                        });
+                    }, 40);
+                };
+                waituntilReady();
+            });
+        }
+
+        document.getElementById("start-button").addEventListener("componentready", event => {
+            console.log("componentready: " + event.detail.result);
+            document.getElementById("result").textContent = "Reload time by class change was [" + event.detail.result + "] ms";
+            document.getElementById("result").hidden = false;
+        });
+        window.benchmark.measureRender(document.getElementById("start-button"));
+    </script>
+</body>
+</html>
