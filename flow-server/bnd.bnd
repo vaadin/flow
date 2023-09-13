@@ -3,6 +3,6 @@ Bundle-Name: Vaadin Flow Server
 Bundle-Version: ${osgi.bundle.version}
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-License: https://vaadin.com/commercial-license-and-service-terms
-Import-Package: org.atmosphere*;resolution:=optional;version='${atmosphere.runtime.version}',\
+Import-Package: org.atmosphere*;resolution:=optional;bundle-version='${atmosphere.runtime.version}',\
     org.apache.http*;resolution:=optional;,*
 Export-Package: !com.vaadin.flow.push*, com.vaadin.flow*;-noimport:=true
