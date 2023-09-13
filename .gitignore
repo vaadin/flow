@@ -76,3 +76,4 @@ flow-tests/test-express-build/test-embedding-express-build/src/main/dev-bundle
 
 # Exclude generated vaadin dev tools frontend
 vaadin-dev-server/src/main/resources/META-INF/frontend
+vaadin-dev-server/src/main/resources/META-INF/metadata
