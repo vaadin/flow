@@ -15,6 +15,10 @@
     <description>Provides Spring integration for Vaadin applications.</description>
     <packaging>jar</packaging>
 
+    <properties>
+        <micrometer.version>1.12.0-SNAPSHOT</micrometer.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -56,6 +60,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -101,6 +110,12 @@
             <groupId>com.vaadin</groupId>
             <artifactId>flow-data</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-jakarta</artifactId>
+            <version>${micrometer.version}</version>
             <optional>true</optional>
         </dependency>
 
@@ -175,13 +190,13 @@
 
     <dependencyManagement>
         <dependencies>
-	        <dependency>
-	            <groupId>org.springframework.boot</groupId>
-	            <artifactId>spring-boot-dependencies</artifactId>
-	            <version>${spring.boot.version}</version>
-	            <type>pom</type>
-	            <scope>import</scope>
-	        </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
