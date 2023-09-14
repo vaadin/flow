@@ -276,7 +276,9 @@ public class VaadinServletContextInitializer
                                 Stream.of(LookupInitializer.class,
                                         SpringLookupInitializer.class))
                         .collect(Collectors.toSet());
-                ReloadCache.lookupClasses = classes;
+                if (devModeCachingEnabled) {
+                    ReloadCache.lookupClasses = classes;
+                }
             }
             process(classes, event.getServletContext());
 
@@ -640,7 +642,9 @@ public class VaadinServletContextInitializer
                         VaadinAppShellInitializer.getValidAnnotations(),
                         VaadinAppShellInitializer.getValidSupers())
                         .collect(Collectors.toSet());
-                ReloadCache.appShellClasses = classes;
+                if (devModeCachingEnabled) {
+                    ReloadCache.appShellClasses = classes;
+                }
             }
 
             VaadinAppShellInitializer.init(classes,
