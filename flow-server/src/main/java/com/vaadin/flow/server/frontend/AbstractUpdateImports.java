@@ -37,6 +37,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.UnaryOperator;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -89,7 +91,7 @@ abstract class AbstractUpdateImports implements Runnable {
             + "%n" + "registerStyles('%s', $css_%1$d%s);";
 
     private static final String IMPORT_TEMPLATE = "import '%s';";
-
+    private static final Pattern STARTING_DOT_SLASH = Pattern.compile("^\\./+");
     final Options options;
 
     private FrontendDependenciesScanner scanner;
@@ -398,7 +400,8 @@ abstract class AbstractUpdateImports implements Runnable {
 
             // We only should check here those paths starting with './' when all
             // flow components have the './' prefix
-            String resource = resolved.replaceFirst("^\\./+", "");
+            String resource = STARTING_DOT_SLASH.matcher(resolved)
+                    .replaceFirst("");
             if (hasMetaInfResource(resource)) {
                 if (!resolved.startsWith("./")) {
                     getLogger().warn(
@@ -466,6 +469,22 @@ abstract class AbstractUpdateImports implements Runnable {
         Set<String> resourceNotFound = new HashSet<>();
         Set<String> es6ImportPaths = new LinkedHashSet<>();
         AbstractTheme theme = scanner.getTheme();
+
+        UnaryOperator<String> convertToLocalPath;
+        if (theme != null) {
+            // (#5964) Allows:
+            // - custom @Theme with files placed in /frontend
+            // - customize an already themed component
+            // @vaadin/vaadin-grid/theme/lumo/vaadin-grid.js ->
+            // theme/lumo/vaadin-grid.js
+            String themePath = theme.getThemeUrl();
+            Pattern themePattern = Pattern.compile("@.+" + themePath);
+            convertToLocalPath = path -> themePattern.matcher(path)
+                    .replaceFirst(themePath);
+        } else {
+            convertToLocalPath = UnaryOperator.identity();
+        }
+
         Set<String> visited = new HashSet<>();
 
         for (String originalModulePath : modules) {
@@ -474,15 +493,8 @@ abstract class AbstractUpdateImports implements Runnable {
             if (theme != null
                     && translatedModulePath.contains(theme.getBaseUrl())) {
                 translatedModulePath = theme.translateUrl(translatedModulePath);
-                String themePath = theme.getThemeUrl();
-
-                // (#5964) Allows:
-                // - custom @Theme with files placed in /frontend
-                // - customize an already themed component
-                // @vaadin/vaadin-grid/theme/lumo/vaadin-grid.js ->
-                // theme/lumo/vaadin-grid.js
-                localModulePath = translatedModulePath
-                        .replaceFirst("@.+" + themePath, themePath);
+                localModulePath = convertToLocalPath
+                        .apply(translatedModulePath);
             }
 
             if (localModulePath != null
@@ -737,7 +749,8 @@ abstract class AbstractUpdateImports implements Runnable {
                         "Use the './' prefix for files in the '{}' folder: '{}', please update your annotations.",
                         options.getFrontendDirectory(), jsImport);
             }
-            return FRONTEND_FOLDER_ALIAS + jsImport.replaceFirst("^\\./", "");
+            return FRONTEND_FOLDER_ALIAS
+                    + STARTING_DOT_SLASH.matcher(jsImport).replaceFirst("");
         }
         return jsImport;
     }

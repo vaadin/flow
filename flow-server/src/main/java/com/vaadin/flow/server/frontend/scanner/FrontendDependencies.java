@@ -229,8 +229,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         entryPoint.reachableClasses = collectReachableClasses(entryPoint);
         if (log().isDebugEnabled()) {
-            log().debug("Classes reachable from " + entryPoint.getName() + ": "
-                    + entryPoint.reachableClasses);
+            log().debug("Classes reachable from {}: {}", entryPoint.getName(),
+                    entryPoint.reachableClasses);
         }
 
     }
