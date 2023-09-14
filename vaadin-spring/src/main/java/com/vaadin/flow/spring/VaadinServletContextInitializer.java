@@ -110,27 +110,27 @@ public class VaadinServletContextInitializer
      * Packages that should be excluded when scanning all packages.
      */
     private static final List<String> DEFAULT_SCAN_NEVER = Stream.of("antlr",
-                    "cglib", "ch/quos/logback", "commons-codec", "commons-fileupload",
-                    "commons-io", "commons-logging", "com/fasterxml", "com/google",
-                    "com/h2database", "com/helger", "com/vaadin/external/atmosphere",
-                    "com/vaadin/webjar", "junit", "net/bytebuddy", "org/apache",
-                    "org/aspectj", "org/bouncycastle", "org/dom4j", "org/easymock",
-                    "org/eclipse/persistence", "org/hamcrest", "org/hibernate",
-                    "org/javassist", "org/jboss", "org/jsoup", "org/seleniumhq",
-                    "org/slf4j", "org/atmosphere", "org/springframework",
-                    "org/webjars/bowergithub", "org/yaml",
+            "cglib", "ch/quos/logback", "commons-codec", "commons-fileupload",
+            "commons-io", "commons-logging", "com/fasterxml", "com/google",
+            "com/h2database", "com/helger", "com/vaadin/external/atmosphere",
+            "com/vaadin/webjar", "junit", "net/bytebuddy", "org/apache",
+            "org/aspectj", "org/bouncycastle", "org/dom4j", "org/easymock",
+            "org/eclipse/persistence", "org/hamcrest", "org/hibernate",
+            "org/javassist", "org/jboss", "org/jsoup", "org/seleniumhq",
+            "org/slf4j", "org/atmosphere", "org/springframework",
+            "org/webjars/bowergithub", "org/yaml",
 
-                    "java/", "javax/", "javafx/", "com/sun/", "oracle/deploy",
-                    "oracle/javafx", "oracle/jrockit", "oracle/jvm", "oracle/net",
-                    "oracle/nio", "oracle/tools", "oracle/util", "oracle/webservices",
-                    "oracle/xmlns",
+            "java/", "javax/", "javafx/", "com/sun/", "oracle/deploy",
+            "oracle/javafx", "oracle/jrockit", "oracle/jvm", "oracle/net",
+            "oracle/nio", "oracle/tools", "oracle/util", "oracle/webservices",
+            "oracle/xmlns",
 
-                    "com/intellij/", "org/jetbrains",
+            "com/intellij/", "org/jetbrains",
 
-                    "com/vaadin/external/gwt", "javassist/", "io/methvin",
-                    "com/github/javaparser", "oshi/", "io/micrometer", "jakarta/",
-                    "com/nimbusds", "elemental/util", "elemental/json",
-                    "org/reflections", "org/aopalliance", "org/objectweb")
+            "com/vaadin/external/gwt", "javassist/", "io/methvin",
+            "com/github/javaparser", "oshi/", "io/micrometer", "jakarta/",
+            "com/nimbusds", "elemental/util", "elemental/json",
+            "org/reflections", "org/aopalliance", "org/objectweb")
             .collect(Collectors.toList());
 
     /**
