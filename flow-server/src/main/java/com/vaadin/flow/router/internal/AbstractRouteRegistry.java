@@ -18,12 +18,14 @@ package com.vaadin.flow.router.internal;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableBiConsumer;
@@ -41,6 +43,8 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.shared.Registration;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * AbstractRouteRegistry with locking support and configuration.
@@ -194,10 +198,12 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
     private List<RouteData> getRegisteredRoutes(
             ConfiguredRoutes configuration) {
+        var routePathMap = new HashMap<>(configuration.getRoutesMap());
         List<RouteData> registeredRoutes = new ArrayList<>();
-        configuration.getTargetRoutes().forEach(
-                (target, template) -> populateRegisteredRoutes(configuration,
-                        registeredRoutes, target, template));
+        configuration.getTargetRoutes()
+                .forEach((target, template) -> populateRegisteredRoutes(
+                        configuration, registeredRoutes, routePathMap, target,
+                        template));
 
         Collections.sort(registeredRoutes);
 
@@ -205,21 +211,25 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     private void populateRegisteredRoutes(ConfiguredRoutes configuration,
-            List<RouteData> registeredRoutes, Class<? extends Component> target,
-            String template) {
+            List<RouteData> registeredRoutes,
+            Map<String, RouteTarget> routePathMap,
+            Class<? extends Component> target, String template) {
         List<RouteAliasData> routeAliases = new ArrayList<>();
 
-        configuration.getRoutePaths(target).stream().filter(
-                routePathTemplate -> !routePathTemplate.equals(template))
-                .forEach(
-                        aliasRoutePathTemplate -> routeAliases
-                                .add(new RouteAliasData(
-                                        getParentLayouts(configuration,
-                                                aliasRoutePathTemplate),
-                                        aliasRoutePathTemplate,
-                                        configuration.getParameters(
-                                                aliasRoutePathTemplate),
-                                        target)));
+        routePathMap.entrySet().stream()
+                .filter(entry -> entry.getValue().containsTarget(target))
+                .map(Map.Entry::getKey).collect(toList()).stream()
+                .peek(routePathMap::remove)
+                .filter(routePathTemplate -> !routePathTemplate
+                        .equals(template))
+                .forEach(aliasRoutePathTemplate -> {
+                    routeAliases.add(new RouteAliasData(
+                            getParentLayouts(configuration,
+                                    aliasRoutePathTemplate),
+                            aliasRoutePathTemplate,
+                            configuration.getParameters(aliasRoutePathTemplate),
+                            target));
+                });
         List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(
                 configuration, template);
         RouteData route = new RouteData(parentLayouts, template,
