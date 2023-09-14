@@ -274,9 +274,9 @@ export class VaadinDevTools extends LitElement {
 
         .window {
           border-radius: var(--dev-tools-border-radius);
-          overflow: hidden;
+          overflow: auto;
           margin: 0.5rem;
-          width: 30rem;
+          min-width: 30rem;
           max-width: calc(100% - 1rem);
           max-height: calc(100vh - 1rem);
           flex-shrink: 1;
