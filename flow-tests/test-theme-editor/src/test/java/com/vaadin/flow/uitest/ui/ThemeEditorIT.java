@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.base.devserver.themeeditor.ThemeModifier;
 import com.vaadin.base.devserver.themeeditor.utils.CssRule;
 import com.vaadin.base.devserver.themeeditor.utils.ComponentsMetadata;
+import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.testutil.DevToolsElement;
 import com.vaadin.flow.uitest.ui.testbench.DevToolsCheckboxPropertyEditorElement;
@@ -29,13 +30,18 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,14 +52,61 @@ import static junit.framework.TestCase.fail;
 
 @NotThreadSafe
 public class ThemeEditorIT extends AbstractThemeEditorIT {
+    private static String javaContent = "";
+
     @Override
     protected String getTestPath() {
         return "/context/view/com.vaadin.flow.uitest.ui.ThemeEditorView";
     }
 
+    @BeforeClass
+    public static void initialize() {
+        try {
+            ComponentTracker.Location location = new ComponentTracker.Location(
+                    "com.vaadin.flow.uitest.ui.ThemeEditorView",
+                    "ThemeEditorView.java", "ThemeEditorView", 1);
+            File javaFile = location
+                    .findJavaFile(new TestAbstractConfiguration());
+            javaContent = Files.readString(javaFile.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @After
+    public void tearDown() {
+        try {
+            ComponentTracker.Location location = new ComponentTracker.Location(
+                    "com.vaadin.flow.uitest.ui.ThemeEditorView",
+                    "ThemeEditorView.java", "ThemeEditorView", 1);
+            File javaFile = location
+                    .findJavaFile(new TestAbstractConfiguration());
+            try (FileWriter fw = new FileWriter(javaFile)) {
+                fw.write(javaContent);
+            }
+            ThemeModifier themeModifier = new TestThemeModifier();
+            File styleSheetFile = themeModifier.getStyleSheetFile();
+            if (styleSheetFile.exists()) {
+                styleSheetFile.delete();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Test
     public void testButton() throws IOException {
-        List<Metadata> buttonMetadata = extractMetadata("vaadin-button");
+        performTagTest("vaadin-button", By.id("button"));
+    }
+
+    @Test
+    public void testIcon() throws IOException {
+        performTagTest("vaadin-icon", By.id("icon"));
+    }
+
+    protected void performTagTest(String tagName, By componentSelector)
+            throws IOException {
+        List<Metadata> buttonMetadata = extractMetadata(tagName);
 
         open();
 
@@ -66,7 +119,8 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
                 .$("vaadin-dev-tools-theme-editor").first();
         themeEditor.$("button").first().click();
 
-        new Actions(getDriver()).click(findElement(By.id("button"))).perform();
+        new Actions(getDriver()).click(findElement(componentSelector))
+                .perform();
 
         DevToolsThemeClassNameEditorElement classNameEditor = themeEditor
                 .$(DevToolsThemeClassNameEditorElement.class).waitForFirst();

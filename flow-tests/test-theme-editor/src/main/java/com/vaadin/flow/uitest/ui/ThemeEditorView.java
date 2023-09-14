@@ -17,6 +17,8 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -26,5 +28,9 @@ public class ThemeEditorView extends Div {
         Button button = new Button("Click");
         button.setId("button");
         add(button);
+
+        Icon icon = VaadinIcon.ABACUS.create();
+        icon.setId("icon");
+        add(icon);
     }
 }
