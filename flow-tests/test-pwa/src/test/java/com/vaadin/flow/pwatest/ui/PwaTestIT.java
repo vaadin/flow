@@ -17,11 +17,15 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
+import com.vaadin.flow.testutil.ChromeDeviceTest;
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
@@ -29,11 +33,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.mobile.NetworkConnection;
-
-import com.vaadin.flow.testutil.ChromeDeviceTest;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 public class PwaTestIT extends ChromeDeviceTest {
 
@@ -81,7 +80,7 @@ public class PwaTestIT extends ChromeDeviceTest {
                 .findElements(By.xpath("//link[@rel='manifest'][@href]"));
         Assert.assertEquals(1, elements.size());
         String href = elements.get(0).getAttribute("href");
-        Assert.assertTrue(href + " didn't respond with resource", exists(href));
+        assertExists(href);
         // Verify user values in manifest.webmanifest
         if (!href.startsWith(getRootURL())) {
             href = getRootURL() + '/' + href;
@@ -113,8 +112,7 @@ public class PwaTestIT extends ChromeDeviceTest {
                 ? matcher.group(1)
                 : getRootURL() + "/" + matcher.group(1);
 
-        Assert.assertTrue("Service worker not served at: " + serviceWorkerUrl,
-                exists(serviceWorkerUrl));
+        assertExists(serviceWorkerUrl);
 
         String serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);
         // parse the precache resources (the app bundles) from service worker JS
@@ -227,31 +225,45 @@ public class PwaTestIT extends ChromeDeviceTest {
         Assert.assertEquals(expected, icons.size());
         for (WebElement element : icons) {
             String href = element.getAttribute("href");
-            Assert.assertTrue(href + " didn't respond with resource",
-                    exists(href));
+            assertExists(href);
         }
     }
 
     private void checkResources(String... resources) {
         for (String url : resources) {
-            Assert.assertTrue(url + " didn't respond with resource",
-                    exists(url));
+            assertExists(url);
         }
     }
 
-    private boolean exists(String url) {
+    private void assertExists(String url) {
         // If the mimetype can be guessed from the file name, check consistency
         // with the actual served file
         String expectedMimeType = URLConnection.guessContentTypeFromName(url);
+        if ("text/javascript".equals(expectedMimeType)) {
+            expectedMimeType = "application/javascript";
+        }
         String script = "const mimeType = arguments[0];"
                 + "const resolve = arguments[2];" //
                 + "fetch(arguments[1], {method: 'GET'})" //
-                + ".then(response => resolve(response.status===200" //
-                + "      && !response.redirected" //
-                + "      && (mimeType===null || response.headers.get('Content-Type').replace(';charset=utf-8','')===mimeType)))" //
-                + ".catch(err => resolve(false));";
-        return (boolean) ((JavascriptExecutor) getDriver())
+                + ".then(response => resolve({status: response.status," //
+                + "      redirected: response.redirected," //
+                + "      mimeType: response.headers.get('Content-Type')}))" //
+                + ".catch(err => resolve());";
+        Map data = (Map) ((JavascriptExecutor) getDriver())
                 .executeAsyncScript(script, expectedMimeType, url);
+
+        if (expectedMimeType != null) {
+            String mimeType = ((String) data.get("mimeType"))
+                    .replaceAll(";[ ]?charset=utf-8", "");
+
+            Assert.assertEquals(url + " has an unexpected mime type",
+                    expectedMimeType, mimeType);
+        }
+        Assert.assertEquals(url + " has an unexpected redirect", false,
+                data.get("redirected"));
+        Assert.assertEquals(url + " has an unexpected response code", 200L,
+                data.get("status"));
+
     }
 
     private static String readStringFromUrl(String url) throws IOException {
