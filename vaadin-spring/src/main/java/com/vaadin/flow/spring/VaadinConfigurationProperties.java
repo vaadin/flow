@@ -270,7 +270,7 @@ public class VaadinConfigurationProperties {
      * @return if class scan caching should be enabled
      */
     public boolean isDevmodeCaching() {
-        return launchBrowser;
+        return devmodeCaching;
     }
 
     /**
