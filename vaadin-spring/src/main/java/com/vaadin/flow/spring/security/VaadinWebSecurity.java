@@ -206,8 +206,6 @@ public abstract class VaadinWebSecurity {
             urlRegistry.requestMatchers(getDefaultWebSecurityIgnoreMatcher(
                     requestUtil.getUrlMapping())).permitAll();
 
-            // all other requests require authentication
-            urlRegistry.anyRequest().authenticated();
         });
 
         // Enable view access control
