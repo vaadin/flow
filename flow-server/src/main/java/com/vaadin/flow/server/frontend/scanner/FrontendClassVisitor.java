@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend.scanner;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
@@ -42,6 +43,8 @@ import com.vaadin.flow.theme.Theme;
  */
 final class FrontendClassVisitor extends ClassVisitor {
 
+    private static final Pattern SIGNATURE_PATTERN = Pattern.compile(
+            "(^\\([\\[ZBFDJICL]*|^[\\[ZBFDJICL]+|;?\\)[\\[ZBFDJICLV]*|;[\\[ZBFDJICL]*)");
     private static final String VARIANT = "variant";
     private static final String LAYOUT = "layout";
     static final String VALUE = "value";
@@ -317,8 +320,7 @@ final class FrontendClassVisitor extends ClassVisitor {
         }
         // This regular expression is able to split the signature and remove
         // primitive and other mark symbols, see test for more info.
-        String[] tmp = signature.replace("/", ".").split(
-                "(^\\([\\[ZBFDJICL]*|^[\\[ZBFDJICL]+|;?\\)[\\[ZBFDJICLV]*|;[\\[ZBFDJICL]*)");
+        String[] tmp = SIGNATURE_PATTERN.split(signature.replace("/", "."));
         for (String cls : tmp) {
             if (!cls.isBlank()) {
                 classes.add(cls);
