@@ -22,11 +22,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 @NotThreadSafe
-public class DevModeClassCacheIT extends ChromeBrowserTest {
+public class DevModeClassCacheIT extends AbstractReloadIT {
 
     @Override
     protected String getTestPath() {
@@ -39,9 +38,13 @@ public class DevModeClassCacheIT extends ChromeBrowserTest {
 
         waitForElementPresent(By.id("last-span"));
 
+        reloadAndWait();
+
+        waitForElementPresent(By.id("last-span"));
+
         List<TestBenchElement> allSpans = $("span").all();
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 1; i < 6; i++) {
             String[] value = allSpans.get(i).getText().split(":");
             Assert.assertTrue("Expected " + value[0] + " to be greater than 0.",
                     Integer.parseInt(value[1]) > 0);
@@ -49,6 +52,6 @@ public class DevModeClassCacheIT extends ChromeBrowserTest {
 
         Assert.assertEquals("Unexpected cached route packages.",
                 "com.vaadin.flow.uitest.ui",
-                allSpans.get(5).getText().split(":")[1]);
+                allSpans.get(6).getText().split(":")[1]);
     }
 }

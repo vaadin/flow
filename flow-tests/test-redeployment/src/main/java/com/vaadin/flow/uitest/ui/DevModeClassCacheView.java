@@ -19,15 +19,17 @@ import java.lang.reflect.Field;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DevModeClassCacheView")
-public class DevModeClassCacheView extends Div {
+public class DevModeClassCacheView extends AbstractReloadView {
 
     @SuppressWarnings("unchecked")
     public DevModeClassCacheView() {
+
+        addTriggerButton();
+        addViewId();
 
         try {
             Class<?> reloadCacheClass = Class
@@ -47,7 +49,8 @@ public class DevModeClassCacheView extends Div {
             lookupClassesField.setAccessible(true);
             Set<Class<?>> lookupClasses = (Set<Class<?>>) lookupClassesField
                     .get(null);
-            add(new Span("lookup class count:" + lookupClasses.size()));
+            add(new Span("lookup class count:"
+                    + (lookupClasses == null ? 0 : lookupClasses.size())));
 
             // validResources
             Field validResourcesField = reloadCacheClass

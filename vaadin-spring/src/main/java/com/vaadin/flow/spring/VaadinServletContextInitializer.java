@@ -223,7 +223,7 @@ public class VaadinServletContextInitializer
             listeners.forEach(listener -> listener.contextInitialized(event));
 
             long ms = (System.nanoTime() - start) / 1000000;
-            getLogger().info(
+            getLogger().debug(
                     "Total time for Vaadin Servlet Context Init took {} ms",
                     ms);
         }
@@ -264,15 +264,12 @@ public class VaadinServletContextInitializer
                                 appContext, Collections.emptyList(),
                                 getServiceTypes()),
                                 // LookupInitializer is necessary here: it
-                                // allows
-                                // identify Spring boot as a regular Web
+                                // allows identify Spring boot as a regular Web
                                 // container (and run
                                 // LookupServletContainerInitializer logic) even
-                                // though
-                                // LookupInitializer will be ignored because
-                                // there
-                                // is its subclass SpringLookupInitializer
-                                // provided
+                                // though LookupInitializer will be ignored
+                                // because there is its subclass
+                                // SpringLookupInitializer provided
                                 Stream.of(LookupInitializer.class,
                                         SpringLookupInitializer.class))
                         .collect(Collectors.toSet());
@@ -283,7 +280,7 @@ public class VaadinServletContextInitializer
             process(classes, event.getServletContext());
 
             long ms = (System.nanoTime() - start) / 1000000;
-            getLogger().info("Lookup initializer took {} ms", ms);
+            getLogger().debug("Lookup initializer took {} ms", ms);
 
         }
 
@@ -369,7 +366,7 @@ public class VaadinServletContextInitializer
             }
 
             long ms = (System.nanoTime() - start) / 1000000;
-            getLogger().info("Route discovery took {} ms", ms);
+            getLogger().debug("Route discovery took {} ms", ms);
         }
 
         private void setAnnotatedRoutes(RouteConfiguration routeConfiguration,
@@ -425,7 +422,7 @@ public class VaadinServletContextInitializer
                     hasErrorComponents.collect(Collectors.toSet()));
 
             long ms = (System.nanoTime() - start) / 1000000;
-            getLogger().info("Search for error navigation targets took {} ms",
+            getLogger().debug("Search for error navigation targets took {} ms",
                     ms);
         }
     }
@@ -446,7 +443,7 @@ public class VaadinServletContextInitializer
                     extraValidator.getAnnotations());
 
             long ms = (System.nanoTime() - start) / 1000000;
-            getLogger().info("Annotation validation took {} ms", ms);
+            getLogger().debug("Annotation validation took {} ms", ms);
         }
 
         @SuppressWarnings("unchecked")
@@ -555,7 +552,7 @@ public class VaadinServletContextInitializer
                         "Unable to initialize Vaadin DevModeHandler", e);
             }
             ms = (System.nanoTime() - start) / 1000000;
-            getLogger().info("DevModeHandlerManager init took {} ms", ms);
+            getLogger().debug("DevModeHandlerManager init took {} ms", ms);
 
             // Make live reload port available for index.html handler
             event.getServletContext().setAttribute(
@@ -610,7 +607,7 @@ public class VaadinServletContextInitializer
             }
 
             long ms = (System.nanoTime() - start) / 1000000;
-            getLogger().info("WebComponent init took {} ms", ms);
+            getLogger().debug("WebComponent init took {} ms", ms);
         }
     }
 
@@ -651,7 +648,7 @@ public class VaadinServletContextInitializer
                     new VaadinServletContext(event.getServletContext()));
 
             long ms = (System.nanoTime() - start) / 1000000;
-            getLogger().info("Search for VaadinAppShell took {} ms", ms);
+            getLogger().debug("Search for VaadinAppShell took {} ms", ms);
         }
     }
 
@@ -713,11 +710,11 @@ public class VaadinServletContextInitializer
                         .getProperty("vaadin.devmode-caching");
                 if (devModeCachingProperty != null
                         && !"true".equals(devModeCachingProperty)) {
-                    getLogger().info(
+                    getLogger().debug(
                             "Disabling dev mode scanned class caching since "
                                     + "vaadin.devmode-caching is set to a non-true value.");
                 } else {
-                    getLogger().info(
+                    getLogger().debug(
                             "Spring Boot DevTools found. Enabling scanned class caching.");
                     devModeCachingEnabled = true;
                     ((ConfigurableApplicationContext) appContext)
@@ -735,7 +732,7 @@ public class VaadinServletContextInitializer
                 }
             }
         } catch (ClassNotFoundException e) {
-            getLogger().info(
+            getLogger().debug(
                     "Spring Boot DevTools not found. Disabling scanned class caching.");
         }
     }

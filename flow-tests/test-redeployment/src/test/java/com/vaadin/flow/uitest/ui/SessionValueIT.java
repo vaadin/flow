@@ -21,11 +21,10 @@ import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.StaleElementReferenceException;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-public class SessionValueIT extends ChromeBrowserTest {
+public class SessionValueIT extends AbstractReloadIT {
 
     @Override
     protected String getTestPath() {
@@ -57,21 +56,5 @@ public class SessionValueIT extends ChromeBrowserTest {
                 .replace("The custom value in the session is: ", "");
         Assert.assertEquals(customAttribute, customAttributeAfterSecondReload);
 
-    }
-
-    private void reloadAndWait() {
-        String viewId = getViewId();
-        $("*").id(SessionValueView.TRIGGER_RELOAD_ID).click();
-        waitUntil(driver -> {
-            try {
-                return !getViewId().equals(viewId);
-            } catch (StaleElementReferenceException e) {
-                return false;
-            }
-        });
-    }
-
-    private String getViewId() {
-        return $("*").id("viewId").getText();
     }
 }

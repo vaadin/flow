@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
+import java.io.File;
 import java.io.Serializable;
 
 import org.springframework.boot.devtools.classpath.ClassPathChangedEvent;
@@ -62,7 +63,8 @@ class ReloadListener
 
     private String convertToClassName(String fileName) {
         if (fileName.endsWith(".class")) {
-            return fileName.replace(".class", "").replace("/", ".");
+            return fileName.replace(".class", "").replace(File.separatorChar,
+                    '.');
         } else {
             return null;
         }
