@@ -36,14 +36,21 @@ public class DevToolsPluginIT extends ChromeBrowserTest {
         devTools.showTab("Hello");
         TestBenchElement myTool = devTools.$("my-tool").first();
 
-        assertMessages(myTool, "plugin-init");
+        assertMessages(myTool, "plugin-init", "activate called");
         myTool.$(NativeButtonElement.class).first().click();
-        assertMessages(myTool, "plugin-init",
+        assertMessages(myTool, "plugin-init", "activate called",
                 "Response for Hello from dev tools plugin");
 
         $(NativeButtonElement.class).id("refresh").click();
         Assert.assertEquals("Hello from dev tools plugin",
                 $("div").id("injected").getText());
+
+        devTools.showTab("code");
+        devTools.showTab("Hello");
+        assertMessages(myTool, "plugin-init", "activate called",
+                "Response for Hello from dev tools plugin", "deactivate called",
+                "activate called");
+
     }
 
     private void assertMessages(TestBenchElement myTool, String... expected) {
