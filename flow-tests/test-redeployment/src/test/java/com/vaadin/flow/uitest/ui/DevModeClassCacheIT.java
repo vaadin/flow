@@ -20,6 +20,7 @@ import java.util.List;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
@@ -35,6 +36,8 @@ public class DevModeClassCacheIT extends ChromeBrowserTest {
     @Test
     public void testDevModeClassCachePopulated() {
         open();
+
+        waitForElementPresent(By.id("last-span"));
 
         List<TestBenchElement> allSpans = $("span").all();
 

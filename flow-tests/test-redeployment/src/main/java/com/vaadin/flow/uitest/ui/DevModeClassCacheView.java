@@ -80,8 +80,11 @@ public class DevModeClassCacheView extends Div {
             routePackagesField.setAccessible(true);
             Set<String> routePackages = (Set<String>) routePackagesField
                     .get(null);
-            add(new Span("route packages:"
-                    + routePackages.stream().collect(Collectors.joining(","))));
+
+            Span span = new Span("route packages:"
+                    + routePackages.stream().collect(Collectors.joining(",")));
+            span.setId("last-span");
+            add(span);
 
         } catch (ClassNotFoundException | NoSuchFieldException
                 | IllegalAccessException e) {

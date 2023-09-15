@@ -86,8 +86,10 @@ public class DevModeNoClassCacheView extends Div {
             routePackagesField.setAccessible(true);
             Set<String> routePackages = (Set<String>) routePackagesField
                     .get(null);
-            add(new Span("route packages count:"
-                    + (routePackages == null ? "0" : routePackages.size())));
+            Span span = new Span("route packages count:"
+                    + (routePackages == null ? "0" : routePackages.size()));
+            span.setId("last-span");
+            add(span);
 
         } catch (ClassNotFoundException | NoSuchFieldException
                 | IllegalAccessException e) {
