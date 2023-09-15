@@ -40,6 +40,21 @@
                         <goals>
                             <goal>clean</goal>
                         </goals>
+                        <configuration>
+                            <filesets>
+                                <!--
+                                Clean NPM related files to prevent errors when tests of this module
+                                are executed right after the ones from pom.xml
+                                -->
+                                <fileset>
+                                    <directory>${project.basedir}</directory>
+                                    <includes>
+                                        <include>package-lock.json</include>
+                                        <include>node_modules/**</include>
+                                    </includes>
+                                </fileset>
+                            </filesets>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
