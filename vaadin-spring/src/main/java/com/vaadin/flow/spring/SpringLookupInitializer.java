@@ -20,6 +20,7 @@ import jakarta.servlet.ServletException;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -61,15 +62,44 @@ public class SpringLookupInitializer extends LookupInitializer {
 
         private final WebApplicationContext context;
 
+        private final Map<Class<?>, Object> cachedServices;
+
+        private final Map<Class<?>, Boolean> cacheableServices;
+
         private SpringLookup(WebApplicationContext context,
                 BiFunction<Class<?>, Class<?>, Object> factory,
                 Map<Class<?>, Collection<Class<?>>> services) {
             super(services, factory);
             this.context = context;
+            this.cachedServices = new HashMap<>();
+            this.cacheableServices = new HashMap<>();
+        }
+
+        private <T> boolean isCacheableService(Class<T> serviceClass) {
+            return cacheableServices.computeIfAbsent(serviceClass,
+                    key -> LookupInitializer.getDefaultImplementations()
+                            .stream().anyMatch(serviceClass::isAssignableFrom));
+        }
+
+        private <T> T getCachedService(Class<T> serviceClass) {
+            return serviceClass.cast(cachedServices.get(serviceClass));
+        }
+
+        private <T> void setCachedService(Class<T> serviceClass, T service) {
+            cachedServices.put(serviceClass, service);
         }
 
         @Override
         public <T> T lookup(Class<T> serviceClass) {
+            boolean cacheableService = isCacheableService(serviceClass);
+
+            if (cacheableService) {
+                T cached = getCachedService(serviceClass);
+                if (cached != null) {
+                    return cached;
+                }
+            }
+
             Collection<T> beans = context.getBeansOfType(serviceClass).values();
 
             // Check whether we have service objects instantiated without Spring
@@ -87,13 +117,19 @@ public class SpringLookupInitializer extends LookupInitializer {
                 allFound.addAll(beans);
                 allFound.add(service);
             }
+            T lookupResult;
             if (allFound.size() == 0) {
-                return null;
+                lookupResult = null;
             } else if (allFound.size() == 1) {
-                return allFound.iterator().next();
+                lookupResult = allFound.iterator().next();
+            } else {
+                throw new IllegalStateException(SEVERAL_IMPLS + serviceClass
+                        + SPI + allFound + ONE_IMPL_REQUIRED);
             }
-            throw new IllegalStateException(SEVERAL_IMPLS + serviceClass + SPI
-                    + allFound + ONE_IMPL_REQUIRED);
+            if (cacheableService) {
+                setCachedService(serviceClass, lookupResult);
+            }
+            return lookupResult;
         }
 
         @Override
