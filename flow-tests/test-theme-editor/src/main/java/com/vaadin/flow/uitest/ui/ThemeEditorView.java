@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -27,10 +28,14 @@ public class ThemeEditorView extends Div {
     public ThemeEditorView() {
         Button button = new Button("Click");
         button.setId("button");
-        add(button);
+        add(new Div(button));
 
         Icon icon = VaadinIcon.ABACUS.create();
         icon.setId("icon");
-        add(icon);
+        add(new Div(icon));
+
+        Checkbox checkbox = new Checkbox("The checkbox");
+        checkbox.setId("checkbox");
+        add(new Div(checkbox));
     }
 }

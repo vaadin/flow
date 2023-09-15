@@ -15,7 +15,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <vaadin.devmode.liveReload.enabled>true</vaadin.devmode.liveReload.enabled>
-        <vaadin.components.version>24.1.9</vaadin.components.version>
+        <vaadin.components.version>24.2-SNAPSHOT</vaadin.components.version>
     </properties>
 
     <dependencies>
@@ -53,6 +53,11 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-icons-flow</artifactId>
+            <version>${vaadin.components.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-checkbox-flow</artifactId>
             <version>${vaadin.components.version}</version>
         </dependency>
 
