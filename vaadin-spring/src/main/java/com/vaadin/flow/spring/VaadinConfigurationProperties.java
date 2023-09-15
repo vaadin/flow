@@ -111,6 +111,12 @@ public class VaadinConfigurationProperties {
      */
     private List<String> excludeUrls;
 
+    /**
+     * Enables class scan caching between reloads when using Spring Boot
+     * DevTools.
+     */
+    private boolean devmodeCaching = true;
+
     public static class Frontend {
         /**
          * Whether a frontend development server (Vite) is used in development
@@ -254,6 +260,29 @@ public class VaadinConfigurationProperties {
      */
     public void setLaunchBrowser(boolean launchBrowser) {
         this.launchBrowser = launchBrowser;
+    }
+
+    /**
+     * Returns whether class scan caching between reloads when using Spring Boot
+     * DevTools should be enabled.
+     * <p>
+     *
+     * @return if class scan caching should be enabled
+     */
+    public boolean isDevmodeCaching() {
+        return devmodeCaching;
+    }
+
+    /**
+     * Sets whether class scan caching between reloads when using Spring Boot
+     * DevTools should be enabled.
+     *
+     * @param devmodeCaching
+     *            {@code true} to enable class scan caching when in development
+     *            mode, {@code false} otherwise
+     */
+    public void setDevmodeCaching(boolean devmodeCaching) {
+        this.devmodeCaching = devmodeCaching;
     }
 
     /**

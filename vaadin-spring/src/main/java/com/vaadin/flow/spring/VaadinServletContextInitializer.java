@@ -49,6 +49,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
@@ -101,6 +102,7 @@ import com.vaadin.flow.theme.Theme;
 public class VaadinServletContextInitializer
         implements ServletContextInitializer {
 
+    private static boolean devModeCachingEnabled;
     private ApplicationContext appContext;
     private ResourceLoader customLoader;
 
@@ -123,7 +125,13 @@ public class VaadinServletContextInitializer
             "oracle/nio", "oracle/tools", "oracle/util", "oracle/webservices",
             "oracle/xmlns",
 
-            "com/intellij/", "org/jetbrains").collect(Collectors.toList());
+            "com/intellij/", "org/jetbrains",
+
+            "com/vaadin/external/gwt", "javassist/", "io/methvin",
+            "com/github/javaparser", "oshi/", "io/micrometer", "jakarta/",
+            "com/nimbusds", "elemental/util", "elemental/json",
+            "org/reflections", "org/aopalliance", "org/objectweb")
+            .collect(Collectors.toList());
 
     /**
      * Packages that should be scanned by default and can't be overriden by a
@@ -210,7 +218,14 @@ public class VaadinServletContextInitializer
 
         @Override
         public void contextInitialized(ServletContextEvent event) {
+            long start = System.nanoTime();
+
             listeners.forEach(listener -> listener.contextInitialized(event));
+
+            long ms = (System.nanoTime() - start) / 1000000;
+            getLogger().debug(
+                    "Total time for Vaadin Servlet Context Init took {} ms",
+                    ms);
         }
 
         @Override
@@ -231,24 +246,42 @@ public class VaadinServletContextInitializer
         @Override
         public void failFastContextInitialized(ServletContextEvent event)
                 throws ServletException {
+            long start = System.nanoTime();
+
             VaadinServletContext vaadinContext = new VaadinServletContext(
                     event.getServletContext());
             if (vaadinContext.getAttribute(Lookup.class) != null) {
                 return;
             }
 
-            Set<Class<?>> classes = Stream.concat(
-                    findByAnnotationOrSuperType(getLookupPackages(), appContext,
-                            Collections.emptyList(), getServiceTypes()),
-                    // LookupInitializer is necessary here: it allows
-                    // identify Spring boot as a regular Web container (and run
-                    // LookupServletContainerInitializer logic) even though
-                    // LookupInitializer will be ignored because there
-                    // is its subclass SpringLookupInitializer provided
-                    Stream.of(LookupInitializer.class,
-                            SpringLookupInitializer.class))
-                    .collect(Collectors.toSet());
+            Set<Class<?>> classes = null;
+            if (devModeCachingEnabled) {
+                classes = ReloadCache.lookupClasses;
+            }
+            if (classes == null) {
+                classes = Stream
+                        .concat(findByAnnotationOrSuperType(getLookupPackages(),
+                                appContext, Collections.emptyList(),
+                                getServiceTypes()),
+                                // LookupInitializer is necessary here: it
+                                // allows identify Spring boot as a regular Web
+                                // container (and run
+                                // LookupServletContainerInitializer logic) even
+                                // though LookupInitializer will be ignored
+                                // because there is its subclass
+                                // SpringLookupInitializer provided
+                                Stream.of(LookupInitializer.class,
+                                        SpringLookupInitializer.class))
+                        .collect(Collectors.toSet());
+                if (devModeCachingEnabled) {
+                    ReloadCache.lookupClasses = classes;
+                }
+            }
             process(classes, event.getServletContext());
+
+            long ms = (System.nanoTime() - start) / 1000000;
+            getLogger().debug("Lookup initializer took {} ms", ms);
+
         }
 
         @Override
@@ -273,6 +306,8 @@ public class VaadinServletContextInitializer
         @SuppressWarnings("unchecked")
         @Override
         public void failFastContextInitialized(ServletContextEvent event) {
+            long start = System.nanoTime();
+
             final VaadinServletContext vaadinServletContext = new VaadinServletContext(
                     event.getServletContext());
             ApplicationRouteRegistry registry = ApplicationRouteRegistry
@@ -285,9 +320,23 @@ public class VaadinServletContextInitializer
                 getLogger().debug("There are no discovered routes yet. "
                         + "Start to collect all routes from the classpath...");
                 try {
+                    Collection<String> routePackages = null;
+                    if (devModeCachingEnabled
+                            && ReloadCache.routePackages != null) {
+                        routePackages = ReloadCache.routePackages;
+                    } else {
+                        routePackages = getRoutePackages();
+                    }
+
                     List<Class<?>> routeClasses = findByAnnotation(
-                            getRoutePackages(), Route.class, RouteAlias.class)
+                            routePackages, Route.class, RouteAlias.class)
                             .collect(Collectors.toList());
+
+                    if (devModeCachingEnabled) {
+                        ReloadCache.routePackages = routeClasses.stream()
+                                .map(Class::getPackageName)
+                                .collect(Collectors.toSet());
+                    }
 
                     getLogger().debug(
                             "Found {} route classes. Here is the list: {}",
@@ -315,6 +364,9 @@ public class VaadinServletContextInitializer
                         "Skipped discovery as there was {} routes already in registry",
                         registry.getRegisteredRoutes().size());
             }
+
+            long ms = (System.nanoTime() - start) / 1000000;
+            getLogger().debug("Route discovery took {} ms", ms);
         }
 
         private void setAnnotatedRoutes(RouteConfiguration routeConfiguration,
@@ -357,6 +409,8 @@ public class VaadinServletContextInitializer
         @Override
         @SuppressWarnings("unchecked")
         public void failFastContextInitialized(ServletContextEvent event) {
+            long start = System.nanoTime();
+
             ApplicationRouteRegistry registry = ApplicationRouteRegistry
                     .getInstance(new VaadinServletContext(
                             event.getServletContext()));
@@ -366,6 +420,10 @@ public class VaadinServletContextInitializer
                     .map(clazz -> (Class<? extends Component>) clazz);
             registry.setErrorNavigationTargets(
                     hasErrorComponents.collect(Collectors.toSet()));
+
+            long ms = (System.nanoTime() - start) / 1000000;
+            getLogger().debug("Search for error navigation targets took {} ms",
+                    ms);
         }
     }
 
@@ -374,6 +432,8 @@ public class VaadinServletContextInitializer
 
         @Override
         public void failFastContextInitialized(ServletContextEvent event) {
+            long start = System.nanoTime();
+
             AnnotationValidator annotationValidator = new AnnotationValidator();
             validateAnnotations(annotationValidator, event.getServletContext(),
                     annotationValidator.getAnnotations());
@@ -381,6 +441,9 @@ public class VaadinServletContextInitializer
             WebComponentExporterAwareValidator extraValidator = new WebComponentExporterAwareValidator();
             validateAnnotations(extraValidator, event.getServletContext(),
                     extraValidator.getAnnotations());
+
+            long ms = (System.nanoTime() - start) / 1000000;
+            getLogger().debug("Annotation validation took {} ms", ms);
         }
 
         @SuppressWarnings("unchecked")
@@ -443,7 +506,12 @@ public class VaadinServletContextInitializer
             if (isScanOnlySet()) {
                 basePackages = new HashSet<>(getScanOnlyPackages());
             } else {
-                basePackages = Collections.singleton("");
+                if (devModeCachingEnabled
+                        && ReloadCache.dynamicWhiteList != null) {
+                    basePackages = ReloadCache.dynamicWhiteList;
+                } else {
+                    basePackages = Collections.singleton("");
+                }
             }
 
             long start = System.nanoTime();
@@ -456,6 +524,11 @@ public class VaadinServletContextInitializer
             Set<Class<?>> classes = findByAnnotationOrSuperType(basePackages,
                     customLoader, annotations, superTypes)
                     .collect(Collectors.toSet());
+
+            if (devModeCachingEnabled) {
+                ReloadCache.dynamicWhiteList = classes.stream()
+                        .map(Class::getPackageName).collect(Collectors.toSet());
+            }
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info(
@@ -470,6 +543,7 @@ public class VaadinServletContextInitializer
                                 + "See the whitelisted-packages section in the docs at https://vaadin.com/docs/latest/flow/integrations/spring/configuration#special-configuration-parameters");
             }
 
+            start = System.nanoTime();
             try {
                 devModeHandlerManager.initDevModeHandler(classes,
                         new VaadinServletContext(event.getServletContext()));
@@ -477,6 +551,8 @@ public class VaadinServletContextInitializer
                 throw new RuntimeException(
                         "Unable to initialize Vaadin DevModeHandler", e);
             }
+            ms = (System.nanoTime() - start) / 1000000;
+            getLogger().debug("DevModeHandlerManager init took {} ms", ms);
 
             // Make live reload port available for index.html handler
             event.getServletContext().setAttribute(
@@ -512,6 +588,7 @@ public class VaadinServletContextInitializer
         @Override
         public void failFastContextInitialized(ServletContextEvent event)
                 throws ServletException {
+            long start = System.nanoTime();
 
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                     .getInstance(new VaadinServletContext(
@@ -528,6 +605,9 @@ public class VaadinServletContextInitializer
                 initializer.process(webComponentExporters,
                         event.getServletContext());
             }
+
+            long ms = (System.nanoTime() - start) / 1000000;
+            getLogger().debug("WebComponent init took {} ms", ms);
         }
     }
 
@@ -545,17 +625,30 @@ public class VaadinServletContextInitializer
                 return;
             }
 
-            Set<Class<?>> classes = findByAnnotationOrSuperType(
-                    getVerifiableAnnotationPackages(), customLoader,
-                    VaadinAppShellInitializer.getValidAnnotations(),
-                    VaadinAppShellInitializer.getValidSupers())
-                    .collect(Collectors.toSet());
+            if (!config.isProductionMode()) {
+                initializeDevModeClassCache();
+            }
 
-            long ms = (System.nanoTime() - start) / 1000000;
-            getLogger().info("Search for VaadinAppShell took {} ms", ms);
+            Set<Class<?>> classes = null;
+            if (devModeCachingEnabled) {
+                classes = ReloadCache.appShellClasses;
+            }
+            if (classes == null) {
+                classes = findByAnnotationOrSuperType(
+                        getVerifiableAnnotationPackages(), customLoader,
+                        VaadinAppShellInitializer.getValidAnnotations(),
+                        VaadinAppShellInitializer.getValidSupers())
+                        .collect(Collectors.toSet());
+                if (devModeCachingEnabled) {
+                    ReloadCache.appShellClasses = classes;
+                }
+            }
 
             VaadinAppShellInitializer.init(classes,
                     new VaadinServletContext(event.getServletContext()));
+
+            long ms = (System.nanoTime() - start) / 1000000;
+            getLogger().debug("Search for VaadinAppShell took {} ms", ms);
         }
     }
 
@@ -568,6 +661,7 @@ public class VaadinServletContextInitializer
      */
     public VaadinServletContextInitializer(ApplicationContext context) {
         appContext = context;
+
         String neverScanProperty = appContext.getEnvironment()
                 .getProperty("vaadin.blacklisted-packages");
         List<String> neverScan;
@@ -605,6 +699,42 @@ public class VaadinServletContextInitializer
         VaadinServletContext vaadinContext = new VaadinServletContext(
                 servletContext);
         servletContext.addListener(createCompositeListener(vaadinContext));
+    }
+
+    private void initializeDevModeClassCache() {
+        try {
+            Class.forName(
+                    "org.springframework.boot.devtools.livereload.LiveReloadServer");
+            if (appContext instanceof ConfigurableApplicationContext) {
+                String devModeCachingProperty = appContext.getEnvironment()
+                        .getProperty("vaadin.devmode-caching");
+                if (devModeCachingProperty != null
+                        && !"true".equals(devModeCachingProperty)) {
+                    getLogger().debug(
+                            "Disabling dev mode scanned class caching since "
+                                    + "vaadin.devmode-caching is set to a non-true value.");
+                } else {
+                    getLogger().debug(
+                            "Spring Boot DevTools found. Enabling scanned class caching.");
+                    devModeCachingEnabled = true;
+                    ((ConfigurableApplicationContext) appContext)
+                            .addApplicationListener(new ReloadListener(e -> {
+                                // Updates cached white list and route packages
+                                Set<String> addedPackages = new HashSet<>();
+                                e.getAddedClasses().forEach(c -> {
+                                    addedPackages.add(
+                                            c.substring(0, c.lastIndexOf(".")));
+                                });
+                                ReloadCache.dynamicWhiteList
+                                        .addAll(addedPackages);
+                                ReloadCache.routePackages.addAll(addedPackages);
+                            }));
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            getLogger().debug(
+                    "Spring Boot DevTools not found. Disabling scanned class caching.");
+        }
     }
 
     private CompositeServletContextListener createCompositeListener(
@@ -821,48 +951,69 @@ public class VaadinServletContextInitializer
         private Resource[] collectResources(String locationPattern)
                 throws IOException {
             List<Resource> resourcesList = new ArrayList<>();
+
+            Set<String> skipped = ReloadCache.skippedResources;
+            Set<String> valid = ReloadCache.validResources;
+
             for (Resource resource : super.getResources(locationPattern)) {
+                String originalPath = resource.getURL().getPath();
                 String path;
-                if (resource.getURL().getPath()
-                        .startsWith("file:///resources!")) {
+                if (originalPath.startsWith("file:///resources!")) {
                     // It's a resource from a native build, remove the
                     // prefix from URL path
-                    path = resource.getURL().getPath()
+                    path = originalPath
                             .substring("file:///resources!".length());
                 } else {
-                    path = resource.getURL().getPath();
+                    path = originalPath;
                 }
 
-                if (path.endsWith(".jar!/")) {
-                    resourcesList.add(resource);
-                } else if (path.endsWith("/")) {
-                    rootPaths.add(path);
+                if (devModeCachingEnabled && skipped.contains(originalPath)) {
+                    continue;
+                }
+
+                if (devModeCachingEnabled && valid.contains(originalPath)) {
                     resourcesList.add(resource);
                 } else {
-                    int index = path.lastIndexOf(".jar!/");
-                    if (index >= 0) {
-                        String relativePath = path.substring(index + 6);
-                        if (shouldPathBeScanned(relativePath)) {
-                            resourcesList.add(resource);
-                        }
+                    if (path.endsWith(".jar!/")) {
+                        resourcesList.add(resource);
+                    } else if (path.endsWith("/")) {
+                        rootPaths.add(path);
+                        resourcesList.add(resource);
                     } else {
-                        List<String> parents = rootPaths.stream()
-                                .filter(path::startsWith)
-                                .collect(Collectors.toList());
-                        if (parents.isEmpty()) {
-                            throw new IllegalStateException(String.format(
-                                    "Parent resource of [%s] not found in the resources!",
-                                    path));
-                        }
+                        int index = path.lastIndexOf(".jar!/");
+                        if (index >= 0) {
+                            String relativePath = path.substring(index + 6);
+                            if (shouldPathBeScanned(relativePath)) {
+                                resourcesList.add(resource);
+                            }
+                        } else {
+                            List<String> parents = rootPaths.stream()
+                                    .filter(path::startsWith)
+                                    .collect(Collectors.toList());
+                            if (parents.isEmpty()) {
+                                throw new IllegalStateException(String.format(
+                                        "Parent resource of [%s] not found in the resources!",
+                                        path));
+                            }
 
-                        if (parents.stream()
-                                .anyMatch(parent -> shouldPathBeScanned(
-                                        path.substring(parent.length())))) {
-                            resourcesList.add(resource);
+                            if (parents.stream()
+                                    .anyMatch(parent -> shouldPathBeScanned(
+                                            path.substring(parent.length())))) {
+                                resourcesList.add(resource);
+                            }
                         }
                     }
                 }
+
+                if (devModeCachingEnabled) {
+                    if (resourcesList.contains(resource)) {
+                        valid.add(originalPath);
+                    } else {
+                        skipped.add(originalPath);
+                    }
+                }
             }
+
             return resourcesList.toArray(new Resource[0]);
         }
 
