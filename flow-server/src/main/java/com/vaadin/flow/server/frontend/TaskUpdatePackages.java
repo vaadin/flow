@@ -331,16 +331,35 @@ public class TaskUpdatePackages extends NodeUpdater {
         // packages exist at this point
         assert vaadinDeps != null : "vaadin{ dependencies { } } should exist";
         assert packageJsonDeps != null : "dependencies { } should exist";
-        if (!packageJsonDeps.hasKey(pkg) || !vaadinDeps.hasKey(pkg)
-                || !platformPinnedVersion.equals(
-                        new FrontendVersion(packageJsonDeps.getString(pkg)))
-                || !platformPinnedVersion.equals(
-                        new FrontendVersion(vaadinDeps.getString(pkg)))) {
-            packageJsonDeps.put(pkg, platformPinnedVersion.getFullVersion());
-            vaadinDeps.put(pkg, platformPinnedVersion.getFullVersion());
-            return true;
+
+        FrontendVersion packageJsonVersion = null, vaadinDepsVersion = null;
+        try {
+            if (packageJsonDeps.hasKey(pkg)) {
+                packageJsonVersion = new FrontendVersion(
+                        packageJsonDeps.getString(pkg));
+            }
+        } catch (NumberFormatException e) {
+            // Overridden to a file link in package.json, do not change
+            return false;
         }
-        return false;
+        try {
+            if (vaadinDeps.hasKey(pkg)) {
+                vaadinDepsVersion = new FrontendVersion(
+                        vaadinDeps.getString(pkg));
+            }
+        } catch (NumberFormatException e) {
+            // Vaadin defines a non-numeric version. Not sure what the case
+            // would be but probably it should be pinned like any other version
+        }
+
+        if (platformPinnedVersion.equals(packageJsonVersion)
+                && platformPinnedVersion.equals(vaadinDepsVersion)) {
+            return false;
+        }
+
+        packageJsonDeps.put(pkg, platformPinnedVersion.getFullVersion());
+        vaadinDeps.put(pkg, platformPinnedVersion.getFullVersion());
+        return true;
     }
 
     /**
