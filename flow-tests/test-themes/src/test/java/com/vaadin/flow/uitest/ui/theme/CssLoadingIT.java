@@ -68,4 +68,12 @@ public class CssLoadingIT extends ChromeBrowserTest {
         Assert.assertEquals(expectedMargin,
                 $(ParagraphElement.class).id(elementId).getCssValue("margin"));
     }
+
+    @Override
+    protected String getTestPath() {
+        String path = super.getTestPath();
+        String view = "view/";
+        return path.replace(view, "path/");
+    }
+
 }
