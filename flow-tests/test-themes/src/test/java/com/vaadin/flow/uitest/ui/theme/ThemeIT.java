@@ -45,7 +45,7 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.OCTOPUSS_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
 
-public class ThemeIT extends ChromeBrowserTest {
+public class ThemeIT extends AbstractBaseIT {
 
     @Test
     public void typeScriptCssImport_stylesAreApplied() {
@@ -287,13 +287,6 @@ public class ThemeIT extends ChromeBrowserTest {
                 .contains("https://fonts.googleapis.com/css?family=Itim"));
         Assert.assertFalse("Found import that webpack should have resolved",
                 linkUrls.contains("sub-css/sub.css"));
-    }
-
-    @Override
-    protected String getTestPath() {
-        String path = super.getTestPath();
-        String view = "view/";
-        return path.replace(view, "path/");
     }
 
     private String getCssPseudoElementValue(String elementId,
