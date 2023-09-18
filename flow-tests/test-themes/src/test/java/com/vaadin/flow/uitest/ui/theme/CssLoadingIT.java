@@ -29,7 +29,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  * The expected priority is: Lumo styles < @CssImport < page.addStylesheet
  * < @Stylehseet < parent theme < current theme (app theme)
  */
-public class CssLoadingIT extends ChromeBrowserTest {
+public class CssLoadingIT extends AbstractBaseIT {
 
     private static final String BLUE_RGBA = "rgba(0, 0, 255, 1)";
     private static final String GREEN_RGBA = "rgba(0, 255, 0, 1)";
@@ -67,13 +67,6 @@ public class CssLoadingIT extends ChromeBrowserTest {
                 .id(elementId).getCssValue("font-size"));
         Assert.assertEquals(expectedMargin,
                 $(ParagraphElement.class).id(elementId).getCssValue("margin"));
-    }
-
-    @Override
-    protected String getTestPath() {
-        String path = super.getTestPath();
-        String view = "view/";
-        return path.replace(view, "path/");
     }
 
 }
