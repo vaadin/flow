@@ -526,8 +526,15 @@ public class VaadinServletContextInitializer
                     .collect(Collectors.toSet());
 
             if (devModeCachingEnabled) {
+                classes.addAll(ReloadCache.vaadinClasses);
                 ReloadCache.dynamicWhiteList = classes.stream()
-                        .map(Class::getPackageName).collect(Collectors.toSet());
+                        .map(Class::getPackageName)
+                        .filter(packageName -> !packageName
+                                .startsWith("com.vaadin.flow"))
+                        .collect(Collectors.toSet());
+                ReloadCache.vaadinClasses = classes.stream().filter(
+                        c -> c.getPackageName().startsWith("com.vaadin.flow"))
+                        .collect(Collectors.toSet());
             }
 
             long ms = (System.nanoTime() - start) / 1000000;

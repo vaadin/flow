@@ -46,8 +46,14 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
 
         for (int i = 1; i < 6; i++) {
             String[] value = allSpans.get(i).getText().split(":");
-            Assert.assertTrue("Expected " + value[0] + " to be greater than 0.",
-                    Integer.parseInt(value[1]) > 0);
+            if ("dynamic white list count".equals(value[0])) {
+                Assert.assertTrue("Expected " + value[0] + " to be 0.",
+                        Integer.parseInt(value[1]) == 0);
+            } else {
+                Assert.assertTrue(
+                        "Expected " + value[0] + " to be greater than 0.",
+                        Integer.parseInt(value[1]) > 0);
+            }
         }
 
         Assert.assertEquals("Unexpected cached route packages.",
