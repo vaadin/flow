@@ -130,23 +130,6 @@
             <artifactId>commons-compress</artifactId>
             <version>1.24.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.14</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-codec</groupId>
-                    <artifactId>commons-codec</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- Overrides the dependency version of httpclient -->
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.15</version>
-        </dependency>
         <!-- TESTING DEPENDENCIES -->
         <dependency>
             <groupId>com.vaadin</groupId>
