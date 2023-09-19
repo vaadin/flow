@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.jcip.annotations.NotThreadSafe;
-
 import org.hamcrest.MatcherAssert;
 import org.junit.After;
 import org.junit.Assert;
@@ -66,6 +65,7 @@ import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.router.internal.RouteModelTest.parameters;
 import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
 import static org.hamcrest.CoreMatchers.is;
@@ -463,6 +463,44 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
             event.rerouteTo("param", "hello");
+        }
+    }
+
+    @Route("rerouteWithQueryParams")
+    @Tag(Tag.DIV)
+    public static class RerouteWithQueryParams extends RouteParametersBase
+            implements BeforeEnterObserver {
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            super.beforeEnter(event);
+            Map<String, List<String>> parameters = event.getLocation()
+                    .getQueryParameters().getParameters();
+            QueryParameters newParams = QueryParameters.of("newParam", "hello");
+            if (parameters.isEmpty()) {
+                event.rerouteTo("show", newParams);
+            } else if (parameters.containsKey("sameTarget")) {
+                event.rerouteTo("rerouteWithQueryParams", newParams);
+            }
+        }
+    }
+
+    @Route("forwardWithQueryParams")
+    @Tag(Tag.DIV)
+    public static class ForwardWithQueryParams extends RouteParametersBase
+            implements BeforeEnterObserver {
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            super.beforeEnter(event);
+            Map<String, List<String>> parameters = event.getLocation()
+                    .getQueryParameters().getParameters();
+            QueryParameters newParams = QueryParameters.of("newParam", "hello");
+            if (parameters.isEmpty()) {
+                event.forwardTo("show", newParams);
+            } else if (parameters.containsKey("sameTarget")) {
+                event.forwardTo("forwardWithQueryParams", newParams);
+            }
         }
     }
 
@@ -4157,6 +4195,92 @@ public class RouterTest extends RoutingTestBase {
                 .count();
         assertEquals(1, historyInvocations);
 
+    }
+
+    @Test
+    public void reroute_queryParameters()
+            throws InvalidRouteConfigurationException {
+        RouteParametersBase.clear();
+        setNavigationTargets(RerouteWithQueryParams.class, ShowAllView.class);
+
+        router.navigate(ui, new Location("rerouteWithQueryParams"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(
+                "Expected reroute to ShowAll view but was "
+                        + RouteParametersBase.target,
+                ShowAllView.class, RouteParametersBase.target);
+        String singleParameter = RouteParametersBase.queryParameters
+                .getSingleParameter("newParam").orElse(null);
+        Assert.assertEquals("Missing parameter after reroute", "hello",
+                singleParameter);
+    }
+
+    @Test
+    public void reroute_queryParameters_sameNavigationTarget()
+            throws InvalidRouteConfigurationException {
+        RouteParametersBase.clear();
+        setNavigationTargets(RerouteWithQueryParams.class, ShowAllView.class);
+
+        router.navigate(ui,
+                new Location("rerouteWithQueryParams?sameTarget=true"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(
+                "Expected reroute to same view but was "
+                        + RouteParametersBase.target,
+                RerouteWithQueryParams.class, RouteParametersBase.target);
+        String singleParameter = RouteParametersBase.queryParameters
+                .getSingleParameter("newParam").orElse(null);
+        Assert.assertEquals("Missing parameter after reroute", "hello",
+                singleParameter);
+        Assert.assertTrue(
+                "Expecting original parameter not be present after reroute",
+                RouteParametersBase.queryParameters
+                        .getSingleParameter("sameTarget").isEmpty());
+    }
+
+    @Test
+    public void forward_queryParameters()
+            throws InvalidRouteConfigurationException {
+        RouteParametersBase.clear();
+        setNavigationTargets(ForwardWithQueryParams.class, ShowAllView.class);
+
+        router.navigate(ui, new Location("forwardWithQueryParams"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(
+                "Expected forward to ShowAll view but was "
+                        + RouteParametersBase.target,
+                ShowAllView.class, RouteParametersBase.target);
+        String singleParameter = RouteParametersBase.queryParameters
+                .getSingleParameter("newParam").orElse(null);
+        Assert.assertEquals("Missing query parameter after forward", "hello",
+                singleParameter);
+    }
+
+    @Test
+    public void forward_queryParameters_sameNavigationTarget()
+            throws InvalidRouteConfigurationException {
+        RouteParametersBase.clear();
+        setNavigationTargets(ForwardWithQueryParams.class, ShowAllView.class);
+
+        router.navigate(ui,
+                new Location("forwardWithQueryParams?sameTarget=true"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(
+                "Expected forward to same view but was "
+                        + RouteParametersBase.target,
+                ForwardWithQueryParams.class, RouteParametersBase.target);
+        String singleParameter = RouteParametersBase.queryParameters
+                .getSingleParameter("newParam").orElse(null);
+        Assert.assertEquals("Missing query parameter after forward", "hello",
+                singleParameter);
+        Assert.assertTrue(
+                "Expecting original parameter not be present after forward",
+                RouteParametersBase.queryParameters
+                        .getSingleParameter("sameTarget").isEmpty());
     }
 
     private void assertWrongRouteParametersRedirect() {
