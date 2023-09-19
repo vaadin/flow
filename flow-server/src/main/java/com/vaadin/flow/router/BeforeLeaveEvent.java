@@ -41,10 +41,6 @@ public class BeforeLeaveEvent extends BeforeEvent {
 
         private NavigationHandler handler = null;
         private NavigationEvent event = null;
-        private Command proceedCallback = () -> {
-        };
-        private Command cancelCallback = () -> {
-        };
 
         private ContinueNavigationAction() {
         }
@@ -82,7 +78,9 @@ public class BeforeLeaveEvent extends BeforeEvent {
                                     + "Use UI.access() to execute any UI related code from a separate thread properly");
                 }
 
-                proceedCallback.execute();
+                // See UI.SERVER_CONNECTED and acknowledgeClient.
+                event.getUI().wrapperElement
+                        .executeJs("this.serverConnected($0)", false);
 
                 // Change the trigger to programmatic as the url will be
                 // updated/added by router when we continue for a Router_link.
@@ -98,16 +96,19 @@ public class BeforeLeaveEvent extends BeforeEvent {
             }
         }
 
+        /**
+         * Cancel the navigation that was postponed.
+         * <p>
+         * This is so that the client router pending promise closes. Also
+         * updates the correct url on back navigation if blocking back.
+         */
         public void cancel() {
-            cancelCallback.execute();
-        }
-
-        public void setProceedCallback(Command proceedCallback) {
-            this.proceedCallback = proceedCallback;
-        }
-
-        public void setCancelCallback(Command cancelCallback) {
-            this.cancelCallback = cancelCallback;
+            BeforeLeaveEvent.this.continueNavigationAction = null;
+            if (handler != null && event != null) {
+                // See UI.SERVER_CONNECTED and cancelClient.
+                event.getUI().wrapperElement
+                        .executeJs("this.serverConnected($0)", true);
+            }
         }
     }
 

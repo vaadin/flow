@@ -1722,11 +1722,6 @@ public class UI extends Component
             navigateToClient(getForwardToClientUrl());
             acknowledgeClient();
         } else if (isPostponed()) {
-            BeforeLeaveEvent.ContinueNavigationAction continueNavigationAction = getInternals()
-                    .getContinueNavigationAction();
-            continueNavigationAction
-                    .setProceedCallback(this::acknowledgeClient);
-            continueNavigationAction.setCancelCallback(this::cancelClient);
             serverPaused();
         } else {
             acknowledgeClient();
