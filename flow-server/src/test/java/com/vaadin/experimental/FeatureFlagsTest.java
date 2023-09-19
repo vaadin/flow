@@ -15,12 +15,16 @@
  */
 package com.vaadin.experimental;
 
-import net.jcip.annotations.NotThreadSafe;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,6 +32,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
@@ -36,6 +41,7 @@ import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import static com.vaadin.experimental.FeatureFlags.PROPERTIES_FILENAME;
 
@@ -308,6 +314,75 @@ public class FeatureFlagsTest {
         }
     }
 
+    // https://github.com/vaadin/flow/issues/17637
+    @Test
+    public void get_concurrentAccess_servletContextLock_noDeadlock()
+            throws Exception {
+        BiConsumer<Void, Throwable> errorLogger = (unused, throwable) -> {
+            if (throwable != null) {
+                LoggerFactory.getLogger(FeatureFlagsTest.class)
+                        .error("Future failed", throwable);
+            }
+        };
+        context = new MockVaadinContext();
+        CountDownLatch latch = new CountDownLatch(2);
+        CompletableFuture<Void> directTask = CompletableFuture.runAsync(() -> {
+            FeatureFlags.get(context);
+            latch.countDown();
+        }).whenComplete(errorLogger);
+        CompletableFuture<Void> supplierTask = CompletableFuture
+                .runAsync(() -> {
+                    context.getAttribute(FeatureFlags.class, () -> {
+                        FeatureFlags out = FeatureFlags.get(context);
+                        latch.countDown();
+                        return out;
+                    });
+                }).whenComplete(errorLogger);
+        CompletableFuture.allOf(directTask, supplierTask);
+        Assert.assertTrue("Futures not completed, potential deadlock",
+                latch.await(1, TimeUnit.SECONDS));
+    }
+
+    // https://github.com/vaadin/flow/issues/13962
+    @Test
+    public void get_concurrentAccess_vaadinContextLock_noDeadlock()
+            throws Exception {
+        BiConsumer<Void, Throwable> errorLogger = (unused, throwable) -> {
+            if (throwable != null) {
+                LoggerFactory.getLogger(FeatureFlagsTest.class)
+                        .error("Future failed", throwable);
+            }
+        };
+        context = new MockVaadinContext();
+        CountDownLatch latch = new CountDownLatch(2);
+        CompletableFuture<Void> supplierTask = CompletableFuture
+                .runAsync(() -> {
+                    // Simulation of ApplicationRouteRegistry.getInstance()
+                    // locking on VaadinContext
+                    synchronized (context) {
+                        ApplicationRouteRegistry attribute = context
+                                .getAttribute(ApplicationRouteRegistry.class);
+                        if (attribute == null) {
+                            attribute = Mockito
+                                    .mock(ApplicationRouteRegistry.class);
+                            context.setAttribute(attribute);
+                        }
+                    }
+                    context.getAttribute(FeatureFlags.class, () -> {
+                        FeatureFlags out = FeatureFlags.get(context);
+                        latch.countDown();
+                        return out;
+                    });
+                }).whenComplete(errorLogger);
+        CompletableFuture<Void> directTask = CompletableFuture.runAsync(() -> {
+            FeatureFlags.get(context);
+            latch.countDown();
+        }).whenComplete(errorLogger);
+        CompletableFuture.allOf(directTask, supplierTask);
+        Assert.assertTrue("Futures not completed, potential deadlock",
+                latch.await(1, TimeUnit.SECONDS));
+    }
+
     private boolean hasUsageStatsEntry(String name) {
         return UsageStatistics.getEntries()
                 .filter(entry -> entry.getName().equals(name)).findFirst()
@@ -333,4 +408,5 @@ public class FeatureFlagsTest {
     private void createFeatureFlagsFile(String data) throws IOException {
         FileUtils.write(featureFlagsFile, data, StandardCharsets.UTF_8);
     }
+
 }
