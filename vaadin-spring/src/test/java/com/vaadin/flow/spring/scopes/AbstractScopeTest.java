@@ -18,10 +18,12 @@ package com.vaadin.flow.spring.scopes;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
@@ -153,6 +155,10 @@ public abstract class AbstractScopeTest {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         Lookup lookup = Mockito.mock(Lookup.class);
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        Mockito.when(context.getAttribute(ArgumentMatchers.any(Class.class),
+                ArgumentMatchers.any(Supplier.class)))
+                .then(i -> i.getArgument(1, Supplier.class).get());
+
         Mockito.when(appConfig.getContext()).thenReturn(context);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 appConfig, getClass(), initParameters);
