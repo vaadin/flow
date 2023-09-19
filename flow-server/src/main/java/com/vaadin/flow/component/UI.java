@@ -54,6 +54,7 @@ import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveListener;
 import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -1721,7 +1722,12 @@ public class UI extends Component
             navigateToClient(getForwardToClientUrl());
             acknowledgeClient();
         } else if (isPostponed()) {
-            cancelClient();
+            BeforeLeaveEvent.ContinueNavigationAction continueNavigationAction = getInternals()
+                    .getContinueNavigationAction();
+            continueNavigationAction
+                    .setProceedCallback(this::acknowledgeClient);
+            continueNavigationAction.setCancelCallback(this::cancelClient);
+            serverPaused();
         } else {
             acknowledgeClient();
         }
@@ -1761,6 +1767,10 @@ public class UI extends Component
 
     private void cancelClient() {
         serverConnected(true);
+    }
+
+    private void serverPaused() {
+        wrapperElement.executeJs("this.serverPaused()");
     }
 
     private void serverConnected(boolean cancel) {

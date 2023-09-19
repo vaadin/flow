@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.Command;
 
 /**
  * Event created before navigation happens.
@@ -40,6 +41,10 @@ public class BeforeLeaveEvent extends BeforeEvent {
 
         private NavigationHandler handler = null;
         private NavigationEvent event = null;
+        private Command proceedCallback = () -> {
+        };
+        private Command cancelCallback = () -> {
+        };
 
         private ContinueNavigationAction() {
         }
@@ -77,9 +82,32 @@ public class BeforeLeaveEvent extends BeforeEvent {
                                     + "Use UI.access() to execute any UI related code from a separate thread properly");
                 }
 
+                proceedCallback.execute();
+
+                // Change the trigger to programmatic as the url will be
+                // updated/added by router when we continue for a Router_link.
+                // If the server updates the url also we will get 2 history
+                // changes instead of 1.
+                if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
+                    event = new NavigationEvent(event.getSource(),
+                            event.getLocation(), event.getUI(),
+                            NavigationTrigger.PROGRAMMATIC);
+                }
                 handler.handle(event);
                 setReferences(null, null);
             }
+        }
+
+        public void cancel() {
+            cancelCallback.execute();
+        }
+
+        public void setProceedCallback(Command proceedCallback) {
+            this.proceedCallback = proceedCallback;
+        }
+
+        public void setCancelCallback(Command cancelCallback) {
+            this.cancelCallback = cancelCallback;
         }
     }
 
@@ -202,5 +230,4 @@ public class BeforeLeaveEvent extends BeforeEvent {
     public ContinueNavigationAction getContinueNavigationAction() {
         return continueNavigationAction;
     }
-
 }
