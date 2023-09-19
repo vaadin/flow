@@ -331,12 +331,6 @@
             </modules>
         </profile>
         <profile>
-            <id>nightly</id>
-            <modules>
-                <module>test-webpush</module>
-            </modules>
-        </profile>
-        <profile>
             <id>benchmark</id>
             <modules>
                 <module>vaadin-spring-tests</module>
