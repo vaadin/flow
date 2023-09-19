@@ -78,9 +78,11 @@ public class BeforeLeaveEvent extends BeforeEvent {
                                     + "Use UI.access() to execute any UI related code from a separate thread properly");
                 }
 
-                // See UI.SERVER_CONNECTED and acknowledgeClient.
-                event.getUI().wrapperElement
-                        .executeJs("this.serverConnected($0)", false);
+                if (event.getUI().wrapperElement != null) {
+                    // See UI.SERVER_CONNECTED and acknowledgeClient.
+                    event.getUI().wrapperElement
+                            .executeJs("this.serverConnected($0)", false);
+                }
 
                 // Change the trigger to programmatic as the url will be
                 // updated/added by router when we continue for a Router_link.
@@ -104,7 +106,8 @@ public class BeforeLeaveEvent extends BeforeEvent {
          */
         public void cancel() {
             BeforeLeaveEvent.this.continueNavigationAction = null;
-            if (handler != null && event != null) {
+            if (handler != null && event != null
+                    && event.getUI().wrapperElement != null) {
                 // See UI.SERVER_CONNECTED and cancelClient.
                 event.getUI().wrapperElement
                         .executeJs("this.serverConnected($0)", true);
