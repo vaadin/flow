@@ -23,6 +23,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
@@ -58,6 +59,7 @@ public class SpringBootAutoConfiguration {
     private WebApplicationContext context;
 
     @Bean
+    @ConditionalOnMissingBean(VaadinBeanFactoryInitializationAotProcessor.class)
     static VaadinBeanFactoryInitializationAotProcessor flowBeanFactoryInitializationAotProcessor() {
         return new VaadinBeanFactoryInitializationAotProcessor();
     }
@@ -68,6 +70,7 @@ public class SpringBootAutoConfiguration {
      * @return a custom ServletContextInitializer instance
      */
     @Bean
+    @ConditionalOnMissingBean(ServletContextInitializer.class)
     public ServletContextInitializer contextInitializer() {
         return new VaadinServletContextInitializer(context);
     }
@@ -83,6 +86,7 @@ public class SpringBootAutoConfiguration {
      * @return a custom ServletRegistrationBean instance
      */
     @Bean
+    @ConditionalOnMissingBean(ServletRegistrationBean.class)
     public ServletRegistrationBean<SpringServlet> servletRegistrationBean(
             ObjectProvider<MultipartConfigElement> multipartConfig,
             VaadinConfigurationProperties configurationProperties) {
@@ -125,6 +129,7 @@ public class SpringBootAutoConfiguration {
      * @return the server endpoint exporter which does the actual work.
      */
     @Bean
+    @ConditionalOnClass(ServerEndpointExporter.class)
     public ServerEndpointExporter websocketEndpointDeployer() {
         return new VaadinWebsocketEndpointExporter();
     }
