@@ -42,8 +42,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
@@ -54,6 +52,7 @@ import com.vaadin.flow.server.frontend.scanner.EntryPointType;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
+import org.slf4j.Logger;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -94,6 +93,10 @@ abstract class AbstractUpdateImports implements Runnable {
     private static final Pattern STARTING_DOT_SLASH = Pattern.compile("^\\./+");
     final Options options;
 
+    private final UnaryOperator<String> themeToLocalPathConverter;
+
+    private final Map<Path, List<String>> importedPathsCache = new HashMap<>();
+
     private FrontendDependenciesScanner scanner;
 
     private ClassFinder classFinder;
@@ -107,6 +110,8 @@ abstract class AbstractUpdateImports implements Runnable {
         this.options = options;
         this.scanner = scanner;
         this.classFinder = classFinder;
+        this.themeToLocalPathConverter = createThemeToLocalPathConverter(
+                scanner.getTheme());
 
         generatedFlowImports = FrontendUtils
                 .getFlowGeneratedImports(options.getFrontendDirectory());
@@ -248,7 +253,6 @@ abstract class AbstractUpdateImports implements Runnable {
                     mergedChunkKeys.size());
 
             for (ChunkInfo chunkInfo : mergedChunkKeys) {
-
                 List<String> chunkLines = new ArrayList<>();
                 if (lazyJavascript.containsKey(chunkInfo)) {
                     chunkLines.addAll(
@@ -487,25 +491,11 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     private Set<String> getUniqueEs6ImportPaths(Collection<String> modules) {
+        long start = System.nanoTime();
         Set<String> npmNotFound = new HashSet<>();
         Set<String> resourceNotFound = new HashSet<>();
         Set<String> es6ImportPaths = new LinkedHashSet<>();
         AbstractTheme theme = scanner.getTheme();
-
-        UnaryOperator<String> convertToLocalPath;
-        if (theme != null) {
-            // (#5964) Allows:
-            // - custom @Theme with files placed in /frontend
-            // - customize an already themed component
-            // @vaadin/vaadin-grid/theme/lumo/vaadin-grid.js ->
-            // theme/lumo/vaadin-grid.js
-            String themePath = theme.getThemeUrl();
-            Pattern themePattern = Pattern.compile("@.+" + themePath);
-            convertToLocalPath = path -> themePattern.matcher(path)
-                    .replaceFirst(themePath);
-        } else {
-            convertToLocalPath = UnaryOperator.identity();
-        }
 
         Set<String> visited = new HashSet<>();
 
@@ -515,7 +505,7 @@ abstract class AbstractUpdateImports implements Runnable {
             if (theme != null
                     && translatedModulePath.contains(theme.getBaseUrl())) {
                 translatedModulePath = theme.translateUrl(translatedModulePath);
-                localModulePath = convertToLocalPath
+                localModulePath = themeToLocalPathConverter
                         .apply(translatedModulePath);
             }
 
@@ -578,8 +568,26 @@ abstract class AbstractUpdateImports implements Runnable {
                     "Failed to find the following imports in the `node_modules` tree:",
                     getImportsNotFoundMessage()));
         }
-
         return es6ImportPaths;
+    }
+
+    private static UnaryOperator<String> createThemeToLocalPathConverter(
+            AbstractTheme theme) {
+        UnaryOperator<String> convertToLocalPath;
+        if (theme != null) {
+            // (#5964) Allows:
+            // - custom @Theme with files placed in /frontend
+            // - customize an already themed component
+            // @vaadin/vaadin-grid/theme/lumo/vaadin-grid.js ->
+            // theme/lumo/vaadin-grid.js
+            String themePath = theme.getThemeUrl();
+            Pattern themePattern = Pattern.compile("@.+" + themePath);
+            convertToLocalPath = path -> themePattern.matcher(path)
+                    .replaceFirst(themePath);
+        } else {
+            convertToLocalPath = UnaryOperator.identity();
+        }
+        return convertToLocalPath;
     }
 
     private boolean isGeneratedFlowFile(String localModulePath) {
@@ -781,23 +789,27 @@ abstract class AbstractUpdateImports implements Runnable {
             AbstractTheme theme, Collection<String> imports,
             Set<String> visitedImports) throws IOException {
 
-        String content = null;
-        try (final Stream<String> contentStream = Files.lines(filePath,
-                StandardCharsets.UTF_8)) {
-            content = contentStream.collect(Collectors.joining("\n"));
-        } catch (UncheckedIOException ioe) {
-            if (ioe.getCause() instanceof MalformedInputException) {
-                getLogger().trace(
-                        "Failed to read file '{}' found from Es6 import statements. "
-                                + "This is probably due to it being a binary file, "
-                                + "in which case it doesn't matter as imports are only in js/ts files.",
-                        filePath.toString(), ioe);
-                return;
+        if (!importedPathsCache.containsKey(filePath)) {
+            String content = null;
+            try (final Stream<String> contentStream = Files.lines(filePath,
+                    StandardCharsets.UTF_8)) {
+                content = contentStream.collect(Collectors.joining("\n"));
+            } catch (UncheckedIOException ioe) {
+                if (ioe.getCause() instanceof MalformedInputException) {
+                    getLogger().trace(
+                            "Failed to read file '{}' found from Es6 import statements. "
+                                    + "This is probably due to it being a binary file, "
+                                    + "in which case it doesn't matter as imports are only in js/ts files.",
+                            filePath.toString(), ioe);
+                    return;
+                }
+                throw ioe;
             }
-            throw ioe;
+            ImportExtractor extractor = new ImportExtractor(content);
+            importedPathsCache.put(filePath, extractor.getImportedPaths());
         }
-        ImportExtractor extractor = new ImportExtractor(content);
-        List<String> importedPaths = extractor.getImportedPaths();
+        List<String> importedPaths = importedPathsCache.get(filePath);
+
         for (String importedPath : importedPaths) {
             // try to resolve path relatively to original filePath (inside user
             // frontend folder)
