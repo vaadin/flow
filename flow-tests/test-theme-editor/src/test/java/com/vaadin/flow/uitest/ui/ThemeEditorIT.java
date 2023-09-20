@@ -156,7 +156,9 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
                 dataTestIds.add(dataTestIdAttribute);
             }
 
-            Map<String, String> cssProperties = new HashMap<>();
+            String cssSelector = createSelector(metadata, tagName,
+                    cssClassName);
+            Map<String, String> expectedCssProperties = new HashMap<>();
             for (Property property : metadata.getProperties()) {
                 Assert.assertTrue(String.format(
                         "The property '%s' doesn't appear in section '%s' from the dev tools window. Available section properties: %s",
@@ -166,25 +168,31 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
 
                 TestBenchElement sectionPropertyList = section.$("div")
                         .attribute("class", "property-list").first();
+
                 String value = updatePropertyInDevTools(sectionPropertyList,
                         property);
-                cssProperties.put(property.getPropertyName(), value);
+
+                expectedCssProperties.put(property.getPropertyName(), value);
                 // ouch...
                 if (property.getPropertyName().equals("border-width")
                         && !value.equals("0px")) {
-                    cssProperties.put("border-style", "solid");
+                    expectedCssProperties.put("border-style", "solid");
                 }
+
+                checkCssSelectorProperties(cssSelector, expectedCssProperties);
             }
-            String cssSelector = createSelector(metadata, tagName,
-                    cssClassName);
-            Optional<CssRule> oActual = getCssRuleFromFile(cssSelector);
-            Assert.assertTrue(String.format(
-                    "The rules for the css selector '%s' were not found in the generated css file.",
-                    cssSelector), oActual.isPresent());
-            CssRule expected = new CssRule(cssSelector, cssProperties);
-            CssRule actual = oActual.get();
-            Assert.assertEquals(expected, actual);
         }
+    }
+
+    protected void checkCssSelectorProperties(String cssSelector,
+            Map<String, String> expectedCssProperties) {
+        Optional<CssRule> oActual = getCssRuleFromFile(cssSelector);
+        Assert.assertTrue(String.format(
+                "The rules for the css selector '%s' were not found in the generated css file.",
+                cssSelector), oActual.isPresent());
+        CssRule expected = new CssRule(cssSelector, expectedCssProperties);
+        CssRule actual = oActual.get();
+        Assert.assertEquals(expected, actual);
     }
 
     private String createSelector(Metadata metadata, String tagName,
@@ -207,34 +215,44 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
             Property property) {
         TestBenchElement element = container.$("*")
                 .attribute("data-testid", property.getPropertyName()).first();
-        switch (property.getEditorType()) {
-        case "color": {
+        String result = switch (property.getEditorType()) {
+        case "color" -> {
             DevToolsThemeColorPropertyEditorElement colorEditor = element
                     .wrap(DevToolsThemeColorPropertyEditorElement.class);
             String value = "rgba(116, 219, 0, 1)";
             colorEditor.setValue(value);
+            waitForModifiedLabel(colorEditor);
             // TODO: we should normalize the value inside CssRule equals
             // comparison...
-            return value.replaceAll(" ", "");
+            yield value.replaceAll(" ", "");
         }
-        case "checkbox": {
+        case "checkbox" -> {
             DevToolsCheckboxPropertyEditorElement checkboxEditor = element
                     .wrap(DevToolsCheckboxPropertyEditorElement.class);
             checkboxEditor.setChecked(true);
+            waitForModifiedLabel(checkboxEditor);
             String value = checkboxEditor.getCheckedValue();
-            return value;
+            yield value;
         }
-        case "range": {
+        case "range" -> {
             DevToolsThemeRangePropertyEditorElement rangeEditor = element
                     .wrap(DevToolsThemeRangePropertyEditorElement.class);
             String value = "3px";
             rangeEditor.setValue(value);
-            return value;
+            waitForModifiedLabel(rangeEditor);
+            yield value;
         }
+        default -> {
+            throw new RuntimeException(String.format(
+                    "The property '%s' is associated with a unknown editor: '%s'",
+                    property.getPropertyName(), property.getEditorType()));
         }
-        throw new RuntimeException(String.format(
-                "The property '%s' is associated with a unknown editor: '%s'",
-                property.getPropertyName(), property.getEditorType()));
+        };
+        return result;
+    }
+
+    private void waitForModifiedLabel(TestBenchElement element) {
+        element.$("span").attribute("class", "modified").waitForFirst();
     }
 
     private List<Metadata> extractMetadata(String componentName)
