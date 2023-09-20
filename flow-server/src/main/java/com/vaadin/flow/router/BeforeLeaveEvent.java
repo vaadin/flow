@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.Command;
 
 /**
  * Event created before navigation happens.
@@ -77,8 +78,39 @@ public class BeforeLeaveEvent extends BeforeEvent {
                                     + "Use UI.access() to execute any UI related code from a separate thread properly");
                 }
 
+                if (event.getUI().wrapperElement != null) {
+                    // See UI.SERVER_CONNECTED and acknowledgeClient.
+                    event.getUI().wrapperElement
+                            .executeJs("this.serverConnected($0)", false);
+                }
+
+                // Change the trigger to programmatic as the url will be
+                // updated/added by router when we continue for a Router_link.
+                // If the server updates the url also we will get 2 history
+                // changes instead of 1.
+                if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
+                    event = new NavigationEvent(event.getSource(),
+                            event.getLocation(), event.getUI(),
+                            NavigationTrigger.PROGRAMMATIC);
+                }
                 handler.handle(event);
                 setReferences(null, null);
+            }
+        }
+
+        /**
+         * Cancel the navigation that was postponed.
+         * <p>
+         * This is so that the client router pending promise closes. Also
+         * updates the correct url on back navigation if blocking back.
+         */
+        public void cancel() {
+            BeforeLeaveEvent.this.continueNavigationAction = null;
+            if (handler != null && event != null
+                    && event.getUI().wrapperElement != null) {
+                // See UI.SERVER_CONNECTED and cancelClient.
+                event.getUI().wrapperElement
+                        .executeJs("this.serverConnected($0)", true);
             }
         }
     }
@@ -202,5 +234,4 @@ public class BeforeLeaveEvent extends BeforeEvent {
     public ContinueNavigationAction getContinueNavigationAction() {
         return continueNavigationAction;
     }
-
 }
