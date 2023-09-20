@@ -68,7 +68,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             + "%n 2) Manually installing a newer version of npx: npm install -g npx"
             + "%n 3) Manually installing a newer version of pnpm: npm install -g pnpm"
             + "%n 4) Deleting the following files from your Vaadin project's folder (if present):"
-            + "%n        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js"
+            + "%n        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml"
             + "%n======================================================================================================%n";
 
     private final NodeUpdater packageUpdater;
@@ -229,16 +229,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
         tools.validateNodeAndNpmVersion();
 
         if (options.isEnablePnpm()) {
-            try {
-                createPnpmFile(packageUpdater.versionsJson, tools);
-            } catch (IOException exception) {
-                throw new ExecutionFailedException(
-                        "Failed to read frontend version data from vaadin-core "
-                                + "and make it available to pnpm for locking transitive dependencies.\n"
-                                + "Please report an issue, as a workaround try running project "
-                                + "with npm by setting system variable -Dvaadin.pnpm.enable=false",
-                        exception);
-            }
             try {
                 createNpmRcFile();
             } catch (IOException exception) {
@@ -449,48 +439,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     /*
-     * The pnpmfile.js file is recreated from scratch every time when `pnpm
-     * install` is executed. It doesn't take much time to recreate it and it's
-     * not supposed that it can be modified by the user. This is done in the
-     * same way as for webpack.generated.js.
-     */
-    private void createPnpmFile(JsonObject versionsJson, FrontendTools tools)
-            throws IOException {
-        if (versionsJson == null) {
-            return;
-        }
-        String pnpmFileName = ".pnpmfile.cjs";
-        final List<String> pnpmExecutable = tools.getSuitablePnpm();
-        pnpmExecutable.add("--version");
-        try {
-            final FrontendVersion pnpmVersion = FrontendUtils.getVersion("pnpm",
-                    pnpmExecutable);
-            if (pnpmVersion.isOlderThan(new FrontendVersion("6.0"))) {
-                pnpmFileName = "pnpmfile.js";
-            }
-        } catch (FrontendUtils.UnknownVersionException e) {
-            packageUpdater.log().error("Failed to determine pnpm version", e);
-        }
-
-        File pnpmFile = new File(options.getNpmFolder().getAbsolutePath(),
-                pnpmFileName);
-        try (InputStream content = TaskRunNpmInstall.class
-                .getResourceAsStream("/pnpmfile.js")) {
-            if (content == null) {
-                throw new IOException(
-                        "Couldn't find template pnpmfile.js in the classpath");
-            }
-            FileUtils.copyInputStreamToFile(content, pnpmFile);
-            packageUpdater.log().debug("Generated pnpmfile hook file: '{}'",
-                    pnpmFile);
-
-            FileUtils.writeStringToFile(pnpmFile,
-                    modifyPnpmFile(pnpmFile, versionsJson),
-                    StandardCharsets.UTF_8);
-        }
-    }
-
-    /*
      * Create an .npmrc file the project directory if there is none.
      */
     private void createNpmRcFile() throws IOException {
@@ -529,14 +477,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
                         npmrcFile);
             }
         }
-    }
-
-    private String modifyPnpmFile(File generatedFile, JsonObject versionsJson)
-            throws IOException {
-        String content = FileUtils.readFileToString(generatedFile,
-                StandardCharsets.UTF_8);
-        content = content.replace("versionsinfojson", versionsJson.toJson());
-        return content;
     }
 
     private void cleanUp() throws ExecutionFailedException {

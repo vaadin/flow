@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -30,7 +26,6 @@ import java.util.List;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -50,6 +45,10 @@ import com.vaadin.flow.testutil.FrontendStubs;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 
 @NotThreadSafe
 @Category(SlowTests.class)
@@ -160,56 +159,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
                 new TaskRunNpmInstall(getNodeUpdater(), options));
-    }
-
-    @Test
-    public void runPnpmInstall_versionsJsonIsFound_pnpmHookFileIsGenerated()
-            throws IOException, ExecutionFailedException {
-        ClassFinder classFinder = getClassFinder();
-        File versions = temporaryFolder.newFile();
-        FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
-        Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versions.toURI().toURL());
-
-        String versionsJson = "{\"foo\":\"bar\"}";
-        TaskRunNpmInstall task = createTask(versionsJson);
-        getNodeUpdater().modified = true;
-        task.execute();
-
-        File file = new File(npmFolder, "pnpmfile.js");
-        File cjsFile = new File(npmFolder, ".pnpmfile.cjs");
-        Assert.assertTrue(file.exists() || cjsFile.exists());
-        String content;
-        if (file.exists()) {
-            content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-        } else {
-            content = FileUtils.readFileToString(cjsFile,
-                    StandardCharsets.UTF_8);
-        }
-        MatcherAssert.assertThat(content,
-                CoreMatchers.containsString("versions = " + versionsJson));
-    }
-
-    @Test
-    public void runPnpmInstall_versionsJsonIsNotFound_pnpmHookFileIsGeneratedFromPackageJson()
-            throws IOException, ExecutionFailedException {
-        TaskRunNpmInstall task = createTask();
-        getNodeUpdater().modified = true;
-        task.execute();
-
-        File file = new File(npmFolder, "pnpmfile.js");
-        File cjsFile = new File(npmFolder, ".pnpmfile.cjs");
-        Assert.assertTrue(file.exists() || cjsFile.exists());
-        String content;
-        if (file.exists()) {
-            content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-        } else {
-            content = FileUtils.readFileToString(cjsFile,
-                    StandardCharsets.UTF_8);
-        }
-        MatcherAssert.assertThat(content,
-                CoreMatchers.containsString("versions = {}"));
     }
 
     @Test
