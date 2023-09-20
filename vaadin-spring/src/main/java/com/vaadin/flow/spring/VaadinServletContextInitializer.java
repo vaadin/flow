@@ -993,8 +993,8 @@ public class VaadinServletContextInitializer
                             if (devModeCachingEnabled
                                     && relativePath.endsWith(".class")) {
                                 // Stores names of vaadin classes from JARs
-                                String className = relativePath.replaceAll(
-                                        String.valueOf(File.separatorChar), ".")
+                                String className = relativePath
+                                        .replace(File.separatorChar, '.')
                                         .replace(".class", "");
                                 if (className.startsWith("com.vaadin.flow")
                                         || className
