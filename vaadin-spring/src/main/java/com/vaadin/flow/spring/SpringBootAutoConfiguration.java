@@ -70,7 +70,7 @@ public class SpringBootAutoConfiguration {
      * @return a custom ServletContextInitializer instance
      */
     @Bean
-    @ConditionalOnMissingBean(ServletContextInitializer.class)
+    @ConditionalOnMissingBean(VaadinServletContextInitializer.class)
     public ServletContextInitializer contextInitializer() {
         return new VaadinServletContextInitializer(context);
     }
@@ -86,7 +86,7 @@ public class SpringBootAutoConfiguration {
      * @return a custom ServletRegistrationBean instance
      */
     @Bean
-    @ConditionalOnMissingBean(ServletRegistrationBean.class)
+    @ConditionalOnMissingBean(value = SpringServlet.class, parameterizedContainer = ServletRegistrationBean.class)
     public ServletRegistrationBean<SpringServlet> servletRegistrationBean(
             ObjectProvider<MultipartConfigElement> multipartConfig,
             VaadinConfigurationProperties configurationProperties) {
@@ -129,7 +129,7 @@ public class SpringBootAutoConfiguration {
      * @return the server endpoint exporter which does the actual work.
      */
     @Bean
-    @ConditionalOnClass(ServerEndpointExporter.class)
+    @ConditionalOnMissingBean(VaadinWebsocketEndpointExporter.class)
     public ServerEndpointExporter websocketEndpointDeployer() {
         return new VaadinWebsocketEndpointExporter();
     }
