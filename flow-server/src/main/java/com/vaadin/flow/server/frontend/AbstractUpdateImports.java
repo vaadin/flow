@@ -491,7 +491,6 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     private Set<String> getUniqueEs6ImportPaths(Collection<String> modules) {
-        long start = System.nanoTime();
         Set<String> npmNotFound = new HashSet<>();
         Set<String> resourceNotFound = new HashSet<>();
         Set<String> es6ImportPaths = new LinkedHashSet<>();
