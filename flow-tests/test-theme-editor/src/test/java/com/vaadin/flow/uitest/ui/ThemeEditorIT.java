@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.base.devserver.themeeditor.ThemeModifier;
 import com.vaadin.base.devserver.themeeditor.utils.CssRule;
+import com.vaadin.base.devserver.themeeditor.utils.ComponentsMetadata;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.testutil.DevToolsElement;
 import com.vaadin.flow.uitest.ui.testbench.DevToolsCheckboxPropertyEditorElement;
@@ -34,16 +35,11 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 import static junit.framework.TestCase.fail;
@@ -57,14 +53,7 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
 
     @Test
     public void testButton() throws IOException {
-        File parentFolder = new File(Objects
-                .requireNonNull(getClass().getClassLoader().getResource(""))
-                .getPath());
-        Path metadataFilePath = Paths.get(
-                parentFolder.getParentFile().getParent(), "metadata",
-                "vaadin-button.txt");
-
-        List<Metadata> buttonMetadata = extractMetadata(metadataFilePath);
+        List<Metadata> buttonMetadata = extractMetadata("vaadin-button");
 
         open();
 
@@ -187,9 +176,9 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
         return Optional.empty();
     }
 
-    private List<Metadata> extractMetadata(Path metadataFilePath)
+    private List<Metadata> extractMetadata(String componentName)
             throws IOException {
-        String content = Files.readString(metadataFilePath);
+        String content = ComponentsMetadata.getMetadataContent(componentName);
         JsonArray jsonArray = Json.instance().parse(content);
         return JsonUtils.stream(jsonArray).map(
                 m -> JsonUtils.readToObject((JsonObject) m, Metadata.class))
