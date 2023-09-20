@@ -996,9 +996,8 @@ public class VaadinServletContextInitializer
                                 String className = relativePath
                                         .replace(File.separatorChar, '.')
                                         .replace(".class", "");
-                                if (className.startsWith("com.vaadin.flow")
-                                        || className
-                                                .startsWith("org.vaadin.flow")
+                                if (className.startsWith("com.vaadin")
+                                        || className.startsWith("org.vaadin")
                                         || className.startsWith("dev.hilla")) {
                                     ReloadCache.vaadinClassNames.add(className);
                                 }
