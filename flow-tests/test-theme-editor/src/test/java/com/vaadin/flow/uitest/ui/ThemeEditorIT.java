@@ -38,11 +38,15 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.FluentWait;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -84,14 +88,18 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
             try (FileWriter fw = new FileWriter(javaFile)) {
                 fw.write(javaContent);
             }
-            ThemeModifier themeModifier = new TestThemeModifier();
-            File styleSheetFile = themeModifier.getStyleSheetFile();
+            File styleSheetFile = getStyleSheetFile();
             if (styleSheetFile.exists()) {
                 styleSheetFile.delete();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected File getStyleSheetFile() {
+        TestThemeModifier themeModifier = new TestThemeModifier();
+        return themeModifier.getStyleSheetFileWithoutSideEffects();
     }
 
     @Test
@@ -104,7 +112,6 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
         performTagTest("vaadin-icon", By.id("icon"));
     }
 
-    @Ignore("https://github.com/vaadin/flow/issues/17678")
     @Test
     public void testCheckbox() throws IOException {
         performTagTest("vaadin-checkbox", By.id("checkbox"));
@@ -171,6 +178,7 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
                 TestBenchElement sectionPropertyList = section.$("div")
                         .attribute("class", "property-list").first();
 
+                Instant baseTime = Instant.now();
                 String value = updatePropertyInDevTools(sectionPropertyList,
                         property);
 
@@ -181,9 +189,39 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
                     expectedCssProperties.put("border-style", "solid");
                 }
 
+                waitForStyleSheetFileToChange(baseTime);
+
                 checkCssSelectorProperties(cssSelector, expectedCssProperties);
             }
         }
+    }
+
+    private Optional<Instant> getLastModifiedTime(File file) {
+        try {
+            if (!file.exists()) {
+                return Optional.empty();
+            }
+            BasicFileAttributes attributes = Files.readAttributes(file.toPath(),
+                    BasicFileAttributes.class);
+            return Optional.of(attributes.lastModifiedTime().toInstant());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void waitForStyleSheetFileToChange(Instant baseTime) {
+        new FluentWait<File>(getStyleSheetFile())
+                .withTimeout(Duration.ofSeconds(5))
+                .pollingEvery(Duration.ofMillis(500)).until(f -> {
+                    Optional<Instant> oLastModifiedTime = getLastModifiedTime(
+                            f);
+                    if (oLastModifiedTime.isEmpty()) {
+                        return false;
+                    } else {
+                        Instant lastModifiedTime = oLastModifiedTime.get();
+                        return lastModifiedTime.isAfter(baseTime);
+                    }
+                });
     }
 
     protected void checkCssSelectorProperties(String cssSelector,
