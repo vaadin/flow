@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -72,9 +73,8 @@ public class SpringLookupInitializer extends LookupInitializer {
                 Map<Class<?>, Collection<Class<?>>> services) {
             super(services, factory);
             this.context = context;
-            this.cachedServices = Collections.synchronizedMap(new HashMap<>());
-            this.cacheableServices = Collections
-                    .synchronizedMap(new HashMap<>());
+            this.cachedServices = new ConcurrentHashMap<>();
+            this.cacheableServices = new ConcurrentHashMap<>();
         }
 
         private <T> boolean isCacheableService(Class<T> serviceClass) {
