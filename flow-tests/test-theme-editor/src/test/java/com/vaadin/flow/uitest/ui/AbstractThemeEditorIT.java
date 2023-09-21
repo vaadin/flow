@@ -95,6 +95,10 @@ public abstract class AbstractThemeEditorIT extends ChromeDeviceTest {
         protected File getFrontendFolder() {
             return new File(getProjectFolder(), FrontendUtils.FRONTEND);
         }
+
+        public File getStyleSheetFileWithoutSideEffects() {
+            return new File(getThemeFile(), getCssFileName());
+        }
     }
 
     protected static class TestAbstractConfiguration
