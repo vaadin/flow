@@ -35,12 +35,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.slf4j.Logger;
 
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UrlUtil;
@@ -52,7 +55,6 @@ import com.vaadin.flow.server.frontend.scanner.EntryPointType;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
-import org.slf4j.Logger;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -95,7 +97,7 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private final UnaryOperator<String> themeToLocalPathConverter;
 
-    private final Map<Path, List<String>> importedPathsCache = new HashMap<>();
+    private final Map<Path, List<String>> resolvedImportPathsCache = new HashMap<>();
 
     private FrontendDependenciesScanner scanner;
 
@@ -788,7 +790,7 @@ abstract class AbstractUpdateImports implements Runnable {
             AbstractTheme theme, Collection<String> imports,
             Set<String> visitedImports) throws IOException {
 
-        if (!importedPathsCache.containsKey(filePath)) {
+        if (!resolvedImportPathsCache.containsKey(filePath)) {
             String content = null;
             try (final Stream<String> contentStream = Files.lines(filePath,
                     StandardCharsets.UTF_8)) {
@@ -805,30 +807,38 @@ abstract class AbstractUpdateImports implements Runnable {
                 throw ioe;
             }
             ImportExtractor extractor = new ImportExtractor(content);
-            importedPathsCache.put(filePath, extractor.getImportedPaths());
+            resolvedImportPathsCache.put(filePath,
+                    extractor.getImportedPaths().stream().map(importedPath -> {
+                        // try to resolve path relatively to original filePath
+                        // (inside user
+                        // frontend folder)
+                        importedPath = StringUtil.stripSuffix(importedPath,
+                                "?inline");
+                        String resolvedPath = resolve(importedPath, filePath,
+                                path);
+                        File file = getImportedFrontendFile(resolvedPath);
+                        if (file == null && !importedPath.startsWith("./")) {
+                            // In case such file doesn't exist it may be
+                            // external: inside
+                            // node_modules folder
+                            file = getFile(options.getNodeModulesFolder(),
+                                    importedPath);
+                            if (!file.exists()) {
+                                file = null;
+                            }
+                            resolvedPath = importedPath;
+                        }
+                        if (file == null) {
+                            // don't do anything if such file doesn't exist at
+                            // all
+                            return null;
+                        }
+                        return normalizePath(resolvedPath);
+                    }).filter(Objects::nonNull).collect(Collectors.toList()));
         }
-        List<String> importedPaths = importedPathsCache.get(filePath);
+        List<String> resolvedPaths = resolvedImportPathsCache.get(filePath);
 
-        for (String importedPath : importedPaths) {
-            // try to resolve path relatively to original filePath (inside user
-            // frontend folder)
-            importedPath = StringUtil.stripSuffix(importedPath, "?inline");
-            String resolvedPath = resolve(importedPath, filePath, path);
-            File file = getImportedFrontendFile(resolvedPath);
-            if (file == null && !importedPath.startsWith("./")) {
-                // In case such file doesn't exist it may be external: inside
-                // node_modules folder
-                file = getFile(options.getNodeModulesFolder(), importedPath);
-                if (!file.exists()) {
-                    file = null;
-                }
-                resolvedPath = importedPath;
-            }
-            if (file == null) {
-                // don't do anything if such file doesn't exist at all
-                continue;
-            }
-            resolvedPath = normalizePath(resolvedPath);
+        for (String resolvedPath : resolvedPaths) {
             if (resolvedPath.contains(theme.getBaseUrl())) {
                 String translatedPath = theme.translateUrl(resolvedPath);
                 if (!visitedImports.contains(translatedPath)
