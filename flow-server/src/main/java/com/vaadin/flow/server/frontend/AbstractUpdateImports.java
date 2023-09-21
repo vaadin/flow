@@ -35,6 +35,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
@@ -94,6 +95,10 @@ abstract class AbstractUpdateImports implements Runnable {
     private static final Pattern STARTING_DOT_SLASH = Pattern.compile("^\\./+");
     final Options options;
 
+    private final UnaryOperator<String> themeToLocalPathConverter;
+
+    private final Map<Path, List<String>> resolvedImportPathsCache = new HashMap<>();
+
     private FrontendDependenciesScanner scanner;
 
     private ClassFinder classFinder;
@@ -107,6 +112,8 @@ abstract class AbstractUpdateImports implements Runnable {
         this.options = options;
         this.scanner = scanner;
         this.classFinder = classFinder;
+        this.themeToLocalPathConverter = createThemeToLocalPathConverter(
+                scanner.getTheme());
 
         generatedFlowImports = FrontendUtils
                 .getFlowGeneratedImports(options.getFrontendDirectory());
@@ -219,7 +226,6 @@ abstract class AbstractUpdateImports implements Runnable {
                     mergedChunkKeys.size());
 
             for (ChunkInfo chunkInfo : mergedChunkKeys) {
-
                 List<String> chunkLines = new ArrayList<>();
                 if (lazyJavascript.containsKey(chunkInfo)) {
                     chunkLines.addAll(
@@ -470,21 +476,6 @@ abstract class AbstractUpdateImports implements Runnable {
         Set<String> es6ImportPaths = new LinkedHashSet<>();
         AbstractTheme theme = scanner.getTheme();
 
-        UnaryOperator<String> convertToLocalPath;
-        if (theme != null) {
-            // (#5964) Allows:
-            // - custom @Theme with files placed in /frontend
-            // - customize an already themed component
-            // @vaadin/vaadin-grid/theme/lumo/vaadin-grid.js ->
-            // theme/lumo/vaadin-grid.js
-            String themePath = theme.getThemeUrl();
-            Pattern themePattern = Pattern.compile("@.+" + themePath);
-            convertToLocalPath = path -> themePattern.matcher(path)
-                    .replaceFirst(themePath);
-        } else {
-            convertToLocalPath = UnaryOperator.identity();
-        }
-
         Set<String> visited = new HashSet<>();
 
         for (String originalModulePath : modules) {
@@ -493,7 +484,7 @@ abstract class AbstractUpdateImports implements Runnable {
             if (theme != null
                     && translatedModulePath.contains(theme.getBaseUrl())) {
                 translatedModulePath = theme.translateUrl(translatedModulePath);
-                localModulePath = convertToLocalPath
+                localModulePath = themeToLocalPathConverter
                         .apply(translatedModulePath);
             }
 
@@ -556,8 +547,26 @@ abstract class AbstractUpdateImports implements Runnable {
                     "Failed to find the following imports in the `node_modules` tree:",
                     getImportsNotFoundMessage()));
         }
-
         return es6ImportPaths;
+    }
+
+    private static UnaryOperator<String> createThemeToLocalPathConverter(
+            AbstractTheme theme) {
+        UnaryOperator<String> convertToLocalPath;
+        if (theme != null) {
+            // (#5964) Allows:
+            // - custom @Theme with files placed in /frontend
+            // - customize an already themed component
+            // @vaadin/vaadin-grid/theme/lumo/vaadin-grid.js ->
+            // theme/lumo/vaadin-grid.js
+            String themePath = theme.getThemeUrl();
+            Pattern themePattern = Pattern.compile("@.+" + themePath);
+            convertToLocalPath = path -> themePattern.matcher(path)
+                    .replaceFirst(themePath);
+        } else {
+            convertToLocalPath = UnaryOperator.identity();
+        }
+        return convertToLocalPath;
     }
 
     private boolean isGeneratedFlowFile(String localModulePath) {
@@ -759,43 +768,55 @@ abstract class AbstractUpdateImports implements Runnable {
             AbstractTheme theme, Collection<String> imports,
             Set<String> visitedImports) throws IOException {
 
-        String content = null;
-        try (final Stream<String> contentStream = Files.lines(filePath,
-                StandardCharsets.UTF_8)) {
-            content = contentStream.collect(Collectors.joining("\n"));
-        } catch (UncheckedIOException ioe) {
-            if (ioe.getCause() instanceof MalformedInputException) {
-                getLogger().trace(
-                        "Failed to read file '{}' found from Es6 import statements. "
-                                + "This is probably due to it being a binary file, "
-                                + "in which case it doesn't matter as imports are only in js/ts files.",
-                        filePath.toString(), ioe);
-                return;
-            }
-            throw ioe;
-        }
-        ImportExtractor extractor = new ImportExtractor(content);
-        List<String> importedPaths = extractor.getImportedPaths();
-        for (String importedPath : importedPaths) {
-            // try to resolve path relatively to original filePath (inside user
-            // frontend folder)
-            importedPath = StringUtil.stripSuffix(importedPath, "?inline");
-            String resolvedPath = resolve(importedPath, filePath, path);
-            File file = getImportedFrontendFile(resolvedPath);
-            if (file == null && !importedPath.startsWith("./")) {
-                // In case such file doesn't exist it may be external: inside
-                // node_modules folder
-                file = getFile(options.getNodeModulesFolder(), importedPath);
-                if (!file.exists()) {
-                    file = null;
+        if (!resolvedImportPathsCache.containsKey(filePath)) {
+            String content = null;
+            try (final Stream<String> contentStream = Files.lines(filePath,
+                    StandardCharsets.UTF_8)) {
+                content = contentStream.collect(Collectors.joining("\n"));
+            } catch (UncheckedIOException ioe) {
+                if (ioe.getCause() instanceof MalformedInputException) {
+                    getLogger().trace(
+                            "Failed to read file '{}' found from Es6 import statements. "
+                                    + "This is probably due to it being a binary file, "
+                                    + "in which case it doesn't matter as imports are only in js/ts files.",
+                            filePath.toString(), ioe);
+                    return;
                 }
-                resolvedPath = importedPath;
+                throw ioe;
             }
-            if (file == null) {
-                // don't do anything if such file doesn't exist at all
-                continue;
-            }
-            resolvedPath = normalizePath(resolvedPath);
+            ImportExtractor extractor = new ImportExtractor(content);
+            resolvedImportPathsCache.put(filePath,
+                    extractor.getImportedPaths().stream().map(importedPath -> {
+                        // try to resolve path relatively to original filePath
+                        // (inside user
+                        // frontend folder)
+                        importedPath = StringUtil.stripSuffix(importedPath,
+                                "?inline");
+                        String resolvedPath = resolve(importedPath, filePath,
+                                path);
+                        File file = getImportedFrontendFile(resolvedPath);
+                        if (file == null && !importedPath.startsWith("./")) {
+                            // In case such file doesn't exist it may be
+                            // external: inside
+                            // node_modules folder
+                            file = getFile(options.getNodeModulesFolder(),
+                                    importedPath);
+                            if (!file.exists()) {
+                                file = null;
+                            }
+                            resolvedPath = importedPath;
+                        }
+                        if (file == null) {
+                            // don't do anything if such file doesn't exist at
+                            // all
+                            return null;
+                        }
+                        return normalizePath(resolvedPath);
+                    }).filter(Objects::nonNull).collect(Collectors.toList()));
+        }
+        List<String> resolvedPaths = resolvedImportPathsCache.get(filePath);
+
+        for (String resolvedPath : resolvedPaths) {
             if (resolvedPath.contains(theme.getBaseUrl())) {
                 String translatedPath = theme.translateUrl(resolvedPath);
                 if (!visitedImports.contains(translatedPath)
