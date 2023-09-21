@@ -62,8 +62,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
-import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.*;
 
 /**
  * Represents the class dependency tree of the application.
@@ -91,6 +90,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
+    private final HashMap<String, String> devPackages = new HashMap<>();
     private final Map<String, ClassInfo> visitedClasses = new HashMap<>();
 
     private PwaConfiguration pwaConfiguration;
@@ -247,6 +247,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     @Override
     public Map<String, String> getPackages() {
         return packages;
+    }
+
+    @Override
+    public Map<String, String> getDevPackages() {
+        return devPackages;
     }
 
     /**
@@ -637,7 +642,14 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                         "Multiple npm versions for {} found:  {}. First version found '{}' will be considered.",
                         dependency, foundVersions, version);
             }
-            packages.put(dependency, version);
+            Set<Boolean> devs = npmPackageVisitor.getValuesForKey(VALUE, dependency, DEV);
+            devs.forEach(dev -> {
+                if(dev) {
+                    devPackages.put(dependency, version);
+                } else {
+                    packages.put(dependency, version);
+                }
+            });
         }
     }
 

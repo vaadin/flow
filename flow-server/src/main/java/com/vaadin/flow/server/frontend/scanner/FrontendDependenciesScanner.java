@@ -106,6 +106,13 @@ public interface FrontendDependenciesScanner extends Serializable {
     Map<String, String> getPackages();
 
     /**
+     * Get all npm packages needed only for development.
+     *
+     * @return the `devDependencies` packages
+     */
+    Map<String, String> getDevPackages();
+
+    /**
      * Get all ES6 modules needed for run the application. Modules that are
      * theme dependencies are guaranteed to precede other modules in the result.
      *

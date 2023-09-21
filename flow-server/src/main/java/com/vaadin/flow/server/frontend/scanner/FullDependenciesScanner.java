@@ -47,6 +47,8 @@ import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.DEV;
+
 /**
  * Full classpath scanner.
  * <p>
@@ -68,6 +70,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private PwaConfiguration pwaConfiguration;
     private Set<String> classes = new HashSet<>();
     private Map<String, String> packages;
+    private Map<String, String> devPackages;
     private List<CssData> cssData;
     private List<String> scripts;
     private List<String> scriptsDevelopment;
@@ -117,7 +120,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     + AbstractTheme.class.getName() + " class", exception);
         }
 
-        packages = discoverPackages();
+        packages = new HashMap<>();
+        devPackages = new HashMap<>();
+        discoverPackages(packages, devPackages);
 
         LinkedHashSet<String> modulesSet = new LinkedHashSet<>();
         LinkedHashSet<String> modulesSetDevelopment = new LinkedHashSet<>();
@@ -143,6 +148,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     @Override
     public Map<String, String> getPackages() {
         return Collections.unmodifiableMap(packages);
+    }
+
+    @Override
+    public Map<String, String> getDevPackages() {
+        return Collections.unmodifiableMap(devPackages);
     }
 
     @Override
@@ -211,13 +221,12 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         return value.isEmpty() ? null : value;
     }
 
-    private Map<String, String> discoverPackages() {
+    private void discoverPackages(final Map<String, String> packages, final Map<String, String> devPackages) {
         try {
             Class<? extends Annotation> loadedAnnotation = getFinder()
                     .loadClass(NpmPackage.class.getName());
             Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
-            Map<String, String> result = new HashMap<>();
             Set<String> logs = new HashSet<>();
             for (Class<?> clazz : annotatedClasses) {
                 classes.add(clazz.getName());
@@ -228,7 +237,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                             VALUE);
                     String version = getAnnotationValueAsString(annotation,
                             VERSION);
+                    boolean dev = getAnnotationValueAsBoolean(annotation, DEV);
                     logs.add(value + " " + version + " " + clazz.getName());
+                    Map<String, String> result = dev ? devPackages : packages;
                     if (result.containsKey(value)
                             && !result.get(value).equals(version)) {
                         String foundVersions = "[" + result.get(value) + ", "
@@ -242,7 +253,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                 });
             }
             debug("npm dependencies", logs);
-            return result;
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
                     COULD_NOT_LOAD_ERROR_MSG + NpmPackage.class.getName(),

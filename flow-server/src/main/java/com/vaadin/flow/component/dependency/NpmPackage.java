@@ -67,6 +67,14 @@ public @interface NpmPackage {
     String version();
 
     /**
+     * Whether the package should be installed as a dev dependency.
+     *
+     * @return {@code true} if the package should be installed as a dev
+     *     dependency, {@code false} otherwise.
+     */
+    boolean dev() default false;
+
+    /**
      * Internal annotation to enable use of multiple {@link NpmPackage}
      * annotations.
      */
