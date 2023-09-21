@@ -33,6 +33,7 @@ import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -103,6 +104,7 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
         performTagTest("vaadin-icon", By.id("icon"));
     }
 
+    @Ignore("https://github.com/vaadin/flow/issues/17678")
     @Test
     public void testCheckbox() throws IOException {
         performTagTest("vaadin-checkbox", By.id("checkbox"));
