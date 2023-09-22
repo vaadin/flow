@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.base.devserver.themeeditor.ThemeModifier;
 import com.vaadin.base.devserver.themeeditor.utils.CssRule;
 import com.vaadin.base.devserver.themeeditor.utils.ComponentsMetadata;
+import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.testutil.DevToolsElement;
 import com.vaadin.flow.uitest.ui.testbench.DevToolsCheckboxPropertyEditorElement;
@@ -29,31 +30,96 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.FluentWait;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import static junit.framework.TestCase.fail;
+import java.util.stream.Collectors;
 
 @NotThreadSafe
 public class ThemeEditorIT extends AbstractThemeEditorIT {
+    private static String javaContent = "";
+
     @Override
     protected String getTestPath() {
         return "/context/view/com.vaadin.flow.uitest.ui.ThemeEditorView";
     }
 
+    @BeforeClass
+    public static void initialize() {
+        try {
+            ComponentTracker.Location location = new ComponentTracker.Location(
+                    "com.vaadin.flow.uitest.ui.ThemeEditorView",
+                    "ThemeEditorView.java", "ThemeEditorView", 1);
+            File javaFile = location
+                    .findJavaFile(new TestAbstractConfiguration());
+            javaContent = Files.readString(javaFile.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @After
+    public void tearDown() {
+        try {
+            ComponentTracker.Location location = new ComponentTracker.Location(
+                    "com.vaadin.flow.uitest.ui.ThemeEditorView",
+                    "ThemeEditorView.java", "ThemeEditorView", 1);
+            File javaFile = location
+                    .findJavaFile(new TestAbstractConfiguration());
+            try (FileWriter fw = new FileWriter(javaFile)) {
+                fw.write(javaContent);
+            }
+            File styleSheetFile = getStyleSheetFile();
+            if (styleSheetFile.exists()) {
+                styleSheetFile.delete();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected File getStyleSheetFile() {
+        TestThemeModifier themeModifier = new TestThemeModifier();
+        return themeModifier.getStyleSheetFileWithoutSideEffects();
+    }
+
     @Test
     public void testButton() throws IOException {
-        List<Metadata> buttonMetadata = extractMetadata("vaadin-button");
+        performTagTest("vaadin-button", By.id("button"));
+    }
+
+    @Test
+    public void testIcon() throws IOException {
+        performTagTest("vaadin-icon", By.id("icon"));
+    }
+
+    @Test
+    public void testCheckbox() throws IOException {
+        performTagTest("vaadin-checkbox", By.id("checkbox"));
+    }
+
+    protected void performTagTest(String tagName, By componentSelector)
+            throws IOException {
+        List<Metadata> allMetadata = extractMetadata(tagName);
 
         open();
 
@@ -66,72 +132,113 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
                 .$("vaadin-dev-tools-theme-editor").first();
         themeEditor.$("button").first().click();
 
-        new Actions(getDriver()).click(findElement(By.id("button"))).perform();
+        new Actions(getDriver()).click(findElement(componentSelector))
+                .perform();
 
         DevToolsThemeClassNameEditorElement classNameEditor = themeEditor
                 .$(DevToolsThemeClassNameEditorElement.class).waitForFirst();
         String cssClassName = classNameEditor.getValue();
 
-        TestBenchElement propertiesList = themeEditor
+        TestBenchElement themePropertiesList = themeEditor
                 .$("vaadin-dev-tools" + "-theme-property-list").waitForFirst();
 
-        List<TestBenchElement> propertyEditors = propertiesList.$("*")
-                .hasAttribute("data-testid").all();
+        List<TestBenchElement> sections = themePropertiesList.$("*")
+                .attribute("class", "section").all();
+        for (TestBenchElement section : sections) {
+            String sectionName = section.$("span").first().getText().strip();
+            Optional<Metadata> oMetadata = allMetadata.stream()
+                    .filter(m -> m.getDisplayName().strip().equals(sectionName))
+                    .findFirst();
+            Assert.assertTrue(String.format(
+                    "Couldn't find a metadata for the section named '%s'",
+                    sectionName), oMetadata.isPresent());
+            Metadata metadata = oMetadata.get();
 
-        List<String> dataTestIds = new ArrayList<>(propertyEditors.size());
-        for (TestBenchElement testBenchElement : propertyEditors) {
-            WebElement webElement = testBenchElement.getWrappedElement();
-            String dataTestIdAttribute = webElement.getAttribute("data-testid");
-            dataTestIds.add(dataTestIdAttribute);
-        }
+            List<TestBenchElement> propertyEditors = section.$("*")
+                    .hasAttribute("data-testid").all();
 
-        for (Metadata metadata : buttonMetadata) {
-            Map<String, String> cssProperties = new HashMap<>();
+            List<String> dataTestIds = new ArrayList<>(propertyEditors.size());
+            for (TestBenchElement testBenchElement : propertyEditors) {
+                WebElement webElement = testBenchElement.getWrappedElement();
+                String dataTestIdAttribute = webElement
+                        .getAttribute("data-testid");
+                dataTestIds.add(dataTestIdAttribute);
+            }
+
+            String cssSelector = createSelector(metadata, tagName,
+                    cssClassName);
+            Map<String, String> expectedCssProperties = new HashMap<>();
             for (Property property : metadata.getProperties()) {
-                if (!dataTestIds.contains(property.getPropertyName())) {
-                    fail();
-                }
-                Optional<String> oValue = updateProperty(propertiesList,
+                Assert.assertTrue(String.format(
+                        "The property '%s' doesn't appear in section '%s' from the dev tools window. Available section properties: %s",
+                        property.getPropertyName(), sectionName,
+                        dataTestIds.stream().collect(Collectors.joining(", "))),
+                        dataTestIds.contains(property.getPropertyName()));
+
+                TestBenchElement sectionPropertyList = section.$("div")
+                        .attribute("class", "property-list").first();
+
+                Instant baseTime = Instant.now();
+                String value = updatePropertyInDevTools(sectionPropertyList,
                         property);
-                if (!oValue.isEmpty()) {
-                    String value = oValue.get();
-                    cssProperties.put(property.getPropertyName(), value);
-                    // ouch...
-                    if (property.getPropertyName().equals("border-width")
-                            && !value.equals("0px")) {
-                        cssProperties.put("border-style", "solid");
-                    }
+
+                expectedCssProperties.put(property.getPropertyName(), value);
+                // ouch...
+                if (property.getPropertyName().equals("border-width")
+                        && !value.equals("0px")) {
+                    expectedCssProperties.put("border-style", "solid");
                 }
-            }
-            String cssSelector = createSelector(metadata, cssClassName);
-            Optional<CssRule> oActual = getCssRuleFromFile(cssSelector);
-            if (oActual.isEmpty()) {
-                Assert.assertEquals(cssSelector, "");
-            } else {
-                CssRule expected = new CssRule(cssSelector, cssProperties);
-                CssRule actual = oActual.get();
-                Assert.assertEquals(expected, actual);
+
+                waitForStyleSheetFileToChange(baseTime);
+
+                checkCssSelectorProperties(cssSelector, expectedCssProperties);
             }
         }
     }
 
-    private String createSelector(Metadata metadata, String cssClassName) {
-        if (hasPseudoElement(metadata.getSelector())) {
-            return addCssClassNameToSelectorWithPseudoElement(
-                    metadata.getSelector(), cssClassName);
-        } else {
-            return String.format("%s.%s", metadata.getSelector(), cssClassName);
+    private Optional<Instant> getLastModifiedTime(File file) {
+        try {
+            if (!file.exists()) {
+                return Optional.empty();
+            }
+            BasicFileAttributes attributes = Files.readAttributes(file.toPath(),
+                    BasicFileAttributes.class);
+            return Optional.of(attributes.lastModifiedTime().toInstant());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private String addCssClassNameToSelectorWithPseudoElement(String selector,
+    private void waitForStyleSheetFileToChange(Instant baseTime) {
+        new FluentWait<File>(getStyleSheetFile())
+                .withTimeout(Duration.ofSeconds(5))
+                .pollingEvery(Duration.ofMillis(500)).until(f -> {
+                    Optional<Instant> oLastModifiedTime = getLastModifiedTime(
+                            f);
+                    if (oLastModifiedTime.isEmpty()) {
+                        return false;
+                    } else {
+                        Instant lastModifiedTime = oLastModifiedTime.get();
+                        return lastModifiedTime.isAfter(baseTime);
+                    }
+                });
+    }
+
+    protected void checkCssSelectorProperties(String cssSelector,
+            Map<String, String> expectedCssProperties) {
+        Optional<CssRule> oActual = getCssRuleFromFile(cssSelector);
+        Assert.assertTrue(String.format(
+                "The rules for the css selector '%s' were not found in the generated css file.",
+                cssSelector), oActual.isPresent());
+        CssRule expected = new CssRule(cssSelector, expectedCssProperties);
+        CssRule actual = oActual.get();
+        Assert.assertEquals(expected, actual);
+    }
+
+    private String createSelector(Metadata metadata, String tagName,
             String cssClassName) {
-        return selector.replaceFirst("(.+)::(.+)",
-                String.format("$1.%s::$2", cssClassName));
-    }
-
-    private boolean hasPseudoElement(String selector) {
-        return selector.matches(".+::.+");
+        return metadata.getSelector().replaceFirst(tagName,
+                String.format("%s.%s", tagName, cssClassName));
     }
 
     private Optional<CssRule> getCssRuleFromFile(String selector) {
@@ -144,36 +251,48 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
         }
     }
 
-    private Optional<String> updateProperty(TestBenchElement container,
+    private String updatePropertyInDevTools(TestBenchElement container,
             Property property) {
         TestBenchElement element = container.$("*")
                 .attribute("data-testid", property.getPropertyName()).first();
-        switch (property.getEditorType()) {
-        case "color": {
+        String result = switch (property.getEditorType()) {
+        case "color" -> {
             DevToolsThemeColorPropertyEditorElement colorEditor = element
                     .wrap(DevToolsThemeColorPropertyEditorElement.class);
             String value = "rgba(116, 219, 0, 1)";
             colorEditor.setValue(value);
+            waitForModifiedLabel(colorEditor);
             // TODO: we should normalize the value inside CssRule equals
             // comparison...
-            return Optional.of(value.replaceAll(" ", ""));
+            yield value.replaceAll(" ", "");
         }
-        case "checkbox": {
+        case "checkbox" -> {
             DevToolsCheckboxPropertyEditorElement checkboxEditor = element
                     .wrap(DevToolsCheckboxPropertyEditorElement.class);
             checkboxEditor.setChecked(true);
+            waitForModifiedLabel(checkboxEditor);
             String value = checkboxEditor.getCheckedValue();
-            return Optional.of(value);
+            yield value;
         }
-        case "range": {
+        case "range" -> {
             DevToolsThemeRangePropertyEditorElement rangeEditor = element
                     .wrap(DevToolsThemeRangePropertyEditorElement.class);
             String value = "3px";
             rangeEditor.setValue(value);
-            return Optional.of(value);
+            waitForModifiedLabel(rangeEditor);
+            yield value;
         }
+        default -> {
+            throw new RuntimeException(String.format(
+                    "The property '%s' is associated with a unknown editor: '%s'",
+                    property.getPropertyName(), property.getEditorType()));
         }
-        return Optional.empty();
+        };
+        return result;
+    }
+
+    private void waitForModifiedLabel(TestBenchElement element) {
+        element.$("span").attribute("class", "modified").waitForFirst();
     }
 
     private List<Metadata> extractMetadata(String componentName)

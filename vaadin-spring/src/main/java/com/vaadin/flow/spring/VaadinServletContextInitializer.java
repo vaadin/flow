@@ -22,6 +22,7 @@ import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.HandlesTypes;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -526,8 +527,14 @@ public class VaadinServletContextInitializer
                     .collect(Collectors.toSet());
 
             if (devModeCachingEnabled) {
+                classes.addAll(ReloadCache.vaadinClasses);
                 ReloadCache.dynamicWhiteList = classes.stream()
+                        .filter(c -> !ReloadCache.vaadinClassNames
+                                .contains(c.getName()))
                         .map(Class::getPackageName).collect(Collectors.toSet());
+                ReloadCache.vaadinClasses = classes.stream().filter(
+                        c -> ReloadCache.vaadinClassNames.contains(c.getName()))
+                        .collect(Collectors.toSet());
             }
 
             long ms = (System.nanoTime() - start) / 1000000;
@@ -983,6 +990,18 @@ public class VaadinServletContextInitializer
                         int index = path.lastIndexOf(".jar!/");
                         if (index >= 0) {
                             String relativePath = path.substring(index + 6);
+                            if (devModeCachingEnabled
+                                    && relativePath.endsWith(".class")) {
+                                // Stores names of vaadin classes from JARs
+                                String className = relativePath
+                                        .replace(File.separatorChar, '.')
+                                        .replace(".class", "");
+                                if (className.startsWith("com.vaadin")
+                                        || className.startsWith("org.vaadin")
+                                        || className.startsWith("dev.hilla")) {
+                                    ReloadCache.vaadinClassNames.add(className);
+                                }
+                            }
                             if (shouldPathBeScanned(relativePath)) {
                                 resourcesList.add(resource);
                             }
