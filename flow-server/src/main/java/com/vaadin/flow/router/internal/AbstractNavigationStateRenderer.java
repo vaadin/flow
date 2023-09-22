@@ -658,9 +658,15 @@ public abstract class AbstractNavigationStateRenderer
         if (beforeEvent.hasExternalForwardUrl()) {
             return Optional.of(forwardToExternalUrl(event, beforeEvent));
         }
+
+        boolean queryParameterChanged = beforeEvent.hasRedirectQueryParameters()
+                && !beforeEvent.getRedirectQueryParameters()
+                        .equals(event.getLocation().getQueryParameters());
+
         if (beforeEvent.hasForwardTarget() && (!isSameNavigationState(
                 beforeEvent.getForwardTargetType(),
                 beforeEvent.getForwardTargetRouteParameters())
+                || queryParameterChanged
                 || !(navigationState.getResolvedPath() != null
                         && navigationState.getResolvedPath()
                                 .equals(beforeEvent.getForwardUrl())))) {
@@ -668,8 +674,9 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         if (beforeEvent.hasRerouteTarget()
-                && !isSameNavigationState(beforeEvent.getRerouteTargetType(),
-                        beforeEvent.getRerouteTargetRouteParameters())) {
+                && (!isSameNavigationState(beforeEvent.getRerouteTargetType(),
+                        beforeEvent.getRerouteTargetRouteParameters())
+                        || queryParameterChanged)) {
             return Optional.of(reroute(event, beforeEvent));
         }
 
