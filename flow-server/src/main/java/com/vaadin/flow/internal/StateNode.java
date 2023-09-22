@@ -159,6 +159,7 @@ public class StateNode implements Serializable {
     private StateNode parent;
 
     private int id = -1;
+    private int old_id = -1;
 
     // Only the root node is attached at this point
     private boolean wasAttached = isAttached();
@@ -402,12 +403,9 @@ public class StateNode implements Serializable {
         owner = NullOwner.get();
         hasBeenAttached = false;
         hasBeenDetached = false;
-        // Do not clear ID and wasAttached state as we need to inform client
-        // that it should detach. Id is cleared after collectChanges detach.
-        if (!wasAttached) {
-            id = -1;
-            wasAttached = false;
-        }
+        old_id = id;
+        id = -1;
+        wasAttached = false;
     }
 
     /**
@@ -628,13 +626,15 @@ public class StateNode implements Serializable {
                 // Make all changes show up as if the node was recently attached
                 clearChanges();
                 forEachFeature(NodeFeature::generateChangesFromEmpty);
-            } else {
-                collector.accept(new NodeDetachChange(this));
-                if (getOwner().equals(NullOwner.get())) {
-                    id = -1;
-                }
             }
             wasAttached = isAttached;
+        }
+        if (!isAttached && old_id != -1 && id == -1) {
+            id = old_id;
+            collector.accept(new NodeDetachChange(this));
+            if (getOwner().equals(NullOwner.get())) {
+                old_id = id = -1;
+            }
         }
 
         if (!isAttached()) {
