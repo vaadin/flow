@@ -28,14 +28,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Tracks available feature flags and their status.
@@ -132,21 +132,15 @@ public class FeatureFlags implements Serializable {
     public static FeatureFlags get(final VaadinContext context) {
         assert context != null;
 
-        FeatureFlagsWrapper attribute;
-        synchronized (FeatureFlags.class) {
-            attribute = context.getAttribute(FeatureFlagsWrapper.class);
-
-            if (attribute == null) {
-                final FeatureFlags featureFlags = new FeatureFlags(
-                        context.getAttribute(Lookup.class));
-                featureFlags.configuration = ApplicationConfiguration
-                        .get(context);
-                featureFlags.loadProperties();
-                attribute = new FeatureFlagsWrapper(featureFlags);
-                context.setAttribute(attribute);
-            }
-        }
-
+        FeatureFlagsWrapper attribute = context
+                .getAttribute(FeatureFlagsWrapper.class, () -> {
+                    final FeatureFlags featureFlags = new FeatureFlags(
+                            context.getAttribute(Lookup.class));
+                    featureFlags.configuration = ApplicationConfiguration
+                            .get(context);
+                    featureFlags.loadProperties();
+                    return new FeatureFlagsWrapper(featureFlags);
+                });
         return attribute.getFeatureFlags();
     }
 
