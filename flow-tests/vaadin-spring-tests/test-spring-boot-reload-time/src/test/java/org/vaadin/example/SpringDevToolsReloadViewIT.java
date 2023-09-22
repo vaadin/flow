@@ -46,11 +46,6 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
                 "##teamcity[buildStatisticValue key='%s,nativebutton,spring-boot-devtools-reload-time' value='%s']%n",
                 getVaadinMajorMinorVersion(), result);
 
-        if (getReloadTimeAssertThreshold() != null) {
-            Assert.assertTrue(Double
-                    .parseDouble(result) <= getReloadTimeAssertThreshold());
-        }
-
         optionalAssertByReloadThreshold(result);
     }
 
