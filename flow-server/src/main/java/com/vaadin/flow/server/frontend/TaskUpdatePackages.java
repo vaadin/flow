@@ -81,7 +81,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     @Override
-    public void execute() {
+    public synchronized void execute() {
         try {
             Map<String, String> scannedApplicationDependencies = frontDeps
                     .getPackages();
