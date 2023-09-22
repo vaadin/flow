@@ -194,6 +194,37 @@ public class FullDependenciesScannerTest {
     }
 
     @Test
+    public void getAllPackages_returnsAllPackages_packagesAreOrganized_getClassesReturnAllPackageAnnotatedComponents()
+            throws ClassNotFoundException {
+        FrontendDependenciesScanner scanner = setUpAnnotationScanner(
+                NpmPackage.class);
+
+        Map<String, String> packages = scanner.getPackages();
+        Map<String, String> devPackages = scanner.getDevPackages();
+
+        Assert.assertEquals(packages.get("@vaadin/vaadin-button"), "1.1.1");
+        Assert.assertEquals(packages.get("@vaadin/vaadin-element-mixin"),
+                "1.1.2");
+        Assert.assertEquals(packages.get("@foo/var-component"), "1.1.0");
+        Assert.assertEquals(packages.get("@webcomponents/webcomponentsjs"),
+                "2.2.10");
+
+        Assert.assertEquals(devPackages.get("vite-plugin-pwa"), "0.16.5");
+
+        Assert.assertEquals(4, packages.size());
+        Assert.assertEquals(1, devPackages.size());
+
+        Set<String> visitedClasses = scanner.getClasses();
+        Assert.assertTrue(
+                visitedClasses.contains(LocalP3Template.class.getName()));
+        Assert.assertTrue(visitedClasses
+                .contains(NodeTestComponents.BUTTON_COMPONENT_FQN));
+        Assert.assertTrue(
+                visitedClasses.contains(VaadinElementMixin.class.getName()));
+        Assert.assertTrue(visitedClasses.contains(ExtraImport.class.getName()));
+    }
+
+    @Test
     public void getScripts_returnAllScripts_orderPerClassIsPreserved_getClassesReturnAllJSAnnotatedComponents()
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
