@@ -18,10 +18,12 @@ package com.vaadin.flow.component.dnd;
 
 import java.util.Collections;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -52,6 +54,9 @@ public abstract class AbstractDnDUnitTest {
 
         Lookup lookup = Mockito.mock(Lookup.class);
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        Mockito.when(context.getAttribute(ArgumentMatchers.any(Class.class),
+                ArgumentMatchers.any(Supplier.class)))
+                .then(i -> i.getArgument(1, Supplier.class).get());
 
         DefaultDeploymentConfiguration configuration = new DefaultDeploymentConfiguration(
                 appConfig, VaadinServlet.class, new Properties());
