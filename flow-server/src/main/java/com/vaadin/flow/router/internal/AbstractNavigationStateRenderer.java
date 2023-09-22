@@ -56,6 +56,7 @@ import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
@@ -768,8 +769,12 @@ public abstract class AbstractNavigationStateRenderer
                     redirectType, redirectTarget, redirectParameters));
         }
 
-        Location location = new Location(url,
-                event.getLocation().getQueryParameters());
+        QueryParameters queryParameters = beforeNavigation
+                .hasRedirectQueryParameters()
+                        ? beforeNavigation.getRedirectQueryParameters()
+                        : event.getLocation().getQueryParameters();
+
+        Location location = new Location(url, queryParameters);
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
                 NavigationTrigger.PROGRAMMATIC, null, true);
