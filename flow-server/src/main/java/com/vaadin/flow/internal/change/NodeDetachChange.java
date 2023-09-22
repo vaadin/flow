@@ -18,7 +18,6 @@ package com.vaadin.flow.internal.change;
 
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonObject;
