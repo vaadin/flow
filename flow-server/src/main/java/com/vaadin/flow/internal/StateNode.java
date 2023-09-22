@@ -401,10 +401,14 @@ public class StateNode implements Serializable {
      */
     private void reset() {
         owner = NullOwner.get();
-        id = -1;
-        wasAttached = false;
         hasBeenAttached = false;
         hasBeenDetached = false;
+        // Do not clear ID and wasAttached state as we need to inform client
+        // that it should detach. Id is cleared after collectChanges detach.
+        if (!wasAttached) {
+            id = -1;
+            wasAttached = false;
+        }
     }
 
     /**
@@ -627,6 +631,9 @@ public class StateNode implements Serializable {
                 forEachFeature(NodeFeature::generateChangesFromEmpty);
             } else {
                 collector.accept(new NodeDetachChange(this));
+                if (getOwner().equals(NullOwner.get())) {
+                    id = -1;
+                }
             }
             wasAttached = isAttached;
         }
