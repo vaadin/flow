@@ -16,6 +16,8 @@
 package com.vaadin.flow.uitest.ui;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -23,13 +25,14 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import com.vaadin.base.devserver.themeeditor.ThemeModifier;
+import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 import com.vaadin.flow.testutil.TestUtils;
 
 public abstract class AbstractThemeEditorIT extends ChromeDeviceTest {
-    VaadinContext mockContext = new VaadinContext() {
+    private static VaadinContext mockContext = new VaadinContext() {
 
         Map<String, Object> attributes = new HashMap<>();
 
@@ -74,7 +77,15 @@ public abstract class AbstractThemeEditorIT extends ChromeDeviceTest {
         open((String[]) null);
     }
 
-    protected class TestThemeModifier extends ThemeModifier {
+    private static File getProjectFolder() {
+        File currentFolder = TestUtils.getTestFolder("com");
+        while (!new File(currentFolder, FrontendUtils.FRONTEND).exists()) {
+            currentFolder = currentFolder.getParentFile();
+        }
+        return currentFolder;
+    }
+
+    protected static class TestThemeModifier extends ThemeModifier {
 
         public TestThemeModifier() {
             super(mockContext);
@@ -82,12 +93,39 @@ public abstract class AbstractThemeEditorIT extends ChromeDeviceTest {
 
         @Override
         protected File getFrontendFolder() {
-            File currentFolder = TestUtils.getTestFolder("com");
-            while (!new File(currentFolder, FrontendUtils.FRONTEND).exists()) {
-                currentFolder = currentFolder.getParentFile();
-            }
-            return new File(currentFolder, FrontendUtils.FRONTEND);
+            return new File(getProjectFolder(), FrontendUtils.FRONTEND);
+        }
+
+        public File getStyleSheetFileWithoutSideEffects() {
+            return new File(getThemeFile(), getCssFileName());
         }
     }
 
+    protected static class TestAbstractConfiguration
+            implements AbstractConfiguration {
+
+        @Override
+        public boolean isProductionMode() {
+            return false;
+        }
+
+        @Override
+        public String getStringProperty(String name, String defaultValue) {
+            return null;
+        }
+
+        @Override
+        public boolean getBooleanProperty(String name, boolean defaultValue) {
+            return false;
+        }
+
+        @Override
+        public File getJavaSourceFolder() {
+            File projectFolder = getProjectFolder();
+            Path pathToJavaSourceFolder = projectFolder.toPath()
+                    .resolve(Paths.get("src", "main", "java")).normalize();
+            return pathToJavaSourceFolder.toAbsolutePath().toFile();
+        }
+
+    }
 }
