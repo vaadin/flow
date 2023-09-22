@@ -29,16 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.hamcrest.MatcherAssert;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasComponents;
@@ -62,9 +52,17 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import net.jcip.annotations.NotThreadSafe;
+import org.hamcrest.MatcherAssert;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import static com.vaadin.flow.router.internal.RouteModelTest.parameters;
 import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
@@ -484,8 +482,9 @@ public class RouterTest extends RoutingTestBase {
             super.beforeEnter(event);
             QueryParameters queryParameters = event.getLocation()
                     .getQueryParameters();
-            String updateQueryParams = queryParameters
-                    .getSingleParameter("updateQueryParams").orElse(null);
+            String updateQueryParams = queryParameters.getParameters()
+                    .getOrDefault("updateQueryParams", Collections.emptyList())
+                    .stream().findFirst().orElse(null);
             QueryParameters newParams = QueryParameters.of("newParam", "hello");
             if (queryParameters.getParameters().isEmpty()) {
                 event.rerouteTo("show", newParams);
@@ -515,8 +514,9 @@ public class RouterTest extends RoutingTestBase {
             super.beforeEnter(event);
             QueryParameters queryParameters = event.getLocation()
                     .getQueryParameters();
-            String updateQueryParams = queryParameters
-                    .getSingleParameter("updateQueryParams").orElse(null);
+            String updateQueryParams = queryParameters.getParameters()
+                    .getOrDefault("updateQueryParams", Collections.emptyList())
+                    .stream().findFirst().orElse(null);
             QueryParameters newParams = QueryParameters.of("newParam", "hello");
             if (queryParameters.getParameters().isEmpty()) {
                 event.forwardTo("show", newParams);
@@ -1332,7 +1332,7 @@ public class RouterTest extends RoutingTestBase {
      * children components used in the assertion of the event order, as being
      * children of the layout in the chain instead of being part of the layout
      * chain itself.
-     *
+     * <p>
      * So any children of an instance of this class should receive the
      * navigation events right after the instance of this class receives them
      * and in the order they are added.
@@ -4239,7 +4239,9 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Expecting reroute view to be entered once", 1,
                 RerouteWithQueryParams.events);
         String singleParameter = RouteParametersBase.queryParameters
-                .getSingleParameter("newParam").orElse(null);
+                .getParameters()
+                .getOrDefault("newParam", Collections.emptyList()).stream()
+                .findFirst().orElse(null);
         Assert.assertEquals("Missing parameter after reroute", "hello",
                 singleParameter);
     }
@@ -4261,13 +4263,17 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Expecting reroute view to be entered twice", 2,
                 RerouteWithQueryParams.events);
         String singleParameter = RouteParametersBase.queryParameters
-                .getSingleParameter("newParam").orElse(null);
+                .getParameters()
+                .getOrDefault("newParam", Collections.emptyList()).stream()
+                .findFirst().orElse(null);
         Assert.assertEquals("Missing parameter after reroute", "hello",
                 singleParameter);
         Assert.assertTrue(
                 "Expecting original parameter not be present after reroute",
-                RouteParametersBase.queryParameters
-                        .getSingleParameter("updateQueryParams").isEmpty());
+                RouteParametersBase.queryParameters.getParameters()
+                        .getOrDefault("updateQueryParams",
+                                Collections.emptyList())
+                        .isEmpty());
     }
 
     @Test
@@ -4287,13 +4293,16 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Expecting reroute view to be entered once", 1,
                 RerouteWithQueryParams.events);
         String singleParameter = RouteParametersBase.queryParameters
-                .getSingleParameter("updateQueryParams").orElse(null);
+                .getParameters()
+                .getOrDefault("updateQueryParams", Collections.emptyList())
+                .stream().findFirst().orElse(null);
         Assert.assertEquals("Expecting original parameter after reroute",
                 "false", singleParameter);
         Assert.assertTrue(
                 "Expecting new parameter not to be present after reroute",
-                RouteParametersBase.queryParameters
-                        .getSingleParameter("newParam").isEmpty());
+                RouteParametersBase.queryParameters.getParameters()
+                        .getOrDefault("newParam", Collections.emptyList())
+                        .isEmpty());
     }
 
     @Test
@@ -4312,7 +4321,9 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Expecting forward view to be entered once", 1,
                 ForwardWithQueryParams.events);
         String singleParameter = RouteParametersBase.queryParameters
-                .getSingleParameter("newParam").orElse(null);
+                .getParameters()
+                .getOrDefault("newParam", Collections.emptyList()).stream()
+                .findFirst().orElse(null);
         Assert.assertEquals("Missing query parameter after forward", "hello",
                 singleParameter);
     }
@@ -4334,13 +4345,17 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Expecting forward view to be entered twice", 2,
                 ForwardWithQueryParams.events);
         String singleParameter = RouteParametersBase.queryParameters
-                .getSingleParameter("newParam").orElse(null);
+                .getParameters()
+                .getOrDefault("newParam", Collections.emptyList()).stream()
+                .findFirst().orElse(null);
         Assert.assertEquals("Missing query parameter after forward", "hello",
                 singleParameter);
         Assert.assertTrue(
                 "Expecting original parameter not be present after forward",
-                RouteParametersBase.queryParameters
-                        .getSingleParameter("updateQueryParams").isEmpty());
+                RouteParametersBase.queryParameters.getParameters()
+                        .getOrDefault("updateQueryParams",
+                                Collections.emptyList())
+                        .isEmpty());
     }
 
     @Test
@@ -4360,13 +4375,16 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Expecting forward view to be entered once", 1,
                 ForwardWithQueryParams.events);
         String singleParameter = RouteParametersBase.queryParameters
-                .getSingleParameter("updateQueryParams").orElse(null);
+                .getParameters()
+                .getOrDefault("updateQueryParams", Collections.emptyList())
+                .stream().findFirst().orElse(null);
         Assert.assertEquals("Missing original query parameter after forward",
                 "false", singleParameter);
         Assert.assertTrue(
                 "Expecting new parameter not be present after forward",
-                RouteParametersBase.queryParameters
-                        .getSingleParameter("newParam").isEmpty());
+                RouteParametersBase.queryParameters.getParameters()
+                        .getOrDefault("newParam", Collections.emptyList())
+                        .isEmpty());
     }
 
     private void assertWrongRouteParametersRedirect() {
