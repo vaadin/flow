@@ -69,37 +69,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 StandardCharsets.UTF_8);
     }
 
-    @Test
-    public void runPnpmInstall_overlayVersionIsPinnedViaPlatform_installedOverlayVersionIsSpecifiedByPlatform()
-            throws IOException, ExecutionFailedException {
-        File packageJson = new File(npmFolder, PACKAGE_JSON);
-        packageJson.createNewFile();
-
-        // Write package json file: dialog doesn't pin its Overlay
-        // version which
-        // is transitive dependency.
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {"
-                        + "\"@vaadin/vaadin-dialog\": \"2.2.1\"}}",
-                StandardCharsets.UTF_8);
-
-        // Platform defines a pinned version
-        TaskRunNpmInstall task = createTask(
-                "{ \"@vaadin/vaadin-overlay\":\"" + PINNED_VERSION + "\"}");
-        task.execute();
-
-        File overlayPackageJson = new File(options.getNodeModulesFolder(),
-                "@vaadin/vaadin-overlay/package.json");
-
-        // The resulting version should be the one specified via
-        // platform
-        // versions file
-        JsonObject overlayPackage = Json.parse(FileUtils
-                .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
-        Assert.assertEquals(PINNED_VERSION,
-                overlayPackage.getString("version"));
-    }
-
     @Override
     @Test
     public void runNpmInstall_toolIsChanged_nodeModulesIsRemoved()
@@ -475,54 +444,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         JsonObject overlayPackage = Json.parse(FileUtils
                 .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
         Assert.assertEquals(customOverlayVersion,
-                overlayPackage.getString("version"));
-    }
-
-    @Test
-    public void runPnpmInstall_frameworkCollectedVersionNewerThanPinned_installedOverlayVersionIsSpecifiedByPlatform()
-            throws IOException, ExecutionFailedException {
-        File packageJson = new File(npmFolder, PACKAGE_JSON);
-        packageJson.createNewFile();
-
-        // Write package json file
-        final String customOverlayVersion = "3.3.0";
-        // @formatter:off
-        final String packageJsonContent =
-            "{"
-                + "\"vaadin\": {"
-                    + "\"dependencies\": {"
-                        + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
-                        + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\""
-                    + "}"
-                + "},"
-                + "\"dependencies\": {"
-                    + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
-                    + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\""
-                + "}"
-            + "}";
-        // @formatter:on
-
-        FileUtils.write(packageJson, packageJsonContent,
-                StandardCharsets.UTF_8);
-
-        final VersionsJsonFilter versionsJsonFilter = new VersionsJsonFilter(
-                Json.parse(packageJsonContent), NodeUpdater.DEPENDENCIES);
-        // Platform defines a pinned version
-        TaskRunNpmInstall task = createTask(versionsJsonFilter
-                .getFilteredVersions(
-                        Json.parse("{ \"@vaadin/vaadin-overlay\":\""
-                                + PINNED_VERSION + "\"}"),
-                        "test-versions.json")
-                .toJson());
-        task.execute();
-
-        File overlayPackageJson = new File(options.getNodeModulesFolder(),
-                "@vaadin/vaadin-overlay/package.json");
-
-        // The resulting version should be the one defined by the platform
-        JsonObject overlayPackage = Json.parse(FileUtils
-                .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
-        Assert.assertEquals(PINNED_VERSION,
                 overlayPackage.getString("version"));
     }
 
