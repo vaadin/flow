@@ -22,6 +22,7 @@ import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.testutil.DevToolsElement;
 import com.vaadin.flow.uitest.ui.testbench.DevToolsCheckboxPropertyEditorElement;
+import com.vaadin.flow.uitest.ui.testbench.DevToolsComponentPickerElement;
 import com.vaadin.flow.uitest.ui.testbench.DevToolsThemeClassNameEditorElement;
 import com.vaadin.flow.uitest.ui.testbench.DevToolsThemeColorPropertyEditorElement;
 import com.vaadin.flow.uitest.ui.testbench.DevToolsThemeRangePropertyEditorElement;
@@ -33,7 +34,6 @@ import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -97,7 +97,7 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
         }
     }
 
-    protected File getStyleSheetFile() {
+    private File getStyleSheetFile() {
         TestThemeModifier themeModifier = new TestThemeModifier();
         return themeModifier.getStyleSheetFileWithoutSideEffects();
     }
@@ -117,8 +117,24 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
         performTagTest("vaadin-checkbox", By.id("checkbox"));
     }
 
-    protected void performTagTest(String tagName, By componentSelector)
+    @Test
+    public void testVaadinAccordion() throws IOException {
+        performTagTestUsingComponentPicker("vaadin-accordion",
+                By.id("accordion"));
+    }
+
+    private void performTagTest(String tagName, By componentSelector)
             throws IOException {
+        performTagTest(tagName, componentSelector, false);
+    }
+
+    private void performTagTestUsingComponentPicker(String tagName,
+            By componentSelector) throws IOException {
+        performTagTest(tagName, componentSelector, true);
+    }
+
+    private void performTagTest(String tagName, By componentSelector,
+            boolean useComponentPicker) throws IOException {
         List<Metadata> allMetadata = extractMetadata(tagName);
 
         open();
@@ -132,8 +148,13 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
                 .$("vaadin-dev-tools-theme-editor").first();
         themeEditor.$("button").first().click();
 
-        new Actions(getDriver()).click(findElement(componentSelector))
-                .perform();
+        if (useComponentPicker) {
+            selectComponentUsingComponentPicker(devTools, tagName,
+                    componentSelector);
+        } else {
+            new Actions(getDriver()).click(findElement(componentSelector))
+                    .perform();
+        }
 
         DevToolsThemeClassNameEditorElement classNameEditor = themeEditor
                 .$(DevToolsThemeClassNameEditorElement.class).waitForFirst();
@@ -196,6 +217,32 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
         }
     }
 
+    private void selectComponentUsingComponentPicker(DevToolsElement devTools,
+            String tagName, By componentSelector) {
+        DevToolsComponentPickerElement componentPicker = devTools
+                .$(DevToolsComponentPickerElement.class).waitForFirst();
+
+        WebElement target = findElement(componentSelector);
+
+        componentPicker.moveToElement(target);
+        List<String> options = componentPicker.getOptions();
+        Assert.assertTrue(String.format(
+                "'%s' isn't in the list of options. Available options: %s",
+                tagName, options.stream().collect(Collectors.joining(", "))),
+                options.contains(tagName));
+
+        // let's just test if we can select an option by using the dialog menu
+        Optional<String> oOption = options.stream()
+                .filter(o -> !o.equals(tagName)).findAny();
+        if (oOption.isPresent()) {
+            String option = oOption.get();
+            componentPicker.moveToOption(option);
+            Assert.assertEquals(option, componentPicker.getSelectedOption());
+        }
+
+        componentPicker.selectOption(tagName);
+    }
+
     private Optional<Instant> getLastModifiedTime(File file) {
         try {
             if (!file.exists()) {
@@ -224,15 +271,19 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
                 });
     }
 
-    protected void checkCssSelectorProperties(String cssSelector,
+    private void checkCssSelectorProperties(String cssSelector,
             Map<String, String> expectedCssProperties) {
-        Optional<CssRule> oActual = getCssRuleFromFile(cssSelector);
-        Assert.assertTrue(String.format(
-                "The rules for the css selector '%s' were not found in the generated css file.",
-                cssSelector), oActual.isPresent());
         CssRule expected = new CssRule(cssSelector, expectedCssProperties);
-        CssRule actual = oActual.get();
+        CssRule actual = waitForCssRuleToAppearInStyleFile(cssSelector);
         Assert.assertEquals(expected, actual);
+    }
+
+    private CssRule waitForCssRuleToAppearInStyleFile(String cssSelector) {
+        new FluentWait<String>(cssSelector).withTimeout(Duration.ofSeconds(5))
+                .pollingEvery(Duration.ofMillis(500)).until(f -> {
+                    return getCssRuleFromFile(cssSelector).isPresent();
+                });
+        return getCssRuleFromFile(cssSelector).get();
     }
 
     private String createSelector(Metadata metadata, String tagName,
@@ -262,9 +313,7 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
             String value = "rgba(116, 219, 0, 1)";
             colorEditor.setValue(value);
             waitForModifiedLabel(colorEditor);
-            // TODO: we should normalize the value inside CssRule equals
-            // comparison...
-            yield value.replaceAll(" ", "");
+            yield value;
         }
         case "checkbox" -> {
             DevToolsCheckboxPropertyEditorElement checkboxEditor = element
