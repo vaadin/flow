@@ -62,7 +62,9 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.*;
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.DEV;
 
 /**
  * Represents the class dependency tree of the application.
