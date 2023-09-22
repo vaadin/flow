@@ -23,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
@@ -324,7 +325,28 @@ public class FeatureFlagsTest {
                         .error("Future failed", throwable);
             }
         };
-        context = new MockVaadinContext();
+        context = new MockVaadinContext() {
+            @Override
+            public <T> T getAttribute(Class<T> type) {
+                doSleep();
+                return super.getAttribute(type);
+            }
+
+            @Override
+            public <T> T getAttribute(Class<T> type,
+                    Supplier<T> defaultValueSupplier) {
+                doSleep();
+                return super.getAttribute(type, defaultValueSupplier);
+            }
+
+            private void doSleep() {
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
         CountDownLatch latch = new CountDownLatch(2);
         CompletableFuture<Void> directTask = CompletableFuture.runAsync(() -> {
             FeatureFlags.get(context);
