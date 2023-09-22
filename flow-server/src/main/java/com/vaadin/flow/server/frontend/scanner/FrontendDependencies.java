@@ -644,9 +644,10 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                         "Multiple npm versions for {} found:  {}. First version found '{}' will be considered.",
                         dependency, foundVersions, version);
             }
-            Set<Boolean> devs = npmPackageVisitor.getValuesForKey(VALUE, dependency, DEV);
+            Set<Boolean> devs = npmPackageVisitor.getValuesForKey(VALUE,
+                    dependency, DEV);
             devs.forEach(dev -> {
-                if(dev) {
+                if (dev) {
                     devPackages.put(dependency, version);
                 } else {
                     packages.put(dependency, version);

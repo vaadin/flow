@@ -70,7 +70,7 @@ public @interface NpmPackage {
      * Whether the package should be installed as a dev dependency.
      *
      * @return {@code true} if the package should be installed as a dev
-     *     dependency, {@code false} otherwise.
+     *         dependency, {@code false} otherwise.
      */
     boolean dev() default false;
 

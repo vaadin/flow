@@ -352,8 +352,8 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         for (Map.Entry<String, String> entry : getDefaultDevDependencies()
                 .entrySet()) {
-            added += addDependency(packageJson, DEV_DEPENDENCIES, entry.getKey(),
-                    entry.getValue());
+            added += addDependency(packageJson, DEV_DEPENDENCIES,
+                    entry.getKey(), entry.getValue());
         }
 
         if (added > 0) {

@@ -89,7 +89,8 @@ public class TaskUpdatePackages extends NodeUpdater {
                     .getDevPackages();
             JsonObject packageJson = getPackageJson();
             modified = updatePackageJsonDependencies(packageJson,
-                    scannedApplicationDependencies, scannedApplicationDevDependencies);
+                    scannedApplicationDependencies,
+                    scannedApplicationDevDependencies);
             generateVersionsJson(packageJson);
             boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson);
 
@@ -217,7 +218,8 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     @SuppressWarnings("squid:S134")
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
-            Map<String, String> applicationDependencies, Map<String, String> applicationDevDependencies) throws IOException {
+            Map<String, String> applicationDependencies,
+            Map<String, String> applicationDevDependencies) throws IOException {
         int added = 0;
 
         // Add application dependencies
@@ -227,9 +229,10 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         // Add application dev dependencies.
-        for(Entry<String, String> devDep : applicationDevDependencies.entrySet()) {
-            added += addDependency(packageJson, DEV_DEPENDENCIES, devDep.getKey(),
-                    devDep.getValue());
+        for (Entry<String, String> devDep : applicationDevDependencies
+                .entrySet()) {
+            added += addDependency(packageJson, DEV_DEPENDENCIES,
+                    devDep.getKey(), devDep.getValue());
         }
 
         /*

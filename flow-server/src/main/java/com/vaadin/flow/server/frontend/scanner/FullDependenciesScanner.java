@@ -221,7 +221,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         return value.isEmpty() ? null : value;
     }
 
-    private void discoverPackages(final Map<String, String> packages, final Map<String, String> devPackages) {
+    private void discoverPackages(final Map<String, String> packages,
+            final Map<String, String> devPackages) {
         try {
             Class<? extends Annotation> loadedAnnotation = getFinder()
                     .loadClass(NpmPackage.class.getName());
