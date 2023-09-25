@@ -525,7 +525,10 @@ public class Element extends Node<Element> {
      * @return this element
      */
     public Element removeFromTree() {
+        return removeFromTree(true);
+    }
 
+    public Element removeFromTree(boolean sendDetach) {
         Node<?> parent = getParentNode();
         if (parent != null) {
             if (parent.getChildren().anyMatch(Predicate.isEqual(this))) {
@@ -535,7 +538,7 @@ public class Element extends Node<Element> {
                 parent.removeVirtualChild(this);
             }
         }
-        getNode().removeFromTree();
+        getNode().removeFromTree(sendDetach);
         return this;
     }
 

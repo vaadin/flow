@@ -387,11 +387,22 @@ public class StateNode implements Serializable {
      * the state tree.
      */
     public void removeFromTree() {
+        removeFromTree(false);
+    }
+
+    /**
+     * Removes the node from its parent and unlinks the node (and children) from
+     * the state tree.
+     *
+     * @param sendDetach
+     *            if removal should send detach event for the element
+     */
+    public void removeFromTree(boolean sendDetach) {
         if (getOwner() instanceof StateTree) {
             ComponentUtil.setData(((StateTree) getOwner()).getUI(),
                     ReplacedViaPreserveOnRefresh.class, REPLACED_MARKER);
         }
-        visitNodeTree(StateNode::reset);
+        visitNodeTree(node -> node.reset(sendDetach));
         setParent(null);
     }
 
@@ -399,13 +410,15 @@ public class StateNode implements Serializable {
      * Resets the node to the initial state where it is not owned by a state
      * tree.
      */
-    private void reset() {
+    private void reset(boolean shouldDetach) {
         owner = NullOwner.get();
         hasBeenAttached = false;
         hasBeenDetached = false;
-        old_id = id;
-        id = -1;
-        wasAttached = false;
+        // old_id = id;
+        if (!shouldDetach) {
+            id = -1;
+            wasAttached = false;
+        }
     }
 
     /**
@@ -626,15 +639,10 @@ public class StateNode implements Serializable {
                 // Make all changes show up as if the node was recently attached
                 clearChanges();
                 forEachFeature(NodeFeature::generateChangesFromEmpty);
+            } else {
+                collector.accept(new NodeDetachChange(this));
             }
             wasAttached = isAttached;
-        }
-        if (!isAttached && old_id != -1 && id == -1) {
-            id = old_id;
-            collector.accept(new NodeDetachChange(this));
-            if (getOwner().equals(NullOwner.get())) {
-                old_id = id = -1;
-            }
         }
 
         if (!isAttached()) {
