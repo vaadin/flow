@@ -364,6 +364,34 @@ public class TaskUpdatePackagesNpmTest {
         verifyVersionLockingWithNpmOverrides(true, false, true);
     }
 
+    @Test
+    public void npmIsInUse_packageJsonVersionIsUpdated_vaadinSectionIsNotChanged()
+            throws IOException {
+        final JsonObject packageJson = getOrCreatePackageJson();
+        JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        dependencies.put(VAADIN_ELEMENT_MIXIN, "1.2.3");
+        JsonObject vaadinSection = Json.createObject();
+        JsonObject vaadinDependencies = Json.createObject();
+        packageJson.put(VAADIN_DEP_KEY, vaadinSection);
+        vaadinSection.put(DEPENDENCIES, vaadinDependencies);
+        vaadinDependencies.put(VAADIN_ELEMENT_MIXIN,
+                PLATFORM_ELEMENT_MIXIN_VERSION);
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
+                packageJson.toJson(), StandardCharsets.UTF_8);
+
+        createBasicVaadinVersionsJson();
+
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+
+        JsonObject newVaadinDeps = getOrCreatePackageJson()
+                .getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
+
+        Assert.assertEquals(PLATFORM_ELEMENT_MIXIN_VERSION,
+                newVaadinDeps.getString(VAADIN_ELEMENT_MIXIN));
+    }
+
     // #11025
     @Test
     public void npmIsInUse_versionsJsonHasVaadinCoreVersionPinned_vaadinCoreVersionIgnored()
