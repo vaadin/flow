@@ -45,6 +45,8 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
         System.out.printf(
                 "##teamcity[buildStatisticValue key='%s,nativebutton,spring-boot-devtools-reload-time' value='%s']%n",
                 getVaadinMajorMinorVersion(), result);
+
+        optionalAssertByReloadThreshold(result);
     }
 
     @Test
@@ -63,6 +65,8 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
         System.out.printf(
                 "##teamcity[buildStatisticValue key='%s,orderedlayout,spring-boot-devtools-reload-time' value='%s']%n",
                 getVaadinMajorMinorVersion(), result);
+
+        optionalAssertByReloadThreshold(result);
     }
 
     private void triggerReload() {
@@ -82,7 +86,26 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
                 reloadTimeInMsText.indexOf("]"));
     }
 
+    private void optionalAssertByReloadThreshold(String reloadTime) {
+        if (getReloadTimeAssertThreshold() != null) {
+            Assert.assertTrue(String.format(
+                    "Reload time %sms was above the threshold %sms. It should stay within the threshold set to system property 'vaadin.test.reload-time-assert-threshold'.",
+                    reloadTime, getReloadTimeAssertThreshold()),
+                    Double.parseDouble(
+                            reloadTime) <= getReloadTimeAssertThreshold());
+        }
+    }
+
     private String getVaadinMajorMinorVersion() {
         return Version.getMajorVersion() + "." + Version.getMinorVersion();
+    }
+
+    private Double getReloadTimeAssertThreshold() {
+        String value = System
+                .getProperty("vaadin.test.reload-time-assert-threshold", null);
+        if (value != null) {
+            return Double.parseDouble(value);
+        }
+        return null;
     }
 }
