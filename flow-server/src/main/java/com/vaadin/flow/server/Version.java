@@ -10,9 +10,12 @@ package com.vaadin.flow.server;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.internal.StringUtil;
 
 /**
  * Provides information about the current version of Vaadin Flow.
@@ -48,14 +51,21 @@ public class Version implements Serializable {
      */
     private static final String VERSION_BUILD;
 
+    /**
+     * Build hash based on the timestamp of the build.
+     */
+    private static final String VERSION_BUILD_HASH;
+
     /* Initialize version numbers from string replaced by build-script. */
     static {
         String flowVersion = "9.9.9.INTERNAL-DEBUG-BUILD";
+        String buildTimestamp = "";
         Properties properties = new Properties();
         try {
             properties.load(
                     Version.class.getResourceAsStream("version.properties"));
             flowVersion = properties.getProperty("flow.version");
+            buildTimestamp = properties.getProperty("flow.build.timestamp");
         } catch (IOException e) {
             LoggerFactory.getLogger(Version.class.getName())
                     .warn("Unable to determine Flow version number", e);
@@ -81,6 +91,8 @@ public class Version implements Serializable {
         }
         VERSION_REVISION = revision;
         VERSION_BUILD = build;
+        VERSION_BUILD_HASH = StringUtil.getHash(buildTimestamp,
+                StandardCharsets.UTF_8);
     }
 
     /**
@@ -128,6 +140,16 @@ public class Version implements Serializable {
      */
     public static String getBuildIdentifier() {
         return VERSION_BUILD;
+    }
+
+    /**
+     * Gets the version's build hash. This hash is based on build's timestamp
+     * and varies from build to build.
+     *
+     * @return version's build hash
+     */
+    public static String getBuildHash() {
+        return VERSION_BUILD_HASH;
     }
 
 }

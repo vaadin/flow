@@ -1547,7 +1547,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     protected static String getPushScript(BootstrapContext context) {
         VaadinRequest request = context.getRequest();
         // Parameter appended to JS to bypass caches after version upgrade.
-        String versionQueryParam = "?v=" + Version.getFullVersion();
+        String versionQueryParam = "?v=" + Version.getBuildHash();
         // Load client-side dependencies for push support
         String pushJSPath = context.getService()
                 .getContextRootRelativePath(request);
