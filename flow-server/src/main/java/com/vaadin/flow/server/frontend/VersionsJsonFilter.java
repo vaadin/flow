@@ -78,10 +78,8 @@ class VersionsJsonFilter {
                             userManagedDependencies.getString(key), key,
                             versions.getString(key));
                 }
-                json.put(key, userManagedDependencies.getString(key));
-            } else {
-                json.put(key, versions.getString(key));
             }
+            json.put(key, versions.getString(key));
         }
         return json;
     }

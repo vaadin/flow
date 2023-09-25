@@ -333,6 +333,12 @@ public class TaskUpdatePackages extends NodeUpdater {
             // would be but probably it should be pinned like any other version
         }
 
+        if ((vaadinDepsVersion != null && packageJsonVersion != null)
+                && !vaadinDepsVersion.equals(packageJsonVersion)) {
+            // The user has overridden the version, use that
+            return false;
+        }
+
         if (platformPinnedVersion.equals(packageJsonVersion)
                 && platformPinnedVersion.equals(vaadinDepsVersion)) {
             return false;
