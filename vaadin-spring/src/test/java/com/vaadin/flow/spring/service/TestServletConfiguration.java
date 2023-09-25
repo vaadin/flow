@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.spring.service;
 
-import com.vaadin.flow.server.*;
-import org.springframework.beans.factory.ObjectProvider;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinRequestInterceptor;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -40,18 +42,20 @@ public class TestServletConfiguration {
         @Override
         public void requestStart(VaadinRequest request,
                 VaadinResponse response) {
-
+            request.setAttribute("started", "true");
         }
 
         @Override
         public void handleException(VaadinRequest request,
                 VaadinResponse response, VaadinSession vaadinSession,
                 Exception t) {
+            request.setAttribute("error", "true");
         }
 
         @Override
         public void requestEnd(VaadinRequest request, VaadinResponse response,
                 VaadinSession session) {
+            request.setAttribute("stopped", "true");
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.vaadin.flow.spring.test;
+package com.vaadin.flow.spring.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
