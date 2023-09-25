@@ -1,7 +1,6 @@
 package com.vaadin.flow.server;
 
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.theme.AbstractTheme;
 import jakarta.servlet.ServletContext;
@@ -265,10 +264,21 @@ public class VaadinServletServiceTest {
     public void filtersAreCalledWhenHandlingARequest() throws Exception {
         mocks = new MockServletServiceSessionSetup() {
             @Override
-            protected void configureLookup(Lookup lookup) {
-                when(lookup.lookupAll(VaadinRequestInterceptor.class))
-                        .thenReturn(Collections
-                                .singletonList(new MyRequestInterceptor()));
+            public TestVaadinServlet createVaadinServlet() {
+                return new TestVaadinServlet() {
+                    @Override
+                    public TestVaadinServletService createTestVaadinServletService() {
+                        return new TestVaadinServletService(this,
+                                getDeploymentConfiguration()) {
+                            @Override
+                            protected List<VaadinRequestInterceptor> createVaadinRequestInterceptors()
+                                    throws ServiceException {
+                                return Collections.singletonList(
+                                        new MyRequestInterceptor());
+                            }
+                        };
+                    }
+                };
             }
         };
         service = mocks.getService();
