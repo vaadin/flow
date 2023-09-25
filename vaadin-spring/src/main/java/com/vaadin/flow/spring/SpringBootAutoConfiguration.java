@@ -15,10 +15,9 @@
  */
 package com.vaadin.flow.spring;
 
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotProcessor;
-import jakarta.servlet.MultipartConfigElement;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.atmosphere.cpr.ApplicationConfig;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +34,11 @@ import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotProcessor;
+
+import jakarta.servlet.MultipartConfigElement;
 
 /**
  * Spring boot auto-configuration class for Flow.

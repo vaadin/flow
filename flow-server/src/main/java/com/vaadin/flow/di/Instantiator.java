@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.di;
 
+import java.io.Serializable;
+import java.util.ServiceLoader;
+import java.util.stream.Stream;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
@@ -26,10 +30,6 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.UidlWriter;
-
-import java.io.Serializable;
-import java.util.ServiceLoader;
-import java.util.stream.Stream;
 
 /**
  * Delegate for discovering, creating and managing instances of various types
