@@ -65,16 +65,6 @@ public class DefaultInstantiator implements Instantiator {
     }
 
     @Override
-    public <T> Stream<T> getAll(Class<T> type) {
-        if (service == null) {
-            return Stream.empty();
-        }
-        Lookup lookup = service.getContext().getAttribute(Lookup.class);
-        Collection<T> result = lookup == null ? null : lookup.lookupAll(type);
-        return result == null ? Stream.empty() : result.stream();
-    }
-
-    @Override
     public <T extends Component> T createComponent(Class<T> componentClass) {
         return create(componentClass);
     }

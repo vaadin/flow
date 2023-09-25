@@ -117,24 +117,6 @@ public interface Instantiator extends Serializable {
     <T> T getOrCreate(Class<T> type);
 
     /**
-     * Provides all instances of any given type, this is an abstraction that
-     * allows to make use of DI-frameworks from add-ons.
-     * <p>
-     * How the object is created and whether it is being cached or not is up to
-     * the implementation.
-     *
-     * @param type
-     *            the instance type to fetch
-     * @param <T>
-     *            the type of the instance to fetch
-     *
-     * @return all instances of the given type
-     */
-    default <T> Stream<T> getAll(Class<T> type) {
-        return Stream.empty();
-    }
-
-    /**
      * Creates an instance of a navigation target or router layout. This method
      * is not called in cases when a component instance is reused when
      * navigating.

@@ -30,6 +30,12 @@
 
         <dependency>
             <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-dev-server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
             <artifactId>vaadin-test-spring-common</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -112,7 +118,7 @@
                     <execution>
                         <goals>
                             <goal>prepare-frontend</goal>
-                            <goal>build-frontend</goal>
+<!--                            <goal>build-frontend</goal>-->
                         </goals>
                     </execution>
                 </executions>

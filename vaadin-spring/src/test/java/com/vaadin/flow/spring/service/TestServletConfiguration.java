@@ -33,13 +33,6 @@ public class TestServletConfiguration {
         MyRequestInterceptor myFilter() {
             return new MyRequestInterceptor();
         }
-
-        @Bean
-        VaadinRequestInterceptorServiceInitListener vaadinRequestInterceptorServiceInitListener(
-                ObjectProvider<VaadinRequestInterceptor> interceptors) {
-            return new VaadinRequestInterceptorServiceInitListener(
-                    interceptors);
-        }
     }
 
     static class MyRequestInterceptor implements VaadinRequestInterceptor {

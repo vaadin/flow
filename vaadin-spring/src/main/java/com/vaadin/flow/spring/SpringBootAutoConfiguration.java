@@ -16,8 +16,6 @@
 package com.vaadin.flow.spring;
 
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.VaadinRequestInterceptor;
-import com.vaadin.flow.server.VaadinRequestInterceptorServiceInitListener;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotProcessor;
 import jakarta.servlet.MultipartConfigElement;
@@ -117,13 +115,6 @@ public class SpringBootAutoConfiguration {
         registration.setLoadOnStartup(
                 configurationProperties.isLoadOnStartup() ? 1 : -1);
         return registration;
-    }
-
-    @Bean
-    public VaadinRequestInterceptorServiceInitListener vaadinRequestInterceptorServiceInitListener(
-            ObjectProvider<VaadinRequestInterceptor> interceptors) {
-        return new VaadinRequestInterceptorServiceInitListener(
-                interceptors.stream().toList());
     }
 
     /**
