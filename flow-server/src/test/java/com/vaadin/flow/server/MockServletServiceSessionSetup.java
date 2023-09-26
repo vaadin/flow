@@ -1,5 +1,19 @@
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
+import com.vaadin.flow.router.QueryParameters;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.TestRouteRegistry;
+import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
+import com.vaadin.flow.server.communication.IndexHtmlResponse;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -7,6 +21,9 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -23,25 +40,6 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Supplier;
 
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
-import com.vaadin.flow.router.QueryParameters;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.TestRouteRegistry;
-import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
-import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
-import com.vaadin.flow.server.communication.IndexHtmlResponse;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
-
 public class MockServletServiceSessionSetup {
 
     public class TestVaadinServletService extends VaadinServletService {
@@ -51,6 +49,7 @@ public class MockServletServiceSessionSetup {
         private Router router;
         private List<IndexHtmlRequestListener> indexHtmlRequestListeners = new ArrayList<>();
         private VaadinContext context;
+        private List<RequestHandler> handlers;
 
         public TestVaadinServletService(TestVaadinServlet testVaadinServlet,
                 DeploymentConfiguration deploymentConfiguration) {
@@ -72,6 +71,18 @@ public class MockServletServiceSessionSetup {
 
         public void setRouteRegistry(TestRouteRegistry routeRegistry) {
             this.routeRegistry = routeRegistry;
+        }
+
+        @Override
+        protected List<RequestHandler> createRequestHandlers()
+                throws ServiceException {
+            List<RequestHandler> requestHandlers = super.createRequestHandlers();
+            handlers = requestHandlers;
+            return requestHandlers;
+        }
+
+        public List<RequestHandler> getRequestHandlers() {
+            return handlers;
         }
 
         @Override
@@ -130,10 +141,13 @@ public class MockServletServiceSessionSetup {
         @Override
         protected VaadinServletService createServletService()
                 throws ServletException, ServiceException {
-            service = new TestVaadinServletService(this,
-                    deploymentConfiguration);
+            service = createTestVaadinServletService();
             service.init();
             return service;
+        }
+
+        public TestVaadinServletService createTestVaadinServletService() {
+            return new TestVaadinServletService(this, deploymentConfiguration);
         }
 
         @Override
@@ -289,7 +303,7 @@ public class MockServletServiceSessionSetup {
     public MockServletServiceSessionSetup(boolean sessionAvailable)
             throws Exception {
         MockitoAnnotations.initMocks(this);
-        servlet = new TestVaadinServlet();
+        servlet = createVaadinServlet();
 
         deploymentConfiguration.setXsrfProtectionEnabled(false);
         Mockito.doAnswer(
@@ -318,6 +332,8 @@ public class MockServletServiceSessionSetup {
                     return MockServletServiceSessionSetup.class
                             .getResource("/" + invocation.getArgument(0));
                 });
+
+        configureLookup(lookup);
 
         servlet.init(servletConfig);
 
@@ -353,6 +369,14 @@ public class MockServletServiceSessionSetup {
         }
 
         Mockito.when(request.getServletPath()).thenReturn("");
+    }
+
+    public TestVaadinServlet createVaadinServlet() {
+        return new TestVaadinServlet();
+    }
+
+    protected void configureLookup(Lookup lookup) {
+
     }
 
     public TestVaadinServletService getService() {
