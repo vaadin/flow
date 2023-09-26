@@ -98,8 +98,7 @@ public class Version implements Serializable {
         }
         VERSION_REVISION = revision;
         VERSION_BUILD = build;
-        VERSION_BUILD_HASH = StringUtil.getHash(buildTimestamp,
-                StandardCharsets.UTF_8);
+        VERSION_BUILD_HASH = StringUtil.getHash(buildTimestamp);
     }
 
     /**
