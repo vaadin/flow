@@ -1391,6 +1391,70 @@ public class StateNodeTest {
     }
 
     /**
+     * #17695: removeFromTree removes StateTree reference and resets descendant
+     * nodes, sends detach event.
+     */
+    @Test
+    public void removeFromTree_nodeAttachedThenDetached_detachEventCollected() {
+        // given grandParent -> parent -> child
+        StateNode grandParent = createParentNode("grandParent");
+        StateNode parent = createParentNode("parent");
+        addChild(grandParent, parent);
+
+        TestStateTree tree = new TestStateTree();
+        addChild(tree.getRootNode(), grandParent);
+
+        parent.collectChanges(change -> {
+            Assert.assertTrue("Expected attach event for node",
+                    change instanceof NodeAttachChange);
+        });
+
+        // when parent is removed from the tree
+        parent.removeFromTree(true);
+
+        // then parent's parent is null
+        Assert.assertNull(parent.getParent());
+        Assert.assertNotEquals(parent.getId(), -1);
+
+        parent.collectChanges(change -> {
+            Assert.assertTrue("Expected detach event for reset node",
+                    change instanceof NodeDetachChange);
+        });
+    }
+
+    /**
+     * #17695: removeFromTree removes StateTree reference and resets descendant
+     * nodes, sends detach event.
+     */
+    @Test
+    public void removeFromTree_nodeAttached_detachedFullReset_noDetachEventCollected() {
+        // given grandParent -> parent -> child
+        StateNode grandParent = createParentNode("grandParent");
+        StateNode parent = createParentNode("parent");
+        addChild(grandParent, parent);
+
+        TestStateTree tree = new TestStateTree();
+        addChild(tree.getRootNode(), grandParent);
+
+        parent.collectChanges(change -> {
+            Assert.assertTrue("Expected attach event for node",
+                    change instanceof NodeAttachChange);
+        });
+
+        // remove from tree with reset all.
+        parent.removeFromTree();
+
+        // then parent's parent is null
+        Assert.assertNull(parent.getParent());
+        Assert.assertEquals(parent.getId(), -1);
+
+        parent.collectChanges(change -> {
+            Assert.fail(
+                    "No changes should be collected for detached reset node.");
+        });
+    }
+
+    /**
      * #5316: removeFromTree when invoked from a DetachListener removes
      * StateTree reference and resets descendant nodes.
      */

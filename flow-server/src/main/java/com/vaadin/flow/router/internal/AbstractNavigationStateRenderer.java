@@ -823,7 +823,7 @@ public abstract class AbstractNavigationStateRenderer
                 }
 
                 // Remove the top-level component from the tree
-                root.getElement().removeFromTree();
+                root.getElement().removeFromTree(false);
 
                 // Transfer all remaining UI child elements (typically dialogs
                 // and notifications) to the new UI

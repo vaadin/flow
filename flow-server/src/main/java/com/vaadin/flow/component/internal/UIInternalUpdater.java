@@ -59,7 +59,7 @@ public interface UIInternalUpdater extends Serializable {
         final List<Element> uiChildren = oldUI.getElement().getChildren()
                 .collect(Collectors.toList());
         uiChildren.forEach(element -> {
-            element.removeFromTree();
+            element.removeFromTree(false);
             newUI.getElement().appendChild(element);
         });
     }
