@@ -92,4 +92,72 @@ public class BundleLitParserTest {
         Assert.assertEquals(1,
                 element.getElementsByTag("timer-element").size());
     }
+
+    @Test
+    public void parseTemplate_codeInRenderBeforeHtml_templateProperlyParsed2() {
+        final Element element = BundleLitParser.parseLitTemplateElement("in.ts",
+        // @formatter:off
+                         "import { html, LitElement } from 'lit';\n"
+                        + "\n"
+                        + "export class HelloLit extends LitElement {\n"
+                        + "\n"
+                        + "  helper() {\n"
+                        + "    return html`<span>helper</span>`;\n"
+                        + "  }\n"
+                        + "  render() {\n"
+                        + "    const athleteTimerStyles = { \n"
+                        + "      display:  this.currentAthleteMode && !this.decisionVisible ? \"grid\" : \"none\",\n"
+                        + "    }\n"
+                        + "    return html`\n"
+                        + "      <div>Some content</div>`;\n"
+                        + "      <span class=\"timer athleteTimer\" style=\"${styleMap(athleteTimerStyles)}\">\n"
+                        + "        <timer-element id=\"athleteTimer\"></timer-element>\n"
+                        + "      </span>\n"
+                        + "      `;"
+                        + "  }\n"
+                        + "}\n"
+                        + "\n"
+                        + "customElements.define('hello-lit', HelloLit);");
+         // @formatter:on
+
+        Assert.assertEquals(4, element.getAllElements().size());
+        Assert.assertEquals(1, element.getElementsByTag("div").size());
+        Assert.assertEquals(1, element.getElementsByTag("span").size());
+        Assert.assertEquals(1,
+                element.getElementsByTag("timer-element").size());
+    }
+
+    @Test
+    public void parseTemplate_codeInRenderBeforeHtml_templateProperlyParsed3() {
+        final Element element = BundleLitParser.parseLitTemplateElement("in.ts",
+        // @formatter:off
+                         "import { html, LitElement } from 'lit';\n"
+                        + "\n"
+                        + "export class HelloLit extends LitElement {\n"
+                        + "\n"
+                        + "  render() {\n"
+                        + "    const athleteTimerStyles = { \n"
+                        + "      display:  this.currentAthleteMode && !this.decisionVisible ? \"grid\" : \"none\",\n"
+                        + "    }\n"
+                        + "    return html`\n"
+                        + "      <div>Some content</div>`;\n"
+                        + "      <span class=\"timer athleteTimer\" style=\"${styleMap(athleteTimerStyles)}\">\n"
+                        + "        <timer-element id=\"athleteTimer\"></timer-element>\n"
+                        + "      </span>\n"
+                        + "      `;"
+                        + "  }\n"
+                        + "  helper() {\n"
+                        + "    return html`<span>helper</span>`;\n"
+                        + "  }\n"
+                        + "}\n"
+                        + "\n"
+                        + "customElements.define('hello-lit', HelloLit);");
+         // @formatter:on
+
+        Assert.assertEquals(4, element.getAllElements().size());
+        Assert.assertEquals(1, element.getElementsByTag("div").size());
+        Assert.assertEquals(1, element.getElementsByTag("span").size());
+        Assert.assertEquals(1,
+                element.getElementsByTag("timer-element").size());
+    }
 }
