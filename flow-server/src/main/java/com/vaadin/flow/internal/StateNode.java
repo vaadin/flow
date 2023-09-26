@@ -159,7 +159,6 @@ public class StateNode implements Serializable {
     private StateNode parent;
 
     private int id = -1;
-    private int old_id = -1;
 
     // Only the root node is attached at this point
     private boolean wasAttached = isAttached();
@@ -409,12 +408,17 @@ public class StateNode implements Serializable {
     /**
      * Resets the node to the initial state where it is not owned by a state
      * tree.
+     * <p>
+     * If the node should detach on the client keep attached state and node id
+     * to send event to client.
+     *
+     * @param shouldDetach
+     *            if true, keep node id and attached state
      */
     private void reset(boolean shouldDetach) {
         owner = NullOwner.get();
         hasBeenAttached = false;
         hasBeenDetached = false;
-        // old_id = id;
         if (!shouldDetach) {
             id = -1;
             wasAttached = false;
