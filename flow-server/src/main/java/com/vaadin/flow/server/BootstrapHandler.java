@@ -828,7 +828,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         VaadinRequest request = context.getRequest();
 
         // Parameter appended to JS to bypass caches after version upgrade.
-        String versionQueryParam = "?v=" + Version.getFullVersion();
+            String versionQueryParam = "?v=" + Version.getBuildHash();
 
         // Load client-side dependencies for push support
         String pushJSPath = ServletHelper.getContextRootRelativePath(request)
@@ -868,10 +868,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         /*
          * The < symbol is escaped to prevent two problems:
-         * 
+         *
          * 1 - The browser interprets </script> as end of script no matter if it
          * is inside a string
-         * 
+         *
          * 2 - Scripts can be injected with <!-- <script>, that can cause
          * unexpected behavior or complete crash of the app
          */
