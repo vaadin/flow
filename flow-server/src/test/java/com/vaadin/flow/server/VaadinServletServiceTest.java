@@ -226,8 +226,8 @@ public class VaadinServletServiceTest {
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("null.lock", new ReentrantLock()); // for session
         attributes.put("requestStartTime", System.currentTimeMillis()); // for
-        // request
-        // end
+                                                                        // request
+                                                                        // end
         when(request.isSecure())
                 .thenReturn(url.getProtocol().equalsIgnoreCase("https"));
         when(request.getServerName()).thenReturn(url.getHost());

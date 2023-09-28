@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.spring.service;
 
-import com.vaadin.flow.server.*;
+import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -41,13 +44,6 @@ public class TestServletConfiguration {
             return new MyVaadinComandInterceptor();
         }
 
-        @Bean
-        VaadinInterceptorsServiceInitListener vaadinRequestInterceptorServiceInitListener(
-                ObjectProvider<VaadinRequestInterceptor> requestInterceptors,
-                ObjectProvider<VaadinCommandInterceptor> commandInterceptors) {
-            return new VaadinInterceptorsServiceInitListener(
-                    requestInterceptors, commandInterceptors);
-        }
     }
 
     static class MyRequestInterceptor implements VaadinRequestInterceptor {
