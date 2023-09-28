@@ -15,11 +15,9 @@
  */
 package com.vaadin.flow.spring;
 
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.VaadinFilter;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotProcessor;
-import jakarta.servlet.MultipartConfigElement;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.atmosphere.cpr.ApplicationConfig;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +34,11 @@ import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotProcessor;
+
+import jakarta.servlet.MultipartConfigElement;
 
 /**
  * Spring boot auto-configuration class for Flow.
@@ -85,7 +85,6 @@ public class SpringBootAutoConfiguration {
     @Bean
     public ServletRegistrationBean<SpringServlet> servletRegistrationBean(
             ObjectProvider<MultipartConfigElement> multipartConfig,
-            ObjectProvider<List<VaadinFilter>> vaadinFilters,
             VaadinConfigurationProperties configurationProperties) {
         String mapping = configurationProperties.getUrlMapping();
         Map<String, String> initParameters = new HashMap<>();
@@ -103,10 +102,8 @@ public class SpringBootAutoConfiguration {
 
         initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH, pushUrl);
 
-        SpringServlet springServlet = new SpringServlet(context, rootMapping);
-        vaadinFilters.ifAvailable(springServlet::setVaadinFilters);
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
-                springServlet, mapping);
+                new SpringServlet(context, rootMapping), mapping);
         registration.setInitParameters(initParameters);
         registration
                 .setAsyncSupported(configurationProperties.isAsyncSupported());

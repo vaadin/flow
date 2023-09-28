@@ -47,11 +47,12 @@ public interface VaadinCommandInterceptor extends Serializable {
      * @param t
      *            exception
      */
-    void handleException(Map<Object, Object> context, Command command, Exception t);
+    void handleException(Map<Object, Object> context, Command command,
+            Exception t);
 
     /**
-     * Called at the end of processing a command. Will be called
-     * regardless of whether there was an exception or not.
+     * Called at the end of processing a command. Will be called regardless of
+     * whether there was an exception or not.
      *
      * @param context
      *            mutable map passed between methods of this interceptor

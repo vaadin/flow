@@ -367,8 +367,8 @@ public abstract class VaadinService implements Serializable {
      * Called during initialization to add the request handlers for the service.
      * Note that the returned list will be reversed so the last interceptor will
      * be called first. This enables overriding this method and using add on the
-     * returned list to add a custom interceptors which overrides any
-     * predefined handler.
+     * returned list to add a custom interceptors which overrides any predefined
+     * handler.
      *
      * @return The list of request handlers used by this service.
      * @throws ServiceException
@@ -2031,7 +2031,8 @@ public abstract class VaadinService implements Serializable {
      * @see VaadinSession#access(Command)
      */
     public Future<Void> accessSession(VaadinSession session, Command command) {
-        FutureAccess future = new FutureAccess(vaadinCommandInterceptors, session, command);
+        FutureAccess future = new FutureAccess(vaadinCommandInterceptors,
+                session, command);
         session.getPendingAccessQueue().add(future);
 
         ensureAccessQueuePurged(session);

@@ -241,7 +241,8 @@ public class UITest {
     }
 
     private static void initUI(UI ui, String initialLocation,
-            ArgumentCaptor<Integer> statusCodeCaptor, MyInterceptor myInterceptor)
+            ArgumentCaptor<Integer> statusCodeCaptor,
+            MyInterceptor myInterceptor)
             throws InvalidRouteConfigurationException {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
@@ -650,7 +651,8 @@ public class UITest {
     }
 
     @Test
-    public void unsetSession_commandInterceptorGetsExecuted() throws IOException {
+    public void unsetSession_commandInterceptorGetsExecuted()
+            throws IOException {
         MyInterceptor myInterceptor = new MyInterceptor();
         UI ui = createTestUI();
         initUI(ui, "", null, myInterceptor);
@@ -664,9 +666,12 @@ public class UITest {
         ui.getSession().unlock();
 
         Map<Object, Object> map = myInterceptor.map;
-        Assert.assertTrue("Listener must be called on command start", map.containsKey("observation.started"));
-        Assert.assertTrue("Listener must be called on command error", map.containsKey("observation.error"));
-        Assert.assertTrue("Listener must be called on command end", map.containsKey("observation.end"));
+        Assert.assertTrue("Listener must be called on command start",
+                map.containsKey("observation.started"));
+        Assert.assertTrue("Listener must be called on command error",
+                map.containsKey("observation.error"));
+        Assert.assertTrue("Listener must be called on command end",
+                map.containsKey("observation.end"));
     }
 
     @Test
