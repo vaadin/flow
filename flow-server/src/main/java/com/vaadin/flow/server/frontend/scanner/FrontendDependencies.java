@@ -647,7 +647,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             Set<Boolean> devs = npmPackageVisitor.getValuesForKey(VALUE,
                     dependency, DEV);
             devs.forEach(dev -> {
-                if (dev) {
+                if (dev != null && dev) {
                     devPackages.put(dependency, version);
                 } else {
                     packages.put(dependency, version);
