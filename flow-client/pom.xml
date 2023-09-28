@@ -78,13 +78,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- Overrides the dependency version of httpclient -->
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.16.0</version>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-user</artifactId>
