@@ -3,6 +3,5 @@ Bundle-Name: Vaadin Flow Server
 Bundle-Version: ${osgi.bundle.version}
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
-Import-Package: org.atmosphere*;resolution:=optional;bundle-version='${atmosphere.runtime.version}',\
-    org.apache.http*;resolution:=optional;,*
+Import-Package: org.atmosphere*;resolution:=optional;bundle-version='${atmosphere.runtime.version}',*
 Export-Package: !com.vaadin.flow.push*, com.vaadin.flow*;-noimport:=true, com.vaadin.experimental*
