@@ -423,8 +423,21 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static Document getIndexHtmlDocument(VaadinService service)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
-        String index = FrontendUtils.getIndexHtmlContent(service);
-        if (index == null) {
+        String index;
+        try {
+            index = FrontendUtils.getIndexHtmlContent(service);
+        } catch (IOException e) {
+            if (config.getMode() == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
+                throw new IOException(
+                        "Unable to fetch index.html from the frontend development server, check the server logs that it is running");
+            } else {
+                throw new IOException(
+                        "Unable to find index.html. It should be available on the classpath");
+            }
+        }
+        if (index == null)
+
+        {
             if (config.isProductionMode()) {
                 throw new IOException(
                         "Unable to find index.html. It should be available on the classpath when running in production mode");
