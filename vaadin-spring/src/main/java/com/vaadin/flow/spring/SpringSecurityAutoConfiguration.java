@@ -19,6 +19,7 @@ import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
 import com.vaadin.flow.spring.security.RequestUtil;
 import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
+import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
 import com.vaadin.flow.spring.security.ViewAccessCheckerInitializer;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -95,5 +96,15 @@ public class SpringSecurityAutoConfiguration {
     @Bean
     public RequestUtil requestUtil() {
         return new RequestUtil();
+    }
+
+    /**
+     * Makes role prefix holder available for security configuration.
+     *
+     * @return the role prefix holder
+     */
+    @Bean
+    public VaadinRolePrefixHolder vaadinRolePrefixHolder() {
+        return new VaadinRolePrefixHolder(null);
     }
 }

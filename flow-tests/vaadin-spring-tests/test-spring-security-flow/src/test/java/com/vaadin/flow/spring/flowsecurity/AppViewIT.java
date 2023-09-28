@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.upload.testbench.UploadElement;
+import com.vaadin.flow.spring.flowsecurity.views.AdminView;
 import com.vaadin.flow.spring.flowsecurity.views.PublicView;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -34,6 +35,11 @@ public class AppViewIT extends AbstractIT {
 
     private void clickLogout() {
         getMainView().$(ButtonElement.class).id("logout").click();
+    }
+
+    private void clickAccessRolePrefixedAdminPageFromThread() {
+        getMainView().$(ButtonElement.class)
+                .id(AdminView.ROLE_PREFIX_TEST_BUTTON_ID).click();
     }
 
     @Test
@@ -120,6 +126,16 @@ public class AppViewIT extends AbstractIT {
         assertPathShown(LOGIN_PATH);
         loginAdmin();
         assertAdminPageShown(ADMIN_FULLNAME);
+    }
+
+    @Test
+    public void redirect_to_role_prefixed_admin_view_after_login() {
+        open("admin");
+        assertPathShown(LOGIN_PATH);
+        loginAdmin();
+        assertAdminPageShown(ADMIN_FULLNAME);
+        clickAccessRolePrefixedAdminPageFromThread();
+        assertRolePrefixedAdminPageShown(ADMIN_FULLNAME);
     }
 
     @Test

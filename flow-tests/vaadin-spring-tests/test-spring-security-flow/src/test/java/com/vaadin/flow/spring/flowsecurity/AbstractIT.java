@@ -132,6 +132,14 @@ public abstract class AbstractIT extends AbstractSpringTest {
                 welcomeText);
     }
 
+    protected void assertRolePrefixedAdminPageShown(String fullName) {
+        assertPathShown("another_admin");
+        TestBenchElement welcome = waitUntil(driver -> $("*").id("welcome"));
+        String welcomeText = welcome.getText();
+        Assert.assertEquals("Welcome to the another admin page, " + fullName,
+                welcomeText);
+    }
+
     protected void assertPathShown(String path) {
 
         waitUntil(driver -> {
