@@ -25,6 +25,7 @@ import com.vaadin.flow.uitest.ui.testbench.DevToolsCheckboxPropertyEditorElement
 import com.vaadin.flow.uitest.ui.testbench.DevToolsComponentPickerElement;
 import com.vaadin.flow.uitest.ui.testbench.DevToolsThemeClassNameEditorElement;
 import com.vaadin.flow.uitest.ui.testbench.DevToolsThemeColorPropertyEditorElement;
+import com.vaadin.flow.uitest.ui.testbench.DevToolsThemeEditorElement;
 import com.vaadin.flow.uitest.ui.testbench.DevToolsThemeRangePropertyEditorElement;
 import com.vaadin.testbench.TestBenchElement;
 import elemental.json.Json;
@@ -123,6 +124,33 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
                 By.id("accordion"));
     }
 
+    @Test
+    public void testVaadinDialog() throws IOException {
+        open();
+
+        $("vaadin-button").attribute("id", "dialogButton").waitForFirst()
+                .click();
+
+        DevToolsThemeEditorElement themeEditor = openThemeEditor();
+
+        themeEditor.startComponentSelection();
+
+        DevToolsElement devTools = $(DevToolsElement.class).first();
+
+        DevToolsComponentPickerElement componentPicker = devTools
+                .$(DevToolsComponentPickerElement.class).waitForFirst();
+
+        componentPicker
+                .moveMouseToElement($("vaadin-dialog-overlay").waitForFirst());
+
+        componentPicker.selectOption("vaadin-dialog");
+
+        List<Metadata> allMetadata = getMetadataForTag("vaadin-dialog");
+
+        fillMetadataForTagAndCheckGeneratedCss(themeEditor, allMetadata,
+                "vaadin-dialog-overlay");
+    }
+
     private void performTagTest(String tagName, By componentSelector)
             throws IOException {
         performTagTest(tagName, componentSelector, false);
@@ -135,36 +163,37 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
 
     private void performTagTest(String tagName, By componentSelector,
             boolean useComponentPicker) throws IOException {
-        List<Metadata> allMetadata = extractMetadata(tagName);
-
         open();
 
-        DevToolsElement devTools = $(DevToolsElement.class).waitForFirst();
-        devTools.expand();
+        DevToolsThemeEditorElement themeEditor = openThemeEditor();
 
-        devTools.showThemeEditor();
-
-        TestBenchElement themeEditor = devTools
-                .$("vaadin-dev-tools-theme-editor").first();
-        themeEditor.$("button").first().click();
+        themeEditor.startComponentSelection();
 
         if (useComponentPicker) {
-            selectComponentUsingComponentPicker(devTools, tagName,
-                    componentSelector);
+            selectComponentUsingComponentPicker(tagName, componentSelector);
         } else {
-            new Actions(getDriver()).click(findElement(componentSelector))
-                    .perform();
+            selectComponentByClickingOnIt(componentSelector);
         }
 
+        List<Metadata> allMetadata = getMetadataForTag(tagName);
+
+        fillMetadataForTagAndCheckGeneratedCss(themeEditor, allMetadata,
+                tagName);
+    }
+
+    protected void selectComponentByClickingOnIt(By componentSelector) {
+        new Actions(getDriver()).click(findElement(componentSelector))
+                .perform();
+    }
+
+    protected void fillMetadataForTagAndCheckGeneratedCss(
+            DevToolsThemeEditorElement themeEditor, List<Metadata> allMetadata,
+            String tagThatWillBeStyled) throws IOException {
         DevToolsThemeClassNameEditorElement classNameEditor = themeEditor
-                .$(DevToolsThemeClassNameEditorElement.class).waitForFirst();
+                .getClassNameEditor();
         String cssClassName = classNameEditor.getValue();
 
-        TestBenchElement themePropertiesList = themeEditor
-                .$("vaadin-dev-tools" + "-theme-property-list").waitForFirst();
-
-        List<TestBenchElement> sections = themePropertiesList.$("*")
-                .attribute("class", "section").all();
+        List<TestBenchElement> sections = themeEditor.getPropertiesSections();
         for (TestBenchElement section : sections) {
             String sectionName = section.$("span").first().getText().strip();
             Optional<Metadata> oMetadata = allMetadata.stream()
@@ -186,7 +215,7 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
                 dataTestIds.add(dataTestIdAttribute);
             }
 
-            String cssSelector = createSelector(metadata, tagName,
+            String cssSelector = createSelector(metadata, tagThatWillBeStyled,
                     cssClassName);
             Map<String, String> expectedCssProperties = new HashMap<>();
             for (Property property : metadata.getProperties()) {
@@ -217,14 +246,25 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
         }
     }
 
-    private void selectComponentUsingComponentPicker(DevToolsElement devTools,
-            String tagName, By componentSelector) {
+    protected DevToolsThemeEditorElement openThemeEditor() {
+        DevToolsElement devTools = $(DevToolsElement.class).waitForFirst();
+        devTools.expand();
+
+        devTools.showThemeEditor();
+
+        return devTools.$(DevToolsThemeEditorElement.class).first();
+    }
+
+    private void selectComponentUsingComponentPicker(String tagName,
+            By componentSelector) {
+        DevToolsElement devTools = $(DevToolsElement.class).first();
+
         DevToolsComponentPickerElement componentPicker = devTools
                 .$(DevToolsComponentPickerElement.class).waitForFirst();
 
         WebElement target = findElement(componentSelector);
 
-        componentPicker.moveToElement(target);
+        componentPicker.moveMouseToElement(target);
         List<String> options = componentPicker.getOptions();
         Assert.assertTrue(String.format(
                 "'%s' isn't in the list of options. Available options: %s",
@@ -344,7 +384,7 @@ public class ThemeEditorIT extends AbstractThemeEditorIT {
         element.$("span").attribute("class", "modified").waitForFirst();
     }
 
-    private List<Metadata> extractMetadata(String componentName)
+    private List<Metadata> getMetadataForTag(String componentName)
             throws IOException {
         String content = ComponentsMetadata.getMetadataContent(componentName);
         JsonArray jsonArray = Json.instance().parse(content);
