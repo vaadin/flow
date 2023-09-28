@@ -22,6 +22,7 @@ import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.HandlesTypes;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -78,7 +79,6 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
-import com.vaadin.flow.server.startup.ServletDeployer;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializer;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
@@ -526,8 +526,13 @@ public class VaadinServletContextInitializer
                     .collect(Collectors.toSet());
 
             if (devModeCachingEnabled) {
-                ReloadCache.dynamicWhiteList = classes.stream()
+                classes.addAll(ReloadCache.jarClasses);
+                ReloadCache.dynamicWhiteList = classes.stream().filter(
+                        c -> !ReloadCache.jarClassNames.contains(c.getName()))
                         .map(Class::getPackageName).collect(Collectors.toSet());
+                ReloadCache.jarClasses = classes.stream().filter(
+                        c -> ReloadCache.jarClassNames.contains(c.getName()))
+                        .collect(Collectors.toSet());
             }
 
             long ms = (System.nanoTime() - start) / 1000000;
@@ -983,6 +988,14 @@ public class VaadinServletContextInitializer
                         int index = path.lastIndexOf(".jar!/");
                         if (index >= 0) {
                             String relativePath = path.substring(index + 6);
+                            if (devModeCachingEnabled
+                                    && relativePath.endsWith(".class")) {
+                                // Stores names of all classes from JARs
+                                String className = relativePath
+                                        .replace(File.separatorChar, '.')
+                                        .replace(".class", "");
+                                ReloadCache.jarClassNames.add(className);
+                            }
                             if (shouldPathBeScanned(relativePath)) {
                                 resourcesList.add(resource);
                             }

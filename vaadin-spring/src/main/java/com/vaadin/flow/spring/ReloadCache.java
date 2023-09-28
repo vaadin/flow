@@ -30,4 +30,6 @@ class ReloadCache implements Serializable {
     static Set<String> skippedResources = new HashSet<>();
     static Set<String> dynamicWhiteList;
     static Set<String> routePackages;
+    static Set<String> jarClassNames = new HashSet<>();
+    static Set<Class<?>> jarClasses = new HashSet<>();
 }

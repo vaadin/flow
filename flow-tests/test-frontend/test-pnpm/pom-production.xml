@@ -4,7 +4,7 @@
     <parent>
         <artifactId>test-frontend</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.2-SNAPSHOT</version>
+        <version>24.3-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-pnpm-production</artifactId>
     <name>Flow tests in pnpm and production mode</name>
@@ -30,6 +30,16 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <!-- Pnpm used is skipped for production as files are cleaned after install -->
+                        <exclude>**/PnpmUsedIT.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
             <!-- Auto run clean to remove previous mode compilation -->
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>

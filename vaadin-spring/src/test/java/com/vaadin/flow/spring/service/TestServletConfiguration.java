@@ -55,18 +55,20 @@ public class TestServletConfiguration {
         @Override
         public void requestStart(VaadinRequest request,
                 VaadinResponse response) {
-
+            request.setAttribute("started", "true");
         }
 
         @Override
         public void handleException(VaadinRequest request,
                 VaadinResponse response, VaadinSession vaadinSession,
                 Exception t) {
+            request.setAttribute("error", "true");
         }
 
         @Override
         public void requestEnd(VaadinRequest request, VaadinResponse response,
                 VaadinSession session) {
+            request.setAttribute("stopped", "true");
         }
     }
 

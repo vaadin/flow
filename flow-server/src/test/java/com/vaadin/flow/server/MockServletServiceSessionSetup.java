@@ -141,10 +141,13 @@ public class MockServletServiceSessionSetup {
         @Override
         protected VaadinServletService createServletService()
                 throws ServletException, ServiceException {
-            service = new TestVaadinServletService(this,
-                    deploymentConfiguration);
+            service = createTestVaadinServletService();
             service.init();
             return service;
+        }
+
+        public TestVaadinServletService createTestVaadinServletService() {
+            return new TestVaadinServletService(this, deploymentConfiguration);
         }
 
         @Override
@@ -300,7 +303,7 @@ public class MockServletServiceSessionSetup {
     public MockServletServiceSessionSetup(boolean sessionAvailable)
             throws Exception {
         MockitoAnnotations.initMocks(this);
-        servlet = new TestVaadinServlet();
+        servlet = createVaadinServlet();
 
         deploymentConfiguration.setXsrfProtectionEnabled(false);
         Mockito.doAnswer(
@@ -366,6 +369,10 @@ public class MockServletServiceSessionSetup {
         }
 
         Mockito.when(request.getServletPath()).thenReturn("");
+    }
+
+    public TestVaadinServlet createVaadinServlet() {
+        return new TestVaadinServlet();
     }
 
     protected void configureLookup(Lookup lookup) {

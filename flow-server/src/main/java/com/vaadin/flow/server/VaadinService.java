@@ -29,7 +29,17 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
-import com.vaadin.flow.server.communication.*;
+import com.vaadin.flow.server.communication.AtmospherePushConnection;
+import com.vaadin.flow.server.communication.HeartbeatHandler;
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
+import com.vaadin.flow.server.communication.IndexHtmlResponse;
+import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
+import com.vaadin.flow.server.communication.PwaHandler;
+import com.vaadin.flow.server.communication.SessionRequestHandler;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.communication.UidlRequestHandler;
+import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
+import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
@@ -341,7 +351,7 @@ public abstract class VaadinService implements Serializable {
      * Called during initialization to add the request handlers for the service.
      * Note that the returned list will be reversed so the last interceptor will
      * be called first. This enables overriding this method and using add on the
-     * returned list to add a custom interceptors which overrides any
+     * returned list to add a custom request interceptors which overrides any
      * predefined handler.
      *
      * @return The list of request handlers used by this service.

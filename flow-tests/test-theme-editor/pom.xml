@@ -6,7 +6,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.2-SNAPSHOT</version>
+        <version>24.3-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-theme-editor</artifactId>
     <name>Flow tests for Theme Editor</name>
@@ -15,6 +15,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <vaadin.devmode.liveReload.enabled>true</vaadin.devmode.liveReload.enabled>
+        <vaadin.components.version>24.3-SNAPSHOT</vaadin.components.version>
     </properties>
 
     <dependencies>
@@ -47,8 +48,24 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-button-flow</artifactId>
-            <version>24.1.9</version>
+            <version>${vaadin.components.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-icons-flow</artifactId>
+            <version>${vaadin.components.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-checkbox-flow</artifactId>
+            <version>${vaadin.components.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-accordion-flow</artifactId>
+            <version>${vaadin.components.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>

@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.helger.css.ECSSVersion;
+import com.helger.css.decl.CascadingStyleSheet;
+import com.helger.css.reader.CSSReader;
+
 public class CssRule implements Cloneable {
 
     private String selector;
@@ -53,8 +57,12 @@ public class CssRule implements Cloneable {
         if (o == null || getClass() != o.getClass())
             return false;
         CssRule cssRule = (CssRule) o;
-        return Objects.equals(selector, cssRule.selector)
-                && Objects.equals(properties, cssRule.properties);
+        return Objects.equals(toCascadingStyleSheet(),
+                cssRule.toCascadingStyleSheet());
+    }
+
+    private CascadingStyleSheet toCascadingStyleSheet() {
+        return CSSReader.readFromString(cssRepr(), ECSSVersion.LATEST);
     }
 
     @Override
@@ -62,12 +70,18 @@ public class CssRule implements Cloneable {
         return Objects.hash(selector, properties);
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("CssRule[");
+    private String cssRepr() {
+        StringBuilder sb = new StringBuilder();
         sb.append(selector + "{");
         properties.forEach(
                 (k, v) -> sb.append(k).append(":").append(v).append(";"));
-        return sb.append("}]").toString();
+        return sb.append("}").toString();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("CssRule[");
+        sb.append(cssRepr());
+        return sb.append("]").toString();
     }
 }
