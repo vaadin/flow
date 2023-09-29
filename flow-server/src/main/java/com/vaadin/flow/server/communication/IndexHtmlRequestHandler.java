@@ -435,9 +435,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                         "Unable to find index.html. It should be available on the classpath");
             }
         }
-        if (index == null)
-
-        {
+        if (index == null) {
             if (config.isProductionMode()) {
                 throw new IOException(
                         "Unable to find index.html. It should be available on the classpath when running in production mode");
