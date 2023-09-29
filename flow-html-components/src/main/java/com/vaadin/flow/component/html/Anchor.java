@@ -47,6 +47,7 @@ public class Anchor extends HtmlContainer
             .optionalAttributeWithDefault("target",
                     AnchorTarget.DEFAULT.getValue());
 
+    private static final String ROUTER_IGNORE_ATTRIBUTE = "router-ignore";
     private Serializable href;
 
     /**
@@ -176,7 +177,7 @@ public class Anchor extends HtmlContainer
     /**
      * The routing mechanism in Vaadin by default intercepts all anchor elements
      * with relative URL. This method can be used make the router ignore this
-     * anchor and this way make this anchor behave normally and cause a full 
+     * anchor and this way make this anchor behave normally and cause a full
      * page load.
      *
      * @param ignore
@@ -184,7 +185,15 @@ public class Anchor extends HtmlContainer
      *            web application routing mechanism in Vaadin.
      */
     public void setRouterIgnore(boolean ignore) {
-        getElement().setAttribute("router-ignore", true);
+        getElement().setAttribute(ROUTER_IGNORE_ATTRIBUTE, true);
+    }
+
+    /**
+     * @return true if this anchor should be ignored by the Vaadin router and
+     *         behave normally.
+     */
+    public boolean isRouterIgnore() {
+        return getElement().hasAttribute(ROUTER_IGNORE_ATTRIBUTE);
     }
 
     /**
