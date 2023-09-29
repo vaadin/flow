@@ -18,6 +18,7 @@ package com.vaadin.flow.spring.security;
 
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletRequestWrapper;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,7 +38,7 @@ import com.vaadin.flow.server.VaadinServletRequest;
  * {@link com.vaadin.flow.spring.AuthenticationUtil} to check roles in the same
  * way with same role prefix.
  */
-public class VaadinRolePrefixHolder {
+public class VaadinRolePrefixHolder implements Serializable {
 
     private String rolePrefix;
 
