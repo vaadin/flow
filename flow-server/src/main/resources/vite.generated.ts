@@ -665,6 +665,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
   return {
     root: frontendFolder,
     base: '',
+    publicDir: false,
     resolve: {
       alias: {
         '@vaadin/flow-frontend': jarResourcesFolder,
