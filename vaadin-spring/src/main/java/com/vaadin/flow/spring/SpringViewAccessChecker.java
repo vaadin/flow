@@ -41,8 +41,8 @@ public class SpringViewAccessChecker extends ViewAccessChecker {
     @Override
     protected Function<String, Boolean> getRolesChecker(VaadinRequest request) {
         if (request == null) {
-            return Optional
-                    .ofNullable(VaadinService.getCurrent().getContext()
+            return Optional.ofNullable(VaadinService.getCurrent())
+                    .map(service -> service.getContext()
                             .getAttribute(Lookup.class))
                     .map(lookup -> lookup.lookup(VaadinRolePrefixHolder.class))
                     .map(VaadinRolePrefixHolder::getRolePrefix)
@@ -52,8 +52,8 @@ public class SpringViewAccessChecker extends ViewAccessChecker {
         }
 
         // Update active role prefix if it's not set yet.
-        Optional.ofNullable(VaadinService.getCurrent().getContext()
-                .getAttribute(Lookup.class))
+        Optional.ofNullable(VaadinService.getCurrent())
+                .map(service -> service.getContext().getAttribute(Lookup.class))
                 .map(lookup -> lookup.lookup(VaadinRolePrefixHolder.class))
                 .filter(prefixHolder -> prefixHolder.getRolePrefix() == null)
                 .ifPresent(
