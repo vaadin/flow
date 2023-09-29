@@ -38,7 +38,6 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateTree.BeforeClientResponseEntry;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
@@ -387,24 +386,43 @@ public class StateNode implements Serializable {
      * the state tree.
      */
     public void removeFromTree() {
+        removeFromTree(false);
+    }
+
+    /**
+     * Removes the node from its parent and unlinks the node (and children) from
+     * the state tree.
+     *
+     * @param sendDetach
+     *            if removal should send detach event for the element
+     */
+    public void removeFromTree(boolean sendDetach) {
         if (getOwner() instanceof StateTree) {
             ComponentUtil.setData(((StateTree) getOwner()).getUI(),
                     ReplacedViaPreserveOnRefresh.class, REPLACED_MARKER);
         }
-        visitNodeTree(StateNode::reset);
+        visitNodeTree(node -> node.reset(sendDetach));
         setParent(null);
     }
 
     /**
      * Resets the node to the initial state where it is not owned by a state
      * tree.
+     * <p>
+     * If the node should detach on the client keep attached state and node id
+     * to send event to client.
+     *
+     * @param shouldDetach
+     *            if true, keep node id and attached state
      */
-    private void reset() {
+    private void reset(boolean shouldDetach) {
         owner = NullOwner.get();
-        id = -1;
-        wasAttached = false;
         hasBeenAttached = false;
         hasBeenDetached = false;
+        if (!shouldDetach) {
+            id = -1;
+            wasAttached = false;
+        }
     }
 
     /**

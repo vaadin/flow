@@ -201,7 +201,7 @@ public class WebComponentUI extends UI {
 
         Optional<Element> old = getRegistry().get(hash);
         if (old.isPresent()) {
-            elementToAttach = old.get().removeFromTree();
+            elementToAttach = old.get().removeFromTree(false);
         }
 
         // did not have an element in the cache, create a new one

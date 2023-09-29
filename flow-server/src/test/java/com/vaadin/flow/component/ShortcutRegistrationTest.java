@@ -287,7 +287,7 @@ public class ShortcutRegistrationTest {
         ui.close();
         components[0] = newUI;
 
-        owner.getElement().removeFromTree();
+        owner.getElement().removeFromTree(false);
         newUI.add(owner);
 
         ArgumentCaptor<SerializableConsumer> captor = ArgumentCaptor
@@ -621,7 +621,7 @@ public class ShortcutRegistrationTest {
         ui.close();
         components[0] = newUI;
 
-        owner.getElement().removeFromTree();
+        owner.getElement().removeFromTree(false);
         newUI.add(owner);
 
         verify(newUI, atLeastOnce()).beforeClientResponse(eq(owner),

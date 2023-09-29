@@ -18,6 +18,7 @@ package com.vaadin.flow.spring;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
@@ -158,6 +159,9 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         VaadinContext context = Mockito.mock(VaadinContext.class);
+        Mockito.when(
+                context.getAttribute(Mockito.any(Class.class), Mockito.any()))
+                .then(i -> i.getArgument(1, Supplier.class).get());
         Mockito.when(context.getAttribute(
                 Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
                 .thenReturn(appConfig);

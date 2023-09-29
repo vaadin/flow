@@ -15,26 +15,29 @@
  */
 package com.vaadin.flow.spring.service;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletResponse;
+import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 import jakarta.servlet.ServletException;
-
-import java.util.Properties;
-import java.util.stream.Stream;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
+import java.util.Properties;
+import java.util.stream.Stream;
 
 @RunWith(SpringRunner.class)
 @Import(TestServletConfiguration.class)
@@ -46,9 +49,13 @@ public class SpringVaadinServletServiceTest {
     @Component
     public static class TestInstantiator implements Instantiator {
 
+        @Autowired
+        private ApplicationContext context;
+
         @Override
         public Stream<VaadinServiceInitListener> getServiceInitListeners() {
-            return Stream.of();
+            return context.getBeansOfType(VaadinServiceInitListener.class)
+                    .values().stream();
         }
 
         @Override
@@ -87,6 +94,31 @@ public class SpringVaadinServletServiceTest {
 
         Assert.assertEquals(1, listener.events.size());
         Assert.assertSame(ui, listener.events.get(0).getUI());
+    }
+
+    @Test
+    public void requestInterceptorsAreRegisteredOnTheService()
+            throws ServletException, ServiceException {
+        VaadinServletService service = (VaadinServletService) SpringInstantiatorTest
+                .getService(context, new Properties());
+        VaadinServletRequest request = new VaadinServletRequest(
+                new MockHttpServletRequest(), service);
+
+        try {
+            service.handleRequest(request, new VaadinServletResponse(
+                    new MockHttpServletResponse(), service));
+        } catch (Exception e) {
+            Assert.assertTrue(
+                    "Exception must be related to missing frontend folder",
+                    e.getMessage().contains("Unable to find index.html"));
+        }
+
+        Assert.assertEquals("Interceptor got called on start", "true",
+                request.getAttribute("started"));
+        Assert.assertEquals("Interceptor got called on error", "true",
+                request.getAttribute("error"));
+        Assert.assertEquals("Interceptor got called on stop", "true",
+                request.getAttribute("stopped"));
     }
 
 }

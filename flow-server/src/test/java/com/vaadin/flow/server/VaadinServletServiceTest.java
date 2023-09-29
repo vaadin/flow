@@ -1,22 +1,27 @@
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.theme.AbstractTheme;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collections;
-import java.util.List;
-
+import jakarta.servlet.http.HttpSession;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
-import com.vaadin.flow.theme.AbstractTheme;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
+
+import static org.mockito.Mockito.when;
 
 /**
  * Test class for testing es6 resolution by browser capability. This is valid
@@ -121,10 +126,10 @@ public class VaadinServletServiceTest {
             throws ServiceException {
         VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
         ServletContext context = Mockito.mock(ServletContext.class);
-        Mockito.when(servlet.getServletContext()).thenReturn(context);
+        when(servlet.getServletContext()).thenReturn(context);
 
         ClassLoader loader = Mockito.mock(ClassLoader.class);
-        Mockito.when(context.getClassLoader()).thenReturn(loader);
+        when(context.getClassLoader()).thenReturn(loader);
 
         VaadinServletService service = new VaadinServletService(servlet,
                 mocks.getDeploymentConfiguration()) {
@@ -151,7 +156,7 @@ public class VaadinServletServiceTest {
         MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito
                 .spy(mocks.getServlet());
         // Restore original behavior of getServletContext
-        Mockito.when(vaadinServlet.getServletContext()).thenAnswer(
+        when(vaadinServlet.getServletContext()).thenAnswer(
                 i -> vaadinServlet.getServletConfig().getServletContext());
         VaadinServletService service = new VaadinServletService(vaadinServlet,
                 mocks.getDeploymentConfiguration());
@@ -163,7 +168,7 @@ public class VaadinServletServiceTest {
         MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito
                 .spy(mocks.getServlet());
         // Restore original behavior of getServletContext
-        Mockito.when(vaadinServlet.getServletContext()).thenAnswer(
+        when(vaadinServlet.getServletContext()).thenAnswer(
                 i -> vaadinServlet.getServletConfig().getServletContext());
         VaadinServletService service = new VaadinServletService(vaadinServlet,
                 mocks.getDeploymentConfiguration());
@@ -190,11 +195,9 @@ public class VaadinServletServiceTest {
             throws Exception {
         HttpServletRequest request = createRequest(base, realContextPath,
                 realServletPath, pathInfo);
-        Mockito.when(
-                request.getAttribute("jakarta.servlet.include.context_path"))
+        when(request.getAttribute("jakarta.servlet.include.context_path"))
                 .thenReturn(null);
-        Mockito.when(
-                request.getAttribute("jakarta.servlet.include.servlet_path"))
+        when(request.getAttribute("jakarta.servlet.include.servlet_path"))
                 .thenReturn(null);
 
         return request;
@@ -220,16 +223,128 @@ public class VaadinServletServiceTest {
             String servletPath, String pathInfo) throws MalformedURLException {
         URL url = new URL(base + contextPath + pathInfo);
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.isSecure())
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("null.lock", new ReentrantLock()); // for session
+        attributes.put("requestStartTime", System.currentTimeMillis()); // for
+                                                                        // request
+                                                                        // end
+        when(request.isSecure())
                 .thenReturn(url.getProtocol().equalsIgnoreCase("https"));
-        Mockito.when(request.getServerName()).thenReturn(url.getHost());
-        Mockito.when(request.getServerPort()).thenReturn(url.getPort());
-        Mockito.when(request.getRequestURI()).thenReturn(url.getPath());
-        Mockito.when(request.getContextPath()).thenReturn(contextPath);
-        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
-        Mockito.when(request.getServletPath()).thenReturn(servletPath);
-
+        when(request.getServerName()).thenReturn(url.getHost());
+        when(request.getServerPort()).thenReturn(url.getPort());
+        when(request.getRequestURI()).thenReturn(url.getPath());
+        when(request.getContextPath()).thenReturn(contextPath);
+        when(request.getPathInfo()).thenReturn(pathInfo);
+        when(request.getServletPath()).thenReturn(servletPath);
+        HttpSession session = Mockito.mock(HttpSession.class);
+        when(request.getSession()).thenReturn(session);
+        when(request.getSession(Mockito.anyBoolean())).thenReturn(session);
+        stubSessionAttributes(session, attributes);
+        stubAttributes(request, attributes);
         return request;
     }
 
+    private static void stubSessionAttributes(HttpSession session,
+            Map<String, Object> attributes) {
+        when(
+                session.getAttribute(Mockito.anyString())).thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0), invocation.getArgument(1))).when(
+                session).setAttribute(Mockito.anyString(), Mockito.anyString());
+    }
+
+    private static void stubAttributes(HttpServletRequest request,
+            Map<String, Object> attributes) {
+        when(
+                request.getAttribute(Mockito.anyString())).thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0), invocation.getArgument(1))).when(
+                request).setAttribute(Mockito.anyString(), Mockito.anyString());
+    }
+
+    @Test
+    public void filtersAreCalledWhenHandlingARequest() throws Exception {
+        mocks = new MockServletServiceSessionSetup() {
+            @Override
+            public TestVaadinServlet createVaadinServlet() {
+                return new TestVaadinServlet() {
+                    @Override
+                    public TestVaadinServletService createTestVaadinServletService() {
+                        return new TestVaadinServletService(this,
+                                getDeploymentConfiguration()) {
+                            @Override
+                            protected List<VaadinRequestInterceptor> createVaadinRequestInterceptors()
+                                    throws ServiceException {
+                                return Collections.singletonList(
+                                        new MyRequestInterceptor());
+                            }
+                        };
+                    }
+                };
+            }
+        };
+        service = mocks.getService();
+        servlet = mocks.getServlet();
+
+        VaadinRequest request = servlet.createVaadinRequest(createRequest(
+                "http://dummy.host:8080/", "/contextpath", "/servlet", "/"));
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        service.getRequestHandlers().clear();
+        service.getRequestHandlers().add(new ExceptionThrowingRequestHandler());
+
+        try {
+            service.handleRequest(request, response);
+        } catch (ServiceException ex) {
+            Assert.assertTrue(
+                    "The exception was the one coming from RequestHandler",
+                    ex.getMessage().contains("BOOM!"));
+        }
+
+        Assert.assertEquals("Filter was called on request start", "true",
+                request.getAttribute("started"));
+        Assert.assertEquals("Filter was called on exception handling", "true",
+                request.getAttribute("exception handled"));
+        Assert.assertEquals("Filter was called in the finally block", "true",
+                request.getAttribute("ended"));
+    }
+
+    static class ExceptionThrowingRequestHandler implements RequestHandler {
+
+        @Override
+        public boolean handleRequest(VaadinSession session,
+                VaadinRequest request, VaadinResponse response)
+                throws IOException {
+            throw new IllegalStateException("BOOM!");
+        }
+    }
+
+    static class MyRequestInterceptor implements VaadinRequestInterceptor {
+
+        @Override
+        public void requestStart(VaadinRequest request,
+                VaadinResponse response) {
+            request.setAttribute("started", "true");
+            // An exception thrown here will not be caught by other methods of
+            // the filter!
+        }
+
+        @Override
+        public void handleException(VaadinRequest request,
+                VaadinResponse response, VaadinSession vaadinSession,
+                Exception t) {
+            if (t instanceof IllegalStateException ex) {
+                Assert.assertEquals("BOOM!", ex.getMessage());
+                request.setAttribute("exception handled", "true");
+                return;
+            }
+            throw new AssertionError(
+                    "Invalid exception thrown. Wanted <IllegalStateException> got <"
+                            + t.getClass() + ">",
+                    t);
+        }
+
+        @Override
+        public void requestEnd(VaadinRequest request, VaadinResponse response,
+                VaadinSession session) {
+            request.setAttribute("ended", "true");
+        }
+    }
 }

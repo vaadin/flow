@@ -79,7 +79,6 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
-import com.vaadin.flow.server.startup.ServletDeployer;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializer;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
@@ -527,13 +526,12 @@ public class VaadinServletContextInitializer
                     .collect(Collectors.toSet());
 
             if (devModeCachingEnabled) {
-                classes.addAll(ReloadCache.vaadinClasses);
-                ReloadCache.dynamicWhiteList = classes.stream()
-                        .filter(c -> !ReloadCache.vaadinClassNames
-                                .contains(c.getName()))
+                classes.addAll(ReloadCache.jarClasses);
+                ReloadCache.dynamicWhiteList = classes.stream().filter(
+                        c -> !ReloadCache.jarClassNames.contains(c.getName()))
                         .map(Class::getPackageName).collect(Collectors.toSet());
-                ReloadCache.vaadinClasses = classes.stream().filter(
-                        c -> ReloadCache.vaadinClassNames.contains(c.getName()))
+                ReloadCache.jarClasses = classes.stream().filter(
+                        c -> ReloadCache.jarClassNames.contains(c.getName()))
                         .collect(Collectors.toSet());
             }
 
@@ -992,15 +990,11 @@ public class VaadinServletContextInitializer
                             String relativePath = path.substring(index + 6);
                             if (devModeCachingEnabled
                                     && relativePath.endsWith(".class")) {
-                                // Stores names of vaadin classes from JARs
+                                // Stores names of all classes from JARs
                                 String className = relativePath
                                         .replace(File.separatorChar, '.')
                                         .replace(".class", "");
-                                if (className.startsWith("com.vaadin")
-                                        || className.startsWith("org.vaadin")
-                                        || className.startsWith("dev.hilla")) {
-                                    ReloadCache.vaadinClassNames.add(className);
-                                }
+                                ReloadCache.jarClassNames.add(className);
                             }
                             if (shouldPathBeScanned(relativePath)) {
                                 resourcesList.add(resource);

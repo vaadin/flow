@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -30,7 +26,6 @@ import java.util.List;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -51,6 +46,10 @@ import com.vaadin.flow.testutil.FrontendStubs;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+
 @NotThreadSafe
 @Category(SlowTests.class)
 public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
@@ -68,37 +67,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // error
         FileUtils.write(new File(npmFolder, PACKAGE_JSON), "{}",
                 StandardCharsets.UTF_8);
-    }
-
-    @Test
-    public void runPnpmInstall_overlayVersionIsPinnedViaPlatform_installedOverlayVersionIsSpecifiedByPlatform()
-            throws IOException, ExecutionFailedException {
-        File packageJson = new File(npmFolder, PACKAGE_JSON);
-        packageJson.createNewFile();
-
-        // Write package json file: dialog doesn't pin its Overlay
-        // version which
-        // is transitive dependency.
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {"
-                        + "\"@vaadin/vaadin-dialog\": \"2.2.1\"}}",
-                StandardCharsets.UTF_8);
-
-        // Platform defines a pinned version
-        TaskRunNpmInstall task = createTask(
-                "{ \"@vaadin/vaadin-overlay\":\"" + PINNED_VERSION + "\"}");
-        task.execute();
-
-        File overlayPackageJson = new File(options.getNodeModulesFolder(),
-                "@vaadin/vaadin-overlay/package.json");
-
-        // The resulting version should be the one specified via
-        // platform
-        // versions file
-        JsonObject overlayPackage = Json.parse(FileUtils
-                .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
-        Assert.assertEquals(PINNED_VERSION,
-                overlayPackage.getString("version"));
     }
 
     @Override
@@ -163,56 +131,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runPnpmInstall_versionsJsonIsFound_pnpmHookFileIsGenerated()
-            throws IOException, ExecutionFailedException {
-        ClassFinder classFinder = getClassFinder();
-        File versions = temporaryFolder.newFile();
-        FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
-        Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versions.toURI().toURL());
-
-        String versionsJson = "{\"foo\":\"bar\"}";
-        TaskRunNpmInstall task = createTask(versionsJson);
-        getNodeUpdater().modified = true;
-        task.execute();
-
-        File file = new File(npmFolder, "pnpmfile.js");
-        File cjsFile = new File(npmFolder, ".pnpmfile.cjs");
-        Assert.assertTrue(file.exists() || cjsFile.exists());
-        String content;
-        if (file.exists()) {
-            content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-        } else {
-            content = FileUtils.readFileToString(cjsFile,
-                    StandardCharsets.UTF_8);
-        }
-        MatcherAssert.assertThat(content,
-                CoreMatchers.containsString("versions = " + versionsJson));
-    }
-
-    @Test
-    public void runPnpmInstall_versionsJsonIsNotFound_pnpmHookFileIsGeneratedFromPackageJson()
-            throws IOException, ExecutionFailedException {
-        TaskRunNpmInstall task = createTask();
-        getNodeUpdater().modified = true;
-        task.execute();
-
-        File file = new File(npmFolder, "pnpmfile.js");
-        File cjsFile = new File(npmFolder, ".pnpmfile.cjs");
-        Assert.assertTrue(file.exists() || cjsFile.exists());
-        String content;
-        if (file.exists()) {
-            content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-        } else {
-            content = FileUtils.readFileToString(cjsFile,
-                    StandardCharsets.UTF_8);
-        }
-        MatcherAssert.assertThat(content,
-                CoreMatchers.containsString("versions = {}"));
-    }
-
-    @Test
     public void generateVersionsJson_userHasNoCustomVersions_platformIsMergedWithDevDeps()
             throws IOException {
         File packageJson = new File(npmFolder, PACKAGE_JSON);
@@ -239,114 +157,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // Platform version takes precedence over dev deps
         Assert.assertEquals(PINNED_VERSION,
                 object.getString("@vaadin/vaadin-overlay"));
-    }
-
-    @Test
-    public void generateVersionsJson_userVersionNewerThanPinned_intalledOverlayVersionIsUserVersion()
-            throws IOException {
-        File packageJson = new File(npmFolder, PACKAGE_JSON);
-        packageJson.createNewFile();
-
-        // Write package json file
-        final String customOverlayVersion = "3.3.0";
-        // @formatter:off
-        FileUtils.write(packageJson,
-                "{"
-                        + "\"vaadin\": {"
-                          + "\"dependencies\": {"
-                            + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
-                            + "\"@vaadin/vaadin-overlay\": \"" + PINNED_VERSION + "\""
-
-                          + "},"
-                          + "\"devDependencies\": {"
-                              + "\"@vaadin/vaadin-notification\": \"1.3.9\""
-                          + "},"
-                        + "},"
-                        + "\"dependencies\": {"
-                          + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
-                          + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\""
-                        + "},"
-                        + "\"devDependencies\": {"
-                            + "\"@vaadin/vaadin-notification\": \"1.4.0\""
-                        + "},"
-                     + "}",
-                StandardCharsets.UTF_8);
-        // @formatter:on
-
-        File versions = temporaryFolder.newFile();
-        // Platform defines a pinned version
-        // @formatter:off
-        FileUtils.write(versions, String.format(
-                "{"
-                  + "\"vaadin-overlay\": {"
-                    + "\"npmName\": \"@vaadin/vaadin-overlay\","
-                    + "\"jsVersion\": \"%s\""
-                  + "}"
-                + "}", PINNED_VERSION), StandardCharsets.UTF_8);
-        // @formatter:on
-
-        JsonObject versionsJson = getGeneratedVersionsContent(versions,
-                packageJson);
-        Assert.assertEquals(
-                "Generated versions json should have keys for each dependency",
-                2, versionsJson.keys().length);
-        Assert.assertEquals("Overlay should be pinned to user version",
-                customOverlayVersion,
-                versionsJson.getString("@vaadin/vaadin-overlay"));
-    }
-
-    @Test
-    public void generateVersionsJson_userVersionOlderThanPinned_installedOverlayPinnedVersionIsUserVersion()
-            throws IOException {
-        File packageJson = new File(npmFolder, PACKAGE_JSON);
-        packageJson.createNewFile();
-
-        // Write package json file
-        final String customOverlayVersion = "3.1.0";
-
-        // @formatter:off
-        FileUtils.write(packageJson,
-                "{"
-                        + "\"vaadin\": {"
-                        + "\"dependencies\": {"
-                            + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
-                            + "\"@vaadin/vaadin-overlay\": \"" + PINNED_VERSION + "\""
-                        + "},"
-                        + "\"devDependencies\": {"
-                            + "\"@vaadin/vaadin-notification\": \"1.4.0\""
-                        + "},"
-                        + "},"
-                        + "\"dependencies\": {"
-                            + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
-                            + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\""
-                        + "},"
-                            + "\"devDependencies\": {"
-                            + "\"@vaadin/vaadin-notification\": \"1.3.9\""
-                            + "},"
-                        + "}",
-                StandardCharsets.UTF_8);
-        // @formatter:on
-
-        File versions = temporaryFolder.newFile();
-        // Platform defines a pinned version
-        // @formatter:off
-        FileUtils.write(versions,String.format(
-                "{"
-                        + "\"vaadin-overlay\": {"
-                        + "\"npmName\": \"@vaadin/vaadin-overlay\","
-                        + "\"jsVersion\": \"%s\""
-                        + "}"
-                        + "}", PINNED_VERSION), StandardCharsets.UTF_8);
-        // @formatter:on
-
-        JsonObject versionsJson = getGeneratedVersionsContent(versions,
-                packageJson);
-        Assert.assertEquals(
-                "Generated versions json should have keys for package.json dependencies (also dev)",
-                2, versionsJson.keys().length);
-        Assert.assertEquals("Overlay should be pinned to user version",
-                customOverlayVersion,
-                versionsJson.getString("@vaadin/vaadin-overlay"));
     }
 
     @Test
@@ -420,15 +230,9 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Assert.assertEquals("Login version is the same for user and platform.",
                 loginVersion,
                 generatedVersions.getString("@vaadin/vaadin-login"));
-        Assert.assertEquals("Menu Bar should be pinned to user version.",
-                menuVersion,
-                generatedVersions.getString("@vaadin/vaadin-menu-bar"));
         Assert.assertEquals("Notification version should use platform",
                 versionsNotificationVersion,
                 generatedVersions.getString("@vaadin/vaadin-notification"));
-        Assert.assertEquals("Upload should be pinned to user version.",
-                uploadVersion,
-                generatedVersions.getString("@vaadin/vaadin-upload"));
     }
 
     @Test
@@ -526,54 +330,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         JsonObject overlayPackage = Json.parse(FileUtils
                 .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
         Assert.assertEquals(customOverlayVersion,
-                overlayPackage.getString("version"));
-    }
-
-    @Test
-    public void runPnpmInstall_frameworkCollectedVersionNewerThanPinned_installedOverlayVersionIsSpecifiedByPlatform()
-            throws IOException, ExecutionFailedException {
-        File packageJson = new File(npmFolder, PACKAGE_JSON);
-        packageJson.createNewFile();
-
-        // Write package json file
-        final String customOverlayVersion = "3.3.0";
-        // @formatter:off
-        final String packageJsonContent =
-            "{"
-                + "\"vaadin\": {"
-                    + "\"dependencies\": {"
-                        + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
-                        + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\""
-                    + "}"
-                + "},"
-                + "\"dependencies\": {"
-                    + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
-                    + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\""
-                + "}"
-            + "}";
-        // @formatter:on
-
-        FileUtils.write(packageJson, packageJsonContent,
-                StandardCharsets.UTF_8);
-
-        final VersionsJsonFilter versionsJsonFilter = new VersionsJsonFilter(
-                Json.parse(packageJsonContent), NodeUpdater.DEPENDENCIES);
-        // Platform defines a pinned version
-        TaskRunNpmInstall task = createTask(versionsJsonFilter
-                .getFilteredVersions(
-                        Json.parse("{ \"@vaadin/vaadin-overlay\":\""
-                                + PINNED_VERSION + "\"}"),
-                        "test-versions.json")
-                .toJson());
-        task.execute();
-
-        File overlayPackageJson = new File(options.getNodeModulesFolder(),
-                "@vaadin/vaadin-overlay/package.json");
-
-        // The resulting version should be the one defined by the platform
-        JsonObject overlayPackage = Json.parse(FileUtils
-                .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
-        Assert.assertEquals(PINNED_VERSION,
                 overlayPackage.getString("version"));
     }
 
