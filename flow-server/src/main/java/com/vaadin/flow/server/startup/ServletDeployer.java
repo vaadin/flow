@@ -192,10 +192,12 @@ public class ServletDeployer implements ServletContextListener {
         Collection<DeploymentConfiguration> result = new ArrayList<>(
                 registrations.size());
         for (ServletRegistration registration : registrations) {
-            loadClass(context.getClassLoader(), registration.getClassName())
-                    .ifPresent(servletClass -> result.add(
-                            StubServletConfig.createDeploymentConfiguration(
-                                    context, registration, servletClass)));
+            if (registration.getClassName() != null) {
+                loadClass(context.getClassLoader(), registration.getClassName())
+                        .ifPresent(servletClass -> result.add(
+                                StubServletConfig.createDeploymentConfiguration(
+                                        context, registration, servletClass)));
+            }
         }
         return result;
     }
@@ -268,6 +270,7 @@ public class ServletDeployer implements ServletContextListener {
 
     private ServletRegistration findVaadinServlet(ServletContext context) {
         return context.getServletRegistrations().values().stream()
+                .filter(registration -> registration.getClassName() != null)
                 .filter(registration -> isVaadinServlet(
                         context.getClassLoader(), registration.getClassName()))
                 .findAny().orElse(null);
