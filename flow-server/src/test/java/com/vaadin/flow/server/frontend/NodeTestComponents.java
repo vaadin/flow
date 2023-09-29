@@ -54,6 +54,7 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     }
 
     @NpmPackage(value = "@vaadin/vaadin-button", version = "1.1.1")
+    @NpmPackage(value = "vite-plugin-pwa", version = "0.16.5", dev = true)
     class ButtonComponent extends Component {
     }
 

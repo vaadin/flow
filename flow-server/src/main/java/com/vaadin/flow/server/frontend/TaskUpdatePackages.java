@@ -85,9 +85,12 @@ public class TaskUpdatePackages extends NodeUpdater {
         try {
             Map<String, String> scannedApplicationDependencies = frontDeps
                     .getPackages();
+            Map<String, String> scannedApplicationDevDependencies = frontDeps
+                    .getDevPackages();
             JsonObject packageJson = getPackageJson();
             modified = updatePackageJsonDependencies(packageJson,
-                    scannedApplicationDependencies);
+                    scannedApplicationDependencies,
+                    scannedApplicationDevDependencies);
             generateVersionsJson(packageJson);
             boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson);
 
@@ -200,13 +203,21 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     @SuppressWarnings("squid:S134")
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
-            Map<String, String> applicationDependencies) throws IOException {
+            Map<String, String> applicationDependencies,
+            Map<String, String> applicationDevDependencies) throws IOException {
         int added = 0;
 
         // Add application dependencies
         for (Entry<String, String> dep : applicationDependencies.entrySet()) {
             added += addDependency(packageJson, DEPENDENCIES, dep.getKey(),
                     dep.getValue());
+        }
+
+        // Add application dev dependencies.
+        for (Entry<String, String> devDep : applicationDevDependencies
+                .entrySet()) {
+            added += addDependency(packageJson, DEV_DEPENDENCIES,
+                    devDep.getKey(), devDep.getValue());
         }
 
         /*
@@ -250,6 +261,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         // Remove obsolete devDependencies
         dependencyCollection = new ArrayList<>(
                 getDefaultDevDependencies().keySet());
+        dependencyCollection.addAll(applicationDevDependencies.keySet());
 
         int removedDev = 0;
         removedDev = cleanDependencies(dependencyCollection, packageJson,
