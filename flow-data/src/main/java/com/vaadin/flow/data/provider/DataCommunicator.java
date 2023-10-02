@@ -1208,7 +1208,6 @@ public class DataCommunicator<T> implements Serializable {
                 });
             });
         } else {
-
             Activation activation = collectKeysToFlush(previousActive,
                     effectiveRequested);
 

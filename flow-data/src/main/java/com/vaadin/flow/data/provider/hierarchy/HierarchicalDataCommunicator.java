@@ -544,9 +544,22 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     @Override
     protected Set<String> getPassivatedKeys(Set<String> oldActive) {
-        return super.getPassivatedKeys(oldActive).stream()
-                .filter(key -> !isExpanded(getKeyMapper().get(key)))
-                .collect(Collectors.toCollection(HashSet::new));
+        return super.getPassivatedKeys(oldActive).stream().filter(key -> {
+            T item = getKeyMapper().get(key);
+            if (item != null) {
+                boolean passivateItem = false;
+                T parent = getParentItem(item);
+                while (parent != null) {
+                    if (!isItemActive(parent) || !isExpanded(parent)) {
+                        passivateItem = true;
+                        break;
+                    }
+                    parent = getParentItem(parent);
+                }
+                return passivateItem;
+            }
+            return !isExpanded(getKeyMapper().get(key));
+        }).collect(Collectors.toCollection(HashSet::new));
     }
 
     /**
