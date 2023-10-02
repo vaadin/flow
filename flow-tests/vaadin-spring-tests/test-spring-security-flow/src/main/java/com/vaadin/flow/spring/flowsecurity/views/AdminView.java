@@ -36,14 +36,14 @@ public class AdminView extends VerticalLayout {
         accessRolePrefixedAdminPageFromThread.setId(ROLE_PREFIX_TEST_BUTTON_ID);
         accessRolePrefixedAdminPageFromThread.addClickListener(event -> {
             UI ui = event.getSource().getUI().get();
-            Executors.newFixedThreadPool(1).submit(() -> {
+            new Thread(() -> {
                 try {
                     TimeUnit.MILLISECONDS.sleep(100);
                     ui.access(() -> ui.navigate(RolePrefixedAdminView.class));
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
-            });
+
+            }).start();
         });
         add(accessRolePrefixedAdminPageFromThread);
     }
