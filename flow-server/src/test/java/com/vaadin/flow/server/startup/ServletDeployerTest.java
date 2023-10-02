@@ -1,9 +1,13 @@
 package com.vaadin.flow.server.startup;
 
-import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import jakarta.servlet.Registration;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -17,14 +21,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.servlet.Registration;
-import jakarta.servlet.Servlet;
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletRegistration;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
+import org.apache.commons.io.FileUtils;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
@@ -33,13 +36,10 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ServletDeployerTest {
     private final ServletDeployer deployer = new ServletDeployer();
@@ -137,6 +137,18 @@ public class ServletDeployerTest {
     public void frontendServletIsNotRegistered_whenMainServletIsRegistered()
             throws Exception {
         deployer.contextInitialized(getContextEvent());
+
+        assertMappingsCount(1, 1);
+        assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+        assertLoadOnStartupSet();
+    }
+
+    @Test
+    public void servletsWithoutClassName_registrationDoesNotFail()
+            throws Exception {
+        deployer.contextInitialized(getContextEvent(getServletRegistration(
+                "test", null, singletonList("/WEB-INF/test.jsp"),
+                Collections.emptyMap())));
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
@@ -281,8 +293,8 @@ public class ServletDeployerTest {
             Map<String, String> initParameters) {
         ServletRegistration registrationMock = Mockito
                 .mock(ServletRegistration.class);
-        Mockito.when(registrationMock.getClassName())
-                .thenReturn(servletClass.getName());
+        Mockito.when(registrationMock.getClassName()).thenReturn(
+                servletClass != null ? servletClass.getName() : null);
         Mockito.when(registrationMock.getMappings()).thenReturn(pathMappings);
         Mockito.when(registrationMock.getName()).thenReturn(servletName);
         Mockito.when(registrationMock.getInitParameters())
