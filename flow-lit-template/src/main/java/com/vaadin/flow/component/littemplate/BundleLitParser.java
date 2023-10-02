@@ -66,8 +66,11 @@ public final class BundleLitParser {
      * <code>([\s\S]*)</code> captures all text until we encounter the end
      * character with <code>\1;}</code> e.g. <code>';}</code>
      */
-    private static final Pattern LIT_TEMPLATE_PATTERN = Pattern.compile(
-            "render\\(\\)[\\s]*\\{[\\s\\S]*return[\\s]*html[\\s]*(\\`)([\\s\\S]*?)\\1;[\\s]*\\}");
+    private static final Pattern LIT_TEMPLATE_PATTERN = Pattern
+            .compile("render\\(\\)[\\s]*\\{[\\s\\S]*\\}");
+
+    private static final Pattern LIT_TEMPLATE_PATTERN_HTML = Pattern
+            .compile("return[\\s]*html[\\s]*(\\`)([\\s\\S]*?)\\1;[\\s]*\\}");
 
     private static final String TEMPLATE_TAG_NAME = "template";
 
@@ -87,26 +90,32 @@ public final class BundleLitParser {
             String source) {
         Document templateDocument = null;
         String content = StringUtil.removeComments(source);
-        Matcher templateMatcher = LIT_TEMPLATE_PATTERN.matcher(content);
+        Matcher renderMatcher = LIT_TEMPLATE_PATTERN.matcher(content);
 
-        // GroupCount should be 2 as the first group contains `|'|" depending
-        // on what was in template return html' and the second is the
-        // template contents.
-        if (templateMatcher.find() && templateMatcher.groupCount() == 2) {
-            String group = templateMatcher.group(2);
-            LOGGER.trace("Found regular Lit template content was {}", group);
+        if (renderMatcher.find()) {
+            String renderGroup = renderMatcher.group(0);
+            Matcher templateMatcher = LIT_TEMPLATE_PATTERN_HTML
+                    .matcher(renderGroup);
+            // GroupCount should be at least 3 as the first group contains whole
+            // content and second group contains `|'|". Third group contains
+            // first "return html'" template contents.
+            if (templateMatcher.find() && templateMatcher.groupCount() >= 2) {
+                String group = templateMatcher.group(2);
+                LOGGER.trace("Found regular Lit template content was {}",
+                        group);
 
-            templateDocument = Jsoup.parse(group);
-            LOGGER.trace("The parsed template document was {}",
-                    templateDocument);
-            Element template = templateDocument
-                    .createElement(TEMPLATE_TAG_NAME);
-            Element body = templateDocument.body();
-            templateDocument.body().children().stream()
-                    .filter(node -> !node.equals(body))
-                    .forEach(template::appendChild);
+                templateDocument = Jsoup.parse(group);
+                LOGGER.trace("The parsed template document was {}",
+                        templateDocument);
+                Element template = templateDocument
+                        .createElement(TEMPLATE_TAG_NAME);
+                Element body = templateDocument.body();
+                templateDocument.body().children().stream()
+                        .filter(node -> !node.equals(body))
+                        .forEach(template::appendChild);
 
-            return template;
+                return template;
+            }
         }
         LOGGER.warn("No lit template data found in {} sources.", fileName);
         return null;
