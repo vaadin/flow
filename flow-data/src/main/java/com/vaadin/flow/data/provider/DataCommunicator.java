@@ -377,6 +377,9 @@ public class DataCommunicator<T> implements Serializable {
         resendEntireRange = true;
         dataGenerator.destroyAllData();
         updatedData.clear();
+        activeKeyOrder.clear();
+        activeStart = 0;
+        passivatedByUpdate.clear();
         requestFlush();
     }
 
