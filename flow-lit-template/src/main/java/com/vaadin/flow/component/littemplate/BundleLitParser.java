@@ -42,7 +42,8 @@ public final class BundleLitParser {
             .getLogger(BundleLitParser.class);
 
     /**
-     * Lit template pattern matches the render function
+     * Lit template pattern matches from the <code>render() {</code> until the
+     * last <code>}</code> character.
      *
      * <pre>
      * render() {
@@ -60,7 +61,7 @@ public final class BundleLitParser {
 
     /**
      * Lit template pattern for html matches the return statement with html
-     * template.
+     * template. Used for the first match from <code>render() {</code>.
      *
      * <pre>
      *       return html`
@@ -108,8 +109,8 @@ public final class BundleLitParser {
             String renderGroup = renderMatcher.group(0);
             Matcher templateMatcher = LIT_TEMPLATE_PATTERN_HTML
                     .matcher(renderGroup);
-            // GroupCount should be at least 3 as the first group contains whole
-            // content and second group contains `|'|". Third group contains
+            // GroupCount should be at least 2 as the first group contains
+            // `|'|". Second group contains
             // first "return html'" template contents.
             if (templateMatcher.find() && templateMatcher.groupCount() >= 2) {
                 String group = templateMatcher.group(2);
