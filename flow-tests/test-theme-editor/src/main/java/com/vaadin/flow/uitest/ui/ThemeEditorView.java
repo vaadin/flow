@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
@@ -45,5 +46,14 @@ public class ThemeEditorView extends Div {
         accordion.add("A", new Span("Info for A"));
         accordion.add("B", new Span("Info for B"));
         add(new Div(accordion));
+
+        Dialog dialog = new Dialog("Hey, I'm a dialog!");
+        dialog.setId("dialog");
+        dialog.setModal(false);
+        dialog.getFooter().add(new Span("Footer"));
+        dialog.add(new Span("Dialog content"));
+        Button dialogButton = new Button("Open dialog", e -> dialog.open());
+        dialogButton.setId("dialogButton");
+        add(dialog, new Div(dialogButton));
     }
 }

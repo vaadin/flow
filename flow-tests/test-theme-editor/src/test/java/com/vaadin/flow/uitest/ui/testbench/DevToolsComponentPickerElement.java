@@ -50,7 +50,7 @@ public class DevToolsComponentPickerElement extends TestBenchElement {
         return optionsContainer;
     }
 
-    public void moveToElement(WebElement findElement) {
+    public void moveMouseToElement(WebElement findElement) {
         Map<String, Object> data = new HashMap<>();
 
         Map<String, Object> details = new HashMap<>();
@@ -65,8 +65,9 @@ public class DevToolsComponentPickerElement extends TestBenchElement {
     public void moveToOption(String option) {
         List<String> options = getOptions();
         if (!options.contains(option)) {
-            throw new RuntimeException(
-                    String.format("'%s' is not a valid option", option));
+            throw new RuntimeException(String.format(
+                    "'%s' is not a valid option. Options: [%s]", option,
+                    options.stream().collect(Collectors.joining(", "))));
         }
         while (!getSelectedOption().equals(option)) {
             moveUp();
