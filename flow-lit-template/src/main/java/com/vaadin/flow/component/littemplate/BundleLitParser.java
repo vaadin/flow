@@ -42,10 +42,27 @@ public final class BundleLitParser {
             .getLogger(BundleLitParser.class);
 
     /**
-     * Lit template pattern matches the template getter
+     * Lit template pattern matches the render function
      *
      * <pre>
-     *     render() {
+     * render() {
+     *
+     * }
+     * </pre>
+     *
+     * <p>
+     * <code>render\(\)[\s]*\{</code> finds the template getter method and
+     * <code>[\s\S]*\}</code> ensures everything is captured until the last
+     * <code>}</code> character.
+     */
+    private static final Pattern LIT_TEMPLATE_PATTERN = Pattern
+            .compile("render\\(\\)[\\s]*\\{[\\s\\S]*\\}");
+
+    /**
+     * Lit template pattern for html matches the return statement with html
+     * template.
+     *
+     * <pre>
      *       return html`
      *         &lt;style&gt;
      *           .response { margin-top: 10px`; }
@@ -58,17 +75,12 @@ public final class BundleLitParser {
      * </pre>
      *
      * <p>
-     * <code>render\(\)[\s]*\{</code> finds the template getter method
-     * <p>
-     * <code>[\s\S]*return[\s]*html[\s]*(\`)</code> finds the return statement
+     * <code>return[\s]*html[\s]*(\`)</code> finds the return statement
      * <p>
      * </p>
-     * <code>([\s\S]*)</code> captures all text until we encounter the end
+     * <code>([\s\S]*?)</code> captures all text until we encounter the end
      * character with <code>\1;}</code> e.g. <code>';}</code>
      */
-    private static final Pattern LIT_TEMPLATE_PATTERN = Pattern
-            .compile("render\\(\\)[\\s]*\\{[\\s\\S]*\\}");
-
     private static final Pattern LIT_TEMPLATE_PATTERN_HTML = Pattern
             .compile("return[\\s]*html[\\s]*(\\`)([\\s\\S]*?)\\1;[\\s]*\\}");
 
