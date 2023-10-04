@@ -377,9 +377,6 @@ public class DataCommunicator<T> implements Serializable {
         resendEntireRange = true;
         dataGenerator.destroyAllData();
         updatedData.clear();
-        activeKeyOrder.clear();
-        activeStart = 0;
-        passivatedByUpdate.clear();
         requestFlush();
     }
 
@@ -1211,6 +1208,7 @@ public class DataCommunicator<T> implements Serializable {
                 });
             });
         } else {
+
             Activation activation = collectKeysToFlush(previousActive,
                     effectiveRequested);
 
