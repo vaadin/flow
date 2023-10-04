@@ -216,8 +216,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         classes.add(name);
         for (String className : visitedClass.children) {
-            if (!entryPoints.containsKey(className)) {
+            EntryPointData entryPointData = entryPoints.get(className);
+            if (entryPointData == null) {
                 collectReachableClasses(className, classes);
+            } else if (entryPointData.reachableClasses != null) {
+                classes.addAll(entryPointData.reachableClasses);
             }
         }
 

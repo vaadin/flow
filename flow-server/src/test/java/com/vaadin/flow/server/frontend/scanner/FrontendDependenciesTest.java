@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -323,6 +324,35 @@ public class FrontendDependenciesTest {
                 dependencies.shouldVisit("com.sun"));
     }
 
+    @Test
+    public void classScanningForChildAndParentEntryPoint_parentAnnotated_childNotAnnotated_childHasModulesFromParent() {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Stream.of(ParentRoute.class, ChildRoute.class)
+                        .collect(Collectors.toSet()));
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+
+        Optional<EntryPointData> childEntryPoint = dependencies
+                .getEntryPoints().stream().filter(entryPoint -> entryPoint
+                        .getName().equals(ChildRoute.class.getName()))
+                .findAny();
+
+        Assert.assertTrue(childEntryPoint.isPresent());
+
+        Assert.assertNotNull(childEntryPoint.get().reachableClasses);
+        Assert.assertFalse(childEntryPoint.get().reachableClasses.isEmpty());
+
+        // Child entrypoint sees classes reachable from parent entrypoint,
+        // not only one "ParentRoute" class
+        Assert.assertTrue(childEntryPoint.get().reachableClasses.size() > 1);
+
+        Assert.assertNotNull(childEntryPoint.get().getModules());
+        Assert.assertEquals(1, childEntryPoint.get().getModules().size());
+        Assert.assertEquals("reference.js",
+                childEntryPoint.get().getModules().iterator().next());
+    }
+
     public static class MyComponent extends Component {
     }
 
@@ -402,6 +432,18 @@ public class FrontendDependenciesTest {
                 ErrorParameter<NotFoundException> parameter) {
             return 0;
         }
+    }
+
+    @Route("parent")
+    public static class ParentRoute extends Component implements HasComponents {
+        private Referenced myComponent = new Referenced();
+
+        public ParentRoute() {
+            add(myComponent);
+        }
+    }
+
+    public static class ChildRoute extends ParentRoute {
     }
 
 }
