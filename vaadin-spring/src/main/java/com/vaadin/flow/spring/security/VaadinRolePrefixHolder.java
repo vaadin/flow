@@ -26,6 +26,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.util.FieldUtils;
+import org.springframework.security.web.DefaultSecurityFilterChain;
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper;
 
 import com.vaadin.flow.server.VaadinRequest;
@@ -74,16 +76,49 @@ public class VaadinRolePrefixHolder implements Serializable {
     public void resetRolePrefix(VaadinRequest request) {
         SecurityContextHolderAwareRequestWrapper requestWrapper = findSecurityContextHolderAwareRequestWrapper(
                 request);
-        if (requestWrapper != null) {
+        resetRolePrefix(requestWrapper);
+    }
+
+    /**
+     * Reset role prefix from the given {@link DefaultSecurityFilterChain}.
+     * Method doesn't do anything if role is not found.
+     *
+     * @param defaultSecurityFilterChain
+     *            Default security filter chain used to find active role prefix.
+     * @throws NullPointerException
+     *             If <code>defaultSecurityFilterChain</code> is null.
+     */
+    public void resetRolePrefix(
+            DefaultSecurityFilterChain defaultSecurityFilterChain) {
+        defaultSecurityFilterChain.getFilters().stream()
+                .filter(filter -> SecurityContextHolderAwareRequestFilter.class
+                        .isAssignableFrom(filter.getClass()))
+                .map(SecurityContextHolderAwareRequestFilter.class::cast)
+                .findFirst().ifPresent(this::resetRolePrefix);
+    }
+
+    private void resetRolePrefix(
+            SecurityContextHolderAwareRequestFilter securityContextHolderAwareRequestFilter) {
+        resetRolePrefix(securityContextHolderAwareRequestFilter,
+                SecurityContextHolderAwareRequestFilter.class);
+    }
+
+    private void resetRolePrefix(
+            SecurityContextHolderAwareRequestWrapper securityContextHolderAwareRequestWrapper) {
+        resetRolePrefix(securityContextHolderAwareRequestWrapper,
+                SecurityContextHolderAwareRequestWrapper.class);
+    }
+
+    private void resetRolePrefix(Object source, Class<?> type) {
+        if (source != null) {
             try {
-                Field field = FieldUtils.getField(
-                        SecurityContextHolderAwareRequestWrapper.class,
-                        "rolePrefix");
+                Field field = FieldUtils.getField(type, "rolePrefix");
                 field.setAccessible(true);
-                rolePrefix = (String) field.get(requestWrapper);
+                rolePrefix = (String) field.get(source);
             } catch (IllegalAccessException e) {
                 getLogger().warn(
-                        "Could not read SecurityContextHolderAwareRequestWrapper#rolePrefix field.",
+                        String.format("Could not read %s#rolePrefix field.",
+                                type.getSimpleName()),
                         e);
             }
         }

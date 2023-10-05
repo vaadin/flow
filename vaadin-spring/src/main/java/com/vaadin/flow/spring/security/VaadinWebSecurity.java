@@ -114,6 +114,9 @@ public abstract class VaadinWebSecurity {
     @Autowired
     private ViewAccessChecker viewAccessChecker;
 
+    @Autowired
+    private VaadinRolePrefixHolder vaadinRolePrefixHolder;
+
     @Value("#{servletContext.contextPath}")
     private String servletContextPath;
 
@@ -137,6 +140,8 @@ public abstract class VaadinWebSecurity {
             addLogoutHandlers(cfg::addLogoutHandler);
         });
         DefaultSecurityFilterChain securityFilterChain = http.build();
+        vaadinRolePrefixHolder.resetRolePrefix(securityFilterChain);
+
         LogoutConfigurer<?> logoutConfigurer = http
                 .getConfigurer(LogoutConfigurer.class);
         authenticationContext.setLogoutHandlers(
