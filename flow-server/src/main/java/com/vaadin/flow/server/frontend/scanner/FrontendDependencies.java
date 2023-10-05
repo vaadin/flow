@@ -227,8 +227,10 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     private void visitEntryPoints() throws IOException {
-        for (Entry<String, EntryPointData> entry : entryPoints.entrySet()) {
-            visitEntryPoint(entry.getValue());
+        List<EntryPointData> sortedEntryPoints = entryPoints.values().stream()
+                .sorted(this::compareEntryPoints).collect(Collectors.toList());
+        for (EntryPointData entry : sortedEntryPoints) {
+            visitEntryPoint(entry);
         }
 
     }
@@ -871,5 +873,20 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         }
 
         return false;
+    }
+
+    private int compareEntryPoints(EntryPointData entryPointData1,
+            EntryPointData entryPointData2) {
+        Annotation routeAnnotation1 = entryPointData1.getClassInfo()
+                .getDeclaredAnnotation(routeClass);
+        Annotation routeAnnotation2 = entryPointData2.getClassInfo()
+                .getDeclaredAnnotation(routeClass);
+        if (routeAnnotation1 != null && routeAnnotation2 == null) {
+            return -1;
+        }
+        if (routeAnnotation1 == null && routeAnnotation2 != null) {
+            return 1;
+        }
+        return 0;
     }
 }

@@ -327,7 +327,7 @@ public class FrontendDependenciesTest {
     @Test
     public void classScanningForChildAndParentEntryPoint_parentAnnotated_childNotAnnotated_childHasModulesFromParent() {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
-                .thenReturn(Stream.of(ParentRoute.class, ChildRoute.class)
+                .thenReturn(Stream.of(ChildRoute.class, ParentRoute.class)
                         .collect(Collectors.toSet()));
 
         FrontendDependencies dependencies = new FrontendDependencies(
