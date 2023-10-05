@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.spring;
 
+import java.util.Optional;
+
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
 import com.vaadin.flow.spring.security.RequestUtil;
@@ -28,6 +30,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.core.GrantedAuthorityDefaults;
 
 /**
  * Spring boot auto-configuration class for Flow.
@@ -101,10 +104,17 @@ public class SpringSecurityAutoConfiguration {
     /**
      * Makes role prefix holder available for security configuration.
      *
+     * @param grantedAuthorityDefaults
+     *            Optional granted authority defaults bean for the default role
+     *            prefix
      * @return the role prefix holder
      */
     @Bean
-    public VaadinRolePrefixHolder vaadinRolePrefixHolder() {
-        return new VaadinRolePrefixHolder(null);
+    @ConditionalOnMissingBean
+    public VaadinRolePrefixHolder vaadinRolePrefixHolder(
+            Optional<GrantedAuthorityDefaults> grantedAuthorityDefaults) {
+        return new VaadinRolePrefixHolder(grantedAuthorityDefaults
+                .map(GrantedAuthorityDefaults::getRolePrefix).orElse(null));
     }
+
 }
