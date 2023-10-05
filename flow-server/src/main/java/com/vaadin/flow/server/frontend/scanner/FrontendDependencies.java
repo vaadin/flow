@@ -227,10 +227,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     private void visitEntryPoints() throws IOException {
-        List<EntryPointData> sortedEntryPoints = entryPoints.values().stream()
-                .sorted(this::compareEntryPoints).collect(Collectors.toList());
-        for (EntryPointData entry : sortedEntryPoints) {
-            visitEntryPoint(entry);
+        for (Entry<String, EntryPointData> entry : entryPoints.entrySet()) {
+            visitEntryPoint(entry.getValue());
         }
 
     }
@@ -409,7 +407,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // references loaded by the specific class finder loader
         Class<? extends Annotation> triggerClass = getFinder()
                 .loadClass(DependencyTrigger.class.getName());
-        for (Class<?> route : getFinder().getAnnotatedClasses(routeClass)) {
+
+        List<Class<?>> routeClasses = new ArrayList<>(
+                getFinder().getAnnotatedClasses(routeClass));
+        routeClasses.sort(this::compareEntryPoints);
+
+        for (Class<?> route : routeClasses) {
             List<String> triggerClasses = getDependencyTriggers(route,
                     triggerClass);
             boolean eager = isEagerRoute(route);
@@ -875,11 +878,10 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         return false;
     }
 
-    private int compareEntryPoints(EntryPointData entryPointData1,
-            EntryPointData entryPointData2) {
-        Annotation routeAnnotation1 = entryPointData1.getClassInfo()
+    private int compareEntryPoints(Class<?> entryPoint1, Class<?> entryPoint2) {
+        Annotation routeAnnotation1 = entryPoint1
                 .getDeclaredAnnotation(routeClass);
-        Annotation routeAnnotation2 = entryPointData2.getClassInfo()
+        Annotation routeAnnotation2 = entryPoint2
                 .getDeclaredAnnotation(routeClass);
         if (routeAnnotation1 != null && routeAnnotation2 == null) {
             return -1;
