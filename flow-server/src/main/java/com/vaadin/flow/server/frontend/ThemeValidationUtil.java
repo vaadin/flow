@@ -1,6 +1,10 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -8,18 +12,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.theme.ThemeDefinition;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -38,6 +46,7 @@ public class ThemeValidationUtil {
 
     private static final Pattern THEME_PATH_PATTERN = Pattern
             .compile("themes\\/([\\s\\S]+?)\\/theme.json");
+    private static final String FRONTEND_HASHES_KEY = "frontendHashes";
 
     public static boolean themeConfigurationChanged(Options options,
             JsonObject statsJson,
@@ -86,7 +95,7 @@ public class ThemeValidationUtil {
             }
 
             collectThemeJsonContentsInFrontend(options, themeJsonContents, key,
-                    projectThemeJson.get(), finder);
+                    projectThemeJson.get());
         }
 
         for (Map.Entry<String, JsonObject> themeContent : themeJsonContents
@@ -114,6 +123,82 @@ public class ThemeValidationUtil {
         return false;
     }
 
+    /**
+     * Checks if theme has legacy Shadow DOM stylesheets in
+     * {@literal <theme>/components} folder and if their content has changed.
+     *
+     * @param options
+     *            Flow plugin options
+     * @param statsJson
+     *            the stats.json for the application bundle.
+     * @param frontendDependencies
+     *            frontend dependencies scanner to lookup for theme settings
+     * @return {@literal true} if the theme has legacy Shadow DOM stylesheets,
+     *         and they are not included on the application bundle, otherwise
+     *         {@literal false}.
+     */
+    public static boolean themeShadowDOMStylesheetsChanged(Options options,
+            JsonObject statsJson,
+            FrontendDependenciesScanner frontendDependencies) {
+        File frontendDirectory = options.getFrontendDirectory();
+        // Scan the theme hierarchy and collect all <theme>/components folders
+        Set<Path> themeComponentsDirs = Optional
+                .ofNullable(frontendDependencies.getThemeDefinition())
+                .map(ThemeDefinition::getName).filter(name -> !name.isBlank())
+                .map(themeName -> {
+                    Map<String, JsonObject> themeJsonContents = new HashMap<>();
+                    ThemeUtils.getThemeJson(themeName, frontendDirectory)
+                            .ifPresent(
+                                    themeJson -> collectThemeJsonContentsInFrontend(
+                                            options, themeJsonContents,
+                                            themeName, themeJson));
+                    return themeJsonContents.keySet().stream()
+                            .map(name -> ThemeUtils
+                                    .getThemeFolder(frontendDirectory, name))
+                            .map(dir -> new File(dir, "components"))
+                            .filter(File::exists).map(File::toPath)
+                            .collect(Collectors.toSet());
+                }).orElse(null);
+        if (themeComponentsDirs != null) {
+            Map<String, String> frontendHashes = new HashMap<>();
+            if (statsJson.hasKey(FRONTEND_HASHES_KEY)) {
+                JsonObject json = statsJson.getObject(FRONTEND_HASHES_KEY);
+                Stream.of(json.keys())
+                        // Only considers bundled resources located in
+                        // '[generated/jar-resources/]themes/<themeName>/components'
+                        .filter(path -> themeComponentsDirs.stream()
+                                .anyMatch(dir -> frontendDirectory.toPath()
+                                        .resolve(path).startsWith(dir)))
+                        .forEach(key -> frontendHashes.put(key,
+                                json.getString(key)));
+            }
+
+            List<String> themeComponentsCssFiles = new ArrayList<>();
+            for (Path dir : themeComponentsDirs) {
+                FileUtils.listFiles(dir.toFile(), new String[] { "css" }, true)
+                        .stream()
+                        .filter(themeFile -> isFrontendResourceChangedOrMissingInBundle(
+                                frontendHashes, frontendDirectory, themeFile))
+                        .map(f -> frontendDirectory.toPath()
+                                .relativize(f.toPath()).toString())
+                        .collect(Collectors
+                                .toCollection(() -> themeComponentsCssFiles));
+            }
+            if (!themeComponentsCssFiles.isEmpty()) {
+                BundleValidationUtil.logChangedFiles(themeComponentsCssFiles,
+                        "Detected new or changed theme components CSS files");
+            }
+            if (!frontendHashes.isEmpty()) {
+                BundleValidationUtil.logChangedFiles(
+                        new ArrayList<>(frontendHashes.keySet()),
+                        "Detected removed theme components CSS files");
+            }
+            return !(themeComponentsCssFiles.isEmpty()
+                    && frontendHashes.isEmpty());
+        }
+        return false;
+    }
+
     private static boolean hasNewAssetsOrImports(JsonObject contentsInStats,
             Map.Entry<String, JsonObject> themeContent) {
         JsonObject json = themeContent.getValue();
@@ -128,7 +213,7 @@ public class ThemeValidationUtil {
 
     private static void collectThemeJsonContentsInFrontend(Options options,
             Map<String, JsonObject> themeJsonContents, String themeName,
-            JsonObject themeJson, ClassFinder finder) {
+            JsonObject themeJson) {
         Optional<String> parentThemeInFrontend = ThemeUtils
                 .getParentThemeName(themeJson);
         if (parentThemeInFrontend.isPresent()) {
@@ -137,8 +222,7 @@ public class ThemeValidationUtil {
                     parentThemeName, options.getFrontendDirectory());
             parentThemeJson.ifPresent(
                     jsonObject -> collectThemeJsonContentsInFrontend(options,
-                            themeJsonContents, parentThemeName, jsonObject,
-                            finder));
+                            themeJsonContents, parentThemeName, jsonObject));
         }
 
         themeJsonContents.put(themeName, themeJson);
@@ -285,6 +369,29 @@ public class ThemeValidationUtil {
             allEntriesFound = allEntriesFound && entryFound;
         }
         return allEntriesFound;
+    }
+
+    private static boolean isFrontendResourceChangedOrMissingInBundle(
+            Map<String, String> frontendHashes, File frontendFolder,
+            File frontendResource) {
+        String relativePath = frontendFolder.toPath()
+                .relativize(frontendResource.toPath()).toString();
+        boolean presentInBundle = frontendHashes.containsKey(relativePath);
+        if (!presentInBundle && !frontendResource.exists()) {
+            return false;
+        }
+        if (presentInBundle) {
+            final String contentHash;
+            try {
+                contentHash = BundleValidationUtil.calculateHash(
+                        FileUtils.readFileToString(frontendResource,
+                                StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            return !frontendHashes.remove(relativePath).equals(contentHash);
+        }
+        return true;
     }
 
     private static Logger getLogger() {
