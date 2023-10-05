@@ -2,7 +2,6 @@ package com.vaadin.flow.spring.flowsecurity.views;
 
 import jakarta.annotation.security.RolesAllowed;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.vaadin.flow.component.UI;
