@@ -185,7 +185,7 @@ public class Anchor extends HtmlContainer
      *            web application routing mechanism in Vaadin.
      */
     public void setRouterIgnore(boolean ignore) {
-        getElement().setAttribute(ROUTER_IGNORE_ATTRIBUTE, true);
+        getElement().setAttribute(ROUTER_IGNORE_ATTRIBUTE, ignore);
     }
 
     /**
