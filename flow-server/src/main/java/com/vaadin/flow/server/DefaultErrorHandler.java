@@ -19,14 +19,33 @@ package com.vaadin.flow.server;
 import java.io.EOFException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.InvalidLocationException;
+import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
  * The default implementation of {@link ErrorHandler}.
@@ -72,6 +91,13 @@ public class DefaultErrorHandler implements ErrorHandler {
     public void error(ErrorEvent event) {
         Throwable throwable = findRelevantThrowable(event.getThrowable());
         if (shouldHandle(throwable)) {
+            if (FeatureFlags.get(VaadinService.getCurrent().getContext())
+                    .isEnabled(FeatureFlags.HAS_ERROR_OUTSIDE_NAVIGATION)
+                    && throwable instanceof Exception) {
+                if (drawErrorViewForException((Exception) throwable)) {
+                    return;
+                }
+            }
             Marker marker = MarkerFactory.getMarker("INVALID_LOCATION");
             if (throwable instanceof InvalidLocationException) {
                 if (getLogger().isWarnEnabled(marker)) {
@@ -82,6 +108,63 @@ public class DefaultErrorHandler implements ErrorHandler {
                 getLogger().error("", throwable);
             }
         }
+    }
+
+    protected static boolean drawErrorViewForException(Exception exception) {
+        ApplicationRouteRegistry appRegistry = ApplicationRouteRegistry
+                .getInstance(VaadinService.getCurrent().getContext());
+        Optional<ErrorTargetEntry> errorNavigationTarget = appRegistry
+                .getErrorNavigationTarget(exception);
+        // Found error target and handled exception is the same as thrown
+        // exception.
+        if (errorNavigationTarget.isPresent() && errorNavigationTarget.get()
+                .getHandledExceptionType().equals(exception.getClass())) {
+            UI ui = UI.getCurrent();
+            if (ui == null) {
+                return false;
+            }
+            // Init error view and parents
+            Component routeTarget = getRouteTarget(
+                    errorNavigationTarget.get().getNavigationTarget(), ui);
+            List<Class<? extends RouterLayout>> routeLayouts = RouteUtil
+                    .getParentLayoutsForNonRouteTarget(routeTarget.getClass());
+            List<RouterLayout> parentLayouts = routeLayouts.stream()
+                    .map(route -> getRouteTarget(route, ui))
+                    .collect(Collectors.toList());
+
+            // Connect to ui
+            ui.getInternals().showRouteTarget(
+                    ui.getInternals().getActiveViewLocation(), routeTarget,
+                    parentLayouts);
+
+            // Build before enter event for setErrorParameter
+            NavigationEvent navigationEvent = new NavigationEvent(
+                    ui.getInternals().getRouter(),
+                    ui.getInternals().getActiveViewLocation(), ui,
+                    NavigationTrigger.PROGRAMMATIC);
+            BeforeEnterEvent beforeEnterEvent = new BeforeEnterEvent(
+                    navigationEvent,
+                    errorNavigationTarget.get().getNavigationTarget(),
+                    routeLayouts);
+
+            // Execute error view error parameter
+            ((HasErrorParameter) routeTarget).setErrorParameter(
+                    beforeEnterEvent,
+                    new ErrorParameter(exception.getClass(), exception));
+            return true;
+        }
+        return false;
+    }
+
+    private static <T extends HasElement> T getRouteTarget(
+            Class<T> routeTargetType, UI ui) {
+        Optional<HasElement> currentInstance = ui.getInternals()
+                .getActiveRouterTargetsChain().stream()
+                .filter(component -> component.getClass()
+                        .equals(routeTargetType))
+                .findAny();
+        return (T) currentInstance.orElseGet(() -> Instantiator.get(ui)
+                .createRouteTarget(routeTargetType, null));
     }
 
     protected boolean shouldHandle(Throwable t) {
