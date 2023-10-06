@@ -295,6 +295,7 @@ public class PushHandlerTest {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
         AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
         Mockito.when(resource.getRequest()).thenReturn(request);
+        Mockito.when(resource.uuid()).thenReturn("1");
 
         AtmosphereResourceEvent event = Mockito
                 .mock(AtmosphereResourceEvent.class);
@@ -312,6 +313,7 @@ public class PushHandlerTest {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
         AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
         Mockito.when(resource.getRequest()).thenReturn(request);
+        Mockito.when(resource.uuid()).thenReturn("1");
 
         testExec.accept(handler, resource);
 
