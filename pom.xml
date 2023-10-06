@@ -109,7 +109,7 @@
         <jetty.version>11.0.15</jetty.version>
         <properties-maven-plugin.version>1.2.0</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.4.0</build-helper-maven-plugin.version>
-        <maven.version>3.9.4</maven.version>
+        <maven.version>3.9.5</maven.version>
 
         <!-- Frontend -->
         <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
