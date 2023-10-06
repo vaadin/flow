@@ -80,7 +80,7 @@ public class VaadinRolePrefixHolder implements Serializable {
      * {@link VaadinServletRequest} and a chain of
      * {@link ServletRequestWrapper}s to find
      * {@link SecurityContextHolderAwareRequestWrapper} with the role prefix.
-     * Method doesn't do anything if role is not found.
+     * Method doesn't do anything if role prefix is not found.
      *
      * @param request
      *            Vaadin request used to find active role prefix.
@@ -93,7 +93,7 @@ public class VaadinRolePrefixHolder implements Serializable {
 
     /**
      * Reset role prefix from the given {@link DefaultSecurityFilterChain}.
-     * Method doesn't do anything if role is not found.
+     * Method doesn't do anything if role prefix is not found.
      *
      * @param defaultSecurityFilterChain
      *            Default security filter chain used to find active role prefix.
