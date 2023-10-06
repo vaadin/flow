@@ -878,15 +878,36 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         return false;
     }
 
+    /**
+     * Ensures @Route annotated entry points are placed first in the list,
+     * whereas child classes and not annotated classes go to the end of list.
+     * This ensures that reachable classes for entry points are properly
+     * populated for not annotated entry points.
+     *
+     * @param entryPoint1
+     *            entry point one
+     * @param entryPoint2
+     *            entry point two
+     * @return -1 if entry point 1 should be placed first, 0 if they are
+     *         identical, 1 if entry point 2 should be placed first.
+     */
     private int compareEntryPoints(Class<?> entryPoint1, Class<?> entryPoint2) {
         Annotation routeAnnotation1 = entryPoint1
                 .getDeclaredAnnotation(routeClass);
         Annotation routeAnnotation2 = entryPoint2
                 .getDeclaredAnnotation(routeClass);
+        // classes with @Route go first in the list
         if (routeAnnotation1 != null && routeAnnotation2 == null) {
             return -1;
         }
         if (routeAnnotation1 == null && routeAnnotation2 != null) {
+            return 1;
+        }
+        // parent classes go first in the list
+        if (entryPoint1.isAssignableFrom(entryPoint2)) {
+            return -1;
+        }
+        if (entryPoint2.isAssignableFrom(entryPoint1)) {
             return 1;
         }
         return 0;

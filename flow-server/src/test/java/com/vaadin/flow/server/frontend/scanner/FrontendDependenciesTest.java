@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend.scanner;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -325,32 +326,82 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void classScanningForChildAndParentEntryPoint_parentAnnotated_childNotAnnotated_childHasModulesFromParent() {
+    public void classScanningForChildAndParentEntryPoint_ordered_childrenSeeClassesFromParent() {
+        LinkedHashSet<Class<?>> hierarchy = Stream
+                .of(ParentRoute.class, AnnotatedChildRoute.class,
+                        ChildRoute.class, GrandChildRoute.class)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
-                .thenReturn(Stream.of(ChildRoute.class, ParentRoute.class)
-                        .collect(Collectors.toSet()));
+                .thenReturn(hierarchy);
 
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
 
-        Optional<EntryPointData> childEntryPoint = dependencies
-                .getEntryPoints().stream().filter(entryPoint -> entryPoint
-                        .getName().equals(ChildRoute.class.getName()))
+        hierarchy.forEach(entryPointClass -> verifyEntryPointData(dependencies,
+                entryPointClass));
+    }
+
+    @Test
+    public void classScanningForChildAndParentEntryPoint_shuffled_childrenSeeClassesFromParent() {
+        LinkedHashSet<Class<?>> hierarchy = Stream
+                .of(GrandChildRoute.class, AnnotatedChildRoute.class,
+                        ParentRoute.class, ChildRoute.class)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(hierarchy);
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+
+        hierarchy.forEach(entryPointClass -> verifyEntryPointData(dependencies,
+                entryPointClass));
+    }
+
+    @Test
+    public void classScanningForChildAndParentEntryPoint_reversed_childrenSeeClassesFromParent() {
+        LinkedHashSet<Class<?>> hierarchy = Stream
+                .of(GrandChildRoute.class, ChildRoute.class,
+                        AnnotatedChildRoute.class, ParentRoute.class)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(hierarchy);
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+
+        hierarchy.forEach(entryPointClass -> verifyEntryPointData(dependencies,
+                entryPointClass));
+    }
+
+    private static EntryPointData getEntryPointByClass(
+            FrontendDependencies dependencies, Class<?> entryPointClass) {
+        Optional<EntryPointData> childEntryPoint = dependencies.getEntryPoints()
+                .stream().filter(entryPoint -> entryPoint.getName()
+                        .equals(entryPointClass.getName()))
                 .findAny();
-
         Assert.assertTrue(childEntryPoint.isPresent());
+        return childEntryPoint.get();
+    }
 
-        Assert.assertNotNull(childEntryPoint.get().reachableClasses);
-        Assert.assertFalse(childEntryPoint.get().reachableClasses.isEmpty());
+    private static void verifyEntryPointData(FrontendDependencies dependencies,
+            Class<?> entryPointClass) {
+        EntryPointData entryPointData = getEntryPointByClass(dependencies,
+                entryPointClass);
 
-        // Child entrypoint sees classes reachable from parent entrypoint,
-        // not only one "ParentRoute" class
-        Assert.assertTrue(childEntryPoint.get().reachableClasses.size() > 1);
+        Assert.assertNotNull(entryPointData.reachableClasses);
+        Assert.assertFalse(entryPointData.reachableClasses.isEmpty());
 
-        Assert.assertNotNull(childEntryPoint.get().getModules());
-        Assert.assertEquals(1, childEntryPoint.get().getModules().size());
+        // Child entrypoint should see classes reachable from parent entrypoint,
+        // not only the parent class
+        Assert.assertTrue(entryPointData.reachableClasses.size() > 1);
+
+        Assert.assertNotNull(entryPointData.getModules());
+        Assert.assertEquals(1, entryPointData.getModules().size());
         Assert.assertEquals("reference.js",
-                childEntryPoint.get().getModules().iterator().next());
+                entryPointData.getModules().iterator().next());
     }
 
     public static class MyComponent extends Component {
@@ -443,7 +494,14 @@ public class FrontendDependenciesTest {
         }
     }
 
+    @Route("child")
+    public static class AnnotatedChildRoute extends ParentRoute {
+    }
+
     public static class ChildRoute extends ParentRoute {
+    }
+
+    public static class GrandChildRoute extends ChildRoute {
     }
 
 }
