@@ -547,18 +547,15 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         return super.getPassivatedKeys(oldActive).stream().filter(key -> {
             T item = getKeyMapper().get(key);
             if (item != null) {
-                boolean passivateItem = false;
                 T parent = getParentItem(item);
                 while (parent != null) {
                     if (!isItemActive(parent) || !isExpanded(parent)) {
-                        passivateItem = true;
-                        break;
+                        return true;
                     }
                     parent = getParentItem(parent);
                 }
-                return passivateItem;
             }
-            return !isExpanded(getKeyMapper().get(key));
+            return false;
         }).collect(Collectors.toCollection(HashSet::new));
     }
 
