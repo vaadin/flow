@@ -47,6 +47,7 @@
                 <module>test-parent-theme-in-frontend</module>
                 <module>test-parent-theme-in-frontend-prod</module>
                 <module>test-embedding-express-build</module>
+                <module>test-theme-legacy-components-css-prod</module>
             </modules>
         </profile>
     </profiles>
