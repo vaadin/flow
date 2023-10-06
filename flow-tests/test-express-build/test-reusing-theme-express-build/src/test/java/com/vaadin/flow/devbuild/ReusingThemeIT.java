@@ -94,6 +94,16 @@ public class ReusingThemeIT extends ChromeBrowserTest {
                     .hasKey("reusable-theme"));
             Assert.assertFalse(json.getObject("themeJsonContents")
                     .getString("reusable-theme").isBlank());
+
+            Assert.assertTrue(json.hasKey("frontendHashes"));
+            JsonObject frontendHashes = json.getObject("frontendHashes");
+
+            Assert.assertTrue(frontendHashes.hasKey(
+                    "generated/jar-resources/themes/reusable-theme/components/my-reusable-component.css"));
+            Assert.assertFalse(frontendHashes.getString(
+                    "generated/jar-resources/themes/reusable-theme/components/my-reusable-component.css")
+                    .isBlank());
+
         } catch (IOException e) {
             throw new RuntimeException("Failed to verify theme.json hash", e);
         }
