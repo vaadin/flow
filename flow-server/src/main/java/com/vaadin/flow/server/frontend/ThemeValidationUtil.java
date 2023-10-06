@@ -160,7 +160,7 @@ public class ThemeValidationUtil {
                             .collect(Collectors.toSet());
                 }).orElse(null);
         if (themeComponentsDirs != null) {
-            Map<String, String> bundledComponentCssHashes = new HashMap<>();
+            Map<String, String> hashesWithNoComponentCssMatches = new HashMap<>();
             if (statsJson.hasKey(FRONTEND_HASHES_KEY)) {
                 JsonObject json = statsJson.getObject(FRONTEND_HASHES_KEY);
                 Stream.of(json.keys())
@@ -169,7 +169,7 @@ public class ThemeValidationUtil {
                         .filter(path -> themeComponentsDirs.stream()
                                 .anyMatch(dir -> frontendDirectory.toPath()
                                         .resolve(path).startsWith(dir)))
-                        .forEach(key -> bundledComponentCssHashes.put(key,
+                        .forEach(key -> hashesWithNoComponentCssMatches.put(key,
                                 json.getString(key)));
             }
 
@@ -178,8 +178,8 @@ public class ThemeValidationUtil {
                 FileUtils.listFiles(dir.toFile(), new String[] { "css" }, true)
                         .stream()
                         .filter(themeFile -> isFrontendResourceChangedOrMissingInBundle(
-                                bundledComponentCssHashes, frontendDirectory,
-                                themeFile))
+                                hashesWithNoComponentCssMatches,
+                                frontendDirectory, themeFile))
                         .map(f -> frontendDirectory.toPath()
                                 .relativize(f.toPath()).toString())
                         .collect(Collectors
@@ -189,13 +189,14 @@ public class ThemeValidationUtil {
                 BundleValidationUtil.logChangedFiles(themeComponentsCssFiles,
                         "Detected new or changed theme components CSS files");
             }
-            if (!bundledComponentCssHashes.isEmpty()) {
+            if (!hashesWithNoComponentCssMatches.isEmpty()) {
                 BundleValidationUtil.logChangedFiles(
-                        new ArrayList<>(bundledComponentCssHashes.keySet()),
+                        new ArrayList<>(
+                                hashesWithNoComponentCssMatches.keySet()),
                         "Detected removed theme components CSS files");
             }
             return !(themeComponentsCssFiles.isEmpty()
-                    && bundledComponentCssHashes.isEmpty());
+                    && hashesWithNoComponentCssMatches.isEmpty());
         }
         return false;
     }
