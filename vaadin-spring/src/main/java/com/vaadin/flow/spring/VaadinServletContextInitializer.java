@@ -727,8 +727,13 @@ public class VaadinServletContextInitializer
                                 // Updates cached white list and route packages
                                 Set<String> addedPackages = new HashSet<>();
                                 e.getAddedClasses().forEach(c -> {
-                                    addedPackages.add(
-                                            c.substring(0, c.lastIndexOf(".")));
+                                    if (c.contains("/")) {
+                                        c = c.replaceAll("/", ".");
+                                    }
+                                    if (c.contains(".")) {
+                                        addedPackages.add(c.substring(0,
+                                                c.lastIndexOf(".")));
+                                    }
                                 });
                                 ReloadCache.dynamicWhiteList
                                         .addAll(addedPackages);
