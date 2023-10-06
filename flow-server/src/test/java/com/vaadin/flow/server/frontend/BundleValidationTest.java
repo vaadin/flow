@@ -1463,6 +1463,170 @@ public class BundleValidationTest {
     }
 
     @Test
+    public void projectThemeComponentsCSS_contentsAdded_bundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForProjectThemeComponentsCSS(
+                false, false);
+        Assert.assertTrue(
+                "Should rebuild when Shadow DOM Stylesheets are present "
+                        + " in 'frontend/<theme>/components' folder",
+                needsBuild);
+    }
+
+    @Test
+    public void projectThemeComponentsCSS_contentsChanged_bundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForProjectThemeComponentsCSS(
+                true, true);
+        Assert.assertTrue(
+                "Should rebuild when Shadow DOM Stylesheets contents have changed",
+                needsBuild);
+    }
+
+    @Test
+    public void projectThemeComponentsCSS_contentsNotChanged_noBundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForProjectThemeComponentsCSS(
+                false, true);
+        Assert.assertFalse(
+                "Should not rebuild when Shadow DOM Stylesheets contents have not changed",
+                needsBuild);
+    }
+
+    @Test
+    public void projectThemeComponentsCSS_removedFromProject_bundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForProjectThemeComponentsCSS(
+                false, true, "deleted-component-stylesheet.css");
+        Assert.assertTrue(
+                "Should rebuild when Shadow DOM Stylesheets contents have been removed",
+                needsBuild);
+    }
+
+    @Test
+    public void jarResourceThemeComponentsCSS_contentsAdded_bundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForJarPackagedThemeComponentsCSS(
+                false, false);
+        Assert.assertTrue(
+                "Should rebuild when Shadow DOM Stylesheets are present "
+                        + " in 'frontend/generated/jar-resources/<theme>/components' folder",
+                needsBuild);
+    }
+
+    @Test
+    public void jarResourceThemeComponentsCSS_contentsChanged_bundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForJarPackagedThemeComponentsCSS(
+                true, true);
+        Assert.assertTrue(
+                "Should rebuild when Shadow DOM Stylesheets contents have changed",
+                needsBuild);
+    }
+
+    @Test
+    public void jarResourceThemeComponentsCSS_contentsNotChanged_noBundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForJarPackagedThemeComponentsCSS(
+                false, true);
+        Assert.assertFalse(
+                "Should not rebuild when Shadow DOM Stylesheets contents have not changed",
+                needsBuild);
+    }
+
+    @Test
+    public void jarResourceThemeComponentsCSS_removedFromProject_bundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForJarPackagedThemeComponentsCSS(
+                false, true, "deleted-component-stylesheet.css");
+        Assert.assertTrue(
+                "Should rebuild when Shadow DOM Stylesheets contents have been removed",
+                needsBuild);
+    }
+
+    @Test
+    public void projectParentThemeComponentsCSS_contentsAdded_bundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForParentProjectThemeComponentsCSS(
+                false, false);
+        Assert.assertTrue(
+                "Should rebuild when Shadow DOM Stylesheets are present "
+                        + " in parent theme folder",
+                needsBuild);
+    }
+
+    @Test
+    public void projectParentThemeComponentsCSS_contentsChanged_bundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForParentProjectThemeComponentsCSS(
+                true, true);
+        Assert.assertTrue(
+                "Should rebuild when Shadow DOM Stylesheets contents in parent theme have changed",
+                needsBuild);
+    }
+
+    @Test
+    public void projectParentThemeComponentsCSS_contentsNotChanged_noBundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForParentProjectThemeComponentsCSS(
+                false, true);
+        Assert.assertFalse(
+                "Should not rebuild when Shadow DOM Stylesheets contents in parent theme have not changed",
+                needsBuild);
+    }
+
+    @Test
+    public void projectParentThemeComponentsCSS_removedFromProject_bundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForParentProjectThemeComponentsCSS(
+                false, true, "deleted-component-stylesheet.css");
+        Assert.assertTrue(
+                "Should rebuild when Shadow DOM Stylesheets contents in parent theme have been removed",
+                needsBuild);
+    }
+
+    @Test
+    public void projectParentInJarThemeComponentsCSS_contentsAdded_bundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForJarPackagedParentThemeComponentsCSS(
+                false, false);
+        Assert.assertTrue(
+                "Should rebuild when Shadow DOM Stylesheets are present "
+                        + " in parent theme folder",
+                needsBuild);
+    }
+
+    @Test
+    public void projectParentInJarThemeComponentsCSS_contentsChanged_bundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForJarPackagedParentThemeComponentsCSS(
+                true, true);
+        Assert.assertTrue(
+                "Should rebuild when Shadow DOM Stylesheets contents in parent theme have changed",
+                needsBuild);
+    }
+
+    @Test
+    public void projectParentInJarThemeComponentsCSS_contentsNotChanged_noBundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForJarPackagedParentThemeComponentsCSS(
+                false, true);
+        Assert.assertFalse(
+                "Should not rebuild when Shadow DOM Stylesheets contents in parent theme have not changed",
+                needsBuild);
+    }
+
+    @Test
+    public void projectParentInJarThemeComponentsCSS_removedFromProject_bundleRebuild()
+            throws IOException {
+        boolean needsBuild = checkBundleRebuildForJarPackagedParentThemeComponentsCSS(
+                false, true, "deleted-component-stylesheet.css");
+        Assert.assertTrue(
+                "Should rebuild when Shadow DOM Stylesheets contents in parent theme have been removed",
+                needsBuild);
+    }
+
+    @Test
     public void indexTsAdded_rebuildRequired() throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
@@ -1666,8 +1830,14 @@ public class BundleValidationTest {
 
     private void createProjectThemeJsonStub(String content, String theme)
             throws IOException {
-        File themeJson = new File(temporaryFolder.getRoot(),
-                "frontend/themes/" + theme + "/theme.json");
+        createThemeJsonStub(content, theme, true);
+    }
+
+    private void createThemeJsonStub(String content, String theme,
+            boolean projectTheme) throws IOException {
+        String themeLocation = projectTheme ? "" : "generated/jar-resources/";
+        File themeJson = new File(temporaryFolder.getRoot(), "frontend/"
+                + themeLocation + "themes/" + theme + "/theme.json");
         FileUtils.forceMkdir(themeJson.getParentFile());
         boolean created = themeJson.createNewFile();
         Assert.assertTrue(created);
@@ -1708,4 +1878,98 @@ public class BundleValidationTest {
     static class AllEagerAppConf implements AppShellConfigurator {
 
     }
+
+    private boolean checkBundleRebuildForProjectThemeComponentsCSS(
+            boolean contentChanged, boolean bundled,
+            String... otherBundledComponentCss) throws IOException {
+        return checkBundleRebuildForThemeComponentsCSS(true, false,
+                contentChanged, bundled, otherBundledComponentCss);
+    }
+
+    private boolean checkBundleRebuildForJarPackagedThemeComponentsCSS(
+            boolean contentChanged, boolean bundled,
+            String... otherBundledComponentCss) throws IOException {
+        return checkBundleRebuildForThemeComponentsCSS(false, false,
+                contentChanged, bundled, otherBundledComponentCss);
+    }
+
+    private boolean checkBundleRebuildForParentProjectThemeComponentsCSS(
+            boolean contentChanged, boolean bundled,
+            String... otherBundledComponentCss) throws IOException {
+        return checkBundleRebuildForThemeComponentsCSS(true, true,
+                contentChanged, bundled, otherBundledComponentCss);
+    }
+
+    private boolean checkBundleRebuildForJarPackagedParentThemeComponentsCSS(
+            boolean contentChanged, boolean bundled,
+            String... otherBundledComponentCss) throws IOException {
+        return checkBundleRebuildForThemeComponentsCSS(false, true,
+                contentChanged, bundled, otherBundledComponentCss);
+    }
+
+    private boolean checkBundleRebuildForThemeComponentsCSS(
+            boolean projectTheme, boolean useParentTheme,
+            boolean contentChanged, boolean bundled,
+            String... otherBundledComponentCss) throws IOException {
+        String cssTemplate = "[part=\"input-field\"]{background: %s; }";
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        String themeContents = "{ \"importCss\": [\"foo\"] }";
+        String themeWithParentContents = "{\"parent\": \"parent-theme\"}";
+        if (useParentTheme) {
+            createThemeJsonStub(themeContents, "parent-theme", projectTheme);
+            createThemeJsonStub(themeWithParentContents, "my-theme",
+                    projectTheme);
+        } else {
+            createThemeJsonStub(themeContents, "my-theme", projectTheme);
+        }
+
+        String themeLocation = (projectTheme ? "" : "generated/jar-resources/")
+                + "themes/" + ((useParentTheme) ? "parent-theme" : "my-theme")
+                + "/components/";
+        File stylesheetFile = new File(temporaryFolder.getRoot(),
+                "frontend/" + themeLocation + "vaadin-text-field.css");
+        FileUtils.forceMkdir(stylesheetFile.getParentFile());
+        boolean created = stylesheetFile.createNewFile();
+        Assert.assertTrue(created);
+        FileUtils.write(stylesheetFile, String.format(cssTemplate, "blue"),
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        final ThemeDefinition themeDefinition = Mockito
+                .mock(ThemeDefinition.class);
+        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
+        Mockito.when(depScanner.getThemeDefinition())
+                .thenReturn(themeDefinition);
+
+        JsonObject stats = getBasicStats();
+        if (useParentTheme) {
+            stats.getObject(THEME_JSON_CONTENTS).put("parent-theme",
+                    themeContents);
+            stats.getObject(THEME_JSON_CONTENTS).put("my-theme",
+                    themeWithParentContents);
+        } else {
+            stats.getObject(THEME_JSON_CONTENTS).put("my-theme", themeContents);
+        }
+        stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation, themeContents);
+        if (bundled) {
+            stats.getObject(FRONTEND_HASHES)
+                    .put(themeLocation + "vaadin-text-field.css",
+                            BundleValidationUtil.calculateHash(String.format(
+                                    cssTemplate,
+                                    (contentChanged) ? "red" : "blue")));
+        }
+        for (String path : otherBundledComponentCss) {
+            stats.getObject(FRONTEND_HASHES).put(themeLocation + path,
+                    BundleValidationUtil.calculateHash(
+                            "[part=\"input-field\"]{background: green; }"));
+        }
+
+        setupFrontendUtilsMock(stats);
+
+        return BundleValidationUtil.needsBuild(options, depScanner, finder,
+                mode);
+    }
+
 }
