@@ -44,6 +44,8 @@ public class VaadinRolePrefixHolder implements Serializable {
 
     private String rolePrefix;
 
+    private boolean rolePrefixSet;
+
     /**
      * Construct {@link VaadinRolePrefixHolder} with a role prefix.
      *
@@ -52,6 +54,7 @@ public class VaadinRolePrefixHolder implements Serializable {
      */
     public VaadinRolePrefixHolder(String rolePrefix) {
         this.rolePrefix = rolePrefix;
+        this.rolePrefixSet = this.rolePrefix != null;
     }
 
     /**
@@ -61,6 +64,15 @@ public class VaadinRolePrefixHolder implements Serializable {
      */
     public String getRolePrefix() {
         return rolePrefix;
+    }
+
+    /**
+     * Gets boolean flag indicating if role prefix is set or not.
+     *
+     * @return true when role prefix is set, false otherwise.
+     */
+    public boolean isSet() {
+        return rolePrefixSet;
     }
 
     /**
@@ -122,6 +134,7 @@ public class VaadinRolePrefixHolder implements Serializable {
                         e);
             }
         }
+        this.rolePrefixSet = true;
     }
 
     private SecurityContextHolderAwareRequestWrapper findSecurityContextHolderAwareRequestWrapper(

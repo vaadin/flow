@@ -55,8 +55,7 @@ public class SpringViewAccessChecker extends ViewAccessChecker {
         Optional.ofNullable(VaadinService.getCurrent())
                 .map(service -> service.getContext().getAttribute(Lookup.class))
                 .map(lookup -> lookup.lookup(VaadinRolePrefixHolder.class))
-                .filter(prefixHolder -> prefixHolder.getRolePrefix() == null)
-                .ifPresent(
+                .filter(prefixHolder -> !prefixHolder.isSet()).ifPresent(
                         prefixHolder -> prefixHolder.resetRolePrefix(request));
 
         return super.getRolesChecker(request);
