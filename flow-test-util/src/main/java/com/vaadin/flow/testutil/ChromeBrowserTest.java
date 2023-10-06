@@ -18,8 +18,12 @@ package com.vaadin.flow.testutil;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Filter;
+import java.util.logging.LogRecord;
 
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
@@ -56,6 +60,8 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
     private static InetAddress ipv4All;
     private static InetAddress ipv6All;
+    private static boolean cdpMismatchLogged = false;
+
     static {
         try {
             ipv4All = InetAddress.getByName("0.0.0.0");
@@ -63,6 +69,27 @@ public class ChromeBrowserTest extends ViewOrUITest {
         } catch (UnknownHostException e) {
             throw new ExceptionInInitializerError(e);
         }
+
+        // Log CDP mismatch message only once
+        java.util.logging.Logger rootLogger = java.util.logging.Logger
+                .getLogger("");
+        java.util.logging.Handler handler = new ConsoleHandler();
+        Arrays.stream(rootLogger.getHandlers())
+                .forEach(rootLogger::removeHandler);
+        rootLogger.addHandler(handler);
+        handler.setFilter(new Filter() {
+            @Override
+            public boolean isLoggable(LogRecord record) {
+                if (record.getMessage().matches(
+                        "Unable to find an exact match for CDP version (.*), so returning the closest version found: (.*)")) {
+                    if (cdpMismatchLogged) {
+                        return false;
+                    }
+                    cdpMismatchLogged = true;
+                }
+                return true;
+            }
+        });
     }
 
     @Before
