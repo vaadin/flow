@@ -160,7 +160,7 @@ public class ThemeValidationUtil {
                             .collect(Collectors.toSet());
                 }).orElse(null);
         if (themeComponentsDirs != null) {
-            Map<String, String> frontendHashes = new HashMap<>();
+            Map<String, String> bundledComponentCssHashes = new HashMap<>();
             if (statsJson.hasKey(FRONTEND_HASHES_KEY)) {
                 JsonObject json = statsJson.getObject(FRONTEND_HASHES_KEY);
                 Stream.of(json.keys())
@@ -169,7 +169,7 @@ public class ThemeValidationUtil {
                         .filter(path -> themeComponentsDirs.stream()
                                 .anyMatch(dir -> frontendDirectory.toPath()
                                         .resolve(path).startsWith(dir)))
-                        .forEach(key -> frontendHashes.put(key,
+                        .forEach(key -> bundledComponentCssHashes.put(key,
                                 json.getString(key)));
             }
 
@@ -178,7 +178,8 @@ public class ThemeValidationUtil {
                 FileUtils.listFiles(dir.toFile(), new String[] { "css" }, true)
                         .stream()
                         .filter(themeFile -> isFrontendResourceChangedOrMissingInBundle(
-                                frontendHashes, frontendDirectory, themeFile))
+                                bundledComponentCssHashes, frontendDirectory,
+                                themeFile))
                         .map(f -> frontendDirectory.toPath()
                                 .relativize(f.toPath()).toString())
                         .collect(Collectors
@@ -188,13 +189,13 @@ public class ThemeValidationUtil {
                 BundleValidationUtil.logChangedFiles(themeComponentsCssFiles,
                         "Detected new or changed theme components CSS files");
             }
-            if (!frontendHashes.isEmpty()) {
+            if (!bundledComponentCssHashes.isEmpty()) {
                 BundleValidationUtil.logChangedFiles(
-                        new ArrayList<>(frontendHashes.keySet()),
+                        new ArrayList<>(bundledComponentCssHashes.keySet()),
                         "Detected removed theme components CSS files");
             }
             return !(themeComponentsCssFiles.isEmpty()
-                    && frontendHashes.isEmpty());
+                    && bundledComponentCssHashes.isEmpty());
         }
         return false;
     }
@@ -372,14 +373,11 @@ public class ThemeValidationUtil {
     }
 
     private static boolean isFrontendResourceChangedOrMissingInBundle(
-            Map<String, String> frontendHashes, File frontendFolder,
+            Map<String, String> bundledHashes, File frontendFolder,
             File frontendResource) {
         String relativePath = frontendFolder.toPath()
                 .relativize(frontendResource.toPath()).toString();
-        boolean presentInBundle = frontendHashes.containsKey(relativePath);
-        if (!presentInBundle && !frontendResource.exists()) {
-            return false;
-        }
+        boolean presentInBundle = bundledHashes.containsKey(relativePath);
         if (presentInBundle) {
             final String contentHash;
             try {
@@ -389,7 +387,7 @@ public class ThemeValidationUtil {
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
-            return !frontendHashes.remove(relativePath).equals(contentHash);
+            return !bundledHashes.remove(relativePath).equals(contentHash);
         }
         return true;
     }
