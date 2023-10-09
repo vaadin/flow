@@ -86,7 +86,7 @@ public class SecurityConfig extends VaadinWebSecurity {
 
         http.logout(cfg -> cfg
                 .logoutRequestMatcher(new AntPathRequestMatcher(
-                        getRootUrl() + "/doLogout", "GET"))
+                        getRootUrl() + "doLogout", "GET"))
                 .addLogoutHandler((request, response, authentication) -> {
                     if (!request.getRequestURI().endsWith("doLogout")) {
                         UI ui = UI.getCurrent();
@@ -111,7 +111,7 @@ public class SecurityConfig extends VaadinWebSecurity {
             e.printStackTrace();
         }
         SimpleUrlLogoutSuccessHandler urlLogoutHandler = new SimpleUrlLogoutSuccessHandler();
-        urlLogoutHandler.setDefaultTargetUrl("/logout");
+        urlLogoutHandler.setDefaultTargetUrl(getRootUrl() + "logout");
         urlLogoutHandler.setRedirectStrategy(new UidlRedirectStrategy());
         urlLogoutHandler.onLogoutSuccess(request, response, authentication);
     }
