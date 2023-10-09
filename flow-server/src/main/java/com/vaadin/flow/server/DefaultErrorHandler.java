@@ -91,8 +91,12 @@ public class DefaultErrorHandler implements ErrorHandler {
     public void error(ErrorEvent event) {
         Throwable throwable = findRelevantThrowable(event.getThrowable());
         if (shouldHandle(throwable)) {
-            if (FeatureFlags.get(VaadinService.getCurrent().getContext())
-                    .isEnabled(FeatureFlags.HAS_ERROR_OUTSIDE_NAVIGATION)
+            VaadinService service = VaadinService.getCurrent();
+            VaadinContext context = service != null ? service.getContext()
+                    : null;
+            if (context != null
+                    && FeatureFlags.get(context).isEnabled(
+                            FeatureFlags.HAS_ERROR_OUTSIDE_NAVIGATION)
                     && ErrorHandlerUtil
                             .handleErrorByRedirectingToErrorView(throwable)) {
                 return;
