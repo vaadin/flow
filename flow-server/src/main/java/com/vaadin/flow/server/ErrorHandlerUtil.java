@@ -88,10 +88,13 @@ public final class ErrorHandlerUtil {
      */
     public static boolean handleErrorByRedirectingToErrorView(
             Exception exception) {
-        VaadinService current = VaadinService.getCurrent();
-        VaadinContext context = current != null ? current.getContext() : null;
         UI ui = UI.getCurrent();
-        if (context == null || ui == null) {
+        if (ui == null) {
+            return false;
+        }
+        VaadinService current = ui.getSession().getService();
+        VaadinContext context = current != null ? current.getContext() : null;
+        if (context == null) {
             return false;
         }
         return handleErrorByRedirectingToErrorView(exception, context, ui);
