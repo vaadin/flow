@@ -69,10 +69,6 @@ public class FeatureFlags implements Serializable {
             "https://github.com/vaadin/form-filler-addon", true,
             "com.vaadin.flow.ai.formfiller.FormFiller");
 
-    public static final Feature HAS_ERROR_OUTSIDE_NAVIGATION = new Feature(
-            "In app HasErrorParameter", "hasErrorParam",
-            "https://github.com/vaadin/issues/4715", false, null);
-
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -93,7 +89,6 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
         features.add(new Feature(WEB_PUSH));
         features.add(new Feature(FORM_FILLER_ADDON));
-        features.add(new Feature(HAS_ERROR_OUTSIDE_NAVIGATION));
         loadProperties();
     }
 
