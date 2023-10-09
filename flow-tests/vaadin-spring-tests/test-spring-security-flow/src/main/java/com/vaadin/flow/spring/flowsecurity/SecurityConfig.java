@@ -47,7 +47,7 @@ public class SecurityConfig extends VaadinWebSecurity {
     @Autowired
     private VaadinConfigurationProperties vaadinConfigurationProperties;
 
-    public String getLogoutSuccessUrl() {
+    public String getRootUrl() {
         String logoutSuccessUrl;
         String mapping = vaadinConfigurationProperties.getUrlMapping();
         if (RootMappedCondition.isRootMapping(mapping)) {
@@ -60,6 +60,10 @@ public class SecurityConfig extends VaadinWebSecurity {
             logoutSuccessUrl = contextPath + logoutSuccessUrl;
         }
         return logoutSuccessUrl;
+    }
+
+    public String getLogoutSuccessUrl() {
+        return getRootUrl();
     }
 
     @Override
@@ -81,8 +85,8 @@ public class SecurityConfig extends VaadinWebSecurity {
         }
 
         http.logout(cfg -> cfg
-                .logoutRequestMatcher(
-                        new AntPathRequestMatcher("/doLogout", "GET"))
+                .logoutRequestMatcher(new AntPathRequestMatcher(
+                        getRootUrl() + "/doLogout", "GET"))
                 .addLogoutHandler((request, response, authentication) -> {
                     if (!request.getRequestURI().endsWith("doLogout")) {
                         UI ui = UI.getCurrent();
