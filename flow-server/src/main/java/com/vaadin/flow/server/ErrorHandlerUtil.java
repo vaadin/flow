@@ -92,7 +92,8 @@ public final class ErrorHandlerUtil {
         if (ui == null) {
             return false;
         }
-        VaadinService current = ui.getSession().getService();
+        VaadinSession session = ui.getSession();
+        VaadinService current = session != null ? session.getService() : null;
         VaadinContext context = current != null ? current.getContext() : null;
         if (context == null) {
             return false;
