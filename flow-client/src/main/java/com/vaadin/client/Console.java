@@ -22,8 +22,8 @@ import com.google.gwt.core.client.JavaScriptException;
 import elemental.client.Browser;
 
 /**
- * Helper class for using window.console. Does not log anything to console if
- * production mode is enabled.
+ * Helper class for using window.console. Does not log anything except
+ * JavaScript exception traces to console if production mode is enabled.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -141,9 +141,7 @@ public final class Console {
      */
     public static void reportStacktrace(Exception exception) {
         if (GWT.isScript()) {
-            if (shouldLogToBrowserConsole) {
-                doReportStacktrace(exception);
-            }
+            doReportStacktrace(exception);
         } else {
             exception.printStackTrace();
         }
