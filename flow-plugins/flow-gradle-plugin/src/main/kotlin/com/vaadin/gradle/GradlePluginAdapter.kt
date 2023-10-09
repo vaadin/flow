@@ -190,5 +190,5 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
 
     override fun isPrepareFrontendCacheDisabled(): Boolean = extension.alwaysExecutePrepareFrontend
 
-    override fun isisErrorHandlerRedirect(): Boolean = extension.isErrorHandlerRedirect
+    override fun isErrorHandlerRedirect(): Boolean = extension.isErrorHandlerRedirect
 }
