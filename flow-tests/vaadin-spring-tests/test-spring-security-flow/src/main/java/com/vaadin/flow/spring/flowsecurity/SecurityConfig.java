@@ -48,18 +48,18 @@ public class SecurityConfig extends VaadinWebSecurity {
     private VaadinConfigurationProperties vaadinConfigurationProperties;
 
     public String getRootUrl() {
-        String logoutSuccessUrl;
+        String rootUrl;
         String mapping = vaadinConfigurationProperties.getUrlMapping();
         if (RootMappedCondition.isRootMapping(mapping)) {
-            logoutSuccessUrl = "/";
+            rootUrl = "/";
         } else {
-            logoutSuccessUrl = mapping.replaceFirst("/\\*$", "/");
+            rootUrl = mapping.replaceFirst("/\\*$", "/");
         }
         String contextPath = servletContext.getContextPath();
         if (!"".equals(contextPath)) {
-            logoutSuccessUrl = contextPath + logoutSuccessUrl;
+            rootUrl = contextPath + rootUrl;
         }
-        return logoutSuccessUrl;
+        return rootUrl;
     }
 
     public String getLogoutSuccessUrl() {
