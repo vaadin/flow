@@ -296,12 +296,17 @@ function statsExtracterPlugin(): PluginOption {
 
       const projectFileExtensions = ['.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map', '.css', '.css.map'];
 
+      const isThemeComponentsResource = (id: string) =>
+          id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/'))
+              && id.match(/.*\/jar-resources\/themes\/[^\/]+\/components\//);
+
       // collects project's frontend resources in frontend folder, excluding
-      // 'generated' sub-folder
+      // 'generated' sub-folder, except for legacy shadow DOM stylesheets
+      // packaged in `theme/components/` folder.
       modules
         .map((id) => id.replace(/\\/g, '/'))
         .filter((id) => id.startsWith(frontendFolder.replace(/\\/g, '/')))
-        .filter((id) => !id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/')))
+        .filter((id) => !id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/')) || isThemeComponentsResource(id))
         .map((id) => id.substring(frontendFolder.length + 1))
         .map((line: string) => (line.includes('?') ? line.substring(0, line.lastIndexOf('?')) : line))
         .forEach((line: string) => {

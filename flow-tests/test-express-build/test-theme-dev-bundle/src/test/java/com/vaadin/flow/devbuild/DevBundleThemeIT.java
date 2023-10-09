@@ -139,6 +139,35 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
         }
     }
 
+    @Test
+    public void themeComponentsCssAddedToStats() {
+        // check that the bundle has entries in stats.json for custom and
+        // parent theme
+        try {
+            String themeJsonContent = FileUtils.readFileToString(statsJson,
+                    StandardCharsets.UTF_8);
+            JsonObject json = Json.parse(themeJsonContent);
+            Assert.assertTrue(json.hasKey("frontendHashes"));
+            JsonObject frontendHashes = json.getObject("frontendHashes");
+
+            Assert.assertTrue(frontendHashes
+                    .hasKey("themes/my-theme/components/my-component.css"));
+            Assert.assertFalse(frontendHashes
+                    .getString("themes/my-theme/components/my-component.css")
+                    .isBlank());
+
+            Assert.assertTrue(frontendHashes.hasKey(
+                    "themes/parent-theme/components/my-parent-component.css"));
+            Assert.assertFalse(frontendHashes.getString(
+                    "themes/parent-theme/components/my-parent-component.css")
+                    .isBlank());
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "Failed to verify hashes for shadow DOM stylesheets content in stats.json",
+                    e);
+        }
+    }
+
     private void waitUntilImportedFrontendStyles() {
         waitUntil(driver -> {
             WebElement paragraph = findElement(By.tagName("p"));
