@@ -109,6 +109,16 @@ public abstract class ComponentTest {
                 isOptional, removeDefault));
     }
 
+    protected <U> void addProperty(String propertyName, Class<U> propertyType,
+            U defaultValue, U otherValue, boolean isOptional,
+            boolean removeDefault, String propertyOrAttributeTag) {
+        ComponentProperty property = new ComponentProperty(
+                getComponent().getClass(), propertyName, propertyType,
+                defaultValue, otherValue, isOptional, removeDefault);
+        property.setPropertyOrAttributeTag(propertyOrAttributeTag);
+        properties.add(property);
+    }
+
     protected Component createComponent() throws InstantiationException,
             IllegalAccessException, ClassNotFoundException {
         String componentClass = getClass().getName().replace("Test", "");
@@ -370,7 +380,8 @@ public abstract class ComponentTest {
                 Assert.assertEquals(property.otherValue,
                         property.getUsingGetter(component));
             }
-            assertPropertyOrAttribute(component, property.name);
+            assertPropertyOrAttribute(component,
+                    property.propertyOrAttributeTag);
         }
     }
 
