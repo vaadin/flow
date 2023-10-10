@@ -219,6 +219,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.SKIP_DEV_BUNDLE_REBUILD, defaultValue = "false")
     private boolean skipDevBundleRebuild;
 
+    @Parameter(property = InitParameters.ERROR_HANDLER_REDIRECT_ENABLED, defaultValue = "false")
+    private boolean enableErrorHandlerRedirect;
+
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
      * MavenProject.
@@ -441,5 +444,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public boolean isPrepareFrontendCacheDisabled() {
         return false;
+    }
+
+    @Override
+    public boolean isErrorHandlerRedirectEnabled() {
+        return enableErrorHandlerRedirect;
     }
 }
