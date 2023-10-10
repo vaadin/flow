@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.io.File;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -30,7 +29,6 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
-import static com.vaadin.flow.server.InitParameters.ERROR_HANDLER_REDIRECT_ENABLED;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS;
