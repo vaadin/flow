@@ -48,6 +48,10 @@ public class SecurityConfig extends VaadinWebSecurity {
     private VaadinConfigurationProperties vaadinConfigurationProperties;
 
     public String getRootUrl() {
+        return getRootUrl(true);
+    }
+
+    public String getRootUrl(boolean includeContextPath) {
         String rootUrl;
         String mapping = vaadinConfigurationProperties.getUrlMapping();
         if (RootMappedCondition.isRootMapping(mapping)) {
@@ -56,7 +60,7 @@ public class SecurityConfig extends VaadinWebSecurity {
             rootUrl = mapping.replaceFirst("/\\*$", "/");
         }
         String contextPath = servletContext.getContextPath();
-        if (!"".equals(contextPath)) {
+        if (includeContextPath && !"".equals(contextPath)) {
             rootUrl = contextPath + rootUrl;
         }
         return rootUrl;
@@ -86,7 +90,7 @@ public class SecurityConfig extends VaadinWebSecurity {
 
         http.logout(cfg -> cfg
                 .logoutRequestMatcher(new AntPathRequestMatcher(
-                        getRootUrl() + "doLogout", "GET"))
+                        getRootUrl(false) + "doLogout", "GET"))
                 .addLogoutHandler((request, response, authentication) -> {
                     if (!request.getRequestURI().endsWith("doLogout")) {
                         UI ui = UI.getCurrent();
@@ -111,7 +115,7 @@ public class SecurityConfig extends VaadinWebSecurity {
             e.printStackTrace();
         }
         SimpleUrlLogoutSuccessHandler urlLogoutHandler = new SimpleUrlLogoutSuccessHandler();
-        urlLogoutHandler.setDefaultTargetUrl(getRootUrl() + "logout");
+        urlLogoutHandler.setDefaultTargetUrl(getRootUrl(false) + "logout");
         urlLogoutHandler.setRedirectStrategy(new UidlRedirectStrategy());
         urlLogoutHandler.onLogoutSuccess(request, response, authentication);
     }
