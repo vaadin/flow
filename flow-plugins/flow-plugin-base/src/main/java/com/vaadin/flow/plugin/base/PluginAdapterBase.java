@@ -295,11 +295,12 @@ public interface PluginAdapterBase {
     boolean isPrepareFrontendCacheDisabled();
 
     /**
-     * If {@code true} navigation error views can be rendered for exceptions
-     * during RPC request handling.
+     * If {@code true} navigation error views implementing
+     * {@link com.vaadin.flow.router.HasErrorParameter} can be rendered for
+     * exceptions during RPC request handling.
      *
      * @return {@code true} to enable error view rendering in RPC, {@code false}
      *         by default
      */
-    boolean isErrorHandlerRedirect();
+    boolean isErrorHandlerRedirectEnabled();
 }

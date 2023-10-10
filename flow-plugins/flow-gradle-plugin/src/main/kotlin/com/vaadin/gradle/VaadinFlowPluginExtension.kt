@@ -250,7 +250,10 @@ public open class VaadinFlowPluginExtension(project: Project) {
     public var alwaysExecutePrepareFrontend: Boolean = false
 
     /**
-     * If {@code true} navigation error views can be rendered for exceptions during RPC request handling.
+     * If {@code true} navigation error views implementing {@link HasErrorParameter}
+     * can be rendered for exceptions during RPC request handling, not only limited
+     * to exceptions thrown during navigation life-cycle.
+     *
      * @return {@code true} to enable error view rendering in RPC, {@code false} by default
      */
     public var isErrorHandlerRedirect: Boolean = false

@@ -447,7 +447,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
-    public boolean isErrorHandlerRedirect() {
+    public boolean isErrorHandlerRedirectEnabled() {
         return enableErrorHandlerRedirect;
     }
 }

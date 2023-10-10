@@ -219,7 +219,7 @@ public class BuildFrontendUtil {
         JsonObject buildInfo = Json.createObject();
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
         buildInfo.put(ERROR_HANDLER_REDIRECT_ENABLED,
-                adapter.isErrorHandlerRedirect());
+                adapter.isErrorHandlerRedirectEnabled());
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL,
                 adapter.eagerServerLoad());
         buildInfo.put(NPM_TOKEN, adapter.npmFolder().getAbsolutePath());
