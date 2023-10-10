@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1516,7 +1517,7 @@ public class RouterTest extends RoutingTestBase {
 
     @Tag(Tag.DIV)
     public static class RouteParametersBase extends Component
-            implements BeforeEnterObserver {
+            implements BeforeEnterObserver, AfterNavigationObserver {
 
         static RouteParameters parameters;
 
@@ -1524,10 +1525,13 @@ public class RouterTest extends RoutingTestBase {
 
         static Class<? extends Component> target;
 
+        static RouteParameters afterNavigationRouteParameters;
+
         static void clear() {
             parameters = null;
             queryParameters = null;
             target = null;
+            afterNavigationRouteParameters = null;
         }
 
         @Override
@@ -1535,6 +1539,11 @@ public class RouterTest extends RoutingTestBase {
             parameters = event.getRouteParameters();
             queryParameters = event.getLocation().getQueryParameters();
             target = getClass();
+        }
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            afterNavigationRouteParameters = event.getRouteParameters();
         }
     }
 
@@ -4369,6 +4378,15 @@ public class RouterTest extends RoutingTestBase {
                         .getSingleParameter("newParam").isEmpty());
     }
 
+    @Test
+    public void after_navigation_event_has_route_parameters() {
+        RouteParametersBase.clear();
+        setNavigationTargets(ParametersForumThreadView.class);
+        assertRouteParameters("forum/thread/123/456",
+                parameters("threadID", "123", "messageID", "456"), null,
+                () -> RouteParametersBase.afterNavigationRouteParameters);
+    }
+
     private void assertWrongRouteParametersRedirect() {
         assertRouteParameters("show/wrong", null, null);
     }
@@ -4415,12 +4433,19 @@ public class RouterTest extends RoutingTestBase {
 
     private void assertRouteParameters(String url, RouteParameters parameters,
             Class<? extends Component> target) {
+        assertRouteParameters(url, parameters, target,
+                () -> RouteParametersBase.parameters);
+    }
+
+    private void assertRouteParameters(String url, RouteParameters parameters,
+            Class<? extends Component> target,
+            Supplier<RouteParameters> expectedRouteParameters) {
         RouteParametersBase.clear();
 
         navigate(url);
 
         Assert.assertEquals("Incorrect parameters", parameters,
-                RouteParametersBase.parameters);
+                expectedRouteParameters.get());
 
         if (target != null) {
             Assert.assertEquals("Incorrect target", target,

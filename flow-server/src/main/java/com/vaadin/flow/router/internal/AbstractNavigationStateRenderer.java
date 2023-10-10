@@ -241,7 +241,7 @@ public abstract class AbstractNavigationStateRenderer
                 .addAll(EventUtil.collectAfterNavigationObservers(ui));
 
         fireAfterNavigationListeners(
-                new AfterNavigationEvent(locationChangeEvent),
+                new AfterNavigationEvent(locationChangeEvent, parameters),
                 afterNavigationHandlers);
 
         updatePageTitle(event, componentInstance);
