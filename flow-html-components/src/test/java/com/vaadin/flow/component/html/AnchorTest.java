@@ -138,6 +138,8 @@ public class AnchorTest extends ComponentTest {
     protected void addProperties() {
         addStringProperty("href", "", false);
         addOptionalStringProperty("target");
+        addProperty("routerIgnore", boolean.class, false, true, false, true,
+                "router-ignore");
     }
 
     @Test
