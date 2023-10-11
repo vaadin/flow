@@ -19,14 +19,33 @@ package com.vaadin.flow.server;
 import java.io.EOFException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.InvalidLocationException;
+import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
  * The default implementation of {@link ErrorHandler}.
@@ -72,6 +91,15 @@ public class DefaultErrorHandler implements ErrorHandler {
     public void error(ErrorEvent event) {
         Throwable throwable = findRelevantThrowable(event.getThrowable());
         if (shouldHandle(throwable)) {
+            VaadinService service = VaadinService.getCurrent();
+            if (service != null
+                    && service.getDeploymentConfiguration()
+                            .isErrorRedirectEnabled()
+                    && ErrorHandlerUtil
+                            .handleErrorByRedirectingToErrorView(throwable)) {
+                return;
+
+            }
             Marker marker = MarkerFactory.getMarker("INVALID_LOCATION");
             if (throwable instanceof InvalidLocationException) {
                 if (getLogger().isWarnEnabled(marker)) {

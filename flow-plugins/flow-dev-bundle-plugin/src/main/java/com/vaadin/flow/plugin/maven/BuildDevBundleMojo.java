@@ -418,4 +418,9 @@ public class BuildDevBundleMojo extends AbstractMojo
     public boolean isPrepareFrontendCacheDisabled() {
         return false;
     }
+
+    @Override
+    public boolean isErrorHandlerRedirectEnabled() {
+        return false;
+    }
 }
