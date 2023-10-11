@@ -31,6 +31,8 @@ public class AfterNavigationEvent extends EventObject {
 
     private final LocationChangeEvent event;
 
+    private final RouteParameters routeParameters;
+
     /**
      * Construct event from a NavigationEvent.
      *
@@ -38,8 +40,22 @@ public class AfterNavigationEvent extends EventObject {
      *            NavigationEvent that is on going
      */
     public AfterNavigationEvent(LocationChangeEvent event) {
+        this(event, RouteParameters.empty());
+    }
+
+    /**
+     * Construct event from a NavigationEvent.
+     *
+     * @param event
+     *            NavigationEvent that is on going
+     * @param routeParameters
+     *            route parameters, not <code>null</code>
+     */
+    public AfterNavigationEvent(LocationChangeEvent event,
+            RouteParameters routeParameters) {
         super(event.getSource());
         this.event = event;
+        this.routeParameters = routeParameters;
     }
 
     /**
@@ -81,5 +97,14 @@ public class AfterNavigationEvent extends EventObject {
      */
     public boolean isRefreshEvent() {
         return event.getTrigger().equals(NavigationTrigger.REFRESH);
+    }
+
+    /**
+     * Gets the route parameters associated with this event.
+     *
+     * @return route parameters retrieved from the navigation url.
+     */
+    public RouteParameters getRouteParameters() {
+        return routeParameters;
     }
 }
