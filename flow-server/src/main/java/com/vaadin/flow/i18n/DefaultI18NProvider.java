@@ -69,7 +69,7 @@ public class DefaultI18NProvider implements I18NProvider {
             return "!" + locale.getLanguage() + ": " + key;
         }
         if (params.length > 0) {
-            value = MessageFormat.format(value, params);
+            value = new MessageFormat(value, locale).format(params);
         }
         return value;
     }
