@@ -66,7 +66,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     static final String FOCUS_ACTIVE_ELEMENT_JS = //@formatter:off
         "function(){" +
                 "let ae=document.activeElement;" +
-                "while(ae.shadowRoot) ae = ae.shadowRoot.activeElement;" +
+                "while(ae&&ae.shadowRoot) ae = ae.shadowRoot.activeElement;" +
                 "return !ae || ae.blur() || ae.focus() || true;" +
                 "}()";//@formatter:on
 
