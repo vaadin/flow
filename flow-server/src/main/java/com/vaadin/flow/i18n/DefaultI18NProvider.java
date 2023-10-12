@@ -60,7 +60,7 @@ public class DefaultI18NProvider implements I18NProvider {
         }
 
         final ResourceBundle bundle = getBundle(locale);
-        if(bundle == null) {
+        if (bundle == null) {
             return key;
         }
 
