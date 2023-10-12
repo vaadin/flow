@@ -187,6 +187,7 @@ public class ShortcutsIT extends ChromeBrowserTest {
         WebElement textField4 = findElement(By.id("click-input-4"));
         WebElement textField5 = findElement(By.id("click-input-5"));
         WebElement textField6 = findElement(By.id("click-input-6"));
+        WebElement textField7 = findElement(By.id("click-input-7"));
 
         // ClickButton3: allows browser's default behavior
         textField3.sendKeys("value 3");
@@ -206,12 +207,17 @@ public class ShortcutsIT extends ChromeBrowserTest {
         textField5.sendKeys("value 5");
         sendKeys(Keys.ENTER);
 
-        assertActualEquals("click4: ,");
+        assertActualEquals("click4: value 5,");
 
         textField6.sendKeys("value 6");
         sendKeys(Keys.ENTER);
 
-        assertActualEquals("click4: value 5,");
+        assertActualEquals("click4: value 5,value 6");
+
+        textField7.sendKeys("value 7");
+        sendKeys(Keys.ENTER);
+
+        assertActualEquals("click5: ");
     }
 
     @Test
