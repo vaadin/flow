@@ -63,10 +63,9 @@ public class ShadowRootShortcutsWithValueChangeModeView extends Div
         // clickShortcutWorks
         button.setText(
                 "Button triggered by CTRL + ALT + S and CTRL + ENTER (with auto-focus)");
-        button.addClickShortcut(Key.KEY_S, KeyModifier.CONTROL,
-                KeyModifier.ALT);
-        button.addClickShortcut(Key.ENTER, KeyModifier.CONTROL)
-                .resetFocusOnActiveElement();// .listenOn(button);
+        button.addClickShortcut(Key.KEY_S, KeyModifier.CONTROL, KeyModifier.ALT)
+                .setResetFocusOnActiveElement(false);
+        button.addClickShortcut(Key.ENTER, KeyModifier.CONTROL);
         button.addClickListener(e -> value.setText(input.getValue()));
 
         shadowRoot.appendChild(shadowDiv);
