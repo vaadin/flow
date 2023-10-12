@@ -107,15 +107,6 @@ public class DefaultInstantiatorI18NTest {
     @Test
     public void onlyDefaultTranslation_instantiateDefaultI18N()
             throws IOException {
-        // File resources = temporaryFolder.newFolder();
-        //
-        // File translations = new File(resources,
-        // DefaultI18NProvider.BUNDLE_FOLDER);
-        // translations.mkdirs();
-        //
-        // ClassLoader urlClassLoader = new URLClassLoader(
-        // new URL[]{resources.toURI().toURL()});
-
         File file = new File(translations,
                 DefaultI18NProvider.BUNDLE_FILENAME + ".properties");
         Files.writeString(file.toPath(), "title=Default lang",

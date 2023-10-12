@@ -43,8 +43,6 @@ public class DefaultI18NProvider implements I18NProvider {
     public static final String BUNDLE_PREFIX = BUNDLE_FOLDER + "."
             + BUNDLE_FILENAME;
 
-    private static final Map<Locale, ResourceBundle> bundleCache = new HashMap<>();
-
     public DefaultI18NProvider(List<Locale> providedLocales) {
         this.providedLocales = Collections.unmodifiableList(providedLocales);
     }
@@ -66,13 +64,9 @@ public class DefaultI18NProvider implements I18NProvider {
         String value;
         try {
             value = bundle.getString(key);
-            value = new String(value.getBytes("ISO-8859-1"), "UTF-8");
         } catch (final MissingResourceException e) {
             getLogger().warn("Missing resource", e);
             return "!" + locale.getLanguage() + ": " + key;
-        } catch (UnsupportedEncodingException e) {
-            getLogger().warn("Failed to parse encoding of value", e);
-            return key;
         }
         if (params.length > 0) {
             value = MessageFormat.format(value, params);
@@ -81,25 +75,17 @@ public class DefaultI18NProvider implements I18NProvider {
     }
 
     private ResourceBundle getBundle(Locale locale) {
-        if (!bundleCache.containsKey(locale)) {
-            bundleCache.put(locale, readProperties(locale));
-        }
-        return bundleCache.get(locale);
-    }
-
-    static Logger getLogger() {
-        return LoggerFactory.getLogger(DefaultI18NProvider.class);
-    }
-
-    protected static ResourceBundle readProperties(final Locale locale) {
-        final ClassLoader cl = I18NUtil.getClassLoader();
-
         try {
-            return ResourceBundle.getBundle(BUNDLE_PREFIX, locale, cl);
+            return ResourceBundle.getBundle(BUNDLE_PREFIX, locale,
+                    I18NUtil.getClassLoader());
         } catch (final MissingResourceException e) {
             getLogger().warn("Missing resource", e);
         }
         return null;
+    }
+
+    static Logger getLogger() {
+        return LoggerFactory.getLogger(DefaultI18NProvider.class);
     }
 
 }
