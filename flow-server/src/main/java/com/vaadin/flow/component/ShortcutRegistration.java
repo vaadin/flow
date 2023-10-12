@@ -54,16 +54,27 @@ public class ShortcutRegistration implements Registration, Serializable {
                     + "if (delegate) {"
                     + "delegate.addEventListener('keydown', function(event) {"
                     + "if (%2$s) {" // the filter text to match the key
+                    + "%3$s" // allow reset focus on active element if desired
                     + "const new_event = new event.constructor(event.type, event);"
                     + "listenOn.dispatchEvent(new_event);"
-                    + "%3$s" // the new event allows default if desired
+                    + "%4$s" // the new event allows default if desired
                     + "event.stopPropagation();}" // the new event bubbles if desired
                     + "});" // end matches filter
                     + "} else {"
                     + "throw \"Shortcut listenOn element not found with JS locator string '%1$s'\""
                     + "}";//@formatter:on
+    static final String FOCUS_ACTIVE_ELEMENT_JS = //@formatter:off
+        "function(){" +
+                "let ae=document.activeElement;" +
+                "while(ae.shadowRoot) ae = ae.shadowRoot.activeElement;" +
+                "return !ae || ae.blur() || ae.focus() || true;" +
+                "}()";//@formatter:on
+
     private boolean allowDefaultBehavior = false;
     private boolean allowEventPropagation = false;
+
+    private boolean resetFocusOnActiveElement = false;
+
     static final String LISTEN_ON_INITIALIZED = "_initialized_listen_on_for_component";
 
     private Set<Key> modifiers = new HashSet<>(2);
@@ -256,6 +267,20 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
+     * Reset focus on active element before triggering shortcut event handler.
+     *
+     * @return this <code>ShortcutRegistration</code>
+     * @see #setResetFocusOnActiveElement(boolean)
+     */
+    public ShortcutRegistration resetFocusOnActiveElement() {
+        if (!resetFocusOnActiveElement) {
+            resetFocusOnActiveElement = true;
+            prepareForClientResponse();
+        }
+        return this;
+    }
+
+    /**
      * Binds the shortcut's life cycle to that of the given {@link Component}.
      * When the given {@code component} is attached, the shortcut's listener is
      * attached to the {@code Component} that owns the shortcut. When the given
@@ -422,6 +447,37 @@ public class ShortcutRegistration implements Registration, Serializable {
     public void setEventPropagationAllowed(boolean eventPropagationAllowed) {
         if (allowEventPropagation != eventPropagationAllowed) {
             allowEventPropagation = eventPropagationAllowed;
+            prepareForClientResponse();
+        }
+    }
+
+    /**
+     * Checks if shortcut resets focus on active element before triggering
+     * shortcut event handler.
+     *
+     * @return True when focus is reset on the active element, false otherwise.
+     */
+    public boolean isResetFocusOnActiveElement() {
+        return resetFocusOnActiveElement;
+    }
+
+    /**
+     * Set if shortcut resets focus on active element before triggering shortcut
+     * event handler. Reset means to first <code>blur()</code> and then
+     * <code>focus()</code> the element. If element is an input field with a
+     * ValueChangeMode.ON_CHANGE, then resetting focus ensures that value change
+     * event is triggered before shortcut event is handled. Active element is
+     * <code>document.activeElement</code> or
+     * <code>shadowRoot.activeElement</code> if active element is the
+     * <code>shadowRoot</code>.
+     *
+     * @param resetFocusOnActiveElement
+     *            Reset focus on active element
+     */
+    public void setResetFocusOnActiveElement(
+            boolean resetFocusOnActiveElement) {
+        if (resetFocusOnActiveElement != this.resetFocusOnActiveElement) {
+            this.resetFocusOnActiveElement = resetFocusOnActiveElement;
             prepareForClientResponse();
         }
     }
@@ -626,8 +682,10 @@ public class ShortcutRegistration implements Registration, Serializable {
                 if (!allowEventPropagation) {
                     filterText += " && (event.stopPropagation() || true)";
                 }
+                if (resetFocusOnActiveElement) {
+                    filterText += " && (" + FOCUS_ACTIVE_ELEMENT_JS + ")";
+                }
                 listenerRegistration.setFilter(filterText);
-
                 shortcutActive = true;
             });
         }
@@ -812,11 +870,14 @@ public class ShortcutRegistration implements Registration, Serializable {
             // #10362 only prevent default when key filter matches to not block
             // typing or existing shortcuts
             final String filterText = filterText();
+            final String focusJs = resetFocusOnActiveElement
+                    ? FOCUS_ACTIVE_ELEMENT_JS + ";"
+                    : "";
             // enable default actions if desired
             final String preventDefault = allowDefaultBehavior ? ""
                     : "event.preventDefault();";
             final String jsExpression = String.format(ELEMENT_LOCATOR_JS,
-                    elementLocatorJs, filterText, preventDefault);
+                    elementLocatorJs, filterText, focusJs, preventDefault);
 
             final String expressionHash = StringUtil.getHash(jsExpression);
             final Set<String> expressions = getOrInitListenData(listenOn);

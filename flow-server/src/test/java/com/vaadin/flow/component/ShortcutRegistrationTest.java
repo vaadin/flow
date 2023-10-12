@@ -149,6 +149,17 @@ public class ShortcutRegistrationTest {
     }
 
     @Test
+    public void resetFocusOnActiveElementValuesDefaultToTrue() {
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, event -> {
+                }, Key.KEY_A);
+
+        assertFalse(registration.isResetFocusOnActiveElement());
+        registration.resetFocusOnActiveElement();
+        assertTrue(registration.isResetFocusOnActiveElement());
+    }
+
+    @Test
     public void bindLifecycleToChangesLifecycleOwner() {
         Component newOwner = mock(Component.class);
 
@@ -174,6 +185,7 @@ public class ShortcutRegistrationTest {
 
         registration.setBrowserDefaultAllowed(true);
         registration.setEventPropagationAllowed(true);
+        registration.setResetFocusOnActiveElement(true);
 
         clientResponse();
 
@@ -181,9 +193,12 @@ public class ShortcutRegistrationTest {
                 registration.isBrowserDefaultAllowed());
         assertTrue("Allow propagation was not set to true",
                 registration.isBrowserDefaultAllowed());
+        assertTrue("Reset focus on active element was not set to true",
+                registration.isResetFocusOnActiveElement());
 
         registration.setBrowserDefaultAllowed(false);
         registration.setEventPropagationAllowed(false);
+        registration.setResetFocusOnActiveElement(false);
 
         clientResponse();
 
@@ -191,6 +206,8 @@ public class ShortcutRegistrationTest {
                 registration.isBrowserDefaultAllowed());
         assertFalse("Allow propagation was not set to false",
                 registration.isEventPropagationAllowed());
+        assertFalse("Reset focus on active element was not set to false",
+                registration.isResetFocusOnActiveElement());
     }
 
     @Test
@@ -316,6 +333,9 @@ public class ShortcutRegistrationTest {
 
         assertFalse("Allows propagation was not false",
                 registration.isEventPropagationAllowed());
+
+        assertFalse("Reset focus on active element was not set to false",
+                registration.isResetFocusOnActiveElement());
     }
 
     @Test
@@ -330,6 +350,9 @@ public class ShortcutRegistrationTest {
 
         assertFalse("Allows propagation was not false",
                 registration.isEventPropagationAllowed());
+
+        assertFalse("Reset focus on active element was not set to false",
+                registration.isResetFocusOnActiveElement());
     }
 
     @Test
@@ -399,6 +422,11 @@ public class ShortcutRegistrationTest {
                 expression.contains("event.stopPropagation();"));
         Assert.assertTrue("JS execution string missing the key" + key,
                 expression.contains(key.getKeys().get(0)));
+        Assert.assertFalse(
+                "JS execution string should not have blur() and focus() on active element in it"
+                        + expression,
+                expression.contains(
+                        ShortcutRegistration.FOCUS_ACTIVE_ELEMENT_JS));
 
         fixture.registration.remove();
 
@@ -424,6 +452,25 @@ public class ShortcutRegistrationTest {
                 "JS execution string should NOT have event.preventDefault() in it"
                         + expression,
                 expression.contains("event.preventDefault();"));
+    }
+
+    @Test
+    public void listenOnComponentHasElementLocatorJs_resetFocusOnActiveElement_JsExecutionResetFocusOnActiveElement() {
+        final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
+        final Key key = Key.KEY_A;
+        fixture.createNewShortcut(key).resetFocusOnActiveElement();
+
+        List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = fixture
+                .writeResponse();
+
+        final PendingJavaScriptInvocation js = pendingJavaScriptInvocations
+                .get(0);
+        final String expression = js.getInvocation().getExpression();
+        Assert.assertTrue(
+                "JS execution string should have blur() and focus() on active element in it"
+                        + expression,
+                expression.contains(
+                        ShortcutRegistration.FOCUS_ACTIVE_ELEMENT_JS));
     }
 
     @Test
