@@ -153,10 +153,10 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
                 files.contains("react.tsx"));
 
         Assert.assertTrue(
-                "JSX resource source map should have been copied from jar file",
+                "TSX resource source map should have been copied from jar file",
                 files.contains("react.tsx.map"));
 
-        Assert.assertTrue("TSX resource should have been copied from jar file",
+        Assert.assertTrue("JSX resource should have been copied from jar file",
                 files.contains("test.jsx"));
 
         Assert.assertTrue(
