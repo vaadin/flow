@@ -146,6 +146,39 @@ public class DefaultInstantiatorI18NTest {
         }
     }
 
+    @Test
+    public void onlyLangTransalation_nonExistingLangReturnsKey()
+            throws IOException {
+        File file = new File(translations,
+                DefaultI18NProvider.BUNDLE_FILENAME + "_ja.properties");
+        Files.writeString(file.toPath(), "title=No Default",
+                StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+
+        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class)) {
+            util.when(() -> I18NUtil.getClassLoader())
+                    .thenReturn(urlClassLoader);
+            util.when(() -> I18NUtil.getDefaultTranslationLocales())
+                    .thenCallRealMethod();
+            util.when(() -> I18NUtil.containsDefaultTranslation())
+                    .thenCallRealMethod();
+
+            VaadinService service = Mockito.mock(VaadinService.class);
+            mockLookup(service);
+
+            DefaultInstantiator instantiator = new DefaultInstantiator(service);
+
+            I18NProvider i18NProvider = instantiator.getI18NProvider();
+            Assert.assertNotNull(i18NProvider);
+            Assert.assertTrue(i18NProvider instanceof DefaultI18NProvider);
+
+            Assert.assertEquals("No Default", i18NProvider
+                    .getTranslation("title", new Locale("ja")));
+
+            Assert.assertEquals("title", i18NProvider
+                    .getTranslation("title", new Locale("en", "GB")));
+        }
+    }
+
     private static void createTranslationFiles(File translationsFolder)
             throws IOException {
         File file = new File(translationsFolder,
