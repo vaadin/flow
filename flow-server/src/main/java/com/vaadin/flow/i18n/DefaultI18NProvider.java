@@ -65,7 +65,7 @@ public class DefaultI18NProvider implements I18NProvider {
         try {
             value = bundle.getString(key);
         } catch (final MissingResourceException e) {
-            getLogger().warn("Missing resource", e);
+            getLogger().debug("Missing resource", e);
             return "!" + locale.getLanguage() + ": " + key;
         }
         if (params.length > 0) {
