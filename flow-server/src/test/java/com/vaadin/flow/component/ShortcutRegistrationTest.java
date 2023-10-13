@@ -425,8 +425,7 @@ public class ShortcutRegistrationTest {
         Assert.assertFalse(
                 "JS execution string should not have blur() and focus() on active element in it"
                         + expression,
-                expression.contains(
-                        ShortcutRegistration.FOCUS_ACTIVE_ELEMENT_JS));
+                expression.contains("window.Vaadin.Flow.resetFocus()"));
 
         fixture.registration.remove();
 
@@ -469,8 +468,7 @@ public class ShortcutRegistrationTest {
         Assert.assertTrue(
                 "JS execution string should have blur() and focus() on active element in it"
                         + expression,
-                expression.contains(
-                        ShortcutRegistration.FOCUS_ACTIVE_ELEMENT_JS));
+                expression.contains("window.Vaadin.Flow.resetFocus()"));
     }
 
     @Test

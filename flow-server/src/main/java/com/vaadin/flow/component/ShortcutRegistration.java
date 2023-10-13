@@ -63,12 +63,6 @@ public class ShortcutRegistration implements Registration, Serializable {
                     + "} else {"
                     + "throw \"Shortcut listenOn element not found with JS locator string '%1$s'\""
                     + "}";//@formatter:on
-    static final String FOCUS_ACTIVE_ELEMENT_JS = //@formatter:off
-        "function(){" +
-                "let ae=document.activeElement;" +
-                "while(ae&&ae.shadowRoot) ae = ae.shadowRoot.activeElement;" +
-                "return !ae || ae.blur() || ae.focus() || true;" +
-                "}()";//@formatter:on
 
     private boolean allowDefaultBehavior = false;
     private boolean allowEventPropagation = false;
@@ -683,7 +677,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                     filterText += " && (event.stopPropagation() || true)";
                 }
                 if (resetFocusOnActiveElement) {
-                    filterText += " && (" + FOCUS_ACTIVE_ELEMENT_JS + ")";
+                    filterText += " && window.Vaadin.Flow.resetFocus()";
                 }
                 listenerRegistration.setFilter(filterText);
                 shortcutActive = true;
@@ -871,7 +865,7 @@ public class ShortcutRegistration implements Registration, Serializable {
             // typing or existing shortcuts
             final String filterText = filterText();
             final String focusJs = resetFocusOnActiveElement
-                    ? FOCUS_ACTIVE_ELEMENT_JS + ";"
+                    ? "window.Vaadin.Flow.resetFocus();"
                     : "";
             // enable default actions if desired
             final String preventDefault = allowDefaultBehavior ? ""
