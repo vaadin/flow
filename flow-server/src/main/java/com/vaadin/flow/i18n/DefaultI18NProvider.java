@@ -39,7 +39,7 @@ public class DefaultI18NProvider implements I18NProvider {
 
     public static final String BUNDLE_FOLDER = "vaadin-i18n";
     public static final String BUNDLE_FILENAME = "translations";
-    // Get bundles named `translations` from `translation` folder.
+    // Get bundles named `translations` from `vaadin-i18n` folder.
     public static final String BUNDLE_PREFIX = BUNDLE_FOLDER + "."
             + BUNDLE_FILENAME;
 

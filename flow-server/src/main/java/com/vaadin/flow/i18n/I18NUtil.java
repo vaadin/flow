@@ -26,10 +26,25 @@ import java.util.stream.Collectors;
 
 import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FILENAME;
 
+/**
+ * Utility class for use with determining default i18n property files and
+ * locales.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
 public final class I18NUtil {
 
     public static final String PROPERTIES_SUFFIX = ".properties";
 
+    /**
+     * Check if we have a default translation properties file
+     * {@link DefaultI18NProvider#BUNDLE_FILENAME} in the folder
+     * {@link DefaultI18NProvider#BUNDLE_FOLDER}
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @return {@code true} if default property file found
+     */
     public static boolean containsDefaultTranslation() {
         URL resource = getClassLoader()
                 .getResource(DefaultI18NProvider.BUNDLE_FOLDER + "/"
@@ -41,6 +56,15 @@ public final class I18NUtil {
         return true;
     }
 
+    /**
+     * Check that we have the translation folder
+     * {@link DefaultI18NProvider#BUNDLE_FOLDER} and collect all translation
+     * properties files. Parse names to get locales.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @return List of locales parsed from property files.
+     */
     public static List<Locale> getDefaultTranslationLocales() {
         List<Locale> locales = new ArrayList<>();
 
@@ -53,7 +77,9 @@ public final class I18NUtil {
         if (bundleFolder.exists() && bundleFolder.isDirectory()) {
             List<File> listedFiles = Arrays.stream(bundleFolder.listFiles())
                     .filter(file -> file.isFile())
-                    .filter(file -> file.getName().endsWith(PROPERTIES_SUFFIX))
+                    .filter(file -> file.getName()
+                            .startsWith(DefaultI18NProvider.BUNDLE_FILENAME)
+                            && file.getName().endsWith(PROPERTIES_SUFFIX))
                     .collect(Collectors.toList());
             if (!listedFiles.isEmpty()) {
                 for (File file : listedFiles) {
