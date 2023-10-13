@@ -22,9 +22,12 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -78,10 +81,9 @@ public class I18NUtilTest {
         Files.writeString(file.toPath(), "title=deutsch",
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class)) {
+        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
+                Mockito.CALLS_REAL_METHODS)) {
             util.when(() -> I18NUtil.getClassLoader()).thenReturn(mockLoader);
-            util.when(() -> I18NUtil.getDefaultTranslationLocales())
-                    .thenCallRealMethod();
 
             List<Locale> defaultTranslationLocales = I18NUtil
                     .getDefaultTranslationLocales();
@@ -101,10 +103,9 @@ public class I18NUtilTest {
         Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resources.toURI().toURL());
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class)) {
+        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
+                Mockito.CALLS_REAL_METHODS)) {
             util.when(() -> I18NUtil.getClassLoader()).thenReturn(mockLoader);
-            util.when(() -> I18NUtil.getDefaultTranslationLocales())
-                    .thenCallRealMethod();
 
             List<Locale> defaultTranslationLocales = I18NUtil
                     .getDefaultTranslationLocales();
@@ -124,10 +125,9 @@ public class I18NUtilTest {
         Files.writeString(file.toPath(), "title=Default lang",
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class)) {
+        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
+                Mockito.CALLS_REAL_METHODS)) {
             util.when(() -> I18NUtil.getClassLoader()).thenReturn(mockLoader);
-            util.when(() -> I18NUtil.getDefaultTranslationLocales())
-                    .thenCallRealMethod();
 
             List<Locale> defaultTranslationLocales = I18NUtil
                     .getDefaultTranslationLocales();
@@ -151,13 +151,10 @@ public class I18NUtilTest {
         Files.writeString(file.toPath(), "title=Default lang",
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class)) {
+        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
+                Mockito.CALLS_REAL_METHODS)) {
             util.when(() -> I18NUtil.getClassLoader())
                     .thenReturn(urlClassLoader);
-            util.when(() -> I18NUtil.getDefaultTranslationLocales())
-                    .thenCallRealMethod();
-            util.when(() -> I18NUtil.containsDefaultTranslation())
-                    .thenCallRealMethod();
 
             Assert.assertTrue("Default file should return true",
                     I18NUtil.containsDefaultTranslation());
@@ -174,16 +171,56 @@ public class I18NUtilTest {
         ClassLoader urlClassLoader = new URLClassLoader(
                 new URL[] { resources.toURI().toURL() });
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class)) {
+        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
+                Mockito.CALLS_REAL_METHODS)) {
             util.when(() -> I18NUtil.getClassLoader())
                     .thenReturn(urlClassLoader);
-            util.when(() -> I18NUtil.getDefaultTranslationLocales())
-                    .thenCallRealMethod();
-            util.when(() -> I18NUtil.containsDefaultTranslation())
-                    .thenCallRealMethod();
 
             Assert.assertFalse("Nothing should be returned for empty folder",
                     I18NUtil.containsDefaultTranslation());
         }
+    }
+
+    @Test
+    public void translationFilesInJar_returnsTrueForDefault_findsLanguages()
+            throws IOException {
+        Path path = generateZipArchive(temporaryFolder);
+
+        ClassLoader urlClassLoader = new URLClassLoader(
+                new URL[] { path.toUri().toURL() });
+
+        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
+                Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> I18NUtil.getClassLoader())
+                    .thenReturn(urlClassLoader);
+
+            Assert.assertTrue("Default file should return true",
+                    I18NUtil.containsDefaultTranslation());
+            Assert.assertFalse("Default file should return true",
+                    I18NUtil.getDefaultTranslationLocales().isEmpty());
+        }
+    }
+
+    private Path generateZipArchive(TemporaryFolder folder) throws IOException {
+        File archiveFile = new File(folder.getRoot(), "fake.jar");
+        archiveFile.createNewFile();
+        Path tempArchive = archiveFile.toPath();
+
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                Files.newOutputStream(tempArchive))) {
+            // Create a directory to the zip
+            zipOutputStream.putNextEntry(
+                    new ZipEntry(DefaultI18NProvider.BUNDLE_FOLDER + "/"));
+            zipOutputStream.closeEntry();
+            zipOutputStream
+                    .putNextEntry(new ZipEntry(DefaultI18NProvider.BUNDLE_FOLDER
+                            + "/translations.properties"));
+            zipOutputStream.closeEntry();
+            zipOutputStream
+                    .putNextEntry(new ZipEntry(DefaultI18NProvider.BUNDLE_FOLDER
+                            + "/translations_fi_FI.properties"));
+            zipOutputStream.closeEntry();
+        }
+        return tempArchive;
     }
 }
