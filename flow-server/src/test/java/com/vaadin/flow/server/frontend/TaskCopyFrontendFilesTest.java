@@ -118,7 +118,7 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         task.execute();
 
         List<String> files = TestUtils.listFilesRecursively(frontendDepsFolder);
-        Assert.assertEquals(10, files.size());
+        Assert.assertEquals(12, files.size());
 
         Assert.assertTrue("TS resource should have been copied from jar file",
                 files.contains("example.ts"));
@@ -155,6 +155,13 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         Assert.assertTrue(
                 "TSX resource source map should have been copied from jar file",
                 files.contains("react.tsx.map"));
+
+        Assert.assertTrue("JSX resource should have been copied from jar file",
+                files.contains("test.jsx"));
+
+        Assert.assertTrue(
+                "JSX resource source map should have been copied from jar file",
+                files.contains("test.jsx.map"));
     }
 
     private static Set<File> jars(File... files) {
