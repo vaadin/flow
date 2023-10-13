@@ -47,6 +47,8 @@ public class TranslationIT extends ChromeBrowserTest {
                 $(SpanElement.class).id("english").getText());
         Assert.assertEquals("Deutsch",
                 $(SpanElement.class).id("german").getText());
+        Assert.assertEquals("Deutsch",
+                $(SpanElement.class).id("germany").getText());
         Assert.assertEquals("Suomi",
                 $(SpanElement.class).id("finnish").getText());
         Assert.assertEquals("français",

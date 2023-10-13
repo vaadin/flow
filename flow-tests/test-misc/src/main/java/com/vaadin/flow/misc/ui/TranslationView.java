@@ -37,6 +37,8 @@ public class TranslationView extends Div {
         defaultLang.setId("english");
         Span german = new Span(getTranslation("label", Locale.GERMAN));
         german.setId("german");
+        Span germany = new Span(getTranslation("label", Locale.GERMANY));
+        germany.setId("germany");
         Span finnish = new Span(
                 getTranslation("label", new Locale("fi", "FI")));
         finnish.setId("finnish");
@@ -59,7 +61,7 @@ public class TranslationView extends Div {
             localeSpan.setId(LOCALES_ID);
             add(localeSpan, new Div());
         }
-        add(defaultLang, new Div(), german, new Div(), finnish, new Div(),
-                french, new Div(), japanese);
+        add(defaultLang, new Div(), german, new Div(), germany, new Div(),
+                finnish, new Div(), french, new Div(), japanese);
     }
 }

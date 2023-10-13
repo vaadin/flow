@@ -103,6 +103,11 @@ public class DefaultInstantiatorI18NTest {
             Assert.assertEquals("deutsch",
                     i18NProvider.getTranslation("title", new Locale("de")));
 
+            Assert.assertEquals(
+                    "non existing country should select language bundle",
+                    "deutsch", i18NProvider.getTranslation("title",
+                            new Locale("de", "AT")));
+
             Assert.assertEquals("Korean", i18NProvider.getTranslation("title",
                     new Locale("ko", "KR")));
 
