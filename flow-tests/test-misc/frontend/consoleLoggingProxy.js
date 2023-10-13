@@ -32,6 +32,6 @@ const console = (function(oldConsole) {
 window.console = console;
 
 window.addEventListener("error", function (e) {
-  window.console.trace(e);
+  window.console.trace(e.error.message);
   return false;
 });

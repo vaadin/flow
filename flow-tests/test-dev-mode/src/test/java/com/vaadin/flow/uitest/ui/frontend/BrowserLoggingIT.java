@@ -16,13 +16,15 @@
 
 package com.vaadin.flow.uitest.ui.frontend;
 
+import java.util.ArrayList;
+
 import org.junit.Test;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
-import static org.junit.Assert.assertThat;
 
 /**
  * @author Vaadin Ltd
@@ -31,17 +33,32 @@ import static org.junit.Assert.assertThat;
 public class BrowserLoggingIT extends ChromeBrowserTest {
 
     @Test
-    public void nonProductionModeHasLogEntries() {
+    public void developmentModeHasLogEntries() {
         open();
-        waitForElementPresent(By.id("elementId"));
+        waitForElementPresent(By.id("exception"));
+
+        findElement(By.id("exception")).click();
+
+        ArrayList<Object> logMessages = (ArrayList<Object>) executeScript(
+                "return window.allLogMessages;");
 
         assertThat(
-                "Flow in production mode should output nothing into the console",
-                getLogEntriesCount(), greaterThan(0L));
-    }
+                "Flow in development mode should output something into the console",
+                logMessages.size(), greaterThan(0));
 
-    private Long getLogEntriesCount() {
-        // see java script imported in corresponding test view
-        return (Long) executeScript("return window.allLogMessages.length;");
+        // Check for "Scheduling heartbeat in" msg (= debug level)
+        assertThat("Expected debug message not found in log",
+                logMessages.stream().anyMatch(msg -> String.valueOf(msg)
+                        .contains("Scheduling heartbeat in")));
+
+        // Check for "Setting heartbeat interval to" msg (= info level)
+        assertThat("Expected info message not found in log",
+                logMessages.stream().anyMatch(msg -> String.valueOf(msg)
+                        .contains("Setting heartbeat interval to")));
+
+        // Check for exception thrown msg (= error level)
+        assertThat("Expected error message not found in log", logMessages
+                .stream().anyMatch(msg -> String.valueOf(msg).contains(
+                        "Exception is thrown during JavaScript execution.")));
     }
 }
