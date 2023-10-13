@@ -33,7 +33,7 @@ import static org.hamcrest.number.OrderingComparison.greaterThan;
 public class BrowserLoggingIT extends ChromeBrowserTest {
 
     @Test
-    public void nonProductionModeHasLogEntries() {
+    public void developmentModeHasLogEntries() {
         open();
         waitForElementPresent(By.id("exception"));
 
@@ -43,7 +43,7 @@ public class BrowserLoggingIT extends ChromeBrowserTest {
                 "return window.allLogMessages;");
 
         assertThat(
-                "Flow in non-production mode should output something into the console",
+                "Flow in development mode should output something into the console",
                 logMessages.size(), greaterThan(0));
 
         // Check for "Scheduling heartbeat in" msg (= debug level)
