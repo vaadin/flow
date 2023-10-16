@@ -68,7 +68,7 @@ public class DefaultI18NProvider implements I18NProvider {
         try {
             value = bundle.getString(key);
         } catch (final MissingResourceException e) {
-            getLogger().debug("Missing resource", e);
+            getLogger().debug("Missing resource for key " + key, e);
             return "!" + locale.getLanguage() + ": " + key;
         }
         if (params.length > 0) {
@@ -82,7 +82,8 @@ public class DefaultI18NProvider implements I18NProvider {
             return ResourceBundle.getBundle(BUNDLE_PREFIX, locale,
                     I18NUtil.getClassLoader());
         } catch (final MissingResourceException e) {
-            getLogger().warn("Missing resource", e);
+            getLogger().warn("Missing resource bundle for " + BUNDLE_PREFIX
+                    + " and locale " + locale.getDisplayName(), e);
         }
         return null;
     }

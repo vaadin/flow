@@ -29,8 +29,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FILENAME;
+import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
 
 /**
  * Utility class for use with determining default i18n property files and
@@ -121,33 +125,21 @@ public final class I18NUtil {
         File bundleFolder = new File(resource.getFile());
 
         if ("jar".equals(resource.getProtocol())) {
-            // Get the file path in jar
-            final String pathInJar = resource.getPath()
-                    .substring(resource.getPath().indexOf('!') + 1);
-            FileSystemPair fileSystemPair = null;
+            String file = resource.getFile();
             try {
-                fileSystemPair = getNewOrExistingFileSystem(resource.toURI());
-                // Get the file path inside the jar.
-                final Path dirPath = fileSystemPair.fileSystem
-                        .getPath(pathInJar);
-
-                if (Files.exists(dirPath) && Files.isDirectory(dirPath)) {
-                    try (Stream<Path> jarFiles = Files.list(dirPath)) {
-                        jarFiles.filter(path -> !Files.isDirectory(path))
-                                .map(Path::toString).map(File::new)
-                                .forEach(files::add);
+                Enumeration<JarEntry> entries = new JarFile(
+                        file.substring(6, file.indexOf('!'))).entries();
+                entries.asIterator().forEachRemaining(entry -> {
+                    String fileName = entry.getName();
+                    if (fileName.contains(BUNDLE_FOLDER)
+                            && fileName.endsWith(PROPERTIES_SUFFIX)) {
+                        files.add(new File(fileName));
                     }
-                }
-            } catch (IOException | URISyntaxException e) {
-                getLogger().debug("failed to read jar file contents", e);
-            } finally {
-                if (fileSystemPair != null && fileSystemPair.external) {
-                    try {
-                        fileSystemPair.fileSystem.close();
-                    } catch (IOException e) {
-                        getLogger().debug("Failed to close FileSystem", e);
-                    }
-                }
+                });
+            } catch (IOException ioe) {
+                getLogger().debug("failed to read jar file '"
+                        + file.substring(6, file.indexOf('!')) + "'contents",
+                        ioe);
             }
         } else if (bundleFolder.exists() && bundleFolder.isDirectory()) {
             Arrays.stream(bundleFolder.listFiles()).filter(File::isFile)
@@ -155,24 +147,6 @@ public final class I18NUtil {
         }
 
         return files;
-    }
-
-    protected static FileSystemPair getNewOrExistingFileSystem(URI resourceURI)
-            throws IOException {
-        try {
-            return new FileSystemPair(FileSystems.newFileSystem(resourceURI,
-                    Collections.emptyMap()), false);
-        } catch (FileSystemAlreadyExistsException fsaee) {
-            getLogger().trace(
-                    "Tried to get new filesystem, but it already existed for target uri.",
-                    fsaee);
-            FileSystem fileSystem = FileSystems.getFileSystem(resourceURI);
-
-            return new FileSystemPair(fileSystem, true);
-        }
-    }
-
-    private record FileSystemPair(FileSystem fileSystem, boolean external) {
     }
 
     protected static ClassLoader getClassLoader() {

@@ -80,13 +80,10 @@ public class DefaultInstantiatorI18NTest {
 
         createTranslationFiles(translations);
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class)) {
+        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
+                Mockito.CALLS_REAL_METHODS)) {
             util.when(() -> I18NUtil.getClassLoader())
                     .thenReturn(urlClassLoader);
-            util.when(() -> I18NUtil.getDefaultTranslationLocales())
-                    .thenCallRealMethod();
-            util.when(() -> I18NUtil.containsDefaultTranslation())
-                    .thenCallRealMethod();
 
             VaadinService service = Mockito.mock(VaadinService.class);
             mockLookup(service);
@@ -127,13 +124,10 @@ public class DefaultInstantiatorI18NTest {
         Files.writeString(file.toPath(), "title=Default lang",
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class)) {
+        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
+                Mockito.CALLS_REAL_METHODS)) {
             util.when(() -> I18NUtil.getClassLoader())
                     .thenReturn(urlClassLoader);
-            util.when(() -> I18NUtil.getDefaultTranslationLocales())
-                    .thenCallRealMethod();
-            util.when(() -> I18NUtil.containsDefaultTranslation())
-                    .thenCallRealMethod();
 
             VaadinService service = Mockito.mock(VaadinService.class);
             mockLookup(service);
@@ -169,13 +163,10 @@ public class DefaultInstantiatorI18NTest {
         Files.writeString(file.toPath(), "title=No Default",
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class)) {
+        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
+                Mockito.CALLS_REAL_METHODS)) {
             util.when(() -> I18NUtil.getClassLoader())
                     .thenReturn(urlClassLoader);
-            util.when(() -> I18NUtil.getDefaultTranslationLocales())
-                    .thenCallRealMethod();
-            util.when(() -> I18NUtil.containsDefaultTranslation())
-                    .thenCallRealMethod();
 
             VaadinService service = Mockito.mock(VaadinService.class);
             mockLookup(service);

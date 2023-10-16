@@ -196,8 +196,17 @@ public class I18NUtilTest {
 
             Assert.assertTrue("Default file should return true",
                     I18NUtil.containsDefaultTranslation());
-            Assert.assertFalse("Default file should return true",
-                    I18NUtil.getDefaultTranslationLocales().isEmpty());
+            List<Locale> defaultTranslationLocales = I18NUtil
+                    .getDefaultTranslationLocales();
+            Assert.assertEquals(
+                    "Translation files with locale inside JAR should be resolved",
+                    2, defaultTranslationLocales.size());
+
+            Assert.assertTrue(
+                    "Finnish locale translation should have been found",
+                    defaultTranslationLocales.contains(new Locale("fi", "FI")));
+            Assert.assertTrue("Japan locale translation should have been found",
+                    defaultTranslationLocales.contains(new Locale("ja", "JP")));
         }
     }
 
@@ -219,6 +228,10 @@ public class I18NUtilTest {
             zipOutputStream
                     .putNextEntry(new ZipEntry(DefaultI18NProvider.BUNDLE_FOLDER
                             + "/translations_fi_FI.properties"));
+            zipOutputStream.closeEntry();
+            zipOutputStream
+                    .putNextEntry(new ZipEntry(DefaultI18NProvider.BUNDLE_FOLDER
+                            + "/translations_ja_JP.properties"));
             zipOutputStream.closeEntry();
         }
         return tempArchive;
