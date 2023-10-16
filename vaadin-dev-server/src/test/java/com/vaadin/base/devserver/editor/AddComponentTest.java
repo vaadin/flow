@@ -123,6 +123,7 @@ public class AddComponentTest extends AbstractClassBasedTest {
                 "Button helloWorld = new Button(\"Hello world\");");
         assertTestFileContains("add(helloWorld)");
     }
+
     @Test
     public void addTwiceToEmptyView() throws Exception {
         setupTestClass("EmptyView");
