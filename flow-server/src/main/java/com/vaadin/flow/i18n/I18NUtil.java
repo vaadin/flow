@@ -149,7 +149,7 @@ public final class I18NUtil {
     }
 
     protected static ClassLoader getClassLoader() {
-        return I18NUtil.class.getClassLoader();
+        return Thread.currentThread().getContextClassLoader();
     }
 
     protected static Logger getLogger() {
