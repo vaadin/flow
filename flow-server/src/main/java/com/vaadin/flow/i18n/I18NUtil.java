@@ -125,10 +125,10 @@ public final class I18NUtil {
         File bundleFolder = new File(resource.getFile());
 
         if ("jar".equals(resource.getProtocol())) {
-            String file = resource.getFile();
+            String file = resource.getFile().substring("file:".length(),
+                    resource.getFile().indexOf('!'));
             try {
-                Enumeration<JarEntry> entries = new JarFile(
-                        file.substring(6, file.indexOf('!'))).entries();
+                Enumeration<JarEntry> entries = new JarFile(file).entries();
                 entries.asIterator().forEachRemaining(entry -> {
                     String fileName = entry.getName();
                     if (fileName.contains(BUNDLE_FOLDER)
@@ -137,9 +137,8 @@ public final class I18NUtil {
                     }
                 });
             } catch (IOException ioe) {
-                getLogger().debug("failed to read jar file '"
-                        + file.substring(6, file.indexOf('!')) + "'contents",
-                        ioe);
+                getLogger().debug(
+                        "failed to read jar file '" + file + "' contents", ioe);
             }
         } else if (bundleFolder.exists() && bundleFolder.isDirectory()) {
             Arrays.stream(bundleFolder.listFiles()).filter(File::isFile)
