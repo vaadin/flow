@@ -17,6 +17,7 @@ package com.vaadin.flow.spring.flowsecurity;
 
 import org.junit.After;
 import org.junit.Assert;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
 import com.vaadin.flow.component.login.testbench.LoginFormElement;
@@ -102,6 +103,11 @@ public abstract class AbstractIT extends AbstractSpringTest {
     protected void assertLoginViewShown() {
         assertPathShown("my/login/page");
         waitUntil(driver -> $(LoginOverlayElement.class).exists());
+    }
+
+    protected void assertLogoutViewShown() {
+        assertPathShown("logout");
+        waitForElementVisible(By.id("logout-message"));
     }
 
     protected void assertRootPageShown() {

@@ -1,7 +1,11 @@
 package com.vaadin.flow.spring.flowsecurity;
 
 import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.IOException;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,11 +13,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.vaadin.flow.component.UI;
@@ -23,6 +29,7 @@ import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
 import com.vaadin.flow.spring.flowsecurity.views.LoginView;
+import com.vaadin.flow.spring.security.UidlRedirectStrategy;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
@@ -40,19 +47,27 @@ public class SecurityConfig extends VaadinWebSecurity {
     @Autowired
     private VaadinConfigurationProperties vaadinConfigurationProperties;
 
-    public String getLogoutSuccessUrl() {
-        String logoutSuccessUrl;
+    public String getRootUrl() {
+        return getRootUrl(true);
+    }
+
+    public String getRootUrl(boolean includeContextPath) {
+        String rootUrl;
         String mapping = vaadinConfigurationProperties.getUrlMapping();
         if (RootMappedCondition.isRootMapping(mapping)) {
-            logoutSuccessUrl = "/";
+            rootUrl = "/";
         } else {
-            logoutSuccessUrl = mapping.replaceFirst("/\\*$", "/");
+            rootUrl = mapping.replaceFirst("/\\*$", "/");
         }
         String contextPath = servletContext.getContextPath();
-        if (!"".equals(contextPath)) {
-            logoutSuccessUrl = contextPath + logoutSuccessUrl;
+        if (includeContextPath && !"".equals(contextPath)) {
+            rootUrl = contextPath + rootUrl;
         }
-        return logoutSuccessUrl;
+        return rootUrl;
+    }
+
+    public String getLogoutSuccessUrl() {
+        return getRootUrl();
     }
 
     @Override
@@ -72,13 +87,37 @@ public class SecurityConfig extends VaadinWebSecurity {
         } else {
             setLoginView(http, LoginView.class, getLogoutSuccessUrl());
         }
+
         http.logout(cfg -> cfg
+                .logoutRequestMatcher(new AntPathRequestMatcher(
+                        getRootUrl(false) + "doLogout", "GET"))
                 .addLogoutHandler((request, response, authentication) -> {
-                    UI ui = UI.getCurrent();
-                    ui.accessSynchronously(() -> ui.getPage()
-                            .setLocation(UrlUtil.getServletPathRelative(
-                                    getLogoutSuccessUrl(), request)));
-                }));
+                    if (!request.getRequestURI().endsWith("doLogout")) {
+                        UI ui = UI.getCurrent();
+                        ui.accessSynchronously(() -> ui.getPage()
+                                .setLocation(UrlUtil.getServletPathRelative(
+                                        getLogoutSuccessUrl(), request)));
+                    }
+                }).logoutSuccessHandler(this::onLogoutOnNonVaadinUrl)
+                .permitAll());
+    }
+
+    public void onLogoutOnNonVaadinUrl(HttpServletRequest request,
+            HttpServletResponse response, Authentication authentication)
+            throws IOException, ServletException {
+        if (!request.getRequestURI().endsWith("doLogout")) {
+            return;
+        }
+        try {
+            // Simulate long processing time
+            Thread.currentThread().sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        SimpleUrlLogoutSuccessHandler urlLogoutHandler = new SimpleUrlLogoutSuccessHandler();
+        urlLogoutHandler.setDefaultTargetUrl(getRootUrl(false) + "logout");
+        urlLogoutHandler.setRedirectStrategy(new UidlRedirectStrategy());
+        urlLogoutHandler.onLogoutSuccess(request, response, authentication);
     }
 
     @Bean

@@ -56,6 +56,7 @@ public class PushAtmosphereHandlerTest {
         resource = Mockito.mock(AtmosphereResource.class);
         Mockito.when(resource.getRequest()).thenReturn(request);
         Mockito.when(resource.getResponse()).thenReturn(response);
+        Mockito.when(resource.uuid()).thenReturn("1");
 
         VaadinContext context = new MockVaadinContext();
         ApplicationConfiguration config = Mockito
