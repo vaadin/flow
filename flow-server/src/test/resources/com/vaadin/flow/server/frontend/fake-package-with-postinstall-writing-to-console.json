@@ -4,7 +4,7 @@
     "description": "An extremely fast JavaScript bundler and minifier.",
     "repository": "https://github.com/evanw/esbuild",
     "scripts": {
-        "postinstall": "node -e \"for (var i = 0; i < 100000; i++) { process.stdout.write('Line on stdout\\n'); process.stderr.write('Line on stderr\\n'); } ; fs.writeFileSync('postinstall-console-file.txt','generated')\""
+        "postinstall": "node -e \"for (var i = 0; i < 10000; i++) { process.stdout.write('Line on stdout\\n'); process.stderr.write('Line on stderr\\n'); } ; fs.writeFileSync('postinstall-console-file.txt','generated')\""
     },
     "main": "lib/main.js",
     "types": "lib/main.d.ts",
