@@ -5,6 +5,7 @@ import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 
 public class AccessControlTestClasses {
@@ -246,6 +247,12 @@ public class AccessControlTestClasses {
 
     }
 
+    @AccessDeniedErrorRouter(rerouteToError = NotFoundException.class)
+    @Route("customaccessdenied")
+    public static class CustomAccessDeniedView extends Component {
+
+    }
+
     @AnonymousAllowed
     @Route("anon")
     public static class AnonymousAllowedView extends Component {
@@ -297,6 +304,7 @@ public class AccessControlTestClasses {
             extends PermitAllParentView {
     }
 
+    @AccessDeniedErrorRouter(rerouteToError = NotFoundException.class)
     @RolesAllowed("user")
     public static class RolesAllowedUserGrandParentView {
     }

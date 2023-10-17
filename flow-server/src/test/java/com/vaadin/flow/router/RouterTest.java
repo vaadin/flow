@@ -876,6 +876,16 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    public static class CustomAccessDeniedError extends RouteAccessDeniedError {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<AccessDeniedException> parameter) {
+            getElement().setText(EXCEPTION_TEXT);
+            return HttpStatusCode.UNAUTHORIZED.getCode();
+        }
+    }
+
     @Tag(Tag.DIV)
     public static class NonExtendingNotFoundTarget extends Component
             implements HasErrorParameter<NotFoundException> {
@@ -884,6 +894,17 @@ public class RouterTest extends RoutingTestBase {
                 ErrorParameter<NotFoundException> parameter) {
             getElement().setText(EXCEPTION_TEXT);
             return HttpStatusCode.NOT_FOUND.getCode();
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class NonExtendingAccessDeniedTarget extends Component
+            implements HasErrorParameter<AccessDeniedException> {
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<AccessDeniedException> parameter) {
+            getElement().setText(EXCEPTION_TEXT);
+            return HttpStatusCode.UNAUTHORIZED.getCode();
         }
     }
 
@@ -941,6 +962,17 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
             throw new RuntimeException("Failed on an exception");
+        }
+    }
+
+    @Route("accessdenied")
+    @Tag(Tag.DIV)
+    public static class FailOnAccessDeniedException extends Component
+            implements BeforeEnterObserver {
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            throw new AccessDeniedException();
         }
     }
 
@@ -2665,6 +2697,25 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
+    public void custom_access_denied_exception_target_should_override_default_ones() {
+        setNavigationTargets(FailOnAccessDeniedException.class);
+        setErrorNavigationTargets(NonExtendingAccessDeniedTarget.class,
+                RouteNotFoundError.class);
+
+        int result = router.navigate(ui, new Location("accessdenied"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Unauthorized route should have returned.",
+                HttpStatusCode.UNAUTHORIZED.getCode(), result);
+
+        Assert.assertEquals(
+                "Expected the extending class to be used instead of the super class",
+                NonExtendingAccessDeniedTarget.class, getUIComponentClass());
+
+        assertExceptionComponent(NonExtendingAccessDeniedTarget.class,
+                EXCEPTION_TEXT);
+    }
+
+    @Test
     public void custom_exception_target_is_used() {
         setErrorNavigationTargets(CustomNotFoundTarget.class,
                 RouteNotFoundError.class);
@@ -2679,6 +2730,24 @@ public class RouterTest extends RoutingTestBase {
                 CustomNotFoundTarget.class, getUIComponentClass());
 
         assertExceptionComponent(CustomNotFoundTarget.class, EXCEPTION_TEXT);
+    }
+
+    @Test
+    public void custom_accessdenied_target_is_used() {
+        setNavigationTargets(FailOnAccessDeniedException.class);
+        setErrorNavigationTargets(CustomAccessDeniedError.class,
+                RouteAccessDeniedError.class);
+
+        int result = router.navigate(ui, new Location("accessdenied"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Unauthorized route should have returned.",
+                HttpStatusCode.UNAUTHORIZED.getCode(), result);
+
+        Assert.assertEquals(
+                "Expected the extending class to be used instead of the super class",
+                CustomAccessDeniedError.class, getUIComponentClass());
+
+        assertExceptionComponent(CustomAccessDeniedError.class, EXCEPTION_TEXT);
     }
 
     @Test

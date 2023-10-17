@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.flow.router;
 
 import com.vaadin.flow.component.Tag;
@@ -20,20 +21,19 @@ import com.vaadin.flow.router.internal.DefaultErrorHandler;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**
- * This is a basic default error view shown on routing exceptions.
+ * This is a default error view shown on access denied routing exceptions.
  *
  * @since 1.0
  */
 @Tag(Tag.DIV)
 @AnonymousAllowed
 @DefaultErrorHandler
-public class RouteNotFoundError extends AbstractRouteNotFoundError
-        implements HasErrorParameter<NotFoundException> {
+public class RouteAccessDeniedError extends AbstractRouteNotFoundError
+        implements HasErrorParameter<AccessDeniedException> {
 
     @Override
     public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<NotFoundException> parameter) {
+            ErrorParameter<AccessDeniedException> parameter) {
         return super.setRouteNotFoundErrorParameter(event, parameter);
     }
-
 }
