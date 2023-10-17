@@ -445,6 +445,31 @@ public class TaskRunNpmInstallTest {
                         "postinstall-file.txt").exists());
     }
 
+    // https://github.com/vaadin/flow/issues/17663
+    @Test(timeout = 10000)
+    public void runNpmInstall_postInstallWritingLotsOfOutput_processDoesNotStuck()
+            throws ExecutionFailedException, IOException {
+        setupEsbuildAndFooInstallation();
+
+        File nodeModules = options.getNodeModulesFolder();
+        File fooPackageJson = new File(
+                new File(nodeModules.getParentFile(), "fake-foo"),
+                "package.json");
+        String fooPackageJsonContents = IOUtils.toString(
+                getClass().getResourceAsStream(
+                        "fake-package-with-postinstall-writing-to-console.json"),
+                StandardCharsets.UTF_8);
+        FileUtils.write(fooPackageJson, fooPackageJsonContents,
+                StandardCharsets.UTF_8);
+
+        task = createTask(Collections.singletonList("foo"));
+        task.execute();
+
+        Assert.assertTrue("Postinstall for 'foo' was not run",
+                new File(new File(options.getNodeModulesFolder(), "foo"),
+                        "postinstall-console-file.txt").exists());
+    }
+
     @Test
     public void shouldRunNpmInstallWhenFolderChanges() throws Exception {
         setupEsbuildAndFooInstallation();
