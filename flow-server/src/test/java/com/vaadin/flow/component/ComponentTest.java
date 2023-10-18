@@ -681,6 +681,25 @@ public class ComponentTest {
     }
 
     @Test
+    public void testAttachDetach_children() {
+        UI ui = new UI();
+        TestComponentContainer parent = new TestComponentContainer();
+        TestComponent child1 = new TestComponent();
+        TestComponent child2 = new TestComponent();
+        TestComponent child3 = new TestComponent();
+        parent.addAttachListener(e -> ui.add(child1, child2, child3));
+        parent.addDetachListener(e -> ui.remove(child1, child2, child3));
+
+        ui.add(parent);
+
+        Assert.assertEquals(4, ui.getChildren().count());
+
+        ui.add(parent);
+
+        Assert.assertEquals(4, ui.getChildren().count());
+    }
+
+    @Test
     public void testDetachListener_eventOrder_childFirst() {
         UI ui = new UI();
         TestComponentContainer parent = new TestComponentContainer();
