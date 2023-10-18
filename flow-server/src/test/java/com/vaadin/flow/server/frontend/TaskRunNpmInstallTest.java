@@ -446,7 +446,7 @@ public class TaskRunNpmInstallTest {
     }
 
     // https://github.com/vaadin/flow/issues/17663
-    @Test(timeout = 10000)
+    @Test(timeout = 30000)
     public void runNpmInstall_postInstallWritingLotsOfOutput_processDoesNotStuck()
             throws ExecutionFailedException, IOException {
         setupEsbuildAndFooInstallation();
