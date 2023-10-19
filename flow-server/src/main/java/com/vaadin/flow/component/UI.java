@@ -1638,6 +1638,26 @@ public class UI extends Component
         return childComponents.build();
     }
 
+    /**
+     * Gets the location of the currently shown view. The location is relative
+     * the servlet mapping used for serving the related UI.
+     *
+     * @return the view location, not <code>null</code>
+     */
+    public Location getActiveViewLocation() {
+        return getInternals().getActiveViewLocation();
+    }
+
+    /**
+     * Gets the currently active router target and parent layouts.
+     *
+     * @return a list of active router target and parent layout instances,
+     *         starting from the innermost part
+     */
+    public List<HasElement> getActiveRouterTargetsChain() {
+        return getInternals().getActiveRouterTargetsChain();
+    }
+
     static final String SERVER_CONNECTED = "this.serverConnected($0)";
     public static final String CLIENT_NAVIGATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
 
