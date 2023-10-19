@@ -24,8 +24,10 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -37,6 +39,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+@NotThreadSafe
 public class I18NProviderTest {
 
     private VaadinServletService service;
@@ -53,7 +56,7 @@ public class I18NProviderTest {
     }
 
     @Test
-    public void property_defined_should_init_registy_with_provider()
+    public void property_defined_should_init_registry_with_provider()
             throws ServletException, ServiceException {
         config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
                 TestProvider.class.getName());
@@ -82,6 +85,12 @@ public class I18NProviderTest {
         Assert.assertEquals("Locale was not the defined locale",
                 i18NProvider.getProvidedLocales().get(0),
                 VaadinSession.getCurrent().getLocale());
+    }
+
+    @Before
+    public void initState()
+            throws NoSuchFieldException, IllegalAccessException {
+        clearI18NProviderField();
     }
 
     @After

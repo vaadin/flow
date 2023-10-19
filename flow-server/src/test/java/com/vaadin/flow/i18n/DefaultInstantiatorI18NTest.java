@@ -52,7 +52,8 @@ public class DefaultInstantiatorI18NTest {
     private ClassLoader urlClassLoader;
 
     @Before
-    public void init() throws IOException {
+    public void init()
+            throws IOException, NoSuchFieldException, IllegalAccessException {
         File resources = temporaryFolder.newFolder();
 
         translations = new File(resources, DefaultI18NProvider.BUNDLE_FOLDER);
@@ -60,6 +61,7 @@ public class DefaultInstantiatorI18NTest {
 
         urlClassLoader = new URLClassLoader(
                 new URL[] { resources.toURI().toURL() });
+        I18NProviderTest.clearI18NProviderField();
     }
 
     @After
