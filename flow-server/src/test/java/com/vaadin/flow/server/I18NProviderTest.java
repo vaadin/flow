@@ -19,7 +19,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+import java.lang.reflect.Field;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.After;
@@ -52,33 +54,48 @@ public class I18NProviderTest {
 
     @Test
     public void property_defined_should_init_registy_with_provider()
-            throws ServletException, ServiceException {
+            throws ServletException, ServiceException, NoSuchFieldException,
+            IllegalAccessException {
         config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
                 TestProvider.class.getName());
 
         initServletAndService(config);
 
+        Instantiator instantiator = VaadinService.getCurrent()
+                .getInstantiator();
         Assert.assertEquals("Found wrong registry", TestProvider.class,
-                VaadinService.getCurrent().getInstantiator().getI18NProvider()
-                        .getClass());
+                instantiator.getI18NProvider().getClass());
+
+        Field field = DefaultInstantiator.class
+                .getDeclaredField("i18nProvider");
+        field.setAccessible(true);
+        ((AtomicReference<I18NProvider>) field.get(instantiator)).set(null);
+        field.setAccessible(false);
     }
 
     @Test
     public void with_defined_provider_locale_should_be_the_available_one()
-            throws ServletException, ServiceException {
+            throws ServletException, ServiceException, NoSuchFieldException,
+            IllegalAccessException {
         config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
                 TestProvider.class.getName());
 
         initServletAndService(config);
 
-        I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator()
-                .getI18NProvider();
+        Instantiator instantiator = VaadinService.getCurrent()
+                .getInstantiator();
+        I18NProvider i18NProvider = instantiator.getI18NProvider();
         Assert.assertNotNull("No provider for ", i18NProvider);
 
         Assert.assertEquals("Locale was not the defined locale",
                 i18NProvider.getProvidedLocales().get(0),
                 VaadinSession.getCurrent().getLocale());
 
+        Field field = DefaultInstantiator.class
+                .getDeclaredField("i18nProvider");
+        field.setAccessible(true);
+        ((AtomicReference<I18NProvider>) field.get(instantiator)).set(null);
+        field.setAccessible(false);
     }
 
     @After
