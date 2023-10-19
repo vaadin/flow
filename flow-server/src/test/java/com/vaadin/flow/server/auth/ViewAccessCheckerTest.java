@@ -21,12 +21,14 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.router.AccessDeniedException;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAccessDeniedError;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
@@ -38,6 +40,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.AnonymousAllowedView;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.CustomAccessDeniedView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.DenyAllView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationAnonymousAllowedByGrandParentView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationAnonymousAllowedByParentView;
@@ -322,7 +325,8 @@ public class ViewAccessCheckerTest {
     public void openingRestrictedViewShowsNotFoundForLoggedInUser() {
         Result result = checkAccess(RolesAllowedAdminView.class,
                 User.NORMAL_USER);
-        Assert.assertEquals(NotFoundException.class, result.getRerouteError());
+        Assert.assertEquals(AccessDeniedException.class,
+                result.getRerouteError());
         Assert.assertEquals("", result.getRerouteErrorMessage());
     }
 
@@ -330,7 +334,8 @@ public class ViewAccessCheckerTest {
     public void openingRestrictedViewShowsReasonInDevelopmentMode() {
         Result result = checkAccess(RolesAllowedAdminView.class,
                 User.NORMAL_USER, false);
-        Assert.assertEquals(NotFoundException.class, result.getRerouteError());
+        Assert.assertEquals(AccessDeniedException.class,
+                result.getRerouteError());
         Assert.assertEquals("Access denied", result.getRerouteErrorMessage());
     }
 
@@ -338,6 +343,19 @@ public class ViewAccessCheckerTest {
     public void openingNoAnnotationViewShowsReasonAndHintInDevelopmentMode() {
         Result result = checkAccess(NoAnnotationView.class, User.NORMAL_USER,
                 false);
+        Assert.assertEquals(AccessDeniedException.class,
+                result.getRerouteError());
+        Assert.assertEquals(
+                "Access denied. Consider adding one of the following annotations "
+                        + "to make the view accessible: @AnonymousAllowed, "
+                        + "@PermitAll, @RolesAllowed.",
+                result.getRerouteErrorMessage());
+    }
+
+    @Test
+    public void openingCustomAccessDeniedViewShowsReasonAndHintInDevelopmentMode() {
+        Result result = checkAccess(CustomAccessDeniedView.class,
+                User.NORMAL_USER, false);
         Assert.assertEquals(NotFoundException.class, result.getRerouteError());
         Assert.assertEquals(
                 "Access denied. Consider adding one of the following annotations "
@@ -350,6 +368,15 @@ public class ViewAccessCheckerTest {
     public void openingNoAnnotationViewDoesNotShowAnyReasonAndHintInProductionMode() {
         Result result = checkAccess(NoAnnotationView.class, User.NORMAL_USER,
                 true);
+        Assert.assertEquals(AccessDeniedException.class,
+                result.getRerouteError());
+        Assert.assertEquals("", result.getRerouteErrorMessage());
+    }
+
+    @Test
+    public void openingCustomAccessDeniedViewDoesNotShowAnyReasonAndHintInProductionMode() {
+        Result result = checkAccess(CustomAccessDeniedView.class,
+                User.NORMAL_USER, true);
         Assert.assertEquals(NotFoundException.class, result.getRerouteError());
         Assert.assertEquals("", result.getRerouteErrorMessage());
     }
@@ -464,6 +491,8 @@ public class ViewAccessCheckerTest {
         Result result = checkAccess(NoAnnotationDenyAllByGrandParentView.class,
                 User.NORMAL_USER);
         Assert.assertFalse(result.wasTargetViewRendered());
+        Assert.assertEquals(AccessDeniedException.class,
+                result.getRerouteError());
     }
 
     @Test
@@ -480,6 +509,8 @@ public class ViewAccessCheckerTest {
                 NoAnnotationRolesAllowedAdminByGrandParentView.class,
                 User.NORMAL_USER);
         Assert.assertFalse(result.wasTargetViewRendered());
+        Assert.assertEquals(AccessDeniedException.class,
+                result.getRerouteError());
     }
 
     @Test
@@ -502,6 +533,8 @@ public class ViewAccessCheckerTest {
         Result result = checkAccess(NoAnnotationDenyAllByGrandParentView.class,
                 User.ADMIN);
         Assert.assertFalse(result.wasTargetViewRendered());
+        Assert.assertEquals(AccessDeniedException.class,
+                result.getRerouteError());
     }
 
     @Test
@@ -510,6 +543,7 @@ public class ViewAccessCheckerTest {
                 NoAnnotationRolesAllowedUserByGrandParentView.class,
                 User.ADMIN);
         Assert.assertFalse(result.wasTargetViewRendered());
+        Assert.assertEquals(NotFoundException.class, result.getRerouteError());
     }
 
     @Test
@@ -701,6 +735,10 @@ public class ViewAccessCheckerTest {
                         return Optional.of(
                                 new ErrorTargetEntry(RouteNotFoundError.class,
                                         NotFoundException.class));
+                    } else if (exceptionClass == AccessDeniedException.class) {
+                        return Optional.of(new ErrorTargetEntry(
+                                RouteAccessDeniedError.class,
+                                AccessDeniedException.class));
                     } else {
                         return Optional.empty();
                     }

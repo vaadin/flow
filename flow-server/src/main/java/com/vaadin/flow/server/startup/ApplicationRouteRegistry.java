@@ -29,8 +29,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.AccessDeniedException;
 import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.RouteAccessDeniedError;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
@@ -226,6 +228,9 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
             Map<Class<? extends Exception>, Class<? extends Component>> map) {
         if (!map.containsKey(NotFoundException.class)) {
             map.put(NotFoundException.class, RouteNotFoundError.class);
+        }
+        if (!map.containsKey(AccessDeniedException.class)) {
+            map.put(AccessDeniedException.class, RouteAccessDeniedError.class);
         }
         if (!map.containsKey(Exception.class)) {
             map.put(Exception.class, InternalServerError.class);

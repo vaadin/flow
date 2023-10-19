@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.auth;
 
+import java.lang.reflect.AnnotatedElement;
 import java.security.Principal;
 import java.util.function.Function;
 
@@ -24,6 +25,7 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.http.HttpSession;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.AccessDeniedException;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.NotFoundException;
@@ -205,7 +207,8 @@ public class ViewAccessChecker implements BeforeEnterListener {
             }
         } else if (isProductionMode(beforeEnterEvent)) {
             // Intentionally does not reveal if the route exists
-            beforeEnterEvent.rerouteToError(NotFoundException.class);
+            beforeEnterEvent.rerouteToError(getAccessDeniedException(
+                    accessAnnotationChecker.getSecurityTarget(targetView)));
         } else {
             String errorMsg = "Access denied";
             if (isImplicitlyDenyAllAnnotated(targetView)) {
@@ -213,8 +216,19 @@ public class ViewAccessChecker implements BeforeEnterListener {
                         + "to make the view accessible: @AnonymousAllowed, "
                         + "@PermitAll, @RolesAllowed.";
             }
-            beforeEnterEvent.rerouteToError(NotFoundException.class, errorMsg);
+            beforeEnterEvent.rerouteToError(getAccessDeniedException(
+                    accessAnnotationChecker.getSecurityTarget(targetView)),
+                    errorMsg);
         }
+    }
+
+    protected Class<? extends RuntimeException> getAccessDeniedException(
+            AnnotatedElement securedClass) {
+        if (securedClass.isAnnotationPresent(AccessDeniedErrorRouter.class)) {
+            return securedClass.getAnnotation(AccessDeniedErrorRouter.class)
+                    .rerouteToError();
+        }
+        return AccessDeniedException.class;
     }
 
     /**
