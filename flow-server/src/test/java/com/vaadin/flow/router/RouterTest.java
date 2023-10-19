@@ -2700,7 +2700,7 @@ public class RouterTest extends RoutingTestBase {
     public void custom_access_denied_exception_target_should_override_default_ones() {
         setNavigationTargets(FailOnAccessDeniedException.class);
         setErrorNavigationTargets(NonExtendingAccessDeniedTarget.class,
-                RouteNotFoundError.class);
+                RouteAccessDeniedError.class);
 
         int result = router.navigate(ui, new Location("accessdenied"),
                 NavigationTrigger.PROGRAMMATIC);
