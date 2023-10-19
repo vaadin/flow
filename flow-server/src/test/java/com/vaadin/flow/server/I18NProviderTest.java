@@ -54,8 +54,7 @@ public class I18NProviderTest {
 
     @Test
     public void property_defined_should_init_registy_with_provider()
-            throws ServletException, ServiceException, NoSuchFieldException,
-            IllegalAccessException {
+            throws ServletException, ServiceException {
         config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
                 TestProvider.class.getName());
 
@@ -65,18 +64,11 @@ public class I18NProviderTest {
                 .getInstantiator();
         Assert.assertEquals("Found wrong registry", TestProvider.class,
                 instantiator.getI18NProvider().getClass());
-
-        Field field = DefaultInstantiator.class
-                .getDeclaredField("i18nProvider");
-        field.setAccessible(true);
-        ((AtomicReference<I18NProvider>) field.get(instantiator)).set(null);
-        field.setAccessible(false);
     }
 
     @Test
     public void with_defined_provider_locale_should_be_the_available_one()
-            throws ServletException, ServiceException, NoSuchFieldException,
-            IllegalAccessException {
+            throws ServletException, ServiceException {
         config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
                 TestProvider.class.getName());
 
@@ -90,17 +82,22 @@ public class I18NProviderTest {
         Assert.assertEquals("Locale was not the defined locale",
                 i18NProvider.getProvidedLocales().get(0),
                 VaadinSession.getCurrent().getLocale());
-
-        Field field = DefaultInstantiator.class
-                .getDeclaredField("i18nProvider");
-        field.setAccessible(true);
-        ((AtomicReference<I18NProvider>) field.get(instantiator)).set(null);
-        field.setAccessible(false);
     }
 
     @After
-    public void clearCurrentInstances() {
+    public void clearCurrentInstances()
+            throws NoSuchFieldException, IllegalAccessException {
         CurrentInstance.clearAll();
+        clearI18NProviderField();
+    }
+
+    public static void clearI18NProviderField()
+            throws NoSuchFieldException, IllegalAccessException {
+        Field field = DefaultInstantiator.class
+                .getDeclaredField("i18nProvider");
+        field.setAccessible(true);
+        ((AtomicReference<I18NProvider>) field.get(null)).set(null);
+        field.setAccessible(false);
     }
 
     private void initServletAndService(DeploymentConfiguration config)
