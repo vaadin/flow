@@ -3035,6 +3035,16 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
+     * Checks whether a field has uncomitted changes.
+     *
+     * @param binding Binding to be checked
+     * @return true if field has been changed.
+     */
+    public boolean hasChanges(Binding<BEAN, ?> binding) {
+        return hasChanges() && changedBindings.contains(binding);
+    }
+
+    /**
      * Sets the read only state to the given value for all currently bound
      * fields.
      * <p>

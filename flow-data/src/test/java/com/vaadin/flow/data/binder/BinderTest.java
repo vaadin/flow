@@ -200,6 +200,27 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void writeBean_setsHasChangesBindingToFalse() {
+        var binding = binder.forField(nameField).bind(Person::getFirstName,
+                Person::setFirstName);
+
+        binder.readBean(item);
+        assertEquals("No name field value", "Johannes", nameField.getValue());
+
+        ageField.setValue("99");
+        assertFalse("Age field caused name field change", binder.hasChanges(binding));
+
+        nameField.setValue("James");
+        assertTrue("Binder did not have value changes", binder.hasChanges(binding));
+
+        binder.readBean(null);
+
+        assertFalse("Binder has changes after clearing all fields",
+                binder.hasChanges(binding));
+
+    }
+
+    @Test
     public void clearReadOnlyBinder_shouldClearFields() {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
