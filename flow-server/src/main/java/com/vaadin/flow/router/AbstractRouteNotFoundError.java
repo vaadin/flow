@@ -59,8 +59,9 @@ public abstract class AbstractRouteNotFoundError extends Component {
      */
     public int setRouteNotFoundErrorParameter(BeforeEnterEvent event,
             ErrorParameter<? extends RuntimeException> parameter) {
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug(
+        Logger logger = LoggerFactory.getLogger(getClass());
+        if (logger.isDebugEnabled()) {
+            logger.debug(
                     parameter.hasCustomMessage() ? parameter.getCustomMessage()
                             : "Route is not found",
                     parameter.getCaughtException());
@@ -104,16 +105,13 @@ public abstract class AbstractRouteNotFoundError extends Component {
         return HttpStatusCode.NOT_FOUND.getCode();
     }
 
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(RouteNotFoundError.class);
-    }
-
     private static String readHtmlFile(String templateName) {
         try (InputStream stream = RouteNotFoundError.class
                 .getResourceAsStream(templateName)) {
             return IOUtils.toString(stream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            getLogger().error("Unable to read " + templateName, e);
+            LoggerFactory.getLogger(AbstractRouteNotFoundError.class)
+                    .error("Unable to read " + templateName, e);
             // Use a very simple error page if the real one could not be found
             return "Could not navigate to '{{path}}'";
         }
