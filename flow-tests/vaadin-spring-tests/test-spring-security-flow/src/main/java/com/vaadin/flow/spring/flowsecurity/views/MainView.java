@@ -8,6 +8,7 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
@@ -95,6 +96,11 @@ public class MainView extends AppLayout {
                 securityUtils.logout();
             });
             layout.add(logout);
+
+            Anchor logoutWithUrl = new Anchor("doLogout", "Logout with URL");
+            logoutWithUrl.getElement().setAttribute("router-ignore", true);
+            logoutWithUrl.setId("logout-anchor");
+            layout.add(logoutWithUrl);
         }
         return layout;
     }

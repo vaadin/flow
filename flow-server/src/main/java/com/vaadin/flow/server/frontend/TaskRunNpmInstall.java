@@ -15,22 +15,24 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
+import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -39,9 +41,9 @@ import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
+import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_VERSION;
-import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.
@@ -310,16 +312,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
             logger.debug("Output of `{}`:", commandString);
             StringBuilder toolOutput = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream(),
-                            StandardCharsets.UTF_8))) {
-                String stdoutLine;
-                while ((stdoutLine = reader.readLine()) != null) {
-                    logger.debug(stdoutLine);
-                    toolOutput.append(stdoutLine)
-                            .append(System.lineSeparator());
-                }
-            }
+            consumeProcessOutput(process, stdoutLine -> {
+                logger.debug(stdoutLine);
+                toolOutput.append(stdoutLine).append(System.lineSeparator());
+            });
 
             int errorCode = process.waitFor();
 
@@ -339,14 +335,19 @@ public class TaskRunNpmInstall implements FallibleCommand {
             } else {
                 logger.info("Frontend dependencies resolved successfully.");
             }
-        } catch (InterruptedException | IOException e) {
+        } catch (InterruptedException | IOException | UncheckedIOException e) {
             logger.error("Error when running `{} install`", toolName, e);
+            Throwable cause = e;
             if (e instanceof InterruptedException) {
                 // Restore interrupted state
                 Thread.currentThread().interrupt();
             }
+            if (e instanceof UncheckedIOException) {
+                cause = e.getCause();
+            }
             throw new ExecutionFailedException(
-                    "Command '" + toolName + " install' failed to finish", e);
+                    "Command '" + toolName + " install' failed to finish",
+                    cause);
         } finally {
             if (process != null) {
                 process.destroyForcibly();
@@ -378,13 +379,15 @@ public class TaskRunNpmInstall implements FallibleCommand {
             } catch (IOException ioe) {
                 logger.error(
                         "Couldn't read package.json for {}. Skipping postinstall",
-                        ioe);
+                        postinstallPackage, ioe);
                 continue;
             }
 
             logger.debug("Running postinstall for '{}'", postinstallPackage);
             try {
                 process = runNpmCommand(postinstallCommand, packageFolder);
+                logger.debug("Output of postinstall `{}`:", postinstallPackage);
+                consumeProcessOutput(process, logger::debug);
                 process.waitFor();
             } catch (IOException | InterruptedException e) {
                 if (e instanceof InterruptedException) {
@@ -396,6 +399,25 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + postinstallPackage + "'",
                         e);
             }
+        }
+    }
+
+    private void consumeProcessOutput(Process process,
+            Consumer<String> consumer)
+            throws IOException, InterruptedException {
+        try {
+            Pair<String, String> outputs = FrontendUtils
+                    .consumeProcessStreams(process).get();
+            outputs.getFirst().lines().forEach(consumer);
+        } catch (ExecutionException e) {
+            Throwable cause = e;
+            if (e.getCause() != null) {
+                cause = e.getCause();
+            }
+            if (cause instanceof IOException ioException) {
+                throw ioException;
+            }
+            throw new IOException(cause);
         }
     }
 

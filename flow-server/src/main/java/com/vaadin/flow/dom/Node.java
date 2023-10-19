@@ -383,6 +383,11 @@ public abstract class Node<N extends Node<N>> implements Serializable {
                 }
             }
             child.removeFromParent();
+            // If detach of component removes other components adjust insert
+            // target
+            if (insertIndex > getChildCount()) {
+                insertIndex = getChildCount();
+            }
             getStateProvider().insertChild(node, insertIndex, child);
             ensureChildHasParent(child, true);
         }

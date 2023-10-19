@@ -105,6 +105,25 @@ public class AddComponentTest extends AbstractClassBasedTest {
         assertTestFileContains("add(helloWorld)");
     }
 
+    /**
+     * Test if the Switch expression is supported (Java 17 support)
+     *
+     * @throws Exception
+     */
+    @Test
+    public void addToEmptyViewWithSwitch() throws Exception {
+        setupTestClass("EmptyViewWithSwitch");
+        // Create is the constructor
+        int create = getLineNumber(testFile, "public EmptyView() {");
+        int attach = create;
+        editor.addComponent(testFile, create, attach, Where.INSIDE,
+                ComponentType.BUTTON, "Hello world");
+
+        assertTestFileContains(
+                "Button helloWorld = new Button(\"Hello world\");");
+        assertTestFileContains("add(helloWorld)");
+    }
+
     @Test
     public void addTwiceToEmptyView() throws Exception {
         setupTestClass("EmptyView");

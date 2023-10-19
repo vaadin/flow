@@ -1,5 +1,6 @@
 package com.vaadin.base.devserver.editor;
 
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.Position;
 import com.github.javaparser.Range;
 import com.github.javaparser.StaticJavaParser;
@@ -33,6 +34,7 @@ import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
+import com.github.javaparser.utils.SourceRoot;
 import com.vaadin.base.devserver.themeeditor.utils.StatementLineNumberVisitor;
 import com.vaadin.flow.shared.util.SharedUtil;
 import org.apache.commons.io.IOUtils;
@@ -1097,6 +1099,10 @@ public class Editor {
     }
 
     protected CompilationUnit parseSource(String source) {
+        ParserConfiguration parserConfiguration = new ParserConfiguration();
+        parserConfiguration
+                .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
+        StaticJavaParser.setConfiguration(parserConfiguration);
         return LexicalPreservingPrinter.setup(StaticJavaParser.parse(source));
     }
 

@@ -37,6 +37,10 @@ public class AppViewIT extends AbstractIT {
         getMainView().$(ButtonElement.class).id("logout").click();
     }
 
+    private void clickLogoutAnchor() {
+        getMainView().$("a").id("logout-anchor").click();
+    }
+
     private void clickAccessRolePrefixedAdminPageFromThread() {
         getMainView().$(ButtonElement.class)
                 .id(AdminView.ROLE_PREFIX_TEST_BUTTON_ID).click();
@@ -286,6 +290,17 @@ public class AppViewIT extends AbstractIT {
         // separate
         // sleep
         assertAdminPageShown(ADMIN_FULLNAME);
+    }
+
+    // https://github.com/vaadin/flow/issues/7323
+    @Test
+    public void logout_via_doLogin_redirects_to_logout() {
+        open(LOGIN_PATH);
+        loginAdmin();
+        navigateTo("admin");
+        assertAdminPageShown(ADMIN_FULLNAME);
+        clickLogoutAnchor();
+        assertLogoutViewShown();
     }
 
     private void navigateTo(String path) {
