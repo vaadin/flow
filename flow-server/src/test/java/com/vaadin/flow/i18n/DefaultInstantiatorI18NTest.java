@@ -18,7 +18,6 @@ package com.vaadin.flow.i18n;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
@@ -26,8 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.concurrent.atomic.AtomicReference;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,9 +38,11 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.I18NProviderTest;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
+@NotThreadSafe
 public class DefaultInstantiatorI18NTest {
 
     @Rule
@@ -49,10 +50,10 @@ public class DefaultInstantiatorI18NTest {
 
     private File translations;
     private ClassLoader urlClassLoader;
-    private DefaultInstantiator instantiator;
 
     @Before
-    public void init() throws IOException {
+    public void init()
+            throws IOException, NoSuchFieldException, IllegalAccessException {
         File resources = temporaryFolder.newFolder();
 
         translations = new File(resources, DefaultI18NProvider.BUNDLE_FOLDER);
@@ -60,18 +61,13 @@ public class DefaultInstantiatorI18NTest {
 
         urlClassLoader = new URLClassLoader(
                 new URL[] { resources.toURI().toURL() });
+        I18NProviderTest.clearI18NProviderField();
     }
 
     @After
     public void cleanup() throws NoSuchFieldException, IllegalAccessException {
         ResourceBundle.clearCache(urlClassLoader);
-        if (instantiator != null) {
-            Field field = DefaultInstantiator.class
-                    .getDeclaredField("i18nProvider");
-            field.setAccessible(true);
-            ((AtomicReference<I18NProvider>) field.get(instantiator)).set(null);
-            field.setAccessible(false);
-        }
+        I18NProviderTest.clearI18NProviderField();
     }
 
     @Test
@@ -88,9 +84,8 @@ public class DefaultInstantiatorI18NTest {
             VaadinService service = Mockito.mock(VaadinService.class);
             mockLookup(service);
 
-            instantiator = new DefaultInstantiator(service);
-
-            I18NProvider i18NProvider = instantiator.getI18NProvider();
+            I18NProvider i18NProvider = new DefaultInstantiator(service)
+                    .getI18NProvider();
             Assert.assertNotNull(i18NProvider);
             Assert.assertTrue(i18NProvider instanceof DefaultI18NProvider);
 
@@ -132,9 +127,8 @@ public class DefaultInstantiatorI18NTest {
             VaadinService service = Mockito.mock(VaadinService.class);
             mockLookup(service);
 
-            instantiator = new DefaultInstantiator(service);
-
-            I18NProvider i18NProvider = instantiator.getI18NProvider();
+            I18NProvider i18NProvider = new DefaultInstantiator(service)
+                    .getI18NProvider();
             Assert.assertNotNull(i18NProvider);
             Assert.assertTrue(i18NProvider instanceof DefaultI18NProvider);
 
@@ -171,9 +165,8 @@ public class DefaultInstantiatorI18NTest {
             VaadinService service = Mockito.mock(VaadinService.class);
             mockLookup(service);
 
-            instantiator = new DefaultInstantiator(service);
-
-            I18NProvider i18NProvider = instantiator.getI18NProvider();
+            I18NProvider i18NProvider = new DefaultInstantiator(service)
+                    .getI18NProvider();
             Assert.assertNotNull(i18NProvider);
             Assert.assertTrue(i18NProvider instanceof DefaultI18NProvider);
 
