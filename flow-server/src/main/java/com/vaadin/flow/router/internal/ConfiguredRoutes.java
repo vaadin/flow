@@ -457,6 +457,10 @@ public class ConfiguredRoutes implements Serializable {
     private static Collection<String> getOrderedTemplates(
             Class<? extends Component> navigationTarget, RouteModel model) {
         final Collection<String> templates = model.getRoutes().keySet();
+        // No need to check route if one or no template.
+        if (templates.size() <= 1) {
+            return templates;
+        }
 
         // Bring actual route to front of collection
         if (navigationTarget.isAnnotationPresent(Route.class)) {
