@@ -1107,7 +1107,8 @@ public class FrontendTools {
             String... extraUpdateInstructions) {
         StringBuilder extraInstructions = new StringBuilder();
         for (String instruction : extraUpdateInstructions) {
-            extraInstructions.append("%n  - or ").append(instruction);
+            extraInstructions.append(System.lineSeparator()).append("  - or ")
+                    .append(instruction);
         }
         return String.format(BAD_VERSION, tool, version,
                 extraInstructions.toString(),
