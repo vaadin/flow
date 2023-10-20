@@ -290,7 +290,8 @@ public class Binder<BEAN> implements Serializable {
          * @throws IllegalStateException
          *             if the binding is no longer attached to a Binder.
          *
-         * @return {@literal true} if the field the binding uses has uncommitted changes, otherwise {@literal false}.
+         * @return {@literal true} if the field the binding uses has uncommitted
+         *         changes, otherwise {@literal false}.
          */
         boolean hasChanges();
     }
