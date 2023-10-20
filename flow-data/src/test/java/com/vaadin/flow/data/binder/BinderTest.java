@@ -206,6 +206,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binder.readBean(item);
         assertEquals("No name field value", "Johannes", nameField.getValue());
+        assertFalse("Field marked as changed after reading bean",
+                binder.hasChanges(binding));
 
         ageField.setValue("99");
         assertFalse("Age field caused name field change",
