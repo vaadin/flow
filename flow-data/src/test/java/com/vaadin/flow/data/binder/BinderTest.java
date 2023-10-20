@@ -200,7 +200,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
-    public void writeBean_setsHasChangesBindingToFalse() {
+    public void bindingHasChanges_trueWhenFieldValueChanges() {
         var binding = binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
 
