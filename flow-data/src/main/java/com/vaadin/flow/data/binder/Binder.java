@@ -293,7 +293,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * @return True if field has uncommitted changes
          */
-        boolean hasChanges() throws IllegalStateException;
+        boolean hasChanges();
     }
 
     /**
