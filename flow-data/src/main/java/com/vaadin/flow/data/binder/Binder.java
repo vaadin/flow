@@ -1604,7 +1604,7 @@ public class Binder<BEAN> implements Serializable {
         @Override
         public boolean hasChanges() throws IllegalStateException {
             if (this.binder == null) {
-                throw new IllegalStateException();
+                throw new IllegalStateException("This Binding is no longer attached to a Binder");
             }
 
             return this.binder.hasChanges(this);
