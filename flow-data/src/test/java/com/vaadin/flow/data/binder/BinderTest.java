@@ -264,7 +264,9 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binding.unbind();
 
         assertThrows("Expect unbound binding to throw exception",
-                IllegalStateException.class, binding::hasChanges);
+                IllegalStateException.class, () -> {
+                    binding.hasChanges();
+                });
     }
 
     @Test
