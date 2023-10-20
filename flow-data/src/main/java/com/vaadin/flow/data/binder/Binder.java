@@ -282,6 +282,18 @@ public class Binder<BEAN> implements Serializable {
          * @return A boolean value
          */
         boolean isConvertBackToPresentation();
+
+        /**
+         * Checks whether the related Binder instance has marked the field as
+         * having uncommitted changes.
+         *
+         * @throws IllegalStateException
+         *             if {@code binder} is null. Ensure that the binder has
+         *             been declared here.
+         *
+         * @return True if field has uncommitted changes
+         */
+        boolean hasChanges() throws IllegalStateException;
     }
 
     /**
@@ -1588,6 +1600,15 @@ public class Binder<BEAN> implements Serializable {
                     throw exception;
                 }
             }
+        }
+
+        @Override
+        public boolean hasChanges() throws IllegalStateException {
+            if (this.binder == null) {
+                throw new IllegalStateException();
+            }
+
+            return this.binder.hasChanges(this);
         }
     }
 
