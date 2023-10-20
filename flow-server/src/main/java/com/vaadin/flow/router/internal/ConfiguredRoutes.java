@@ -16,8 +16,10 @@
 package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouteParameters;
@@ -431,8 +434,7 @@ public class ConfiguredRoutes implements Serializable {
             return null;
         }
 
-        final Collection<String> templates = model.getRoutes().keySet();
-        for (String template : templates) {
+        for (String template : getOrderedTemplates(navigationTarget, model)) {
             final T result = templateOutput.apply(template);
             if (result != null) {
                 return result;
@@ -440,6 +442,35 @@ public class ConfiguredRoutes implements Serializable {
         }
 
         return null;
+    }
+
+    /**
+     * Get the navigation target templates ordered so that {@link Route}
+     * annotation string is first in collection.
+     *
+     * @param navigationTarget
+     *            target class
+     * @param model
+     *            {@link RouteModel} for navigation target
+     * @return target templates with route value before RouteAlias values
+     */
+    private static Collection<String> getOrderedTemplates(
+            Class<? extends Component> navigationTarget, RouteModel model) {
+        final Collection<String> templates = model.getRoutes().keySet();
+
+        // Bring actual route to front of collection
+        if (navigationTarget.isAnnotationPresent(Route.class)) {
+            String route = PathUtil.trimPath(
+                    navigationTarget.getAnnotation(Route.class).value());
+            if (templates.contains(route)) {
+                List<String> reorder = new ArrayList<>();
+                templates.remove(route);
+                reorder.add(route);
+                reorder.addAll(templates);
+                return reorder;
+            }
+        }
+        return templates;
     }
 
 }
