@@ -16,7 +16,7 @@
         <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
         <sonar.skip>true</sonar.skip>
         <!-- needed for dependencyConvergence rule -->
-        <selenium.version>4.11.0</selenium.version>
+        <selenium.version>4.14.0</selenium.version>
         <guava.version>31.1-jre</guava.version>
     </properties>
     <dependencies>
