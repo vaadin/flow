@@ -284,8 +284,8 @@ public class Binder<BEAN> implements Serializable {
         boolean isConvertBackToPresentation();
 
         /**
-         * Checks whether the related Binder instance has marked the field as
-         * having uncommitted changes.
+         * Checks whether the field that the binding uses has uncommitted
+         * changes.
          *
          * @throws IllegalStateException
          *             if the binding is no longer attached to a Binder.
@@ -1604,7 +1604,8 @@ public class Binder<BEAN> implements Serializable {
         @Override
         public boolean hasChanges() throws IllegalStateException {
             if (this.binder == null) {
-                throw new IllegalStateException("This Binding is no longer attached to a Binder");
+                throw new IllegalStateException(
+                        "This Binding is no longer attached to a Binder");
             }
 
             return this.binder.hasChanges(this);

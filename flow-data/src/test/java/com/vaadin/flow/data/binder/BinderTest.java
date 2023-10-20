@@ -65,6 +65,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThrows;
 
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
@@ -245,6 +246,25 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         assertFalse("Binder has changes after clearing all fields",
                 binding.hasChanges());
+    }
+
+    @Test
+    public void bindingInstanceHasChanges_throwsWhenBinderNotAttached() {
+        var binding = binder.forField(nameField).bind(Person::getFirstName,
+                Person::setFirstName);
+
+        binder.readBean(item);
+
+        assertFalse("Field marked as changed after reading bean",
+                binding.hasChanges());
+
+        nameField.setValue("James");
+        assertTrue("Binder did not have value changes", binding.hasChanges());
+
+        binding.unbind();
+
+        assertThrows("Expect unbound binding to throw exception",
+                IllegalStateException.class, binding::hasChanges);
     }
 
     @Test
