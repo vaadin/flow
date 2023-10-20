@@ -3035,7 +3035,7 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Checks whether a field has uncomitted changes.
+     * Checks whether a bound field has uncomitted changes.
      *
      * @param binding
      *            Binding to be checked
