@@ -55,7 +55,6 @@ public class Div extends HtmlContainer
      *            the text
      */
     public Div(String text) {
-        super();
         setText(text);
     }
 }
