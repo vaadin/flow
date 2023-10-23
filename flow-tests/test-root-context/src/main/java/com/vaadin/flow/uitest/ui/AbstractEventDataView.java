@@ -45,8 +45,7 @@ public class AbstractEventDataView extends AbstractDivView {
     }
 
     private Div createContainer(String identifier) {
-        final Div div = new Div();
-        div.add(new Text(identifier));
+        final Div div = new Div(identifier);
         div.setId(identifier);
         div.getStyle().set("border", "1px solid orange").set("padding", "5px");
         return div;
