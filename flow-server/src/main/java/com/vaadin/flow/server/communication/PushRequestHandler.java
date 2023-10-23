@@ -205,6 +205,10 @@ public class PushRequestHandler
                 ApplicationConfig.DROP_ACCESS_CONTROL_ALLOW_ORIGIN_HEADER,
                 "false");
 
+        // Set default max WS idle time to 5 minutes (300 000 ms)
+        atmosphere.addInitParameter(ApplicationConfig.WEBSOCKET_IDLETIME,
+                String.valueOf(300000));
+
         final String bufferSize = String
                 .valueOf(PushConstants.WEBSOCKET_BUFFER_SIZE);
         atmosphere.addInitParameter(ApplicationConfig.WEBSOCKET_BUFFER_SIZE,
