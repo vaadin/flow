@@ -793,7 +793,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setLineHeight(String value) {
-        return applyOrErase("line-height", value);
+        return set("line-height", value);
     }
 
     /**
