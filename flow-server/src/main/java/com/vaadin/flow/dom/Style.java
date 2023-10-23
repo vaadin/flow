@@ -802,6 +802,7 @@ public interface Style extends Serializable {
     public enum AlignItems {
         NORMAL, STRETCH, CENTER, UNSAFE, SAFE, START, END, FLEX_START, FLEX_END, SELF_START, SELF_END, BASELINE, INITIAL;
     }
+
     /**
      * Sets the <code>align-items</code> property.
      *
@@ -820,6 +821,7 @@ public interface Style extends Serializable {
     public enum AlignSelf {
         AUTO, NORMAL, STRETCH, UNSAFE, SAFE, CENTER, START, END, FLEX_START, FLEX_END, SELF_START, SELF_END, BASELINE, INITIAL;
     }
+
     /**
      * Sets the <code>align-self</code> property.
      *
