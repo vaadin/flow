@@ -90,7 +90,10 @@ abstract class AbstractUpdateImports implements Runnable {
     private static final String THEMABLE_MIXIN_IMPORT = "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';";
     private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT_AND_MAKE_LIT_CSS
             + "%n" + "registerStyles('%s', $css_%1$d%s);";
-
+    static final String RESET_FOCUS_JS = "() => {\n"
+            + " let ae=document.activeElement;\n"
+            + " while(ae&&ae.shadowRoot) ae = ae.shadowRoot.activeElement;\n"
+            + " return !ae || ae.blur() || ae.focus() || true;\n" + "}";
     private static final String IMPORT_TEMPLATE = "import '%s';";
     private static final Pattern STARTING_DOT_SLASH = Pattern.compile("^\\./+");
     final Options options;
@@ -317,6 +320,7 @@ abstract class AbstractUpdateImports implements Runnable {
         mainLines.add("window.Vaadin = window.Vaadin || {};");
         mainLines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
         mainLines.add("window.Vaadin.Flow.loadOnDemand = loadOnDemand;");
+        mainLines.add("window.Vaadin.Flow.resetFocus = " + RESET_FOCUS_JS);
 
         files.put(generatedFlowImports, mainLines);
         files.put(generatedFlowDefinitions,

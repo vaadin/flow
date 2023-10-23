@@ -100,7 +100,9 @@ public abstract class AbstractNodeStateProvider
     @Override
     public void insertChild(StateNode node, int index, Element child) {
         assert index >= 0;
-        assert index <= getChildCount(node); // == if adding as last
+        // == if adding as last
+        assert index <= getChildCount(node)
+                : "index " + index + " outside range " + getChildCount(node);
 
         getChildrenFeature(node).add(index, child.getNode());
         if (child.getComponent().isPresent()) {

@@ -1,0 +1,95 @@
+/*
+ * Copyright 2000-2023 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+package com.vaadin.flow.i18n;
+
+import java.io.UnsupportedEncodingException;
+import java.text.MessageFormat;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Default i18n provider that will be initialized if
+ */
+public class DefaultI18NProvider implements I18NProvider {
+
+    final List<Locale> providedLocales;
+
+    public static final String BUNDLE_FOLDER = "vaadin-i18n";
+    public static final String BUNDLE_FILENAME = "translations";
+    // Get bundles named `translations` from `vaadin-i18n` folder.
+    public static final String BUNDLE_PREFIX = BUNDLE_FOLDER + "."
+            + BUNDLE_FILENAME;
+
+    public DefaultI18NProvider(List<Locale> providedLocales) {
+        this.providedLocales = Collections.unmodifiableList(providedLocales);
+    }
+
+    @Override
+    public List<Locale> getProvidedLocales() {
+        return providedLocales;
+    }
+
+    @Override
+    public String getTranslation(String key, Locale locale, Object... params) {
+        if (key == null) {
+            getLogger().warn("Got lang request for key with null value!");
+            return "";
+        }
+
+        final ResourceBundle bundle = getBundle(locale);
+        if (bundle == null) {
+            return key;
+        }
+
+        String value;
+        try {
+            value = bundle.getString(key);
+        } catch (final MissingResourceException e) {
+            getLogger().debug("Missing resource for key " + key, e);
+            return "!" + locale.getLanguage() + ": " + key;
+        }
+        if (params.length > 0) {
+            value = new MessageFormat(value, locale).format(params);
+        }
+        return value;
+    }
+
+    private ResourceBundle getBundle(Locale locale) {
+        try {
+            return ResourceBundle.getBundle(BUNDLE_PREFIX, locale,
+                    I18NUtil.getClassLoader());
+        } catch (final MissingResourceException e) {
+            getLogger().warn("Missing resource bundle for " + BUNDLE_PREFIX
+                    + " and locale " + locale.getDisplayName(), e);
+        }
+        return null;
+    }
+
+    static Logger getLogger() {
+        return LoggerFactory.getLogger(DefaultI18NProvider.class);
+    }
+
+}

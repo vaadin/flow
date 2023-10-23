@@ -17,6 +17,7 @@ package com.vaadin.flow.spring.flowsecurity;
 
 import org.junit.After;
 import org.junit.Assert;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
 import com.vaadin.flow.component.login.testbench.LoginFormElement;
@@ -104,6 +105,11 @@ public abstract class AbstractIT extends AbstractSpringTest {
         waitUntil(driver -> $(LoginOverlayElement.class).exists());
     }
 
+    protected void assertLogoutViewShown() {
+        assertPathShown("logout");
+        waitForElementVisible(By.id("logout-message"));
+    }
+
     protected void assertRootPageShown() {
         waitUntil(drive -> $("h1").attribute("id", "header").exists());
         String headerText = $("h1").id("header").getText();
@@ -129,6 +135,14 @@ public abstract class AbstractIT extends AbstractSpringTest {
         TestBenchElement welcome = waitUntil(driver -> $("*").id("welcome"));
         String welcomeText = welcome.getText();
         Assert.assertEquals("Welcome to the admin page, " + fullName,
+                welcomeText);
+    }
+
+    protected void assertRolePrefixedAdminPageShown(String fullName) {
+        assertPathShown("another_admin");
+        TestBenchElement welcome = waitUntil(driver -> $("*").id("welcome"));
+        String welcomeText = welcome.getText();
+        Assert.assertEquals("Welcome to the another admin page, " + fullName,
                 welcomeText);
     }
 

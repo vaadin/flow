@@ -66,7 +66,7 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v20.7.0";
+    public static final String DEFAULT_NODE_VERSION = "v20.8.0";
     /**
      * This is the version shipped with the default Node version.
      */
@@ -1107,7 +1107,8 @@ public class FrontendTools {
             String... extraUpdateInstructions) {
         StringBuilder extraInstructions = new StringBuilder();
         for (String instruction : extraUpdateInstructions) {
-            extraInstructions.append("%n  - or ").append(instruction);
+            extraInstructions.append(System.lineSeparator()).append("  - or ")
+                    .append(instruction);
         }
         return String.format(BAD_VERSION, tool, version,
                 extraInstructions.toString(),

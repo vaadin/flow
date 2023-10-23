@@ -23,6 +23,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
 
 public class ComponentProperty {
     public String name;
+    public String propertyOrAttributeTag;
     public Object defaultValue, otherValue;
     public boolean optional;
     public boolean removeDefault;
@@ -34,11 +35,16 @@ public class ComponentProperty {
             boolean optional, boolean removeDefault) {
         this.componentType = componentType;
         this.name = name;
+        this.propertyOrAttributeTag = name;
         this.type = type;
         this.defaultValue = defaultValue;
         this.optional = optional;
         this.removeDefault = removeDefault;
         this.otherValue = otherValue == null ? name + name : otherValue;
+    }
+
+    public void setPropertyOrAttributeTag(String propertyOrAttributeTag) {
+        this.propertyOrAttributeTag = propertyOrAttributeTag;
     }
 
     public boolean isOptional() {

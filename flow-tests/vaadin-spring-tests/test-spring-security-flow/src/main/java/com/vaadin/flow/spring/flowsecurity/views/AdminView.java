@@ -2,6 +2,10 @@ package com.vaadin.flow.spring.flowsecurity.views;
 
 import jakarta.annotation.security.RolesAllowed;
 
+import java.util.concurrent.TimeUnit;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -14,6 +18,8 @@ import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 @RolesAllowed("admin")
 public class AdminView extends VerticalLayout {
 
+    public final static String ROLE_PREFIX_TEST_BUTTON_ID = "role-prefix-test-button";
+
     public AdminView(SecurityUtils securityUtils) {
         H1 welcome = new H1("Welcome to the admin page, "
                 + securityUtils.getAuthenticatedUserInfo().getFullName());
@@ -23,5 +29,21 @@ public class AdminView extends VerticalLayout {
         div.setText(
                 "This page is full of dangerous controls and secret information");
         add(div);
+
+        Button accessRolePrefixedAdminPageFromThread = new Button(
+                "Access ROLE_ prefixed admin view from another thread");
+        accessRolePrefixedAdminPageFromThread.setId(ROLE_PREFIX_TEST_BUTTON_ID);
+        accessRolePrefixedAdminPageFromThread.addClickListener(event -> {
+            UI ui = event.getSource().getUI().get();
+            new Thread(() -> {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(100);
+                    ui.access(() -> ui.navigate(RolePrefixedAdminView.class));
+                } catch (InterruptedException e) {
+                }
+
+            }).start();
+        });
+        add(accessRolePrefixedAdminPageFromThread);
     }
 }

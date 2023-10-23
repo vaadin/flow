@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,6 +142,8 @@ public class FrontendToolsLocator implements Serializable {
             log().error(
                     "Unexpected interruption happened during '{}' command execution",
                     commandString, e);
+            // Restore interrupted state
+            Thread.currentThread().interrupt();
             return Optional.empty();
         } finally {
             if (exitCode == -1) {
@@ -159,19 +163,29 @@ public class FrontendToolsLocator implements Serializable {
             } else if (log().isDebugEnabled()) {
                 log().debug(FAILED_WITH_EXIT_CODE_MSG, commandString, exitCode);
             }
+            streamConsumer.cancel(true);
             return Optional.empty();
         }
 
         List<String> stdout;
         List<String> stderr;
         try {
-            Pair<String, String> outputs = streamConsumer.get();
+            // Command is expected to execute fast, so give up after a while to
+            // prevent the current process to be blocked indefinitely because
+            // of pending STDOUT or STDERR
+            Pair<String, String> outputs = streamConsumer.get(10,
+                    TimeUnit.SECONDS);
             stdout = new ArrayList<>(
                     List.of(outputs.getFirst().split(System.lineSeparator())));
             stderr = new ArrayList<>(
                     List.of(outputs.getSecond().split(System.lineSeparator())));
-        } catch (ExecutionException | InterruptedException e) {
+        } catch (ExecutionException | InterruptedException
+                | TimeoutException e) {
             Throwable cause = e;
+            if (e instanceof InterruptedException) {
+                // Restore interrupted state
+                Thread.currentThread().interrupt();
+            }
             if (e instanceof ExecutionException) {
                 cause = e.getCause();
             }

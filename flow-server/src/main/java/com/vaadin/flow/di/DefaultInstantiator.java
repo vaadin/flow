@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.di;
 
+import java.util.List;
+import java.util.Locale;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -22,7 +24,9 @@ import java.util.stream.StreamSupport;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.i18n.DefaultI18NProvider;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.i18n.I18NUtil;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.InvalidI18NConfigurationException;
@@ -93,6 +97,16 @@ public class DefaultInstantiator implements Instantiator {
     private I18NProvider getI18NProviderInstance() {
         String property = getI18NProviderProperty();
         if (property == null) {
+            // If no i18n provider provided check if the default location has
+            // translation files (lang coded or just the default)
+            List<Locale> defaultTranslationLocales = I18NUtil
+                    .getDefaultTranslationLocales();
+            if (!defaultTranslationLocales.isEmpty()
+                    || I18NUtil.containsDefaultTranslation()) {
+                // Some lang files were found in default location initialize
+                // default I18N provider.
+                return new DefaultI18NProvider(defaultTranslationLocales);
+            }
             return null;
         }
         try {

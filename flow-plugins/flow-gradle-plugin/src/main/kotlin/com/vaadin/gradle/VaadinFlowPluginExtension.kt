@@ -249,6 +249,15 @@ public open class VaadinFlowPluginExtension(project: Project) {
      */
     public var alwaysExecutePrepareFrontend: Boolean = false
 
+    /**
+     * If {@code true} navigation error views implementing {@link HasErrorParameter}
+     * can be rendered for exceptions during RPC request handling, not only limited
+     * to exceptions thrown during navigation life-cycle.
+     *
+     * @return {@code true} to enable error view rendering in RPC, {@code false} by default
+     */
+    public var isErrorHandlerRedirect: Boolean = false
+
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>? = null): ClasspathFilter {
         if (block != null) {
             block.delegate = classpathFilter
@@ -277,6 +286,11 @@ public open class VaadinFlowPluginExtension(project: Project) {
         val productionModeProperty: Boolean? = project.getBooleanProperty("vaadin.productionMode")
         if (productionModeProperty != null) {
             productionMode = productionModeProperty
+        }
+
+        val isErrorHandlerRedirectProperty: Boolean? = project.getBooleanProperty(InitParameters.ERROR_HANDLER_REDIRECT_ENABLED)
+        if (isErrorHandlerRedirectProperty != null) {
+            isErrorHandlerRedirect = isErrorHandlerRedirectProperty
         }
 
         val eagerServerLoadProperty: Boolean? = project.getBooleanProperty("vaadin.eagerServerLoad")
