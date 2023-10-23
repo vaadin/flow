@@ -282,6 +282,18 @@ public class Binder<BEAN> implements Serializable {
          * @return A boolean value
          */
         boolean isConvertBackToPresentation();
+
+        /**
+         * Checks whether the field that the binding uses has uncommitted
+         * changes.
+         *
+         * @throws IllegalStateException
+         *             if the binding is no longer attached to a Binder.
+         *
+         * @return {@literal true} if the field the binding uses has uncommitted
+         *         changes, otherwise {@literal false}.
+         */
+        boolean hasChanges();
     }
 
     /**
@@ -1588,6 +1600,16 @@ public class Binder<BEAN> implements Serializable {
                     throw exception;
                 }
             }
+        }
+
+        @Override
+        public boolean hasChanges() throws IllegalStateException {
+            if (this.binder == null) {
+                throw new IllegalStateException(
+                        "This Binding is no longer attached to a Binder");
+            }
+
+            return this.binder.hasChanges(this);
         }
     }
 
@@ -3032,6 +3054,17 @@ public class Binder<BEAN> implements Serializable {
      */
     public boolean hasChanges() {
         return !changedBindings.isEmpty();
+    }
+
+    /**
+     * Checks whether a bound field has uncomitted changes.
+     *
+     * @param binding
+     *            Binding to be checked
+     * @return true if field has been changed.
+     */
+    public boolean hasChanges(Binding<BEAN, ?> binding) {
+        return hasChanges() && changedBindings.contains(binding);
     }
 
     /**
