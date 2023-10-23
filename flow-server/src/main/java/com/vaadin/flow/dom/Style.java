@@ -111,6 +111,18 @@ public interface Style extends Serializable {
     }
 
     /**
+     * Sets the <code>background-color</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setBackgroundColor(String value) {
+        return set("background-color", value);
+    }
+
+    /**
      * Sets the <code>border</code> property.
      *
      * @param value
@@ -120,6 +132,54 @@ public interface Style extends Serializable {
      */
     default Style setBorder(String value) {
         return set("border", value);
+    }
+
+    /**
+     * Sets the <code>border-left</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setBorderLeft(String value) {
+        return set("border-left", value);
+    }
+
+    /**
+     * Sets the <code>border-right</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setBorderRight(String value) {
+        return set("border-right", value);
+    }
+
+    /**
+     * Sets the <code>border-top</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setBorderTop(String value) {
+        return set("border-top", value);
+    }
+
+    /**
+     * Sets the <code>border-bottom</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setBorderBottom(String value) {
+        return set("border-bottom", value);
     }
 
     public enum BoxSizing {
@@ -254,6 +314,30 @@ public interface Style extends Serializable {
     }
 
     /**
+     * Sets the <code>min-height</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setMinHeight(String value) {
+        return set("min-height", value);
+    }
+
+    /**
+     * Sets the <code>max-height</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setMaxHeight(String value) {
+        return set("max-height", value);
+    }
+
+    /**
      * Sets the <code>margin</code> property.
      *
      * @param value
@@ -263,6 +347,78 @@ public interface Style extends Serializable {
      */
     default Style setMargin(String value) {
         return set("margin", value);
+    }
+
+    /**
+     * Sets the <code>margin-left</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setMarginLeft(String value) {
+        return set("margin-left", value);
+    }
+
+    /**
+     * Sets the <code>margin-right</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setMarginRight(String value) {
+        return set("margin-right", value);
+    }
+
+    /**
+     * Sets the <code>margin-top</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setMarginTop(String value) {
+        return set("margin-top", value);
+    }
+
+    /**
+     * Sets the <code>margin-bottom</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setMarginBottom(String value) {
+        return set("margin-bottom", value);
+    }
+
+    /**
+     * Sets the <code>margin-inline-start</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setMarginInlineStart(String value) {
+        return set("margin-inline-start", value);
+    }
+
+    /**
+     * Sets the <code>margin-inline-end</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setMarginInlineEnd(String value) {
+        return set("margin-inline-end", value);
     }
 
     /**
@@ -315,6 +471,54 @@ public interface Style extends Serializable {
      */
     default Style setPadding(String value) {
         return set("padding", value);
+    }
+
+    /**
+     * Sets the <code>padding-left</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setPaddingLeft(String value) {
+        return set("padding-left", value);
+    }
+
+    /**
+     * Sets the <code>padding-right</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setPaddingRight(String value) {
+        return set("padding-right", value);
+    }
+
+    /**
+     * Sets the <code>padding-top</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setPaddingTop(String value) {
+        return set("padding-top", value);
+    }
+
+    /**
+     * Sets the <code>padding-bottom</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setPaddingBottom(String value) {
+        return set("padding-bottom", value);
     }
 
     /**
@@ -435,10 +639,34 @@ public interface Style extends Serializable {
     }
 
     /**
+     * Sets the <code>min-width</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setMinWidth(String value) {
+        return set("min-width", value);
+    }
+
+    /**
+     * Sets the <code>max-width</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setMaxWidth(String value) {
+        return set("max-width", value);
+    }
+
+    /**
      * Css values for the white-space property.
      */
     public enum WhiteSpace {
-        NORMAL, NOWRAP, PRE, PRE_LINE, PRE_WRAP, INITIAL, INHERIT
+        NORMAL, NOWRAP, PRE, PRE_LINE, PRE_WRAP, BREAK_SPACES, INITIAL, INHERIT
     }
 
     /**
@@ -511,6 +739,209 @@ public interface Style extends Serializable {
      */
     default Style setZIndex(Integer value) {
         return applyOrErase("z-index", value);
+    }
+
+    /**
+     * Css values for the <code>font-weight</code> property.
+     */
+    public enum FontWeight {
+        NORMAL, LIGHTER, BOLD, BOLDER, INITIAL, INHERIT
+    }
+
+    /**
+     * Sets the <code>font-weight</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setFontWeight(FontWeight value) {
+        return applyOrErase("font-weight", value);
+    }
+
+    /**
+     * Sets the <code>font-weight</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setFontWeight(Integer value) {
+        return applyOrErase("font-weight", value);
+    }
+
+    /**
+     * Sets the <code>font-size</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setFontSize(String value) {
+        return set("font-size", value);
+    }
+
+    /**
+     * Sets the <code>line-height</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setLineHeight(String value) {
+        return applyOrErase("line-height", value);
+    }
+
+    /**
+     * Css values for the <code>align-items</code> property.
+     */
+    public enum AlignItems {
+        NORMAL, STRETCH, CENTER, UNSAFE, SAFE, START, END, FLEX_START, FLEX_END, SELF_START, SELF_END, BASELINE, INITIAL;
+    }
+    /**
+     * Sets the <code>align-items</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setAlignItems(AlignItems value) {
+        return applyOrErase("align-items", value);
+    }
+
+    /**
+     * Css values for the <code>align-self</code> property.
+     */
+    public enum AlignSelf {
+        AUTO, NORMAL, STRETCH, UNSAFE, SAFE, CENTER, START, END, FLEX_START, FLEX_END, SELF_START, SELF_END, BASELINE, INITIAL;
+    }
+    /**
+     * Sets the <code>align-self</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setAlignSelf(AlignSelf value) {
+        return applyOrErase("align-self", value);
+    }
+
+    /**
+     * Css values for the <code>flex-wrap</code> property.
+     */
+    public enum FlexWrap {
+        NOWRAP, WRAP, WRAP_REVERSE, INITIAL
+    }
+
+    /**
+     * Sets the <code>flex-wrap</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setFlexWrap(FlexWrap value) {
+        return applyOrErase("flex-wrap", value);
+    }
+
+    /**
+     * Sets the <code>flex-grow</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setFlexGrow(String value) {
+        return set("flex-grow", value);
+    }
+
+    /**
+     * Sets the <code>flex-shrink</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setFlexShrink(String value) {
+        return set("flex-shrink", value);
+    }
+
+    /**
+     * Css values for the <code>justify-content</code> property.
+     */
+    public enum JustifyContent {
+        CENTER, START, END, FLEX_START, FLEX_END, LEFT, RIGHT, NORMAL, SPACE_BETWEEN, SPACE_AROUND, SPACE_EVENLY, STRETCH, SAFE, UNSAFE, INITIAL
+    }
+
+    /**
+     * Sets the <code>justify-content</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setJustifyContent(JustifyContent value) {
+        return applyOrErase("justify-content", value);
+    }
+
+    /**
+     * Css values for the <code>justify-content</code> property.
+     */
+    public enum FlexDirection {
+        ROW, ROW_REVERSE, COLUMN, COLUMN_REVERSE, INITIAL
+    }
+
+    /**
+     * Sets the <code>flex-direction</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setFlexDirection(FlexDirection value) {
+        return applyOrErase("flex-direction", value);
+    }
+
+    /**
+     * Css values for the <code>flex-basis</code> property.
+     */
+    public enum FlexBasis {
+        AUTO, MAX_CONTENT, MIN_CONTENT, FIT_CONTENT, CONTENT, INITIAL
+    }
+
+    /**
+     * Sets the <code>flex-basis</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setFlexBasis(FlexBasis value) {
+        return applyOrErase("flex-basis", value);
+    }
+
+    /**
+     * Sets the <code>flex-basis</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setFlexBasis(String value) {
+        return set("flex-basis", value);
     }
 
     private Style applyOrErase(String propertyName, Enum value) {
