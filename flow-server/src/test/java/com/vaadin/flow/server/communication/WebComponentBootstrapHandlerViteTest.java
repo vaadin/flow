@@ -102,7 +102,7 @@ public class WebComponentBootstrapHandlerViteTest {
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-        Element head = new Document("").normalise().head();
+        Element head = new Document("").head();
         Element meta = head.ownerDocument().createElement("meta");
         head.appendChild(meta);
         meta.attr("http-equiv", "Content-Type");
@@ -136,7 +136,7 @@ public class WebComponentBootstrapHandlerViteTest {
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-        Element head = new Document("").normalise().head();
+        Element head = new Document("").head();
 
         Element script = head.ownerDocument().createElement("script");
         head.appendChild(script);
@@ -157,7 +157,7 @@ public class WebComponentBootstrapHandlerViteTest {
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-        Element head = new Document("").normalise().head();
+        Element head = new Document("").head();
 
         Element script = head.ownerDocument().createElement("script");
         head.appendChild(script);
@@ -263,7 +263,7 @@ public class WebComponentBootstrapHandlerViteTest {
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-        Element head = new Document("").normalise().head();
+        Element head = new Document("").head();
 
         VaadinResponse response = getMockResponse(stream);
         handler.writeBootstrapPage("", response, head, "");
