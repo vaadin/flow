@@ -63,6 +63,12 @@ export class Connection extends Object {
 
   handleMessage(msg: any) {
     let json;
+
+    if (msg.data === 'X') {
+      // Atmosphere heartbeat message, should be ignored
+      return;
+    }
+
     try {
       json = JSON.parse(msg.data);
     } catch (e: any) {
