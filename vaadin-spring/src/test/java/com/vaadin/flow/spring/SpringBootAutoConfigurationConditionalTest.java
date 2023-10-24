@@ -16,58 +16,28 @@
 package com.vaadin.flow.spring;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.mock.web.MockServletContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestContext;
-import org.springframework.test.context.TestExecutionListener;
-import org.springframework.test.context.TestExecutionListeners;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
-
-import com.vaadin.testbench.unit.mocks.MockWebApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@TestExecutionListeners(SpringBootAutoConfigurationConditionalTest.class)
-@WebAppConfiguration
-@ContextConfiguration
-public class SpringBootAutoConfigurationConditionalTest
-        implements TestExecutionListener {
-
-    private static final ThreadLocal<WebApplicationContext> WEB_APPLICATION_CONTEXT = new ThreadLocal<>();
-
-    @Override
-    public void beforeTestMethod(final TestContext testContext) {
-        WEB_APPLICATION_CONTEXT.set(new MockWebApplicationContext(
-                testContext.getApplicationContext(), new MockServletContext()));
-    }
-
-    @Override
-    public void afterTestMethod(final TestContext testContext) {
-        WEB_APPLICATION_CONTEXT.remove();
-    }
+public class SpringBootAutoConfigurationConditionalTest {
 
     @Test
     public void customServletRegistrationBean() {
-        new ApplicationContextRunner()
-                .withBean(WebApplicationContext.class,
-                        WEB_APPLICATION_CONTEXT::get)
+        new WebApplicationContextRunner()
+                .withConfiguration(AutoConfigurations
+                        .of(SpringBootAutoConfiguration.class))
                 .withUserConfiguration(
-                        ServletRegistrationBeanConfiguration.MockServletRegistrationBean.class,
-                        SpringBootAutoConfiguration.class)
-                .run(context -> {
-                    assertThat(context).getBean(ServletRegistrationBean.class)
-                            .isInstanceOf(
-                                    ServletRegistrationBeanConfiguration.MockServletRegistrationBean.class);
-                });
+                        ServletRegistrationBeanConfiguration.class)
+                .run(context -> assertThat(context)
+                        .getBean(ServletRegistrationBean.class).isInstanceOf(
+                                ServletRegistrationBeanConfiguration.MockServletRegistrationBean.class));
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -87,9 +57,7 @@ public class SpringBootAutoConfigurationConditionalTest
                     final WebApplicationContext webApplicationContext) {
                 super(new SpringServlet(webApplicationContext, false));
             }
-
         }
 
     }
-
 }
