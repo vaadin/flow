@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -167,9 +168,27 @@ public class DebugWindowConnection implements BrowserLiveReload {
             debugWindowConnection.send(resource, msg.toJson());
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            DevToolsInterfaceImpl that = (DevToolsInterfaceImpl) o;
+            return Objects.equals(debugWindowConnection,
+                    that.debugWindowConnection)
+                    && Objects.equals(resource, that.resource);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(debugWindowConnection, resource);
+        }
     }
 
-    private DevToolsInterface getDevToolsInterface(
+    protected DevToolsInterface getDevToolsInterface(
             AtmosphereResource resource) {
         return new DevToolsInterfaceImpl(this, resource);
     }
