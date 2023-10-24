@@ -9,7 +9,7 @@
     </parent>
     <artifactId>flow-html-components-testbench</artifactId>
     <name>TestBench elements for Flow HTML Components</name>
-    <description>${name}</description>
+    <description>${project.name}</description>
     <packaging>jar</packaging>
 
     <properties>

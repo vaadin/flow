@@ -11,7 +11,7 @@
 
     <artifactId>flow-dnd</artifactId>
     <name>Generic HTML 5 Drag and Drop support for Flow</name>
-    <description>${name}</description>
+    <description>${project.name}</description>
     <packaging>jar</packaging>
 
     <dependencies>

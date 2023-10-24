@@ -10,7 +10,7 @@
     </parent>
     <artifactId>vaadin-dev-server</artifactId>
     <name>Vaadin Development Mode Server</name>
-    <description>${name}</description>
+    <description>${project.name}</description>
     <packaging>jar</packaging>
 
     <properties>
