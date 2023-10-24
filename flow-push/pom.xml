@@ -9,7 +9,7 @@
     </parent>
     <artifactId>flow-push</artifactId>
     <name>Flow Push</name>
-    <description>${name}</description>
+    <description>${project.name}</description>
     <packaging>jar</packaging>
 
     <dependencies>

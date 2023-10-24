@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class DivTest extends ComponentTest {
@@ -42,5 +43,10 @@ public class DivTest extends ComponentTest {
         // Other roles besides Landmarks (discussed above) are ignored.
         // Source: https://www.w3.org/TR/using-aria/#label-support
         super.testHasAriaLabelIsNotImplemented();
+    }
+
+    @Test
+    public void testNonDefaultConstructor() {
+        Assert.assertEquals("text", new Div("text").getText());
     }
 }

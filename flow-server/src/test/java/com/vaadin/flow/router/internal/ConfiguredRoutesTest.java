@@ -3,6 +3,8 @@ package com.vaadin.flow.router.internal;
 import java.util.Arrays;
 import java.util.EnumSet;
 
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouteParameterRegex;
 import org.junit.Assert;
@@ -10,6 +12,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 
 public class ConfiguredRoutesTest {
@@ -166,6 +169,26 @@ public class ConfiguredRoutesTest {
                         + RouteParameterRegex.LONG + "/:/:thinking|of|U|and|I",
                 config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.REGEX)));
+    }
+
+    @Test
+    public void configuration_provides_formatted_url_for_route_not_routeAlias() {
+        ConfigureRoutes config = new ConfigureRoutes();
+
+        config.setRoute(RouteTarget.class.getAnnotation(Route.class).value(),
+                RouteTarget.class);
+        config.setRoute("", RouteTarget.class);
+
+        String targetUrl = config.getTargetUrl(RouteTarget.class,
+                new RouteParameters(new RouteParam("message", "hello")));
+
+        Assert.assertEquals("Route should be matched and not RouteAlias",
+                "home/hello", targetUrl);
+    }
+
+    @Tag("div")
+    @Route("/home/:message?")
+    public static class RouteTarget extends Component {
     }
 
     @Tag("div")
