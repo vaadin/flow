@@ -1,4 +1,4 @@
-<a target="_blank" href="https://discord.gg/MYFq5RTbBn"><img src="https://discord.com/assets/e4923594e694a21542a489471ecffa50.svg" width="100" alt="Join the discussion in Vaadin Flow Discord"></img></a>
+hdk<a target="_blank" href="https://discord.gg/MYFq5RTbBn"><img src="https://discord.com/assets/e4923594e694a21542a489471ecffa50.svg" width="100" alt="Join the discussion in Vaadin Flow Discord"></img></a>
 
 Vaadin Flow
 ======
