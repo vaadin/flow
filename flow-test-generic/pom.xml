@@ -11,7 +11,7 @@
 
     <artifactId>flow-test-generic</artifactId>
     <name>Flow Generic Test Utilities</name>
-    <description>${name}</description>
+    <description>${project.name}</description>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
