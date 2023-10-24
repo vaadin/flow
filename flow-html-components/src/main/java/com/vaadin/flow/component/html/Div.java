@@ -47,4 +47,14 @@ public class Div extends HtmlContainer
     public Div(Component... components) {
         super(components);
     }
+
+    /**
+     * Creates a new div with the given text.
+     *
+     * @param text
+     *            the text
+     */
+    public Div(String text) {
+        setText(text);
+    }
 }
