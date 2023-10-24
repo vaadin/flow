@@ -16,7 +16,6 @@
 package com.vaadin.flow.spring;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -44,7 +43,6 @@ public class SpringBootAutoConfigurationConditionalTest {
     public static class ServletRegistrationBeanConfiguration {
 
         @Bean
-        @Autowired
         public ServletRegistrationBean<SpringServlet> servletRegistrationBean(
                 final WebApplicationContext webApplicationContext) {
             return new MockServletRegistrationBean(webApplicationContext);
