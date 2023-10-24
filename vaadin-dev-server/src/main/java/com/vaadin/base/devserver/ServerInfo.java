@@ -28,7 +28,8 @@ import com.vaadin.flow.server.Version;
  */
 public class ServerInfo implements Serializable {
 
-    public record NameAndVersion(String name, String version) {
+    public record NameAndVersion(String name, String version)
+            implements Serializable {
     };
 
     private List<NameAndVersion> versions = new ArrayList<>();
