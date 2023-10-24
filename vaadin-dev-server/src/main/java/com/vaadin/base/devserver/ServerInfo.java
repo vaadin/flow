@@ -16,8 +16,8 @@
 package com.vaadin.base.devserver;
 
 import java.io.Serializable;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Platform;
@@ -28,33 +28,35 @@ import com.vaadin.flow.server.Version;
  */
 public class ServerInfo implements Serializable {
 
-    private final String flowVersion;
-    private final String vaadinVersion;
-    private final String javaVersion;
-    private final String osVersion;
-    private final String productName;
-    private final String hillaVersion;
+    public record NameAndVersion(String name, String version) {
+    };
+
+    private List<NameAndVersion> versions = new ArrayList<>();
 
     /**
      * Creates a new instance.
      */
     public ServerInfo() {
-        this.flowVersion = Version.getFullVersion();
-        this.vaadinVersion = fetchVaadinVersion();
-        this.javaVersion = fetchJavaVersion();
-        this.osVersion = fetchOperatingSystem();
-        this.productName = fetchProductName();
-        this.hillaVersion = fetchHillaVersion();
+        // The order here is the order shown in dev tools
+        if (EndpointRequestUtil.isHillaAvailable()) {
+            versions.add(new NameAndVersion("Hilla", fetchHillaVersion()));
+        }
+        versions.add(new NameAndVersion("Flow", Version.getFullVersion()));
+        if (isVaadinAvailable()) {
+            versions.add(new NameAndVersion("Vaadin", fetchVaadinVersion()));
+        }
+        versions.add(new NameAndVersion("Java", fetchJavaVersion()));
+        versions.add(new NameAndVersion("OS", fetchOperatingSystem()));
     }
 
-    private String fetchJavaVersion() {
+    public static String fetchJavaVersion() {
         String vendor = System.getProperty("java.vendor");
         String version = System.getProperty("java.version");
 
         return vendor + " " + version;
     }
 
-    private String fetchOperatingSystem() {
+    public static String fetchOperatingSystem() {
         String arch = System.getProperty("os.arch");
         String name = System.getProperty("os.name");
         String version = System.getProperty("os.version");
@@ -62,55 +64,19 @@ public class ServerInfo implements Serializable {
         return arch + " " + name + " " + version;
     }
 
-    private String fetchVaadinVersion() {
+    public static String fetchVaadinVersion() {
         return isVaadinAvailable() ? Platform.getVaadinVersion().orElse("?")
                 : "-";
     }
 
-    private String fetchHillaVersion() {
+    public static String fetchHillaVersion() {
         return EndpointRequestUtil.isHillaAvailable()
                 ? Platform.getHillaVersion().orElse("?")
                 : "-";
     }
 
-    private String fetchProductName() {
-        final Set<String> result = new LinkedHashSet<>();
-        if (isVaadinAvailable()) {
-            result.add("Vaadin");
-        }
-        if (EndpointRequestUtil.isHillaAvailable()) {
-            result.add("Hilla");
-        }
-        return String.join(",", result);
-    }
-
-    public String getFlowVersion() {
-        return flowVersion;
-    }
-
-    public String getVaadinVersion() {
-        return vaadinVersion;
-    }
-
-    public String getHillaVersion() {
-        return hillaVersion;
-    }
-
-    public String getJavaVersion() {
-        return javaVersion;
-    }
-
-    public String getOsVersion() {
-        return osVersion;
-    }
-
-    /**
-     * Returns the product name.
-     *
-     * @return the product name, one of "Vaadin", "Hilla" or "Vaadin,Hilla".
-     */
-    public String getProductName() {
-        return productName;
+    public List<NameAndVersion> getVersions() {
+        return versions;
     }
 
     private static boolean isVaadinAvailable() {

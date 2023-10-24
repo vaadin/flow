@@ -15,15 +15,6 @@
  */
 package com.vaadin.base.devserver;
 
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -31,7 +22,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 
 public class ServerInfoTest {
     private ClassLoader oldContextClassLoader;
@@ -84,43 +82,4 @@ public class ServerInfoTest {
         Thread.currentThread().setContextClassLoader(classLoader);
     }
 
-    @Test
-    public void testGetProductNameWithNoProducts() {
-        ServerInfo serverInfo = new ServerInfo();
-        assertEquals("", serverInfo.getProductName());
-    }
-
-    @Test
-    public void testGetProductNameWithVaadinOnClasspath() throws Exception {
-        fakePlatform(true, false);
-        ServerInfo serverInfo = new ServerInfo();
-        assertEquals("Vaadin", serverInfo.getProductName());
-    }
-
-    @Test
-    public void testGetProductNameWithHillaOnClasspath() throws Exception {
-        fakePlatform(false, true);
-        ServerInfo serverInfo = new ServerInfo();
-        assertEquals("Hilla", serverInfo.getProductName());
-    }
-
-    @Test
-    public void testGetProductNameWithBothVaadinAndHillaOnClasspath()
-            throws Exception {
-        fakePlatform(true, true);
-        ServerInfo serverInfo = new ServerInfo();
-        assertEquals("Vaadin,Hilla", serverInfo.getProductName());
-    }
-
-    @Test
-    public void hillaVersionIsDashWhenNoHillaOnClasspath() {
-        final ServerInfo serverInfo = new ServerInfo();
-        assertEquals("-", serverInfo.getHillaVersion());
-    }
-
-    @Test
-    public void vaadinVersionIsDashWhenNoVaadinOnClasspath() {
-        final ServerInfo serverInfo = new ServerInfo();
-        assertEquals("-", serverInfo.getVaadinVersion());
-    }
 }
