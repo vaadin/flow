@@ -57,5 +57,6 @@ public interface DevToolsMessageHandler {
      *            for interaction with the development tools, e.g. sending a
      *            message
      */
-    default void handleDisconnect(DevToolsInterface devToolsInterface) {}
+    default void handleDisconnect(DevToolsInterface devToolsInterface) {
+    }
 }
