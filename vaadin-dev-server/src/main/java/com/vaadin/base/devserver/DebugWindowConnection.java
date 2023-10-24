@@ -214,6 +214,9 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     @Override
     public void onDisconnect(AtmosphereResource resource) {
+        for (DevToolsMessageHandler plugin : plugins) {
+            plugin.handleDisconnect(getDevToolsInterface(resource));
+        }
         if (!atmosphereResources
                 .removeIf(resourceRef -> resource.equals(resourceRef.get()))) {
             String uuid = resource.uuid();
