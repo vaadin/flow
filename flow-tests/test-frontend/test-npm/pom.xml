@@ -72,10 +72,6 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
-                <configuration>
-                    <requireHomeNodeExec>true</requireHomeNodeExec>
-                    <nodeAutoUpdate>true</nodeAutoUpdate>
-                </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->
             <plugin>
