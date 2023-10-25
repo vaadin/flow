@@ -16,6 +16,8 @@
 package com.vaadin.base.devserver;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
@@ -70,6 +72,34 @@ public class DebugWindowConnectionTest {
         String reloadJson = reload.toJson();
         Mockito.verify(broadcaster).broadcast(reloadJson, resource1);
         Mockito.verify(broadcaster).broadcast(reloadJson, resource2);
+    }
+
+    @Test
+    public void requestDevToolsInterface_alwaysReturnsEqualingInterfaceForResource() {
+        AtmosphereResource resource1 = Mockito.mock(AtmosphereResource.class);
+        AtmosphereResource resource2 = Mockito.mock(AtmosphereResource.class);
+
+        DevToolsInterface devToolsInterface = reload
+                .getDevToolsInterface(resource1);
+        DevToolsInterface devToolsInterface2 = reload
+                .getDevToolsInterface(resource2);
+
+        Assert.assertNotEquals(
+                "DevTollsInterface for different resources should not be equal",
+                devToolsInterface, devToolsInterface2);
+        Assert.assertEquals(devToolsInterface,
+                reload.getDevToolsInterface(resource1));
+        Assert.assertEquals(devToolsInterface2,
+                reload.getDevToolsInterface(resource2));
+
+        Map<DevToolsInterface, String> map = new HashMap<>();
+        map.put(devToolsInterface, "one");
+        map.put(devToolsInterface2, "two");
+
+        Assert.assertEquals("one",
+                map.get(reload.getDevToolsInterface(resource1)));
+        Assert.assertEquals("two",
+                map.get(reload.getDevToolsInterface(resource2)));
     }
 
     @Test
