@@ -26,7 +26,7 @@ public class PublicView extends FlexLayout {
         header.getStyle().set("text-align", "center");
         add(header);
         Image image = new Image("public/images/bank.jpg", "Bank");
-        image.getStyle().setMaxWidth("100%").setMinWidth("0");
+        image.getStyle().setMaxWidth("100%").setMinHeight("0");
         add(image);
         add(new Paragraph(
                 "We are very great and have great amounts of money."));
