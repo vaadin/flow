@@ -1,8 +1,8 @@
 import '@vaadin/text-field';
 import { html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import styles from './hello-world-view.css';
-
+// @ts-ignore
+import styles from './hello-world-view.css?inline';
 
 @customElement('hello-world-view')
 export class HelloWorldView extends LitElement {
