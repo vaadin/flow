@@ -56,6 +56,10 @@ public class ElementConstants {
      */
     public static final String STYLE_BACKGROUND_COLOR = "background-color";
     /**
+     * The style property for background-image.
+     */
+    public static final String STYLE_BACKGROUND_IMAGE = "background-image";
+    /**
      * The style property for color.
      */
     public static final String STYLE_COLOR = "color";

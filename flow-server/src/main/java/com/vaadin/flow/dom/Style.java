@@ -774,6 +774,18 @@ public interface Style extends Serializable {
     }
 
     /**
+     * Sets the <code>font-weight</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setFontWeight(String value) {
+        return set(STYLE_FONT_WEIGHT, value);
+    }
+
+    /**
      * Sets the <code>font-size</code> property.
      *
      * @param value
