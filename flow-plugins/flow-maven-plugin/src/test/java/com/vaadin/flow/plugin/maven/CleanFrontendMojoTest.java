@@ -180,6 +180,16 @@ public class CleanFrontendMojoTest {
     }
 
     @Test
+    public void should_removePnpmFile()
+            throws MojoFailureException, IOException {
+        final File pnpmFile = new File(projectBase, ".pnpmfile.cjs");
+        FileUtils.fileWrite(pnpmFile, "{ \"fake\": \"pnpmfile\"}");
+
+        mojo.execute();
+        Assert.assertFalse(".pnpmfile.cjs was not removed", pnpmFile.exists());
+    }
+
+    @Test
     public void should_removePnpmPackageLockFile()
             throws MojoFailureException, IOException {
         final File pnpmLock = new File(projectBase, "pnpm-lock.yaml");
