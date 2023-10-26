@@ -1298,6 +1298,35 @@ public class DataCommunicatorTest {
     }
 
     @Test
+    public void fetchFromProvider_itemCountLessThanTwoPages_correctItemsReturned() {
+        List<Item> items = new ArrayList<>();
+        for (int i = 1; i <= 113; i++) {
+            items.add(new Item(i));
+        }
+
+        DataProvider<Item, Void> dataProvider = DataProvider
+                .fromCallbacks(query -> {
+                    int offset = query.getPage() * query.getPageSize();
+                    int end = offset + query.getPageSize();
+                    if (end > items.size()) {
+                        end = items.size();
+                    }
+                    return items.subList(offset, end).stream();
+                }, query -> items.size());
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setPageSize(50);
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        // request second page with correct db size.
+        Stream<Item> itemStream = dataCommunicator.fetchFromProvider(100, 13);
+        List<Item> itemList = itemStream.toList();
+
+        Assert.assertEquals(13, itemList.size());
+        Assert.assertEquals(new Item(101), itemList.get(0));
+
+    }
+
+    @Test
     public void fetchEnabled_getItemCount_stillReturnsItemsCount() {
         dataCommunicator.setFetchEnabled(false);
         Assert.assertEquals(0, dataCommunicator.getItemCount());
