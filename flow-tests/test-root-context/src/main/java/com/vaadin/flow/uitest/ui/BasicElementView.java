@@ -80,8 +80,8 @@ public class BasicElementView extends AbstractDivView {
                     helloWorldEventRemover.remove();
                 });
         Style s = helloWorldElement.getStyle();
-        s.set("color", "red");
-        s.set("fontWeight", "bold");
+        s.setColor("red");
+        s.setFontWeight(Style.FontWeight.BOLD);
 
         Element elementContainer = ElementFactory.createDiv();
 
