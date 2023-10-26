@@ -10,7 +10,7 @@
     </parent>
     <artifactId>flow-data</artifactId>
     <name>Flow Data</name>
-    <description>${name}</description>
+    <description>${project.name}</description>
     <packaging>jar</packaging>
 
     <dependencies>
