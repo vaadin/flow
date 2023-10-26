@@ -34,9 +34,9 @@ import com.vaadin.flow.i18n.DefaultI18NProvider;
 import com.vaadin.flow.i18n.I18NUtil;
 
 /**
- * Factory for {@link DefaultI18NProvider}. By default, factory creates I18N
- * provider for locales based on all .properties files in /vaadin-i18n folder in
- * the classpath including JAR contents.
+ * Factory for {@link DefaultI18NProvider}. Factory creates I18N provider for
+ * locales based on all .properties files in /vaadin-i18n folder in the
+ * classpath including JAR contents.
  */
 public class DefaultI18NProviderFactory {
 
@@ -69,8 +69,7 @@ public class DefaultI18NProviderFactory {
     /**
      * Creates new instance of {@link DefaultI18NProvider}.
      *
-     * @return new instance of {@link DefaultI18NProvider} or null if unable to
-     *         create one.
+     * @return new instance of {@link DefaultI18NProvider}. Not null.
      */
     public DefaultI18NProvider create() {
         try {
