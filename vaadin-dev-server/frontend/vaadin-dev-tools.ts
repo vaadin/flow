@@ -74,7 +74,6 @@ interface Tab {
   title: string;
   render: (() => TemplateResult) | string;
   element?: HTMLElement;
-  activate?: () => void;
   handleMessage?: MessageHandler;
 }
 
@@ -1373,15 +1372,15 @@ export class VaadinDevTools extends LitElement {
                 @click=${() => {
                   const currentTab = this.tabs.find((tab) => tab.id === this.activeTab);
                   if (currentTab && currentTab.element) {
-                    const deactivateMethod = (currentTab.element as any)?.deactivate;
+                    const deactivateMethod = (currentTab.element?.firstElementChild as any)?.deactivate;
                     if (deactivateMethod) {
-                      deactivateMethod.call(currentTab.element);
+                      deactivateMethod.call(currentTab.element?.firstElementChild);
                     }
                   }
                   this.activeTab = tab.id;
-                  const activateMethod = (tab.element as any).activate;
+                  const activateMethod = (tab.element?.firstElementChild as any).activate;
                   if (activateMethod) {
-                    activateMethod.call(tab.element);
+                    activateMethod.call(tab.element?.firstElementChild);
                   }
                 }}
               >

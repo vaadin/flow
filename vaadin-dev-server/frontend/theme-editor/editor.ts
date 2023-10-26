@@ -72,7 +72,9 @@ export class ThemeEditor extends LitElement {
   @state()
   private effectiveTheme: ComponentTheme | null = null;
 
-  private undoRedoListener;
+  private markedAsUsed = false;
+
+  private undoRedoListener: any;
 
   static get styles() {
     return css`
@@ -204,11 +206,16 @@ export class ThemeEditor extends LitElement {
     `;
   }
 
+  public activate() {
+    if (!this.markedAsUsed) {
+      this.api.markAsUsed().then(() => {this.markedAsUsed = true});
+    }
+  }
+
   protected firstUpdated() {
     this.api = new ThemeEditorApi(this.connection);
     this.history = new ThemeEditorHistory(this.api);
     this.historyActions = this.history.allowedActions;
-    this.api.markAsUsed();
 
     this.undoRedoListener = (evt: KeyboardEvent) => {
       const isZKey = evt.key === 'Z' || evt.key === 'z';
