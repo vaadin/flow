@@ -579,9 +579,8 @@ public class UI extends Component
                          * It makes no sense to pollute the logs with a
                          * UIDetachedException at this point.
                          */
-                        if (exception instanceof ExecutionException
-                                && ((ExecutionException) exception)
-                                        .getCause() instanceof UIDetachedException) {
+                        if (exception instanceof ExecutionException && exception
+                                .getCause() instanceof UIDetachedException) {
                             getLogger().debug(exception.getMessage(),
                                     exception);
                         } else {

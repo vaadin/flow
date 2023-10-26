@@ -32,7 +32,7 @@ public interface DevToolsMessageHandler {
      *            for interaction with the development tools, e.g. sending a
      *            message
      */
-    public void handleConnect(DevToolsInterface devToolsInterface);
+    void handleConnect(DevToolsInterface devToolsInterface);
 
     /**
      * Called when a message from the browser arrives.
@@ -47,7 +47,16 @@ public interface DevToolsMessageHandler {
      * @return {@code true} if the message was handled and should not be passed
      *         on to further handlers
      */
-    public boolean handleMessage(String command, JsonObject data,
+    boolean handleMessage(String command, JsonObject data,
             DevToolsInterface devToolsInterface);
 
+    /**
+     * Called when the browser connection disconnects.
+     *
+     * @param devToolsInterface
+     *            for interaction with the development tools, e.g. sending a
+     *            message
+     */
+    default void handleDisconnect(DevToolsInterface devToolsInterface) {
+    }
 }

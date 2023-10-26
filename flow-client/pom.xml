@@ -10,7 +10,7 @@
     </parent>
     <artifactId>flow-client</artifactId>
     <name>Flow Client</name>
-    <description>${name}</description>
+    <description>${project.name}</description>
     <packaging>jar</packaging>
 
     <properties>
