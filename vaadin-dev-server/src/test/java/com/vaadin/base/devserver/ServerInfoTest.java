@@ -25,11 +25,14 @@ import java.util.LinkedList;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+
+import static org.junit.Assert.assertEquals;
 
 public class ServerInfoTest {
     private ClassLoader oldContextClassLoader;
@@ -82,4 +85,13 @@ public class ServerInfoTest {
         Thread.currentThread().setContextClassLoader(classLoader);
     }
 
+    @Test
+    public void hillaVersionIsDashWhenNoHillaOnClasspath() {
+        assertEquals("-", ServerInfo.fetchHillaVersion());
+    }
+
+    @Test
+    public void vaadinVersionIsDashWhenNoVaadinOnClasspath() {
+        assertEquals("-", ServerInfo.fetchVaadinVersion());
+    }
 }
