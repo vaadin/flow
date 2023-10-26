@@ -74,14 +74,7 @@ public class ErrorEvent implements Serializable {
      * @return Component that error happened for if available
      */
     public Optional<Component> getComponent() {
-        if (componentNode != null) {
-            try {
-                return Element.get(componentNode).getComponent();
-            } catch (IllegalArgumentException iae) {
-                // NO-OP return Optional.empty
-            }
-        }
-        return Optional.empty();
+        return getElement().flatMap(Element::getComponent);
     }
 
     /**
