@@ -147,8 +147,11 @@ public class Query<T, F> implements Serializable {
      * Returns the page size that should be returned. The amount of items can be
      * smaller if there is no more items available in the backend.
      * <p>
-     * Vaadin asks data from the backend in paged manner. This is an alias for
-     * {@link #getLimit()}. As long as the size is evenly divisible.
+     * Vaadin asks data from the backend in paged manner.
+     * <p>
+     * This is an alias for {@link #getLimit()} if the page offset can be evenly
+     * divided by the limit. Else the page size will be increased to evenly
+     * divide offset so the items skip for page will go to the corrent item.
      *
      * @return the page size used for data access
      */
