@@ -85,6 +85,11 @@
             <artifactId>vaadin-text-field-testbench</artifactId>
             <version>${component.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-html-components-testbench</artifactId>
+            <version>${component.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>

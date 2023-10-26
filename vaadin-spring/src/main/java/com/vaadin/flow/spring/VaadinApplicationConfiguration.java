@@ -20,8 +20,11 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.vaadin.flow.i18n.DefaultI18NProvider;
+import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.spring.SpringLookupInitializer.SpringApplicationContextInit;
+import com.vaadin.flow.spring.i18n.DefaultI18NProviderFactory;
 
 /**
  * Vaadin Application Spring configuration.
@@ -57,5 +60,17 @@ public class VaadinApplicationConfiguration {
     @Bean
     public ApplicationContextAware vaadinApplicationContextInitializer() {
         return new SpringApplicationContextInit();
+    }
+
+    /**
+     * Creates default {@link I18NProvider}. This is created only if there's no
+     * {@link I18NProvider} bean declared.
+     *
+     * @return default I18N provider
+     */
+    @Bean
+    @ConditionalOnMissingBean(value = I18NProvider.class)
+    public DefaultI18NProvider vaadinI18nProvider() {
+        return new DefaultI18NProviderFactory().create();
     }
 }

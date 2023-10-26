@@ -87,8 +87,21 @@ public final class I18NUtil {
                         .startsWith(DefaultI18NProvider.BUNDLE_FILENAME)
                         && file.getName().endsWith(PROPERTIES_SUFFIX))
                 .collect(Collectors.toList());
-        for (File file : listedFiles) {
-            String name = file.getName();
+        return collectLocalesFromFiles(listedFiles);
+    }
+
+    /**
+     * Get list of locales collected from the given list of translation file
+     * names.
+     *
+     * @param fileNames
+     *            List of file names
+     * @return List of locales
+     */
+    public static List<Locale> collectLocalesFromFileNames(
+            List<String> fileNames) {
+        List<Locale> locales = new ArrayList<>();
+        for (String name : fileNames) {
 
             if (!name.contains("_")) {
                 // This is the default bundle and that doesn't have a
@@ -108,6 +121,11 @@ public final class I18NUtil {
             }
         }
         return locales;
+    }
+
+    private static List<Locale> collectLocalesFromFiles(List<File> files) {
+        return collectLocalesFromFileNames(
+                files.stream().map(File::getName).collect(Collectors.toList()));
     }
 
     protected static List<File> getTranslationFiles(URL resource) {
