@@ -1319,7 +1319,7 @@ public class DataCommunicatorTest {
         dataCommunicator.setDataProvider(dataProvider, null);
         // request second page with correct db size.
         Stream<Item> itemStream = dataCommunicator.fetchFromProvider(100, 13);
-        List<Item> itemList = itemStream.toList();
+        List<Item> itemList = itemStream.collect(Collectors.toList());
 
         Assert.assertEquals(13, itemList.size());
         Assert.assertEquals(new Item(101), itemList.get(0));
