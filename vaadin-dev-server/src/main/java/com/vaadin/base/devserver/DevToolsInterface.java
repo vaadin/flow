@@ -30,5 +30,5 @@ public interface DevToolsInterface {
      * @param data
      *            data, specific to the command
      */
-    public void send(String command, JsonObject data);
+    void send(String command, JsonObject data);
 }

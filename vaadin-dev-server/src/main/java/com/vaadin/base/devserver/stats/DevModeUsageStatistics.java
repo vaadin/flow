@@ -103,13 +103,11 @@ public class DevModeUsageStatistics {
 
     private void trackGlobalData() {
         storage.update((globalData, projectData) -> {
-            ServerInfo serverInfo = new ServerInfo();
-
             // Update the machine / user / source level data
             globalData.setValue(StatisticsConstants.FIELD_OPERATING_SYSTEM,
-                    serverInfo.getOsVersion());
+                    ServerInfo.fetchOperatingSystem());
             globalData.setValue(StatisticsConstants.FIELD_JVM,
-                    serverInfo.getJavaVersion());
+                    ServerInfo.fetchJavaVersion());
             globalData.setValue(StatisticsConstants.FIELD_PROKEY,
                     ProjectHelpers.getProKey());
             globalData.setValue(StatisticsConstants.FIELD_USER_KEY,
@@ -127,9 +125,9 @@ public class DevModeUsageStatistics {
             projectData.setValue(StatisticsConstants.FIELD_FLOW_VERSION,
                     Version.getFullVersion());
             projectData.setValue(StatisticsConstants.FIELD_VAADIN_VERSION,
-                    serverInfo.getVaadinVersion());
+                    ServerInfo.fetchVaadinVersion());
             projectData.setValue(StatisticsConstants.FIELD_HILLA_VERSION,
-                    serverInfo.getHillaVersion());
+                    ServerInfo.fetchHillaVersion());
             projectData.setValue(StatisticsConstants.FIELD_SOURCE_ID,
                     ProjectHelpers.getProjectSource(projectFolder));
             projectData.increment(

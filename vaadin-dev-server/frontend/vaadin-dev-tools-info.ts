@@ -9,11 +9,7 @@ import { ConnectionStatus } from './connection';
 import { MessageType, VaadinDevTools } from './vaadin-dev-tools.js';
 
 interface ServerInfo {
-  vaadinVersion: string;
-  flowVersion: string;
-  javaVersion: string;
-  osVersion: string;
-  productName: string;
+  versions: { name: string; version: string }[];
 }
 
 @customElement('vaadin-dev-tools-info')
@@ -23,11 +19,7 @@ export class InfoTab extends LitElement {
 
   @state()
   private serverInfo: ServerInfo = {
-    flowVersion: '',
-    vaadinVersion: '',
-    javaVersion: '',
-    osVersion: '',
-    productName: ''
+    versions: []
   };
 
   protected createRenderRoot(): Element | ShadowRoot {
@@ -38,14 +30,12 @@ export class InfoTab extends LitElement {
     return html` <div class="info-tray">
       <button class="button copy" @click=${this.copyInfoToClipboard}>Copy</button>
       <dl>
-        <dt>${this.serverInfo.productName}</dt>
-        <dd>${this.serverInfo.vaadinVersion}</dd>
-        <dt>Flow</dt>
-        <dd>${this.serverInfo.flowVersion}</dd>
-        <dt>Java</dt>
-        <dd>${this.serverInfo.javaVersion}</dd>
-        <dt>OS</dt>
-        <dd>${this.serverInfo.osVersion}</dd>
+        ${this.serverInfo.versions.map(
+          (version) => html`
+            <dt>${version.name}</dt>
+            <dd>${version.version}</dd>
+          `
+        )}
         <dt>Browser</dt>
         <dd>${navigator.userAgent}</dd>
         <dt>

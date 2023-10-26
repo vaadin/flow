@@ -70,6 +70,12 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
             lockFile.delete();
         }
 
+        // clean up .pnpmfile.cjs
+        File pnpmfile = new File(npmFolder(), ".pnpmfile.cjs");
+        if (pnpmfile.exists()) {
+            pnpmfile.delete();
+        }
+
         // clean up generated files from frontend
         if (generatedTsFolder().exists()) {
             try {

@@ -159,7 +159,7 @@ jobs:
           version: '8.3.1'
       - uses: oven-sh/setup-bun@v1
         with:
-          bun-version: latest
+          bun-version: '1.0.7'
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
