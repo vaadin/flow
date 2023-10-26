@@ -46,7 +46,7 @@ public open class VaadinCleanTask : DefaultTask() {
     init {
         group = "Vaadin"
         description = "Cleans the project completely and removes 'generated' folders, node_modules, src/main/dev-bundle, webpack.generated.js, " +
-                "vite.generated.js, tsconfig.json, types.d.ts, pnpm-lock.yaml, .pnpmfile.cjs and package-lock.json"
+                "vite.generated.js, tsconfig.json, types.d.ts, pnpm-lock.yaml, pnpmfile.js, .pnpmfile.cjs and package-lock.json"
 
         dependsOn("clean")
     }
