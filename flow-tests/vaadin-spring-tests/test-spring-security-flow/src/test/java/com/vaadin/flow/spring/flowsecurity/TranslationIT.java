@@ -30,7 +30,7 @@ public class TranslationIT extends AbstractSpringTest {
     }
 
     @Test
-    public void translationFilesExist_defaultI18NIntantiated_languagesWork() {
+    public void translationFilesExist_customI18NInstantiated_languagesWork() {
         open();
 
         String locales = $(SpanElement.class).id(TranslationView.LOCALES_ID)
