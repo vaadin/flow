@@ -250,6 +250,8 @@ public class BuildFrontendUtil {
 
         buildInfo.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
                 adapter.pnpmEnable());
+        buildInfo.put(InitParameters.SERVLET_PARAMETER_ENABLE_BUN,
+                adapter.bunEnable());
         buildInfo.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
                 adapter.requireHomeNodeExec());
 
@@ -322,6 +324,7 @@ public class BuildFrontendUtil {
                             adapter.generateEmbeddableWebComponents())
                     .withTokenFile(BuildFrontendUtil.getTokenFile(adapter))
                     .withEnablePnpm(adapter.pnpmEnable())
+                    .withEnableBun(adapter.bunEnable())
                     .useGlobalPnpm(adapter.useGlobalPnpm())
                     .withFrontendGeneratedFolder(adapter.generatedTsFolder())
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
@@ -384,6 +387,7 @@ public class BuildFrontendUtil {
                             adapter.generateEmbeddableWebComponents())
                     .withTokenFile(BuildFrontendUtil.getTokenFile(adapter))
                     .withEnablePnpm(adapter.pnpmEnable())
+                    .withEnableBun(adapter.bunEnable())
                     .useGlobalPnpm(adapter.useGlobalPnpm())
                     .withFrontendGeneratedFolder(adapter.generatedTsFolder())
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
@@ -672,6 +676,7 @@ public class BuildFrontendUtil {
             buildInfo.remove(FRONTEND_TOKEN);
             buildInfo.remove(FRONTEND_HOTDEPLOY);
             buildInfo.remove(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM);
+            buildInfo.remove(InitParameters.SERVLET_PARAMETER_ENABLE_BUN);
             buildInfo.remove(InitParameters.CI_BUILD);
             buildInfo.remove(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE);
             buildInfo.remove(

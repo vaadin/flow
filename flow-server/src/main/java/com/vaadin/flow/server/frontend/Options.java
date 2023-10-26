@@ -62,6 +62,8 @@ public class Options implements Serializable {
 
     private boolean enablePnpm = Constants.ENABLE_PNPM_DEFAULT;
 
+    private boolean enableBun = Constants.ENABLE_BUN_DEFAULT;
+
     private boolean ciBuild;
 
     private boolean forceProductionBuild;
@@ -396,6 +398,20 @@ public class Options implements Serializable {
     }
 
     /**
+     * Enables bun tool.
+     * <p>
+     * "bun" will be used instead of "npm".
+     *
+     * @param enable
+     *            enables bun.
+     * @return the builder, for chaining
+     */
+    public Options withEnableBun(boolean enable) {
+        enableBun = enable;
+        return this;
+    }
+
+    /**
      * Enables ci build.
      * <p>
      * "npm ci" will be used instead of "npm install". "--frozen-lockfile" will
@@ -726,6 +742,10 @@ public class Options implements Serializable {
 
     public boolean isEnablePnpm() {
         return enablePnpm;
+    }
+
+    public boolean isEnableBun() {
+        return enableBun;
     }
 
     public boolean isCiBuild() {

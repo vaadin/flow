@@ -393,7 +393,7 @@ public class NodeUpdaterTest {
 
             Mockito.verify(logger, Mockito.times(1)).info(
                     "Couldn't find {} file to pin dependency versions for core components."
-                            + " Transitive dependencies won't be pinned for npm/pnpm.",
+                            + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
                     Constants.VAADIN_CORE_VERSIONS_JSON);
         }
     }

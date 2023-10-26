@@ -131,6 +131,16 @@ public interface AbstractConfiguration extends Serializable {
     }
 
     /**
+     * Returns whether bun is enabled or not.
+     *
+     * @return {@code true} if enabled, {@code false} if not
+     */
+    default boolean isBunEnabled() {
+        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_BUN,
+                Constants.ENABLE_BUN_DEFAULT);
+    }
+
+    /**
      * Returns whether globally installed pnpm is used or the default one (see
      * {@link com.vaadin.flow.server.frontend.FrontendTools#DEFAULT_PNPM_VERSION}).
      *

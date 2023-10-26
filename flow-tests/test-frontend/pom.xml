@@ -50,6 +50,8 @@
                 <module>test-npm</module>
                 <module>test-pnpm/pom-production.xml</module>
                 <module>test-pnpm</module>
+                <module>test-bun/pom-production.xml</module>
+                <module>test-bun</module>
             </modules>
         </profile>
     </profiles>
