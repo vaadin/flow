@@ -38,6 +38,7 @@ public class Query<T, F> implements Serializable {
     private final List<QuerySortOrder> sortOrders;
     private final Comparator<T> inMemorySorting;
     private final F filter;
+    private Integer pageSize;
 
     /**
      * Constructs a Query for all rows from 0 to {@link Integer#MAX_VALUE}
@@ -119,24 +120,45 @@ public class Query<T, F> implements Serializable {
      * <p>
      * Vaadin asks data from the backend in paged manner. This shorthand
      * calculates the page index for backends using paged data access, such as
-     * Spring Data repositores.
+     * Spring Data repositories.
      *
      * @return the zero-based page index
      */
     public int getPage() {
-        return getOffset() / getLimit();
+        int pageSize = getPageSize();
+        int pageOffset = getOffset();
+        // If page offset is not evenly divisible with pageSize raise
+        // pageSize until it is.
+        // Else we will on the end pick the wrong items due to rounding error.
+        if (pageOffset > pageSize && pageOffset % pageSize != 0) {
+            while (pageOffset % pageSize != 0) {
+                pageSize++;
+            }
+            setPageSize(pageSize);
+        }
+        return pageOffset / pageSize;
+    }
+
+    private void setPageSize(Integer pageSize) {
+        this.pageSize = pageSize;
     }
 
     /**
      * Returns the page size that should be returned. The amount of items can be
      * smaller if there is no more items available in the backend.
      * <p>
-     * Vaadin asks data from the backend in paged manner. This is an alias for
-     * {@link #getLimit()}.
+     * Vaadin asks data from the backend in paged manner.
+     * <p>
+     * This is an alias for {@link #getLimit()} if the page offset can be evenly
+     * divided by the limit. Else the page size will be increased to evenly
+     * divide offset so the items skip for page will go to the correct item.
      *
      * @return the page size used for data access
      */
     public int getPageSize() {
+        if (pageSize != null) {
+            return pageSize;
+        }
         return getLimit();
     }
 
