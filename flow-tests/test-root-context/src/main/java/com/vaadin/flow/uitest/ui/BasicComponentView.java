@@ -62,8 +62,8 @@ public class BasicComponentView extends AbstractDivView {
             helloWorld.getElement().getClassList().clear();
         });
         Style s = helloWorld.getElement().getStyle();
-        s.set("color", "red");
-        s.set("fontWeight", "bold");
+        s.setColor("red");
+        s.setFontWeight("bold");
 
         add(text, helloWorld, button, input);
     }

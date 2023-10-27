@@ -150,10 +150,12 @@ class VaadinSmokeTest : AbstractGradleTest() {
     fun vaadinCleanDoesntDeletePnpmFiles() {
         val pnpmLockYaml = testProject.newFile("pnpm-lock.yaml")
         val pnpmFileJs = testProject.newFile("pnpmfile.js")
+        val pnpmFileCjs = testProject.newFile(".pnpmfile.cjs")
         val webpackConfigJs = testProject.newFile("webpack.config.js")
         testProject.build("vaadinClean")
         expect(false) { pnpmLockYaml.exists() }
         expect(false) { pnpmFileJs.exists() }
+        expect(false) { pnpmFileCjs.exists() }
         // don't delete webpack.config.js: https://github.com/vaadin/vaadin-gradle-plugin/pull/74#discussion_r444457296
         expect(true) { webpackConfigJs.exists() }
     }

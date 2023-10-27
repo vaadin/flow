@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.MessageDigestUtil;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.VaadinRequest;
@@ -430,7 +431,13 @@ public class ServerRpcHandler implements Serializable {
             if (JsonConstants.RPC_TYPE_MAP_SYNC.equals(type)) {
                 // Handle these before any RPC invocations.
                 mapSyncHandler.handle(ui, invocationJson)
-                        .ifPresent(pendingChangeEvents::add);
+                        .ifPresent(runnable -> pendingChangeEvents.add(() -> {
+                            try {
+                                runnable.run();
+                            } catch (Throwable throwable) {
+                                callErrorHandler(ui, invocationJson, throwable);
+                            }
+                        }));
             } else {
                 data.add(invocationJson);
             }
@@ -461,8 +468,21 @@ public class ServerRpcHandler implements Serializable {
                     : "RPC handler " + handler.getClass().getName()
                             + " returned a Runnable even though it shouldn't";
         } catch (Throwable throwable) {
-            ui.getSession().getErrorHandler().error(new ErrorEvent(throwable));
+            callErrorHandler(ui, invocationJson, throwable);
         }
+    }
+
+    private static void callErrorHandler(UI ui, JsonObject invocationJson,
+            Throwable throwable) {
+        StateNode node = ui.getInternals().getStateTree().getNodeById(
+                (int) invocationJson.getNumber(JsonConstants.RPC_NODE));
+        ErrorEvent event;
+        if (node != null) {
+            event = new ErrorEvent(throwable, node);
+        } else {
+            event = new ErrorEvent(throwable);
+        }
+        ui.getSession().getErrorHandler().error(event);
     }
 
     protected String getMessage(Reader reader) throws IOException {

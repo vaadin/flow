@@ -59,12 +59,21 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
         removeNodeModules();
 
         // Cleanup (p)npm lock file.
-        File lockFile = new File(npmFolder(), "pnpm-lock.yaml");
+        File lockFile = new File(npmFolder(), Constants.PACKAGE_LOCK_YAML);
         if (!lockFile.exists()) {
-            lockFile = new File(npmFolder(), "package-lock.json");
+            lockFile = new File(npmFolder(), Constants.PACKAGE_LOCK_BUN);
+        }
+        if (!lockFile.exists()) {
+            lockFile = new File(npmFolder(), Constants.PACKAGE_LOCK_JSON);
         }
         if (lockFile.exists()) {
             lockFile.delete();
+        }
+
+        // clean up .pnpmfile.cjs
+        File pnpmfile = new File(npmFolder(), ".pnpmfile.cjs");
+        if (pnpmfile.exists()) {
+            pnpmfile.delete();
         }
 
         // clean up generated files from frontend

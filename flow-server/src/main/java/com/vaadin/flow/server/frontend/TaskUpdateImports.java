@@ -60,21 +60,8 @@ public class TaskUpdateImports extends NodeUpdater {
      *            a reusable class finder
      * @param frontendDepScanner
      *            a reusable frontend dependencies scanner
-     * @param npmFolder
-     *            folder with the `package.json` file
-     * @param generatedPath
-     *            folder where flow generated files will be placed.
-     * @param frontendDirectory
-     *            a directory with project's frontend files
-     * @param tokenFile
-     *            the token (flow-build-info.json) path, may be {@code null}
-     * @param tokenFileData
-     *            object to fill with token file data, may be {@code null}
-     * @param enablePnpm
-     *            if {@code true} then pnpm is used instead of npm, otherwise
-     *            npm is used
-     * @param buildDir
-     *            the used build directory
+     * @param options
+     *            options for the task
      */
     TaskUpdateImports(ClassFinder finder,
             FrontendDependenciesScanner frontendDepScanner, Options options) {
@@ -89,9 +76,16 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private String getAbsentPackagesMessage() {
-        String lockFile = options.isEnablePnpm() ? "pnpm-lock.yaml"
-                : Constants.PACKAGE_LOCK_JSON;
-        String command = options.isEnablePnpm() ? "pnpm" : "npm";
+        String lockFile;
+        String toolName = TaskRunNpmInstall.getToolName(options);
+        if (options.isEnableBun()) {
+            lockFile = Constants.PACKAGE_LOCK_BUN;
+        } else if (options.isEnablePnpm()) {
+            lockFile = Constants.PACKAGE_LOCK_YAML;
+        } else {
+            lockFile = Constants.PACKAGE_LOCK_JSON;
+        }
+
         String note = "";
         if (options.isEnablePnpm()) {
             note = "\nMake sure first that `pnpm` command is installed, otherwise you should install it using npm: `npm add -g pnpm@"
@@ -101,7 +95,7 @@ public class TaskUpdateImports extends NodeUpdater {
                 "If the build fails, check that npm packages are installed.\n\n"
                         + "  To fix the build remove `%s` and `node_modules` directory to reset modules.\n"
                         + "  In addition you may run `%s install` to fix `node_modules` tree structure.%s",
-                lockFile, command, note);
+                lockFile, toolName, note);
     }
 
 }

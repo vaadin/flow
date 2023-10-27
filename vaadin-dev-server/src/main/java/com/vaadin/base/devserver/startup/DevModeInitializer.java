@@ -246,6 +246,7 @@ public class DevModeInitializer implements Serializable {
                         Boolean.FALSE.toString())));
 
         boolean enablePnpm = config.isPnpmEnabled();
+        boolean enableBun = config.isBunEnabled();
 
         boolean useGlobalPnpm = config.isGlobalPnpm();
 
@@ -278,7 +279,7 @@ public class DevModeInitializer implements Serializable {
                 .withRunNpmInstall(mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
                 .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).withEnablePnpm(enablePnpm)
-                .useGlobalPnpm(useGlobalPnpm)
+                .withEnableBun(enableBun).useGlobalPnpm(useGlobalPnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
                 .withProductionMode(config.isProductionMode())
                 .withPostinstallPackages(

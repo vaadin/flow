@@ -60,13 +60,13 @@ public class DnDAttachDetachView extends Div {
         Div div = new Div();
         div.setText("Text To Drag");
         div.setId(DRAGGABLE_ID);
-        div.getStyle().set("background-color", "grey");
+        div.getStyle().setBackgroundColor("grey");
         add(div);
 
         add(view1);
         view1.setWidth("500px");
         view1.setHeight("500px");
-        view1.getStyle().set("background-color", "pink");
+        view1.getStyle().setBackgroundColor("pink");
         view1.setId(VIEW_1_ID);
 
         view2.setWidth("500px");

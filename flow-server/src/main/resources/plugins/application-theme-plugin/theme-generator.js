@@ -156,7 +156,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
         "Missing npm modules or files '" +
           missingModules.join("', '") +
           "' for documentCss marked in 'theme.json'.\n" +
-          "Install or update package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'"
+          "Install or update package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm/bun i'"
       );
     }
     themeProperties.documentCss.forEach((cssImport) => {
@@ -179,7 +179,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
         "Missing npm modules or files '" +
           missingModules.join("', '") +
           "' for importCss marked in 'theme.json'.\n" +
-          "Install or update package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'"
+          "Install or update package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm/bun i'"
       );
     }
     themeProperties.importCss.forEach((cssPath) => {

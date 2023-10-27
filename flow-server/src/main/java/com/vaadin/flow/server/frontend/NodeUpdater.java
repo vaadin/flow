@@ -144,7 +144,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (coreVersionsResource == null) {
             log().info(
                     "Couldn't find {} file to pin dependency versions for core components."
-                            + " Transitive dependencies won't be pinned for npm/pnpm.",
+                            + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
                     Constants.VAADIN_CORE_VERSIONS_JSON);
             return Json.createObject();
         }

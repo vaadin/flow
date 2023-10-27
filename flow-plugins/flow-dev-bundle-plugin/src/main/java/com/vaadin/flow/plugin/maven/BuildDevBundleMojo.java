@@ -358,6 +358,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
+    public boolean bunEnable() {
+        return false;
+    }
+
+    @Override
     public boolean useGlobalPnpm() {
         return false;
     }

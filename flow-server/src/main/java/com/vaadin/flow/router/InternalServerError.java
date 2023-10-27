@@ -138,7 +138,7 @@ public class InternalServerError extends Component
                             + "Add some binding as a dependency to your project. "
                             + "See details ");
             logInfo.getStyle().setMargin("10px 0");
-            logInfo.getStyle().set("fontWeight", "bold");
+            logInfo.getStyle().setFontWeight("bold");
             logInfo.getStyle().setColor("#6495ED");
             logInfo.appendChild(ElementFactory.createAnchor(
                     "https://www.slf4j.org/manual.html#swapping", "here"));

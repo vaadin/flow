@@ -49,7 +49,8 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
 
     private List<String> generatedFiles = List.of(NODE_MODULES,
             Constants.PACKAGE_JSON, Constants.PACKAGE_LOCK_JSON,
-            Constants.PACKAGE_LOCK_YAML, TaskGenerateTsConfig.TSCONFIG_JSON,
+            Constants.PACKAGE_LOCK_YAML, Constants.PACKAGE_LOCK_BUN,
+            TaskGenerateTsConfig.TSCONFIG_JSON,
             TaskGenerateTsDefinitions.TS_DEFINITIONS, ".pnpmfile.cjs", ".npmrc",
             FrontendUtils.VITE_GENERATED_CONFIG, FrontendUtils.VITE_CONFIG);
     private Set<File> existingFiles = new HashSet<>();

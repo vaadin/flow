@@ -19,6 +19,7 @@ import java.util.Random;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.dom.Style;
 
 public abstract class AbstractLiveReloadView extends Div {
     public static final String INSTANCE_IDENTIFIER = "instance-identifier";
@@ -30,8 +31,8 @@ public abstract class AbstractLiveReloadView extends Div {
 
     public AbstractLiveReloadView() {
         getStyle().set("display", "flex");
-        getStyle().set("flex-direction", "column");
-        getStyle().set("align-items", "flex-start");
+        getStyle().setFlexDirection(Style.FlexDirection.COLUMN);
+        getStyle().setAlignItems(Style.AlignItems.FLEX_START);
 
         Span instanceIdLabel = new Span(Integer.toString(random.nextInt()));
         instanceIdLabel.setId(INSTANCE_IDENTIFIER);
