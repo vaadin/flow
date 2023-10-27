@@ -25,7 +25,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -42,16 +41,6 @@ import com.vaadin.flow.i18n.I18NUtil;
 public class DefaultI18NProviderFactory implements Serializable {
 
     private static final String DEFAULT_LOCATION_PATTERN = "classpath*:/vaadin-i18n/*.properties";
-
-    private final Logger logger;
-
-    public DefaultI18NProviderFactory() {
-        logger = LoggerFactory.getLogger(DefaultI18NProviderFactory.class);
-    }
-
-    private Logger getLogger() {
-        return logger;
-    }
 
     /**
      * Get location pattern for {@link ResourcePatternResolver} to find
@@ -85,8 +74,8 @@ public class DefaultI18NProviderFactory implements Serializable {
                 return new DefaultI18NProvider(locales);
             }
         } catch (IOException e) {
-            getLogger().error("Unable to create DefaultI18NProvider instance.",
-                    e);
+            LoggerFactory.getLogger(DefaultI18NProviderFactory.class)
+                    .error("Unable to create DefaultI18NProvider instance.", e);
         }
         return new DefaultI18NProvider(Collections.emptyList());
     }
