@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.spring;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 import com.vaadin.flow.i18n.DefaultI18NProvider;
@@ -70,7 +72,11 @@ public class VaadinApplicationConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(value = I18NProvider.class)
-    public DefaultI18NProvider vaadinI18nProvider() {
-        return new DefaultI18NProviderFactory().create();
+    @Conditional(DefaultI18NProviderFactory.class)
+    public DefaultI18NProvider vaadinI18nProvider(
+            @Value("${vaadin.i18n.location-pattern:"
+                    + DefaultI18NProviderFactory.DEFAULT_LOCATION_PATTERN
+                    + "}") String locationPattern) {
+        return new DefaultI18NProviderFactory().create(locationPattern);
     }
 }

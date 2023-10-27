@@ -19,16 +19,18 @@ package com.vaadin.flow.spring.i18n;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 
 import com.vaadin.flow.i18n.DefaultI18NProvider;
 import com.vaadin.flow.i18n.I18NUtil;
@@ -38,34 +40,27 @@ import com.vaadin.flow.i18n.I18NUtil;
  * locales based on all .properties files in /vaadin-i18n folder in the
  * classpath including JAR contents.
  */
-public class DefaultI18NProviderFactory implements Serializable {
-
-    private static final String DEFAULT_LOCATION_PATTERN = "classpath*:/vaadin-i18n/*.properties";
+public class DefaultI18NProviderFactory implements Condition, Serializable {
 
     /**
-     * Get location pattern for {@link ResourcePatternResolver} to find
-     * translation files for available locales. Default value finds all
-     * .properties files in /vaadin-i18n folder in the classpath including JAR
-     * contents.
+     * Default location pattern to be used with {@link ResourcePatternResolver}.
+     */
+    public static final String DEFAULT_LOCATION_PATTERN = "classpath*:/vaadin-i18n/*.properties";
+
+    /**
+     * Creates new instance of {@link DefaultI18NProvider} with the given
+     * location pattern.
      *
-     * @return location pattern
+     * @param locationPattern
+     *            location pattern for {@link ResourcePatternResolver} to find
+     *            translation files for available locales.
+     * @return new instance of {@link DefaultI18NProvider}. May be null.
      * @see ResourcePatternResolver
      * @see ResourcePatternResolver#getResources(String)
      */
-    protected String getLocationPattern() {
-        return DEFAULT_LOCATION_PATTERN;
-    }
-
-    /**
-     * Creates new instance of {@link DefaultI18NProvider}.
-     *
-     * @return new instance of {@link DefaultI18NProvider}. Not null.
-     */
-    public DefaultI18NProvider create() {
+    public DefaultI18NProvider create(String locationPattern) {
         try {
-            ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
-            Resource[] translations = resourcePatternResolver
-                    .getResources(getLocationPattern());
+            Resource[] translations = getTranslationResources(locationPattern);
             if (translations.length > 0) {
                 List<Locale> locales = I18NUtil.collectLocalesFromFileNames(
                         Arrays.stream(translations).map(Resource::getFilename)
@@ -77,6 +72,31 @@ public class DefaultI18NProviderFactory implements Serializable {
             LoggerFactory.getLogger(DefaultI18NProviderFactory.class)
                     .error("Unable to create DefaultI18NProvider instance.", e);
         }
-        return new DefaultI18NProvider(Collections.emptyList());
+        return null;
+    }
+
+    @Override
+    public boolean matches(ConditionContext context,
+            AnnotatedTypeMetadata metadata) {
+        try {
+            String locationPattern = context.getEnvironment().getProperty(
+                    "vaadin.i18n.location-pattern", String.class,
+                    DEFAULT_LOCATION_PATTERN);
+            Resource[] translations = getTranslationResources(locationPattern);
+            return translations.length > 0;
+        } catch (IOException e) {
+            LoggerFactory.getLogger(DefaultI18NProviderFactory.class).error(
+                    "Unable to detect if DefaultI18NProvider instance is needed.",
+                    e);
+            return false;
+        }
+    }
+
+    private Resource[] getTranslationResources(String locationPattern)
+            throws IOException {
+        ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
+        return resourcePatternResolver
+                .getResources(locationPattern != null ? locationPattern
+                        : DEFAULT_LOCATION_PATTERN);
     }
 }
