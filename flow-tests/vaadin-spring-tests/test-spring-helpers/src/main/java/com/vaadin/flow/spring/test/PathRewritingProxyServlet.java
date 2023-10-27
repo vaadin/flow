@@ -7,11 +7,10 @@ import java.util.Locale;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.eclipse.jetty.client.Response;
+import org.eclipse.jetty.ee10.proxy.ProxyServlet;
 
-import org.eclipse.jetty.client.api.Response;
-import org.eclipse.jetty.proxy.ProxyServlet.Transparent;
-
-public class PathRewritingProxyServlet extends Transparent {
+public class PathRewritingProxyServlet extends ProxyServlet.Transparent {
 
     private String prefix;
     private String proxyTo;
