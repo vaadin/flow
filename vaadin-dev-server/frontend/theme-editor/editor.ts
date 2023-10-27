@@ -206,12 +206,6 @@ export class ThemeEditor extends LitElement {
     `;
   }
 
-  public activate() {
-    if (!this.markedAsUsed) {
-      this.api.markAsUsed().then(() => {this.markedAsUsed = true});
-    }
-  }
-
   protected firstUpdated() {
     this.api = new ThemeEditorApi(this.connection);
     this.history = new ThemeEditorHistory(this.api);
@@ -581,6 +575,9 @@ export class ThemeEditor extends LitElement {
     }
 
     const componentResponse = await this.api.loadComponentMetadata(component);
+    if (!this.markedAsUsed) {
+      this.api.markAsUsed().then(() => {this.markedAsUsed = true});
+    }
     themePreview.previewLocalClassName(component.element, componentResponse.className);
 
     await this.refreshTheme({
