@@ -1372,15 +1372,17 @@ export class VaadinDevTools extends LitElement {
                 @click=${() => {
                   const currentTab = this.tabs.find((tab) => tab.id === this.activeTab);
                   if (currentTab && currentTab.element) {
-                    const deactivateMethod = (currentTab.element?.firstElementChild as any)?.deactivate;
+                    const currentTabElement: any = (typeof currentTab.render === 'function' ? currentTab.element!.firstElementChild : currentTab.element);
+                    const deactivateMethod = currentTabElement?.deactivate;
                     if (deactivateMethod) {
-                      deactivateMethod.call(currentTab.element?.firstElementChild);
+                      deactivateMethod.call(currentTabElement);
                     }
                   }
                   this.activeTab = tab.id;
-                  const activateMethod = (tab.element?.firstElementChild as any).activate;
+                  const tabElement: any = (typeof tab.render === 'function' ? tab.element!.firstElementChild : tab.element);
+                  const activateMethod = tabElement.activate;
                   if (activateMethod) {
-                    activateMethod.call(tab.element?.firstElementChild);
+                    activateMethod.call(tabElement);
                   }
                 }}
               >
