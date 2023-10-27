@@ -103,7 +103,7 @@
         <maven.failsafe.plugin.version>3.2.1</maven.failsafe.plugin.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
-        <maven.clean.plugin.version>3.3.1</maven.clean.plugin.version>
+        <maven.clean.plugin.version>3.3.2</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>9.1.0</testbench.version>
         <jetty.version>11.0.17</jetty.version>
