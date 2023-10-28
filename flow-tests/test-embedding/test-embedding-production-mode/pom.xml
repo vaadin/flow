@@ -48,7 +48,7 @@
                 <artifactId>jetty-ee10-maven-plugin</artifactId>
                 <configuration>
                     <contextHandlers>
-                        <contextHandler implementation="org.eclipse.jetty.maven.plugin.MavenWebAppContext">
+                        <contextHandler implementation="org.eclipse.jetty.ee10.maven.plugin.MavenWebAppContext">
                             <contextPath>/pages</contextPath>
                             <resourceBases>
                                 ${project.basedir}/../webapp/npm

@@ -30,11 +30,11 @@
                         <contextPath>/</contextPath>
                     </webApp>
                     <contextHandlers>
-                        <contextHandler implementation="org.eclipse.jetty.maven.plugin.MavenWebAppContext">
+                        <contextHandler implementation="org.eclipse.jetty.ee10.maven.plugin.MavenWebAppContext">
                             <war>${project.basedir}${file.separator}..${file.separator}test-war1${file.separator}target${file.separator}flow-test-multi-war1.war</war>
                             <contextPath>/test-war1</contextPath>
                         </contextHandler>
-                        <contextHandler implementation="org.eclipse.jetty.maven.plugin.MavenWebAppContext">
+                        <contextHandler implementation="org.eclipse.jetty.ee10.maven.plugin.MavenWebAppContext">
                             <war>${project.basedir}${file.separator}..${file.separator}test-war2${file.separator}target${file.separator}flow-test-multi-war2.war</war>
                             <contextPath>/test-war2</contextPath>
                         </contextHandler>
