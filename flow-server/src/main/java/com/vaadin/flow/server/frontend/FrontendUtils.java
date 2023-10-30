@@ -671,22 +671,13 @@ public class FrontendUtils {
 
     static void validateToolVersion(String tool, FrontendVersion toolVersion,
             FrontendVersion supported) {
-        if (isVersionAtLeast(toolVersion, supported)) {
+        if (toolVersion.isEqualOrNewer(supported)) {
             return;
         }
 
         throw new IllegalStateException(buildTooOldString(tool,
                 toolVersion.getFullVersion(), supported.getMajorVersion(),
                 supported.getMinorVersion()));
-    }
-
-    static boolean isVersionAtLeast(FrontendVersion toolVersion,
-            FrontendVersion required) {
-        int major = toolVersion.getMajorVersion();
-        int minor = toolVersion.getMinorVersion();
-        return (major > required.getMajorVersion()
-                || (major == required.getMajorVersion()
-                        && minor >= required.getMinorVersion()));
     }
 
     /**

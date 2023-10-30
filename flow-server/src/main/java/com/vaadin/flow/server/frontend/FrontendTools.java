@@ -760,8 +760,8 @@ public class FrontendTools {
             try {
                 FrontendVersion foundNpmVersion = getNpmVersion();
                 // npm < 7.0.0 doesn't accept whitespaces in path
-                return FrontendUtils.isVersionAtLeast(foundNpmVersion,
-                        WHITESPACE_ACCEPTING_NPM_VERSION);
+                return foundNpmVersion
+                        .isEqualOrNewer(WHITESPACE_ACCEPTING_NPM_VERSION);
             } catch (UnknownVersionException e) {
                 getLogger().warn("Error checking if npm accepts path '{}'",
                         folder, e);
@@ -1122,8 +1122,8 @@ public class FrontendTools {
             versionCmd.add("--version"); // NOSONAR
             FrontendVersion pnpmVersion = FrontendUtils.getVersion("pnpm",
                     versionCmd);
-            boolean versionNewEnough = FrontendUtils
-                    .isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION);
+            boolean versionNewEnough = pnpmVersion
+                    .isEqualOrNewer(SUPPORTED_PNPM_VERSION);
             boolean versionAccepted = ignoreVersionChecks || versionNewEnough;
             if (!versionAccepted) {
                 getLogger().warn(
@@ -1145,8 +1145,8 @@ public class FrontendTools {
             versionCmd.add("--version"); // NOSONAR
             FrontendVersion bunVersion = FrontendUtils.getVersion("bun",
                     versionCmd);
-            boolean versionNewEnough = FrontendUtils
-                    .isVersionAtLeast(bunVersion, SUPPORTED_BUN_VERSION);
+            boolean versionNewEnough = bunVersion
+                    .isEqualOrNewer(SUPPORTED_BUN_VERSION);
             boolean versionAccepted = ignoreVersionChecks || versionNewEnough;
             if (!versionAccepted) {
                 getLogger().warn(
