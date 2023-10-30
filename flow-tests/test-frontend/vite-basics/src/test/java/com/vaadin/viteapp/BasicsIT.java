@@ -67,4 +67,9 @@ public class BasicsIT extends ViteDevModeIT {
         String importResult = $("div").id("directoryImportResult").getText();
         Assert.assertEquals("Directory import ok", importResult);
     }
+
+    @Test
+    public void bootstrapTsCanBeModified() {
+        Assert.assertEquals(1L, executeScript("return window.bootstrapMod"));
+    }
 }
