@@ -28,22 +28,9 @@
         <!-- API DEPENDENCIES -->
 
         <dependency>
-            <groupId>nl.martijndwars</groupId>
-            <artifactId>web-push</artifactId>
-            <version>5.1.1</version>
-
-            <exclusions>
-                <exclusion>
-                    <groupId>com.typesafe.netty</groupId>
-                    <artifactId>netty-reactive-streams</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.70</version>
+            <groupId>dev.blanke.webpush.jwt</groupId>
+            <artifactId>webpush-jwt-jose4j</artifactId>
+            <version>6.1.1</version>
         </dependency>
 
         <!-- DefaultApplicationConfigurationFactory is declared as an OSGi
