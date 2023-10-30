@@ -58,7 +58,7 @@ public class DefaultI18NProviderFactory implements Condition, Serializable {
      * @see ResourcePatternResolver
      * @see ResourcePatternResolver#getResources(String)
      */
-    public DefaultI18NProvider create(String locationPattern) {
+    public static DefaultI18NProvider create(String locationPattern) {
         try {
             Resource[] translations = getTranslationResources(locationPattern);
             if (translations.length > 0) {
@@ -92,7 +92,7 @@ public class DefaultI18NProviderFactory implements Condition, Serializable {
         }
     }
 
-    private Resource[] getTranslationResources(String locationPattern)
+    private static Resource[] getTranslationResources(String locationPattern)
             throws IOException {
         ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
         return resourcePatternResolver

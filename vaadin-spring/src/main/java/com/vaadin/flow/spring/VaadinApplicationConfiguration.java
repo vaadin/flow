@@ -77,6 +77,6 @@ public class VaadinApplicationConfiguration {
             @Value("${vaadin.i18n.location-pattern:"
                     + DefaultI18NProviderFactory.DEFAULT_LOCATION_PATTERN
                     + "}") String locationPattern) {
-        return new DefaultI18NProviderFactory().create(locationPattern);
+        return DefaultI18NProviderFactory.create(locationPattern);
     }
 }
