@@ -46,7 +46,8 @@ public class StreamResourceIT extends AbstractStreamResourceIT {
         assertDownloadedContent("plus-link", "file%2B.jpg");
     }
 
-    // Ignored due to https://github.com/jetty/jetty.project/issues/9444#issuecomment-1677068428
+    // Ignored due to
+    // https://github.com/jetty/jetty.project/issues/9444#issuecomment-1677068428
     @Test
     @Ignore
     public void getDynamicVaadinPercentResource() throws IOException {
