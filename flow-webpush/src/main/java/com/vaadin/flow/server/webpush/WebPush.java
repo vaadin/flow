@@ -91,7 +91,9 @@ public class WebPush {
         try {
             // Initialize push service with the public key, private key and
             // subject
-            pushService = new PushService(publicKey, privateKey, subject);
+            pushService = PushService.builder().withVapidPublicKey(publicKey)
+                    .withVapidPrivateKey(privateKey).withVapidSubject(subject)
+                    .build();
         } catch (GeneralSecurityException e) {
             throw new WebPushException(
                     "Security exception initializing web push PushService", e);
@@ -113,8 +115,10 @@ public class WebPush {
     public void sendNotification(Subscription subscription,
             WebPushMessage message) throws WebPushException {
         try {
-            HttpResponse response = pushService
-                    .send(new Notification(subscription, message.toJson()));
+            ;
+            HttpResponse response = (HttpResponse) pushService
+                    .send(Notification.builder().subscription(subscription)
+                            .payload(message.toJson()).build());
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 201) {
                 getLogger().error(
@@ -124,8 +128,7 @@ public class WebPush {
                 List<String> strings = IOUtils.readLines(content, "UTF-8");
                 getLogger().error(String.join("\n", strings));
             }
-        } catch (GeneralSecurityException | IOException | JoseException
-                | ExecutionException | InterruptedException e) {
+        } catch (Exception e) {
             getLogger().error("Failed to send notification.", e);
         }
     }
