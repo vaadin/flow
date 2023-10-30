@@ -1,9 +1,11 @@
 package com.vaadin.flow.server.frontend;
 
+import java.io.Serializable;
+
 /**
  * Implemented by classes that want to modify the bootstrap typescript.
  */
-public interface TypeScriptBootstrapModifier {
+public interface TypeScriptBootstrapModifier extends Serializable {
 
     /**
      * Modifies the bootstrap typescript.
