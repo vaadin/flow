@@ -115,7 +115,6 @@ public class WebPush {
     public void sendNotification(Subscription subscription,
             WebPushMessage message) throws WebPushException {
         try {
-            ;
             HttpResponse response = (HttpResponse) pushService
                     .send(Notification.builder().subscription(subscription)
                             .payload(message.toJson()).build());
