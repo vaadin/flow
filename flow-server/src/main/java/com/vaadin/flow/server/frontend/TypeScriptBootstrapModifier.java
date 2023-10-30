@@ -7,7 +7,7 @@ public interface TypeScriptBootstrapModifier {
 
     /**
      * Modifies the bootstrap typescript.
-     * 
+     *
      * @param bootstrapTypeScript
      *            the input typescript
      * @return the output typescript
