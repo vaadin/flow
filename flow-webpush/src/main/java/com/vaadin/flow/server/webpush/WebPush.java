@@ -127,6 +127,8 @@ public class WebPush {
             }
         } catch (Exception e) {
             getLogger().error("Failed to send notification.", e);
+            throw new WebPushException(
+                    "Sending of web push notification failed", e);
         }
     }
 
