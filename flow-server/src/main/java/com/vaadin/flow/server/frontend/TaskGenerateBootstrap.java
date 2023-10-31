@@ -69,11 +69,10 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         }
         lines.addAll(getThemeLines());
 
-        String vaadinTs = String.join(System.lineSeparator(), lines);
         for (TypeScriptBootstrapModifier modifier : modifiers) {
-            vaadinTs = modifier.modify(vaadinTs);
+            modifier.modify(lines);
         }
-        return vaadinTs;
+        return String.join(System.lineSeparator(), lines);
     }
 
     @Override
