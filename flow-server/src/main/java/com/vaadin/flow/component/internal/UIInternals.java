@@ -924,8 +924,27 @@ public class UIInternals implements Serializable {
 
     private void triggerChunkLoading(
             Class<? extends Component> componentClass) {
-        ui.getPage().addDynamicImport("return window.Vaadin.Flow.loadOnDemand('"
-                + BundleUtils.getChunkId(componentClass) + "');");
+        boolean isProductionMode = ui.getSession() != null
+                && ui.getSession().getConfiguration().isProductionMode();
+        List<String> chunkIds = new ArrayList<>();
+        chunkIds.add(BundleUtils.getChunkId(componentClass));
+        if (isProductionMode) {
+            // When using the default production bundle, the chunk for a
+            // specific
+            // Flow component subclass may not be present (e.g. MyChart < Chart)
+            // However, the required imports are in the bundle, associated with
+            // the chunk id of the parent class.
+            // Force loading of potential chunks for all parent classes in the
+            // component hierarchy. DependencyList takes care to prevent loading
+            // the same chunk multiple times.
+            Class<?> clazz = componentClass.getSuperclass();
+            while (clazz != Component.class) {
+                chunkIds.add(BundleUtils.getChunkId(clazz.getName()));
+                clazz = clazz.getSuperclass();
+            }
+        }
+        chunkIds.forEach(chunkId -> ui.getPage().addDynamicImport(
+                "return window.Vaadin.Flow.loadOnDemand('" + chunkId + "');"));
     }
 
     private void warnForUnavailableBundledDependencies(
