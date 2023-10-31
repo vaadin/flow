@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ServiceLoader;
 
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -45,11 +46,17 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
             FrontendUtils.JAR_RESOURCES_IMPORT + "vaadin-dev-tools/");
     private final FrontendDependenciesScanner frontDeps;
     private final Options options;
+    private List<TypeScriptBootstrapModifier> modifiers;
 
     TaskGenerateBootstrap(FrontendDependenciesScanner frontDeps,
             Options options) {
         this.frontDeps = frontDeps;
         this.options = options;
+        this.modifiers = new ArrayList<>();
+        for (TypeScriptBootstrapModifier modifier : ServiceLoader
+                .load(TypeScriptBootstrapModifier.class)) {
+            this.modifiers.add(modifier);
+        }
     }
 
     @Override
@@ -62,6 +69,9 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         }
         lines.addAll(getThemeLines());
 
+        for (TypeScriptBootstrapModifier modifier : modifiers) {
+            modifier.modify(lines);
+        }
         return String.join(System.lineSeparator(), lines);
     }
 
