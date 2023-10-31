@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -56,6 +57,7 @@ import com.vaadin.flow.server.MockVaadinContext.RoutePathProviderImpl;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -208,6 +210,58 @@ public class UidlWriterTest {
         assertFalse(response.hasKey(LoadMode.EAGER.name()));
         assertFalse(response.hasKey(LoadMode.INLINE.name()));
         assertFalse(response.hasKey(LoadMode.LAZY.name()));
+    }
+
+    @Test
+    public void componentDependencies_productionMode_scanForParentClasses()
+            throws Exception {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+        mocks.getDeploymentConfiguration().setProductionMode(true);
+
+        UidlWriter uidlWriter = new UidlWriter();
+        ui.add(new ChildComponent());
+
+        // no dependencies should be resent in next response
+        JsonObject response = uidlWriter.createUidl(ui, false);
+        Set<String> chunks = getDependenciesMap(response).keySet().stream()
+                .filter(key -> key
+                        .startsWith("return window.Vaadin.Flow.loadOnDemand('"))
+                .map(key -> key
+                        .replace("return window.Vaadin.Flow.loadOnDemand('", "")
+                        .replace("');", ""))
+                .collect(Collectors.toSet());
+
+        Set<String> expectedChunks = Stream
+                .of(TestUI.class, BaseClass.class, ChildComponent.class,
+                        ActualComponent.class, EmptyClassWithInterface.class,
+                        SuperComponent.class)
+                .map(BundleUtils::getChunkId).collect(Collectors.toSet());
+
+        assertEquals(expectedChunks, chunks);
+    }
+
+    @Test
+    public void componentDependencies_developmentMode_onlySendComponentSpecificChunks()
+            throws Exception {
+        UidlWriter uidlWriter = new UidlWriter();
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+        ui.add(new ChildComponent());
+
+        // no dependencies should be resent in next response
+        JsonObject response = uidlWriter.createUidl(ui, false);
+        Set<String> chunks = getDependenciesMap(response).keySet().stream()
+                .filter(key -> key
+                        .startsWith("return window.Vaadin.Flow.loadOnDemand('"))
+                .map(key -> key
+                        .replace("return window.Vaadin.Flow.loadOnDemand('", "")
+                        .replace("');", ""))
+                .collect(Collectors.toSet());
+
+        Set<String> expectedChunks = Stream
+                .of(TestUI.class, BaseClass.class, ChildComponent.class)
+                .map(BundleUtils::getChunkId).collect(Collectors.toSet());
+
+        assertEquals(expectedChunks, chunks);
     }
 
     @Test
