@@ -14,15 +14,14 @@
  * the License.
  */
 
-package com.vaadin.flow.misc.ui;
+package com.vaadin.flow.spring.test;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.html.testbench.SpanElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class TranslationIT extends ChromeBrowserTest {
+public class TranslationIT extends AbstractSpringTest {
     @Override
     protected String getTestPath() {
         return "/translations";

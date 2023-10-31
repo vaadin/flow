@@ -260,6 +260,18 @@ public class FrontendVersion
     }
 
     /**
+     * Check if this version is equal or newer than given version. Will return
+     * false if is older.
+     *
+     * @param otherVersion
+     *            version to check against
+     * @return true if this is newer than or equal to otherVersion
+     */
+    public boolean isEqualOrNewer(FrontendVersion otherVersion) {
+        return compareTo(otherVersion) >= 0;
+    }
+
+    /**
      * Check if this and the given version are equal to each other.
      *
      * @param otherVersion

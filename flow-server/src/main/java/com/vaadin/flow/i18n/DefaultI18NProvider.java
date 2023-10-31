@@ -16,14 +16,10 @@
 
 package com.vaadin.flow.i18n;
 
-import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -31,7 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Default i18n provider that will be initialized if
+ * Default i18n provider that will be initialized if custom {@link I18NProvider}
+ * is not available.
  */
 public class DefaultI18NProvider implements I18NProvider {
 
@@ -43,6 +40,14 @@ public class DefaultI18NProvider implements I18NProvider {
     public static final String BUNDLE_PREFIX = BUNDLE_FOLDER + "."
             + BUNDLE_FILENAME;
 
+    /**
+     * Construct {@link DefaultI18NProvider} for a list of locales that we have
+     * translations for.
+     *
+     * @param providedLocales
+     *            List of locales. The first locale should be the default
+     *            locale.
+     */
     public DefaultI18NProvider(List<Locale> providedLocales) {
         this.providedLocales = Collections.unmodifiableList(providedLocales);
     }

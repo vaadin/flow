@@ -65,16 +65,14 @@ public class FrontendUtilsTest {
         FrontendVersion sixPointO = new FrontendVersion(6, 0);
 
         FrontendVersion requiredVersionTen = new FrontendVersion(10, 0);
-        assertFalse(
-                FrontendUtils.isVersionAtLeast(sixPointO, requiredVersionTen));
-        assertFalse(FrontendUtils.isVersionAtLeast(sixPointO,
-                new FrontendVersion(6, 1)));
-        assertTrue(FrontendUtils.isVersionAtLeast(new FrontendVersion("10.0.0"),
-                requiredVersionTen));
-        assertTrue(FrontendUtils.isVersionAtLeast(new FrontendVersion("10.0.2"),
-                requiredVersionTen));
-        assertTrue(FrontendUtils.isVersionAtLeast(new FrontendVersion("10.2.0"),
-                requiredVersionTen));
+        assertFalse(sixPointO.isEqualOrNewer(requiredVersionTen));
+        assertFalse(sixPointO.isEqualOrNewer(new FrontendVersion(6, 1)));
+        assertTrue(new FrontendVersion("10.0.0")
+                .isEqualOrNewer(requiredVersionTen));
+        assertTrue(new FrontendVersion("10.0.2")
+                .isEqualOrNewer(requiredVersionTen));
+        assertTrue(new FrontendVersion("10.2.0")
+                .isEqualOrNewer(requiredVersionTen));
     }
 
     @Test
