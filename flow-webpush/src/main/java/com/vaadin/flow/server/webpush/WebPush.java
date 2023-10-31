@@ -22,7 +22,10 @@ import java.io.Serializable;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.Security;
+import java.security.spec.InvalidKeySpecException;
 
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
@@ -111,24 +114,29 @@ public class WebPush {
      */
     public void sendNotification(Subscription subscription,
             WebPushMessage message) throws WebPushException {
+        int statusCode = -1;
+        HttpResponse<String> response = null;
         try {
             Notification notification = Notification.builder()
                     .subscription(subscription).payload(message.toJson())
                     .build();
-            HttpResponse<String> response = pushService.send(notification,
+            response = pushService.send(notification,
                     PushService.DEFAULT_ENCODING,
                     HttpResponse.BodyHandlers.ofString());
-            int statusCode = response.statusCode();
-            if (statusCode != 201) {
-                getLogger().error(
-                        "Failed to send web push notification, received status code:"
-                                + statusCode);
-                getLogger().error(String.join("\n", response.body()));
-            }
+            statusCode = response.statusCode();
         } catch (Exception e) {
             getLogger().error("Failed to send notification.", e);
             throw new WebPushException(
                     "Sending of web push notification failed", e);
+        }
+        if (statusCode != 201) {
+            getLogger().error(
+                    "Failed to send web push notification, received status code:"
+                            + statusCode);
+            getLogger().error(String.join("\n", response.body()));
+            throw new WebPushException(
+                    "Sending of web push notification failed with status code "
+                            + statusCode);
         }
     }
 
