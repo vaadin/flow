@@ -24,8 +24,6 @@ import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 
 @Theme("vaadin-prod-bundle")
 @PWA(name = "vaadin-prod-bundle", shortName = "vaadin-prod-bundle")
-@JsModule("@vaadin-component-factory/vcf-nav")
-@NpmPackage(value = "@vaadin-component-factory/vcf-nav", version = "1.0.6")
 @JsModule("@vaadin/horizontal-layout")
 @NpmPackage(value = "@vaadin/horizontal-layout", version = TestVersion.VAADIN)
 public class FakeAppConf implements AppShellConfigurator {
