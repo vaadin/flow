@@ -57,14 +57,14 @@ public class WebPushView extends Div {
 
         subscribe = new NativeButton("Subscribe", event -> webPush
                 .subscribe(event.getSource().getUI().get(), result -> {
-                    addLogEntry("Subscribed " + result.endpoint);
+                    addLogEntry("Subscribed " + result.endpoint());
                     subscription = result;
                 }));
         subscribe.setId(SUBSCRIBE_ID);
 
         unsubscribe = new NativeButton("Unsubscribe", event -> webPush
                 .unsubscribe(event.getSource().getUI().get(), result -> {
-                    String endpoint = result != null ? result.endpoint
+                    String endpoint = result != null ? result.endpoint()
                             : "<unknown>";
                     addLogEntry("Unsubscribed " + endpoint);
                     subscription = null;
