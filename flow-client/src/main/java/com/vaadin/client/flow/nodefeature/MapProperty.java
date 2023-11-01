@@ -43,7 +43,7 @@ public class MapProperty implements ReactiveValue {
      */
     private boolean isServerUpdate;
 
-    private static final Runnable NO_OP = () -> {
+    public static final Runnable NO_OP = () -> {
     };
 
     private final ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent> eventRouter = new ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent>(

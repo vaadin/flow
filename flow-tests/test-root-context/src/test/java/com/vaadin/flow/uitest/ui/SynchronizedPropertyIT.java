@@ -105,4 +105,28 @@ public class SynchronizedPropertyIT extends ChromeBrowserTest {
                 multiSyncValueAsNumberLabel.getText());
     }
 
+    @Test
+    public void synchronizePropertyWithCustomEventDebounce_singleEvent() {
+        open();
+        WebElement label = findElement(
+                By.id("syncWithCustomEventDebounceLabel"));
+        executeScript(
+                "const input = document.querySelector('#syncWithCustomEventDebounceInput');\n"
+                        + "input.myProperty = 'value1';\n"
+                        + "input.dispatchEvent(new CustomEvent('input'));");
+        waitUntil(driver -> "Server value: value1".equals(label.getText()), 2);
+    }
+
+    @Test
+    public void synchronizePropertyWithCustomEventDebounce_twoEvents() {
+        open();
+        WebElement label = findElement(
+                By.id("syncWithCustomEventDebounceLabel"));
+        executeScript(
+                "const input = document.querySelector('#syncWithCustomEventDebounceInput');\n"
+                        + "input.myProperty = 'value1';\n"
+                        + "input.dispatchEvent(new CustomEvent('input'));\n"
+                        + "input.dispatchEvent(new CustomEvent('input'));");
+        waitUntil(driver -> "Server value: value1".equals(label.getText()), 2);
+    }
 }
