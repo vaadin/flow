@@ -135,10 +135,11 @@ fun expectArchiveDoesntContain(vararg globs: String, archiveProvider: () -> File
     }
 }
 
-fun expectArchiveContainsVaadinBundle(archive: File,
-                                             isSpringBootJar: Boolean,
-                                      compressedExtension: String = "*.br"
-                                        ) {
+fun expectArchiveContainsVaadinBundle(
+    archive: File,
+    isSpringBootJar: Boolean,
+    compressedExtension: String = "*.br"
+) {
     val isWar: Boolean = archive.name.endsWith(".war", true)
     val isStandaloneJar: Boolean = !isWar && !isSpringBootJar
     val resourcePackaging: String = when {
