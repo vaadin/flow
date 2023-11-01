@@ -52,6 +52,7 @@ public class Debouncer {
     private JsMap<String, Runnable> bufferedCommands;
     private JsMap<String, Runnable> previousBufferedNonExecutedCommands;
     private Consumer<String> potentialTrailingWithBothTrailingAndIntermediate;
+    private JsMap<String, Runnable> potentialTrailingWithBothTrailingAndIntermediateBufferedCommands;
 
     private Debouncer(Node element, String identifier, double timeout) {
         this.element = element;
@@ -89,11 +90,13 @@ public class Debouncer {
             // last command is saved for timers unless this is a "leading" event
             bufferedSendCommand = command;
             bufferedCommands = commands;
-            if (idleTimer == null
-                    || previousBufferedNonExecutedCommands == null) {
+            if (!phases.has(JsonConstants.EVENT_PHASE_INTERMEDIATE)
+                    && (idleTimer == null
+                            || previousBufferedNonExecutedCommands == null)) {
                 previousBufferedNonExecutedCommands = commands;
             }
             potentialTrailingWithBothTrailingAndIntermediate = null;
+            potentialTrailingWithBothTrailingAndIntermediateBufferedCommands = null;
         }
         // idleTimer is used for trailing/leading, should always be there?
         if (phases.has(JsonConstants.EVENT_PHASE_LEADING)
@@ -121,7 +124,8 @@ public class Debouncer {
                              */
                             runCommands(JsonConstants.EVENT_PHASE_TRAILING,
                                     potentialTrailingWithBothTrailingAndIntermediate,
-                                    bufferedCommands, null);
+                                    potentialTrailingWithBothTrailingAndIntermediateBufferedCommands,
+                                    null);
                         }
                         unregister(); // unregister to release memory
                     }
@@ -141,6 +145,7 @@ public class Debouncer {
                                 bufferedSendCommand, bufferedCommands, null);
                         if (phases.has(JsonConstants.EVENT_PHASE_TRAILING)) {
                             potentialTrailingWithBothTrailingAndIntermediate = bufferedSendCommand;
+                            potentialTrailingWithBothTrailingAndIntermediateBufferedCommands = bufferedCommands;
                         }
                         bufferedSendCommand = null;
                         bufferedCommands = null;
@@ -271,7 +276,7 @@ public class Debouncer {
                                 runCommands(JsonConstants.EVENT_PHASE_TRAILING,
                                         debouncer.bufferedSendCommand,
                                         debouncer.bufferedCommands,
-                                        debouncer.previousBufferedNonExecutedCommands);
+                                        null);
                             } else {
                                 // "Debouncer was in queue, but no command.
                                 // Likely a leading only subscription."
@@ -284,7 +289,7 @@ public class Debouncer {
                             runCommands(JsonConstants.EVENT_PHASE_INTERMEDIATE,
                                     debouncer.bufferedSendCommand,
                                     debouncer.bufferedCommands,
-                                    debouncer.previousBufferedNonExecutedCommands);
+                                    null);
                             // Restart intermediate timer so that there won't
                             // be triggering more than one event "quicker than
                             // orderd" in the orginal schedule.
