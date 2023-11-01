@@ -84,7 +84,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.boot.version>3.1.5</spring.boot.version>
+        <spring.boot.version>3.2.0-RC1</spring.boot.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
         <slf4j.version>2.0.9</slf4j.version>
@@ -106,7 +106,7 @@
         <maven.clean.plugin.version>3.3.2</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>9.1.0</testbench.version>
-        <jetty.version>11.0.17</jetty.version>
+        <jetty.version>12.0.3</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.4.0</build-helper-maven-plugin.version>
         <maven.version>3.9.5</maven.version>
@@ -158,6 +158,13 @@
             </snapshots>
         </repository>
         <repository>
+            <id>spring-milestones</id>
+            <url>https://repo.spring.io/milestone/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>${flow.release.repo.id}</id>
             <url>${flow.release.repo.url}</url>
             <snapshots>
@@ -181,6 +188,13 @@
             <url>https://repo.maven.apache.org/maven2</url>
             <snapshots>
                 <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>spring-milestones</id>
+            <url>https://repo.spring.io/milestone/</url>
+            <snapshots>
+                <enabled>true</enabled>
             </snapshots>
         </pluginRepository>
         <pluginRepository>

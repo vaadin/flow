@@ -3,10 +3,9 @@ package com.vaadin.flow.spring.test;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 
-import org.eclipse.jetty.proxy.ConnectHandler;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -26,12 +25,11 @@ public class Proxy {
         }
         server = new Server(proxyPort);
 
-        ConnectHandler proxy = new ConnectHandler();
-        server.setHandler(proxy);
-
         // Setup proxy servlet
-        ServletContextHandler context = new ServletContextHandler(proxy, "/",
+        ServletContextHandler context = new ServletContextHandler("/",
                 ServletContextHandler.SESSIONS);
+        server.setHandler(context);
+
         ServletHolder proxyServlet = new ServletHolder(
                 PathRewritingProxyServlet.class);
         proxyServlet.setInitParameter("proxyTo", "http://localhost:8888/");

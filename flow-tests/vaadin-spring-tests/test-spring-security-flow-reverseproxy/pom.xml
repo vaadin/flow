@@ -45,14 +45,6 @@
 
 
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-proxy</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>test-spring-security-flow</artifactId>
             <version>${project.version}</version>
