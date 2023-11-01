@@ -230,10 +230,10 @@ class TestProject(val gradleVersion: String = if(JavaVersion.current().majorVers
     val settingsFile: File get() = File(dir, "settings.gradle")
 
 
-    private fun createGradleRunner(): GradleRunner = GradleRunner.create()
+    private fun createGradleRunner(debug: Boolean): GradleRunner = GradleRunner.create()
         .withProjectDir(dir)
         .withPluginClasspath()
-        .withDebug(true) // use --debug to catch ReflectionsException: https://github.com/vaadin/vaadin-gradle-plugin/issues/99
+        .withDebug(debug)
         .forwardOutput()   // a must, otherwise ./gradlew check freezes on windows!
         .withGradleVersion(gradleVersion)
 
@@ -271,7 +271,7 @@ class TestProject(val gradleVersion: String = if(JavaVersion.current().majorVers
         expect(true, "$buildFile doesn't exist, can't run build") { buildFile.exists() }
 
         println("$dir/./gradlew ${args.joinToString(" ")}")
-        val result: BuildResult = createGradleRunner()
+        val result: BuildResult = createGradleRunner(debug)
             .withArguments(args.toList() + "--stacktrace" + "--info")
             .build()
 
@@ -291,7 +291,7 @@ class TestProject(val gradleVersion: String = if(JavaVersion.current().majorVers
      */
     fun buildAndFail(vararg args: String): BuildResult {
         println("$dir/./gradlew ${args.joinToString(" ")}")
-        return createGradleRunner()
+        return createGradleRunner(false)
                 .withArguments(args.toList() + "--stacktrace" + "--info")
                 .buildAndFail()
     }
