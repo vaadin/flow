@@ -22,10 +22,7 @@ import java.io.Serializable;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.Security;
-import java.security.spec.InvalidKeySpecException;
 
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
