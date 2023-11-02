@@ -163,12 +163,11 @@ public class BundleValidationTest {
 
     @Test
     public void devBundleStatsJsonMissing_bundleCompilationRequires() {
-        devBundleUtils
-                .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
+        devBundleUtils.when(() -> DevBundleUtils
+                .getDevBundleFolder(Mockito.any(), Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
-        devBundleUtils
-                .when(() -> DevBundleUtils
-                        .findBundleStatsJson(temporaryFolder.getRoot()))
+        devBundleUtils.when(() -> DevBundleUtils
+                .findBundleStatsJson(temporaryFolder.getRoot(), "target"))
                 .thenReturn(null);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -853,8 +852,8 @@ public class BundleValidationTest {
         jarResources.put("TodoTemplate.js", fileContent);
 
         setupFrontendUtilsMock(stats);
-        devBundleUtils
-                .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
+        devBundleUtils.when(() -> DevBundleUtils
+                .getDevBundleFolder(Mockito.any(), Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -887,8 +886,8 @@ public class BundleValidationTest {
         stats.getArray(BUNDLE_IMPORTS).set(0,
                 "Frontend/generated/jar-resources/TodoTemplate.js");
 
-        devBundleUtils
-                .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
+        devBundleUtils.when(() -> DevBundleUtils
+                .getDevBundleFolder(Mockito.any(), Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
         frontendUtils
                 .when(() -> FrontendUtils.getJarResourceString(
@@ -896,8 +895,8 @@ public class BundleValidationTest {
                         Mockito.any(ClassFinder.class)))
                 .thenReturn(fileContent);
         devBundleUtils
-                .when(() -> DevBundleUtils
-                        .findBundleStatsJson(temporaryFolder.getRoot()))
+                .when(() -> DevBundleUtils.findBundleStatsJson(
+                        temporaryFolder.getRoot(), "target"))
                 .thenReturn(stats.toJson());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -932,8 +931,8 @@ public class BundleValidationTest {
         stats.getObject(FRONTEND_HASHES).put("TodoTemplate.js",
                 "dea5180dd21d2f18d1472074cd5305f60b824e557dae480fb66cdf3ea73edc65");
 
-        devBundleUtils
-                .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
+        devBundleUtils.when(() -> DevBundleUtils
+                .getDevBundleFolder(Mockito.any(), Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
         frontendUtils
                 .when(() -> FrontendUtils.getJarResourceString(
@@ -941,8 +940,8 @@ public class BundleValidationTest {
                         Mockito.any(ClassFinder.class)))
                 .thenReturn(fileContent);
         devBundleUtils
-                .when(() -> DevBundleUtils
-                        .findBundleStatsJson(temporaryFolder.getRoot()))
+                .when(() -> DevBundleUtils.findBundleStatsJson(
+                        temporaryFolder.getRoot(), "target"))
                 .thenReturn(stats.toJson());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -1860,12 +1859,13 @@ public class BundleValidationTest {
                             Mockito.any(ClassFinder.class)))
                     .thenReturn(stats.toJson());
         } else {
-            devBundleUtils.when(
-                    () -> DevBundleUtils.getDevBundleFolder(Mockito.any()))
+            devBundleUtils
+                    .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any(),
+                            Mockito.any()))
                     .thenReturn(temporaryFolder.getRoot());
             devBundleUtils
-                    .when(() -> DevBundleUtils
-                            .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .when(() -> DevBundleUtils.findBundleStatsJson(
+                            temporaryFolder.getRoot(), "target"))
                     .thenAnswer(q -> stats.toJson());
         }
         frontendUtils

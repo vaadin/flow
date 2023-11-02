@@ -15,8 +15,13 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -58,6 +63,16 @@ public class MessageDigestUtil {
      */
     public static byte[] sha256(String string, Charset charset) {
         return getSha256().digest(string.getBytes(charset));
+    }
+
+    public static byte[] sha256(File file) {
+        try {
+            return getSha256().digest(Files.readAllBytes(file.toPath()));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static MessageDigest getSha256() {

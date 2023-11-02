@@ -181,7 +181,9 @@ public final class BundleUtils {
 
     private static void copyAppropriatePackageLock(Options options,
             File packageLock) throws IOException {
-        File devBundleFolder = new File(options.getNpmFolder(),
+        File devBundleFolder = new File(
+                new File(options.getNpmFolder(),
+                        options.getBuildDirectoryName()),
                 Constants.DEV_BUNDLE_LOCATION);
         String packageLockFile = options.isEnablePnpm()
                 ? Constants.PACKAGE_LOCK_YAML

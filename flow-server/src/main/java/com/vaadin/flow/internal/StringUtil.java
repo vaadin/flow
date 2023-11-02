@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -200,6 +201,10 @@ public final class StringUtil {
         }
 
         return bytesToHex(MessageDigestUtil.sha256(content, charset));
+    }
+
+    public static String getHash(File file) {
+        return bytesToHex(MessageDigestUtil.sha256(file));
     }
 
     private static String bytesToHex(byte[] hash) {

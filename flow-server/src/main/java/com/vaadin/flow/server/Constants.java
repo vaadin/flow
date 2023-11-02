@@ -285,7 +285,23 @@ public final class Constants implements Serializable {
      * The folder in the project where Flow generates Express Build mode
      * application dev bundle.
      */
-    public static final String DEV_BUNDLE_LOCATION = "src/main/dev-bundle";
+    public static final String DEV_BUNDLE_LOCATION = "dev-bundle";
+
+    /**
+     * The folder where the bundle zip files are stored.
+     */
+    public static final String BUNDLE_LOCATION = "src/main/bundles/";
+
+    /**
+     *
+     */
+    public static final String DEV_BUNDLE_COMPRESSED_FILE = "dev.bundle";
+
+    /**
+     *
+     */
+    public static final String DEV_BUNDLE_COMPRESSED_FILE_LOCATION = BUNDLE_LOCATION
+            + DEV_BUNDLE_COMPRESSED_FILE;
 
     /**
      * The path part where dev-bundle is located inside the jar.
@@ -296,6 +312,17 @@ public final class Constants implements Serializable {
      * The path part where production bundle is located inside the jar.
      */
     public static final String PROD_BUNDLE_JAR_PATH = PROD_BUNDLE_NAME + "/";
+
+    /**
+     *
+     */
+    public static final String PROD_BUNDLE_COMPRESSED_FILE = "prod.bundle";
+
+    /**
+     *
+     */
+    public static final String PROD_BUNDLE_COMPRESSED_FILE_LOCATION = BUNDLE_LOCATION
+            + PROD_BUNDLE_COMPRESSED_FILE;
 
     /**
      * The directory name inside dev bundle for the frontend assets.

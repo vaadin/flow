@@ -111,12 +111,19 @@ public final class BundleValidationUtil {
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder) throws IOException {
         File npmFolder = options.getNpmFolder();
-
-        if (!DevBundleUtils.getDevBundleFolder(npmFolder).exists()
+        if (!DevBundleUtils
+                .getDevBundleFolder(npmFolder, options.getBuildDirectoryName())
+                .exists()
                 && !BundleValidationUtil.hasJarBundle(DEV_BUNDLE_JAR_PATH,
                         finder)) {
-            getLogger().info("No dev-bundle found.");
-            return true;
+            if (!new File(Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION)
+                    .exists()) {
+                getLogger().info("No dev-bundle found.");
+                return true;
+            }
+            DevBundleUtils.unpackBundle(new File(
+                    new File(npmFolder, options.getBuildDirectoryName()),
+                    Constants.DEV_BUNDLE_LOCATION));
         }
 
         if (options.isSkipDevBundle()) {
@@ -127,7 +134,8 @@ public final class BundleValidationUtil {
             return false;
         }
 
-        String statsJsonContent = DevBundleUtils.findBundleStatsJson(npmFolder);
+        String statsJsonContent = DevBundleUtils.findBundleStatsJson(npmFolder,
+                options.getBuildDirectoryName());
 
         if (statsJsonContent == null) {
             // without stats.json in bundle we can not say if it is up-to-date

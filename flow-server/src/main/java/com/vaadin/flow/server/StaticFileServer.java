@@ -280,6 +280,7 @@ public class StaticFileServer implements StaticFileHandler {
             if (!"/index.html".equals(filenameWithPath)) {
                 resourceUrl = DevBundleUtils.findBundleFile(
                         deploymentConfiguration.getProjectFolder(),
+                        deploymentConfiguration.getBuildFolder(),
                         "webapp" + filenameWithPath);
             }
 
@@ -290,7 +291,6 @@ public class StaticFileServer implements StaticFileHandler {
                 // Express mode theme file request
                 resourceUrl = findAssetInFrontendThemesOrDevBundle(
                         vaadinService,
-                        deploymentConfiguration.getProjectFolder(),
                         filenameWithPath.replace(VAADIN_MAPPING, ""));
             }
         } else if (deploymentConfiguration
@@ -352,11 +352,14 @@ public class StaticFileServer implements StaticFileHandler {
     }
 
     private static URL findAssetInFrontendThemesOrDevBundle(
-            VaadinService vaadinService, File projectFolder, String assetPath)
-            throws IOException {
+            VaadinService vaadinService, String assetPath) throws IOException {
+        DeploymentConfiguration deploymentConfiguration = vaadinService
+                .getDeploymentConfiguration();
         // First, look for the theme assets in the {project.root}/frontend/
         // themes/my-theme folder
-        File frontendFolder = new File(projectFolder, FrontendUtils.FRONTEND);
+        File frontendFolder = new File(
+                deploymentConfiguration.getProjectFolder(),
+                FrontendUtils.FRONTEND);
         File assetInFrontendThemes = new File(frontendFolder, assetPath);
         if (assetInFrontendThemes.exists()) {
             return assetInFrontendThemes.toURI().toURL();
@@ -389,8 +392,9 @@ public class StaticFileServer implements StaticFileHandler {
         // node_modules)
         if (assetInDevBundleUrl == null) {
             String assetInDevBundle = "/" + Constants.ASSETS + "/" + assetPath;
-            assetInDevBundleUrl = DevBundleUtils.findBundleFile(projectFolder,
-                    assetInDevBundle);
+            assetInDevBundleUrl = DevBundleUtils.findBundleFile(
+                    deploymentConfiguration.getProjectFolder(),
+                    deploymentConfiguration.getBuildFolder(), assetInDevBundle);
         }
 
         if (assetInDevBundleUrl == null) {
@@ -399,7 +403,7 @@ public class StaticFileServer implements StaticFileHandler {
             throw new IllegalStateException(String.format(
                     "Asset '%1$s' is not found in project frontend directory"
                             + ", default development bundle or in the application "
-                            + "bundle '%2$s/assets/'. \n"
+                            + "bundle '{build}/%2$s/assets/'. \n"
                             + "Verify that the asset is available in "
                             + "'frontend/themes/%3$s/' directory and is added into the "
                             + "'assets' block of the 'theme.json' file.",

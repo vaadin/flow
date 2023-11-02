@@ -131,15 +131,25 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
      * Log a warning if there was an issue removing the folder.
      */
     private void removeDevBundle() {
-        File devBundleDir = new File(npmFolder(),
-                Constants.DEV_BUNDLE_LOCATION);
+        File devBundle = new File(npmFolder(),
+                Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION);
+        File bundleDir = new File(npmFolder(), Constants.BUNDLE_LOCATION);
         try {
-            if (devBundleDir.exists()) {
-                FrontendUtils.deleteDirectory(devBundleDir);
+            if (devBundle.exists()) {
+                FileUtils.delete(devBundle);
             }
         } catch (IOException exception) {
             getLog().debug("Exception removing dev-bundle", exception);
-            getLog().error("Failed to remove '" + devBundleDir.getAbsolutePath()
+            getLog().error("Failed to remove '" + devBundle.getAbsolutePath()
+                    + "'. Please remove it manually.");
+        }
+        try {
+            if (bundleDir.exists() && bundleDir.listFiles().length == 0) {
+                FrontendUtils.deleteDirectory(bundleDir);
+            }
+        } catch (IOException ioe) {
+            getLog().debug("Exception removing dev-bundle", ioe);
+            getLog().error("Failed to remove '" + bundleDir.getAbsolutePath()
                     + "'. Please remove it manually.");
         }
     }
