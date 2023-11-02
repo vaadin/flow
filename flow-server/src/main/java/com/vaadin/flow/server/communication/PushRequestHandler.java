@@ -33,7 +33,6 @@ import org.atmosphere.cpr.AtmosphereInterceptor;
 import org.atmosphere.cpr.AtmosphereRequestImpl;
 import org.atmosphere.cpr.AtmosphereResponseImpl;
 import org.atmosphere.cpr.BroadcasterConfig;
-import org.atmosphere.interceptor.HeartbeatInterceptor;
 import org.atmosphere.util.VoidAnnotationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -205,11 +204,10 @@ public class PushRequestHandler
         atmosphere.addInitParameter(
                 ApplicationConfig.DROP_ACCESS_CONTROL_ALLOW_ORIGIN_HEADER,
                 "false");
-        // Disable heartbeat (it does not emit correct events client side)
-        // https://github.com/Atmosphere/atmosphere-javascript/issues/141
-        atmosphere.addInitParameter(
-                ApplicationConfig.DISABLE_ATMOSPHEREINTERCEPTORS,
-                HeartbeatInterceptor.class.getName());
+
+        // Set default max WS idle time to 5 minutes (300 000 ms)
+        atmosphere.addInitParameter(ApplicationConfig.WEBSOCKET_IDLETIME,
+                String.valueOf(300000));
 
         final String bufferSize = String
                 .valueOf(PushConstants.WEBSOCKET_BUFFER_SIZE);
