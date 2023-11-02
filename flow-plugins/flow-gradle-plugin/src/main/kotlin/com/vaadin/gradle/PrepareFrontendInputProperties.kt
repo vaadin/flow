@@ -240,6 +240,9 @@ public class PrepareFrontendInputProperties public constructor(project: Project)
     @Input
     @Optional
     public fun getPnpmExecutablePath(): String? {
+        if (!extension.pnpmEnable) {
+            return null
+        }
         val pnpmExecutable = tools.pnpmExecutable ?: return null
         return pnpmExecutable.stream()
             .collect(Collectors.joining(" "))
