@@ -48,6 +48,7 @@ public class NpmTemplateParserTest {
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
+        Mockito.when(configuration.getBuildFolder()).thenReturn("target");
 
         Properties properties = new Properties();
         Mockito.when(configuration.getInitParameters()).thenReturn(properties);
