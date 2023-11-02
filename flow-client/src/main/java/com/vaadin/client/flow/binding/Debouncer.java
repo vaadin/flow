@@ -275,8 +275,7 @@ public class Debouncer {
                                 // trailing event
                                 runCommands(JsonConstants.EVENT_PHASE_TRAILING,
                                         debouncer.bufferedSendCommand,
-                                        debouncer.bufferedCommands,
-                                        null);
+                                        debouncer.bufferedCommands, null);
                             } else {
                                 // "Debouncer was in queue, but no command.
                                 // Likely a leading only subscription."
@@ -288,8 +287,7 @@ public class Debouncer {
                             // than in wrong order
                             runCommands(JsonConstants.EVENT_PHASE_INTERMEDIATE,
                                     debouncer.bufferedSendCommand,
-                                    debouncer.bufferedCommands,
-                                    null);
+                                    debouncer.bufferedCommands, null);
                             // Restart intermediate timer so that there won't
                             // be triggering more than one event "quicker than
                             // orderd" in the orginal schedule.
