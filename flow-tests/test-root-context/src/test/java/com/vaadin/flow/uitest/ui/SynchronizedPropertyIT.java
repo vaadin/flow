@@ -129,4 +129,20 @@ public class SynchronizedPropertyIT extends ChromeBrowserTest {
                         + "input.dispatchEvent(new CustomEvent('input'));");
         waitUntil(driver -> "Server value: value1".equals(label.getText()), 2);
     }
+
+    @Test
+    public void synchronizePropertyWithCustomEventDebounce_multipleEventAndValueChanges() {
+        open();
+        WebElement label = findElement(
+                By.id("syncWithCustomEventDebounceLabel"));
+        executeScript(
+                "const input = document.querySelector('#syncWithCustomEventDebounceInput');\n"
+                        + "input.myProperty = 'value1';\n"
+                        + "input.dispatchEvent(new CustomEvent('input'));\n"
+                        + "input.dispatchEvent(new CustomEvent('input'));\n"
+                        + "input.myProperty = 'value2';\n"
+                        + "input.dispatchEvent(new CustomEvent('input'));\n"
+                        + "input.dispatchEvent(new CustomEvent('input'));");
+        waitUntil(driver -> "Server value: value2".equals(label.getText()), 2);
+    }
 }
