@@ -46,8 +46,8 @@ public class ParentThemeIT extends ChromeBrowserTest {
     @Before
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
-        statsJson = new File(baseDir, "target/" +
-                Constants.DEV_BUNDLE_LOCATION + "/config/stats.json");
+        statsJson = new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION
+                + "/config/stats.json");
         themeAssetsInBundle = new File(baseDir,
                 "target/" + Constants.DEV_BUNDLE_LOCATION
                         + "/assets/themes/reusable-theme");
