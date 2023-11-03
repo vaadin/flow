@@ -264,15 +264,6 @@ public open class VaadinFlowPluginExtension(project: Project) {
      */
     public var alwaysExecutePrepareFrontend: Boolean = false
 
-    /**
-     * If {@code true} navigation error views implementing {@link HasErrorParameter}
-     * can be rendered for exceptions during RPC request handling, not only limited
-     * to exceptions thrown during navigation life-cycle.
-     *
-     * @return {@code true} to enable error view rendering in RPC, {@code false} by default
-     */
-    public var isErrorHandlerRedirect: Boolean = false
-
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>? = null): ClasspathFilter {
         if (block != null) {
             block.delegate = classpathFilter
@@ -331,12 +322,6 @@ public open class VaadinFlowPluginExtension(project: Project) {
         val forceProductionBuildProperty: Boolean? = project.getBooleanProperty(InitParameters.FORCE_PRODUCTION_BUILD)
         if (forceProductionBuildProperty != null) {
             forceProductionBuild = forceProductionBuildProperty
-        }
-
-
-        val compressBundleProperty: Boolean? = project.getBooleanProperty(InitParameters.COMPRESS_BUNDLE)
-        if (compressBundleProperty != null) {
-            compressBundle = compressBundleProperty
         }
 
         val useGlobalPnpmProperty: Boolean? = project.getBooleanProperty(InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM)
