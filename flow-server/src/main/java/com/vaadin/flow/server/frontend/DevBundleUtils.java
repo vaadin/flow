@@ -129,10 +129,11 @@ public class DevBundleUtils {
             for (File child : devBundleFolder.listFiles()) {
                 zip(child, child.getName(), zipOut);
             }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new CompressionException(
+                    "Failed to compress dev bundle files to '"
+                            + bundleFile.getPath() + "'",
+                    e);
         }
     }
 
@@ -209,10 +210,9 @@ public class DevBundleUtils {
                 zipEntry = zis.getNextEntry();
             }
             zis.closeEntry();
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new CompressionException(
+                    "Failed to unpack '" + bundleFile.getPath() + "'", e);
         }
     }
 
