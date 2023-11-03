@@ -32,6 +32,17 @@
             <!-- Auto run clean to remove previous mode compilation -->
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${project.basedir}</directory>
+                            <includes>
+                                <include>package*.json</include>
+                                <include>webpack*.js</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
                 <!-- This is because we run multiple modes on the same module -->
                 <executions>
                     <execution>
@@ -63,8 +74,6 @@
                 <configuration>
                     <productionMode>true</productionMode>
                     <pnpmEnable>false</pnpmEnable>
-                    <nodeAutoUpdate>true</nodeAutoUpdate>
-                    <requireHomeNodeExec>true</requireHomeNodeExec>
                 </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->
