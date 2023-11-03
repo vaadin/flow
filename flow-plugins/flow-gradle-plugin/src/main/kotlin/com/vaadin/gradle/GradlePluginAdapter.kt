@@ -190,6 +190,8 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
 
     override fun forceProductionBuild(): Boolean = extension.forceProductionBuild
 
+    override fun compressBundle(): Boolean = extension.compressBundle
+
     override fun isPrepareFrontendCacheDisabled(): Boolean = extension.alwaysExecutePrepareFrontend
 
     override fun isErrorHandlerRedirectEnabled(): Boolean = extension.isErrorHandlerRedirect
