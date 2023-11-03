@@ -49,7 +49,7 @@ const moduleWeights = {
   // - flow-tests/test-root-ui-context
   // - flow-tests/test-live-reload
   // - flow-tests/test-dev-mode
-  'flow-tests/test-frontend/test-npm': {pos: 1, weight: 2},
+  'flow-tests/test-frontend/test-npm/pom.xml': {pos: 1, weight: 2},
   'flow-tests/test-frontend/test-npm/pom-production.xml': { weight: 2 },
   'flow-tests/test-application-theme/test-theme-live-reload': {pos: 1, weight: 4},
   'flow-tests/test-no-theme': {pos: 1},
