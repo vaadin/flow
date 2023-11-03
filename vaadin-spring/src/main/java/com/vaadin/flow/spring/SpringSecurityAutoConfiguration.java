@@ -152,8 +152,8 @@ public class SpringSecurityAutoConfiguration {
     public AccessPathChecker accessPatchChecker(
             VaadinConfigurationProperties vaadinProperties,
             @Lazy WebInvocationPrivilegeEvaluator evaluator) {
-        return new SpringAccessPathChecker(vaadinProperties.getUrlMapping(),
-                evaluator);
+        return new SpringAccessPathChecker(evaluator,
+                vaadinProperties.getUrlMapping());
     }
 
     /**

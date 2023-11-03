@@ -52,9 +52,9 @@ import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.PermitAllView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedAdminView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedUserView;
+import com.vaadin.flow.server.auth.NavigationAccessChecker.AccessCheckResult;
 import com.vaadin.flow.server.auth.NavigationAccessChecker.Decision;
 import com.vaadin.flow.server.auth.NavigationAccessChecker.NavigationContext;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.Result;
 
 public class AnnotatedViewAccessCheckerTest {
 
@@ -66,158 +66,172 @@ public class AnnotatedViewAccessCheckerTest {
 
     @Test
     public void anonymousAccessToAnonymousViewAllowed() {
-        Result result = checkAccess(AnonymousAllowedView.class, null);
-        Assert.assertEquals(Result.ALLOW, result);
+        AccessCheckResult result = checkAccess(AnonymousAllowedView.class,
+                null);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void anonymousAccessToNoAnnotationViewDenied() {
-        Result result = checkAccess(NoAnnotationView.class, null);
+        AccessCheckResult result = checkAccess(NoAnnotationView.class, null);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void anonymousAccessToPermitAllViewDenied() {
-        Result result = checkAccess(PermitAllView.class, null);
+        AccessCheckResult result = checkAccess(PermitAllView.class, null);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void anonymousAccessToDenyAllViewDenied() {
-        Result result = checkAccess(DenyAllView.class, null);
+        AccessCheckResult result = checkAccess(DenyAllView.class, null);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void anonymousAccessToRolesAllowedUserViewDenied() {
-        Result result = checkAccess(RolesAllowedUserView.class, null);
+        AccessCheckResult result = checkAccess(RolesAllowedUserView.class,
+                null);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void anonymousAccessToRolesAllowedAdminViewDenied() {
-        Result result = checkAccess(RolesAllowedAdminView.class, null);
+        AccessCheckResult result = checkAccess(RolesAllowedAdminView.class,
+                null);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void loggedInNoRolesAccessToAnonymousViewAllowed() {
-        Result result = checkAccess(AnonymousAllowedView.class,
+        AccessCheckResult result = checkAccess(AnonymousAllowedView.class,
                 User.USER_NO_ROLES);
-        Assert.assertEquals(Result.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void loggedInNoRolesAccessToNoAnnotationViewDenied() {
-        Result result = checkAccess(NoAnnotationView.class, User.USER_NO_ROLES);
+        AccessCheckResult result = checkAccess(NoAnnotationView.class,
+                User.USER_NO_ROLES);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void loggedInNoRolesAccessToPermitAllViewAllowed() {
-        Result result = checkAccess(PermitAllView.class, User.USER_NO_ROLES);
-        Assert.assertEquals(Result.ALLOW, result);
+        AccessCheckResult result = checkAccess(PermitAllView.class,
+                User.USER_NO_ROLES);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void loggedInNoRolesAccessToDenyAllViewDenied() {
-        Result result = checkAccess(DenyAllView.class, User.USER_NO_ROLES);
+        AccessCheckResult result = checkAccess(DenyAllView.class,
+                User.USER_NO_ROLES);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void loggedInNoRolesAccessToRolesAllowedUserViewDenied() {
-        Result result = checkAccess(RolesAllowedUserView.class,
+        AccessCheckResult result = checkAccess(RolesAllowedUserView.class,
                 User.USER_NO_ROLES);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void loggedInNoRolesAccessToRolesAllowedAdminViewDenied() {
-        Result result = checkAccess(RolesAllowedAdminView.class,
+        AccessCheckResult result = checkAccess(RolesAllowedAdminView.class,
                 User.USER_NO_ROLES);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void loggedInUserRoleAccessToAnonymousViewAllowed() {
-        Result result = checkAccess(AnonymousAllowedView.class,
+        AccessCheckResult result = checkAccess(AnonymousAllowedView.class,
                 User.NORMAL_USER);
-        Assert.assertEquals(Result.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void loggedInUserRoleAccessToNoAnnotationViewDenied() {
-        Result result = checkAccess(NoAnnotationView.class, User.NORMAL_USER);
+        AccessCheckResult result = checkAccess(NoAnnotationView.class,
+                User.NORMAL_USER);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void loggedInUserRoleAccessToPermitAllViewAllowed() {
-        Result result = checkAccess(PermitAllView.class, User.NORMAL_USER);
-        Assert.assertEquals(Result.ALLOW, result);
+        AccessCheckResult result = checkAccess(PermitAllView.class,
+                User.NORMAL_USER);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void loggedInUserRoleAccessToDenyAllViewDenied() {
-        Result result = checkAccess(DenyAllView.class, User.NORMAL_USER);
+        AccessCheckResult result = checkAccess(DenyAllView.class,
+                User.NORMAL_USER);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void loggedInUserRoleAccessToRolesAllowedUserViewAllowed() {
-        Result result = checkAccess(RolesAllowedUserView.class,
+        AccessCheckResult result = checkAccess(RolesAllowedUserView.class,
                 User.NORMAL_USER);
-        Assert.assertEquals(Result.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void loggedInUserRoleAccessToRolesAllowedAdminViewDenied() {
-        Result result = checkAccess(RolesAllowedAdminView.class,
+        AccessCheckResult result = checkAccess(RolesAllowedAdminView.class,
                 User.NORMAL_USER);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void loggedInAdminRoleAccessToAnonymousViewAllowed() {
-        Result result = checkAccess(AnonymousAllowedView.class, User.ADMIN);
-        Assert.assertEquals(Result.ALLOW, result);
+        AccessCheckResult result = checkAccess(AnonymousAllowedView.class,
+                User.ADMIN);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void loggedInAdminRoleAccessToNoAnnotationViewDenied() {
-        Result result = checkAccess(NoAnnotationView.class, User.ADMIN);
+        AccessCheckResult result = checkAccess(NoAnnotationView.class,
+                User.ADMIN);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void loggedInAdminRoleAccessToPermitAllViewAllowed() {
-        Result result = checkAccess(PermitAllView.class, User.ADMIN);
-        Assert.assertEquals(Result.ALLOW, result);
+        AccessCheckResult result = checkAccess(PermitAllView.class, User.ADMIN);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void loggedInAdminRoleAccessToDenyAllViewDenied() {
-        Result result = checkAccess(DenyAllView.class, User.ADMIN);
+        AccessCheckResult result = checkAccess(DenyAllView.class, User.ADMIN);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void loggedInAdminRoleAccessToRolesAllowedUserViewDenied() {
-        Result result = checkAccess(RolesAllowedUserView.class, User.ADMIN);
+        AccessCheckResult result = checkAccess(RolesAllowedUserView.class,
+                User.ADMIN);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void loggedInAdminRoleAccessToRolesAllowedAdminViewAllowed() {
-        Result result = checkAccess(RolesAllowedAdminView.class, User.ADMIN);
-        Assert.assertEquals(Result.ALLOW, result);
+        AccessCheckResult result = checkAccess(RolesAllowedAdminView.class,
+                User.ADMIN);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void openingNoAnnotationViewShowsReasonAndHint() {
-        Result result = checkAccess(NoAnnotationView.class, User.NORMAL_USER);
-        Assert.assertEquals(new Result(Decision.DENY,
+        AccessCheckResult result = checkAccess(NoAnnotationView.class,
+                User.NORMAL_USER);
+        Assert.assertEquals(new AccessCheckResult(Decision.DENY,
                 "Consider adding one of the following annotations "
                         + "to make the view accessible: @AnonymousAllowed, "
                         + "@PermitAll, @RolesAllowed."),
@@ -226,72 +240,72 @@ public class AnnotatedViewAccessCheckerTest {
 
     @Test
     public void anonymousAccess_to_noAnnotationAnonymousAllowedByParent_allowed() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationAnonymousAllowedByParentView.class, null);
-        Assert.assertEquals(Result.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void anonymousAccess_to_noAnnotationAnonymousAllowedByGrandParent_allowed() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationAnonymousAllowedByGrandParentView.class, null);
-        Assert.assertEquals(Result.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void anonymousAccess_to_noAnnotationPermitAllByGrandParentView_denied() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationPermitAllByGrandParentView.class, null);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void anonymousAccess_to_noAnnotationDenyAllByGrandParentView_denied() {
-        Result result = checkAccess(NoAnnotationDenyAllByGrandParentView.class,
-                null);
+        AccessCheckResult result = checkAccess(
+                NoAnnotationDenyAllByGrandParentView.class, null);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void anonymousAccess_to_noAnnotationRolesAllowedUserByGrandParentView_denied() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationRolesAllowedUserByGrandParentView.class, null);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void anonymousAccess_to_noAnnotationRolesAllowedAdminByGrandParentView_denied() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationRolesAllowedAdminByGrandParentView.class, null);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void loggedInNoRolesAccess_to_noAnnotationAnonymousAllowedByGrandParentView_allowed() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationAnonymousAllowedByGrandParentView.class,
                 User.USER_NO_ROLES);
-        Assert.assertEquals(Result.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void loggedInNoRolesAccess_to_noAnnotationPermitAllByGrandParentView_allowed() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationPermitAllByGrandParentView.class,
                 User.USER_NO_ROLES);
-        Assert.assertEquals(Result.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void loggedInNoRolesAccess_to_noAnnotationDenyAllByGrandParentView_denied() {
-        Result result = checkAccess(NoAnnotationDenyAllByGrandParentView.class,
-                User.USER_NO_ROLES);
+        AccessCheckResult result = checkAccess(
+                NoAnnotationDenyAllByGrandParentView.class, User.USER_NO_ROLES);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void loggedInNoRolesAccess_to_noAnnotationRolesAllowedUserByGrandParentView_denied() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationRolesAllowedUserByGrandParentView.class,
                 User.USER_NO_ROLES);
         Assert.assertEquals(Decision.DENY, result.decision());
@@ -299,7 +313,7 @@ public class AnnotatedViewAccessCheckerTest {
 
     @Test
     public void loggedInNoRolesAccess_to_noAnnotationRolesAllowedAdminByGrandParentView_denied() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationRolesAllowedAdminByGrandParentView.class,
                 User.USER_NO_ROLES);
         Assert.assertEquals(Decision.DENY, result.decision());
@@ -307,37 +321,37 @@ public class AnnotatedViewAccessCheckerTest {
 
     @Test
     public void loggedInUserRoleAccess_to_noAnnotationAnonymousAllowedByGrandParentView_allowed() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationAnonymousAllowedByGrandParentView.class,
                 User.NORMAL_USER);
-        Assert.assertEquals(Result.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void loggedInUserRoleAccess_to_noAnnotationPermitAllByGrandParentView_allowed() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationPermitAllByGrandParentView.class, User.NORMAL_USER);
-        Assert.assertEquals(Result.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void loggedInUserRoleAccess_to_noAnnotationDenyAllByGrandParentView_denied() {
-        Result result = checkAccess(NoAnnotationDenyAllByGrandParentView.class,
-                User.NORMAL_USER);
+        AccessCheckResult result = checkAccess(
+                NoAnnotationDenyAllByGrandParentView.class, User.NORMAL_USER);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void loggedInUserRoleAccess_to_noAnnotationRolesAllowedUserByGrandParentView_allowed() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationRolesAllowedUserByGrandParentView.class,
                 User.NORMAL_USER);
-        Assert.assertEquals(Result.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void loggedInUserRoleAccess_to_noAnnotationRolesAllowedAdminByGrandParentView_denied() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationRolesAllowedAdminByGrandParentView.class,
                 User.NORMAL_USER);
         Assert.assertEquals(Decision.DENY, result.decision());
@@ -345,29 +359,29 @@ public class AnnotatedViewAccessCheckerTest {
 
     @Test
     public void loggedInAdminRoleAccess_to_noAnnotationAnonymousAllowedByGrandParentView_allowed() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationAnonymousAllowedByGrandParentView.class,
                 User.ADMIN);
-        Assert.assertEquals(Result.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void loggedInAdminRoleAccess_to_noAnnotationPermitAllByGrandParentView_allowed() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationPermitAllByGrandParentView.class, User.ADMIN);
-        Assert.assertEquals(Result.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void loggedInAdminRoleAccess_to_noAnnotationDenyAllByGrandParentView_denied() {
-        Result result = checkAccess(NoAnnotationDenyAllByGrandParentView.class,
-                User.ADMIN);
+        AccessCheckResult result = checkAccess(
+                NoAnnotationDenyAllByGrandParentView.class, User.ADMIN);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
     @Test
     public void loggedInAdminRoleAccess_to_noAnnotationRolesAllowedUserByGrandParentView_denied() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationRolesAllowedUserByGrandParentView.class,
                 User.ADMIN);
         Assert.assertEquals(Decision.DENY, result.decision());
@@ -375,10 +389,10 @@ public class AnnotatedViewAccessCheckerTest {
 
     @Test
     public void loggedInAdminRoleAccess_To_noAnnotationRolesAllowedAdminByGrandParentView_allowed() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationRolesAllowedAdminByGrandParentView.class,
                 User.ADMIN);
-        Assert.assertEquals(Result.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
@@ -402,7 +416,7 @@ public class AnnotatedViewAccessCheckerTest {
 
     @Test
     public void anonymousAccess_to_noAnnotationPermitAllByGrandParentAsInterfacesIgnoredView_denied() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationPermitAllByGrandParentAsInterfacesIgnoredView.class,
                 null);
         Assert.assertEquals(Decision.DENY, result.decision());
@@ -410,34 +424,34 @@ public class AnnotatedViewAccessCheckerTest {
 
     @Test
     public void loggedInNoRolesAccess_to_noAnnotationPermitAllByGrandParentAsInterfacesIgnoredView_allowed() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 NoAnnotationPermitAllByGrandParentAsInterfacesIgnoredView.class,
                 User.USER_NO_ROLES);
-        Assert.assertEquals(Result.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void rerouteToError_defaultErrorHandler_allowed() {
-        Result result = checkAccess(RouteNotFoundError.class, null);
-        Assert.assertEquals(Result.ALLOW, result);
+        AccessCheckResult result = checkAccess(RouteNotFoundError.class, null);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void rerouteToError_customAnonymousErrorHandler_allowed() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 AccessControlTestClasses.CustomErrorView.class, null);
-        Assert.assertEquals(Result.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.ALLOW, result);
     }
 
     @Test
     public void rerouteToError_customNotAnnotatedErrorHandler_deny() {
-        Result result = checkAccess(
+        AccessCheckResult result = checkAccess(
                 AccessControlTestClasses.NotAnnotatedCustomErrorView.class,
                 null);
         Assert.assertEquals(Decision.DENY, result.decision());
     }
 
-    private Result checkAccess(Class<?> viewClass, User user) {
+    private AccessCheckResult checkAccess(Class<?> viewClass, User user) {
         NavigationContext context = setupNavigationContext(viewClass, user);
         return this.viewAccessChecker.check(context);
     }

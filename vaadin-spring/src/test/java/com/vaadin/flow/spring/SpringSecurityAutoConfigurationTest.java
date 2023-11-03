@@ -137,7 +137,7 @@ class SpringSecurityAutoConfigurationTest {
         Mockito.when(navigationContext.deny(ArgumentMatchers.anyString()))
                 .thenCallRealMethod();
 
-        NavigationAccessChecker.Result result = control
+        NavigationAccessChecker.AccessCheckResult result = control
                 .checkAccess(navigationContext, false);
         assertThat(result.decision())
                 .isEqualTo(NavigationAccessChecker.Decision.DENY);

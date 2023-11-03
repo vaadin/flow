@@ -8,6 +8,8 @@ import java.util.function.Predicate;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.auth.AnnotatedViewAccessChecker;
+import com.vaadin.flow.server.auth.DefaultNavigationCheckDecisionResolver;
 import com.vaadin.flow.server.auth.NavigationAccessChecker;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.spring.AuthenticationUtil;
@@ -19,9 +21,24 @@ import com.vaadin.flow.spring.AuthenticationUtil;
  */
 public class SpringNavigationAccessControl extends NavigationAccessControl {
 
+    /**
+     * Create a new instance with the default view annotation checker and
+     * decision resolver.
+     *
+     * @see AnnotatedViewAccessChecker
+     * @see DefaultNavigationCheckDecisionResolver
+     */
     public SpringNavigationAccessControl() {
     }
 
+    /**
+     * Create a new instance with given checkers and decision resolver.
+     *
+     * @param checkerList
+     *            collection of navigation access checker.
+     * @param decisionResolver
+     *            the decision resolver.
+     */
     public SpringNavigationAccessControl(
             Collection<NavigationAccessChecker> checkerList,
             NavigationAccessChecker.DecisionResolver decisionResolver) {

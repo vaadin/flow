@@ -26,6 +26,9 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.auth.NavigationAccessChecker.AccessCheckResult;
+import com.vaadin.flow.server.auth.NavigationAccessChecker.NavigationContext;
+
 /**
  * Default implementation of {@link NavigationAccessChecker.DecisionResolver}
  * that allow access only if input results are all ALLOW, or a combination of
@@ -50,14 +53,13 @@ public class DefaultNavigationCheckDecisionResolver
             .getLogger(DefaultNavigationCheckDecisionResolver.class);
 
     @Override
-    public NavigationAccessChecker.Result resolve(
-            List<NavigationAccessChecker.Result> results,
-            NavigationAccessChecker.NavigationContext context) {
+    public AccessCheckResult resolve(List<AccessCheckResult> results,
+            NavigationContext context) {
         Class<?> navigationTarget = context.getNavigationTarget();
         String path = context.getLocation().getPath();
-        Map<NavigationAccessChecker.Decision, List<NavigationAccessChecker.Result>> resultsByDecision = results
-                .stream().collect(Collectors
-                        .groupingBy(NavigationAccessChecker.Result::decision));
+        Map<NavigationAccessChecker.Decision, List<AccessCheckResult>> resultsByDecision = results
+                .stream()
+                .collect(Collectors.groupingBy(AccessCheckResult::decision));
         int neutralVotes = Optional
                 .ofNullable(resultsByDecision
                         .remove(NavigationAccessChecker.Decision.NEUTRAL))
@@ -65,7 +67,7 @@ public class DefaultNavigationCheckDecisionResolver
 
         String denyReasons = resultsByDecision
                 .getOrDefault(NavigationAccessChecker.Decision.DENY, List.of())
-                .stream().map(NavigationAccessChecker.Result::reason)
+                .stream().map(AccessCheckResult::reason)
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining(System.lineSeparator()));
 
@@ -103,7 +105,7 @@ public class DefaultNavigationCheckDecisionResolver
                 summary += ", " + NavigationAccessChecker.Decision.NEUTRAL
                         + " = " + neutralVotes;
             }
-            LOGGER.debug("Access to view '{}' with path '{}' blocked because "
+            LOGGER.warn("Access to view '{}' with path '{}' blocked because "
                     + "there is no unanimous consensus from the navigation checkers. {}.",
                     navigationTarget.getName(), path, summary);
             return context.reject(String.format(

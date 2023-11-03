@@ -324,7 +324,7 @@ class NavigationAccessControlConfigurerTest {
         }
 
         @Override
-        public Result check(NavigationContext context) {
+        public AccessCheckResult check(NavigationContext context) {
             return context.deny("TEST " + id);
         }
 

@@ -35,10 +35,10 @@ import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.WrappedSession;
+import com.vaadin.flow.server.auth.NavigationAccessChecker.AccessCheckResult;
 import com.vaadin.flow.server.auth.NavigationAccessChecker.Decision;
 import com.vaadin.flow.server.auth.NavigationAccessChecker.DecisionResolver;
 import com.vaadin.flow.server.auth.NavigationAccessChecker.NavigationContext;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.Result;
 
 /**
  * A {@link BeforeEnterListener} implementation that contains logic to perform
@@ -231,7 +231,8 @@ public class NavigationAccessControl implements BeforeEnterListener {
 
         NavigationContext context = new NavigationContext(event,
                 getPrincipal(request), getRolesChecker(request));
-        Result result = checkAccess(context, isProductionMode(event));
+        AccessCheckResult result = checkAccess(context,
+                isProductionMode(event));
         if (result.decision() != Decision.ALLOW) {
             if (context.getPrincipal() == null) {
                 storeRedirectURL(event, request);
@@ -254,7 +255,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
         }
     }
 
-    public Result checkAccess(NavigationContext context,
+    public AccessCheckResult checkAccess(NavigationContext context,
             boolean productionMode) {
         Class<?> navigationTarget = context.getNavigationTarget();
         if (!enabled) {
@@ -280,12 +281,12 @@ public class NavigationAccessControl implements BeforeEnterListener {
         } else if (loginUrl != null && PathUtil.trimPath(loginUrl)
                 .equals(context.getLocation().getPath())) {
             getLogger().debug("Allowing access for login URL {}", loginUrl);
-            return Result.ALLOW;
+            return AccessCheckResult.ALLOW;
         }
 
-        List<Result> results = checkerList.stream()
+        List<AccessCheckResult> results = checkerList.stream()
                 .map(checker -> checker.check(context)).toList();
-        Result decision = decisionResolver.resolve(results, context);
+        AccessCheckResult decision = decisionResolver.resolve(results, context);
         getLogger().debug("Decision against {} checker results: {}",
                 results.size(), decision);
 
@@ -296,7 +297,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
             // Intentionally do not reveal the real denial reason,
             // for example if the route exists but access is denied for some
             // other reason
-            decision = new Result(decision.decision(), "");
+            decision = new AccessCheckResult(decision.decision(), "");
         }
         return decision;
     }

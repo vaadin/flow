@@ -199,8 +199,8 @@ public class RequestUtil {
                         QueryParameters.full(request.getParameterMap())),
                 target.getRouteParameters(), null, role -> false, false);
 
-        NavigationAccessChecker.Result result = accessControl.getObject()
-                .checkAccess(navigationContext, service
+        NavigationAccessChecker.AccessCheckResult result = accessControl
+                .getObject().checkAccess(navigationContext, service
                         .getDeploymentConfiguration().isProductionMode());
         boolean isAllowed = result
                 .decision() == NavigationAccessChecker.Decision.ALLOW;

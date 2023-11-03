@@ -50,7 +50,7 @@ public class RoutePathAccessChecker implements NavigationAccessChecker {
     }
 
     @Override
-    public Result check(NavigationContext context) {
+    public AccessCheckResult check(NavigationContext context) {
         if (context.isErrorHandling()) {
             // Error handling rerouting, the path would referer to the original
             // already evaluated route, so do no take decisions.

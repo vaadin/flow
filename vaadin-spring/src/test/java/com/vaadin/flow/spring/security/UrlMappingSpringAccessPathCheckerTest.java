@@ -153,7 +153,7 @@ class UrlMappingSpringAccessPathCheckerTest {
         @Bean
         SpringAccessPathChecker urlMappingPpathAccessChecker(
                 WebInvocationPrivilegeEvaluator evaluator) {
-            return new SpringAccessPathChecker("/url-mapping/*", evaluator);
+            return new SpringAccessPathChecker(evaluator, "/url-mapping/*");
         }
 
         @Bean

@@ -43,7 +43,7 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
      * Creates an instance using the given checker.
      */
     public AnnotatedViewAccessChecker() {
-        this.accessAnnotationChecker = new AccessAnnotationChecker();
+        this(new AccessAnnotationChecker());
     }
 
     /**
@@ -58,7 +58,7 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
     }
 
     @Override
-    public Result check(NavigationContext context) {
+    public AccessCheckResult check(NavigationContext context) {
         Class<?> targetView = context.getNavigationTarget();
         boolean hasAccess = accessAnnotationChecker.hasAccess(targetView,
                 context.getPrincipal(), context::hasRole);

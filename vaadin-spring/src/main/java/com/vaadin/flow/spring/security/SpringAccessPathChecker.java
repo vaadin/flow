@@ -41,8 +41,7 @@ public class SpringAccessPathChecker implements AccessPathChecker {
      *            evaluator to check path permissions.
      */
     public SpringAccessPathChecker(WebInvocationPrivilegeEvaluator evaluator) {
-        this.evaluator = evaluator;
-        this.urlMapping = null;
+        this(evaluator, null);
     }
 
     /**
@@ -52,13 +51,13 @@ public class SpringAccessPathChecker implements AccessPathChecker {
      * It applies the given Vaadin servlet url mapping to the input path before
      * delegating the check to the evaluator.
      *
-     * @param urlMapping
-     *            Vaadin servlet url mapping
      * @param evaluator
      *            evaluator to check path permissions.
+     * @param urlMapping
+     *            Vaadin servlet url mapping
      */
-    public SpringAccessPathChecker(String urlMapping,
-            WebInvocationPrivilegeEvaluator evaluator) {
+    public SpringAccessPathChecker(WebInvocationPrivilegeEvaluator evaluator,
+            String urlMapping) {
         this.urlMapping = urlMapping;
         this.evaluator = evaluator;
     }

@@ -49,7 +49,7 @@ import com.vaadin.flow.router.Router;
  * </ul>
  *
  * {@link NavigationContext} provides the methods to create the above
- * {@link Result}s.
+ * {@link AccessCheckResult}s.
  */
 @FunctionalInterface
 public interface NavigationAccessChecker extends Serializable {
@@ -81,7 +81,7 @@ public interface NavigationAccessChecker extends Serializable {
      * @return a result indicating weather the access to target view should be
      *         granted or not, never {@literal null}.
      */
-    Result check(NavigationContext context);
+    AccessCheckResult check(NavigationContext context);
 
     /**
      * Decision on navigation access.
@@ -158,7 +158,8 @@ public interface NavigationAccessChecker extends Serializable {
          * @return a result indicating weather the access to target view should
          *         be granted or not, never {@literal null}.
          */
-        Result resolve(List<Result> results, NavigationContext context);
+        AccessCheckResult resolve(List<AccessCheckResult> results,
+                NavigationContext context);
     }
 
     /**
@@ -343,8 +344,8 @@ public interface NavigationAccessChecker extends Serializable {
          *
          * @return a {@link Decision#ALLOW} result instance.
          */
-        public Result allow() {
-            return Result.ALLOW;
+        public AccessCheckResult allow() {
+            return AccessCheckResult.ALLOW;
         }
 
         /**
@@ -353,8 +354,8 @@ public interface NavigationAccessChecker extends Serializable {
          *
          * @return a {@link Decision#NEUTRAL} result instance.
          */
-        public Result neutral() {
-            return Result.NEUTRAL;
+        public AccessCheckResult neutral() {
+            return AccessCheckResult.NEUTRAL;
         }
 
         /**
@@ -367,8 +368,8 @@ public interface NavigationAccessChecker extends Serializable {
          *
          * @return a {@link Decision#DENY} result instance.
          */
-        public Result deny(String reason) {
-            return new Result(Decision.DENY, reason);
+        public AccessCheckResult deny(String reason) {
+            return new AccessCheckResult(Decision.DENY, reason);
         }
 
         /**
@@ -383,8 +384,8 @@ public interface NavigationAccessChecker extends Serializable {
          *
          * @return a {@link Decision#REJECT} result instance.
          */
-        public Result reject(String reason) {
-            return new Result(Decision.REJECT, reason);
+        public AccessCheckResult reject(String reason) {
+            return new AccessCheckResult(Decision.REJECT, reason);
         }
 
     }
@@ -393,16 +394,18 @@ public interface NavigationAccessChecker extends Serializable {
      * A representation of the access check result, potentially providing deny
      * reason.
      */
-    final class Result implements Serializable {
+    final class AccessCheckResult implements Serializable {
 
         /**
          * Default allow instance
          */
-        static final Result ALLOW = new Result(Decision.ALLOW, null);
+        static final AccessCheckResult ALLOW = new AccessCheckResult(
+                Decision.ALLOW, null);
         /**
          * Default neutral instance
          */
-        static final Result NEUTRAL = new Result(Decision.NEUTRAL, null);
+        static final AccessCheckResult NEUTRAL = new AccessCheckResult(
+                Decision.NEUTRAL, null);
         private final String reason;
 
         private final Decision decision;
@@ -415,7 +418,7 @@ public interface NavigationAccessChecker extends Serializable {
          * @param reason
          *            a message explaining the reason for that decision.
          */
-        Result(Decision decision, String reason) {
+        AccessCheckResult(Decision decision, String reason) {
             this.decision = decision;
             this.reason = reason;
         }
@@ -449,7 +452,7 @@ public interface NavigationAccessChecker extends Serializable {
             if (o == null || getClass() != o.getClass()) {
                 return false;
             }
-            Result result = (Result) o;
+            AccessCheckResult result = (AccessCheckResult) o;
             return Objects.equals(reason, result.reason)
                     && decision == result.decision;
         }
