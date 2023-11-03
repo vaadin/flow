@@ -355,7 +355,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
      */
     @Test
     fun testCircularDepsBug() {
-        doTestCircularDepsBug();
+        doTestCircularDepsBug()
     }
 
     /**
@@ -364,7 +364,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     @Ignore("Webpack uses gzip compression")
     @Test
     fun testCircularDepsBugWebpack() {
-        doTestCircularDepsBug("*.gz");
+        doTestCircularDepsBug("*.gz")
     }
 
     private fun doTestCircularDepsBug(compressedExtension: String = "*.br") {
