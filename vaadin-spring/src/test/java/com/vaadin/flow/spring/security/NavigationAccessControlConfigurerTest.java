@@ -309,10 +309,6 @@ class NavigationAccessControlConfigurerTest {
             return super.getLoginView();
         }
 
-        @Override
-        public boolean isEnabled() {
-            return super.isEnabled();
-        }
     }
 
     private static class TestAccessChecker implements NavigationAccessChecker {

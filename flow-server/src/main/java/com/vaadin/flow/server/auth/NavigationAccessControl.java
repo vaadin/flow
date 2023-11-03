@@ -164,7 +164,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
      * @return {@literal true} if the access control is enabled, otherwise
      *         {@literal false}.
      */
-    protected boolean isEnabled() {
+    public final boolean isEnabled() {
         return enabled;
     }
 

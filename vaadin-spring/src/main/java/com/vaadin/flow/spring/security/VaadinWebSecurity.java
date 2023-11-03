@@ -213,7 +213,7 @@ public abstract class VaadinWebSecurity {
             urlRegistry.anyRequest().authenticated();
         });
 
-        accessControl.setEnabled(true);
+        accessControl.setEnabled(enableNavigationAccessControl());
     }
 
     /**
@@ -240,6 +240,19 @@ public abstract class VaadinWebSecurity {
 
     protected void configure(WebSecurity web) throws Exception {
         // no-operation
+    }
+
+    /**
+     * Gets if navigation access control should be enabled.
+     *
+     * Navigation access control is enabled by default. This method can be
+     * overridden returning {@literal false} to disable it.
+     *
+     * @return {@literal true} if navigation access control should be enabled,
+     *         {@literal false} to disable it.
+     */
+    protected boolean enableNavigationAccessControl() {
+        return true;
     }
 
     /**
