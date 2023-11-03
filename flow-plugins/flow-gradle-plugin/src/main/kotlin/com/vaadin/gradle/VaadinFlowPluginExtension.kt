@@ -246,6 +246,12 @@ public open class VaadinFlowPluginExtension(project: Project) {
     public var forceProductionBuild: Boolean = false
 
     /**
+     * Setting this to {@code false} will skip compression of the bundle.
+     * {@code true} by default.
+     */
+    public var compressBundle: Boolean = true
+
+    /**
      * Prevents tracking state of the `vaadinPrepareFrontend` task, so that it
      * will re-run every time it is called.
      *
@@ -323,6 +329,12 @@ public open class VaadinFlowPluginExtension(project: Project) {
         val forceProductionBuildProperty: Boolean? = project.getBooleanProperty(InitParameters.FORCE_PRODUCTION_BUILD)
         if (forceProductionBuildProperty != null) {
             forceProductionBuild = forceProductionBuildProperty
+        }
+
+
+        val compressBundleProperty: Boolean? = project.getBooleanProperty(InitParameters.COMPRESS_BUNDLE)
+        if (compressBundleProperty != null) {
+            compressBundle = compressBundleProperty
         }
 
         val useGlobalPnpmProperty: Boolean? = project.getBooleanProperty(InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM)
