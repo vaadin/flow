@@ -23,6 +23,8 @@ import com.vaadin.flow.server.frontend.FrontendTools
 import com.vaadin.flow.server.frontend.FrontendToolsSettings
 import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.Project
+import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.SourceSetContainer
 import java.io.File
 import java.net.URI
 
@@ -61,20 +63,17 @@ public fun Project.getBooleanProperty(propertyName: String) : Boolean? {
  * ```
  */
 public fun Project.vaadin(block: VaadinFlowPluginExtension.() -> Unit) {
-    convention.getByType(VaadinFlowPluginExtension::class.java).apply(block)
+    VaadinFlowPluginExtension.get(this).apply(block)
 }
 
 internal fun Collection<File>.toPrettyFormat(): String = joinToString(prefix = "[", postfix = "]") { if (it.isFile) it.name else it.absolutePath }
-
-internal fun VaadinFlowPluginExtension.createFrontendTools(): FrontendTools {
-    var settings = FrontendToolsSettings(npmFolder.absolutePath, SerializableSupplier { FrontendUtils.getVaadinHomeDirectory().absolutePath })
-    settings.setNodeVersion(nodeVersion)
-    settings.setNodeDownloadRoot(URI(nodeDownloadRoot))
-    return FrontendTools(settings)
-}
 
 /**
  * Returns only jar files from given file collection.
  */
 internal val Configuration.jars: FileCollection
     get() = filter { it.name.endsWith(".jar", true) }
+
+internal val Project.sourceSets: SourceSetContainer get() = project.properties["sourceSets"] as SourceSetContainer
+internal fun Project.getSourceSet(sourceSetName: String): SourceSet = sourceSets.getByName(sourceSetName)
+internal fun Project.getBuildResourcesDir(sourceSetName: String): File = getSourceSet(sourceSetName).output.resourcesDir!!
