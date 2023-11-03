@@ -15,12 +15,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
-import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
@@ -197,16 +193,11 @@ public class RequestUtil {
             return false;
         }
 
-        BeforeEnterEvent event = new BeforeEnterEvent(
-                new NavigationEvent(router,
-                        new Location(path,
-                                QueryParameters
-                                        .full(request.getParameterMap())),
-                        new UI(), NavigationTrigger.CLIENT_SIDE),
-                targetView, target.getRouteParameters(),
-                target.getRouteTarget().getParentLayouts());
         NavigationAccessChecker.NavigationContext navigationContext = new NavigationAccessChecker.NavigationContext(
-                event, null, role -> false);
+                router, targetView,
+                new Location(path,
+                        QueryParameters.full(request.getParameterMap())),
+                target.getRouteParameters(), null, role -> false, false);
 
         NavigationAccessChecker.Result result = accessControl.getObject()
                 .checkAccess(navigationContext, service
