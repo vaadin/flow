@@ -204,10 +204,11 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 process.destroyForcibly();
             }
         }
-        DevBundleUtils.compressBundle(new File(
-                new File(options.getNpmFolder(),
-                        options.getBuildDirectoryName()),
-                Constants.DEV_BUNDLE_LOCATION));
+        DevBundleUtils.compressBundle(options.getNpmFolder(),
+                new File(
+                        new File(options.getNpmFolder(),
+                                options.getBuildDirectoryName()),
+                        Constants.DEV_BUNDLE_LOCATION));
     }
 
     private void copyPackageLockToBundleFolder() {

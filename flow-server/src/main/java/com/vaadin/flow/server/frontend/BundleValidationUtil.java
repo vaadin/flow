@@ -121,9 +121,11 @@ public final class BundleValidationUtil {
                 getLogger().info("No dev-bundle found.");
                 return true;
             }
-            DevBundleUtils.unpackBundle(new File(
-                    new File(npmFolder, options.getBuildDirectoryName()),
-                    Constants.DEV_BUNDLE_LOCATION));
+            DevBundleUtils.unpackBundle(npmFolder,
+                    new File(
+                            new File(npmFolder,
+                                    options.getBuildDirectoryName()),
+                            Constants.DEV_BUNDLE_LOCATION));
         }
 
         if (options.isSkipDevBundle()) {

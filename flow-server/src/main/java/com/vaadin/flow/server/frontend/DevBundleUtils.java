@@ -114,8 +114,8 @@ public class DevBundleUtils {
      * @param devBundleFolder
      *            dev bundle location
      */
-    public static void compressBundle(File devBundleFolder) {
-        File bundleFile = new File(
+    public static void compressBundle(File projectDir, File devBundleFolder) {
+        File bundleFile = new File(projectDir,
                 Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION);
         if (bundleFile.exists()) {
             bundleFile.delete();
@@ -174,8 +174,8 @@ public class DevBundleUtils {
      * @param devBundleFolder
      *            unpacked dev bundle location
      */
-    public static void unpackBundle(File devBundleFolder) {
-        File bundleFile = new File(
+    public static void unpackBundle(File projectDir, File devBundleFolder) {
+        File bundleFile = new File(projectDir,
                 Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION);
         if (!bundleFile.exists()) {
             return;
