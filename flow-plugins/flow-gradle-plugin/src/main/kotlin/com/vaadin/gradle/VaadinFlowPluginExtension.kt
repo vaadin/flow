@@ -290,7 +290,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
     internal fun autoconfigure(project: Project) {
         // calculate webpackOutputDirectory if not set by the user
         if (webpackOutputDirectory == null) {
-            webpackOutputDirectory = File(project.buildResourcesDir, Constants.VAADIN_WEBAPP_RESOURCES)
+            webpackOutputDirectory = File(project.getBuildResourcesDir(sourceSetName), Constants.VAADIN_WEBAPP_RESOURCES)
         }
 
         val productionModeProperty: Boolean? = project.getBooleanProperty("vaadin.productionMode")
@@ -385,7 +385,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
             ")"
 }
 
-internal val Project.buildResourcesDir: File get() {
-    val sourceSets: SourceSetContainer = project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets
-    return sourceSets.getByName(extensions.getByType(VaadinFlowPluginExtension::class.java).sourceSetName).output.resourcesDir!!
+internal fun Project.getBuildResourcesDir(sourceSetName: String): File {
+    val sourceSets: SourceSetContainer = convention.getPlugin(JavaPluginConvention::class.java).sourceSets
+    return sourceSets.getByName(sourceSetName).output.resourcesDir!!
 }

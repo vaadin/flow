@@ -158,7 +158,7 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
                 Constants.VAADIN_SERVLET_RESOURCES
             )
         }
-        return File(project.buildResourcesDir, Constants.VAADIN_SERVLET_RESOURCES)
+        return File(project.getBuildResourcesDir(extension.sourceSetName), Constants.VAADIN_SERVLET_RESOURCES)
     }
 
     override fun webpackOutputDirectory(): File =
