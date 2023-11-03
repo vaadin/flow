@@ -23,6 +23,8 @@ import com.vaadin.flow.server.frontend.FrontendTools
 import com.vaadin.flow.server.frontend.FrontendToolsSettings
 import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.Project
+import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.SourceSetContainer
 import java.io.File
 import java.net.URI
 
@@ -71,3 +73,7 @@ internal fun Collection<File>.toPrettyFormat(): String = joinToString(prefix = "
  */
 internal val Configuration.jars: FileCollection
     get() = filter { it.name.endsWith(".jar", true) }
+
+internal val Project.sourceSets: SourceSetContainer get() = project.properties["sourceSets"] as SourceSetContainer
+internal fun Project.getSourceSet(sourceSetName: String): SourceSet = sourceSets.getByName(sourceSetName)
+internal fun Project.getBuildResourcesDir(sourceSetName: String): File = getSourceSet(sourceSetName).output.resourcesDir!!

@@ -23,8 +23,6 @@ import groovy.lang.Closure
 import groovy.lang.DelegatesTo
 import org.gradle.api.Action
 import org.gradle.api.Project
-import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.tasks.SourceSetContainer
 import java.io.File
 
 public open class VaadinFlowPluginExtension(project: Project) {
@@ -383,9 +381,4 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "dependencyScope=$dependencyScope, " +
             "processResourcesTaskName=$processResourcesTaskName" +
             ")"
-}
-
-internal fun Project.getBuildResourcesDir(sourceSetName: String): File {
-    val sourceSets: SourceSetContainer = convention.getPlugin(JavaPluginConvention::class.java).sourceSets
-    return sourceSets.getByName(sourceSetName).output.resourcesDir!!
 }
