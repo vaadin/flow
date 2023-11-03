@@ -44,7 +44,7 @@ export class InfoTab extends LitElement {
             <input
               id="toggle"
               type="checkbox"
-              ?disabled=${this._devTools.liveReloadDisabled ||
+              ?disabled=${!this._devTools.conf.enable ||
               ((this._devTools.frontendStatus === ConnectionStatus.UNAVAILABLE ||
                 this._devTools.frontendStatus === ConnectionStatus.ERROR) &&
                 (this._devTools.javaStatus === ConnectionStatus.UNAVAILABLE ||
@@ -61,7 +61,7 @@ export class InfoTab extends LitElement {
           style="--status-color: ${this._devTools.getStatusColor(this._devTools.javaStatus)}"
         >
           Java ${this._devTools.javaStatus}
-          ${this._devTools.backend ? `(${VaadinDevTools.BACKEND_DISPLAY_NAME[this._devTools.backend]})` : ''}
+          ${this._devTools.conf.backend ? `(${VaadinDevTools.BACKEND_DISPLAY_NAME[this._devTools.conf.backend]})` : ''}
         </dd>
         <dd
           class="live-reload-status"
