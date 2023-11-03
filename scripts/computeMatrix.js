@@ -98,6 +98,8 @@ const moduleWeights = {
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-methodsecurity': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-urlmapping': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-reverseproxy': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow-standalone-routepathaccesschecker': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow-routepathaccesschecker': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints': { pos: 5, weight: 2 },
   'flow-tests/test-live-reload-multimodule/ui': {pos:6},
   'flow-tests/test-live-reload-multimodule/library': {pos:6},
