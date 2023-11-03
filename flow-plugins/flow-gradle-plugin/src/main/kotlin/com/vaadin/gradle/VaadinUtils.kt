@@ -66,13 +66,6 @@ public fun Project.vaadin(block: VaadinFlowPluginExtension.() -> Unit) {
 
 internal fun Collection<File>.toPrettyFormat(): String = joinToString(prefix = "[", postfix = "]") { if (it.isFile) it.name else it.absolutePath }
 
-internal fun VaadinFlowPluginExtension.createFrontendTools(): FrontendTools {
-    var settings = FrontendToolsSettings(npmFolder.absolutePath, SerializableSupplier { FrontendUtils.getVaadinHomeDirectory().absolutePath })
-    settings.setNodeVersion(nodeVersion)
-    settings.setNodeDownloadRoot(URI(nodeDownloadRoot))
-    return FrontendTools(settings)
-}
-
 /**
  * Returns only jar files from given file collection.
  */
