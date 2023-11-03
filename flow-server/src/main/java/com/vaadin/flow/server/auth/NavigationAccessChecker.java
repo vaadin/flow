@@ -381,7 +381,7 @@ public interface NavigationAccessChecker extends Serializable {
          *            and the critical issue encountered. Useful for debugging
          *            purposes.
          *
-         * @return a {@link Decision#REJECT result instance.
+         * @return a {@link Decision#REJECT} result instance.
          */
         public Result reject(String reason) {
             return new Result(Decision.REJECT, reason);
