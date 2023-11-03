@@ -61,7 +61,7 @@ public fun Project.getBooleanProperty(propertyName: String) : Boolean? {
  * ```
  */
 public fun Project.vaadin(block: VaadinFlowPluginExtension.() -> Unit) {
-    convention.getByType(VaadinFlowPluginExtension::class.java).apply(block)
+    VaadinFlowPluginExtension.get(this).apply(block)
 }
 
 internal fun Collection<File>.toPrettyFormat(): String = joinToString(prefix = "[", postfix = "]") { if (it.isFile) it.name else it.absolutePath }
