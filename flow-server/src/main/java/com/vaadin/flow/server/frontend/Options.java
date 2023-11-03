@@ -80,6 +80,8 @@ public class Options implements Serializable {
 
     private boolean skipDevBundle = false;
 
+    private boolean compressBundle = true;
+
     /**
      * The node.js version to be used when node.js is installed automatically by
      * Vaadin, for example <code>"v16.0.0"</code>. Defaults to
@@ -835,5 +837,26 @@ public class Options implements Serializable {
      */
     public boolean isSkipDevBundle() {
         return skipDevBundle;
+    }
+
+    /**
+     * Set to {@code false} to skip frontend bundle compression.
+     *
+     * @param compressBundle
+     *            {@code false} to not compress frontend bundles
+     * @return this builder
+     */
+    public Options withCompressBundle(boolean compressBundle) {
+        this.compressBundle = compressBundle;
+        return this;
+    }
+
+    /**
+     * Get if frontend bundle should be compressed or not.
+     *
+     * @return true to copress, false to skip compression
+     */
+    public boolean isCompressBundle() {
+        return compressBundle;
     }
 }

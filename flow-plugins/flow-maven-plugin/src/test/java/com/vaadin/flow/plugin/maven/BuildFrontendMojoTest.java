@@ -175,6 +175,7 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle", true);
         ReflectionUtils.setVariableValueInObject(mojo, "forceProductionBuild",
                 false);
+        ReflectionUtils.setVariableValueInObject(mojo, "compressBundle", true);
 
         ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
                 openApiJsonFile);

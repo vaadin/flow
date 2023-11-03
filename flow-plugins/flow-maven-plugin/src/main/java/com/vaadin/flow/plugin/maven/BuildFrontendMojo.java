@@ -119,6 +119,13 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Parameter(property = InitParameters.FORCE_PRODUCTION_BUILD, defaultValue = "false")
     private boolean forceProductionBuild;
 
+    /**
+     * Setting this to {@code false} will skip compression of prebuilt frontend
+     * bundles.
+     */
+    @Parameter(property = InitParameters.COMPRESS_BUNDLE, defaultValue = "true")
+    private boolean compressBundle;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
@@ -208,6 +215,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Override
     public boolean forceProductionBuild() {
         return forceProductionBuild;
+    }
+
+    @Override
+    public boolean compressBundle() {
+        return compressBundle;
     }
 
 }
