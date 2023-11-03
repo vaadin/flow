@@ -34,9 +34,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -61,18 +59,17 @@ import org.slf4j.LoggerFactory;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.BundleValidationUtil;
-import com.vaadin.flow.server.frontend.CvdlProducts;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
+import com.vaadin.flow.server.frontend.ProdBundleUtils;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
@@ -429,6 +426,24 @@ public class BuildFrontendUtil {
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
         BuildFrontendUtil.runVite(adapter, tools);
+        copyBundleToProdBundleLocation(adapter);
+    }
+
+    private static void copyBundleToProdBundleLocation(
+            PluginAdapterBase adapter) {
+        try {
+            File prodBundleFolder = ProdBundleUtils.getProdBundleFolder(
+                    adapter.projectBaseDirectory().toFile());
+            if (prodBundleFolder.exists()) {
+                FrontendUtils.deleteDirectory(prodBundleFolder);
+            }
+            FileUtils.copyDirectory(adapter.servletResourceOutputDirectory(),
+                    prodBundleFolder);
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "Couldn't copy new production bundle files to prod-bundle folder",
+                    e);
+        }
     }
 
     /**

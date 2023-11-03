@@ -118,8 +118,14 @@ public class NodeTasks implements FallibleCommand {
                 options.withBundleBuild(needBuild);
                 if (!needBuild) {
                     commands.add(new TaskPrepareProdBundle(options));
-                    UsageStatistics.markAsUsed("flow/prod-pre-compiled-bundle",
-                            null);
+                    File prodBundleFolder = ProdBundleUtils
+                            .getProdBundleFolder(options.getNpmFolder());
+                    if (prodBundleFolder.exists()) {
+                        UsageStatistics.markAsUsed(
+                                "flow/prod-pre-compiled-bundle", null);
+                    } else {
+                        UsageStatistics.markAsUsed("flow/prod-bundle", null);
+                    }
                 } else {
                     BundleUtils.copyPackageLockFromBundle(options);
                 }

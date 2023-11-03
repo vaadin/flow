@@ -54,7 +54,11 @@ public class TaskPrepareProdBundle implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        copyBundleFilesFromJar();
+        if(hasProdBundle()) {
+            copyBundleFilesFromProdBundle();
+        } else {
+            copyDefaultBundleFilesFromJar();
+        }
         copyProjectThemes();
         writePreCompiledMarker();
     }
@@ -89,7 +93,7 @@ public class TaskPrepareProdBundle implements FallibleCommand {
         }
     }
 
-    private void copyBundleFilesFromJar() throws ExecutionFailedException {
+    private void copyDefaultBundleFilesFromJar() throws ExecutionFailedException {
         URL statsJson = BundleValidationUtil.getProdBundleResource(
                 "config/stats.json", options.getClassFinder());
         if (statsJson == null) {
@@ -109,6 +113,29 @@ public class TaskPrepareProdBundle implements FallibleCommand {
                     new File(jarUri), Constants.PROD_BUNDLE_NAME,
                     options.getResourceOutputDirectory(), "**/*.*");
         } catch (URISyntaxException e) {
+            throw new ExecutionFailedException(
+                    "Couldn't copy production bundle files", e);
+        }
+    }
+
+    private boolean hasProdBundle() {
+        File prodBundleFolder = ProdBundleUtils
+                .getProdBundleFolder(options.getNpmFolder());
+        if (prodBundleFolder.exists()) {
+            // Has a production bundle
+            File bundleFile = new File(prodBundleFolder, "config/stats.json");
+            return bundleFile.exists();
+        }
+        return false;
+    }
+
+    private void copyBundleFilesFromProdBundle()
+            throws ExecutionFailedException {
+        try {
+            FileUtils.copyDirectory(
+                    ProdBundleUtils.getProdBundleFolder(options.getNpmFolder()),
+                    options.getResourceOutputDirectory());
+        } catch (IOException e) {
             throw new ExecutionFailedException(
                     "Couldn't copy production bundle files", e);
         }
