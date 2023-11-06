@@ -383,6 +383,8 @@ internal class PluginEffectiveConfiguration(
     val postinstallPackages: ListProperty<String> = extension.postinstallPackages
         .convention(listOf())
 
+    val classpathFilter: Property<ClasspathFilter> = extension.classpathFilter
+
     val dependencyScope: Property<String> = extension.dependencyScope
         .convention(sourceSetName.map {
             if (it == "main") {
