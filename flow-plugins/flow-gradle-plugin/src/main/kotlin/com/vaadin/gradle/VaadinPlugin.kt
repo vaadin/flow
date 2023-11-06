@@ -58,13 +58,29 @@ public class VaadinPlugin : Plugin<Project> {
                 config.resourceOutputDirectory
             )
 
-            // auto-activate tasks: https://github.com/vaadin/vaadin-gradle-plugin/issues/48
+            // the processResources copies stuff from build/vaadin-generated
+            // (which is populated by this task) and therefore must run after vaadinPrepareFrontend task.
             project.tasks.getByPath(config.processResourcesTaskName.get()).dependsOn("vaadinPrepareFrontend")
+
+            // auto-activate tasks: https://github.com/vaadin/vaadin-gradle-plugin/issues/48
             if (config.productionMode.get()) {
                 // this will also catch the War task since it extends from Jar
                 project.tasks.withType(Jar::class.java) { task: Jar ->
                     task.dependsOn("vaadinBuildFrontend")
                 }
+            }
+
+            // make sure all dependent projects have finished building their jars, otherwise
+            // the Vaadin classpath scanning will not work properly. See
+            // https://github.com/vaadin/vaadin-gradle-plugin/issues/38
+            // for more details.
+            project.tasks.getByName("vaadinPrepareFrontend").dependsOn(
+                project.configurations.getByName(config.dependencyScope.get()).jars
+            )
+
+            if (config.alwaysExecutePrepareFrontend.get()) {
+                project.tasks.getByName("vaadinPrepareFrontend")
+                    .doNotTrackState("State tracking is disabled. Use the 'alwaysExecutePrepareFrontend' plugin setting to enable the feature")
             }
         }
     }

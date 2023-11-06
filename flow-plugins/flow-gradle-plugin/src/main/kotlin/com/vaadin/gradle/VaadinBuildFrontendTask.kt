@@ -41,6 +41,9 @@ import org.gradle.api.tasks.bundling.Jar
  *
  */
 public open class VaadinBuildFrontendTask : DefaultTask() {
+    private val config: PluginEffectiveConfiguration =
+        PluginEffectiveConfiguration.get(project)
+
     init {
         group = "Vaadin"
         description = "Builds the frontend bundle with webpack"
@@ -63,10 +66,8 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
 
     @TaskAction
     public fun vaadinBuildFrontend() {
-        val config: PluginEffectiveConfiguration =
-            PluginEffectiveConfiguration.get(project)
         logger.info("Running the vaadinBuildFrontend task with effective configuration $config")
-        val adapter = GradlePluginAdapter(project, false)
+        val adapter = GradlePluginAdapter(project, config, false)
         // sanity check
         val tokenFile = BuildFrontendUtil.getTokenFile(adapter)
         check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }

@@ -301,7 +301,7 @@ public interface VaadinFlowPluginExtension {
 
 internal class PluginEffectiveConfiguration(
     private val project: Project,
-    private val extension: VaadinFlowPluginExtension
+    extension: VaadinFlowPluginExtension
 ) {
     val productionMode: Provider<Boolean> = extension.productionMode
         .convention(false)
@@ -387,6 +387,7 @@ internal class PluginEffectiveConfiguration(
         .convention(listOf())
 
     val classpathFilter: Property<ClasspathFilter> = extension.classpathFilter
+        .convention(ClasspathFilter())
 
     val dependencyScope: Property<String> = extension.dependencyScope
         .convention(sourceSetName.map {

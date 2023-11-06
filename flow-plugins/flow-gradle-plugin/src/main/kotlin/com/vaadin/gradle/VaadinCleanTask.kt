@@ -43,6 +43,9 @@ import com.vaadin.flow.server.Constants
  * in the development mode.
  */
 public open class VaadinCleanTask : DefaultTask() {
+    private val config: PluginEffectiveConfiguration =
+        PluginEffectiveConfiguration.get(project)
+
     init {
         group = "Vaadin"
         description = "Cleans the project completely and removes 'generated' folders, node_modules, src/main/dev-bundle, webpack.generated.js, " +
@@ -53,8 +56,6 @@ public open class VaadinCleanTask : DefaultTask() {
 
     @TaskAction
     public fun clean() {
-        val config: PluginEffectiveConfiguration =
-            PluginEffectiveConfiguration.get(project)
         project.delete(
                 config.generatedTsFolder,
                 config.frontendDirectory.get().resolve("generated").absolutePath,

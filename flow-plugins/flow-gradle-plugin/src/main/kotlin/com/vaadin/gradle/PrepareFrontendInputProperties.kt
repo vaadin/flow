@@ -37,9 +37,7 @@ import org.gradle.api.provider.Provider
  * caching the results of vaadinPrepareFrontend task to not run it again if
  * inputs are the same.
  */
-public class PrepareFrontendInputProperties public constructor(project: Project) {
-
-    private val config: PluginEffectiveConfiguration = PluginEffectiveConfiguration.get(project)
+internal class PrepareFrontendInputProperties(private val config: PluginEffectiveConfiguration) {
     private val tools: Provider<FrontendTools> = initialiseFrontendToolsSettings()
 
     @Input

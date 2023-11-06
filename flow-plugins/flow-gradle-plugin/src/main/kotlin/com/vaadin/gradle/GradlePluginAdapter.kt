@@ -29,10 +29,11 @@ import java.nio.file.Path
 
 private val servletApiJarRegex = Regex(".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$")
 
-internal class GradlePluginAdapter(val project: Project, private val isBeforeProcessResources: Boolean): PluginAdapterBuild {
-    val config: PluginEffectiveConfiguration =
-        PluginEffectiveConfiguration.get(project)
-
+internal class GradlePluginAdapter(
+    val project: Project,
+    val config: PluginEffectiveConfiguration,
+    private val isBeforeProcessResources: Boolean
+): PluginAdapterBuild {
     override fun applicationProperties(): File = config.applicationProperties.get()
 
     override fun eagerServerLoad(): Boolean = config.eagerServerLoad.get()

@@ -29,9 +29,10 @@ import java.io.File
  * as the files in the frontend directory. Being used for caching the results
  * of vaadinPrepareFrontend task to not run it again if inputs are the same.
  */
-public class PrepareFrontendOutputProperties public constructor(private val project: Project) {
-
-    private val config: PluginEffectiveConfiguration = PluginEffectiveConfiguration.get(project)
+internal class PrepareFrontendOutputProperties(
+    private val project: Project,
+    private val config: PluginEffectiveConfiguration,
+) {
 
     @OutputFile
     public fun getPackageJson(): File {
