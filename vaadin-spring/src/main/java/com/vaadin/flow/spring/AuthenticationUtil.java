@@ -66,4 +66,5 @@ public class AuthenticationUtil {
                             .getAuthority().equals(roleWithPrefix));
         };
     }
+
 }

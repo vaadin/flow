@@ -215,6 +215,13 @@ public class BuildDevBundleMojo extends AbstractMojo
         return false; // not applicable for dev bundle generation.
     }
 
+    @Override
+    public boolean compressBundle() {
+        // Dev bundle plugin is used only for jar creation.
+        // Should not compress as it will not be used.
+        return false;
+    }
+
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
      * MavenProject.
@@ -428,4 +435,5 @@ public class BuildDevBundleMojo extends AbstractMojo
     public boolean isErrorHandlerRedirectEnabled() {
         return false;
     }
+
 }

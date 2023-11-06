@@ -1,32 +1,16 @@
 package com.vaadin.flow.spring.security;
 
+import jakarta.annotation.security.RolesAllowed;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-import jakarta.annotation.security.RolesAllowed;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.internal.NavigationRouteTarget;
-import com.vaadin.flow.router.internal.RouteTarget;
-import com.vaadin.flow.router.internal.RouteUtil;
-import com.vaadin.flow.server.HandlerHelper.RequestType;
-import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.spring.MockVaadinContext;
-import com.vaadin.flow.spring.SpringBootAutoConfiguration;
-import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
-import com.vaadin.flow.spring.SpringServlet;
-import com.vaadin.flow.spring.SpringVaadinServletService;
-import com.vaadin.flow.spring.VaadinConfigurationProperties;
-
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,6 +19,29 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.internal.NavigationRouteTarget;
+import com.vaadin.flow.router.internal.RouteTarget;
+import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.server.auth.NavigationAccessChecker;
+import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.server.auth.RoutePathAccessChecker;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.spring.MockVaadinContext;
+import com.vaadin.flow.spring.SpringBootAutoConfiguration;
+import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
+import com.vaadin.flow.spring.SpringServlet;
+import com.vaadin.flow.spring.SpringVaadinServletService;
+import com.vaadin.flow.spring.VaadinConfigurationProperties;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest()
@@ -45,11 +52,28 @@ public class RequestUtilTest {
     @Autowired
     RequestUtil requestUtil;
 
+    @Autowired
+    NavigationAccessControl accessControl;
+
     @MockBean
     VaadinConfigurationProperties vaadinConfigurationProperties;
 
     @MockBean
+    private RoutePathAccessChecker accessPathChecker;
+
+    @MockBean
     private ServletRegistrationBean<SpringServlet> springServletRegistration;
+
+    @Before
+    public void setUp() {
+        accessControl.setEnabled(true);
+        // Disable path checker
+        Mockito.when(accessPathChecker.check(ArgumentMatchers.any()))
+                .then(i -> i
+                        .getArgument(0,
+                                NavigationAccessChecker.NavigationContext.class)
+                        .neutral());
+    }
 
     @Test
     public void testRootRequest_init_standardMapping() {
@@ -359,6 +383,8 @@ public class RequestUtilTest {
                 .mock(SpringVaadinServletService.class);
         Router router = Mockito.mock(Router.class);
         RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
+        DeploymentConfiguration deploymentConfiguration = Mockito
+                .mock(DeploymentConfiguration.class);
 
         Mockito.when(springServletRegistration.getServlet())
                 .thenReturn(servlet);
@@ -366,6 +392,8 @@ public class RequestUtilTest {
             Mockito.when(servlet.getService()).thenReturn(service);
         }
         Mockito.when(service.getRouter()).thenReturn(router);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(deploymentConfiguration);
         Mockito.when(router.getRegistry()).thenReturn(routeRegistry);
         return servlet;
     }
@@ -392,6 +420,9 @@ public class RequestUtilTest {
                 .thenReturn(navigationTarget);
         Mockito.when(navigationTarget.getRouteTarget())
                 .thenReturn(publicRouteTarget);
+        Mockito.when(navigationTarget.getRouteParameters())
+                .thenReturn(RouteParameters.empty());
+
         Mockito.when(publicRouteTarget.getTarget()).thenReturn((Class) view);
 
     }

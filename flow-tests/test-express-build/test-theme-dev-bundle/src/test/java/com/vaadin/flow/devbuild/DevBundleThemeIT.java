@@ -54,10 +54,11 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
     @Before
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
-        File bundle = new File(baseDir, Constants.DEV_BUNDLE_LOCATION);
+        File bundle = new File(baseDir,
+                "target/" + Constants.DEV_BUNDLE_LOCATION);
         statsJson = new File(bundle, "config/stats.json");
-        themeAssetsInBundle = new File(baseDir,
-                Constants.DEV_BUNDLE_LOCATION + "/assets/themes/my-theme");
+        themeAssetsInBundle = new File(baseDir, "target/"
+                + Constants.DEV_BUNDLE_LOCATION + "/assets/themes/my-theme");
         final File themeFolder = new File(baseDir, THEME_FOLDER);
         fontFile = new File(themeFolder, "fonts/ostrich-sans-regular.ttf");
         stylesCss = new File(themeFolder, "styles.css");

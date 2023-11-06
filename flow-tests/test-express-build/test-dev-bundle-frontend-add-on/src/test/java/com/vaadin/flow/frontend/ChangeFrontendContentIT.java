@@ -55,11 +55,12 @@ public class ChangeFrontendContentIT extends ChromeBrowserTest {
 
         // should create a dev-bundle
         Assert.assertTrue("New devBundle should be generated",
-                new File(baseDir, Constants.DEV_BUNDLE_LOCATION).exists());
+                new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION)
+                        .exists());
 
         // should add a hash for lit-view
-        File statsJson = new File(baseDir,
-                Constants.DEV_BUNDLE_LOCATION + "/config/stats.json");
+        File statsJson = new File(baseDir, "target/"
+                + Constants.DEV_BUNDLE_LOCATION + "/config/stats.json");
         Assert.assertTrue("Stats.json should exist", statsJson.exists());
 
         String content = FileUtils.readFileToString(statsJson,

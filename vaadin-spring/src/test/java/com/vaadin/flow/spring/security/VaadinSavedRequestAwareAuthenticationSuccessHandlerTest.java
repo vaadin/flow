@@ -12,7 +12,7 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.DefaultCsrfToken;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 
-import com.vaadin.flow.server.auth.ViewAccessChecker;
+import com.vaadin.flow.server.auth.NavigationAccessControl;
 
 public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
 
@@ -137,7 +137,8 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 .createRequest("/login");
         HttpSession session = loginRequest.getSession();
         // Simulate ViewAccessChecker
-        session.setAttribute(ViewAccessChecker.SESSION_STORED_REDIRECT_ABSOLUTE,
+        session.setAttribute(
+                NavigationAccessControl.SESSION_STORED_REDIRECT_ABSOLUTE,
                 "http://localhost/last-route");
         MockHttpServletResponse loginResponse = new MockHttpServletResponse();
         vaadinSavedRequestAwareAuthenticationSuccessHandler
@@ -159,7 +160,8 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
         HttpSession session = firstRequest.getSession();
         cache.saveRequest(firstRequest, new MockHttpServletResponse());
         // Simulate ViewAccessChecker
-        session.setAttribute(ViewAccessChecker.SESSION_STORED_REDIRECT_ABSOLUTE,
+        session.setAttribute(
+                NavigationAccessControl.SESSION_STORED_REDIRECT_ABSOLUTE,
                 "http://localhost/last-route");
 
         MockHttpServletRequest loginRequest = RequestUtilTest

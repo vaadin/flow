@@ -137,6 +137,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.communication\\.ServerRpcHandler\\$LazyInvocationHandlers",
                 "com\\.vaadin\\.flow\\.server\\.VaadinServletRequest",
                 "com\\.vaadin\\.flow\\.server\\.VaadinServletResponse",
+                "com\\.vaadin\\.flow\\.server\\.auth\\.NavigationAccessChecker\\$NavigationContext",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.AnnotationValidator",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.AppShellPredicate",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationConfigurationFactory",

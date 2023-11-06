@@ -94,11 +94,17 @@ interface Message {
   dontShowAgain: boolean;
   deleted: boolean;
 }
-
+type DevToolsConf = {
+  enable: boolean;
+  url: string;
+  backend?: string;
+  liveReloadPort: number;
+};
 @customElement('vaadin-dev-tools')
 export class VaadinDevTools extends LitElement {
   static MAX_LOG_ROWS = 1000;
   unhandledMessages: ServerMessage[] = [];
+  conf: DevToolsConf = { enable: false, url: '', liveReloadPort: -1 };
 
   static get styles() {
     return [
@@ -814,18 +820,6 @@ export class VaadinDevTools extends LitElement {
     return shown !== null && shown.includes(persistentId);
   }
 
-  @property({ type: String })
-  url?: string;
-
-  @property({ type: Boolean, attribute: true })
-  liveReloadDisabled?: boolean;
-
-  @property({ type: String })
-  backend?: string;
-
-  @property({ type: Number })
-  springBootLiveReloadPort?: number;
-
   @property({ type: Boolean, attribute: false })
   expanded: boolean = false;
 
@@ -943,7 +937,7 @@ export class VaadinDevTools extends LitElement {
     this.frontendConnection = frontendConnection;
 
     let javaConnection: Connection;
-    if (this.backend === VaadinDevTools.SPRING_BOOT_DEVTOOLS && this.springBootLiveReloadPort) {
+    if (this.conf.backend === VaadinDevTools.SPRING_BOOT_DEVTOOLS) {
       javaConnection = new Connection(this.getSpringBootWebSocketUrl(window.location));
       javaConnection.onHandshake = () => {
         if (!VaadinDevTools.isActive) {
@@ -952,7 +946,7 @@ export class VaadinDevTools extends LitElement {
       };
       javaConnection.onReload = onReload;
       javaConnection.onConnectionError = onConnectionError;
-    } else if (this.backend === VaadinDevTools.JREBEL || this.backend === VaadinDevTools.HOTSWAP_AGENT) {
+    } else if (this.conf.backend === VaadinDevTools.JREBEL || this.conf.backend === VaadinDevTools.HOTSWAP_AGENT) {
       javaConnection = frontendConnection;
     } else {
       javaConnection = new Connection(undefined);
@@ -965,16 +959,16 @@ export class VaadinDevTools extends LitElement {
     const prevOnHandshake = javaConnection.onHandshake;
     javaConnection.onHandshake = () => {
       prevOnHandshake();
-      if (this.backend) {
+      if (this.conf.backend) {
         this.log(
           MessageType.INFORMATION,
-          `Java live reload available: ${VaadinDevTools.BACKEND_DISPLAY_NAME[this.backend]}`
+          `Java live reload available: ${VaadinDevTools.BACKEND_DISPLAY_NAME[this.conf.backend]}`
         );
       }
     };
     this.javaConnection = javaConnection;
 
-    if (!this.backend) {
+    if (!this.conf.backend) {
       this.showNotification(
         MessageType.WARNING,
         'Java live reload unavailable',
@@ -1022,10 +1016,10 @@ export class VaadinDevTools extends LitElement {
       div.innerHTML = `<a href="${relative}"/>`;
       return (div.firstChild as HTMLLinkElement).href;
     }
-    if (this.url === undefined) {
+    if (this.conf.url === undefined) {
       return undefined;
     }
-    const connectionBaseUrl = getAbsoluteUrl(this.url!);
+    const connectionBaseUrl = getAbsoluteUrl(this.conf.url!);
 
     if (!connectionBaseUrl.startsWith('http://') && !connectionBaseUrl.startsWith('https://')) {
       // eslint-disable-next-line no-console
@@ -1041,9 +1035,9 @@ export class VaadinDevTools extends LitElement {
     if (hostname.endsWith('gitpod.io')) {
       // Gitpod uses `port-url` instead of `url:port`
       const hostnameWithoutPort = hostname.replace(/.*?-/, '');
-      return `${wsProtocol}://${this.springBootLiveReloadPort}-${hostnameWithoutPort}`;
+      return `${wsProtocol}://${this.conf.liveReloadPort}-${hostnameWithoutPort}`;
     } else {
-      return `${wsProtocol}://${hostname}:${this.springBootLiveReloadPort}`;
+      return `${wsProtocol}://${hostname}:${this.conf.liveReloadPort}`;
     }
   }
 
@@ -1058,6 +1052,7 @@ export class VaadinDevTools extends LitElement {
     super.connectedCallback();
     this.catchErrors();
 
+    this.conf = (window.Vaadin as any).devToolsConf;
     // when focus or clicking anywhere, move the splash message to the message tray
     this.disableEventListener = (_: any) => this.demoteSplashMessage();
     document.body.addEventListener('focus', this.disableEventListener);
@@ -1372,14 +1367,18 @@ export class VaadinDevTools extends LitElement {
                 @click=${() => {
                   const currentTab = this.tabs.find((tab) => tab.id === this.activeTab);
                   if (currentTab && currentTab.element) {
-                    const currentTabElement: any = (typeof currentTab.render === 'function' ? currentTab.element!.firstElementChild : currentTab.element);
+                    const currentTabElement: any =
+                      typeof currentTab.render === 'function'
+                        ? currentTab.element!.firstElementChild
+                        : currentTab.element;
                     const deactivateMethod = currentTabElement?.deactivate;
                     if (deactivateMethod) {
                       deactivateMethod.call(currentTabElement);
                     }
                   }
                   this.activeTab = tab.id;
-                  const tabElement: any = (typeof tab.render === 'function' ? tab.element!.firstElementChild : tab.element);
+                  const tabElement: any =
+                    typeof tab.render === 'function' ? tab.element!.firstElementChild : tab.element;
                   const activateMethod = tabElement.activate;
                   if (activateMethod) {
                     activateMethod.call(tabElement);

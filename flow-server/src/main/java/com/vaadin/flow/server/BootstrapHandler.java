@@ -1597,8 +1597,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     protected static JsonObject getStatsJson(DeploymentConfiguration config)
             throws IOException {
-        String statsJson = DevBundleUtils
-                .findBundleStatsJson(config.getProjectFolder());
+        String statsJson = DevBundleUtils.findBundleStatsJson(
+                config.getProjectFolder(), config.getBuildFolder());
         Objects.requireNonNull(statsJson,
                 "Frontend development bundle is expected to be in the project"
                         + " or on the classpath, but not found.");

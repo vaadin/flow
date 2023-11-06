@@ -15,14 +15,17 @@
  */
 package com.vaadin.flow.server.auth;
 
-import java.lang.reflect.AnnotatedElement;
-import java.security.Principal;
-import java.util.function.Function;
-
 import jakarta.annotation.security.DenyAll;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.http.HttpSession;
+
+import java.lang.reflect.AnnotatedElement;
+import java.security.Principal;
+import java.util.function.Function;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.AccessDeniedException;
@@ -32,15 +35,17 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Checks access to views using an {@link AccessAnnotationChecker}.
  * <p>
  * An instance of this class should be added as a {@link BeforeEnterListener} to
  * the {@link com.vaadin.flow.component.UI} of interest.
+ *
+ * @deprecated for annotation based view security use
+ *             {@link NavigationAccessControl} with
+ *             {@link AnnotatedViewAccessChecker}.
  */
+@Deprecated(forRemoval = true, since = "24.3")
 public class ViewAccessChecker implements BeforeEnterListener {
 
     public static final String SESSION_STORED_REDIRECT = ViewAccessChecker.class

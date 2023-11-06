@@ -189,6 +189,8 @@ internal class GradlePluginAdapter(
 
     override fun forceProductionBuild(): Boolean = config.forceProductionBuild.get()
 
+    override fun compressBundle(): Boolean = true
+
     override fun isPrepareFrontendCacheDisabled(): Boolean = config.alwaysExecutePrepareFrontend.get()
 
     override fun isErrorHandlerRedirectEnabled(): Boolean = config.isErrorHandlerRedirect.get()

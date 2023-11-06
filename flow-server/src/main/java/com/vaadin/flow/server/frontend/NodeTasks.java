@@ -141,8 +141,9 @@ public class NodeTasks implements FallibleCommand {
                 } else {
                     // A dev bundle build is not needed after all, skip it
                     options.withBundleBuild(false);
-                    File devBundleFolder = DevBundleUtils
-                            .getDevBundleFolder(options.getNpmFolder());
+                    File devBundleFolder = DevBundleUtils.getDevBundleFolder(
+                            options.getNpmFolder(),
+                            options.getBuildDirectoryName());
                     if (devBundleFolder.exists()) {
                         UsageStatistics.markAsUsed("flow/app-dev-bundle", null);
                     } else {
