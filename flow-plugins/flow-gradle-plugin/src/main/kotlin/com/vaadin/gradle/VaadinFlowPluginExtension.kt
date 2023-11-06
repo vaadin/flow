@@ -23,8 +23,6 @@ import groovy.lang.Closure
 import groovy.lang.DelegatesTo
 import org.gradle.api.Action
 import org.gradle.api.Project
-import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.tasks.SourceSetContainer
 import java.io.File
 
 public open class VaadinFlowPluginExtension(project: Project) {
@@ -289,7 +287,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
     internal fun autoconfigure(project: Project) {
         // calculate webpackOutputDirectory if not set by the user
         if (webpackOutputDirectory == null) {
-            webpackOutputDirectory = File(project.buildResourcesDir, Constants.VAADIN_WEBAPP_RESOURCES)
+            webpackOutputDirectory = File(project.getBuildResourcesDir(sourceSetName), Constants.VAADIN_WEBAPP_RESOURCES)
         }
 
         val productionModeProperty: Boolean? = project.getBooleanProperty("vaadin.productionMode")
@@ -382,9 +380,4 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "dependencyScope=$dependencyScope, " +
             "processResourcesTaskName=$processResourcesTaskName" +
             ")"
-}
-
-internal val Project.buildResourcesDir: File get() {
-    val sourceSets: SourceSetContainer = project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets
-    return sourceSets.getByName(extensions.getByType(VaadinFlowPluginExtension::class.java).sourceSetName).output.resourcesDir!!
 }
