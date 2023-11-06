@@ -54,8 +54,8 @@ public class CompressUtil {
             }
         } catch (IOException e) {
             throw new CompressionException(
-                    "Failed to compress dev bundle files to '"
-                            + outfile.getPath() + "'",
+                    "Failed to compress bundle files to '" + outfile.getPath()
+                            + "'",
                     e);
         }
     }
