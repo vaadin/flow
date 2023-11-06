@@ -19,7 +19,6 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
-import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.util.GradleVersion
 
@@ -42,7 +41,7 @@ public class VaadinPlugin : Plugin<Project> {
             // fixes https://github.com/vaadin/vaadin-gradle-plugin/issues/26
             extensionName = "vaadinPlatform"
         }
-        project.extensions.create(extensionName, VaadinFlowPluginExtension::class.java, project)
+        project.extensions.create(extensionName, VaadinFlowPluginExtension::class.java)
 
         project.tasks.apply {
             register("vaadinClean", VaadinCleanTask::class.java)
@@ -52,16 +51,16 @@ public class VaadinPlugin : Plugin<Project> {
         }
 
         project.afterEvaluate {
-            val extension: VaadinFlowPluginExtension = VaadinFlowPluginExtension.get(it)
-            extension.autoconfigure(project)
+            val config = PluginEffectiveConfiguration.get(it)
 
             // add a new source-set folder for generated stuff, by default `vaadin-generated`
-            val sourceSets: SourceSetContainer = it.properties["sourceSets"] as SourceSetContainer
-            sourceSets.getByName(extension.sourceSetName).resources.srcDirs(extension.resourceOutputDirectory)
+            it.getSourceSet(config.sourceSetName.get()).resources.srcDirs(
+                config.resourceOutputDirectory
+            )
 
             // auto-activate tasks: https://github.com/vaadin/vaadin-gradle-plugin/issues/48
-            project.tasks.getByPath(extension.processResourcesTaskName!!).dependsOn("vaadinPrepareFrontend")
-            if (extension.productionMode) {
+            project.tasks.getByPath(config.processResourcesTaskName.get()).dependsOn("vaadinPrepareFrontend")
+            if (config.productionMode.get()) {
                 // this will also catch the War task since it extends from Jar
                 project.tasks.withType(Jar::class.java) { task: Jar ->
                     task.dependsOn("vaadinBuildFrontend")

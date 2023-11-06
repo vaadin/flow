@@ -278,8 +278,10 @@ public interface VaadinFlowPluginExtension {
      *
      * @return `true` to enable error view rendering in RPC, `false` by default
      */
-    public val isErrorHandlerRedirect: Property<Boolean>
+    public val errorHandlerRedirect: Property<Boolean>
 
+/*
+// @TODO mavi bring this back
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>) {
         block.delegate = classpathFilter.get()
         block.resolveStrategy = Closure.DELEGATE_FIRST
@@ -290,6 +292,7 @@ public interface VaadinFlowPluginExtension {
         block.execute(classpathFilter.get())
     }
 
+*/
     public companion object {
         public fun get(project: Project): VaadinFlowPluginExtension =
                 project.extensions.getByType(VaadinFlowPluginExtension::class.java)
@@ -420,7 +423,7 @@ internal class PluginEffectiveConfiguration(
     val alwaysExecutePrepareFrontend: Property<Boolean> = extension.alwaysExecutePrepareFrontend
         .convention(false)
 
-    val isErrorHandlerRedirect: Provider<Boolean> = extension.isErrorHandlerRedirect
+    val isErrorHandlerRedirect: Provider<Boolean> = extension.errorHandlerRedirect
         .convention(false)
         .overrideWithSystemProperty(InitParameters.ERROR_HANDLER_REDIRECT_ENABLED)
 

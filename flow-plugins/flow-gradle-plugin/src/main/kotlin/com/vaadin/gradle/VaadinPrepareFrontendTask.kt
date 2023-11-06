@@ -33,8 +33,6 @@ import org.gradle.api.tasks.TaskAction
 @CacheableTask
 public open class VaadinPrepareFrontendTask : DefaultTask() {
 
-    private val extension: VaadinFlowPluginExtension
-
     private val inputProperties: PrepareFrontendInputProperties
 
     private val outputProperties: PrepareFrontendOutputProperties
@@ -59,7 +57,6 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
         group = "Vaadin"
         description = "checks that node and npm tools are installed, copies frontend resources available inside `.jar` dependencies to `node_modules`, and creates or updates `package.json` and `webpack.config.json` files."
 
-        extension = VaadinFlowPluginExtension.get(project)
         // Maven's task run in the LifecyclePhase.PROCESS_RESOURCES phase
 
         inputProperties = PrepareFrontendInputProperties(project)
@@ -67,24 +64,28 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
 
         // the processResources copies stuff from build/vaadin-generated
         // (which is populated by this task) and therefore must run after this task.
-        project.tasks.getByName(extension.processResourcesTaskName!!).mustRunAfter("vaadinPrepareFrontend")
+        project.afterEvaluate { project ->
+            val config = PluginEffectiveConfiguration.get(project)
+            project.tasks.getByName(config.processResourcesTaskName.get()).mustRunAfter("vaadinPrepareFrontend")
 
-        // make sure all dependent projects have finished building their jars, otherwise
-        // the Vaadin classpath scanning will not work properly. See
-        // https://github.com/vaadin/vaadin-gradle-plugin/issues/38
-        // for more details.
-        dependsOn(project.configurations.getByName(extension.dependencyScope!!).jars)
+            // make sure all dependent projects have finished building their jars, otherwise
+            // the Vaadin classpath scanning will not work properly. See
+            // https://github.com/vaadin/vaadin-gradle-plugin/issues/38
+            // for more details.
+            dependsOn(project.configurations.getByName(config.dependencyScope.get()).jars)
 
-        if (extension.alwaysExecutePrepareFrontend) {
-            doNotTrackState("State tracking is disabled. Use the 'alwaysExecutePrepareFrontend' plugin setting to enable the feature");
+            if (config.alwaysExecutePrepareFrontend.get()) {
+                doNotTrackState("State tracking is disabled. Use the 'alwaysExecutePrepareFrontend' plugin setting to enable the feature");
+            }
         }
     }
 
     @TaskAction
     public fun vaadinPrepareFrontend() {
+        val config = PluginEffectiveConfiguration.get(project)
         // Remove Frontend/generated folder to get clean files copied/generated
-        project.delete(extension.generatedTsFolder.absolutePath)
-        logger.info("Running the vaadinPrepareFrontend task with effective configuration $extension")
+        project.delete(config.generatedTsFolder)
+        logger.info("Running the vaadinPrepareFrontend task with effective configuration $config")
         val adapter = GradlePluginAdapter(project, true)
         val tokenFile = BuildFrontendUtil.propagateBuildInfo(adapter)
 
