@@ -26,63 +26,62 @@ import org.gradle.api.Project
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.internal.enterprise.test.FileProperty
 import java.io.File
 
-public interface VaadinFlowPluginExtension {
+public abstract class VaadinFlowPluginExtension {
     /**
      * Whether or not we are running in productionMode. Defaults to false.
      * Responds to the `-Pvaadin.productionMode` property.
      */
-    public val productionMode: Property<Boolean>
+    public abstract val productionMode: Property<Boolean>
 
     /**
      * The folder where webpack should output index.js and other generated
      * files. Defaults to `null` which will use the auto-detected value of
      * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/VAADIN/webapp/`.
      */
-    public val webpackOutputDirectory: Property<File>
+    public abstract val webpackOutputDirectory: Property<File>
 
     /**
      * The folder where `package.json` file is located. Default is project root
      * dir.
      */
-    public val npmFolder: Property<File>
+    public abstract val npmFolder: Property<File>
 
     /**
      * A directory with project's frontend source files.
      *
      * Defaults to `frontend`
      */
-    public val frontendDirectory: Property<File>
+    public abstract val frontendDirectory: Property<File>
 
     /**
      * Whether to generate a bundle from the project frontend sources or not. Defaults to true.
      */
-    public val generateBundle: Property<Boolean>
+    public abstract val generateBundle: Property<Boolean>
 
     /**
      * Whether to run `npm install` after updating dependencies. Defaults to true.
      */
-    public val runNpmInstall: Property<Boolean>
+    public abstract val runNpmInstall: Property<Boolean>
 
     /**
      * Whether to generate embeddable web components from WebComponentExporter
      * inheritors. Defaults to true.
      */
-    public val generateEmbeddableWebComponents: Property<Boolean>
+    public abstract val generateEmbeddableWebComponents: Property<Boolean>
 
     /**
      * Defines the project frontend directory from where resources should be
      * copied from for use with webpack. Defaults to [Constants.LOCAL_FRONTEND_RESOURCES_PATH]
      */
-    public val frontendResourcesDirectory: Property<File>
+    public abstract val frontendResourcesDirectory: Property<File>
 
     /**
      * Whether to use byte code scanner strategy to discover frontend
      * components. Defaults to true.
      */
-    public val optimizeBundle: Property<Boolean>
+    public abstract val optimizeBundle: Property<Boolean>
 
     /**
      * Instructs to use pnpm for installing npm frontend resources. Default is [Constants.ENABLE_PNPM_DEFAULT]
@@ -92,7 +91,7 @@ public interface VaadinFlowPluginExtension {
      * downloaded) for every project. This results in reduced disk space usage
      * and faster recurring builds when compared to npm.
      */
-    public val pnpmEnable: Property<Boolean>
+    public abstract val pnpmEnable: Property<Boolean>
 
     /**
      * Instructs to use bun for installing npm frontend resources. Default is false.
@@ -102,14 +101,14 @@ public interface VaadinFlowPluginExtension {
      * downloaded) for every project. This results in reduced disk space usage
      * and faster recurring builds when compared to npm.
      */
-    public val bunEnable: Property<Boolean>
+    public abstract val bunEnable: Property<Boolean>
 
     /**
      * Whether the globally installed pnpm tool is used. By default, the
      * pinned supported version of pnpm is used, see
      * [FrontendTools.DEFAULT_PNPM_VERSION].
      */
-    public val useGlobalPnpm: Property<Boolean>
+    public abstract val useGlobalPnpm: Property<Boolean>
 
     /**
      * Whether vaadin home node executable usage is forced. If it's set to
@@ -119,47 +118,47 @@ public interface VaadinFlowPluginExtension {
      *
      * Defaults to false.
      */
-    public val requireHomeNodeExec: Property<Boolean>
+    public abstract val requireHomeNodeExec: Property<Boolean>
 
     /**
      * Whether or not insert the initial Uidl object in the bootstrap index.html. Defaults to false.
      * Responds to the `-Pvaadin.eagerServerLoad` property.
      */
-    public val eagerServerLoad: Property<Boolean>
+    public abstract val eagerServerLoad: Property<Boolean>
 
     /**
      * Application properties file in Spring project.
      * Defaults to `src/main/resources/application.properties`
      */
-    public val applicationProperties: Property<File>
+    public abstract val applicationProperties: Property<File>
 
     /**
      * Default generated path of the OpenAPI json.
      *
      * Defaults to `generated-resources/openapi.json`.
      */
-    public val openApiJsonFile: Property<File>
+    public abstract val openApiJsonFile: Property<File>
 
     /**
      * Java source folders for connect scanning.
      */
-    public val javaSourceFolder: Property<File>
+    public abstract val javaSourceFolder: Property<File>
 
     /**
      * Java resource folder.
      */
-    public val javaResourceFolder: Property<File>
+    public abstract val javaResourceFolder: Property<File>
 
     /**
      * The folder where flow will put TS API files for client projects.
      */
-    public val generatedTsFolder: Property<File>
+    public abstract val generatedTsFolder: Property<File>
 
     /**
      * The node.js version to be used when node.js is installed automatically by
      * Vaadin, for example `"v16.0.0"`. Defaults to [FrontendTools.DEFAULT_NODE_VERSION].
      */
-    public val nodeVersion: Property<String>
+    public abstract val nodeVersion: Property<String>
 
     /**
      * Download node.js from this URL. Handy in heavily firewalled corporate
@@ -168,12 +167,12 @@ public interface VaadinFlowPluginExtension {
      *
      * Example: `"https://nodejs.org/dist/"`.
      */
-    public val nodeDownloadRoot: Property<String>
+    public abstract val nodeDownloadRoot: Property<String>
 
     /**
      * Allow automatic update of node installed to alternate location. Default `false`
      */
-    public val nodeAutoUpdate: Property<Boolean>
+    public abstract val nodeAutoUpdate: Property<Boolean>
 
     /**
      * Defines the output directory for generated non-served resources, such as
@@ -187,21 +186,21 @@ public interface VaadinFlowPluginExtension {
      *
      * The `flow-build-info.json` file is generated here.
      */
-    public val resourceOutputDirectory: Property<File>
+    public abstract val resourceOutputDirectory: Property<File>
 
     /**
      * Defines the output folder used by the project.
      *
      * Default value is the `project.buildDir` and should not need to be changed.
      */
-    public val projectBuildDir: Property<String>
+    public abstract val projectBuildDir: Property<String>
 
     /**
      * Defines the npm packages to run postinstall for.
      */
-    public val postinstallPackages: ListProperty<String>
+    public abstract val postinstallPackages: ListProperty<String>
 
-    public val classpathFilter: Property<ClasspathFilter>
+    public val classpathFilter: ClasspathFilter = ClasspathFilter()
 
     /**
      * The name of the SourceSet to scan for Vaadin components - i.e. the classes that are annoated with
@@ -209,14 +208,14 @@ public interface VaadinFlowPluginExtension {
      *
      * Defaults to `"main"`
      */
-    public val sourceSetName: Property<String>
+    public abstract val sourceSetName: Property<String>
 
     /**
      * The Gradle scope the Vaadin dependencies have been added to. Defaults to 'runtimeClasspath' if
      * no sourceSetName has been specified, or '<code>sourceSetName</code>RuntimeClasspath' if a non-main sourceset
      * has been set.
      */
-    public val dependencyScope: Property<String>
+    public abstract val dependencyScope: Property<String>
 
     /**
      * The Gradle task that the `vaadinPrepareFrontend` task must run before. The target task should run before
@@ -224,7 +223,7 @@ public interface VaadinFlowPluginExtension {
      * output directory for that SourceSet. Defaults to 'processResources' if no sourceSetName has been specified, or
      * 'process<code>SourceSetName</code>Resources' if a non-main sourceset has been specified.
      */
-    public val processResourcesTaskName: Property<String>
+    public abstract val processResourcesTaskName: Property<String>
 
     /**
      * Parameter to control if frontend development server should be used in
@@ -232,7 +231,7 @@ public interface VaadinFlowPluginExtension {
      *
      * Defaults to false.
      */
-    public val frontendHotdeploy: Property<Boolean>
+    public abstract val frontendHotdeploy: Property<Boolean>
 
     /**
      * Setting this to true will run {@code npm ci} instead of {@code npm install} when using npm.
@@ -241,13 +240,13 @@ public interface VaadinFlowPluginExtension {
      *
      * This makes sure that the versions in package lock file will not be overwritten and production builds are reproducible.
      */
-    public val ciBuild: Property<Boolean>
+    public abstract val ciBuild: Property<Boolean>
 
     /**
      * Enable skip of dev bundle rebuild if a dev bundle exists. Defaults to false.
      * @return `true` to skip dev bundle rebuild
      */
-    public val skipDevBundleBuild: Property<Boolean>
+    public abstract val skipDevBundleBuild: Property<Boolean>
 
     /**
      * Setting this to `true` will force a build of the production build
@@ -258,7 +257,7 @@ public interface VaadinFlowPluginExtension {
      *
      * Defaults to `false`.
      */
-    public val forceProductionBuild: Property<Boolean>
+    public abstract val forceProductionBuild: Property<Boolean>
 
     /**
      * Prevents tracking state of the `vaadinPrepareFrontend` task, so that it
@@ -269,7 +268,7 @@ public interface VaadinFlowPluginExtension {
      * Defaults to `false`, meaning that the task execution is skipped when its
      * outcomes are up-to-date, improving the overall build time.
      */
-    public val alwaysExecutePrepareFrontend: Property<Boolean>
+    public abstract val alwaysExecutePrepareFrontend: Property<Boolean>
 
     /**
      * If `true` navigation error views implementing [HasErrorParameter]
@@ -278,21 +277,18 @@ public interface VaadinFlowPluginExtension {
      *
      * @return `true` to enable error view rendering in RPC, `false` by default
      */
-    public val errorHandlerRedirect: Property<Boolean>
+    public abstract val errorHandlerRedirect: Property<Boolean>
 
-/*
-// @TODO mavi bring this back
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>) {
-        block.delegate = classpathFilter.get()
+        block.delegate = classpathFilter
         block.resolveStrategy = Closure.DELEGATE_FIRST
         block.call()
     }
 
     public fun filterClasspath(block: Action<ClasspathFilter>) {
-        block.execute(classpathFilter.get())
+        block.execute(classpathFilter)
     }
 
-*/
     public companion object {
         public fun get(project: Project): VaadinFlowPluginExtension =
                 project.extensions.getByType(VaadinFlowPluginExtension::class.java)
@@ -386,8 +382,7 @@ internal class PluginEffectiveConfiguration(
     val postinstallPackages: ListProperty<String> = extension.postinstallPackages
         .convention(listOf())
 
-    val classpathFilter: Property<ClasspathFilter> = extension.classpathFilter
-        .convention(ClasspathFilter())
+    val classpathFilter = extension.classpathFilter
 
     val dependencyScope: Property<String> = extension.dependencyScope
         .convention(sourceSetName.map {

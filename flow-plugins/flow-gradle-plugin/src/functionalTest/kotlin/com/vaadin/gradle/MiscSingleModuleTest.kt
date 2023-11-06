@@ -683,6 +683,6 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         """.trimIndent()
         )
 
-        testProject.build("tasks")
+        testProject.build("build")
     }
 }

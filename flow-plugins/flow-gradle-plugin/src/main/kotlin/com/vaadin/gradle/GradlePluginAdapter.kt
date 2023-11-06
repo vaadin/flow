@@ -47,7 +47,7 @@ internal class GradlePluginAdapter(
         val dependencyConfigurationJars: List<File> = if (dependencyConfiguration != null) {
             var artifacts: List<ResolvedArtifact> =
                 dependencyConfiguration.resolvedConfiguration.resolvedArtifacts.toList()
-            val artifactFilter = config.classpathFilter.get().toPredicate()
+            val artifactFilter = config.classpathFilter.toPredicate()
             artifacts = artifacts.filter { artifactFilter.test(it.moduleVersion.id.module) }
             artifacts.map { it.file }
         } else listOf()
