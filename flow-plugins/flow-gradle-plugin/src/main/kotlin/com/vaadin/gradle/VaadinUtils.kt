@@ -23,8 +23,6 @@ import com.vaadin.flow.server.frontend.FrontendTools
 import com.vaadin.flow.server.frontend.FrontendToolsSettings
 import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.Project
-import org.gradle.api.file.Directory
-import org.gradle.api.file.RegularFile
 import org.gradle.api.internal.provider.Providers
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
@@ -95,19 +93,15 @@ internal fun <IN: Any, OUT> Provider<IN>.mapOrNull(block: (IN) -> OUT?): Provide
 /**
  * Workaround for https://github.com/gradle/gradle/issues/19981
  */
-internal fun <T: Any> Provider<T>.filterBy(block: (T) -> Boolean): Provider<T> = mapOrNull { if (block(it)) it else null }
+internal fun <T: Any> Provider<T>.filter(block: (T) -> Boolean): Provider<T> = mapOrNull { if (block(it)) it else null }
 
 /**
  * Passes the value if the file exists.
  */
-internal fun Provider<File>.filterExists(): Provider<File> = filterBy { it.exists() }
+internal fun Provider<File>.filterExists(): Provider<File> = filter { it.exists() }
 
 /**
  * Passes the value if the file denoted by the string value exists.
  */
 @JvmName("filterExistsString")
-internal fun Provider<String>.filterExists(): Provider<String> = filterBy { File(it).exists() }
-
-internal fun Provider<RegularFile>.asFile(): Provider<File> = map { it.asFile }
-@JvmName("directoryAsFile")
-internal fun Provider<Directory>.asFile(): Provider<File> = map { it.asFile }
+internal fun Provider<String>.filterExists(): Provider<String> = filter { File(it).exists() }
