@@ -83,6 +83,8 @@ public class DevBundleUtils {
      *
      * @param projectDir
      *            the project base directory
+     * @param buildFolder
+     *            the project build folder name
      * @return stats.json content or {@code null} if not found
      * @throws IOException
      *             if an I/O exception occurs.
