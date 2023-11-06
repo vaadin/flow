@@ -87,4 +87,12 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
      * {@link #optimizeBundle} parameter.
      */
     boolean forceProductionBuild();
+
+    /**
+     * Setting this to {@code false} will skip compression of the bundle.
+     * {@code true} by default.
+     *
+     * @return {@code true} if the bundle should be compressed
+     */
+    boolean compressBundle();
 }

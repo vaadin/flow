@@ -120,13 +120,18 @@ public class CleanFrontendMojoTest {
     }
 
     @Test
-    public void should_removeDevBundleFolder() throws MojoFailureException {
+    public void should_removeCompressedDevBundle()
+            throws MojoFailureException, IOException {
         final File devBundleDir = new File(projectBase,
-                Constants.DEV_BUNDLE_LOCATION);
-        Assert.assertTrue("Failed to create 'dev-bundle'",
+                Constants.BUNDLE_LOCATION);
+        final File devBundle = new File(projectBase,
+                Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION);
+        Assert.assertTrue("Failed to create 'dev-bundle' folder",
                 devBundleDir.mkdirs());
+        Assert.assertTrue(devBundle.createNewFile());
         mojo.execute();
-        Assert.assertFalse("'dev-bundle' was not removed.",
+        Assert.assertFalse("'dev.bundle' was not removed.", devBundle.exists());
+        Assert.assertFalse("Empty 'bundle' directory was not removed.",
                 devBundleDir.exists());
     }
 

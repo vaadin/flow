@@ -236,7 +236,6 @@ public open class VaadinFlowPluginExtension(project: Project) {
      */
     public var skipDevBundleBuild: Boolean = false
 
-
     /**
      * Setting this to `true` will force a build of the production build
      * even if there is a default production bundle that could be used.

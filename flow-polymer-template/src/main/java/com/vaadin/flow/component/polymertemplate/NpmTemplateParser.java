@@ -199,8 +199,9 @@ public class NpmTemplateParser implements TemplateParser {
             String pathWithoutPrefix = url.replaceFirst("^\\./", "");
             Path subFolder = Path.of(Constants.DEV_BUNDLE_LOCATION, "config",
                     "templates", pathWithoutPrefix);
-            File templateFile = new File(
+            File templateFile = new File(new File(
                     service.getDeploymentConfiguration().getProjectFolder(),
+                    service.getDeploymentConfiguration().getBuildFolder()),
                     subFolder.toString());
             try {
                 content = new FileInputStream(templateFile);
