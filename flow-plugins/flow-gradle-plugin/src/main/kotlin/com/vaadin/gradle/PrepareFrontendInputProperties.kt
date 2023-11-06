@@ -140,7 +140,8 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
 
     @Input
     @Optional
-    public fun getNodeExecutablePath(): Provider<String> = tools.mapOrNull { tools -> tools.nodeBinary }
+    public fun getNodeExecutablePath(): Provider<String> = tools
+        .mapOrNull { it.nodeBinary }
         .filterExists()
 
     @Input

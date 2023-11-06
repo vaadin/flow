@@ -23,6 +23,7 @@ import com.vaadin.flow.server.frontend.FrontendTools
 import com.vaadin.flow.server.frontend.FrontendToolsSettings
 import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.Project
+import org.gradle.api.internal.provider.Providers
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
@@ -83,29 +84,11 @@ internal fun Project.getBuildResourcesDir(sourceSetName: String): File = getSour
 
 internal val Provider<File>.absolutePath: Provider<String> get() = map { it.absolutePath }
 
-// horrible workaround taken from https://github.com/gradle/gradle/issues/12388#issuecomment-643453665
-
-// Gradle's map {} APIs sometimes are interpreted by Kotlin to be non-null only but legally allow null returns. This
-// abuses kotlin contracts to safe cast without a null check.
-// https://github.com/gradle/gradle/issues/12388
-private fun <T> sneakyNull(value: T? = null): T {
-    markAsNonNullForGradle(value)
-    return value
-}
-
-// Gradle's map {} APIs sometimes are interpreted by Kotlin to be non-null only but legally allow null returns. This
-// abuses kotlin contracts to safe cast without a null check.
-@OptIn(ExperimentalContracts::class)
-private fun <T> markAsNonNullForGradle(value: T?) {
-    contract {
-        returns() implies (value != null)
-    }
-}
-
 /**
- * Same thing as [Provider.map] but can return null. Workaround for https://github.com/gradle/gradle/issues/12388
+ * Same thing as [Provider.map]. Works around the bug in Gradle+Kotlin which
+ * renders [Provider.map] unable to return null in Kotlin: https://github.com/gradle/gradle/issues/12388
  */
-internal fun <IN: Any, OUT> Provider<IN>.mapOrNull(block: (IN) -> OUT?): Provider<OUT> = map { sneakyNull(block(it)) }
+internal fun <IN: Any, OUT> Provider<IN>.mapOrNull(block: (IN) -> OUT?): Provider<OUT> = flatMap { Providers.ofNullable(block(it)) }
 
 /**
  * Workaround for https://github.com/gradle/gradle/issues/19981
