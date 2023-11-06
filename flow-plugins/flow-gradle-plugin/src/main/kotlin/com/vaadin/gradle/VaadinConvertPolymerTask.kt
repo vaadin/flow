@@ -27,6 +27,8 @@ import org.gradle.api.tasks.TaskAction
  */
 public open class VaadinConvertPolymerTask : DefaultTask() {
 
+    private val config = PluginEffectiveConfiguration.get(project)
+
     init {
         group = "Vaadin"
         description = "converts Polymer-based source files into Lit."
@@ -34,9 +36,8 @@ public open class VaadinConvertPolymerTask : DefaultTask() {
 
     @TaskAction
     public fun vaadinConvertPolymer() {
-        val extension: VaadinFlowPluginExtension = VaadinFlowPluginExtension.get(project)
-        logger.info("Running the vaadinConvertPolymer task with effective configuration $extension")
-        val adapter = GradlePluginAdapter(project, true)
+        logger.info("Running the vaadinConvertPolymer task with effective configuration $config")
+        val adapter = GradlePluginAdapter(project, config, true)
 
         val pathProperty: String = System.getProperty("path") ?: ""
         val useLit1Property: Boolean = project.getBooleanProperty("useLit1") ?: false
