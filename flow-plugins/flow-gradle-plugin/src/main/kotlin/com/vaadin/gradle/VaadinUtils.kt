@@ -23,10 +23,13 @@ import com.vaadin.flow.server.frontend.FrontendTools
 import com.vaadin.flow.server.frontend.FrontendToolsSettings
 import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.Project
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import java.io.File
 import java.net.URI
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 /**
  * Finds the value of a boolean property. It searches in gradle and system properties.
@@ -77,3 +80,45 @@ internal val Configuration.jars: FileCollection
 internal val Project.sourceSets: SourceSetContainer get() = project.properties["sourceSets"] as SourceSetContainer
 internal fun Project.getSourceSet(sourceSetName: String): SourceSet = sourceSets.getByName(sourceSetName)
 internal fun Project.getBuildResourcesDir(sourceSetName: String): File = getSourceSet(sourceSetName).output.resourcesDir!!
+
+internal val Provider<File>.absolutePath: Provider<String> get() = map { it.absolutePath }
+
+// horrible workaround taken from https://github.com/gradle/gradle/issues/12388#issuecomment-643453665
+
+// Gradle's map {} APIs sometimes are interpreted by Kotlin to be non-null only but legally allow null returns. This
+// abuses kotlin contracts to safe cast without a null check.
+// https://github.com/gradle/gradle/issues/12388
+private fun <T> sneakyNull(value: T? = null): T {
+    markAsNonNullForGradle(value)
+    return value
+}
+
+// Gradle's map {} APIs sometimes are interpreted by Kotlin to be non-null only but legally allow null returns. This
+// abuses kotlin contracts to safe cast without a null check.
+@OptIn(ExperimentalContracts::class)
+private fun <T> markAsNonNullForGradle(value: T?) {
+    contract {
+        returns() implies (value != null)
+    }
+}
+
+/**
+ * Same thing as [Provider.map] but can return null. Workaround for https://github.com/gradle/gradle/issues/12388
+ */
+internal fun <IN: Any, OUT> Provider<IN>.mapOrNull(block: (IN) -> OUT?): Provider<OUT> = map { sneakyNull(block(it)) }
+
+/**
+ * Workaround for https://github.com/gradle/gradle/issues/19981
+ */
+internal fun <T: Any> Provider<T>.filter(block: (T) -> Boolean): Provider<T> = mapOrNull { if (block(it)) it else null }
+
+/**
+ * Passes the value if the file exists.
+ */
+internal fun Provider<File>.filterExists(): Provider<File> = filter { it.exists() }
+
+/**
+ * Passes the value if the file denoted by the string value exists.
+ */
+@JvmName("filterExistsString")
+internal fun Provider<String>.filterExists(): Provider<String> = filter { File(it).exists() }

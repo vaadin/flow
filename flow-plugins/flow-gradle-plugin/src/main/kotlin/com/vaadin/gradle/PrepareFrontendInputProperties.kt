@@ -29,6 +29,8 @@ import java.net.URI
 import com.vaadin.experimental.FeatureFlags
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 /**
  * Declaratively defines the inputs of the [VaadinPrepareFrontendTask]:
@@ -45,7 +47,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
     @Input
     @Optional
     public fun getWebpackOutputDirectory(): Provider<String> = config.webpackOutputDirectory
-        .takeIfExists()
+        .filterExists()
         .map { it.absolutePath }
 
     @Input
@@ -66,7 +68,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
     @InputDirectory
     @Optional
     @PathSensitive(PathSensitivity.ABSOLUTE)
-    public fun getFrontendResourcesDirectory(): Provider<File> = config.frontendResourcesDirectory.takeIfExists()
+    public fun getFrontendResourcesDirectory(): Provider<File> = config.frontendResourcesDirectory.filterExists()
 
     @Input
     public fun getOptimizeBundle(): Provider<Boolean> = config.optimizeBundle
@@ -86,19 +88,19 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
     @InputFile
     @Optional
     @PathSensitive(PathSensitivity.NONE)
-    public fun getApplicationProperties(): Provider<File> = config.applicationProperties.takeIfExists()
+    public fun getApplicationProperties(): Provider<File> = config.applicationProperties.filterExists()
 
     @InputFile
     @Optional
     @PathSensitive(PathSensitivity.ABSOLUTE)
-    public fun getOpenApiJsonFile(): Provider<File> = config.openApiJsonFile.takeIfExists()
+    public fun getOpenApiJsonFile(): Provider<File> = config.openApiJsonFile.filterExists()
 
     @InputFile
     @Optional
     @PathSensitive(PathSensitivity.ABSOLUTE)
     public fun getFeatureFlagsFile(): Provider<File> = config.javaResourceFolder
         .map { it.resolve(FeatureFlags.PROPERTIES_FILENAME) }
-        .takeIfExists()
+        .filterExists()
 
     @Input
     public fun getJavaSourceFolder(): Provider<String> = config.javaSourceFolder.absolutePath
@@ -139,7 +141,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
     @Input
     @Optional
     public fun getNodeExecutablePath(): Provider<String> = tools.mapOrNull { tools -> tools.nodeBinary }
-        .takeIfExists()
+        .filterExists()
 
     @Input
     @Optional
@@ -170,14 +172,3 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
         FrontendTools(settings)
     }
 }
-
-private val Provider<File>.absolutePath: Provider<String> get() = map { it.absolutePath }
-
-/**
- * Same thing as [Provider.map] but can return null. Workaround for https://github.com/gradle/gradle/issues/12388
- */
-private fun <IN: Any, OUT> Provider<IN>.mapOrNull(block: (IN) -> OUT?): Provider<OUT> =
-    map(FunctionToTransformerAdapter(block))
-private fun Provider<File>.takeIfExists(): Provider<File> = mapOrNull { it.takeIf { it.exists() } }
-@JvmName("takeIfExistsString")
-private fun Provider<String>.takeIfExists(): Provider<String> = mapOrNull { it.takeIf { File(it).exists() } }
