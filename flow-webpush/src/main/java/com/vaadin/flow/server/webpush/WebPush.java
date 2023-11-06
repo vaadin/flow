@@ -19,19 +19,16 @@ package com.vaadin.flow.server.webpush;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Security;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
 import nl.martijndwars.webpush.Subscription;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.jose4j.lang.JoseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,7 +88,9 @@ public class WebPush {
         try {
             // Initialize push service with the public key, private key and
             // subject
-            pushService = new PushService(publicKey, privateKey, subject);
+            pushService = PushService.builder().withVapidPublicKey(publicKey)
+                    .withVapidPrivateKey(privateKey).withVapidSubject(subject)
+                    .build();
         } catch (GeneralSecurityException e) {
             throw new WebPushException(
                     "Security exception initializing web push PushService", e);
@@ -112,21 +111,29 @@ public class WebPush {
      */
     public void sendNotification(Subscription subscription,
             WebPushMessage message) throws WebPushException {
+        int statusCode = -1;
+        HttpResponse<String> response = null;
         try {
-            HttpResponse response = pushService
-                    .send(new Notification(subscription, message.toJson()));
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != 201) {
-                getLogger().error(
-                        "Failed to send web push notification, received status code:"
-                                + statusCode);
-                InputStream content = response.getEntity().getContent();
-                List<String> strings = IOUtils.readLines(content, "UTF-8");
-                getLogger().error(String.join("\n", strings));
-            }
-        } catch (GeneralSecurityException | IOException | JoseException
-                | ExecutionException | InterruptedException e) {
+            Notification notification = Notification.builder()
+                    .subscription(subscription).payload(message.toJson())
+                    .build();
+            response = pushService.send(notification,
+                    PushService.DEFAULT_ENCODING,
+                    HttpResponse.BodyHandlers.ofString());
+            statusCode = response.statusCode();
+        } catch (Exception e) {
             getLogger().error("Failed to send notification.", e);
+            throw new WebPushException(
+                    "Sending of web push notification failed", e);
+        }
+        if (statusCode != 201) {
+            getLogger().error(
+                    "Failed to send web push notification, received status code:"
+                            + statusCode);
+            getLogger().error(String.join("\n", response.body()));
+            throw new WebPushException(
+                    "Sending of web push notification failed with status code "
+                            + statusCode);
         }
     }
 

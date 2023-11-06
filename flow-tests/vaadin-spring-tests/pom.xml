@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
@@ -15,7 +16,7 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <component.version>24.2.0</component.version>
+        <component.version>24.2.1</component.version>
         <nimbus-jose-jwt.version>9.37</nimbus-jose-jwt.version>
     </properties>
 
@@ -161,8 +162,8 @@
             </plugin>
             <!-- jetty plugin for those child modules that need it -->
             <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
+                <groupId>org.eclipse.jetty.ee10</groupId>
+                <artifactId>jetty-ee10-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
             </plugin>
         </plugins>
@@ -326,6 +327,8 @@
                 <module>test-spring-security-flow-urlmapping</module>
                 <module>test-spring-security-flow-reverseproxy</module>
                 <module>test-spring-security-flow-methodsecurity</module>
+                <module>test-spring-security-flow-standalone-routepathaccesschecker</module>
+                <module>test-spring-security-flow-routepathaccesschecker</module>
 
                 <module>test-spring-boot-only-prepare</module>
                 <module>test-spring-white-list</module>

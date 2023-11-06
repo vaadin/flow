@@ -43,9 +43,12 @@ import com.vaadin.flow.server.Constants
  * in the development mode.
  */
 public open class VaadinCleanTask : DefaultTask() {
+    private val config: PluginEffectiveConfiguration =
+        PluginEffectiveConfiguration.get(project)
+
     init {
         group = "Vaadin"
-        description = "Cleans the project completely and removes 'generated' folders, node_modules, src/main/dev-bundle, webpack.generated.js, " +
+        description = "Cleans the project completely and removes 'generated' folders, node_modules, src/main/bundles/, webpack.generated.js, " +
                 "vite.generated.js, tsconfig.json, types.d.ts, pnpm-lock.yaml, pnpmfile.js, .pnpmfile.cjs and package-lock.json"
 
         dependsOn("clean")
@@ -53,13 +56,11 @@ public open class VaadinCleanTask : DefaultTask() {
 
     @TaskAction
     public fun clean() {
-        val extension: VaadinFlowPluginExtension =
-                VaadinFlowPluginExtension.get(project)
         project.delete(
-                extension.generatedTsFolder.absolutePath,
-                extension.frontendDirectory.resolve("generated").absolutePath,
+                config.generatedTsFolder,
+                config.frontendDirectory.get().resolve("generated").absolutePath,
                 "${project.projectDir}/node_modules",
-                "${project.projectDir}/${Constants.DEV_BUNDLE_LOCATION}",
+                "${project.projectDir}/${Constants.BUNDLE_LOCATION}",
                 "${project.projectDir}/package-lock.json",
                 "${project.projectDir}/webpack.generated.js",
                 "${project.projectDir}/vite.generated.js",

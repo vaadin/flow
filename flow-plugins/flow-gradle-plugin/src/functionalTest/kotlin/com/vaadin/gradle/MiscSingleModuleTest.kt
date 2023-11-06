@@ -206,7 +206,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             def jettyVersion = "11.0.12"
             vaadin {
-                pnpmEnable = true
+                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
@@ -355,7 +355,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
      */
     @Test
     fun testCircularDepsBug() {
-        doTestCircularDepsBug();
+        doTestCircularDepsBug()
     }
 
     /**
@@ -364,7 +364,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     @Ignore("Webpack uses gzip compression")
     @Test
     fun testCircularDepsBugWebpack() {
-        doTestCircularDepsBug("*.gz");
+        doTestCircularDepsBug("*.gz")
     }
 
     private fun doTestCircularDepsBug(compressedExtension: String = "*.br") {
@@ -546,7 +546,6 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 implementation("com.vaadin:flow:$flowVersion")
             }
             vaadin {
-                pnpmEnable = true
                 filterClasspath {
                     include("com.vaadin:flow-*")
                     exclude("com.vaadin:flow-data")
@@ -658,5 +657,32 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         val jar: File = testProject.builtJar
         expectArchiveContainsVaadinBundle(jar, true)
+    }
+
+    /**
+     * Tests https://github.com/vaadin/flow/issues/17665
+     */
+    @Test
+    fun testEagerTaskInstantiationWontFail() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id 'com.vaadin'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+            }
+            tasks.whenTaskAdded {} // reproduces #17665
+        """.trimIndent()
+        )
+
+        testProject.build("build")
     }
 }

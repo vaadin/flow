@@ -397,7 +397,8 @@ public class BuildFrontendUtil {
                     .setJavaResourceFolder(adapter.javaResourceFolder())
                     .withPostinstallPackages(adapter.postinstallPackages())
                     .withBundleBuild(true)
-                    .skipDevBundleBuild(adapter.skipDevBundleBuild());
+                    .skipDevBundleBuild(adapter.skipDevBundleBuild())
+                    .withCompressBundle(adapter.compressBundle());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;

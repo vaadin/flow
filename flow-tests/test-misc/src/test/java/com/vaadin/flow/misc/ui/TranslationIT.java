@@ -29,7 +29,7 @@ public class TranslationIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void translationFilesExist_defaultI18NIntantiated_languagesWork() {
+    public void translationFilesExist_defaultI18NInstantiated_languagesWork() {
         open();
 
         String locales = $(SpanElement.class).id(TranslationView.LOCALES_ID)

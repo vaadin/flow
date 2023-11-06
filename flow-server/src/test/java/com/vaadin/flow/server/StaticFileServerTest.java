@@ -1207,6 +1207,7 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(configuration.getProjectFolder())
                 .thenReturn(projectRootFolder);
+        Mockito.when(configuration.getBuildFolder()).thenReturn("target");
 
         setupRequestURI("", "", "/VAADIN/themes/my-theme/styles.css");
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
@@ -1225,6 +1226,7 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(configuration.getProjectFolder())
                 .thenReturn(projectRootFolder);
+        Mockito.when(configuration.getBuildFolder()).thenReturn("target");
 
         setupRequestURI("", "", "/VAADIN/themes/my-theme/styles.css");
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
@@ -1243,6 +1245,7 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         Mockito.when(configuration.getProjectFolder())
                 .thenReturn(projectRootFolder);
+        Mockito.when(configuration.getBuildFolder()).thenReturn("target");
 
         setupRequestURI("", "", "/themes/my-theme/styles.css");
         Assert.assertFalse(fileServer.serveStaticResource(request, response));
@@ -1318,9 +1321,7 @@ public class StaticFileServerTest implements Serializable {
                             public void writeResponseContents(
                                     String filenameWithPath, URL resourceUrl,
                                     HttpServletRequest request,
-                                    HttpServletResponse response)
-                                    throws IOException {
-                                return;
+                                    HttpServletResponse response) {
                             }
                         };
                         Field f = StaticFileServer.class

@@ -67,7 +67,7 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.21</version>
+            <version>4.2.22</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
@@ -110,8 +110,8 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
+                <groupId>org.eclipse.jetty.ee10</groupId>
+                <artifactId>jetty-ee10-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
                 <configuration>
                     <!-- Use war output directory to get the webpack files -->

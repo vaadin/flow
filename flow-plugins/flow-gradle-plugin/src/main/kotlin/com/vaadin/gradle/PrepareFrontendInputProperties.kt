@@ -18,7 +18,6 @@ package com.vaadin.gradle
 import com.vaadin.flow.server.frontend.FrontendTools
 import com.vaadin.flow.server.frontend.FrontendToolsSettings
 import com.vaadin.flow.server.frontend.FrontendUtils
-import org.gradle.api.Project
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
@@ -27,8 +26,9 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import java.io.File
 import java.net.URI
-import java.util.stream.Collectors
 import com.vaadin.experimental.FeatureFlags
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Provider
 
 /**
  * Declaratively defines the inputs of the [VaadinPrepareFrontendTask]:
@@ -36,226 +36,138 @@ import com.vaadin.experimental.FeatureFlags
  * caching the results of vaadinPrepareFrontend task to not run it again if
  * inputs are the same.
  */
-public class PrepareFrontendInputProperties public constructor(project: Project) {
-
-    private var extension: VaadinFlowPluginExtension
-
-    private val tools: FrontendTools
-
-    init {
-        extension = VaadinFlowPluginExtension.get(project)
-        tools = initialiseFrontendToolsSettings()
-    }
+internal class PrepareFrontendInputProperties(private val config: PluginEffectiveConfiguration) {
+    private val tools: Provider<FrontendTools> = initialiseFrontendToolsSettings()
 
     @Input
-    public fun getProductionMode(): Boolean {
-        return extension.productionMode
-    }
+    public fun getProductionMode(): Provider<Boolean> = config.productionMode
 
     @Input
     @Optional
-    public fun getWebpackOutputDirectory(): String? {
-        val webpackOutputDirectory = extension.webpackOutputDirectory
-        if (webpackOutputDirectory != null && !webpackOutputDirectory.exists()) {
-            return null
-        } else if (webpackOutputDirectory == null) {
-            return null
-        }
-        return webpackOutputDirectory.absolutePath
-    }
+    public fun getWebpackOutputDirectory(): Provider<String> = config.webpackOutputDirectory
+        .filterExists()
+        .absolutePath
 
     @Input
-    public fun getNpmFolder(): String {
-        return extension.npmFolder.absolutePath
-    }
+    public fun getNpmFolder(): Provider<String> = config.npmFolder.absolutePath
 
     @Input
-    public fun getFrontendDirectory(): String {
-        return extension.frontendDirectory.absolutePath
-    }
+    public fun getFrontendDirectory(): Provider<String> = config.frontendDirectory.absolutePath
 
     @Input
-    public fun getGenerateBundle(): Boolean {
-        return extension.generateBundle
-    }
+    public fun getGenerateBundle(): Provider<Boolean> = config.generateBundle
 
     @Input
-    public fun getRunNpmInstall(): Boolean {
-        return extension.runNpmInstall
-    }
+    public fun getRunNpmInstall(): Provider<Boolean> = config.runNpmInstall
 
     @Input
-    public fun getGenerateEmbeddableWebComponent(): Boolean {
-        return extension.generateEmbeddableWebComponents
-    }
+    public fun getGenerateEmbeddableWebComponent(): Provider<Boolean> = config.generateEmbeddableWebComponents
 
     @InputDirectory
     @Optional
     @PathSensitive(PathSensitivity.ABSOLUTE)
-    public fun getFrontendResourcesDirectory(): File? {
-        val frontendResourcesDirectory = extension.frontendResourcesDirectory
-        if (!frontendResourcesDirectory.exists()) {
-            return null
-        }
-        return frontendResourcesDirectory
-    }
+    public fun getFrontendResourcesDirectory(): Provider<File> = config.frontendResourcesDirectory.filterExists()
 
     @Input
-    public fun getOptimizeBundle(): Boolean {
-        return extension.optimizeBundle
-    }
+    public fun getOptimizeBundle(): Provider<Boolean> = config.optimizeBundle
 
     @Input
-    public fun getPnpmEnable(): Boolean {
-        return extension.pnpmEnable
-    }
+    public fun getPnpmEnable(): Provider<Boolean> = config.pnpmEnable
 
     @Input
-    public  fun getUseGlobalPnpm(): Boolean {
-        return extension.useGlobalPnpm
-    }
+    public fun getUseGlobalPnpm(): Provider<Boolean> = config.useGlobalPnpm
 
     @Input
-    public fun getRequireHomeNodeExec(): Boolean {
-        return extension.requireHomeNodeExec
-    }
+    public fun getRequireHomeNodeExec(): Provider<Boolean> = config.requireHomeNodeExec
 
     @Input
-    public fun getEagerServerLoad(): Boolean {
-        return extension.eagerServerLoad
-    }
+    public fun getEagerServerLoad(): Provider<Boolean> = config.eagerServerLoad
 
     @InputFile
     @Optional
     @PathSensitive(PathSensitivity.NONE)
-    public fun getApplicationProperties(): File? {
-        val applicationProperties = extension.applicationProperties
-        if (!applicationProperties.exists()) {
-            return null
-        }
-        return applicationProperties
-    }
+    public fun getApplicationProperties(): Provider<File> = config.applicationProperties.filterExists()
 
     @InputFile
     @Optional
     @PathSensitive(PathSensitivity.ABSOLUTE)
-    public fun getOpenApiJsonFile(): File? {
-        val openApiJsonFile = extension.openApiJsonFile
-        if (!openApiJsonFile.exists()) {
-            return null
-        }
-        return openApiJsonFile
-    }
+    public fun getOpenApiJsonFile(): Provider<File> = config.openApiJsonFile.filterExists()
 
     @InputFile
     @Optional
     @PathSensitive(PathSensitivity.ABSOLUTE)
-    public fun getFeatureFlagsFile(): File? {
-        val featureFlagsFile = extension.javaResourceFolder.resolve(FeatureFlags.PROPERTIES_FILENAME)
-        if (!featureFlagsFile.exists()) {
-            return null
+    public fun getFeatureFlagsFile(): Provider<File> = config.javaResourceFolder
+        .map { it.resolve(FeatureFlags.PROPERTIES_FILENAME) }
+        .filterExists()
+
+    @Input
+    public fun getJavaSourceFolder(): Provider<String> = config.javaSourceFolder.absolutePath
+
+    @Input
+    public fun getJavaResourceFolder(): Provider<String> = config.javaResourceFolder.absolutePath
+
+    @Input
+    public fun getGeneratedTsFolder(): Provider<String> = config.generatedTsFolder.absolutePath
+
+    @Input
+    public fun getNodeVersion(): Provider<String> = config.nodeVersion
+
+    @Input
+    public fun getNodeDownloadRoot(): Provider<String> = config.nodeDownloadRoot
+
+    @Input
+    public fun getNodeAutoUpdate(): Provider<Boolean> = config.nodeAutoUpdate
+
+    @Input
+    public fun getProjectBuildDir(): Provider<String> = config.projectBuildDir
+
+    @Input
+    public fun getPostInstallPackages(): ListProperty<String> = config.postinstallPackages
+
+    @Input
+    public fun getFrontendHotdeploy(): Provider<Boolean> = config.frontendHotdeploy
+
+    @Input
+    public fun getCiBuild(): Provider<Boolean> = config.ciBuild
+
+    @Input
+    public fun getSkipDevBundleBuild(): Provider<Boolean> = config.skipDevBundleBuild
+
+    @Input
+    public fun getForceProductionBuild(): Provider<Boolean> = config.forceProductionBuild
+
+    @Input
+    @Optional
+    public fun getNodeExecutablePath(): Provider<String> = tools
+        .mapOrNull { it.nodeBinary }
+        .filterExists()
+
+    @Input
+    @Optional
+    public fun getNpmExecutablePath(): Provider<String> = tools.map { tools ->
+        val npmExecutable = tools.npmExecutable ?: listOf()
+        npmExecutable.joinToString(" ")
+    }
+
+    @Input
+    @Optional
+    public fun getPnpmExecutablePath(): Provider<String> = config.pnpmEnable.map { pnpmEnable ->
+        if (!pnpmEnable) {
+            return@map ""
         }
-        return featureFlagsFile
+        val pnpmExecutable = tools.get().pnpmExecutable ?: listOf()
+        pnpmExecutable.joinToString(" ")
     }
 
-    @Input
-    public fun getJavaSourceFolder(): String {
-        return extension.javaSourceFolder.absolutePath
-    }
-
-    @Input
-    public fun getJavaResourceFolder(): String {
-        return extension.javaResourceFolder.absolutePath
-    }
-
-    @Input
-    public fun getGeneratedTsFolder(): String {
-        return extension.generatedTsFolder.absolutePath
-    }
-
-    @Input
-    public fun getNodeVersion(): String {
-        return extension.nodeVersion
-    }
-
-    @Input
-    public fun getNodeDownloadRoot(): String {
-        return extension.nodeDownloadRoot
-    }
-
-    @Input
-    public fun getNodeAutoUpdate(): Boolean {
-        return extension.nodeAutoUpdate
-    }
-
-    @Input
-    public fun getProjectBuildDir(): String {
-        return extension.projectBuildDir
-    }
-
-    @Input
-    public fun getPostInstallPackages(): List<String> {
-        return extension.postinstallPackages
-    }
-
-    @Input
-    public fun getFrontendHotdeploy(): Boolean {
-        return extension.frontendHotdeploy
-    }
-
-    @Input
-    public fun getCiBuild(): Boolean {
-        return extension.ciBuild
-    }
-
-    @Input
-    public fun getSkipDevBundleBuild(): Boolean {
-        return extension.skipDevBundleBuild
-    }
-
-    @Input
-    public fun getForceProductionBuild(): Boolean {
-        return extension.forceProductionBuild
-    }
-
-    @Input
-    @Optional
-    public fun getNodeExecutablePath(): String? {
-        val nodeBinary = tools.nodeBinary ?: return null
-        val nodeBinaryFile = File(nodeBinary)
-        if (!nodeBinaryFile.exists()) {
-            return null
-        }
-        return nodeBinaryFile.absolutePath
-    }
-
-    @Input
-    @Optional
-    public fun getNpmExecutablePath(): String? {
-        val npmExecutable = tools.npmExecutable ?: return null
-        return npmExecutable.stream()
-            .collect(Collectors.joining(" "))
-    }
-
-    @Input
-    @Optional
-    public fun getPnpmExecutablePath(): String? {
-        val pnpmExecutable = tools.pnpmExecutable ?: return null
-        return pnpmExecutable.stream()
-            .collect(Collectors.joining(" "))
-    }
-
-    private fun initialiseFrontendToolsSettings(): FrontendTools {
-        val settings = FrontendToolsSettings(
-            extension.npmFolder.absolutePath
-        ) {
+    private fun initialiseFrontendToolsSettings(): Provider<FrontendTools> = config.npmFolder.map { npmFolder ->
+        val settings = FrontendToolsSettings(npmFolder.absolutePath) {
             FrontendUtils.getVaadinHomeDirectory()
                 .absolutePath
         }
-        settings.nodeDownloadRoot = URI(extension.nodeDownloadRoot)
-        settings.isForceAlternativeNode = extension.requireHomeNodeExec
-        settings.isUseGlobalPnpm = extension.useGlobalPnpm
-        settings.isAutoUpdate = extension.nodeAutoUpdate
-        return FrontendTools(settings)
+        settings.nodeDownloadRoot = URI(config.nodeDownloadRoot.get())
+        settings.isForceAlternativeNode = config.requireHomeNodeExec.get()
+        settings.isUseGlobalPnpm = config.useGlobalPnpm.get()
+        settings.isAutoUpdate = config.nodeAutoUpdate.get()
+        FrontendTools(settings)
     }
 }

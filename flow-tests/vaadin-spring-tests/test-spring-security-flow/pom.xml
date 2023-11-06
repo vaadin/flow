@@ -163,6 +163,11 @@
             <artifactId>vaadin-avatar-flow</artifactId>
             <version>${component.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-html-components-testbench</artifactId>
+            <version>${component.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -15,17 +15,20 @@
  */
 package com.vaadin.flow.spring.security;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -165,6 +168,27 @@ public class AuthenticationContext {
     /* For testing purposes */
     CompositeLogoutHandler getLogoutHandler() {
         return logoutHandler;
+    }
+
+    /**
+     * Augments the given {@link AuthenticationContext} with Spring Security.
+     *
+     * This method can be used to configure the {@link AuthenticationContext}
+     * when {@link VaadinWebSecurity} is not used to set up Spring Security.
+     *
+     * @param httpSecurity
+     *            Spring {@link HttpSecurity} for security configuration
+     * @param authCtx
+     *            The authentication context of the application.
+     */
+    public static void applySecurityConfiguration(HttpSecurity httpSecurity,
+            AuthenticationContext authCtx) {
+        httpSecurity.getObject(); // Ensure http security has been built
+        LogoutConfigurer<?> logoutConfigurer = httpSecurity
+                .getConfigurer(LogoutConfigurer.class);
+        authCtx.setLogoutHandlers(logoutConfigurer.getLogoutSuccessHandler(),
+                logoutConfigurer.getLogoutHandlers());
+
     }
 
 }

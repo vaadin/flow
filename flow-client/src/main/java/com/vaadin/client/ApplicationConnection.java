@@ -87,25 +87,6 @@ public class ApplicationConnection {
                     servletVersion);
             Console.log(
                     "Vaadin application servlet version: " + servletVersion);
-
-            if (applicationConfiguration.isDevToolsEnabled()
-                    && applicationConfiguration.getLiveReloadUrl() != null) {
-                Element devTools = Browser.getDocument()
-                        .createElement("vaadin-dev-tools");
-                DomApi.wrap(devTools).setAttribute("url",
-                        applicationConfiguration.getLiveReloadUrl());
-                if (applicationConfiguration.getLiveReloadBackend() != null) {
-                    DomApi.wrap(devTools).setAttribute("backend",
-                            applicationConfiguration.getLiveReloadBackend());
-                }
-                if (applicationConfiguration
-                        .getSpringBootLiveReloadPort() != null) {
-                    DomApi.wrap(devTools).setAttribute(
-                            "springbootlivereloadport", applicationConfiguration
-                                    .getSpringBootLiveReloadPort());
-                }
-                DomApi.wrap(body).appendChild(devTools);
-            }
         }
 
         ConnectionIndicator.setState(ConnectionIndicator.LOADING);

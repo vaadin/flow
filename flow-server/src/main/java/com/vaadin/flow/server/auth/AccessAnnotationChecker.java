@@ -15,6 +15,11 @@
  */
 package com.vaadin.flow.server.auth;
 
+import jakarta.annotation.security.DenyAll;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.Serializable;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
@@ -22,11 +27,6 @@ import java.lang.reflect.Modifier;
 import java.security.Principal;
 import java.util.Objects;
 import java.util.function.Function;
-
-import jakarta.annotation.security.DenyAll;
-import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.server.VaadinServletRequest;
 
@@ -222,6 +222,10 @@ public class AccessAnnotationChecker implements Serializable {
      *             if the input {@code cls} is null
      */
     public AnnotatedElement getSecurityTarget(Class<?> cls) {
+        return securityTarget(cls);
+    }
+
+    static AnnotatedElement securityTarget(Class<?> cls) {
         Objects.requireNonNull(cls, "The input Class must not be null.");
 
         Class<?> clazz = cls;
@@ -266,7 +270,7 @@ public class AccessAnnotationChecker implements Serializable {
         return false;
     }
 
-    private boolean hasSecurityAnnotation(AnnotatedElement method) {
+    private static boolean hasSecurityAnnotation(AnnotatedElement method) {
         return method.isAnnotationPresent(AnonymousAllowed.class)
                 || method.isAnnotationPresent(PermitAll.class)
                 || method.isAnnotationPresent(DenyAll.class)

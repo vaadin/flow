@@ -232,4 +232,8 @@ public class InitParameters implements Serializable {
      * Configuration name for forcing optimized production bundle build.
      */
     public static final String FORCE_PRODUCTION_BUILD = "vaadin.force.production.build";
+    /**
+     * Configuration name for forcing optimized production bundle build.
+     */
+    public static final String COMPRESS_BUNDLE = "vaadin.compress.bundle";
 }

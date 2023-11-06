@@ -39,7 +39,7 @@ public class ParentThemeInFrontendIT extends ChromeBrowserTest {
     @Before
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
-        bundle = new File(baseDir, Constants.DEV_BUNDLE_LOCATION);
+        bundle = new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION);
         nodeModules = new File(baseDir, "node_modules");
     }
 

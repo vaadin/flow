@@ -11,15 +11,13 @@ describe('vaadin-dev-tools', function () {
     // @ts-ignore
     window.Vaadin = {};
     // @ts-ignore
-    window.Vaadin.Flow = {};
-    // @ts-ignore
-    window.Vaadin.Flow.clients = {};
+    window.Vaadin.Flow = { clients: {} };
     // @ts-ignore
     window.Vaadin.ConsoleErrors = [];
     // @ts-ignore
-    window.Vaadin.devTools = {};
+    window.Vaadin.devTools = { createdCvdlElements: [] };
     // @ts-ignore
-    window.Vaadin.devTools.createdCvdlElements = [];
+    window.Vaadin.devToolsConf = {};
     window.sessionStorage.setItem(VaadinDevTools.ACTIVE_KEY_IN_SESSION_STORAGE, 'true');
     devTools = await fixture(html` <vaadin-dev-tools></vaadin-dev-tools>`);
   });

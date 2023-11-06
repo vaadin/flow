@@ -16,11 +16,12 @@
 
 package com.vaadin.flow.spring.security;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.Map;
 import java.util.function.Consumer;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +38,9 @@ import org.springframework.security.web.authentication.logout.CompositeLogoutHan
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import com.vaadin.flow.server.auth.NavigationAccessControl;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -70,6 +74,51 @@ public class VaadinWebSecurityTest {
                 mock(HttpServletResponse.class), mock(Authentication.class));
         Mockito.verify(testConfig.handler1).logout(any(), any(), any());
         Mockito.verify(testConfig.handler2).logout(any(), any(), any());
+    }
+
+    @Test
+    public void navigationAccessControl_enabledByDefault() throws Exception {
+        HttpSecurity httpSecurity = new HttpSecurity(postProcessor,
+                new AuthenticationManagerBuilder(postProcessor),
+                Map.of(ApplicationContext.class, appCtx));
+        VaadinWebSecurity testConfig = new VaadinWebSecurity() {
+        };
+        NavigationAccessControl accessControl = new NavigationAccessControl();
+        ReflectionTestUtils.setField(testConfig, "accessControl",
+                accessControl);
+        RequestUtil requestUtil = mock(RequestUtil.class);
+        Mockito.when(requestUtil.getUrlMapping()).thenReturn("/*");
+        ReflectionTestUtils.setField(testConfig, "requestUtil", requestUtil);
+
+        testConfig.filterChain(httpSecurity);
+        Assert.assertTrue(
+                "Expecting navigation access control to be enabled by default",
+                testConfig.getNavigationAccessControl().isEnabled());
+    }
+
+    @Test
+    public void navigationAccessControlEnabled_disabledByWebSecurity()
+            throws Exception {
+        HttpSecurity httpSecurity = new HttpSecurity(postProcessor,
+                new AuthenticationManagerBuilder(postProcessor),
+                Map.of(ApplicationContext.class, appCtx));
+        VaadinWebSecurity testConfig = new VaadinWebSecurity() {
+            @Override
+            protected boolean enableNavigationAccessControl() {
+                return false;
+            }
+        };
+        NavigationAccessControl accessControl = new NavigationAccessControl();
+        ReflectionTestUtils.setField(testConfig, "accessControl",
+                accessControl);
+        RequestUtil requestUtil = mock(RequestUtil.class);
+        Mockito.when(requestUtil.getUrlMapping()).thenReturn("/*");
+        ReflectionTestUtils.setField(testConfig, "requestUtil", requestUtil);
+
+        testConfig.filterChain(httpSecurity);
+        Assert.assertFalse(
+                "Expecting navigation access control to be disable by VaadinWebSecurity subclass",
+                testConfig.getNavigationAccessControl().isEnabled());
     }
 
     static class TestConfig extends VaadinWebSecurity {
