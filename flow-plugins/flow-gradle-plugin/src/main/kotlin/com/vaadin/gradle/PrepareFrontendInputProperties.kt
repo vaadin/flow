@@ -29,8 +29,6 @@ import java.net.URI
 import com.vaadin.experimental.FeatureFlags
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 
 /**
  * Declaratively defines the inputs of the [VaadinPrepareFrontendTask]:
@@ -48,7 +46,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
     @Optional
     public fun getWebpackOutputDirectory(): Provider<String> = config.webpackOutputDirectory
         .filterExists()
-        .map { it.absolutePath }
+        .absolutePath
 
     @Input
     public fun getNpmFolder(): Provider<String> = config.npmFolder.absolutePath
