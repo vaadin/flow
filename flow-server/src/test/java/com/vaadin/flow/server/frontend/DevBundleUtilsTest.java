@@ -35,7 +35,7 @@ public class DevBundleUtilsTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
-    public void compileDevBundle_uncompileDevBundle_filesHaeSameHash()
+    public void compileDevBundle_uncompileDevBundle_filesHasSameHash()
             throws IOException {
         File projectBase = temporaryFolder.getRoot();
         File devFolder = new File(projectBase, "target/dev-bundle");

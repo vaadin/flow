@@ -293,12 +293,12 @@ public final class Constants implements Serializable {
     public static final String BUNDLE_LOCATION = "src/main/bundles/";
 
     /**
-     *
+     *The file name of the compressed development bundle.
      */
     public static final String DEV_BUNDLE_COMPRESSED_FILE = "dev.bundle";
 
     /**
-     *
+     *Location of the compressed development bundle file.
      */
     public static final String DEV_BUNDLE_COMPRESSED_FILE_LOCATION = BUNDLE_LOCATION
             + DEV_BUNDLE_COMPRESSED_FILE;

@@ -1924,7 +1924,7 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, finder, mode);
-        Assert.assertFalse("Jar fronted file content hash should match.",
+        Assert.assertFalse("Jar frontend file content hash should match.",
                 needsBuild);
     }
 
