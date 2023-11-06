@@ -15,15 +15,12 @@
  */
 package com.vaadin.flow.spring.security;
 
-import java.io.IOException;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.server.auth.ViewAccessChecker;
+import java.io.IOException;
 
 import org.springframework.core.log.LogMessage;
 import org.springframework.security.core.Authentication;
@@ -35,6 +32,10 @@ import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.util.StringUtils;
+
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.server.auth.ViewAccessChecker;
 
 /**
  * A version of {@link SavedRequestAwareAuthenticationSuccessHandler} that
@@ -251,9 +252,9 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
             return null;
         }
         String redirectUrl = (String) session.getAttribute(
-                ViewAccessChecker.SESSION_STORED_REDIRECT_ABSOLUTE);
+                NavigationAccessControl.SESSION_STORED_REDIRECT_ABSOLUTE);
         session.removeAttribute(
-                ViewAccessChecker.SESSION_STORED_REDIRECT_ABSOLUTE);
+                NavigationAccessControl.SESSION_STORED_REDIRECT_ABSOLUTE);
         return redirectUrl;
     }
 

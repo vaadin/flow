@@ -72,14 +72,13 @@ public class SecurityConfig extends VaadinWebSecurity {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
+        // @formatter:off
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(new AntPathRequestMatcher("/admin-only/**"))
-                .hasAnyRole(ROLE_ADMIN)
-                .requestMatchers(new AntPathRequestMatcher("/public/**"))
-                .permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/error"))
-                .permitAll());
-
+                    .hasAnyRole(ROLE_ADMIN)
+                .requestMatchers(antMatchers("/public/**", "/error"))
+                    .permitAll());
+        // @formatter:on
         super.configure(http);
         if (getLogoutSuccessUrl().equals("/")) {
             // Test the default url with empty context path

@@ -27,6 +27,8 @@ import com.vaadin.flow.component.UI;
  */
 public class BeforeEnterEvent extends BeforeEvent {
 
+    private final boolean errorEvent;
+
     /**
      * Constructs event from a NavigationEvent.
      *
@@ -40,6 +42,7 @@ public class BeforeEnterEvent extends BeforeEvent {
     public BeforeEnterEvent(NavigationEvent event, Class<?> navigationTarget,
             List<Class<? extends RouterLayout>> layouts) {
         super(event, navigationTarget, layouts);
+        errorEvent = event instanceof ErrorNavigationEvent;
     }
 
     /**
@@ -58,6 +61,7 @@ public class BeforeEnterEvent extends BeforeEvent {
             RouteParameters parameters,
             List<Class<? extends RouterLayout>> layouts) {
         super(event, navigationTarget, parameters, layouts);
+        errorEvent = event instanceof ErrorNavigationEvent;
     }
 
     /**
@@ -82,6 +86,7 @@ public class BeforeEnterEvent extends BeforeEvent {
             Location location, Class<?> navigationTarget, UI ui,
             List<Class<? extends RouterLayout>> layouts) {
         super(router, trigger, location, navigationTarget, ui, layouts);
+        errorEvent = false;
     }
 
     /**
@@ -110,6 +115,7 @@ public class BeforeEnterEvent extends BeforeEvent {
             List<Class<? extends RouterLayout>> layouts) {
         super(router, trigger, location, navigationTarget, parameters, ui,
                 layouts);
+        errorEvent = false;
     }
 
     /**
@@ -119,5 +125,14 @@ public class BeforeEnterEvent extends BeforeEvent {
      */
     public boolean isRefreshEvent() {
         return getTrigger().equals(NavigationTrigger.REFRESH);
+    }
+
+    /**
+     * Check if the event is fired by an error handler.
+     *
+     * @return {@literal true} if the event is fired by an error handler.
+     */
+    public boolean isErrorEvent() {
+        return errorEvent;
     }
 }

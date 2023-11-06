@@ -1,25 +1,34 @@
 package com.vaadin.flow.spring.security;
 
+import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.stereotype.Component;
+
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.server.auth.NavigationAccessChecker;
+import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.spring.SpringServlet;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
-
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.Optional;
 
 /**
  * Contains utility methods related to request handling.
@@ -27,11 +36,10 @@ import java.util.Optional;
 @Component
 public class RequestUtil {
 
-    @Autowired
-    private ApplicationContext applicationContext;
+    private static final ThreadLocal<Boolean> ROUTE_PATH_MATCHER_RUNNING = new ThreadLocal<>();
 
     @Autowired
-    private AccessAnnotationChecker accessAnnotationChecker;
+    private ObjectProvider<NavigationAccessControl> accessControl;
 
     @Autowired
     private VaadinConfigurationProperties configurationProperties;
@@ -102,12 +110,55 @@ public class RequestUtil {
      *         {@code false} otherwise
      */
     public boolean isAnonymousRoute(HttpServletRequest request) {
+        if (ROUTE_PATH_MATCHER_RUNNING.get() == null) {
+            ROUTE_PATH_MATCHER_RUNNING.set(Boolean.TRUE);
+            try {
+                return isAnonymousRouteInternal(request);
+            } finally {
+                ROUTE_PATH_MATCHER_RUNNING.remove();
+            }
+        }
+        // A route path check is already in progress for the current request
+        // this matcher should be considered only once, since for alias check
+        // we are interested only in the other matchers
+        return false;
+    }
+
+    /**
+     * Utility to create {@link RequestMatcher}s from ant patterns.
+     *
+     * @param patterns
+     *            and patterns
+     * @return an array or {@link RequestMatcher} instances for the given
+     *         patterns.
+     */
+    public static RequestMatcher[] antMatchers(String... patterns) {
+        return Stream.of(patterns).map(AntPathRequestMatcher::new)
+                .toArray(RequestMatcher[]::new);
+    }
+
+    /**
+     * Utility to create {@link RequestMatcher}s for a Vaadin routes, using ant
+     * patterns and HTTP get method.
+     *
+     * @param patterns
+     *            and patterns
+     * @return an array or {@link RequestMatcher} instances for the given
+     *         patterns.
+     */
+    public static RequestMatcher[] routeMatchers(String... patterns) {
+        return Stream.of(patterns)
+                .map(p -> AntPathRequestMatcher.antMatcher(HttpMethod.GET, p))
+                .toArray(RequestMatcher[]::new);
+    }
+
+    private boolean isAnonymousRouteInternal(HttpServletRequest request) {
         String vaadinMapping = configurationProperties.getUrlMapping();
         String requestedPath = HandlerHelper
                 .getRequestPathInsideContext(request);
         Optional<String> maybePath = HandlerHelper
                 .getPathIfInsideServlet(vaadinMapping, requestedPath);
-        if (!maybePath.isPresent()) {
+        if (maybePath.isEmpty()) {
             return false;
         }
         String path = maybePath.get();
@@ -142,13 +193,25 @@ public class RequestUtil {
             return false;
         }
 
-        // Check if a not authenticated user can access the view
-        boolean result = accessAnnotationChecker.hasAccess(targetView, null,
-                role -> false);
-        if (result) {
-            getLogger().debug(path + " refers to a public view");
+        NavigationAccessChecker.NavigationContext navigationContext = new NavigationAccessChecker.NavigationContext(
+                router, targetView,
+                new Location(path,
+                        QueryParameters.full(request.getParameterMap())),
+                target.getRouteParameters(), null, role -> false, false);
+
+        NavigationAccessChecker.AccessCheckResult result = accessControl
+                .getObject().checkAccess(navigationContext, service
+                        .getDeploymentConfiguration().isProductionMode());
+        boolean isAllowed = result
+                .decision() == NavigationAccessChecker.Decision.ALLOW;
+        if (isAllowed) {
+            getLogger().debug("{} refers to a public view", path);
+        } else {
+            getLogger().debug(
+                    "Access to {} denied by Flow navigation access control. {}",
+                    path, result.reason());
         }
-        return result;
+        return isAllowed;
     }
 
     String getUrlMapping() {
