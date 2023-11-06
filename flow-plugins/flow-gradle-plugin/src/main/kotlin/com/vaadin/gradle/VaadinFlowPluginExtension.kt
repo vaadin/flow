@@ -433,19 +433,7 @@ internal class PluginEffectiveConfiguration(
      * `true` if it's defined or if it's set to "true" and `false` otherwise.
      */
     private fun Provider<Boolean>.overrideWithSystemProperty(propertyName: String) : Provider<Boolean> = map { originalValue ->
-        if (System.getProperty(propertyName) != null) {
-            val value: String = System.getProperty(propertyName)
-            val valueBoolean: Boolean = value.isBlank() || value.toBoolean()
-            project.logger.info("Set $propertyName to $valueBoolean because of System property $propertyName='$value'")
-            return@map valueBoolean
-        }
-        if (project.hasProperty(propertyName)) {
-            val value: String = project.property(propertyName) as String
-            val valueBoolean: Boolean = value.isBlank() || value.toBoolean()
-            project.logger.info("Set $propertyName to $valueBoolean because of Gradle project property $propertyName='$value'")
-            return@map valueBoolean
-        }
-        return@map originalValue
+        project.getBooleanProperty(propertyName) ?: originalValue
     }
 
     override fun toString(): String = "VaadinFlowPluginExtension(" +
