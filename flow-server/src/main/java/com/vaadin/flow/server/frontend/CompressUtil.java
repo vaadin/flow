@@ -28,7 +28,7 @@ import java.util.zip.ZipOutputStream;
  * Utility class for compression and decompression of folders and files.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 24.3
  */
 public class CompressUtil {
 

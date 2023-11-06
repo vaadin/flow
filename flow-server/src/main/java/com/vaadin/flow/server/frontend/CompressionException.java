@@ -20,7 +20,7 @@ package com.vaadin.flow.server.frontend;
  * Exception for when there is a problem with compressing files.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 24.3
  */
 public class CompressionException extends RuntimeException {
 
