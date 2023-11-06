@@ -206,7 +206,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             def jettyVersion = "11.0.12"
             vaadin {
-                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property
+                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")

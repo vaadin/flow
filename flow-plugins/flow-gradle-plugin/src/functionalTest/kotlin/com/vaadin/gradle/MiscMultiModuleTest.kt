@@ -52,7 +52,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                 }
 
                 vaadin {
-                    nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property
+                    nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
                 }
             }
         """.trimIndent())
@@ -96,7 +96,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                 }
 
                 vaadin {
-                    nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property
+                    nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
                 }
             }
         """.trimIndent())

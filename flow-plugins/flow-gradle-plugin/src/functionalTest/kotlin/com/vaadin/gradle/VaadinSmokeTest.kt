@@ -51,7 +51,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
-                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property
+                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
             }
         """)
     }
