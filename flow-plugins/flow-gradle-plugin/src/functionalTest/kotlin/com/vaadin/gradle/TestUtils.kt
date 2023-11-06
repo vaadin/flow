@@ -331,11 +331,3 @@ class TestProject(val gradleVersion: String = if(JavaVersion.current().majorVers
         return jar
     }
 }
-
-/**
- * Similar to [File.deleteRecursively] but throws informative [IOException] instead of
- * just returning false on error. uses Java 8 [Files.deleteIfExists] to delete files and folders.
- */
-fun Path.deleteRecursively() {
-    toFile().walkBottomUp().forEach { Files.deleteIfExists(it.toPath()) }
-}

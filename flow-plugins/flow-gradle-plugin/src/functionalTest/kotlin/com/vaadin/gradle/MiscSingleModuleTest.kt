@@ -206,7 +206,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             def jettyVersion = "11.0.12"
             vaadin {
-                pnpmEnable = true
+                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
@@ -546,7 +546,6 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 implementation("com.vaadin:flow:$flowVersion")
             }
             vaadin {
-                pnpmEnable = true
                 filterClasspath {
                     include("com.vaadin:flow-*")
                     exclude("com.vaadin:flow-data")
