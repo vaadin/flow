@@ -36,6 +36,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReload.Backend;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.LocaleUtil;
@@ -51,7 +52,6 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -160,7 +160,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             addScript(indexDocument, """
                     window.Vaadin = window.Vaadin || {};
                     window.Vaadin.developmentMode = true;
-                    window.Vaadin.devToolsPlugins = [];
                     """);
         }
 
@@ -327,33 +326,36 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             DeploymentConfiguration config, VaadinSession session,
             VaadinRequest request) {
         VaadinService service = session.getService();
+
         Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                 .getLiveReloadFromService(service);
+        Optional<Backend> maybeBackend = liveReload
+                .map(BrowserLiveReload::getBackend);
 
-        if (liveReload.isPresent()) {
-            Element devTools = new Element("vaadin-dev-tools");
-            if (!config.isDevModeLiveReloadEnabled()) {
-                devTools.attr("liveReloadDisabled", "");
+        int liveReloadPort = Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT;
+        VaadinContext context = service.getContext();
+        if (context instanceof VaadinServletContext vaadinServletContext) {
+            String customPort = (String) vaadinServletContext.getContext()
+                    .getAttribute(LIVE_RELOAD_PORT_ATTR);
+            if (customPort != null) {
+                liveReloadPort = Integer.parseInt(customPort);
             }
-            devTools.attr("url",
-                    BootstrapHandlerHelper.getPushURL(session, request));
-            BrowserLiveReload.Backend backend = liveReload.get().getBackend();
-            if (backend != null) {
-                devTools.attr("backend", backend.toString());
-            }
-            String liveReloadPort = ""
-                    + Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT;
-            VaadinContext context = service.getContext();
-            if (context instanceof VaadinServletContext vaadinServletContext) {
-                String customPort = (String) vaadinServletContext.getContext()
-                        .getAttribute(LIVE_RELOAD_PORT_ATTR);
-                if (customPort != null) {
-                    liveReloadPort = customPort;
-                }
-            }
-            devTools.attr("springbootlivereloadport", liveReloadPort);
-            indexDocument.body().appendChild(devTools);
         }
+
+        JsonObject devToolsConf = Json.createObject();
+        devToolsConf.put("enable", config.isDevModeLiveReloadEnabled());
+        devToolsConf.put("url",
+                BootstrapHandlerHelper.getPushURL(session, request));
+        maybeBackend.ifPresent(
+                backend -> devToolsConf.put("backend", backend.toString()));
+        devToolsConf.put("liveReloadPort", liveReloadPort);
+
+        addScript(indexDocument, String.format("""
+                window.Vaadin.devToolsPlugins = [];
+                window.Vaadin.devToolsConf = %s;
+                    """, devToolsConf.toJson()));
+
+        indexDocument.body().appendChild(new Element("vaadin-dev-tools"));
     }
 
     private void addInitialFlow(JsonObject initialJson, Document indexDocument,
