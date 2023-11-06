@@ -53,11 +53,11 @@ public open class VaadinCleanTask : DefaultTask() {
 
     @TaskAction
     public fun clean() {
-        val extension: VaadinFlowPluginExtension =
-                VaadinFlowPluginExtension.get(project)
+        val config: PluginEffectiveConfiguration =
+            PluginEffectiveConfiguration.get(project)
         project.delete(
-                extension.generatedTsFolder.absolutePath,
-                extension.frontendDirectory.resolve("generated").absolutePath,
+                config.generatedTsFolder,
+                config.frontendDirectory.get().resolve("generated").absolutePath,
                 "${project.projectDir}/node_modules",
                 "${project.projectDir}/${Constants.DEV_BUNDLE_LOCATION}",
                 "${project.projectDir}/package-lock.json",
