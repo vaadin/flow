@@ -31,7 +31,7 @@ import java.io.File
 
 public abstract class VaadinFlowPluginExtension {
     /**
-     * Whether we are running in productionMode or not. Defaults to false.
+     * Whether or not we are running in productionMode. Defaults to false.
      * Responds to the `-Pvaadin.productionMode` property.
      */
     public abstract val productionMode: Property<Boolean>
@@ -295,7 +295,7 @@ internal class PluginEffectiveConfiguration(
         .convention(false)
         .overrideWithSystemProperty("vaadin.productionMode")
 
-    val sourceSetName: Property<String> = extension.sourceSetName
+    val sourceSetName = extension.sourceSetName
         .convention("main")
 
     val webpackOutputDirectory: Provider<File> = extension.webpackOutputDirectory
@@ -345,7 +345,7 @@ internal class PluginEffectiveConfiguration(
         .convention(File(project.projectDir, "src/main/resources/application.properties"))
 
     val openApiJsonFile: Property<File> = extension.openApiJsonFile
-        .convention(project.layout.buildDirectory.file("generated-resources/openapi.json").asFile())
+        .convention(File(project.buildDir, "generated-resources/openapi.json"))
 
     val javaSourceFolder: Property<File> = extension.javaSourceFolder
         .convention(File(project.projectDir, "src/main/java"))
@@ -360,16 +360,16 @@ internal class PluginEffectiveConfiguration(
         .convention(FrontendTools.DEFAULT_NODE_VERSION)
 
     val nodeDownloadRoot: Property<String> = extension.nodeDownloadRoot
-        .convention(Platform.guess().nodeDownloadRoot)
+        .convention(com.vaadin.flow.server.frontend.installer.Platform.guess().getNodeDownloadRoot())
 
     val nodeAutoUpdate: Property<Boolean> = extension.nodeAutoUpdate
         .convention(false)
 
     val resourceOutputDirectory: Property<File> = extension.resourceOutputDirectory
-        .convention(project.layout.buildDirectory.dir("vaadin-generated").asFile())
+        .convention(File(project.buildDir, "vaadin-generated"))
 
     val projectBuildDir: Property<String> = extension.projectBuildDir
-        .convention(project.layout.buildDirectory.map { it.asFile.toString() })
+        .convention(project.buildDir.toString())
 
     val postinstallPackages: ListProperty<String> = extension.postinstallPackages
         .convention(listOf())
