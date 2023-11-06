@@ -248,12 +248,6 @@ public open class VaadinFlowPluginExtension(project: Project) {
     public var forceProductionBuild: Boolean = false
 
     /**
-     * Setting this to {@code false} will skip compression of the bundle.
-     * {@code true} by default.
-     */
-    public var compressBundle: Boolean = true
-
-    /**
      * Prevents tracking state of the `vaadinPrepareFrontend` task, so that it
      * will re-run every time it is called.
      *
@@ -263,6 +257,15 @@ public open class VaadinFlowPluginExtension(project: Project) {
      * outcomes are up-to-date, improving the overall build time.
      */
     public var alwaysExecutePrepareFrontend: Boolean = false
+
+    /**
+     * If {@code true} navigation error views implementing {@link HasErrorParameter}
+     * can be rendered for exceptions during RPC request handling, not only limited
+     * to exceptions thrown during navigation life-cycle.
+     *
+     * @return {@code true} to enable error view rendering in RPC, {@code false} by default
+     */
+    public var isErrorHandlerRedirect: Boolean = false
 
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>? = null): ClasspathFilter {
         if (block != null) {
