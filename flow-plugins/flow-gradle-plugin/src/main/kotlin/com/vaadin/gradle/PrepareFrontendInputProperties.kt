@@ -39,13 +39,8 @@ import org.gradle.api.provider.Provider
  */
 public class PrepareFrontendInputProperties public constructor(project: Project) {
 
-    private val config: PluginEffectiveConfiguration
-    private val tools: Provider<FrontendTools>
-
-    init {
-        config = PluginEffectiveConfiguration.get(project)
-        tools = initialiseFrontendToolsSettings()
-    }
+    private val config: PluginEffectiveConfiguration = PluginEffectiveConfiguration.get(project)
+    private val tools: Provider<FrontendTools> = initialiseFrontendToolsSettings()
 
     @Input
     public fun getProductionMode(): Provider<Boolean> = config.productionMode

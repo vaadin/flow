@@ -18,6 +18,7 @@ package com.vaadin.gradle
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.Project
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import java.io.File
@@ -28,16 +29,9 @@ import java.io.File
  * as the files in the frontend directory. Being used for caching the results
  * of vaadinPrepareFrontend task to not run it again if inputs are the same.
  */
-public class PrepareFrontendOutputProperties public constructor(project: Project) {
+public class PrepareFrontendOutputProperties public constructor(private val project: Project) {
 
-    private val project: Project
-
-    private val extension: VaadinFlowPluginExtension
-
-    init {
-        this.project = project
-        extension = VaadinFlowPluginExtension.get(project)
-    }
+    private val config: PluginEffectiveConfiguration = PluginEffectiveConfiguration.get(project)
 
     @OutputFile
     public fun getPackageJson(): File {
@@ -75,12 +69,9 @@ public class PrepareFrontendOutputProperties public constructor(project: Project
     }
 
     @OutputDirectory
-    public fun getGeneratedTsFolder(): File {
-        return extension.generatedTsFolder
-    }
+    public fun getGeneratedTsFolder(): Property<File> =
+        config.generatedTsFolder
 
     @OutputDirectory
-    public fun getResourceOutputDirectory(): File {
-        return extension.resourceOutputDirectory
-    }
+    public fun getResourceOutputDirectory(): Property<File> = config.resourceOutputDirectory
 }
