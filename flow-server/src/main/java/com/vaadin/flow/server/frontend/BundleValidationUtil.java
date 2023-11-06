@@ -111,16 +111,18 @@ public final class BundleValidationUtil {
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder) throws IOException {
         File npmFolder = options.getNpmFolder();
+        File compressedDevBundle = new File(npmFolder,
+                Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION);
         if (!DevBundleUtils
                 .getDevBundleFolder(npmFolder, options.getBuildDirectoryName())
-                .exists()
-                && !BundleValidationUtil.hasJarBundle(DEV_BUNDLE_JAR_PATH,
-                        finder)) {
-            if (!new File(Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION)
-                    .exists()) {
-                getLogger().info("No dev-bundle found.");
-                return true;
-            }
+                .exists() && !compressedDevBundle.exists()
+                && !hasJarBundle(DEV_BUNDLE_JAR_PATH, finder)) {
+            getLogger().info("No dev-bundle found.");
+            return true;
+        }
+        if (!DevBundleUtils
+                .getDevBundleFolder(npmFolder, options.getBuildDirectoryName())
+                .exists() && compressedDevBundle.exists()) {
             DevBundleUtils.unpackBundle(npmFolder,
                     new File(
                             new File(npmFolder,

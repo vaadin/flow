@@ -16,22 +16,14 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
 
 /**
@@ -51,6 +43,8 @@ public class DevBundleUtils {
      *
      * @param projectDir
      *            the project root folder
+     * @param buildFolder
+     *            the project build folder name
      * @param filename
      *            the file name inside the bundle
      * @return a URL referring to the file inside the bundle or {@code null} if
@@ -75,6 +69,8 @@ public class DevBundleUtils {
      *
      * @param projectDir
      *            the project base directory
+     * @param buildFolder
+     *            the project build folder name
      * @return the bundle directory
      */
     public static File getDevBundleFolder(File projectDir, String buildFolder) {
@@ -111,6 +107,8 @@ public class DevBundleUtils {
     /**
      * Compress the dev bundle at give location into src/main/bundles.
      *
+     * @param projectDir
+     *            current project root directory
      * @param devBundleFolder
      *            dev bundle location
      */
@@ -122,112 +120,21 @@ public class DevBundleUtils {
         } else {
             bundleFile.getParentFile().mkdirs();
         }
-
-        try (ZipOutputStream zipOut = new ZipOutputStream(
-                new FileOutputStream(bundleFile))) {
-
-            for (File child : devBundleFolder.listFiles()) {
-                zip(child, child.getName(), zipOut);
-            }
-        } catch (IOException e) {
-            throw new CompressionException(
-                    "Failed to compress dev bundle files to '"
-                            + bundleFile.getPath() + "'",
-                    e);
-        }
-    }
-
-    private static void zip(File fileToZip, String fileName,
-            ZipOutputStream zipOut) throws IOException {
-        if (fileToZip.isHidden()) {
-            return;
-        }
-        fileName = fileName.replaceAll("\\\\", "/");
-        if (fileToZip.isDirectory()) {
-            if (!fileName.endsWith("/")) {
-                fileName = fileName + "/";
-            }
-            zipOut.putNextEntry(new ZipEntry(fileName));
-            zipOut.closeEntry();
-
-            for (File child : fileToZip.listFiles()) {
-                zip(child, fileName + child.getName(), zipOut);
-            }
-            return;
-        }
-        try (FileInputStream fis = new FileInputStream(fileToZip)) {
-            ZipEntry zipEntry = new ZipEntry(fileName);
-            zipOut.putNextEntry(zipEntry);
-            byte[] bytes = new byte[1024];
-            int length;
-            while ((length = fis.read(bytes)) >= 0) {
-                zipOut.write(bytes, 0, length);
-            }
-        }
-        zipOut.closeEntry();
+        CompressUtil.compressDirectory(devBundleFolder, bundleFile);
     }
 
     /**
      * Unpack the compressed dev bundle from src/main/bundles if it exists into
      * the given location.
      *
+     * @param projectDir
+     *            current project root directory
      * @param devBundleFolder
      *            unpacked dev bundle location
      */
     public static void unpackBundle(File projectDir, File devBundleFolder) {
         File bundleFile = new File(projectDir,
                 Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION);
-        if (!bundleFile.exists()) {
-            return;
-        }
-        byte[] buffer = new byte[1024];
-        try (ZipInputStream zis = new ZipInputStream(
-                new FileInputStream(bundleFile))) {
-            ZipEntry zipEntry = zis.getNextEntry();
-            while (zipEntry != null) {
-                File newFile = newFile(devBundleFolder, zipEntry);
-                if (zipEntry.isDirectory()) {
-                    if (!newFile.isDirectory() && !newFile.mkdirs()) {
-                        throw new IOException(
-                                "Failed to create directory " + newFile);
-                    }
-                } else {
-
-                    // fix for Windows-created archives
-                    File parent = newFile.getParentFile();
-                    if (!parent.isDirectory() && !parent.mkdirs()) {
-                        throw new IOException(
-                                "Failed to create directory " + parent);
-                    }
-
-                    try (FileOutputStream fos = new FileOutputStream(newFile)) {
-                        int len;
-                        while ((len = zis.read(buffer)) > 0) {
-                            fos.write(buffer, 0, len);
-                        }
-                    }
-                }
-                zipEntry = zis.getNextEntry();
-            }
-            zis.closeEntry();
-        } catch (IOException e) {
-            throw new CompressionException(
-                    "Failed to unpack '" + bundleFile.getPath() + "'", e);
-        }
-    }
-
-    private static File newFile(File destinationDir, ZipEntry zipEntry)
-            throws IOException {
-        File destFile = new File(destinationDir, zipEntry.getName());
-
-        String destDirPath = destinationDir.getCanonicalPath();
-        String destFilePath = destFile.getCanonicalPath();
-
-        if (!destFilePath.startsWith(destDirPath + File.separator)) {
-            throw new IOException("Entry is outside of the target dir: "
-                    + zipEntry.getName());
-        }
-
-        return destFile;
+        CompressUtil.uncompressFile(bundleFile, devBundleFolder);
     }
 }

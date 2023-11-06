@@ -238,10 +238,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
     }
 
     private void addReadme() {
-        File devBundleFolder = new File(
-                new File(options.getNpmFolder(),
-                        options.getBuildDirectoryName()),
-                Constants.DEV_BUNDLE_LOCATION);
+        File devBundleFolder = new File(options.getNpmFolder(),
+                Constants.BUNDLE_LOCATION);
         assert devBundleFolder.exists();
 
         try {
