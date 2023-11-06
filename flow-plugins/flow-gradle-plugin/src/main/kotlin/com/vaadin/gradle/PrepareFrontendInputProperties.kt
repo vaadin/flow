@@ -18,7 +18,6 @@ package com.vaadin.gradle
 import com.vaadin.flow.server.frontend.FrontendTools
 import com.vaadin.flow.server.frontend.FrontendToolsSettings
 import com.vaadin.flow.server.frontend.FrontendUtils
-import org.gradle.api.Project
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
@@ -45,7 +44,9 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
 
     @Input
     @Optional
-    public fun getWebpackOutputDirectory(): Provider<String> = config.webpackOutputDirectory.takeIfExists().map { it.absolutePath }
+    public fun getWebpackOutputDirectory(): Provider<String> = config.webpackOutputDirectory
+        .takeIfExists()
+        .map { it.absolutePath }
 
     @Input
     public fun getNpmFolder(): Provider<String> = config.npmFolder.absolutePath
@@ -96,7 +97,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
     @Optional
     @PathSensitive(PathSensitivity.ABSOLUTE)
     public fun getFeatureFlagsFile(): Provider<File> = config.javaResourceFolder
-        .map {  it.resolve(FeatureFlags.PROPERTIES_FILENAME) }
+        .map { it.resolve(FeatureFlags.PROPERTIES_FILENAME) }
         .takeIfExists()
 
     @Input
@@ -137,14 +138,8 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
 
     @Input
     @Optional
-    public fun getNodeExecutablePath(): Provider<String> = tools.map { tools ->
-        val nodeBinary = tools.nodeBinary ?: return@map ""
-        val nodeBinaryFile = File(nodeBinary)
-        if (!nodeBinaryFile.exists()) {
-            return@map ""
-        }
-        return@map nodeBinaryFile.absolutePath
-    }
+    public fun getNodeExecutablePath(): Provider<String> = tools.mapOrNull { tools -> tools.nodeBinary }
+        .takeIfExists()
 
     @Input
     @Optional
@@ -177,5 +172,12 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
 }
 
 private val Provider<File>.absolutePath: Provider<String> get() = map { it.absolutePath }
-private fun Provider<File>.takeIfExists(): Provider<File> =
-    map(FileExistsFilter())
+
+/**
+ * Same thing as [Provider.map] but can return null. Workaround for https://github.com/gradle/gradle/issues/12388
+ */
+private fun <IN: Any, OUT> Provider<IN>.mapOrNull(block: (IN) -> OUT?): Provider<OUT> =
+    map(FunctionToTransformerAdapter(block))
+private fun Provider<File>.takeIfExists(): Provider<File> = mapOrNull { it.takeIf { it.exists() } }
+@JvmName("takeIfExistsString")
+private fun Provider<String>.takeIfExists(): Provider<String> = mapOrNull { it.takeIf { File(it).exists() } }
