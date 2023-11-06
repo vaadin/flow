@@ -63,7 +63,7 @@ public class ProdBundleUtils {
     }
 
     /**
-     * Get the folder where an application specific prodction bundle is stored.
+     * Get the folder where an application specific production bundle is stored.
      *
      * @param projectDir
      *            the project base directory
@@ -96,6 +96,40 @@ public class ProdBundleUtils {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ProdBundleUtils.class);
+    }
+
+    /**
+     * Compress the prod bundle at give location into src/main/bundles.
+     *
+     * @param projectDir
+     *            current project root directory
+     * @param prodBundleFolder
+     *            prod bundle location
+     */
+    public static void compressBundle(File projectDir, File prodBundleFolder) {
+        File bundleFile = new File(projectDir,
+                Constants.PROD_BUNDLE_COMPRESSED_FILE_LOCATION);
+        if (bundleFile.exists()) {
+            bundleFile.delete();
+        } else {
+            bundleFile.getParentFile().mkdirs();
+        }
+        CompressUtil.compressDirectory(prodBundleFolder, bundleFile);
+    }
+
+    /**
+     * Unpack the compressed prod bundle from src/main/bundles if it exists into
+     * the given location.
+     *
+     * @param projectDir
+     *            current project root directory
+     * @param prodBundleFolder
+     *            unpacked prod bundle location
+     */
+    public static void unpackBundle(File projectDir, File prodBundleFolder) {
+        File bundleFile = new File(projectDir,
+                Constants.PROD_BUNDLE_COMPRESSED_FILE_LOCATION);
+        CompressUtil.uncompressFile(bundleFile, prodBundleFolder);
     }
 
 }

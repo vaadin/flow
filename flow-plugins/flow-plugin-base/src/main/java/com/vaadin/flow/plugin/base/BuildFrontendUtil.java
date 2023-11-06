@@ -426,24 +426,13 @@ public class BuildFrontendUtil {
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
         BuildFrontendUtil.runVite(adapter, tools);
-        copyBundleToProdBundleLocation(adapter);
+        copyCompressedBundleToProdBundleLocation(adapter);
     }
 
-    private static void copyBundleToProdBundleLocation(
+    private static void copyCompressedBundleToProdBundleLocation(
             PluginAdapterBase adapter) {
-        try {
-            File prodBundleFolder = ProdBundleUtils.getProdBundleFolder(
-                    adapter.projectBaseDirectory().toFile());
-            if (prodBundleFolder.exists()) {
-                FrontendUtils.deleteDirectory(prodBundleFolder);
-            }
-            FileUtils.copyDirectory(adapter.servletResourceOutputDirectory(),
-                    prodBundleFolder);
-        } catch (IOException e) {
-            throw new RuntimeException(
-                    "Couldn't copy new production bundle files to prod-bundle folder",
-                    e);
-        }
+        ProdBundleUtils.compressBundle(adapter.projectBaseDirectory().toFile(),
+                adapter.servletResourceOutputDirectory());
     }
 
     /**
