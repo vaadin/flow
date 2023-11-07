@@ -189,7 +189,12 @@ internal class GradlePluginAdapter(
 
     override fun forceProductionBuild(): Boolean = config.forceProductionBuild.get()
 
-    override fun compressBundle(): Boolean = true
+    override fun compressBundle(): Boolean {
+        // The compress bundle was decided to not be configurable as there is no
+        // point in not compressing it except in the case where we create a pre-compiled frontend bundle jar.
+        // For that there is another maven plugin that is used just for this case.
+        return true
+    }
 
     override fun isPrepareFrontendCacheDisabled(): Boolean = config.alwaysExecutePrepareFrontend.get()
 
