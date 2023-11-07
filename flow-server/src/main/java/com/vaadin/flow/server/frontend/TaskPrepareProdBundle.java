@@ -54,7 +54,7 @@ public class TaskPrepareProdBundle implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        if(hasProdBundle()) {
+        if (hasProdBundle()) {
             ProdBundleUtils.unpackBundle(options.getNpmFolder(),
                     options.getResourceOutputDirectory());
         } else {
@@ -94,7 +94,8 @@ public class TaskPrepareProdBundle implements FallibleCommand {
         }
     }
 
-    private void copyDefaultBundleFilesFromJar() throws ExecutionFailedException {
+    private void copyDefaultBundleFilesFromJar()
+            throws ExecutionFailedException {
         URL statsJson = BundleValidationUtil.getProdBundleResource(
                 "config/stats.json", options.getClassFinder());
         if (statsJson == null) {

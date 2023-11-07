@@ -121,7 +121,8 @@ public class NodeTasks implements FallibleCommand {
                     File prodBundle = ProdBundleUtils
                             .getProdBundle(options.getNpmFolder());
                     if (prodBundle.exists()) {
-                        UsageStatistics.markAsUsed("flow/app-prod-bundle", null);
+                        UsageStatistics.markAsUsed("flow/app-prod-bundle",
+                                null);
                     } else {
                         UsageStatistics.markAsUsed(
                                 "flow/prod-pre-compiled-bundle", null);
