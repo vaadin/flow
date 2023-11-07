@@ -309,23 +309,17 @@ public final class Constants implements Serializable {
     public static final String DEV_BUNDLE_JAR_PATH = DEV_BUNDLE_NAME + "/";
 
     /**
-     * The folder in the project where Flow generates application production
-     * bundle.
-     */
-    public static final String PROD_BUNDLE_LOCATION = "src/main/prod-bundle";
-    
-    /**
      * The path part where production bundle is located inside the jar.
      */
     public static final String PROD_BUNDLE_JAR_PATH = PROD_BUNDLE_NAME + "/";
 
     /**
-     *
+     * The file name of the compressed production bundle.
      */
     public static final String PROD_BUNDLE_COMPRESSED_FILE = "prod.bundle";
 
     /**
-     *
+     * Location of the compressed production bundle file.
      */
     public static final String PROD_BUNDLE_COMPRESSED_FILE_LOCATION = BUNDLE_LOCATION
             + PROD_BUNDLE_COMPRESSED_FILE;

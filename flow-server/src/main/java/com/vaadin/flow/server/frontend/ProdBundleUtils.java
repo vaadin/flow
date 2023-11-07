@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * Helpers related to the production bundle.
@@ -38,53 +39,50 @@ public class ProdBundleUtils {
     }
 
     /**
-     * Finds the given file inside the current production bundle.
-     * <p>
-     *
-     * @param projectDir
-     *            the project root folder
-     * @param filename
-     *            the file name inside the bundle
-     * @return a URL referring to the file inside the bundle or {@code null} if
-     *         the file was not found
-     */
-    public static URL findBundleFile(File projectDir, String filename)
-            throws IOException {
-        File prodBundleFolder = getProdBundleFolder(projectDir);
-        if (prodBundleFolder.exists()) {
-            // Has a production bundle
-            File bundleFile = new File(prodBundleFolder, filename);
-            if (bundleFile.exists()) {
-                return bundleFile.toURI().toURL();
-            }
-        }
-        return TaskPrepareProdBundle.class.getClassLoader()
-                .getResource(Constants.PROD_BUNDLE_JAR_PATH + filename);
-    }
-
-    /**
-     * Get the folder where an application specific production bundle is stored.
+     * Get the application specific production bundle file.
      *
      * @param projectDir
      *            the project base directory
      * @return the bundle directory
      */
-    public static File getProdBundleFolder(File projectDir) {
-        return new File(projectDir, Constants.PROD_BUNDLE_LOCATION);
+    public static File getProdBundle(File projectDir) {
+        return new File(projectDir,
+                Constants.PROD_BUNDLE_COMPRESSED_FILE_LOCATION);
     }
 
     /**
-     * Get the stats.json for the application specific production bundle.
+     * Get the stats.json for the application specific production bundle or from
+     * the default bundle if it exists.
      *
      * @param projectDir
      *            the project base directory
+     * @param finder
+     *            class finder
      * @return stats.json content or {@code null} if not found
      * @throws IOException
      *             if an I/O exception occurs.
      */
-    public static String findBundleStatsJson(File projectDir)
-            throws IOException {
-        URL statsJson = findBundleFile(projectDir, "config/stats.json");
+    public static String findBundleStatsJson(File projectDir,
+            ClassFinder finder) throws IOException {
+        String statsFile = "config/stats.json";
+        File prodBundleFile = getProdBundle(projectDir);
+        if (prodBundleFile.exists()) {
+            // Has a production bundle
+            try {
+                String stats = CompressUtil
+                        .readFileContentFromZip(prodBundleFile, statsFile);
+                if (stats != null) {
+                    return stats;
+                }
+            } catch (IOException e) {
+                getLogger().error(
+                        "Failed to read stats.json from the production bundle",
+                        e);
+            }
+        }
+
+        URL statsJson = finder
+                .getResource(Constants.PROD_BUNDLE_JAR_PATH + statsFile);
         if (statsJson == null) {
             getLogger().warn(
                     "There is no prod-bundle in the project or on the classpath nor is there a default production bundle included.");

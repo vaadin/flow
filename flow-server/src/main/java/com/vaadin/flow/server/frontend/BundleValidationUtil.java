@@ -17,7 +17,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,7 +154,8 @@ public final class BundleValidationUtil {
     private static boolean needsBuildProdBundle(Options options,
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder) throws IOException {
-        String statsJsonContent = findProdBundleStatsJson(finder);
+        String statsJsonContent = ProdBundleUtils
+                .findBundleStatsJson(options.getNpmFolder(), finder);
 
         if (!finder.getAnnotatedClasses(LoadDependenciesOnStartup.class)
                 .isEmpty()) {
@@ -796,16 +796,6 @@ public final class BundleValidationUtil {
             handledFiles.append(" - ").append(file).append("\n");
         }
         getLogger().info(message, handledFiles);
-    }
-
-    public static String findProdBundleStatsJson(ClassFinder finder)
-            throws IOException {
-        URL statsJson = getProdBundleResource("config/stats.json", finder);
-        if (statsJson == null) {
-            getLogger().warn("There is no production bundle in the classpath.");
-            return null;
-        }
-        return IOUtils.toString(statsJson, StandardCharsets.UTF_8);
     }
 
     public static URL getProdBundleResource(String filename,
