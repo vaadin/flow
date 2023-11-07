@@ -181,7 +181,8 @@ public class ThemeValidationUtil {
                                 hashesWithNoComponentCssMatches,
                                 frontendDirectory, themeFile))
                         .map(f -> frontendDirectory.toPath()
-                                .relativize(f.toPath()).toString())
+                                .relativize(f.toPath()).toString()
+                                .replaceAll("\\\\", "/"))
                         .collect(Collectors
                                 .toCollection(() -> themeComponentsCssFiles));
             }
@@ -377,7 +378,8 @@ public class ThemeValidationUtil {
             Map<String, String> bundledHashes, File frontendFolder,
             File frontendResource) {
         String relativePath = frontendFolder.toPath()
-                .relativize(frontendResource.toPath()).toString();
+                .relativize(frontendResource.toPath()).toString()
+                .replaceAll("\\\\", "/");
         boolean presentInBundle = bundledHashes.containsKey(relativePath);
         if (presentInBundle) {
             final String contentHash;
