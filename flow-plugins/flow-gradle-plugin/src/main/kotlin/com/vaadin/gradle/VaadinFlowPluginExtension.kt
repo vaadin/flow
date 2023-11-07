@@ -19,6 +19,7 @@ import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendTools
 import com.vaadin.flow.server.frontend.installer.NodeInstaller
+import com.vaadin.flow.server.frontend.installer.Platform
 import groovy.lang.Closure
 import groovy.lang.DelegatesTo
 import org.gradle.api.Action
@@ -30,7 +31,7 @@ import java.io.File
 
 public abstract class VaadinFlowPluginExtension {
     /**
-     * Whether or not we are running in productionMode. Defaults to false.
+     * Whether we are running in productionMode or not. Defaults to false.
      * Responds to the `-Pvaadin.productionMode` property.
      */
     public abstract val productionMode: Property<Boolean>
@@ -271,7 +272,7 @@ public abstract class VaadinFlowPluginExtension {
     public abstract val alwaysExecutePrepareFrontend: Property<Boolean>
 
     /**
-     * If `true` navigation error views implementing [HasErrorParameter]
+     * If `true` navigation error views implementing `HasErrorParameter`
      * can be rendered for exceptions during RPC request handling, not only limited
      * to exceptions thrown during navigation life-cycle.
      *
@@ -303,7 +304,7 @@ internal class PluginEffectiveConfiguration(
         .convention(false)
         .overrideWithSystemProperty("vaadin.productionMode")
 
-    val sourceSetName = extension.sourceSetName
+    val sourceSetName: Property<String> = extension.sourceSetName
         .convention("main")
 
     val webpackOutputDirectory: Provider<File> = extension.webpackOutputDirectory
@@ -353,7 +354,7 @@ internal class PluginEffectiveConfiguration(
         .convention(File(project.projectDir, "src/main/resources/application.properties"))
 
     val openApiJsonFile: Property<File> = extension.openApiJsonFile
-        .convention(File(project.buildDir, "generated-resources/openapi.json"))
+        .convention(project.layout.buildDirectory.file("generated-resources/openapi.json").asFile())
 
     val javaSourceFolder: Property<File> = extension.javaSourceFolder
         .convention(File(project.projectDir, "src/main/java"))
@@ -368,16 +369,16 @@ internal class PluginEffectiveConfiguration(
         .convention(FrontendTools.DEFAULT_NODE_VERSION)
 
     val nodeDownloadRoot: Property<String> = extension.nodeDownloadRoot
-        .convention(com.vaadin.flow.server.frontend.installer.Platform.guess().getNodeDownloadRoot())
+        .convention(Platform.guess().nodeDownloadRoot)
 
     val nodeAutoUpdate: Property<Boolean> = extension.nodeAutoUpdate
         .convention(false)
 
     val resourceOutputDirectory: Property<File> = extension.resourceOutputDirectory
-        .convention(File(project.buildDir, "vaadin-generated"))
+        .convention(project.layout.buildDirectory.dir("vaadin-generated").asFile())
 
     val projectBuildDir: Property<String> = extension.projectBuildDir
-        .convention(project.buildDir.toString())
+        .convention(project.layout.buildDirectory.map { it.asFile.toString() })
 
     val postinstallPackages: ListProperty<String> = extension.postinstallPackages
         .convention(listOf())

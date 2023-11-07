@@ -23,6 +23,8 @@ import com.vaadin.flow.server.frontend.FrontendTools
 import com.vaadin.flow.server.frontend.FrontendToolsSettings
 import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.Project
+import org.gradle.api.file.Directory
+import org.gradle.api.file.RegularFile
 import org.gradle.api.internal.provider.Providers
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
@@ -105,3 +107,7 @@ internal fun Provider<File>.filterExists(): Provider<File> = filter { it.exists(
  */
 @JvmName("filterExistsString")
 internal fun Provider<String>.filterExists(): Provider<String> = filter { File(it).exists() }
+
+internal fun Provider<RegularFile>.asFile(): Provider<File> = map { it.asFile }
+@JvmName("directoryAsFile")
+internal fun Provider<Directory>.asFile(): Provider<File> = map { it.asFile }
