@@ -17,10 +17,12 @@ package com.vaadin.flow.server.communication;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -60,12 +62,13 @@ public class StreamResourceHandlerTest {
             throws IOException {
         StreamResource res = new StreamResource("readme.md",
                 (InputStreamFactory) () -> {
-                    throw new RuntimeException("Simulated");
+                    throw new RuntimeException("Simulated-1");
                 });
         try {
             handler.handleRequest(session, request, response, res);
-        } catch (RuntimeException ignore) {
-            // Ignore exception, it's expected. We need to check the status
+        } catch (RuntimeException exception) {
+            // Exception is expected; verify it's the same one we threw.
+            Assert.assertEquals("Simulated-1", exception.getMessage());
         }
         Mockito.verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
@@ -76,12 +79,13 @@ public class StreamResourceHandlerTest {
             throws IOException {
         StreamResource res = new StreamResource("readme.md",
                 (StreamResourceWriter) (stream, session) -> {
-                    throw new RuntimeException("Simulated");
+                    throw new RuntimeException("Simulated-2");
                 });
         try {
             handler.handleRequest(session, request, response, res);
-        } catch (RuntimeException ignore) {
-            // Ignore exception, it's expected. We need to check the status
+        } catch (RuntimeException exception) {
+            // Exception is expected; verify it's the same one we threw.
+            Assert.assertEquals("Simulated-2", exception.getMessage());
         }
         Mockito.verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
@@ -101,7 +105,29 @@ public class StreamResourceHandlerTest {
         try {
             handler.handleRequest(session, request, response, res);
         } catch (IOException ignore) {
-            // Ignore exception, it's expected. We need to check the status
+            // Exception is expected
+        }
+        Mockito.verify(response)
+                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+    }
+
+    @Test
+    public void inputStreamResourceWriterAndResponseThrows_streamResourceWriterExceptionIsPropagated()
+            throws IOException {
+        ServletOutputStream servletOutputStream = Mockito
+                .mock(ServletOutputStream.class);
+        Mockito.when(response.getOutputStream())
+                .thenReturn(servletOutputStream);
+        Mockito.doThrow(new RuntimeException("Error on close"))
+                .when(servletOutputStream).close();
+        StreamResource res = new StreamResource("readme.md",
+                (StreamResourceWriter) (stream, session) -> {
+                    throw new RuntimeException("Simulated-3");
+                });
+        try {
+            handler.handleRequest(session, request, response, res);
+        } catch (RuntimeException exception) {
+            Assert.assertEquals("Simulated-3", exception.getMessage());
         }
         Mockito.verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());

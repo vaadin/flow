@@ -29,12 +29,12 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  * The expected priority is: Lumo styles < @CssImport < page.addStylesheet
  * < @Stylehseet < parent theme < current theme (app theme)
  */
-public class CssLoadingIT extends ChromeBrowserTest {
+public class CssLoadingIT extends AbstractBaseIT {
 
     private static final String BLUE_RGBA = "rgba(0, 0, 255, 1)";
     private static final String GREEN_RGBA = "rgba(0, 255, 0, 1)";
     private static final String YELLOW_RGBA = "rgba(255, 255, 0, 1)";
-    private static final String STYLESHEET_LUMO_FONT_SIZE_M = " 1.1rem";
+    private static final String STYLESHEET_LUMO_FONT_SIZE_M = "1.1rem";
 
     @Test
     public void CssImport_overrides_Lumo() {
@@ -45,7 +45,7 @@ public class CssLoadingIT extends ChromeBrowserTest {
                 STYLESHEET_LUMO_FONT_SIZE_M,
                 executeScript(
                         "return getComputedStyle(arguments[0]).getPropertyValue('--lumo-font-size-m')",
-                        htmlElement));
+                        htmlElement).toString().trim());
     }
 
     @Test
@@ -68,4 +68,5 @@ public class CssLoadingIT extends ChromeBrowserTest {
         Assert.assertEquals(expectedMargin,
                 $(ParagraphElement.class).id(elementId).getCssValue("margin"));
     }
+
 }

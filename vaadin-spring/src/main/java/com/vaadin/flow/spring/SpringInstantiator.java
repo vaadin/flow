@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.spring;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.SpringVersion;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.DefaultInstantiator;
@@ -54,6 +56,8 @@ public class SpringInstantiator extends DefaultInstantiator {
         this.context = context;
 
         UsageStatistics.markAsUsed("flow/SpringInstantiator", null);
+        UsageStatistics.markAsUsed("SpringFramework", Optional
+                .ofNullable(SpringVersion.getVersion()).orElse("unknown"));
     }
 
     @Override

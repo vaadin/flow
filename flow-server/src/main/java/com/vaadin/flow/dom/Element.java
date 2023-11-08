@@ -16,6 +16,7 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -1361,8 +1362,8 @@ public class Element extends Node<Element> {
      * at the same time that {@link Page#executeJs(String, Serializable...)}
      * calls are invoked.
      * <p>
-     * If the element is not attached, the function call will be deferred until
-     * the element is attached.
+     * If the element is not attached or not visible, the function call will be
+     * deferred until the element is attached and visible.
      *
      * @see JsonCodec JsonCodec for supported argument types
      *
@@ -1457,6 +1458,9 @@ public class Element extends Node<Element> {
      * <code>'prefix' + $0</code> instead of <code>'prefix$0'</code> and
      * <code>value[$0]</code> instead of <code>value.$0</code> since JavaScript
      * variables aren't evaluated inside strings or property names.
+     * <p>
+     * If the element is not attached or not visible, the function call will be
+     * deferred until the element is attached and visible.
      *
      * @param expression
      *            the JavaScript expression to invoke
@@ -1530,6 +1534,10 @@ public class Element extends Node<Element> {
 
     /**
      * Sets the element visibility value.
+     *
+     * Also executes pending javascript invocations, if their execution was
+     * requested while the element was not visible, and the element is now set
+     * as visible.
      *
      * @param visible
      *            the element visibility value

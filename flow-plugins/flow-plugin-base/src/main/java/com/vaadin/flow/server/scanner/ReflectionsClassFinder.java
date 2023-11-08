@@ -27,8 +27,12 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.reflections.Configuration;
 import org.reflections.Reflections;
+import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
@@ -38,6 +42,8 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  * @since 2.0
  */
 public class ReflectionsClassFinder implements ClassFinder {
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(ReflectionsClassFinder.class);
     private final transient ClassLoader classLoader;
 
     private final transient Reflections reflections;
@@ -58,7 +64,7 @@ public class ReflectionsClassFinder implements ClassFinder {
         configurationBuilder
                 .setInputsFilter(resourceName -> resourceName.endsWith(".class")
                         && !resourceName.endsWith("module-info.class"));
-        reflections = new Reflections(configurationBuilder);
+        reflections = new LoggingReflections(configurationBuilder);
     }
 
     @Override
@@ -107,5 +113,56 @@ public class ReflectionsClassFinder implements ClassFinder {
             Set<Class<? extends T>> source) {
         return source.stream().sorted(Comparator.comparing(Class::getName))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private static class LoggingReflections extends Reflections {
+
+        LoggingReflections(Configuration configuration) {
+            super(configuration);
+        }
+
+        // Classloading errors may cause the frontend-build to fail, but
+        // without any useful information.
+        // Copy-pasting the super method, with addition of exception logging
+        // to help in troubleshooting build issues
+        @Override
+        public Class<?> forClass(String typeName, ClassLoader... loaders) {
+            if (primitiveNames.contains(typeName)) {
+                return primitiveTypes.get(primitiveNames.indexOf(typeName));
+            } else {
+                String type;
+                if (typeName.contains("[")) {
+                    int i = typeName.indexOf("[");
+                    type = typeName.substring(0, i);
+                    String array = typeName.substring(i).replace("]", "");
+                    if (primitiveNames.contains(type)) {
+                        type = primitiveDescriptors
+                                .get(primitiveNames.indexOf(type));
+                    } else {
+                        type = "L" + type + ";";
+                    }
+                    type = array + type;
+                } else {
+                    type = typeName;
+                }
+
+                for (ClassLoader classLoader : ClasspathHelper
+                        .classLoaders(loaders)) {
+                    if (type.contains("[")) {
+                        try {
+                            return Class.forName(type, false, classLoader);
+                        } catch (Throwable ignored) {
+                            LOGGER.debug("Can't find class {}", type, ignored);
+                        }
+                    }
+                    try {
+                        return classLoader.loadClass(type);
+                    } catch (Throwable ignored) {
+                        LOGGER.debug("Can't load class {}", type, ignored);
+                    }
+                }
+                return null;
+            }
+        }
     }
 }

@@ -56,6 +56,7 @@ import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
@@ -670,15 +671,25 @@ public abstract class AbstractNavigationStateRenderer
         if (beforeEvent.hasExternalForwardUrl()) {
             return Optional.of(forwardToExternalUrl(event, beforeEvent));
         }
-        if (beforeEvent.hasForwardTarget()
-                && !isSameNavigationState(beforeEvent.getForwardTargetType(),
-                        beforeEvent.getForwardTargetRouteParameters())) {
+
+        boolean queryParameterChanged = beforeEvent.hasRedirectQueryParameters()
+                && !beforeEvent.getRedirectQueryParameters()
+                        .equals(event.getLocation().getQueryParameters());
+
+        if (beforeEvent.hasForwardTarget() && (!isSameNavigationState(
+                beforeEvent.getForwardTargetType(),
+                beforeEvent.getForwardTargetRouteParameters())
+                || queryParameterChanged
+                || !(navigationState.getResolvedPath() != null
+                        && navigationState.getResolvedPath()
+                                .equals(beforeEvent.getForwardUrl())))) {
             return Optional.of(forward(event, beforeEvent));
         }
 
         if (beforeEvent.hasRerouteTarget()
-                && !isSameNavigationState(beforeEvent.getRerouteTargetType(),
-                        beforeEvent.getRerouteTargetRouteParameters())) {
+                && (!isSameNavigationState(beforeEvent.getRerouteTargetType(),
+                        beforeEvent.getRerouteTargetRouteParameters())
+                        || queryParameterChanged)) {
             return Optional.of(reroute(event, beforeEvent));
         }
 
@@ -765,8 +776,12 @@ public abstract class AbstractNavigationStateRenderer
                     redirectType, redirectTarget, redirectParameters));
         }
 
-        Location location = new Location(url,
-                event.getLocation().getQueryParameters());
+        QueryParameters queryParameters = beforeNavigation
+                .hasRedirectQueryParameters()
+                        ? beforeNavigation.getRedirectQueryParameters()
+                        : event.getLocation().getQueryParameters();
+
+        Location location = new Location(url, queryParameters);
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
                 NavigationTrigger.PROGRAMMATIC, null, true);

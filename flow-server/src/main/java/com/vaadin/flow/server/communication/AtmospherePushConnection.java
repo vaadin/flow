@@ -54,8 +54,8 @@ public class AtmospherePushConnection implements PushConnection {
     private transient AtmosphereResource resource;
     private transient FragmentedMessage incomingMessage;
     private transient Future<Object> outgoingMessage;
-
     private transient Object lock = new Object();
+    private volatile boolean disconnecting;
 
     /**
      * Represents a message that can arrive as multiple fragments.
@@ -188,14 +188,18 @@ public class AtmospherePushConnection implements PushConnection {
      *            false if it is a response to a client request.
      */
     public void push(boolean async) {
-        synchronized (lock) {
-            if (!isConnected()) {
-                if (async && state != State.RESPONSE_PENDING) {
-                    state = State.PUSH_PENDING;
-                } else {
-                    state = State.RESPONSE_PENDING;
-                }
+        if (disconnecting || !isConnected()) {
+            if (disconnecting) {
+                getLogger().debug(
+                        "Disconnection in progress, ignoring push request");
+            }
+            if (async && state != State.RESPONSE_PENDING) {
+                state = State.PUSH_PENDING;
             } else {
+                state = State.RESPONSE_PENDING;
+            }
+        } else {
+            synchronized (lock) {
                 try {
                     JsonObject response = new UidlWriter().createUidl(getUI(),
                             async);
@@ -314,45 +318,58 @@ public class AtmospherePushConnection implements PushConnection {
 
     @Override
     public void disconnect() {
+        // If a disconnection is already happening on another thread it is safe
+        // to skip the operation. This also prevents potential deadlocks if the
+        // container acquires locks during operations on HTTP session, as
+        // closing the AtmosphereResource may cause HTTP session access
+        if (disconnecting) {
+            getLogger().debug(
+                    "Disconnection already in progress, ignoring request");
+            return;
+        }
+
         synchronized (lock) {
-            assert isConnected();
-            if (resource == null) {
-                // Already disconnected. Should not happen but if it does, we
-                // don't
-                // want to cause NPEs
+            if (!isConnected() || resource == null) {
+                // Already disconnected. Should not happen but if it does,
+                // we don't want to cause NPEs
                 getLogger().debug(
-                        "AtmospherePushConnection.disconnect() called twice, this should not happen");
+                        "Disconnection already happened, ignoring request");
                 return;
-            }
-            if (resource.isResumed()) {
-                // This can happen for long polling because of
-                // http://dev.vaadin.com/ticket/16919
-                // Once that is fixed, this should never happen
-                connectionLost();
-                return;
-            }
-            if (outgoingMessage != null) {
-                // Wait for the last message to be sent before closing the
-                // connection (assumes that futures are completed in order)
-                try {
-                    outgoingMessage.get(1000, TimeUnit.MILLISECONDS);
-                } catch (TimeoutException e) {
-                    getLogger().info(
-                            "Timeout waiting for messages to be sent to client before disconnect",
-                            e);
-                } catch (Exception e) {
-                    getLogger().info(
-                            "Error waiting for messages to be sent to client before disconnect",
-                            e);
-                }
-                outgoingMessage = null;
             }
             try {
-                resource.close();
-            } catch (IOException e) {
-                getLogger().info("Error when closing push connection", e);
+                disconnecting = true;
+                if (resource.isResumed()) {
+                    // This can happen for long polling because of
+                    // http://dev.vaadin.com/ticket/16919
+                    // Once that is fixed, this should never happen
+                    connectionLost();
+                    return;
+                }
+                if (outgoingMessage != null) {
+                    // Wait for the last message to be sent before closing the
+                    // connection (assumes that futures are completed in order)
+                    try {
+                        outgoingMessage.get(1000, TimeUnit.MILLISECONDS);
+                    } catch (TimeoutException e) {
+                        getLogger().info(
+                                "Timeout waiting for messages to be sent to client before disconnect",
+                                e);
+                    } catch (Exception e) {
+                        getLogger().info(
+                                "Error waiting for messages to be sent to client before disconnect",
+                                e);
+                    }
+                    outgoingMessage = null;
+                }
+                try {
+                    resource.close();
+                } catch (IOException e) {
+                    getLogger().info("Error when closing push connection", e);
+                }
+                connectionLost();
+            } finally {
+                disconnecting = false;
             }
-            connectionLost();
         }
     }
 
@@ -396,6 +413,7 @@ public class AtmospherePushConnection implements PushConnection {
             throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         state = State.DISCONNECTED;
+        disconnecting = false;
         lock = new Object();
     }
 

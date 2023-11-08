@@ -17,9 +17,11 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 import org.atmosphere.cache.BroadcastMessage;
 import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.cpr.AtmosphereResourceSession;
 import org.atmosphere.cpr.BroadcasterCache;
 import org.atmosphere.cpr.PerRequestBroadcastFilter;
 import org.slf4j.Logger;
@@ -48,17 +50,36 @@ public class LongPollingCacheFilter
         return LoggerFactory.getLogger(LongPollingCacheFilter.class.getName());
     }
 
+    static void onConnect(AtmosphereResource resource) {
+        Integer syncId = Optional
+                .ofNullable(
+                        resource.getRequest().getHeader(SEEN_SERVER_SYNC_ID))
+                .map(Integer::parseInt).orElse(null);
+        if (resource.transport() == AtmosphereResource.TRANSPORT.LONG_POLLING
+                && syncId != null) {
+            AtmosphereResourceSession session = resource.getAtmosphereConfig()
+                    .sessionFactory().getSession(resource);
+            session.setAttribute(SEEN_SERVER_SYNC_ID, syncId);
+        }
+    }
+
     @Override
     public BroadcastAction filter(String broadcasterId, AtmosphereResource r,
             Object originalMessage, Object message) {
+        AtmosphereResourceSession session = r.getAtmosphereConfig()
+                .sessionFactory().getSession(r, false);
         if (originalMessage instanceof AtmospherePushConnection.PushMessage
                 && r.transport() == AtmosphereResource.TRANSPORT.LONG_POLLING
-                && r.getRequest().getHeader(SEEN_SERVER_SYNC_ID) != null) {
+                && session != null
+                && session.getAttribute(SEEN_SERVER_SYNC_ID) != null) {
             AtmospherePushConnection.PushMessage pushMessage = (AtmospherePushConnection.PushMessage) originalMessage;
             String uuid = r.uuid();
-            int lastSeenOnClient = Integer
-                    .parseInt(r.getRequest().getHeader(SEEN_SERVER_SYNC_ID));
-            if (pushMessage.alreadySeen(lastSeenOnClient)) {
+            int lastSeenOnClient = session.getAttribute(SEEN_SERVER_SYNC_ID,
+                    Integer.class);
+            if (lastSeenOnClient == -1) {
+                return new BroadcastAction(BroadcastAction.ACTION.CONTINUE,
+                        message);
+            } else if (pushMessage.alreadySeen(lastSeenOnClient)) {
                 getLogger().trace(
                         "Discarding message {} for resource {} as client already seen {}. {}",
                         pushMessage.serverSyncId, uuid, lastSeenOnClient,

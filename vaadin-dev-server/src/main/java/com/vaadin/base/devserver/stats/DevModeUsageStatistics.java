@@ -16,12 +16,14 @@
 
 package com.vaadin.base.devserver.stats;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.vaadin.base.devserver.ServerInfo;
-import com.vaadin.flow.server.Version;
+import java.io.File;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.base.devserver.ServerInfo;
+import com.vaadin.flow.server.Version;
 
 import elemental.json.JsonObject;
 
@@ -42,7 +44,7 @@ public class DevModeUsageStatistics {
 
     private final StatisticsStorage storage;
 
-    private final String projectFolder;
+    private final File projectFolder;
 
     /**
      * Creates the instance.
@@ -52,7 +54,7 @@ public class DevModeUsageStatistics {
      * @param storage
      *            the storage instance to use
      */
-    private DevModeUsageStatistics(String projectFolder,
+    private DevModeUsageStatistics(File projectFolder,
             StatisticsStorage storage) {
         this.projectFolder = projectFolder;
         this.storage = storage;
@@ -81,7 +83,7 @@ public class DevModeUsageStatistics {
      *
      * @return the created instance or {@code null} if telemetry is not used
      */
-    public static DevModeUsageStatistics init(String projectFolder,
+    public static DevModeUsageStatistics init(File projectFolder,
             StatisticsStorage storage, StatisticsSender sender) {
 
         getLogger().debug("Telemetry enabled");

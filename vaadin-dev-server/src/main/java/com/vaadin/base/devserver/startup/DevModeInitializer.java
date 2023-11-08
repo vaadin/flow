@@ -78,6 +78,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
+import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
@@ -210,9 +211,13 @@ public class DevModeInitializer implements Serializable {
 
         featureFlags.setPropertiesLocation(config.getJavaResourceFolder());
 
-        String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
-                null);
-        if (baseDir == null) {
+        String baseDirString = config
+                .getStringProperty(FrontendUtils.PROJECT_BASEDIR, null);
+
+        File baseDir;
+        if (baseDirString != null) {
+            baseDir = new File(baseDirString);
+        } else {
             baseDir = getBaseDirectoryFallback();
         }
 
@@ -233,9 +238,8 @@ public class DevModeInitializer implements Serializable {
         Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
-        Options options = new Options(lookup, new File(baseDir),
-                new File(generatedDir), new File(frontendFolder),
-                config.getBuildFolder());
+        Options options = new Options(lookup, baseDir, new File(generatedDir),
+                new File(frontendFolder), config.getBuildFolder());
 
         log().info("Starting dev-mode updaters in {} folder.",
                 options.getNpmFolder());
@@ -269,19 +273,21 @@ public class DevModeInitializer implements Serializable {
         options.useV14Bootstrap(config.useV14Bootstrap());
 
         if (!config.useV14Bootstrap() && isEndpointServiceAvailable(lookup)) {
-            String connectJavaSourceFolder = config.getStringProperty(
-                    CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
-                    Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER)
-                            .toString());
-            String connectApplicationProperties = config.getStringProperty(
-                    CONNECT_APPLICATION_PROPERTIES_TOKEN,
-                    Paths.get(baseDir, DEFAULT_CONNECT_APPLICATION_PROPERTIES)
-                            .toString());
-            String connectOpenApiJsonFile = config
-                    .getStringProperty(CONNECT_OPEN_API_FILE_TOKEN,
-                            Paths.get(baseDir, config.getBuildFolder(),
-                                    DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+            String connectJavaSourceFolder = config
+                    .getStringProperty(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                            Paths.get(baseDir.getAbsolutePath(),
+                                    DEFAULT_CONNECT_JAVA_SOURCE_FOLDER)
                                     .toString());
+            String connectApplicationProperties = config
+                    .getStringProperty(CONNECT_APPLICATION_PROPERTIES_TOKEN,
+                            Paths.get(baseDir.getAbsolutePath(),
+                                    DEFAULT_CONNECT_APPLICATION_PROPERTIES)
+                                    .toString());
+            String connectOpenApiJsonFile = config.getStringProperty(
+                    CONNECT_OPEN_API_FILE_TOKEN,
+                    Paths.get(baseDir.getAbsolutePath(),
+                            config.getBuildFolder(),
+                            DEFAULT_CONNECT_OPENAPI_JSON_FILE).toString());
 
             options.withEndpointSourceFolder(new File(connectJavaSourceFolder))
                     .withApplicationProperties(
@@ -319,10 +325,11 @@ public class DevModeInitializer implements Serializable {
                         InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, "")
                 .split(",");
 
-        String frontendGeneratedFolderName = config.getStringProperty(
-                PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
-                Paths.get(baseDir, DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
-                        .toString());
+        String frontendGeneratedFolderName = config
+                .getStringProperty(PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
+                        Paths.get(baseDir.getAbsolutePath(),
+                                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
+                                .toString());
         File frontendGeneratedFolder = new File(frontendGeneratedFolderName);
         File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
                 FrontendUtils.JAR_RESOURCES_FOLDER);
@@ -393,21 +400,10 @@ public class DevModeInitializer implements Serializable {
      * Maven or Gradle project. Check to avoid cluttering server directories
      * (see tickets #8249, #8403).
      */
-    private static String getBaseDirectoryFallback() {
-        /* Try determining the project folder from the classpath. */
-        try {
-            URL url = DevModeInitializer.class.getClassLoader()
-                    .getResource(".");
-            if (url != null && url.getProtocol().equals("file")) {
-                // URI decodes the path so that e.g. " " works correctly
-                String path = url.toURI().getPath();
-                if (path.endsWith("/target/classes/")) {
-                    return path.replaceFirst("/target/classes/$", "");
-                }
-            }
-        } catch (Exception e) {
-            LoggerFactory.getLogger(DevModeInitializer.class).warn(
-                    "Unable to determine project folder using classpath", e);
+    private static File getBaseDirectoryFallback() {
+        File projectFolder = FileIOUtils.getProjectFolderFromClasspath();
+        if (projectFolder != null) {
+            return projectFolder;
         }
 
         String baseDirCandidate = System.getProperty("user.dir", ".");
@@ -415,7 +411,7 @@ public class DevModeInitializer implements Serializable {
         if (path.toFile().isDirectory()
                 && (path.resolve("pom.xml").toFile().exists()
                         || path.resolve("build.gradle").toFile().exists())) {
-            return path.toString();
+            return path.toFile();
         } else {
             throw new IllegalStateException(String.format(
                     "Failed to determine project directory for dev mode. "
