@@ -16,10 +16,13 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ServiceLoader;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -53,9 +56,18 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         this.frontDeps = frontDeps;
         this.options = options;
         this.modifiers = new ArrayList<>();
-        for (TypeScriptBootstrapModifier modifier : ServiceLoader
-                .load(TypeScriptBootstrapModifier.class)) {
-            this.modifiers.add(modifier);
+        for (Class<? extends TypeScriptBootstrapModifier> modifierClass : options
+                .getClassFinder()
+                .getSubTypesOf(TypeScriptBootstrapModifier.class)) {
+            try {
+                this.modifiers
+                        .add(modifierClass.getConstructor().newInstance());
+            } catch (InstantiationException | IllegalAccessException
+                    | IllegalArgumentException | InvocationTargetException
+                    | NoSuchMethodException | SecurityException e) {
+                LoggerFactory.getLogger(TaskGenerateBootstrap.class).error(
+                        "Failed to instantiate TypeScriptBootstrapModifier", e);
+            }
         }
     }
 
@@ -70,7 +82,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         lines.addAll(getThemeLines());
 
         for (TypeScriptBootstrapModifier modifier : modifiers) {
-            modifier.modify(lines);
+            modifier.modify(lines, options.isProductionMode());
         }
         return String.join(System.lineSeparator(), lines);
     }
