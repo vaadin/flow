@@ -142,12 +142,12 @@ public class TaskRunNpmInstallTest {
 
         ensurePackageJson();
 
-        task = createTask(new ArrayList<>(), true);
         task.execute();
         Mockito.verify(logger).info(getRunningMsg());
 
         deleteDirectory(nodeModules);
 
+        task = createTask(new ArrayList<>(), true);
         task.execute();
         Mockito.verify(logger).info(getRunningMsg());
     }
