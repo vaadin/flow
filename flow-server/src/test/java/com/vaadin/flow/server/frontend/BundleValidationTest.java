@@ -1887,7 +1887,7 @@ public class BundleValidationTest {
     }
 
     @Test
-    public void noDevFolderOldDefaultBundle_bundleCompressedFileExists_noBuildRequired()
+    public void noFileBundleOrJar_compressedBundleExists_noBuildRequired()
             throws IOException {
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
