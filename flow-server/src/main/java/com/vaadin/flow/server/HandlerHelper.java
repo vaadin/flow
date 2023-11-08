@@ -85,7 +85,12 @@ public class HandlerHelper implements Serializable {
         /**
          * Push requests (any transport).
          */
-        PUSH(ApplicationConstants.REQUEST_TYPE_PUSH);
+        PUSH(ApplicationConstants.REQUEST_TYPE_PUSH),
+
+        /**
+         * Page showing that the browser is unsupported.
+         */
+        BROWSER_TOO_OLD("oldbrowser");
 
         private String identifier;
 

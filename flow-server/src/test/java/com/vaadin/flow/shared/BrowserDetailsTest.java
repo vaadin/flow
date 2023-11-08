@@ -659,16 +659,6 @@ public class BrowserDetailsTest extends TestCase {
         assertIPhone(bd);
     }
 
-    public void testTooOldBrowsers() {
-        assertTooOld(IE11_WINDOWS_7);
-        assertTooOld(EDGE_12_WINDOWS_10);
-        assertTooOld(EDGE_18);
-        assertTooOld(SAFARI11_MAC);
-        assertNotTooOld(EDGE_79);
-        assertTooOld(SAFARI13_MAC);
-        assertNotTooOld(SAFARI14_MAC);
-    }
-
     public void testEclipseMac_safari91() {
         BrowserDetails bd = new BrowserDetails(ECLIPSE_MAC_SAFARI_91);
         assertWebKit(bd);
@@ -713,10 +703,6 @@ public class BrowserDetailsTest extends TestCase {
         BrowserDetails bd = new BrowserDetails(IPHONE_IOS_11_FIREFOX);
         assertWebKit(bd);
         assertEngineVersion(bd, 604.3f);
-    }
-
-    public void testIphone14_7IsNotOld() {
-        assertNotTooOld(GOOGLE_APP_IPHONE_14_7);
     }
 
     /*
@@ -891,13 +877,4 @@ public class BrowserDetailsTest extends TestCase {
         assertOSMinorVersion(browserDetails, minorVersion);
     }
 
-    private void assertTooOld(String userAgent) {
-        BrowserDetails bd = new BrowserDetails(userAgent);
-        Assert.assertTrue(bd.isTooOldToFunctionProperly());
-    }
-
-    private void assertNotTooOld(String userAgent) {
-        BrowserDetails bd = new BrowserDetails(userAgent);
-        Assert.assertFalse(bd.isTooOldToFunctionProperly());
-    }
 }
