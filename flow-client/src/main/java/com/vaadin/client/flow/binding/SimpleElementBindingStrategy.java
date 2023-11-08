@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.flow.binding;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -1299,18 +1300,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
         }
 
-        JsArray<Runnable> commands = JsCollections.array();
-        synchronizeProperties.forEach(
-                name -> commands.push(getSyncPropertyCommand(name, context)));
+        JsMap<String, Runnable> commands = JsCollections.map();
+        synchronizeProperties.forEach(name -> commands.set(name,
+                getSyncPropertyCommand(name, context)));
 
         Consumer<String> sendCommand = debouncePhase -> {
-            commands.forEach(Runnable::run);
-
             sendEventToServer(node, type, eventData, debouncePhase);
         };
 
         boolean sendNow = resolveFilters(element, type, expressionSettings,
-                eventData, sendCommand);
+                eventData, sendCommand, commands);
 
         if (sendNow) {
             // Send if there were not filters or at least one matched
@@ -1326,6 +1325,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
 
             if (!commandAlreadyExecuted) {
+                commands.mapValues().forEach(Runnable::run);
                 sendCommand.accept(null);
             }
         }
@@ -1356,7 +1356,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private static boolean resolveFilters(Node element, String eventType,
             JsonObject expressionSettings, JsonObject eventData,
-            Consumer<String> sendCommand) {
+            Consumer<String> sendCommand, JsMap<String, Runnable> commands) {
 
         boolean noFilters = true;
         boolean atLeastOneFilterMatched = false;
@@ -1378,7 +1378,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
                 // Count as a match only if at least one debounce is eager
                 filterMatched = resolveDebounces(element, debouncerId,
-                        (JsonArray) settings, sendCommand);
+                        (JsonArray) settings, sendCommand, commands);
             }
 
             atLeastOneFilterMatched |= filterMatched;
@@ -1388,7 +1388,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private static boolean resolveDebounces(Node element, String debouncerId,
-            JsonArray debounceList, Consumer<String> command) {
+            JsonArray debounceList, Consumer<String> sendCommand,
+            JsMap<String, Runnable> commands) {
         boolean atLeastOneEager = false;
 
         for (int i = 0; i < debounceList.length(); i++) {
@@ -1408,7 +1409,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
 
             boolean eager = Debouncer.getOrCreate(element, debouncerId, timeout)
-                    .trigger(phases, command);
+                    .trigger(phases, sendCommand, commands);
 
             atLeastOneEager |= eager;
         }
