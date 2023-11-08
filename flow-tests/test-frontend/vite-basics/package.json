@@ -18,7 +18,7 @@
     "@vaadin/vaadin-themable-mixin": "24.2.1",
     "construct-style-sheets-polyfill": "3.1.0",
     "copy-to-clipboard": "^3.3.1",
-    "lit": "3.0.0",
+    "lit": "3.0.2",
     "mobile-drag-drop": "2.3.0-rc.2",
     "package-outside-npm": "file:../vite-test-assets/packages/package-outside-npm",
     "package2-outside-npm": "../vite-test-assets/packages/package2-outside-npm"
@@ -26,7 +26,7 @@
   "devDependencies": {
     "@rollup/plugin-replace": "5.0.4",
     "@rollup/pluginutils": "5.0.5",
-    "@vitejs/plugin-react": "4.1.0",
+    "@vitejs/plugin-react": "4.1.1",
     "async": "3.2.4",
     "glob": "10.3.3",
     "rollup-plugin-brotli": "3.1.0",
@@ -77,13 +77,13 @@
       "@vaadin/vaadin-lumo-styles": "24.2.1",
       "@vaadin/vaadin-themable-mixin": "24.2.1",
       "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "3.0.0",
+      "lit": "3.0.2",
       "mobile-drag-drop": "2.3.0-rc.2"
     },
     "devDependencies": {
       "@rollup/plugin-replace": "5.0.4",
       "@rollup/pluginutils": "5.0.5",
-      "@vitejs/plugin-react": "4.1.0",
+      "@vitejs/plugin-react": "4.1.1",
       "async": "3.2.4",
       "glob": "10.3.3",
       "rollup-plugin-brotli": "3.1.0",
@@ -97,6 +97,6 @@
       "workbox-core": "7.0.0",
       "workbox-precaching": "7.0.0"
     },
-    "hash": "dcdf7fdb1bbaf3d112c3d5aa3c844ff8b0e1ab1f96e28c7188e5906b329531d2"
+    "hash": "67dbdae90fc9494c609ef6af47afb2c78e6d16adddede45e7515211bdb8f3b92"
   }
 }

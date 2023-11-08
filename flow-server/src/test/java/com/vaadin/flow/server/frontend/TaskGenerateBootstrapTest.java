@@ -60,14 +60,19 @@ public class TaskGenerateBootstrapTest {
 
     private Options options;
 
+    private Lookup lookup;
+
     @Before
     public void setUp() throws Exception {
+        ClassFinder.DefaultClassFinder finder = new ClassFinder.DefaultClassFinder(
+                Collections.singleton(this.getClass()));
         frontDeps = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, new ClassFinder.DefaultClassFinder(
-                        Collections.singleton(this.getClass())), false);
+                .createScanner(false, finder, false);
 
         frontendFolder = temporaryFolder.newFolder(FRONTEND);
-        options = new Options(Mockito.mock(Lookup.class), null)
+        lookup = Mockito.mock(Lookup.class);
+        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
+        options = new Options(lookup, null)
                 .withFrontendDirectory(frontendFolder).withProductionMode(true);
 
         taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps, options);
@@ -128,7 +133,7 @@ public class TaskGenerateBootstrapTest {
     @Test
     public void should_load_AppTheme()
             throws MalformedURLException, ExecutionFailedException {
-        Options options = new Options(Mockito.mock(Lookup.class), null)
+        Options options = new Options(lookup, null)
                 .withFrontendDirectory(frontendFolder).withProductionMode(true);
 
         taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(),

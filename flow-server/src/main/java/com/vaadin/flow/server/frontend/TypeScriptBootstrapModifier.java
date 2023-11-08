@@ -13,7 +13,9 @@ public interface TypeScriptBootstrapModifier extends Serializable {
      *
      * @param bootstrapTypeScript
      *            the input typescript split into lines
+     * @param productionMode
+     *            true if building for production, false otherwise
      */
-    void modify(List<String> bootstrapTypeScript);
+    void modify(List<String> bootstrapTypeScript, boolean productionMode);
 
 }
