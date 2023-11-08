@@ -424,7 +424,7 @@ public class FrontendUtilsTest {
         new TaskRunNpmInstall(nodeUpdater, false, false,
                 FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, Collections.emptyList()).execute();
+                false, Collections.emptyList(), false).execute();
 
         FrontendUtils.deleteNodeModules(new File(npmFolder, "node_modules"));
 

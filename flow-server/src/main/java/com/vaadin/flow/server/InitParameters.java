@@ -221,4 +221,9 @@ public class InitParameters implements Serializable {
      * @since
      */
     public static final String ADDITIONAL_POSTINSTALL_PACKAGES = "npm.postinstallPackages";
+
+    /**
+     * Configuration name for enabling ci build for npm/pnpm.
+     */
+    public static final String CI_BUILD = "ci.build";
 }
