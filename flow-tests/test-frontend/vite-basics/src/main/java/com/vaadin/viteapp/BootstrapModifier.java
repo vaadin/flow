@@ -7,7 +7,8 @@ import com.vaadin.flow.server.frontend.TypeScriptBootstrapModifier;
 public class BootstrapModifier implements TypeScriptBootstrapModifier {
 
     @Override
-    public void modify(List<String> bootstrapTypeScript, boolean productionMode) {
+    public void modify(List<String> bootstrapTypeScript,
+            boolean productionMode) {
         bootstrapTypeScript.add("(window as any).bootstrapMod=1;");
     }
 
