@@ -1832,8 +1832,10 @@ public class BundleValidationTest {
     }
 
     @Test
-    public void noDevFolder_bundleCompressedFileExists_noBuildRequired()
+    public void noDevFolder_compressedDevBundleExists_noBuildRequired()
             throws IOException {
+        Assume.assumeTrue(!mode.isProduction());
+
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
@@ -1872,13 +1874,60 @@ public class BundleValidationTest {
         File statsFile = new File(configFolder, "stats.json");
         FileUtils.write(statsFile, stats.toJson());
 
-        if (mode.isProduction()) {
-            ProdBundleUtils.compressBundle(temporaryFolder.getRoot(),
-                    bundleSourceFolder);
-        } else {
-            DevBundleUtils.compressBundle(temporaryFolder.getRoot(),
-                    bundleSourceFolder);
-        }
+        DevBundleUtils.compressBundle(temporaryFolder.getRoot(),
+                bundleSourceFolder);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, finder, mode);
+        Assert.assertFalse("Jar fronted file content hash should match.",
+                needsBuild);
+    }
+
+    @Test
+    public void compressedProdBundleExists_noBuildRequired()
+            throws IOException {
+        Assume.assumeTrue(mode.isProduction());
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages())
+                .thenReturn(Collections.emptyMap());
+        Mockito.when(depScanner.getModules())
+                .thenReturn(Collections.singletonMap(ChunkInfo.GLOBAL,
+                        Collections.singletonList(
+                                "@polymer/paper-checkbox/paper-checkbox.js")));
+
+        File bundleSourceFolder = temporaryFolder.newFolder("compiled");
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
+                "1.8.6");
+        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
+        bundleImports.set(bundleImports.length(),
+                "@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.set(bundleImports.length(),
+                "@polymer/paper-input/paper-input.js");
+        bundleImports.set(bundleImports.length(),
+                "@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports.set(bundleImports.length(),
+                "Frontend/generated/jar-resources/dndConnector-es6.js");
+
+        File configFolder = new File(bundleSourceFolder, "config/");
+        configFolder.mkdir();
+
+        File statsFile = new File(configFolder, "stats.json");
+        FileUtils.write(statsFile, stats.toJson());
+
+        ProdBundleUtils.compressBundle(temporaryFolder.getRoot(),
+                bundleSourceFolder);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, finder, mode);
@@ -1932,13 +1981,13 @@ public class BundleValidationTest {
                     bundleSourceFolder);
             Mockito.when(finder
                     .getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
-                    .thenReturn(Mockito.mock(URL.class));
+                    .thenReturn(null);
         } else {
             DevBundleUtils.compressBundle(temporaryFolder.getRoot(),
                     bundleSourceFolder);
             Mockito.when(finder
                     .getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json"))
-                    .thenReturn(Mockito.mock(URL.class));
+                    .thenReturn(null);
         }
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,

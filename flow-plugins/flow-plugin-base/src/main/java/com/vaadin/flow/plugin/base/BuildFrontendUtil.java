@@ -426,11 +426,6 @@ public class BuildFrontendUtil {
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
         BuildFrontendUtil.runVite(adapter, tools);
-        copyCompressedBundleToProdBundleLocation(adapter);
-    }
-
-    private static void copyCompressedBundleToProdBundleLocation(
-            PluginAdapterBase adapter) {
         ProdBundleUtils.compressBundle(adapter.projectBaseDirectory().toFile(),
                 adapter.servletResourceOutputDirectory());
     }
