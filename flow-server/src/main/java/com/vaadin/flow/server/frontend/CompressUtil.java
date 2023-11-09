@@ -20,9 +20,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
+import org.apache.commons.io.IOUtils;
 
 /**
  * Utility class for compression and decompression of folders and files.
@@ -150,5 +156,31 @@ public class CompressUtil {
         }
 
         return destFile;
+    }
+
+    /**
+     * Read a file content from the given zip file.
+     *
+     * @param zip
+     *            Target zip file
+     * @param filename
+     *            Target file name
+     * @return File content or {@code null} if not found
+     * @throws IOException
+     *             if an I/O error occurs
+     */
+    public static String readFileContentFromZip(File zip, String filename)
+            throws IOException {
+        try (ZipFile zipFile = new ZipFile(zip)) {
+            ZipEntry entry = zipFile.getEntry(filename);
+            if (entry == null) {
+                return null;
+            }
+            try (InputStream inputStream = zipFile.getInputStream(entry)) {
+                return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+            }
+        } catch (ZipException e) {
+            throw new IOException(e);
+        }
     }
 }

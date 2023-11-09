@@ -30,6 +30,7 @@ public class NoAppBundleIT extends ChromeBrowserTest {
 
         // should use default prod bundle
         assertDefaultProdBundle(baseDir);
+        assertProdBundlePackageNotCreated(baseDir);
 
         Assert.assertFalse("No node_modules should be created",
                 new File(baseDir, "node_modules").exists());
@@ -64,5 +65,11 @@ public class NoAppBundleIT extends ChromeBrowserTest {
                 StandardCharsets.UTF_8);
         Assert.assertTrue("Expected default production bundle to be used",
                 indexHtmlContent.contains("default production bundle"));
+    }
+
+    private void assertProdBundlePackageNotCreated(File baseDir) {
+        File bundlesFolder = new File(baseDir, "src/main/bundles");
+        Assert.assertFalse("src/main/bundles folder should not be created",
+                bundlesFolder.exists());
     }
 }

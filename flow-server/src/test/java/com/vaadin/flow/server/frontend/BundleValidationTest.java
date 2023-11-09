@@ -40,6 +40,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
+import static com.vaadin.flow.server.Constants.PROD_BUNDLE_JAR_PATH;
 
 @RunWith(Parameterized.class)
 public class BundleValidationTest {
@@ -90,7 +91,11 @@ public class BundleValidationTest {
 
     private MockedStatic<DevBundleUtils> devBundleUtils;
 
+    private MockedStatic<ProdBundleUtils> prodBundleUtils;
+
     private MockedStatic<BundleValidationUtil> bundleUtils;
+
+    private MockedStatic<IOUtils> ioUtils;
 
     private String bundleLocation;
 
@@ -107,15 +112,20 @@ public class BundleValidationTest {
                 Mockito.CALLS_REAL_METHODS);
         devBundleUtils = Mockito.mockStatic(DevBundleUtils.class,
                 Mockito.CALLS_REAL_METHODS);
+        prodBundleUtils = Mockito.mockStatic(ProdBundleUtils.class,
+                Mockito.CALLS_REAL_METHODS);
         bundleUtils = Mockito.mockStatic(BundleValidationUtil.class,
                 Mockito.CALLS_REAL_METHODS);
+        ioUtils = Mockito.mockStatic(IOUtils.class, Mockito.CALLS_REAL_METHODS);
     }
 
     @After
     public void teardown() {
         frontendUtils.close();
         devBundleUtils.close();
+        prodBundleUtils.close();
         bundleUtils.close();
+        ioUtils.close();
         File needsBuildFile = new File(options.getResourceOutputDirectory(),
                 Constants.NEEDS_BUNDLE_BUILD_FILE);
         if (needsBuildFile.exists()) {
@@ -1822,11 +1832,10 @@ public class BundleValidationTest {
     }
 
     @Test
-    public void noDevFolder_devBundleCompressedFileExists_noBuildRequired()
+    public void noDevFolder_compressedDevBundleExists_noBuildRequired()
             throws IOException {
-        if (mode.isProduction()) {
-            return;
-        }
+        Assume.assumeTrue(!mode.isProduction());
+
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
@@ -1844,7 +1853,7 @@ public class BundleValidationTest {
                         Collections.singletonList(
                                 "@polymer/paper-checkbox/paper-checkbox.js")));
 
-        File bundleFolder = temporaryFolder.newFolder("compiled");
+        File bundleSourceFolder = temporaryFolder.newFolder("compiled");
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
@@ -1859,13 +1868,14 @@ public class BundleValidationTest {
         bundleImports.set(bundleImports.length(),
                 "Frontend/generated/jar-resources/dndConnector-es6.js");
 
-        File configFolder = new File(bundleFolder, "config/");
+        File configFolder = new File(bundleSourceFolder, "config/");
         configFolder.mkdir();
 
         File statsFile = new File(configFolder, "stats.json");
         FileUtils.write(statsFile, stats.toJson());
 
-        DevBundleUtils.compressBundle(temporaryFolder.getRoot(), bundleFolder);
+        DevBundleUtils.compressBundle(temporaryFolder.getRoot(),
+                bundleSourceFolder);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, finder, mode);
@@ -1874,11 +1884,10 @@ public class BundleValidationTest {
     }
 
     @Test
-    public void noDevFolderOldDefaultBundle_devBundleCompressedFileExists_noBuildRequired()
+    public void compressedProdBundleExists_noBuildRequired()
             throws IOException {
-        if (mode.isProduction()) {
-            return;
-        }
+        Assume.assumeTrue(mode.isProduction());
+
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
         packageJson.createNewFile();
 
@@ -1896,7 +1905,7 @@ public class BundleValidationTest {
                         Collections.singletonList(
                                 "@polymer/paper-checkbox/paper-checkbox.js")));
 
-        File bundleFolder = temporaryFolder.newFolder("compiled");
+        File bundleSourceFolder = temporaryFolder.newFolder("compiled");
 
         JsonObject stats = getBasicStats();
         stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
@@ -1911,16 +1920,106 @@ public class BundleValidationTest {
         bundleImports.set(bundleImports.length(),
                 "Frontend/generated/jar-resources/dndConnector-es6.js");
 
-        File configFolder = new File(bundleFolder, "config/");
+        File configFolder = new File(bundleSourceFolder, "config/");
         configFolder.mkdir();
 
         File statsFile = new File(configFolder, "stats.json");
         FileUtils.write(statsFile, stats.toJson());
 
-        DevBundleUtils.compressBundle(temporaryFolder.getRoot(), bundleFolder);
+        ProdBundleUtils.compressBundle(temporaryFolder.getRoot(),
+                bundleSourceFolder);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, finder, mode);
+        Assert.assertFalse("Jar fronted file content hash should match.",
+                needsBuild);
+    }
+
+    @Test
+    public void noFileBundleOrJar_compressedBundleExists_noBuildRequired()
+            throws IOException {
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages())
+                .thenReturn(Collections.emptyMap());
+        Mockito.when(depScanner.getModules())
+                .thenReturn(Collections.singletonMap(ChunkInfo.GLOBAL,
+                        Collections.singletonList(
+                                "@polymer/paper-checkbox/paper-checkbox.js")));
+
+        File bundleSourceFolder = temporaryFolder.newFolder("compiled");
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("@vaadin/router",
+                "1.8.6");
+        JsonArray bundleImports = stats.getArray(BUNDLE_IMPORTS);
+        bundleImports.set(bundleImports.length(),
+                "@polymer/paper-checkbox/paper-checkbox.js");
+        bundleImports.set(bundleImports.length(),
+                "@polymer/paper-input/paper-input.js");
+        bundleImports.set(bundleImports.length(),
+                "@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports.set(bundleImports.length(),
+                "Frontend/generated/jar-resources/dndConnector-es6.js");
+
+        File configFolder = new File(bundleSourceFolder, "config/");
+        configFolder.mkdir();
+
+        File statsFile = new File(configFolder, "stats.json");
+        FileUtils.write(statsFile, stats.toJson());
+
+        if (mode.isProduction()) {
+            ProdBundleUtils.compressBundle(temporaryFolder.getRoot(),
+                    bundleSourceFolder);
+            Mockito.when(finder
+                    .getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
+                    .thenReturn(null);
+        } else {
+            DevBundleUtils.compressBundle(temporaryFolder.getRoot(),
+                    bundleSourceFolder);
+            Mockito.when(finder
+                    .getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json"))
+                    .thenReturn(null);
+        }
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, finder, mode);
+        Assert.assertFalse("Jar frontend file content hash should match.",
+                needsBuild);
+    }
+
+    @Test
+    public void defaultProdBundleExists_noCompressedProdBundleFile_noBuildRequired()
+            throws IOException {
+        Assume.assumeTrue(mode.isProduction());
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+
+        URL url = Mockito.mock(URL.class);
         Mockito.when(
-                finder.getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json"))
-                .thenReturn(Mockito.mock(URL.class));
+                finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
+                .thenReturn(url);
+        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+                .thenReturn(stats.toJson());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, finder, mode);
@@ -1963,8 +2062,9 @@ public class BundleValidationTest {
 
     private void setupFrontendUtilsMock(JsonObject stats) {
         if (mode.isProduction()) {
-            bundleUtils
-                    .when(() -> BundleValidationUtil.findProdBundleStatsJson(
+            prodBundleUtils
+                    .when(() -> ProdBundleUtils.findBundleStatsJson(
+                            Mockito.any(File.class),
                             Mockito.any(ClassFinder.class)))
                     .thenReturn(stats.toJson());
         } else {

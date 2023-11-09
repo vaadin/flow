@@ -314,12 +314,12 @@ public final class Constants implements Serializable {
     public static final String PROD_BUNDLE_JAR_PATH = PROD_BUNDLE_NAME + "/";
 
     /**
-     *
+     * The file name of the compressed production bundle.
      */
     public static final String PROD_BUNDLE_COMPRESSED_FILE = "prod.bundle";
 
     /**
-     *
+     * Location of the compressed production bundle file.
      */
     public static final String PROD_BUNDLE_COMPRESSED_FILE_LOCATION = BUNDLE_LOCATION
             + PROD_BUNDLE_COMPRESSED_FILE;
