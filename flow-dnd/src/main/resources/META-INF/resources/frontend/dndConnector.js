@@ -1,5 +1,3 @@
-import './dnd-polyfill-loader.js';
-
 window.Vaadin = window.Vaadin || {};
 window.Vaadin.Flow = window.Vaadin.Flow || {};
 window.Vaadin.Flow.dndConnector = {
