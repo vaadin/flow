@@ -1944,7 +1944,7 @@ public class ComponentTest {
                         + "intentional, first remove the node from its current "
                         + "state tree by calling removeFromTree. This usually "
                         + "happens when a component is moved from one UI to another, "
-                        + "which is not a good idea. This may be caused by "
+                        + "which is not recommended. This may be caused by "
                         + "assigning components to static members or spring "
                         + "singleton scoped beans and referencing them from "
                         + "multiple UIs. Offending component: com.vaadin.flow."
