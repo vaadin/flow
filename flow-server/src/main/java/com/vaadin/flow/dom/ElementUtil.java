@@ -20,6 +20,11 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementData;
+import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
@@ -355,4 +360,25 @@ public class ElementUtil {
         }
     }
 
+    /**
+     * Gets the element mapped to the given state node.
+     *
+     * @param node
+     *            the state node, not <code>null</code>
+     * @return the element for the node, or an empty Optional if the state node
+     *         is not mapped to any particular element.
+     */
+    public static Optional<Element> from(StateNode node) {
+        assert node != null;
+
+        if (node.hasFeature(TextNodeMap.class)) {
+            return Optional
+                    .of(Element.get(node, BasicTextElementStateProvider.get()));
+        } else if (node.hasFeature(ElementData.class)) {
+            return Optional
+                    .of(Element.get(node, BasicElementStateProvider.get()));
+        } else {
+            return Optional.empty();
+        }
+    }
 }
