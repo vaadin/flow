@@ -17,15 +17,22 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
@@ -83,6 +90,8 @@ public class NodeTasks implements FallibleCommand {
 
     private final List<FallibleCommand> commands = new ArrayList<>();
 
+    private Path lockFile;
+
     /**
      * Initialize tasks with the given options.
      *
@@ -90,6 +99,10 @@ public class NodeTasks implements FallibleCommand {
      *            the options
      */
     public NodeTasks(Options options) {
+        // Lock file is created in the project root folder and not in target/ so
+        // that Maven does not remove it
+        lockFile = new File(options.getNpmFolder(), ".flow-node-tasks.lock")
+                .toPath();
 
         ClassFinder classFinder = new ClassFinder.CachedClassFinder(
                 options.getClassFinder());
@@ -314,11 +327,72 @@ public class NodeTasks implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        sortCommands(commands);
+        getLock();
+        try {
 
-        for (FallibleCommand command : commands) {
-            command.execute();
+            sortCommands(commands);
+
+            for (FallibleCommand command : commands) {
+                command.execute();
+            }
+        } finally {
+            releaseLock();
         }
+    }
+
+    private void getLock() {
+        while (lockFile.toFile().exists()) {
+            try {
+                long pid = readLockFile();
+                Optional<ProcessHandle> processHandle = ProcessHandle.of(pid);
+                if (processHandle.isPresent()) {
+                    Thread.sleep(500);
+                } else {
+                    // The process has died without removing the lock file
+                    lockFile.toFile().delete();
+                }
+            } catch (Exception e) {
+                getLogger().error("Error waiting for another "
+                        + getClass().getSimpleName() + " process to finish", e);
+            }
+        }
+
+        try {
+            long myPid = ProcessHandle.current().pid();
+            Files.writeString(lockFile, myPid + "", StandardCharsets.UTF_8);
+
+        } catch (IOException e) {
+            getLogger().error("Error writing lock file ({})", lockFile, e);
+        }
+    }
+
+    private void releaseLock() {
+        if (!lockFile.toFile().exists()) {
+            getLogger().warn("Somebody else has removed the lock file");
+            return;
+        }
+
+        try {
+            long pid = readLockFile();
+            if (pid != ProcessHandle.current().pid()) {
+                getLogger().warn(
+                        "Another process ({}) has overwritten the lock file",
+                        pid);
+                return;
+            }
+            lockFile.toFile().delete();
+        } catch (Exception e) {
+            getLogger().error("Error releasing lock file", e);
+        }
+    }
+
+    private long readLockFile() throws NumberFormatException, IOException {
+        return Long
+                .parseLong(Files.readString(lockFile, StandardCharsets.UTF_8));
+    }
+
+    private Logger getLogger() {
+        return LoggerFactory.getLogger(getClass());
     }
 
     /**
@@ -345,7 +419,7 @@ public class NodeTasks implements FallibleCommand {
      *            command to find execution index for
      * @return index of command or -1 if not available
      */
-    private int getIndex(FallibleCommand command) {
+    int getIndex(FallibleCommand command) {
         int index = commandOrder.indexOf(command.getClass());
         if (index != -1) {
             return index;
