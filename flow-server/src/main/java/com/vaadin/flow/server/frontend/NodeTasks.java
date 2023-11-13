@@ -118,8 +118,15 @@ public class NodeTasks implements FallibleCommand {
                 options.withBundleBuild(needBuild);
                 if (!needBuild) {
                     commands.add(new TaskPrepareProdBundle(options));
-                    UsageStatistics.markAsUsed("flow/prod-pre-compiled-bundle",
-                            null);
+                    File prodBundle = ProdBundleUtils
+                            .getProdBundle(options.getNpmFolder());
+                    if (prodBundle.exists()) {
+                        UsageStatistics.markAsUsed("flow/app-prod-bundle",
+                                null);
+                    } else {
+                        UsageStatistics.markAsUsed(
+                                "flow/prod-pre-compiled-bundle", null);
+                    }
                 } else {
                     BundleUtils.copyPackageLockFromBundle(options);
                 }
@@ -141,8 +148,9 @@ public class NodeTasks implements FallibleCommand {
                 } else {
                     // A dev bundle build is not needed after all, skip it
                     options.withBundleBuild(false);
-                    File devBundleFolder = DevBundleUtils
-                            .getDevBundleFolder(options.getNpmFolder());
+                    File devBundleFolder = DevBundleUtils.getDevBundleFolder(
+                            options.getNpmFolder(),
+                            options.getBuildDirectoryName());
                     if (devBundleFolder.exists()) {
                         UsageStatistics.markAsUsed("flow/app-dev-bundle", null);
                     } else {

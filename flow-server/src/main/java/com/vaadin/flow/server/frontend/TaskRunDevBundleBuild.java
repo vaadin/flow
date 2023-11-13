@@ -76,8 +76,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             "Read more [about Vaadin development mode](https://vaadin.com/docs/next/configuration/development-mode/#pre-compiled-front-end-bundle-for-faster-start-up).";
     //@formatter:on
 
-    public static final String README_NOT_CREATED = "Failed to create a README file in "
-            + Constants.DEV_BUNDLE_LOCATION;
+    private final String README_NOT_CREATED;
 
     private final Options options;
 
@@ -89,6 +88,9 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
      */
     TaskRunDevBundleBuild(Options options) {
         this.options = options;
+        README_NOT_CREATED = "Failed to create a README file in "
+                + options.getBuildDirectoryName() + "/"
+                + Constants.DEV_BUNDLE_LOCATION;
     }
 
     @Override
@@ -202,10 +204,19 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 process.destroyForcibly();
             }
         }
+        if (options.isCompressBundle()) {
+            DevBundleUtils.compressBundle(options.getNpmFolder(),
+                    new File(
+                            new File(options.getNpmFolder(),
+                                    options.getBuildDirectoryName()),
+                            Constants.DEV_BUNDLE_LOCATION));
+        }
     }
 
     private void copyPackageLockToBundleFolder() {
-        File devBundleFolder = new File(options.getNpmFolder(),
+        File devBundleFolder = new File(
+                new File(options.getNpmFolder(),
+                        options.getBuildDirectoryName()),
                 Constants.DEV_BUNDLE_LOCATION);
         assert devBundleFolder.exists() : "No dev-bundle folder created";
 
@@ -227,8 +238,11 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
     }
 
     private void addReadme() {
+        if (!options.isCompressBundle()) {
+            return;
+        }
         File devBundleFolder = new File(options.getNpmFolder(),
-                Constants.DEV_BUNDLE_LOCATION);
+                Constants.BUNDLE_LOCATION);
         assert devBundleFolder.exists();
 
         try {

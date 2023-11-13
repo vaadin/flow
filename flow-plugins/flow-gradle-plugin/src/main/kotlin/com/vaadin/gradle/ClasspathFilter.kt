@@ -16,12 +16,13 @@
 package com.vaadin.gradle
 
 import org.gradle.api.artifacts.ModuleIdentifier
+import java.io.Serializable
 import java.util.function.Predicate
 
 public data class ClasspathFilter(
     public val include: MutableList<String> = mutableListOf(),
     public val exclude: MutableList<String> = mutableListOf()
-) {
+) : Serializable {
     public fun include(include: String) {
         this.include.add(include)
     }

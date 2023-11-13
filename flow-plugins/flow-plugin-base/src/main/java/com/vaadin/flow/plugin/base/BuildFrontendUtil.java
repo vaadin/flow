@@ -34,9 +34,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -61,18 +59,17 @@ import org.slf4j.LoggerFactory;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.BundleValidationUtil;
-import com.vaadin.flow.server.frontend.CvdlProducts;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
+import com.vaadin.flow.server.frontend.ProdBundleUtils;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
@@ -397,7 +394,8 @@ public class BuildFrontendUtil {
                     .setJavaResourceFolder(adapter.javaResourceFolder())
                     .withPostinstallPackages(adapter.postinstallPackages())
                     .withBundleBuild(true)
-                    .skipDevBundleBuild(adapter.skipDevBundleBuild());
+                    .skipDevBundleBuild(adapter.skipDevBundleBuild())
+                    .withCompressBundle(adapter.compressBundle());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -428,6 +426,8 @@ public class BuildFrontendUtil {
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
         BuildFrontendUtil.runVite(adapter, tools);
+        ProdBundleUtils.compressBundle(adapter.projectBaseDirectory().toFile(),
+                adapter.servletResourceOutputDirectory());
     }
 
     /**
@@ -513,9 +513,11 @@ public class BuildFrontendUtil {
             File statsFile = new File(adapter.servletResourceOutputDirectory(),
                     Constants.VAADIN_CONFIGURATION + "/stats.json");
             if (!statsFile.exists()) {
-                // If no compiled bundle available check for jar-bundle
-                statsJsonContent = BundleValidationUtil
-                        .findProdBundleStatsJson(adapter.getClassFinder());
+                // If no compiled bundle available check for prod.bundle and
+                // jar-bundle
+                statsJsonContent = ProdBundleUtils.findBundleStatsJson(
+                        adapter.projectBaseDirectory().toFile(),
+                        adapter.getClassFinder());
             } else {
                 statsJsonContent = IOUtils.toString(statsFile.toURI().toURL(),
                         StandardCharsets.UTF_8);

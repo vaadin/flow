@@ -112,14 +112,15 @@ public class TestUtil {
                 + "\"entryScripts\": [\"foo.js\"], "
                 + "\"packageJsonHash\": \"42\","
                 + "\"indexHtmlGenerated\": []}";
-        createStubFile(projectRootFolder,
-                Constants.DEV_BUNDLE_LOCATION + "/config/stats.json", content);
+        createStubFile(projectRootFolder, "target/"
+                + Constants.DEV_BUNDLE_LOCATION + "/config/stats.json",
+                content);
     }
 
     public static void createStylesCssStubInBundle(File projectRootFolder,
             String themeName, String content) throws IOException {
         createStubFile(
-                projectRootFolder, Constants.DEV_BUNDLE_LOCATION
+                projectRootFolder, "target/" + Constants.DEV_BUNDLE_LOCATION
                         + "/assets/themes/" + themeName + "/styles.css",
                 content);
     }

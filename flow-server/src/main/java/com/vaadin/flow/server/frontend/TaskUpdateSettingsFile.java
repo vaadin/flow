@@ -93,12 +93,13 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
                 VAADIN_STATIC_FILES_PATH);
 
         File devBundleOutputFolder = new File(
-                DevBundleUtils.getDevBundleFolder(npmFolder), "webapp");
+                DevBundleUtils.getDevBundleFolder(npmFolder, buildDirectory),
+                "webapp");
         String devBundleOutputFolderString = FrontendUtils
                 .getUnixPath(devBundleOutputFolder.toPath());
-        String devBundleStatsFolderString = FrontendUtils.getUnixPath(
-                new File(DevBundleUtils.getDevBundleFolder(npmFolder), "config")
-                        .toPath());
+        String devBundleStatsFolderString = FrontendUtils.getUnixPath(new File(
+                DevBundleUtils.getDevBundleFolder(npmFolder, buildDirectory),
+                "config").toPath());
         settings.put("staticOutput",
                 FrontendUtils.getUnixPath(new File(staticOutput).toPath()));
         settings.put("generatedFolder", "generated");

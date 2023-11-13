@@ -32,7 +32,6 @@ import com.vaadin.flow.shared.Registration;
  * @author Vaadin Ltd
  * @since 2.0
  */
-@NpmPackage(value = "mobile-drag-drop", version = "2.3.0-rc.2")
 public class DndUtil {
 
     /**

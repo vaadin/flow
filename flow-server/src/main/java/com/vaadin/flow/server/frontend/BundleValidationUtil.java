@@ -17,7 +17,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,12 +110,23 @@ public final class BundleValidationUtil {
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder) throws IOException {
         File npmFolder = options.getNpmFolder();
-
-        if (!DevBundleUtils.getDevBundleFolder(npmFolder).exists()
-                && !BundleValidationUtil.hasJarBundle(DEV_BUNDLE_JAR_PATH,
-                        finder)) {
+        File compressedDevBundle = new File(npmFolder,
+                Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION);
+        if (!DevBundleUtils
+                .getDevBundleFolder(npmFolder, options.getBuildDirectoryName())
+                .exists() && !compressedDevBundle.exists()
+                && !hasJarBundle(DEV_BUNDLE_JAR_PATH, finder)) {
             getLogger().info("No dev-bundle found.");
             return true;
+        }
+        if (!DevBundleUtils
+                .getDevBundleFolder(npmFolder, options.getBuildDirectoryName())
+                .exists() && compressedDevBundle.exists()) {
+            DevBundleUtils.unpackBundle(npmFolder,
+                    new File(
+                            new File(npmFolder,
+                                    options.getBuildDirectoryName()),
+                            Constants.DEV_BUNDLE_LOCATION));
         }
 
         if (options.isSkipDevBundle()) {
@@ -127,7 +137,8 @@ public final class BundleValidationUtil {
             return false;
         }
 
-        String statsJsonContent = DevBundleUtils.findBundleStatsJson(npmFolder);
+        String statsJsonContent = DevBundleUtils.findBundleStatsJson(npmFolder,
+                options.getBuildDirectoryName());
 
         if (statsJsonContent == null) {
             // without stats.json in bundle we can not say if it is up-to-date
@@ -143,7 +154,8 @@ public final class BundleValidationUtil {
     private static boolean needsBuildProdBundle(Options options,
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder) throws IOException {
-        String statsJsonContent = findProdBundleStatsJson(finder);
+        String statsJsonContent = ProdBundleUtils
+                .findBundleStatsJson(options.getNpmFolder(), finder);
 
         if (!finder.getAnnotatedClasses(LoadDependenciesOnStartup.class)
                 .isEmpty()) {
@@ -784,16 +796,6 @@ public final class BundleValidationUtil {
             handledFiles.append(" - ").append(file).append("\n");
         }
         getLogger().info(message, handledFiles);
-    }
-
-    public static String findProdBundleStatsJson(ClassFinder finder)
-            throws IOException {
-        URL statsJson = getProdBundleResource("config/stats.json", finder);
-        if (statsJson == null) {
-            getLogger().warn("There is no production bundle in the classpath.");
-            return null;
-        }
-        return IOUtils.toString(statsJson, StandardCharsets.UTF_8);
     }
 
     public static URL getProdBundleResource(String filename,

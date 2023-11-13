@@ -41,6 +41,7 @@ import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.frontend.TypeScriptBootstrapModifier;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.flow.server.startup.VaadinServletContextStartupInitializer;
 import com.vaadin.flow.theme.NoTheme;
@@ -61,7 +62,8 @@ import com.vaadin.flow.theme.Theme;
         CssImport.class, CssImport.Container.class, JavaScript.class,
         JavaScript.Container.class, Theme.class, NoTheme.class,
         HasErrorParameter.class, PWA.class, AppShellConfigurator.class,
-        Template.class, LoadDependenciesOnStartup.class })
+        Template.class, LoadDependenciesOnStartup.class,
+        TypeScriptBootstrapModifier.class })
 @WebListener
 public class DevModeStartupListener
         implements VaadinServletContextStartupInitializer, Serializable,

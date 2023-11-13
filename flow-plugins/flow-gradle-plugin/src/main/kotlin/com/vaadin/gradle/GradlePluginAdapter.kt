@@ -29,35 +29,35 @@ import java.nio.file.Path
 
 private val servletApiJarRegex = Regex(".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$")
 
-internal class GradlePluginAdapter(val project: Project, private val isBeforeProcessResources: Boolean): PluginAdapterBuild {
-    val extension: VaadinFlowPluginExtension =
-        VaadinFlowPluginExtension.get(project)
+internal class GradlePluginAdapter(
+    val project: Project,
+    val config: PluginEffectiveConfiguration,
+    private val isBeforeProcessResources: Boolean
+): PluginAdapterBuild {
+    override fun applicationProperties(): File = config.applicationProperties.get()
 
-    override fun applicationProperties(): File = extension.applicationProperties
+    override fun eagerServerLoad(): Boolean = config.eagerServerLoad.get()
 
-    override fun eagerServerLoad(): Boolean = extension.eagerServerLoad
+    override fun frontendDirectory(): File = config.frontendDirectory.get()
 
-    override fun frontendDirectory(): File = extension.frontendDirectory
-
-    override fun generatedTsFolder(): File = extension.generatedTsFolder
+    override fun generatedTsFolder(): File = config.generatedTsFolder.get()
 
     override fun getClassFinder(): ClassFinder {
-        val dependencyConfiguration: Configuration? = project.configurations.findByName(extension.dependencyScope!!)
+        val dependencyConfiguration: Configuration? = project.configurations.findByName(config.dependencyScope.get())
         val dependencyConfigurationJars: List<File> = if (dependencyConfiguration != null) {
             var artifacts: List<ResolvedArtifact> =
                 dependencyConfiguration.resolvedConfiguration.resolvedArtifacts.toList()
-            val extension = VaadinFlowPluginExtension.get(project)
-            val artifactFilter = extension.classpathFilter.toPredicate()
+            val artifactFilter = config.classpathFilter.toPredicate()
             artifacts = artifacts.filter { artifactFilter.test(it.moduleVersion.id.module) }
             artifacts.map { it.file }
         } else listOf()
 
         // we need to also analyze the project's classes
-        val classesDirs: List<File> = project.getSourceSet(extension.sourceSetName).output.classesDirs
+        val classesDirs: List<File> = project.getSourceSet(config.sourceSetName.get()).output.classesDirs
             .toList()
             .filter { it.exists() }
 
-        val resourcesDir: List<File> = listOfNotNull(project.getSourceSet(extension.sourceSetName).output.resourcesDir)
+        val resourcesDir: List<File> = listOfNotNull(project.getSourceSet(config.sourceSetName.get()).output.resourcesDir)
                 .filter { it.exists() }
 
         // for Spring Boot project there is no "providedCompile" scope: the WAR plugin brings that in.
@@ -90,7 +90,7 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
     }
 
     override fun getJarFiles(): MutableSet<File> {
-        val jarFiles: Set<File> = project.configurations.getByName(extension.dependencyScope!!).jars.toSet()
+        val jarFiles: Set<File> = project.configurations.getByName(config.dependencyScope.get()).jars.toSet()
         return jarFiles.toMutableSet()
     }
 
@@ -98,9 +98,9 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
 
     override fun isDebugEnabled(): Boolean = true
 
-    override fun javaSourceFolder(): File = extension.javaSourceFolder
+    override fun javaSourceFolder(): File = config.javaSourceFolder.get()
 
-    override fun javaResourceFolder(): File = extension.javaResourceFolder
+    override fun javaResourceFolder(): File = config.javaResourceFolder.get()
 
     override fun logDebug(debugMessage: CharSequence) {
         project.logger.debug(debugMessage.toString())
@@ -123,25 +123,25 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
     }
 
     override fun nodeDownloadRoot(): URI =
-        URI.create(extension.nodeDownloadRoot)
+        URI.create(config.nodeDownloadRoot.get())
 
-    override fun nodeAutoUpdate(): Boolean = extension.nodeAutoUpdate
+    override fun nodeAutoUpdate(): Boolean = config.nodeAutoUpdate.get()
 
-    override fun nodeVersion(): String = extension.nodeVersion
+    override fun nodeVersion(): String = config.nodeVersion.get()
 
-    override fun npmFolder(): File = extension.npmFolder
+    override fun npmFolder(): File = config.npmFolder.get()
 
-    override fun openApiJsonFile(): File = extension.openApiJsonFile
+    override fun openApiJsonFile(): File = config.openApiJsonFile.get()
 
-    override fun pnpmEnable(): Boolean = extension.pnpmEnable
+    override fun pnpmEnable(): Boolean = config.pnpmEnable.get()
 
-    override fun bunEnable(): Boolean = extension.bunEnable
+    override fun bunEnable(): Boolean = config.bunEnable.get()
 
-    override fun useGlobalPnpm(): Boolean = extension.useGlobalPnpm
+    override fun useGlobalPnpm(): Boolean = config.useGlobalPnpm.get()
 
     override fun projectBaseDirectory(): Path = project.projectDir.toPath()
 
-    override fun requireHomeNodeExec(): Boolean = extension.requireHomeNodeExec
+    override fun requireHomeNodeExec(): Boolean = config.requireHomeNodeExec.get()
 
     override fun servletResourceOutputDirectory(): File {
         // when running a task which runs before processResources, we need to
@@ -152,43 +152,51 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
         // need to generate stuff directly to build/resources/main.
         if (isBeforeProcessResources) {
             return File(
-                extension.resourceOutputDirectory,
+                config.resourceOutputDirectory.get(),
                 Constants.VAADIN_SERVLET_RESOURCES
             )
         }
-        return File(project.getBuildResourcesDir(extension.sourceSetName), Constants.VAADIN_SERVLET_RESOURCES)
+        return File(project.getBuildResourcesDir(config.sourceSetName.get()), Constants.VAADIN_SERVLET_RESOURCES)
     }
 
     override fun webpackOutputDirectory(): File =
-        requireNotNull(extension.webpackOutputDirectory) { "VaadinFlowPluginExtension.autoconfigure() was not called" }
+        config.webpackOutputDirectory.get()
 
-    override fun frontendResourcesDirectory(): File = extension.frontendResourcesDirectory
+    override fun frontendResourcesDirectory(): File = config.frontendResourcesDirectory.get()
 
-    override fun generateBundle(): Boolean = extension.generateBundle
+    override fun generateBundle(): Boolean = config.generateBundle.get()
 
-    override fun generateEmbeddableWebComponents(): Boolean = extension.generateEmbeddableWebComponents
+    override fun generateEmbeddableWebComponents(): Boolean = config.generateEmbeddableWebComponents.get()
 
-    override fun optimizeBundle(): Boolean = extension.optimizeBundle
+    override fun optimizeBundle(): Boolean = config.optimizeBundle.get()
 
-    override fun runNpmInstall(): Boolean = extension.runNpmInstall
+    override fun runNpmInstall(): Boolean = config.runNpmInstall.get()
 
     override fun buildFolder(): String {
-        if (extension.projectBuildDir.startsWith(project.projectDir.toString())) {
-            return File(extension.projectBuildDir).relativeTo(project.projectDir).toString()
+        val projectBuildDir = config.projectBuildDir.get()
+        if (projectBuildDir.startsWith(project.projectDir.toString())) {
+            return File(projectBuildDir).relativeTo(project.projectDir).toString()
         }
-        return extension.projectBuildDir
+        return projectBuildDir
     }
-    override fun postinstallPackages(): List<String> = extension.postinstallPackages
+    override fun postinstallPackages(): List<String> = config.postinstallPackages.get()
 
-    override fun isFrontendHotdeploy(): Boolean = extension.frontendHotdeploy
+    override fun isFrontendHotdeploy(): Boolean = config.frontendHotdeploy.get()
 
-    override fun ciBuild(): Boolean = extension.ciBuild
+    override fun ciBuild(): Boolean = config.ciBuild.get()
 
-    override fun skipDevBundleBuild(): Boolean = extension.skipDevBundleBuild
+    override fun skipDevBundleBuild(): Boolean = config.skipDevBundleBuild.get()
 
-    override fun forceProductionBuild(): Boolean = extension.forceProductionBuild
+    override fun forceProductionBuild(): Boolean = config.forceProductionBuild.get()
 
-    override fun isPrepareFrontendCacheDisabled(): Boolean = extension.alwaysExecutePrepareFrontend
+    override fun compressBundle(): Boolean {
+        // The compress bundle was decided to not be configurable as there is no
+        // point in not compressing it except in the case where we create a pre-compiled frontend bundle jar.
+        // For that there is another maven plugin that is used just for this case.
+        return true
+    }
 
-    override fun isErrorHandlerRedirectEnabled(): Boolean = extension.isErrorHandlerRedirect
+    override fun isPrepareFrontendCacheDisabled(): Boolean = config.alwaysExecutePrepareFrontend.get()
+
+    override fun isErrorHandlerRedirectEnabled(): Boolean = config.isErrorHandlerRedirect.get()
 }
