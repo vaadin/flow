@@ -803,9 +803,8 @@ public class StateNode implements Serializable {
                 .findCreate(component);
         final ComponentTracker.Location attachLocation = ComponentTracker
                 .findAttach(component);
-        if (createLocation != null) {
-            // this includes the component class as well, no need to explicitly
-            // include it in the error message
+        if (createLocation != null || attachLocation != null) {
+            // the location.toString() includes the component class as well
             return "created: " + createLocation + ", attached: "
                     + attachLocation;
         }
