@@ -19,6 +19,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Route;
@@ -53,7 +54,7 @@ public class SynchronizedPropertyView extends AbstractDivView {
         addSyncWithInitialValue();
         addSyncOnKeyup();
         addSyncMultipleProperties();
-
+        addSyncWithCustomEventDebounce();
     }
 
     private void addSimpleSync() {
@@ -125,6 +126,22 @@ public class SynchronizedPropertyView extends AbstractDivView {
 
         getElement().appendChild(multiSync);
         add(valueLabel, valueAsNumberLabel);
+    }
+
+    private void addSyncWithCustomEventDebounce() {
+        add(new Text(
+                "Synchronize custom 'myProperty' on custom 'input' event"));
+        Div valueLabel = new Div();
+        valueLabel.setId("syncWithCustomEventDebounceLabel");
+
+        Input input = new Input();
+        input.setId("syncWithCustomEventDebounceInput");
+        input.getElement().setProperty("myProperty", "");
+        input.getElement()
+                .addPropertyChangeListener("myProperty", "input", event -> {
+                    valueLabel.setText("Server value: " + event.getValue());
+                }).debounce(500);
+        add(input, valueLabel);
     }
 
     /**

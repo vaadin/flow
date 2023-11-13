@@ -23,10 +23,16 @@ import com.vaadin.flow.server.frontend.FrontendTools
 import com.vaadin.flow.server.frontend.FrontendToolsSettings
 import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.Project
+import org.gradle.api.file.Directory
+import org.gradle.api.file.RegularFile
+import org.gradle.api.internal.provider.Providers
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import java.io.File
 import java.net.URI
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 /**
  * Finds the value of a boolean property. It searches in gradle and system properties.
@@ -77,3 +83,31 @@ internal val Configuration.jars: FileCollection
 internal val Project.sourceSets: SourceSetContainer get() = project.properties["sourceSets"] as SourceSetContainer
 internal fun Project.getSourceSet(sourceSetName: String): SourceSet = sourceSets.getByName(sourceSetName)
 internal fun Project.getBuildResourcesDir(sourceSetName: String): File = getSourceSet(sourceSetName).output.resourcesDir!!
+
+internal val Provider<File>.absolutePath: Provider<String> get() = map { it.absolutePath }
+
+/**
+ * Same thing as [Provider.map]. Works around the bug in Gradle+Kotlin which
+ * renders [Provider.map] unable to return null in Kotlin: https://github.com/gradle/gradle/issues/12388
+ */
+internal fun <IN: Any, OUT> Provider<IN>.mapOrNull(block: (IN) -> OUT?): Provider<OUT> = flatMap { Providers.ofNullable(block(it)) }
+
+/**
+ * Workaround for https://github.com/gradle/gradle/issues/19981
+ */
+internal fun <T: Any> Provider<T>.filter(block: (T) -> Boolean): Provider<T> = mapOrNull { if (block(it)) it else null }
+
+/**
+ * Passes the value if the file exists.
+ */
+internal fun Provider<File>.filterExists(): Provider<File> = filter { it.exists() }
+
+/**
+ * Passes the value if the file denoted by the string value exists.
+ */
+@JvmName("filterExistsString")
+internal fun Provider<String>.filterExists(): Provider<String> = filter { File(it).exists() }
+
+internal fun Provider<RegularFile>.asFile(): Provider<File> = map { it.asFile }
+@JvmName("directoryAsFile")
+internal fun Provider<Directory>.asFile(): Provider<File> = map { it.asFile }

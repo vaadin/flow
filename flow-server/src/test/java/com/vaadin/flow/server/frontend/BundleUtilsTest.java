@@ -109,7 +109,9 @@ public class BundleUtilsTest {
 
         File packageLockFile = temporaryFolder
                 .newFile(Constants.PACKAGE_LOCK_JSON);
-        File devBundleFolder = new File(options.getNpmFolder(),
+        File devBundleFolder = new File(
+                new File(options.getNpmFolder(),
+                        options.getBuildDirectoryName()),
                 Constants.DEV_BUNDLE_LOCATION);
         devBundleFolder.mkdirs();
         File devPackageLockJson = new File(devBundleFolder,
@@ -147,7 +149,9 @@ public class BundleUtilsTest {
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
-        File devBundleFolder = new File(options.getNpmFolder(),
+        File devBundleFolder = new File(
+                new File(options.getNpmFolder(),
+                        options.getBuildDirectoryName()),
                 Constants.DEV_BUNDLE_LOCATION);
         devBundleFolder.mkdirs();
         File devPackageLockJson = new File(devBundleFolder,
@@ -212,7 +216,9 @@ public class BundleUtilsTest {
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_YAML))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
-        File devBundleFolder = new File(options.getNpmFolder(),
+        File devBundleFolder = new File(
+                new File(options.getNpmFolder(),
+                        options.getBuildDirectoryName()),
                 Constants.DEV_BUNDLE_LOCATION);
         devBundleFolder.mkdirs();
         File devPackageLockJson = new File(devBundleFolder,
@@ -242,7 +248,9 @@ public class BundleUtilsTest {
 
         File packageLockFile = temporaryFolder
                 .newFile(Constants.PACKAGE_LOCK_YAML);
-        File devBundleFolder = new File(options.getNpmFolder(),
+        File devBundleFolder = new File(
+                new File(options.getNpmFolder(),
+                        options.getBuildDirectoryName()),
                 Constants.DEV_BUNDLE_LOCATION);
         devBundleFolder.mkdirs();
         File devPackageLockJson = new File(devBundleFolder,

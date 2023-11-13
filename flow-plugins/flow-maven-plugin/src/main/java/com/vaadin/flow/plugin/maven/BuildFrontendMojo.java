@@ -210,4 +210,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         return forceProductionBuild;
     }
 
+    @Override
+    public boolean compressBundle() {
+        return true;
+    }
+
 }

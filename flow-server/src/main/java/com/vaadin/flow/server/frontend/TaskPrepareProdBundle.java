@@ -54,7 +54,12 @@ public class TaskPrepareProdBundle implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        copyBundleFilesFromJar();
+        if (hasProdBundle()) {
+            ProdBundleUtils.unpackBundle(options.getNpmFolder(),
+                    options.getResourceOutputDirectory());
+        } else {
+            copyDefaultBundleFilesFromJar();
+        }
         copyProjectThemes();
         writePreCompiledMarker();
     }
@@ -89,7 +94,8 @@ public class TaskPrepareProdBundle implements FallibleCommand {
         }
     }
 
-    private void copyBundleFilesFromJar() throws ExecutionFailedException {
+    private void copyDefaultBundleFilesFromJar()
+            throws ExecutionFailedException {
         URL statsJson = BundleValidationUtil.getProdBundleResource(
                 "config/stats.json", options.getClassFinder());
         if (statsJson == null) {
@@ -112,6 +118,12 @@ public class TaskPrepareProdBundle implements FallibleCommand {
             throw new ExecutionFailedException(
                     "Couldn't copy production bundle files", e);
         }
+    }
+
+    private boolean hasProdBundle() {
+        File prodBundleFolder = new File(options.getNpmFolder(),
+                Constants.PROD_BUNDLE_COMPRESSED_FILE_LOCATION);
+        return prodBundleFolder.exists();
     }
 
     private void writePreCompiledMarker() throws ExecutionFailedException {

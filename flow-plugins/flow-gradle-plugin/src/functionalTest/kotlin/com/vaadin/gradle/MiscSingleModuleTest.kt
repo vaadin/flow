@@ -658,4 +658,31 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val jar: File = testProject.builtJar
         expectArchiveContainsVaadinBundle(jar, true)
     }
+
+    /**
+     * Tests https://github.com/vaadin/flow/issues/17665
+     */
+    @Test
+    fun testEagerTaskInstantiationWontFail() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id 'com.vaadin'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
+            }
+            tasks.whenTaskAdded {} // reproduces #17665
+        """.trimIndent()
+        )
+
+        testProject.build("build")
+    }
 }
