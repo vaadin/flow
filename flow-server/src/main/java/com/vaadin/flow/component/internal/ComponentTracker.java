@@ -132,6 +132,11 @@ public class ComponentTracker {
             return javaFile;
         }
 
+        @Override
+        public String toString() {
+            return "Component '" + className + "' at '" + filename + "' ("
+                    + methodName + " LINE " + lineNumber + ")";
+        }
     }
 
     /**
