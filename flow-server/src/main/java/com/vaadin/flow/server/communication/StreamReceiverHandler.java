@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.ErrorEvent;
@@ -406,6 +407,11 @@ public class StreamReceiverHandler implements Serializable {
                 throw new UploadException("Warning: file upload ignored for "
                         + node.getId() + " because the component was disabled");
             }
+            if (isMimeTypeDisallowedByAcceptProperty(node, mimeType)) {
+                throw new UploadException("Warning: file upload ignored for "
+                        + node.getId() + " because the mime type " + mimeType
+                        + " is not allowed by the accept property");
+            }
         } finally {
             session.unlock();
         }
@@ -432,6 +438,29 @@ public class StreamReceiverHandler implements Serializable {
             }
         }
         return false;
+    }
+
+    private boolean isMimeTypeDisallowedByAcceptProperty(StateNode stateNode,
+            String mimeType) {
+        if (stateNode == null) {
+            return false;
+        }
+        Element element;
+        try {
+            element = Element.get(stateNode);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+        String accept = element.getProperty("accept");
+        if (accept == null || accept.isBlank()) {
+            return false;
+        }
+        for (String acceptValue : accept.split(",")) {
+            if (acceptValue.trim().equals(mimeType)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
