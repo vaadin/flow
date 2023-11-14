@@ -456,7 +456,17 @@ public class StreamReceiverHandler implements Serializable {
             return false;
         }
         for (String acceptValue : accept.split(",")) {
-            if (acceptValue.trim().equals(mimeType)) {
+            String trimmedAcceptValue = acceptValue.trim();
+            if (trimmedAcceptValue.equals("*/*")) {
+                return false;
+            }
+            if (trimmedAcceptValue.endsWith("/*")) {
+                if (mimeType.startsWith(trimmedAcceptValue.substring(0,
+                        trimmedAcceptValue.length() - 1))) {
+                    return false;
+                }
+            }
+            if (trimmedAcceptValue.equals(mimeType)) {
                 return false;
             }
         }
