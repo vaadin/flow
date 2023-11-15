@@ -193,14 +193,23 @@ public class RequestUtil {
             return false;
         }
 
+        NavigationAccessControl navigationAccessControl = accessControl
+                .getObject();
+        if (!navigationAccessControl.isEnabled()) {
+            getLogger().debug(
+                    "Navigation Access Control disable. Cannot determine if {} refers to a public view",
+                    path);
+            return false;
+        }
+
         NavigationAccessChecker.NavigationContext navigationContext = new NavigationAccessChecker.NavigationContext(
                 router, targetView,
                 new Location(path,
                         QueryParameters.full(request.getParameterMap())),
                 target.getRouteParameters(), null, role -> false, false);
 
-        NavigationAccessChecker.AccessCheckResult result = accessControl
-                .getObject().checkAccess(navigationContext, service
+        NavigationAccessChecker.AccessCheckResult result = navigationAccessControl
+                .checkAccess(navigationContext, service
                         .getDeploymentConfiguration().isProductionMode());
         boolean isAllowed = result
                 .decision() == NavigationAccessChecker.Decision.ALLOW;

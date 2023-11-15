@@ -373,6 +373,36 @@ public class RequestUtilTest {
         Assert.assertEquals("/", requestUtil.applyUrlMapping(null));
     }
 
+    @Test
+    public void testAnonymousRouteRequest_accessControlDisable_notAnonymous() {
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/*");
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, AnotherPublicView.class);
+        addRoute(servlet, AdminView.class);
+
+        MockHttpServletRequest request = createRequest("admin");
+        request.setServletPath("/");
+        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+
+        request = createRequest("other");
+        request.setServletPath("/");
+        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+
+        accessControl.setEnabled(false);
+        try {
+            request = createRequest("admin");
+            request.setServletPath("/");
+            Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+
+            request = createRequest("other");
+            request.setServletPath("/");
+            Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        } finally {
+            accessControl.setEnabled(true);
+        }
+    }
+
     private SpringServlet setupMockServlet() {
         return setupMockServlet(true);
     }
