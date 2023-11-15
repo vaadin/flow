@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.naming.SizeLimitExceededException;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedWriter;
@@ -407,7 +405,8 @@ public class StreamReceiverHandler implements Serializable {
                 throw new UploadException("Warning: file upload ignored for "
                         + node.getId() + " because the component was disabled");
             }
-            if (isMimeTypeDisallowedByAcceptProperty(node, mimeType)) {
+            if (isMimeTypeOrFileExtensionDisallowedByAcceptProperty(node,
+                    mimeType, filename)) {
                 throw new UploadException("Warning: file upload ignored for "
                         + node.getId() + " because the mime type " + mimeType
                         + " is not allowed by the accept property");
@@ -440,8 +439,9 @@ public class StreamReceiverHandler implements Serializable {
         return false;
     }
 
-    private boolean isMimeTypeDisallowedByAcceptProperty(StateNode stateNode,
-            String mimeType) {
+    private boolean isMimeTypeOrFileExtensionDisallowedByAcceptProperty(
+            StateNode stateNode, String mimeType,
+            String filenameWithExtension) {
         if (stateNode == null) {
             return false;
         }
@@ -468,6 +468,10 @@ public class StreamReceiverHandler implements Serializable {
             }
             if (trimmedAcceptValue.equals(mimeType)) {
                 return false;
+            }
+            if (filenameWithExtension != null
+                    && trimmedAcceptValue.startsWith(".")) {
+                return !filenameWithExtension.endsWith(trimmedAcceptValue);
             }
         }
         return true;
