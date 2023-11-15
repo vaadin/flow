@@ -38,12 +38,14 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateTree.BeforeClientResponseEntry;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.change.NodeDetachChange;
+import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
@@ -632,6 +634,15 @@ public class StateNode implements Serializable {
         if (!isAttached()) {
             return;
         }
+
+        if (isInitialChanges && !isVisible()) {
+            if (hasFeature(ElementData.class)) {
+                doCollectChanges(collector,
+                        Stream.of(getFeature(ElementData.class)));
+            }
+            return;
+        }
+
         if (isInactive()) {
             if (isInitialChanges) {
                 // send only required (reported) features updates
@@ -954,6 +965,25 @@ public class StateNode implements Serializable {
             return isInactiveSelf;
         }
         return getParent().isInactive();
+    }
+
+    /**
+     * Checks (recursively towards the parent node) whether the node is
+     * effectively visible.
+     * <p>
+     * Non-visible node should not participate in any RPC communication.
+     *
+     * @return {@code true} if the node is effectively visible
+     */
+    public boolean isVisible() {
+        if (hasFeature(ElementData.class)) {
+            boolean isVisibleSelf = getFeature(ElementData.class).isVisible();
+            if (!isVisibleSelf || getParent() == null) {
+                return isVisibleSelf;
+            }
+            return parent.isVisible();
+        }
+        return getParent() == null || parent.isVisible();
     }
 
     /**

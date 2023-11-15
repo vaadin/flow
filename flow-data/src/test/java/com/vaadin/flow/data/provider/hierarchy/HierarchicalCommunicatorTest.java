@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +33,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
+import com.vaadin.flow.data.provider.DataCommunicator;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalArrayUpdater.HierarchicalUpdate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
@@ -43,6 +45,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class HierarchicalCommunicatorTest {
 
@@ -211,6 +214,45 @@ public class HierarchicalCommunicatorTest {
         assertFalse("Stalled object in KeyMapper",
                 communicator.getKeyMapper().has(ROOT));
         assertEquals(-1, communicator.getParentIndex(FOLDER).longValue());
+    }
+
+    /**
+     * Test for ensuring that when moving a root node to be a child node of
+     * another root node, the key is held in KeyMapper after two flush events.
+     *
+     * Related: <a href="https://github.com/vaadin/flow/issues/14351">Original
+     * issue</a> Related:
+     * <a href="https://github.com/vaadin/flow/pull/17774">Fix</a> Related:
+     * <a href="https://github.com/vaadin/flow-components/pull/5545">Integration
+     * Test</a>
+     */
+    @Test
+    public void moveNodeFromRootToChildAndFlushTwice_keyShouldBeInKeyMapper() {
+        final String secondRoot = "SECONDROOT";
+
+        treeData.addItem(null, secondRoot);
+        communicator.setRequestedRange(0, 2);
+
+        invokeFlush();
+
+        dataProvider.getTreeData().setParent(secondRoot, ROOT);
+        dataProvider.refreshAll();
+
+        invokeFlush();
+        communicator.confirmUpdate(1);
+
+        assertTrue("SECONDROOT key is missing from KeyMapper",
+                communicator.getKeyMapper().has(secondRoot));
+    }
+
+    private void invokeFlush() {
+        try {
+            Method flush = DataCommunicator.class.getDeclaredMethod("flush");
+            flush.setAccessible(true);
+            flush.invoke(communicator);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test

@@ -42,7 +42,7 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
 
 @Ignore("Webpack specific test")
-public class ThemeWebpackIT extends ChromeBrowserTest {
+public class ThemeWebpackIT extends AbstractBaseIT {
 
     @Test
     public void typeScriptCssImport_stylesAreApplied() {

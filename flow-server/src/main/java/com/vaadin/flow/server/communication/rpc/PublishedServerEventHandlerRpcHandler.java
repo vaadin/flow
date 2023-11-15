@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
@@ -152,10 +153,12 @@ public class PublishedServerEventHandlerRpcHandler
             invokeMethod(compositeContent, compositeContent.getClass(),
                     methodName, args, promiseId, inert);
         } else {
-            String msg = String.format("Neither class '%s' "
-                    + "nor its super classes declare event handler method '%s'",
-                    instance.getClass().getName(), methodName);
-            throw new IllegalStateException(msg);
+            getLogger().error(String.format(
+                    "Faulty method invocation. Neither class '%s' "
+                            + "nor its super classes declare event handler method '%s'",
+                    instance.getClass().getName(), methodName));
+            throw new IllegalStateException(
+                    "Faulty method invocation. See server log for more details.");
         }
     }
 
@@ -166,10 +169,12 @@ public class PublishedServerEventHandlerRpcHandler
                 .filter(method -> hasMethodAnnotation(method))
                 .collect(Collectors.toList());
         if (methods.size() > 1) {
-            String msg = String.format("Class '%s' contains "
-                    + "several event handler method with the same name '%s'",
-                    instance.getClass().getName(), methodName);
-            throw new IllegalStateException(msg);
+            getLogger().error(String.format(
+                    "Method conflict in event handler. Class '%s' contains "
+                            + "several event handler methods with the same name '%s'",
+                    instance.getClass().getName(), methodName));
+            throw new IllegalStateException(
+                    "Method conflict in event handler with multiple methods with same name. See server log for more details.");
         } else if (methods.size() == 1) {
             return Optional.of(methods.get(0));
         } else if (!Component.class.equals(clazz)) {
@@ -377,5 +382,10 @@ public class PublishedServerEventHandlerRpcHandler
         decoders.add(new StringToEnumDecoder());
         decoders.add(new DefaultRpcDecoder());
         return decoders;
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(
+                PublishedServerEventHandlerRpcHandler.class.getName());
     }
 }

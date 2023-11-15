@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
+
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
@@ -59,12 +60,12 @@ public class AtmospherePushConnectionTest {
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
         Mockito.doAnswer(i -> {
             // Introduce a small delay to hold the lock during disconnect
-            Thread.sleep(5);
+            Thread.sleep(30);
             return null;
         }).when(resource).close();
         Mockito.doAnswer(i -> {
             // Introduce a small delay to hold the lock during message push
-            Thread.sleep(5);
+            Thread.sleep(30);
             return CompletableFuture.completedFuture(null);
         }).when(broadcaster).broadcast(ArgumentMatchers.any(),
                 ArgumentMatchers.any(AtmosphereResource.class));
@@ -108,10 +109,11 @@ public class AtmospherePushConnectionTest {
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
-        }).exceptionally(error -> {
-            error.printStackTrace();
-            return null;
-        });
+        }, CompletableFuture.delayedExecutor(5, TimeUnit.MILLISECONDS))
+                .exceptionally(error -> {
+                    error.printStackTrace();
+                    return null;
+                });
         connection.disconnect();
         Assert.assertTrue("AtmospherePushConnection not disconnected",
                 latch.await(2, TimeUnit.SECONDS));
@@ -129,7 +131,7 @@ public class AtmospherePushConnectionTest {
                     CompletableFuture.runAsync(() -> {
                         connection.disconnect();
                         latch.countDown();
-                    }, CompletableFuture.delayedExecutor(1,
+                    }, CompletableFuture.delayedExecutor(5,
                             TimeUnit.MILLISECONDS)).exceptionally(error -> {
                                 error.printStackTrace();
                                 return null;
@@ -216,6 +218,65 @@ public class AtmospherePushConnectionTest {
             latch.countDown();
         } finally {
             sessionLock.unlock();
+        }
+
+        Throwable threadError = threadErrorFuture.get(2, TimeUnit.SECONDS);
+        if (threadError != null) {
+            Assert.fail("Disconnection on spawned thread failed: "
+                    + threadError.getMessage());
+        }
+        Assert.assertTrue("Disconnect calls not completed, missing "
+                + latch.getCount() + " call", latch.await(3, TimeUnit.SECONDS));
+        Mockito.verify(resource, Mockito.times(1)).close();
+    }
+
+    @Test
+    public void pushWhileDisconnect_preventDeadlocks() throws Exception {
+        // Similar motivation exposed in
+        // disconnect_concurrentRequests_preventDeadlocks
+        // but when a Vaadin session is unlocked as a consequence of HTTP
+        // session invalidation
+        ReentrantLock httpSessionLock = new ReentrantLock();
+        Mockito.doAnswer(i -> {
+            // simulate HTTP session lock attempt because of atmosphere resource
+            // accesses session attributes
+            // It does not wait indefinitely, but triggers an error if the lock
+            // is held by the main thread
+            if (httpSessionLock.tryLock(2, TimeUnit.SECONDS)) {
+                httpSessionLock.unlock();
+            } else {
+                throw new AssertionError(
+                        "Deadlock on AtmosphereResource.close");
+            }
+            return null;
+        }).when(resource).close();
+
+        CountDownLatch latch = new CountDownLatch(2);
+        httpSessionLock.lock();
+        CompletableFuture<Throwable> threadErrorFuture;
+        try {
+            // Simulate PUSH disconnection from a separate thread
+            threadErrorFuture = CompletableFuture
+                    .<Throwable> supplyAsync(() -> {
+                        connection.disconnect();
+                        latch.countDown();
+                        return null;
+                    }).exceptionally(t -> {
+                        if (t instanceof CompletionException) {
+                            return t.getCause();
+                        }
+                        return t;
+                    });
+            // Simulate main thread PUSH disconnection because of session
+            // invalidation, delayed a bit to allow the other thread to start
+            // disconnection
+            Thread.sleep(1);
+            vaadinSession.access(() -> {
+                connection.push();
+            });
+            latch.countDown();
+        } finally {
+            httpSessionLock.unlock();
         }
 
         Throwable threadError = threadErrorFuture.get(2, TimeUnit.SECONDS);
