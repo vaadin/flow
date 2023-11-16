@@ -86,7 +86,7 @@ public class PwaHandler implements RequestHandler {
                             icon.write(out);
                         } catch (UncheckedIOException ex) {
                             LoggerFactory.getLogger(PwaHandler.class)
-                                    .debug("Error serving PWA image", ex);
+                                    .debug("Error serving PWA icon", ex);
                         }
                         return true;
                     });

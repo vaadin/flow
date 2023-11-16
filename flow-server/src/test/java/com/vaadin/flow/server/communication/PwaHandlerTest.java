@@ -36,11 +36,11 @@ import com.vaadin.flow.server.VaadinSession;
 
 public class PwaHandlerTest {
 
-    private VaadinSession session = Mockito.mock(VaadinSession.class);
+    private final VaadinSession session = Mockito.mock(VaadinSession.class);
 
-    private VaadinRequest request = Mockito.mock(VaadinRequest.class);
+    private final VaadinRequest request = Mockito.mock(VaadinRequest.class);
 
-    private VaadinResponse response = Mockito.mock(VaadinResponse.class);
+    private final VaadinResponse response = Mockito.mock(VaadinResponse.class);
 
     @Test
     public void handleRequest_noPwaRegistry_returnsFalse() throws IOException {
