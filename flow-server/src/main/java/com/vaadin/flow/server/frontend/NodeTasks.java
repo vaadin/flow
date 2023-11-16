@@ -352,6 +352,7 @@ public class NodeTasks implements FallibleCommand {
                 break;
             }
 
+            boolean loggedWaiting = false;
             try {
                 Optional<ProcessHandle> processHandle = ProcessHandle
                         .of(lockInfo.pid());
@@ -359,6 +360,12 @@ public class NodeTasks implements FallibleCommand {
                 if (processHandle.isPresent()
                         && processHandle.get().info().commandLine().orElse("")
                                 .equals(lockInfo.commandLine())) {
+                    if (!loggedWaiting) {
+                        getLogger().info("Waiting for a previous instance of "
+                                + getClass().getSimpleName() + " (pid: "
+                                + lockInfo.pid() + ") to finish...");
+                        loggedWaiting = true;
+                    }
                     Thread.sleep(500);
                 } else {
                     // The process has died without removing the lock file
