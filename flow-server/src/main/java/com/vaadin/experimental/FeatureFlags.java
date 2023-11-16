@@ -69,6 +69,9 @@ public class FeatureFlags implements Serializable {
             "https://github.com/vaadin/form-filler-addon", true,
             "com.vaadin.flow.ai.formfiller.FormFiller");
 
+    public static final Feature REACT_ROUTER = new Feature(
+            "React router support", "reactRouter", "", true, null);
+
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -89,6 +92,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
         features.add(new Feature(WEB_PUSH));
         features.add(new Feature(FORM_FILLER_ADDON));
+        features.add(new Feature(REACT_ROUTER));
         loadProperties();
     }
 
