@@ -391,13 +391,15 @@ public class NodeTasks implements FallibleCommand {
         try {
             writeLockFile();
         } catch (IOException e) {
-            getLogger().error("Error writing lock file ({})", lockFile.toFile().getAbsolutePath(), e);
+            getLogger().error("Error writing lock file ({})",
+                    lockFile.toFile().getAbsolutePath(), e);
         }
     }
 
     private void releaseLock() {
         if (!lockFile.toFile().exists()) {
-            getLogger().warn("Somebody else has removed the lock file ({})", lockFile.toFile().getAbsolutePath());
+            getLogger().warn("Somebody else has removed the lock file ({})",
+                    lockFile.toFile().getAbsolutePath());
             return;
         }
 
@@ -405,12 +407,14 @@ public class NodeTasks implements FallibleCommand {
             long pid = readLockFile().pid();
             if (pid != ProcessHandle.current().pid()) {
                 getLogger().warn(
-                        "Another process ({}) has overwritten the lock file ({})",pid, lockFile.toFile().getAbsolutePath());
+                        "Another process ({}) has overwritten the lock file ({})",
+                        pid, lockFile.toFile().getAbsolutePath());
                 return;
             }
             lockFile.toFile().delete();
         } catch (Exception e) {
-            getLogger().error("Error releasing lock file ({})", lockFile.toFile().getAbsolutePath());
+            getLogger().error("Error releasing lock file ({})",
+                    lockFile.toFile().getAbsolutePath());
         }
     }
 
