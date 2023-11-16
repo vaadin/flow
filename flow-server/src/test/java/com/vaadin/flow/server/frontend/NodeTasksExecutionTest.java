@@ -49,6 +49,8 @@ public class NodeTasksExecutionTest {
     private List<Class<? extends FallibleCommand>> executionOrder;
     private List<FallibleCommand> commands;
 
+    private Options options;
+
     @Before
     public void init() throws Exception {
 
@@ -57,26 +59,15 @@ public class NodeTasksExecutionTest {
         ClassFinder.DefaultClassFinder finder = new ClassFinder.DefaultClassFinder(
                 Collections.singleton(this.getClass()));
         Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
-        Options options = new Options(lookup, null).withBuildDirectory(TARGET);
+        options = new Options(lookup, null).withBuildDirectory(TARGET);
         options.withProductionMode(false);
 
         nodeTasks = new NodeTasks(options);
-
-        // get the private list of task execution order
-        final Field commandOrderField = NodeTasks.class
-                .getDeclaredField("commandOrder");
-        commandOrderField.setAccessible(true);
-        commandsOrder = (List<Class<? extends FallibleCommand>>) commandOrderField
-                .get(nodeTasks);
-
+        commandsOrder = getCommandOrder(nodeTasks);
         executionOrder = new ArrayList<>(commandsOrder.size());
         commandsMock = mockCommandsRandomOrder(commandsOrder, executionOrder);
 
-        // get the private commands list
-        final Field commandsField = NodeTasks.class
-                .getDeclaredField("commands");
-        commandsField.setAccessible(true);
-        commands = (List<FallibleCommand>) commandsField.get(nodeTasks);
+        commands = getCommands(nodeTasks);
 
         // With Vite we always have two default tasks that cannot be removed
         // by configuration options
@@ -87,9 +78,93 @@ public class NodeTasksExecutionTest {
                 0, commands.size());
     }
 
+    private static List<Class<? extends FallibleCommand>> getCommandOrder(
+            NodeTasks nodeTasks) throws NoSuchFieldException, SecurityException,
+            IllegalArgumentException, IllegalAccessException {
+        // get the private list of task execution order
+        final Field commandOrderField = NodeTasks.class
+                .getDeclaredField("commandOrder");
+        commandOrderField.setAccessible(true);
+        return (List<Class<? extends FallibleCommand>>) commandOrderField
+                .get(nodeTasks);
+    }
+
+    private static List<FallibleCommand> getCommands(NodeTasks nodeTasks)
+            throws NoSuchFieldException, SecurityException,
+            IllegalArgumentException, IllegalAccessException {
+        // get the private commands list
+        final Field commandsField = NodeTasks.class
+                .getDeclaredField("commands");
+        commandsField.setAccessible(true);
+        return (List<FallibleCommand>) commandsField.get(nodeTasks);
+    }
+
     private void createFeatureFlagsFile(String contents) throws IOException {
         Files.writeString(temporaryFolder
                 .newFile(FeatureFlags.PROPERTIES_FILENAME).toPath(), contents);
+    }
+
+    @Test
+    public void nodeTasks_notExecutedInParallel() throws Exception {
+        List<String> result = new ArrayList<>();
+
+        FallibleCommand command1 = new FallibleCommand() {
+            @Override
+            public void execute() throws ExecutionFailedException {
+                try {
+                    result.add("Start 1");
+                    Thread.sleep(100);
+                    result.add("End 1");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        FallibleCommand command2 = new FallibleCommand() {
+            @Override
+            public void execute() throws ExecutionFailedException {
+                try {
+                    result.add("Start 2");
+                    Thread.sleep(100);
+                    result.add("End 2");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+
+        NodeTasks nodeTasks1 = Mockito.spy(new NodeTasks(options));
+        getCommands(nodeTasks1).add(command1);
+        Mockito.doReturn(1).when(nodeTasks1).getIndex(command1);
+
+        NodeTasks nodeTasks2 = Mockito.spy(new NodeTasks(options));
+        getCommands(nodeTasks2).add(command2);
+        Mockito.doReturn(1).when(nodeTasks2).getIndex(command2);
+
+        Thread t1 = new Thread(() -> {
+            try {
+                nodeTasks1.execute();
+            } catch (ExecutionFailedException e) {
+                e.printStackTrace();
+            }
+        });
+        Thread t2 = new Thread(() -> {
+            try {
+                nodeTasks2.execute();
+            } catch (ExecutionFailedException e) {
+                e.printStackTrace();
+            }
+        });
+
+        t1.start();
+        Thread.sleep(100); // Ensure 1 starts and locks before 2 starts
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        Assert.assertEquals(List.of("Start 1", "End 1", "Start 2", "End 2"),
+                result);
     }
 
     @Test
