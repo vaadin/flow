@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -343,9 +344,13 @@ public class NodeTasks implements FallibleCommand {
     private void getLock() {
         while (lockFile.toFile().exists()) {
             try {
-                long pid = readLockFile();
-                Optional<ProcessHandle> processHandle = ProcessHandle.of(pid);
-                if (processHandle.isPresent()) {
+                NodeTasksLockInfo lockInfo = readLockFile();
+                Optional<ProcessHandle> processHandle = ProcessHandle
+                        .of(lockInfo.pid());
+
+                if (processHandle.isPresent()
+                        && processHandle.get().info().commandLine().orElse("")
+                                .equals(lockInfo.commandLine())) {
                     Thread.sleep(500);
                 } else {
                     // The process has died without removing the lock file
@@ -358,9 +363,7 @@ public class NodeTasks implements FallibleCommand {
         }
 
         try {
-            long myPid = ProcessHandle.current().pid();
-            Files.writeString(lockFile, myPid + "", StandardCharsets.UTF_8);
-
+            writeLockFile();
         } catch (IOException e) {
             getLogger().error("Error writing lock file ({})", lockFile, e);
         }
@@ -373,7 +376,7 @@ public class NodeTasks implements FallibleCommand {
         }
 
         try {
-            long pid = readLockFile();
+            long pid = readLockFile().pid();
             if (pid != ProcessHandle.current().pid()) {
                 getLogger().warn(
                         "Another process ({}) has overwritten the lock file",
@@ -386,9 +389,29 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private long readLockFile() throws NumberFormatException, IOException {
-        return Long
-                .parseLong(Files.readString(lockFile, StandardCharsets.UTF_8));
+    public record NodeTasksLockInfo(long pid, String commandLine)
+            implements Serializable {
+    }
+
+    private NodeTasksLockInfo readLockFile()
+            throws NumberFormatException, IOException {
+        List<String> lines = Files.readAllLines(lockFile,
+                StandardCharsets.UTF_8);
+        if (lines.size() != 2) {
+            throw new IllegalStateException(
+                    "Invalid lock file. It should contain 2 rows but contains "
+                            + lines);
+        }
+        return new NodeTasksLockInfo(Long.parseLong(lines.get(0)),
+                lines.get(1));
+    }
+
+    private void writeLockFile() throws IOException {
+        ProcessHandle currentProcess = ProcessHandle.current();
+        long myPid = currentProcess.pid();
+        String commandLine = currentProcess.info().commandLine().orElse("");
+        List<String> lines = List.of(Long.toString(myPid), commandLine);
+        Files.write(lockFile, lines, StandardCharsets.UTF_8);
     }
 
     private Logger getLogger() {
