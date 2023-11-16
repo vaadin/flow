@@ -50,6 +50,11 @@
                 <module>test-npm</module>
                 <module>test-pnpm/pom-production.xml</module>
                 <module>test-pnpm</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>bun</id>
+            <modules>
                 <module>test-bun/pom-production.xml</module>
                 <module>test-bun</module>
             </modules>
