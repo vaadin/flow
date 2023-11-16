@@ -342,6 +342,8 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void getLock() {
+        boolean loggedWaiting = false;
+
         while (lockFile.toFile().exists()) {
             NodeTasksLockInfo lockInfo;
             try {
@@ -352,7 +354,6 @@ public class NodeTasks implements FallibleCommand {
                 break;
             }
 
-            boolean loggedWaiting = false;
             try {
                 Optional<ProcessHandle> processHandle = ProcessHandle
                         .of(lockInfo.pid());
@@ -371,6 +372,15 @@ public class NodeTasks implements FallibleCommand {
                     // The process has died without removing the lock file
                     lockFile.toFile().delete();
                 }
+            } catch (InterruptedException e) {
+                // Restore interrupted state
+                Thread.currentThread().interrupt();
+
+                throw new RuntimeException(
+                        "Interrupted while waiting for another "
+                                + getClass().getSimpleName() + " process (pid: "
+                                + lockInfo.pid() + ") to finish",
+                        e);
             } catch (Exception e) {
                 getLogger().error("Error waiting for another "
                         + getClass().getSimpleName() + " process (pid: "
