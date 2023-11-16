@@ -444,7 +444,7 @@ public class StreamReceiverHandler implements Serializable {
             return false;
         }
         String accept = element.getProperty("accept");
-        if (accept == null || accept.isBlank()) {
+        if (accept == null || accept.trim().isEmpty()) {
             return false;
         }
         for (String acceptValue : accept.split(",")) {
