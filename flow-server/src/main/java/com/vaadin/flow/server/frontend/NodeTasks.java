@@ -343,8 +343,16 @@ public class NodeTasks implements FallibleCommand {
 
     private void getLock() {
         while (lockFile.toFile().exists()) {
+            NodeTasksLockInfo lockInfo;
             try {
-                NodeTasksLockInfo lockInfo = readLockFile();
+                lockInfo = readLockFile();
+            } catch (Exception e) {
+                getLogger().error("Error waiting for another "
+                        + getClass().getSimpleName() + " process to finish", e);
+                break;
+            }
+
+            try {
                 Optional<ProcessHandle> processHandle = ProcessHandle
                         .of(lockInfo.pid());
 
@@ -358,7 +366,8 @@ public class NodeTasks implements FallibleCommand {
                 }
             } catch (Exception e) {
                 getLogger().error("Error waiting for another "
-                        + getClass().getSimpleName() + " process to finish", e);
+                        + getClass().getSimpleName() + " process (pid: "
+                        + lockInfo.pid() + ") to finish", e);
             }
         }
 
