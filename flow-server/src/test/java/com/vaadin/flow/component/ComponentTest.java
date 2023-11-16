@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.i18n.I18NProvider;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -295,6 +297,7 @@ public class ComponentTest {
 
     @Before
     public void setup() throws Exception {
+        resetComponentTrackerProductionMode();
         divWithTextComponent = new TestComponent(
                 ElementFactory.createDiv("Test component"));
         parentDivComponent = new TestComponent(ElementFactory.createDiv());
@@ -314,9 +317,10 @@ public class ComponentTest {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         UI.setCurrent(null);
         mocks.cleanup();
+        resetComponentTrackerProductionMode();
     }
 
     @Test
@@ -1950,4 +1954,13 @@ public class ComponentTest {
                         + "multiple UIs. Offending component: com.vaadin.flow."
                         + "component.ComponentTest$TestButton@"));
     }
+
+    private void resetComponentTrackerProductionMode() throws Exception {
+        Field productionMode = ComponentTracker.class
+                .getDeclaredField("productionMode");
+        productionMode.setAccessible(true);
+        productionMode.set(null, null);
+        productionMode.setAccessible(false);
+    }
+
 }
