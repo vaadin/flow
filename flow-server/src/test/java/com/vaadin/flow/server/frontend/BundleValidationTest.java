@@ -152,7 +152,7 @@ public class BundleValidationTest {
 
         // Add default packageJson dependencies
         for (Map.Entry<String, String> dependency : NodeUpdater
-                .getDefaultDependencies().entrySet()) {
+                .readDependencies("default", "dependencies").entrySet()) {
             packageJsonDependencies.put(dependency.getKey(),
                     dependency.getValue());
         }

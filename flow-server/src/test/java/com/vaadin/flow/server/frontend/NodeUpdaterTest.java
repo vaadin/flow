@@ -108,7 +108,7 @@ public class NodeUpdaterTest {
 
     @Test
     public void getDefaultDependencies_includesAllDependencies() {
-        Map<String, String> defaultDeps = NodeUpdater.getDefaultDependencies();
+        Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
         Set<String> expectedDependencies = new HashSet<>();
         expectedDependencies.add("@polymer/polymer");
         expectedDependencies.add("@vaadin/common-frontend");
