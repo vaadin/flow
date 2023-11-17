@@ -98,9 +98,12 @@ public class ChromeDeviceTest extends ViewOrUITest {
         // - Not W3C WebDriver API compliant, so we disable W3C protocol
         // - device mode: mobileEmulation option with some device settings
 
+        final Map<String, Object> deviceMetrics = new HashMap<>();
+        deviceMetrics.put("width", 1280);
+        deviceMetrics.put("height", 950);
+        deviceMetrics.put("pixelRatio", 1);
         final Map<String, Object> mobileEmulationParams = new HashMap<>();
-        mobileEmulationParams.put("deviceMetrics",
-                Map.of("width", 1280, "height", 950, "pixelRatio", 1));
+        mobileEmulationParams.put("deviceMetrics", deviceMetrics);
 
         chromeOptions.setExperimentalOption("w3c", false);
         chromeOptions.setExperimentalOption("mobileEmulation",
