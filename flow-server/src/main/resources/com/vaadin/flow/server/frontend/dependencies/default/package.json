@@ -11,7 +11,6 @@
   "dependencies": {
     "@polymer/polymer": "3.5.1",
     "@vaadin/common-frontend": "0.0.18",
-    "@vaadin/router": "1.7.5",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "3.1.0"
   },

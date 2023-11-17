@@ -293,10 +293,16 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     Map<String, String> getDefaultDependencies() {
+        Map<String, String> dependencies = readDependencies("default",
+                "dependencies");
         if (options.getFeatureFlags().isEnabled(FeatureFlags.REACT_ROUTER)) {
-            return readDependencies("react", "dependencies");
+            dependencies
+                    .putAll(readDependencies("react-router", "dependencies"));
+        } else {
+            dependencies
+                    .putAll(readDependencies("vaadin-router", "dependencies"));
         }
-        return readDependencies("default", "dependencies");
+        return dependencies;
     }
 
     static Map<String, String> readDependencies(String id,
