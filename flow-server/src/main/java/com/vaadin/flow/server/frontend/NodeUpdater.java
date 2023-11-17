@@ -482,7 +482,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                 || options.isBundleBuild()) {
             log().debug("writing file {}.", packageFile.getAbsolutePath());
             FileUtils.forceMkdirParent(packageFile);
-            FileUtils.writeStringToFile(packageFile, content, UTF_8.name());
+            FileIOUtils.writeIfChanged(packageFile, content);
         }
         return content;
     }
@@ -510,7 +510,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         File vaadinJsonFile = getVaadinJsonFile();
         FileUtils.forceMkdirParent(vaadinJsonFile);
         String content = stringify(fileContent, 2) + "\n";
-        FileUtils.writeStringToFile(vaadinJsonFile, content, UTF_8.name());
+        FileIOUtils.writeIfChanged(vaadinJsonFile, content);
     }
 
     Logger log() {
