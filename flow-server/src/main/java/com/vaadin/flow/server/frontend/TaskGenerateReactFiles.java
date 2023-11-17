@@ -68,26 +68,29 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                 new File(frontendDirectory, FrontendUtils.GENERATED),
                 "flow/routes.tsx");
         try {
-            if(!Path.of(frontendDirectory.getPath(), "App.tsx").toFile().exists()) {
+            if (!Path.of(frontendDirectory.getPath(), "App.tsx").toFile()
+                    .exists()) {
                 writeFile(appTsx, getFileContent("App.tsx"));
             }
 
-            if(!Path.of(frontendDirectory.getPath(), "routes.tsx").toFile().exists()) {
+            if (!Path.of(frontendDirectory.getPath(), "routes.tsx").toFile()
+                    .exists()) {
                 writeFile(routesTsx, getFileContent("routes.tsx"));
             }
             writeFile(flowTsx, getFileContent("Flow.tsx"));
         } catch (IOException e) {
-            throw new ExecutionFailedException("Failed to read file content", e);
+            throw new ExecutionFailedException("Failed to read file content",
+                    e);
         }
     }
 
-    private void writeFile(File target, String content) throws ExecutionFailedException {
+    private void writeFile(File target, String content)
+            throws ExecutionFailedException {
 
         try {
             FileIOUtils.writeIfChanged(target, content);
         } catch (IOException exception) {
-            String errorMessage = String.format("Error writing '%s'",
-                    target);
+            String errorMessage = String.format("Error writing '%s'", target);
             throw new ExecutionFailedException(errorMessage, exception);
         }
     }
