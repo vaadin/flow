@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.i18n.I18NProvider;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -156,6 +158,7 @@ public class ComponentTest {
     private Component shadowChild;
     private UI testUI;
     private MockServletServiceSessionSetup mocks;
+    private VaadinSession session;
 
     public interface TracksAttachDetach {
         default void track() {
@@ -281,8 +284,20 @@ public class ComponentTest {
         }
     }
 
+    private UI createMockedUI() {
+        UI ui = new UI() {
+            @Override
+            public VaadinSession getSession() {
+                return session;
+            }
+        };
+        ui.getInternals().setSession(session);
+        return ui;
+    }
+
     @Before
     public void setup() throws Exception {
+        resetComponentTrackerProductionMode();
         divWithTextComponent = new TestComponent(
                 ElementFactory.createDiv("Test component"));
         parentDivComponent = new TestComponent(ElementFactory.createDiv());
@@ -295,22 +310,17 @@ public class ComponentTest {
 
         mocks = new MockServletServiceSessionSetup();
 
-        VaadinSession session = mocks.getSession();
-        ui = new UI() {
-            @Override
-            public VaadinSession getSession() {
-                return session;
-            }
-        };
-        ui.getInternals().setSession(session);
+        session = mocks.getSession();
+        ui = createMockedUI();
 
         UI.setCurrent(ui);
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         UI.setCurrent(null);
         mocks.cleanup();
+        resetComponentTrackerProductionMode();
     }
 
     @Test
@@ -1922,6 +1932,35 @@ public class ComponentTest {
 
         assertPendingJs(
                 "scrollIntoView({\"behavior\":\"smooth\",\"block\":\"end\",\"inline\":\"center\"})");
+    }
+
+    @Test
+    public void cannotMoveComponentsToOtherUI() {
+        // tests https://github.com/vaadin/flow/issues/9376
+        final UI otherUI = createMockedUI();
+        final TestButton button = new TestButton();
+        otherUI.add(button);
+
+        IllegalStateException ex = Assert.assertThrows(
+                IllegalStateException.class, () -> ui.add(button));
+        Assert.assertTrue(ex.getMessage(), ex.getMessage().startsWith(
+                "Can't move a node from one state tree to another. If this is "
+                        + "intentional, first remove the node from its current "
+                        + "state tree by calling removeFromTree. This usually "
+                        + "happens when a component is moved from one UI to another, "
+                        + "which is not recommended. This may be caused by "
+                        + "assigning components to static members or spring "
+                        + "singleton scoped beans and referencing them from "
+                        + "multiple UIs. Offending component: com.vaadin.flow."
+                        + "component.ComponentTest$TestButton@"));
+    }
+
+    private void resetComponentTrackerProductionMode() throws Exception {
+        Field productionMode = ComponentTracker.class
+                .getDeclaredField("productionMode");
+        productionMode.setAccessible(true);
+        productionMode.set(null, null);
+        productionMode.setAccessible(false);
     }
 
 }

@@ -17,6 +17,7 @@ package com.vaadin.flow.dom;
 
 import java.util.Optional;
 
+import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import org.mockito.Mockito;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
@@ -248,6 +249,21 @@ public class ElementUtilTest {
     @Test
     public void parentInert_siblingIgnoresInheritingInert_siblingInert() {
         final Element sibling = ElementFactory.createDiv();
+    }
+
+    @Test
+    public void elementsUpdateSameData() {
+        Element te = new Element("testelem");
+        Element e = ElementUtil.from(te.getNode()).orElse(null);
+
+        // Elements must be equal but not necessarily the same
+        Assert.assertEquals(te, e);
+    }
+
+    @Test
+    public void getElementFromInvalidNode() {
+        StateNode node = new StateNode(ElementPropertyMap.class);
+        Assert.assertFalse(ElementUtil.from(node).isPresent());
     }
 
     private void setupElementHierarchy() {

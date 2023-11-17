@@ -110,6 +110,12 @@ public class ComponentTracker {
             result = 31 * result + lineNumber;
             return result;
         }
+
+        @Override
+        public String toString() {
+            return "Component '" + className + "' at '" + filename + "' ("
+                    + methodName + " LINE " + lineNumber + ")";
+        }
     }
 
     /**
