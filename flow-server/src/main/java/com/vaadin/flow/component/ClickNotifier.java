@@ -142,7 +142,6 @@ public interface ClickNotifier<T extends Component> extends Serializable {
                 () -> new Component[] { thisComponent.getUI().get() },
                 event -> ComponentUtil.fireEvent(thisComponent,
                         new ClickEvent<>(thisComponent)),
-                key).withModifiers(keyModifiers).allowBrowserDefault()
-                .resetFocusOnActiveElement();
+                key).withModifiers(keyModifiers).allowBrowserDefault();
     }
 }
