@@ -99,7 +99,8 @@ public class ChromeDeviceTest extends ViewOrUITest {
         // - device mode: mobileEmulation option with some device settings
 
         final Map<String, Object> mobileEmulationParams = new HashMap<>();
-        mobileEmulationParams.put("deviceName", "Laptop with touch");
+        mobileEmulationParams.put("deviceMetrics",
+                Map.of("width", 1280, "height", 950, "pixelRatio", 1));
 
         chromeOptions.setExperimentalOption("w3c", false);
         chromeOptions.setExperimentalOption("mobileEmulation",
