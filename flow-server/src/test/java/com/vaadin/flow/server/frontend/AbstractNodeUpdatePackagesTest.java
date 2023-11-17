@@ -861,8 +861,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
     void writePackageJson(File packageJsonFile, JsonObject packageJson)
             throws IOException {
-        FileUtils.writeStringToFile(packageJsonFile, packageJson.toJson(),
-                UTF_8.name());
+        FileIOUtils.writeIfChanged(packageJsonFile, packageJson.toJson());
     }
 
 }
