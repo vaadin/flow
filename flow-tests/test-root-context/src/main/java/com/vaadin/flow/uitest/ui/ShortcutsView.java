@@ -178,9 +178,6 @@ public class ShortcutsView extends Div {
         // this matches the default of other shortcuts but changes
         // the default of the click shortcut
         reg.setBrowserDefaultAllowed(false);
-        // setting setResetFocusOnActiveElement(false) to test browser default
-        // allowed feature alone.
-        reg.setResetFocusOnActiveElement(false);
 
         wrapper1.add(clickInput1, clickButton1);
         wrapper2.add(clickInput2, clickButton2);
@@ -223,11 +220,11 @@ public class ShortcutsView extends Div {
                         + "," + clickInput6.getValue()));
         clickButton4.addClickShortcut(Key.ENTER)
                 .listenOn(clickInput5, clickInput6)
-                // by default addClickShortcut sets setResetFocusOnActiveElement
+                // sets setResetFocusOnActiveElement
                 // to true and this will cause input value change being
                 // triggered no matter what
                 // setBrowserDefaultAllowed is.
-                .setBrowserDefaultAllowed(false);
+                .resetFocusOnActiveElement().setBrowserDefaultAllowed(false);
 
         NativeButton clickButton5 = new NativeButton("CB5",
                 event -> actual.setValue("click5: " + clickInput7.getValue()));
@@ -235,7 +232,6 @@ public class ShortcutsView extends Div {
         // this matches the default of other shortcuts but changes
         // the default of the click shortcut
         reg.setBrowserDefaultAllowed(false);
-        reg.setResetFocusOnActiveElement(false);
 
         wrapper4.add(clickInput5, clickInput6, clickInput7, clickButton4,
                 clickButton5);
