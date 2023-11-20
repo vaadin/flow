@@ -25,6 +25,9 @@ public class ComponentProperty {
     public String name;
     public String propertyOrAttributeTag;
     public Object defaultValue, otherValue;
+    /**
+     * If true, the Java property must be of type {@link java.util.Optional}.
+     */
     public boolean optional;
     public boolean removeDefault;
     public Class<?> type;
