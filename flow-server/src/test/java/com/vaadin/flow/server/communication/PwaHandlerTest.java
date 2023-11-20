@@ -22,17 +22,16 @@ import java.io.UncheckedIOException;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
-
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.PwaIcon;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
 public class PwaHandlerTest {
 
@@ -109,7 +108,7 @@ public class PwaHandlerTest {
 
         PwaHandler handler = new PwaHandler(() -> registry);
 
-        PwaIcon icon = Mockito.spy(createIcon(registry, 100));
+        PwaIcon icon = Mockito.spy(createIcon(100));
         Mockito.when(registry.getIcons()).thenReturn(List.of(icon));
         Mockito.when(configuration.isEnabled()).thenReturn(true);
 
@@ -124,14 +123,10 @@ public class PwaHandlerTest {
         Assert.assertTrue(handler.handleRequest(session, request, response));
     }
 
-    private PwaIcon createIcon(PwaRegistry registry, int size)
-            throws Exception {
+    private PwaIcon createIcon(int size) throws Exception {
         Constructor<PwaIcon> ctor = PwaIcon.class
                 .getDeclaredConstructor(int.class, int.class, String.class);
         ctor.setAccessible(true);
-        PwaIcon icon = ctor.newInstance(size, size,
-                PwaConfiguration.DEFAULT_ICON);
-        icon.setRegistry(registry);
-        return icon;
+        return ctor.newInstance(size, size, PwaConfiguration.DEFAULT_ICON);
     }
 }
