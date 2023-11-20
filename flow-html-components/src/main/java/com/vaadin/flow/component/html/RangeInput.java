@@ -15,7 +15,14 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.AbstractSinglePropertyField;
+import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasAriaLabel;
+import com.vaadin.flow.component.HasSize;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.PropertyDescriptor;
+import com.vaadin.flow.component.PropertyDescriptors;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.data.value.HasValueChangeMode;
 import com.vaadin.flow.data.value.ValueChangeMode;
 
