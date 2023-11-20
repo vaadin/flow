@@ -334,7 +334,7 @@ public class ShortcutRegistrationTest {
         assertFalse("Allows propagation was not false",
                 registration.isEventPropagationAllowed());
 
-        assertTrue("Reset focus on active element was not set to true",
+        assertFalse("Reset focus on active element was not set to false",
                 registration.isResetFocusOnActiveElement());
     }
 
