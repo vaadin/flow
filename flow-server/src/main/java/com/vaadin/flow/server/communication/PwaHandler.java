@@ -18,11 +18,14 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.server.PwaIcon;
@@ -81,6 +84,9 @@ public class PwaHandler implements RequestHandler {
                         }
                         try (OutputStream out = response.getOutputStream()) {
                             icon.write(out);
+                        } catch (UncheckedIOException ex) {
+                            LoggerFactory.getLogger(PwaHandler.class)
+                                    .debug("Error serving PWA icon", ex);
                         }
                         return true;
                     });
