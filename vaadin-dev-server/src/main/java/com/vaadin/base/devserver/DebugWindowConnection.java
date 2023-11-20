@@ -16,6 +16,8 @@
 package com.vaadin.base.devserver;
 
 import java.lang.ref.WeakReference;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
 import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
+import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -195,7 +198,20 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     @Override
     public void onConnect(AtmosphereResource resource) {
+
         resource.suspend(-1);
+
+        AtmosphereRequest request = resource.getRequest();
+        String remoteAddress = request.getRemoteAddr();
+        try {
+            InetAddress inetAddress = InetAddress.getByName(remoteAddress);
+            if(inetAddress.isLoopbackAddress()) {
+                return;
+            }
+        } catch (UnknownHostException e) {
+            getLogger().info("Unable to resolve remote address {}", remoteAddress, e);
+        }
+
         atmosphereResources.add(new WeakReference<>(resource));
         resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
                 resource);
