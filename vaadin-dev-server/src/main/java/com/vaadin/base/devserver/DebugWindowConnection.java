@@ -82,6 +82,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private List<DevToolsMessageHandler> plugins;
 
+    private boolean isLocalhostEnabled = false;
+
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
                 "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener"));
@@ -148,6 +150,14 @@ public class DebugWindowConnection implements BrowserLiveReload {
         this.backend = backend;
     }
 
+    public boolean isLocalhostEnabled() {
+        return isLocalhostEnabled;
+    }
+
+    public void setLocalhostEnabled(boolean localhostEnabled) {
+        isLocalhostEnabled = localhostEnabled;
+    }
+
     /** Implementation of the development tools interface. */
     public static class DevToolsInterfaceImpl implements DevToolsInterface {
         private DebugWindowConnection debugWindowConnection;
@@ -203,13 +213,16 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
         AtmosphereRequest request = resource.getRequest();
         String remoteAddress = request.getRemoteAddr();
-        try {
-            InetAddress inetAddress = InetAddress.getByName(remoteAddress);
-            if(inetAddress.isLoopbackAddress()) {
-                return;
+        if (!isLocalhostEnabled) {
+            try {
+                InetAddress inetAddress = InetAddress.getByName(remoteAddress);
+                if (inetAddress.isLoopbackAddress()) {
+                    return;
+                }
+            } catch (UnknownHostException e) {
+                getLogger().info("Unable to resolve remote address {}",
+                        remoteAddress, e);
             }
-        } catch (UnknownHostException e) {
-            getLogger().info("Unable to resolve remote address {}", remoteAddress, e);
         }
 
         atmosphereResources.add(new WeakReference<>(resource));
