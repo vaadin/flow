@@ -211,7 +211,12 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     }
 
     /**
-     * Non-standard Attribute.
+     * Sets the orientation of the range slider.
+     * <p>
+     * </p>
+     * <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range#non-standard_attributes">Non-standard
+     * Attribute</a>.
      * <p>
      * </p>
      * The orient attribute defines the orientation of the range slider. Values
@@ -227,7 +232,12 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     }
 
     /**
-     * Non-standard Attribute.
+     * Gets the orientation of the range slider.
+     * <p>
+     * </p>
+     * <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range#non-standard_attributes">Non-standard
+     * Attribute</a>.
      * <p>
      * </p>
      * The orient attribute defines the orientation of the range slider. Values
