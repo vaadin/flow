@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -193,10 +194,12 @@ public class RequestUtil {
             return false;
         }
 
+        boolean productionMode = service.getDeploymentConfiguration()
+                .isProductionMode();
         NavigationAccessControl navigationAccessControl = accessControl
                 .getObject();
         if (!navigationAccessControl.isEnabled()) {
-            getLogger().debug(
+            getLogger().atLevel(productionMode ? Level.DEBUG : Level.INFO).log(
                     "Navigation Access Control disable. Cannot determine if {} refers to a public view",
                     path);
             return false;
@@ -209,8 +212,7 @@ public class RequestUtil {
                 target.getRouteParameters(), null, role -> false, false);
 
         NavigationAccessChecker.AccessCheckResult result = navigationAccessControl
-                .checkAccess(navigationContext, service
-                        .getDeploymentConfiguration().isProductionMode());
+                .checkAccess(navigationContext, productionMode);
         boolean isAllowed = result
                 .decision() == NavigationAccessChecker.Decision.ALLOW;
         if (isAllowed) {
