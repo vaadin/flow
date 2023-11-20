@@ -18,12 +18,17 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
+import java.lang.reflect.Constructor;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.PwaConfiguration;
+import com.vaadin.flow.server.PwaIcon;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -31,11 +36,11 @@ import com.vaadin.flow.server.VaadinSession;
 
 public class PwaHandlerTest {
 
-    private VaadinSession session = Mockito.mock(VaadinSession.class);
+    private final VaadinSession session = Mockito.mock(VaadinSession.class);
 
-    private VaadinRequest request = Mockito.mock(VaadinRequest.class);
+    private final VaadinRequest request = Mockito.mock(VaadinRequest.class);
 
-    private VaadinResponse response = Mockito.mock(VaadinResponse.class);
+    private final VaadinResponse response = Mockito.mock(VaadinResponse.class);
 
     @Test
     public void handleRequest_noPwaRegistry_returnsFalse() throws IOException {
@@ -92,5 +97,41 @@ public class PwaHandlerTest {
         Assert.assertTrue(handler.handleRequest(session, request, response));
 
         Mockito.verify(registry, Mockito.times(1)).getIcons();
+    }
+
+    @Test
+    public void handleRequest_writeIconOnResponseFailure_doesNotThrow()
+            throws Exception {
+
+        PwaRegistry registry = Mockito.mock(PwaRegistry.class);
+        PwaConfiguration configuration = Mockito.mock(PwaConfiguration.class);
+        Mockito.when(registry.getPwaConfiguration()).thenReturn(configuration);
+
+        PwaHandler handler = new PwaHandler(() -> registry);
+
+        PwaIcon icon = Mockito.spy(createIcon(registry, 100));
+        Mockito.when(registry.getIcons()).thenReturn(List.of(icon));
+        Mockito.when(configuration.isEnabled()).thenReturn(true);
+
+        Mockito.doAnswer(i -> {
+            throw new UncheckedIOException(
+                    "Failed to store the icon image into the stream provided",
+                    new IOException("Broken pipe"));
+        }).when(icon).write(ArgumentMatchers.any());
+        Mockito.when(request.getPathInfo())
+                .thenReturn("/icons/icon-100x100.png");
+
+        Assert.assertTrue(handler.handleRequest(session, request, response));
+    }
+
+    private PwaIcon createIcon(PwaRegistry registry, int size)
+            throws Exception {
+        Constructor<PwaIcon> ctor = PwaIcon.class
+                .getDeclaredConstructor(int.class, int.class, String.class);
+        ctor.setAccessible(true);
+        PwaIcon icon = ctor.newInstance(size, size,
+                PwaConfiguration.DEFAULT_ICON);
+        icon.setRegistry(registry);
+        return icon;
     }
 }
