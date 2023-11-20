@@ -127,7 +127,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     }
 
     /**
-     * Returns the minimum value.
+     * Gets the minimum value.
      *
      * @return the minimum value, defaults to 0.
      */
@@ -146,7 +146,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     }
 
     /**
-     * Returns the maximum value.
+     * Gets the maximum value.
      *
      * @return the maximum value, defaults to 100.
      */
