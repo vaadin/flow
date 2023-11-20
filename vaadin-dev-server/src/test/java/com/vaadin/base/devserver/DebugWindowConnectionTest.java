@@ -19,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
@@ -42,6 +43,12 @@ public class DebugWindowConnectionTest {
     @Test
     public void onConnect_suspend_sayHello() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+
+        // mock the request
+        AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
+        Mockito.when(resource.getRequest()).thenReturn(request);
+        Mockito.when(request.getRemoteAddr()).thenReturn("169.1.1.1");
+
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
 
@@ -56,7 +63,17 @@ public class DebugWindowConnectionTest {
     @Test
     public void reload_twoConnections_sendReloadCommand() {
         AtmosphereResource resource1 = Mockito.mock(AtmosphereResource.class);
+        // mock the request
+        AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
+        Mockito.when(resource1.getRequest()).thenReturn(request);
+        Mockito.when(request.getRemoteAddr()).thenReturn("169.1.1.1");
+
         AtmosphereResource resource2 = Mockito.mock(AtmosphereResource.class);
+        // mock the request
+        AtmosphereRequest request2 = Mockito.mock(AtmosphereRequest.class);
+        Mockito.when(resource2.getRequest()).thenReturn(request2);
+        Mockito.when(request2.getRemoteAddr()).thenReturn("169.1.1.2");
+
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource1.getBroadcaster()).thenReturn(broadcaster);
         Mockito.when(resource2.getBroadcaster()).thenReturn(broadcaster);
@@ -117,6 +134,12 @@ public class DebugWindowConnectionTest {
     @Test
     public void reload_resourceIsDisconnected_reloadCommandIsNotSent() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+
+        // mock the request
+        AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
+        Mockito.when(resource.getRequest()).thenReturn(request);
+        Mockito.when(request.getRemoteAddr()).thenReturn("169.1.1.1");
+
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
         reload.onConnect(resource);
