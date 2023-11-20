@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -199,9 +198,12 @@ public class RequestUtil {
         NavigationAccessControl navigationAccessControl = accessControl
                 .getObject();
         if (!navigationAccessControl.isEnabled()) {
-            getLogger().atLevel(productionMode ? Level.DEBUG : Level.INFO).log(
-                    "Navigation Access Control disable. Cannot determine if {} refers to a public view",
-                    path);
+            String message = "Navigation Access Control disable. Cannot determine if {} refers to a public view";
+            if (productionMode) {
+                getLogger().debug(message, path);
+            } else {
+                getLogger().info(message, path);
+            }
             return false;
         }
 
