@@ -23,7 +23,8 @@ import static org.junit.Assert.assertNull;
 public class HasPlaceholderTest {
 
     @Tag(Tag.DIV)
-    private static class TestComponent extends Component implements HasPlaceholder {
+    private static class TestComponent extends Component
+            implements HasPlaceholder {
 
     }
 

@@ -34,8 +34,9 @@ import com.vaadin.flow.data.value.ValueChangeMode;
  * @since 1.0
  */
 @Tag(Tag.INPUT)
-public class Input extends AbstractSinglePropertyField<Input, String> implements
-        Focusable<Input>, HasSize, HasStyle, HasValueChangeMode, HasAriaLabel, HasPlaceholder {
+public class Input extends AbstractSinglePropertyField<Input, String>
+        implements Focusable<Input>, HasSize, HasStyle, HasValueChangeMode,
+        HasAriaLabel, HasPlaceholder {
 
     private static final PropertyDescriptor<String, String> placeholderDescriptor = PropertyDescriptors
             .attributeWithDefault("placeholder", "");
