@@ -101,12 +101,14 @@ public abstract class ComponentTest {
                 removeDefault);
     }
 
-    protected <U> void addProperty(String propertyName, Class<U> propertyType,
-            U defaultValue, U otherValue, boolean isOptional,
-            boolean removeDefault) {
-        properties.add(new ComponentProperty(getComponent().getClass(),
-                propertyName, propertyType, defaultValue, otherValue,
-                isOptional, removeDefault));
+    protected <U> ComponentProperty addProperty(String propertyName,
+            Class<U> propertyType, U defaultValue, U otherValue,
+            boolean isOptional, boolean removeDefault) {
+        final ComponentProperty property = new ComponentProperty(
+                getComponent().getClass(), propertyName, propertyType,
+                defaultValue, otherValue, isOptional, removeDefault);
+        properties.add(property);
+        return property;
     }
 
     protected <U> void addProperty(String propertyName, Class<U> propertyType,
@@ -409,10 +411,20 @@ public abstract class ComponentTest {
         assertAttribute(component, propertyOrAttribute, false);
     }
 
+    /**
+     * Asserts that the component has either property or attribute with given
+     * name; fails if both are present or neither is present.
+     *
+     * @param component
+     * @param propertyOrAttribute
+     */
     private static void assertPropertyOrAttribute(Component component,
             String propertyOrAttribute) {
         Element element = component.getElement();
-        Assert.assertNotEquals(element.hasAttribute(propertyOrAttribute),
+        Assert.assertNotEquals(propertyOrAttribute + ": attribute="
+                + element.hasAttribute(propertyOrAttribute) + ", property="
+                + element.hasProperty(propertyOrAttribute),
+                element.hasAttribute(propertyOrAttribute),
                 element.hasProperty(propertyOrAttribute));
     }
 
