@@ -90,6 +90,15 @@ public class DefaultNavigationCheckDecisionResolver
             }
         } else if (resultsByDecision.isEmpty()) {
             // All checkers are neutral
+            if (context.isErrorHandling()) {
+                // During a re-route to an error handler component navigation
+                // access checkers may abstain from taking a decision because
+                // HasErrorParameter classes are usually not routes with a path,
+                // but simple Flow components.
+                // For those error handling view access is allowed, if none of
+                // the checkers explicitly denies it.
+                return context.allow();
+            }
             denyReasons = "Access denied because navigation checkers did not take any decision.";
             LOGGER.debug(
                     "Access to view '{}' with path '{}' denied because "
