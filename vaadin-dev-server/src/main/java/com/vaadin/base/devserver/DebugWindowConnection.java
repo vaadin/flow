@@ -82,7 +82,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private List<DevToolsMessageHandler> plugins;
 
-    private boolean isLocalhostEnabled = false;
+    private boolean isNonLocalhostEnabled = false;
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
@@ -150,12 +150,12 @@ public class DebugWindowConnection implements BrowserLiveReload {
         this.backend = backend;
     }
 
-    public boolean isLocalhostEnabled() {
-        return isLocalhostEnabled;
+    public boolean isNonLocalhostEnabled() {
+        return isNonLocalhostEnabled;
     }
 
-    public void setLocalhostEnabled(boolean localhostEnabled) {
-        isLocalhostEnabled = localhostEnabled;
+    public void setNonLocalhostEnabled(boolean localhostEnabled) {
+        isNonLocalhostEnabled = localhostEnabled;
     }
 
     /** Implementation of the development tools interface. */
@@ -209,22 +209,23 @@ public class DebugWindowConnection implements BrowserLiveReload {
     @Override
     public void onConnect(AtmosphereResource resource) {
 
-        resource.suspend(-1);
 
         AtmosphereRequest request = resource.getRequest();
         String remoteAddress = request.getRemoteAddr();
-        if (!isLocalhostEnabled) {
+        if (!isNonLocalhostEnabled) {
             try {
                 InetAddress inetAddress = InetAddress.getByName(remoteAddress);
-                if (inetAddress.isLoopbackAddress()) {
+                if (!inetAddress.isLoopbackAddress()) {
                     return;
                 }
             } catch (UnknownHostException e) {
-                getLogger().info("Unable to resolve remote address {}",
+                getLogger().info("Unable to resolve remote address: '{}', so we are preventing the web socket connection with DebugWindow.",
                         remoteAddress, e);
+                return;
             }
         }
 
+        resource.suspend(-1);
         atmosphereResources.add(new WeakReference<>(resource));
         resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
                 resource);

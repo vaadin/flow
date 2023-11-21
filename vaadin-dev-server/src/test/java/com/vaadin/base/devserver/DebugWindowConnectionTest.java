@@ -35,9 +35,11 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static org.mockito.Mockito.times;
+
 public class DebugWindowConnectionTest {
 
-    private DebugWindowConnection reload = new DebugWindowConnection(
+    private final DebugWindowConnection reload = new DebugWindowConnection(
             getMockContext());
 
     @Test
@@ -47,7 +49,7 @@ public class DebugWindowConnectionTest {
         // mock the request
         AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
         Mockito.when(resource.getRequest()).thenReturn(request);
-        Mockito.when(request.getRemoteAddr()).thenReturn("169.1.1.1");
+        Mockito.when(request.getRemoteAddr()).thenReturn("127.0.0.1");
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
@@ -61,18 +63,83 @@ public class DebugWindowConnectionTest {
     }
 
     @Test
+    public void onconnect_should_prevent_connection_from_non_localhost() {
+        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+
+        // mock the request
+        AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
+        Mockito.when(resource.getRequest()).thenReturn(request);
+        Mockito.when(request.getRemoteAddr()).thenReturn("169.0.0.1");
+
+        Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
+        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
+
+        reload.onConnect(resource);
+
+        Assert.assertFalse(reload.isLiveReload(resource));
+        Mockito.verify(resource, times(0)).suspend(-1);
+        Mockito.verify(broadcaster, times(0)).broadcast("{\"command\": \"hello\"}",
+                resource);
+
+    }
+
+    @Test
+    public void onconnect_should_let_connection_from_localhost_when_specifically_allowed() {
+        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+
+        // mock the request
+        AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
+        Mockito.when(resource.getRequest()).thenReturn(request);
+        Mockito.when(request.getRemoteAddr()).thenReturn("169.0.0.1");
+
+        Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
+        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
+
+        reload.setNonLocalhostEnabled(true);
+
+        reload.onConnect(resource);
+
+        Assert.assertTrue(reload.isLiveReload(resource));
+        Mockito.verify(resource, times(1)).suspend(-1);
+        Mockito.verify(broadcaster, times(1)).broadcast("{\"command\": \"hello\"}",
+                resource);
+
+    }
+
+    @Test
+    public void onconnect_should_prevent_connection_even_when_client_host_is_unrecognizable() {
+        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+
+        // mock the request
+        AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
+        Mockito.when(resource.getRequest()).thenReturn(request);
+        Mockito.when(request.getRemoteAddr()).thenReturn("should trow UnknownHostException");
+
+        Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
+        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
+
+        reload.onConnect(resource);
+
+        Assert.assertFalse(reload.isLiveReload(resource));
+        Mockito.verify(resource, times(0)).suspend(-1);
+        Mockito.verify(broadcaster, times(0)).broadcast("{\"command\": \"hello\"}",
+                resource);
+
+    }
+
+    @Test
     public void reload_twoConnections_sendReloadCommand() {
         AtmosphereResource resource1 = Mockito.mock(AtmosphereResource.class);
         // mock the request
         AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
         Mockito.when(resource1.getRequest()).thenReturn(request);
-        Mockito.when(request.getRemoteAddr()).thenReturn("169.1.1.1");
+        Mockito.when(request.getRemoteAddr()).thenReturn("127.0.0.1");
 
         AtmosphereResource resource2 = Mockito.mock(AtmosphereResource.class);
         // mock the request
         AtmosphereRequest request2 = Mockito.mock(AtmosphereRequest.class);
         Mockito.when(resource2.getRequest()).thenReturn(request2);
-        Mockito.when(request2.getRemoteAddr()).thenReturn("169.1.1.2");
+        Mockito.when(request2.getRemoteAddr()).thenReturn("127.0.0.1");
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource1.getBroadcaster()).thenReturn(broadcaster);
@@ -138,7 +205,7 @@ public class DebugWindowConnectionTest {
         // mock the request
         AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
         Mockito.when(resource.getRequest()).thenReturn(request);
-        Mockito.when(request.getRemoteAddr()).thenReturn("169.1.1.1");
+        Mockito.when(request.getRemoteAddr()).thenReturn("127.0.0.1");
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
