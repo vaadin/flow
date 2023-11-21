@@ -35,6 +35,11 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 /**
  * Allows to configure the {@link NavigationAccessControl}.
  * <p>
+ * To configure Flow navigation access control, a Spring bean on type
+ * {@link NavigationAccessControlConfigurer} should be defined.
+ *
+ * <p>
+ * </p>
  * {@link NavigationAccessControl} bean can be configured by:
  *
  * <ul>
