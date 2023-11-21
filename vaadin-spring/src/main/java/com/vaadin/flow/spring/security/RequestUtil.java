@@ -193,15 +193,28 @@ public class RequestUtil {
             return false;
         }
 
+        boolean productionMode = service.getDeploymentConfiguration()
+                .isProductionMode();
+        NavigationAccessControl navigationAccessControl = accessControl
+                .getObject();
+        if (!navigationAccessControl.isEnabled()) {
+            String message = "Navigation Access Control is disabled. Cannot determine if {} refers to a public view, thus access is denied. Please add an explicit request matcher rule for this URL.";
+            if (productionMode) {
+                getLogger().debug(message, path);
+            } else {
+                getLogger().info(message, path);
+            }
+            return false;
+        }
+
         NavigationAccessChecker.NavigationContext navigationContext = new NavigationAccessChecker.NavigationContext(
                 router, targetView,
                 new Location(path,
                         QueryParameters.full(request.getParameterMap())),
                 target.getRouteParameters(), null, role -> false, false);
 
-        NavigationAccessChecker.AccessCheckResult result = accessControl
-                .getObject().checkAccess(navigationContext, service
-                        .getDeploymentConfiguration().isProductionMode());
+        NavigationAccessChecker.AccessCheckResult result = navigationAccessControl
+                .checkAccess(navigationContext, productionMode);
         boolean isAllowed = result
                 .decision() == NavigationAccessChecker.Decision.ALLOW;
         if (isAllowed) {

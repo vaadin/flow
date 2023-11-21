@@ -37,6 +37,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -291,11 +292,20 @@ public abstract class NodeUpdater implements FallibleCommand {
         return result;
     }
 
-    static Map<String, String> getDefaultDependencies() {
-        return readDependencies("default", "dependencies");
+    Map<String, String> getDefaultDependencies() {
+        Map<String, String> dependencies = readDependencies("default",
+                "dependencies");
+        if (options.getFeatureFlags().isEnabled(FeatureFlags.REACT_ROUTER)) {
+            dependencies
+                    .putAll(readDependencies("react-router", "dependencies"));
+        } else {
+            dependencies
+                    .putAll(readDependencies("vaadin-router", "dependencies"));
+        }
+        return dependencies;
     }
 
-    private static Map<String, String> readDependencies(String id,
+    static Map<String, String> readDependencies(String id,
             String packageJsonKey) {
         try {
             Map<String, String> map = new HashMap<>();
