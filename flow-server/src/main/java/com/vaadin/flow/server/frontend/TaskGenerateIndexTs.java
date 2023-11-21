@@ -22,6 +22,7 @@ import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Version;
@@ -41,6 +42,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
 
     private final File frontendDirectory;
+    private Options options;
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
@@ -50,6 +52,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
      */
     TaskGenerateIndexTs(Options options) {
         this.frontendDirectory = options.getFrontendDirectory();
+        this.options = options;
     }
 
     @Override
@@ -70,8 +73,12 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
     @Override
     protected String getFileContent() throws IOException {
         String indexTemplate;
+        String indexFile = INDEX_TS;
+        if (options.getFeatureFlags().isEnabled(FeatureFlags.REACT_ROUTER)) {
+            indexFile = "index-react.ts";
+        }
         try (InputStream indexTsStream = getClass()
-                .getResourceAsStream(INDEX_TS)) {
+                .getResourceAsStream(indexFile)) {
             indexTemplate = IOUtils.toString(indexTsStream, UTF_8);
         }
         return indexTemplate;

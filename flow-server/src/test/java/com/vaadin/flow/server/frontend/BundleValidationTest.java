@@ -150,8 +150,15 @@ public class BundleValidationTest {
         stats.put(THEME_JSON_CONTENTS, themeJsonContents);
         stats.put(PACKAGE_JSON_HASH, "aHash");
 
+        NodeUpdater nodeUpdater = new NodeUpdater(finder,
+                Mockito.mock(FrontendDependenciesScanner.class), options) {
+            @Override
+            public void execute() {
+            }
+        };
+
         // Add default packageJson dependencies
-        for (Map.Entry<String, String> dependency : NodeUpdater
+        for (Map.Entry<String, String> dependency : nodeUpdater
                 .getDefaultDependencies().entrySet()) {
             packageJsonDependencies.put(dependency.getKey(),
                     dependency.getValue());
