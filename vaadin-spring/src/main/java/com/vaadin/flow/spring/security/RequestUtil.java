@@ -198,7 +198,7 @@ public class RequestUtil {
         NavigationAccessControl navigationAccessControl = accessControl
                 .getObject();
         if (!navigationAccessControl.isEnabled()) {
-            String message = "Navigation Access Control disable. Cannot determine if {} refers to a public view";
+            String message = "Navigation Access Control is disabled. Cannot determine if {} refers to a public view, thus access is denied. Please add an explicit request matcher rule for this URL.";
             if (productionMode) {
                 getLogger().debug(message, path);
             } else {
