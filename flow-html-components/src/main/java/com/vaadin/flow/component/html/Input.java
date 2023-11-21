@@ -15,11 +15,10 @@
  */
 package com.vaadin.flow.component.html;
 
-import java.util.Optional;
-
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasAriaLabel;
+import com.vaadin.flow.component.HasPlaceholder;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.PropertyDescriptor;
@@ -36,10 +35,10 @@ import com.vaadin.flow.data.value.ValueChangeMode;
  */
 @Tag(Tag.INPUT)
 public class Input extends AbstractSinglePropertyField<Input, String> implements
-        Focusable<Input>, HasSize, HasStyle, HasValueChangeMode, HasAriaLabel {
+        Focusable<Input>, HasSize, HasStyle, HasValueChangeMode, HasAriaLabel, HasPlaceholder {
 
-    private static final PropertyDescriptor<String, Optional<String>> placeholderDescriptor = PropertyDescriptors
-            .optionalAttributeWithDefault("placeholder", "");
+    private static final PropertyDescriptor<String, String> placeholderDescriptor = PropertyDescriptors
+            .attributeWithDefault("placeholder", "");
 
     private static final PropertyDescriptor<String, String> typeDescriptor = PropertyDescriptors
             .attributeWithDefault("type", "text");
@@ -68,26 +67,11 @@ public class Input extends AbstractSinglePropertyField<Input, String> implements
         setValueChangeMode(valueChangeMode);
     }
 
-    /**
-     * Sets the placeholder text that is shown if the input is empty.
-     *
-     * @param placeholder
-     *            the placeholder text to set, or <code>null</code> to remove
-     *            the placeholder
-     */
     public void setPlaceholder(String placeholder) {
         set(placeholderDescriptor, placeholder);
     }
 
-    /**
-     * Gets the placeholder text.
-     *
-     * @see #setPlaceholder(String)
-     *
-     * @return an optional placeholder, or an empty optional if no placeholder
-     *         has been set
-     */
-    public Optional<String> getPlaceholder() {
+    public String getPlaceholder() {
         return get(placeholderDescriptor);
     }
 
