@@ -183,7 +183,7 @@ public interface Style extends Serializable {
         return set(STYLE_BORDER_BOTTOM, value);
     }
     /**
-     * Sets the <code>border-bottom</code> property.
+     * Sets the <code>border-radius</code> property.
      *
      * @param value
      *            the style property value (if <code>null</code>, the property
