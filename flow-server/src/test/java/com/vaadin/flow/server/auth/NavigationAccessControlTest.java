@@ -16,7 +16,15 @@
 
 package com.vaadin.flow.server.auth;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,17 +33,43 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.AccessDeniedException;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorNavigationEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.RouteAccessDeniedError;
+import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.AnonymousAllowedView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.PermitAllView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.TestLoginView;
 import com.vaadin.flow.server.auth.NavigationAccessChecker.Decision;
 import com.vaadin.flow.server.auth.NavigationAccessChecker.NavigationContext;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
+
 public class NavigationAccessControlTest {
+
+    enum User {
+        USER_NO_ROLES, NORMAL_USER, ADMIN
+    }
 
     NavigationAccessControl accessControl;
 
@@ -208,6 +242,18 @@ public class NavigationAccessControlTest {
         Assert.assertFalse(result.wasTargetViewRendered());
         Assert.assertEquals(NotFoundException.class, result.getRerouteError());
         Assert.assertEquals("", result.getRerouteErrorMessage());
+    }
+
+    @Test
+    public void beforeEnter_errorHandlingViewReroute_allCheckersNeutral_allowNavigation() {
+        mockCheckerResult(checker1, Decision.NEUTRAL);
+        mockCheckerResult(checker2, Decision.NEUTRAL);
+        mockCheckerResult(checker3, Decision.NEUTRAL);
+        TestNavigationResult result = checkAccess(RouteAccessDeniedError.class,
+                false, false, true);
+        Assert.assertTrue(result.wasTargetViewRendered());
+        Assert.assertNull(result.getRerouteError());
+        Assert.assertNull("", result.getRerouteErrorMessage());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -399,10 +445,8 @@ public class NavigationAccessControlTest {
     private TestNavigationResult checkAccess(Class<?> navigationTarget,
             boolean authenticated, boolean productionMode,
             boolean expectCheckersUsed) {
-        TestNavigationResult result = ViewAccessCheckerTest.setupRequest(
-                navigationTarget,
-                authenticated ? ViewAccessCheckerTest.User.NORMAL_USER : null,
-                productionMode);
+        TestNavigationResult result = setupRequest(navigationTarget,
+                authenticated ? User.NORMAL_USER : null, productionMode);
         accessControl.beforeEnter(result.event);
         verifyAllCheckersUsed(expectCheckersUsed);
         return result;
@@ -434,6 +478,141 @@ public class NavigationAccessControlTest {
 
     private static String accessDeniedReason(NavigationAccessChecker checker) {
         return "Access denied by " + checker;
+    }
+
+    static TestNavigationResult setupRequest(Class navigationTarget, User user,
+            boolean productionMode) {
+        CurrentInstance.clearAll();
+
+        Principal principal;
+        String[] roles;
+
+        if (user == User.USER_NO_ROLES) {
+            principal = AccessAnnotationCheckerTest.USER_PRINCIPAL;
+            roles = new String[0];
+        } else if (user == User.NORMAL_USER) {
+            principal = AccessAnnotationCheckerTest.USER_PRINCIPAL;
+            roles = new String[] { "user" };
+        } else if (user == User.ADMIN) {
+            principal = AccessAnnotationCheckerTest.USER_PRINCIPAL;
+            roles = new String[] { "admin" };
+        } else {
+            principal = null;
+            roles = new String[0];
+        }
+
+        VaadinServletRequest vaadinServletRequest = Mockito
+                .mock(VaadinServletRequest.class);
+        HttpServletRequest httpServletRequest = AccessAnnotationCheckerTest
+                .createRequest(principal, roles);
+        Mockito.when(vaadinServletRequest.getHttpServletRequest())
+                .thenReturn(httpServletRequest);
+        Mockito.when(vaadinServletRequest.getUserPrincipal())
+                .thenAnswer(answer -> httpServletRequest.getUserPrincipal());
+        Mockito.when(vaadinServletRequest.getSession())
+                .thenAnswer(answer -> httpServletRequest.getSession());
+        Mockito.when(vaadinServletRequest.getSession(anyBoolean())).thenAnswer(
+                answer -> httpServletRequest.getSession(answer.getArgument(0)));
+        Mockito.when(vaadinServletRequest.isUserInRole(Mockito.any()))
+                .thenAnswer(answer -> httpServletRequest
+                        .isUserInRole(answer.getArgument(0)));
+        Mockito.when(vaadinServletRequest.getRequestURL()).thenReturn(
+                new StringBuffer(AccessAnnotationCheckerTest.REQUEST_URL));
+
+        Mockito.when(vaadinServletRequest.getWrappedSession())
+                .thenCallRealMethod();
+        Mockito.when(vaadinServletRequest.getWrappedSession(anyBoolean()))
+                .thenCallRealMethod();
+
+        CurrentInstance.set(VaadinRequest.class, vaadinServletRequest);
+
+        Router router = Mockito.mock(Router.class);
+        UI ui = Mockito.mock(UI.class);
+        Page page = Mockito.mock(Page.class);
+        Mockito.when(ui.getPage()).thenReturn(page);
+        VaadinSession vaadinSession = Mockito.mock(VaadinSession.class);
+        Mockito.when(ui.getSession()).thenReturn(vaadinSession);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(vaadinSession.getConfiguration())
+                .thenReturn(configuration);
+        Mockito.when(configuration.isProductionMode())
+                .thenReturn(productionMode);
+
+        UIInternals uiInternals = Mockito.mock(UIInternals.class);
+        Mockito.when(ui.getInternals()).thenReturn(uiInternals);
+        Mockito.when(uiInternals.getRouter()).thenReturn(router);
+
+        Mockito.when(router.getErrorNavigationTarget(Mockito.any()))
+                .thenAnswer(invocation -> {
+                    Class<?> exceptionClass = invocation.getArguments()[0]
+                            .getClass();
+                    if (exceptionClass == NotFoundException.class) {
+                        return Optional.of(
+                                new ErrorTargetEntry(RouteNotFoundError.class,
+                                        NotFoundException.class));
+                    } else if (exceptionClass == AccessDeniedException.class) {
+                        return Optional.of(new ErrorTargetEntry(
+                                RouteAccessDeniedError.class,
+                                AccessDeniedException.class));
+                    } else {
+                        return Optional.empty();
+                    }
+
+                });
+        Location location = new Location(getRoute(navigationTarget));
+        NavigationEvent navigationEvent;
+        if (HasErrorParameter.class.isAssignableFrom(navigationTarget)) {
+            navigationEvent = new ErrorNavigationEvent(router, location, ui,
+                    NavigationTrigger.ROUTER_LINK,
+                    new ErrorParameter<>(Exception.class, new Exception()));
+        } else {
+            navigationEvent = new NavigationEvent(router, location, ui,
+                    NavigationTrigger.ROUTER_LINK);
+        }
+
+        BeforeEnterEvent event = new BeforeEnterEvent(navigationEvent,
+                navigationTarget, new ArrayList<>());
+
+        RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
+        Mockito.when(router.getRegistry()).thenReturn(routeRegistry);
+        Mockito.when(routeRegistry.getNavigationTarget(Mockito.anyString()))
+                .thenAnswer(invocation -> {
+                    String url = (String) invocation.getArguments()[0];
+                    if (location.getPath().equals(url)) {
+                        return Optional.of(navigationTarget);
+                    } else {
+                        return Optional.empty();
+                    }
+                });
+
+        HttpSession session = Mockito.mock(HttpSession.class);
+        Map<String, Object> sessionAttributes = new HashMap<>();
+        Mockito.when(httpServletRequest.getSession()).thenReturn(session);
+        Mockito.when(httpServletRequest.getSession(anyBoolean()))
+                .thenReturn(session);
+        Mockito.doAnswer(invocation -> {
+            String key = (String) invocation.getArguments()[0];
+            Object value = invocation.getArguments()[1];
+
+            sessionAttributes.put(key, value);
+
+            return null;
+        }).when(session).setAttribute(Mockito.anyString(), Mockito.any());
+
+        TestNavigationResult info = new TestNavigationResult();
+        info.event = event;
+        info.sessionAttributes = sessionAttributes;
+
+        return info;
+    }
+
+    static String getRoute(Class<?> navigationTarget) {
+        if (HasErrorParameter.class.isAssignableFrom(navigationTarget)) {
+            return "some-path";
+        }
+        return RouteUtil.getRoutePath(new MockVaadinContext(),
+                navigationTarget);
     }
 
 }
