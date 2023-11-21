@@ -36,7 +36,16 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TSX;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Generate <code>index.ts</code> if it is missing in frontend folder.
+ * Generate default files for react-router if missing from the frontend folder.
+ * <p>
+ * </p>
+ * The generated files are <code>App.tsx</code>, <code>Flow.tsx</code> and
+ * <code>routes.tsx</code>. Where <code>Flow.tsx</code> is for communication
+ * between the Flow and the router and contains the server side route target
+ * <code>serverSideRoutes</code> to be used in <code>routes.tsx</code>.
+ * <p>
+ * <code>Flow.tsx</code> is always written and thus updates automatically if
+ * there are changes.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
