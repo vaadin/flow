@@ -1,0 +1,16 @@
+{
+  "name": "flow-vaadin-router-dependencies",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@vaadin/router": "1.7.5"
+  },
+  "devDependencies": {
+  }
+}

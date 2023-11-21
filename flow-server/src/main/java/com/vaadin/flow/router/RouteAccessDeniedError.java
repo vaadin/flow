@@ -16,8 +16,10 @@
 
 package com.vaadin.flow.router;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.internal.DefaultErrorHandler;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**
@@ -28,12 +30,13 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 @Tag(Tag.DIV)
 @AnonymousAllowed
 @DefaultErrorHandler
-public class RouteAccessDeniedError extends AbstractRouteNotFoundError
+public class RouteAccessDeniedError extends Component
         implements HasErrorParameter<AccessDeniedException> {
 
     @Override
     public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<AccessDeniedException> parameter) {
-        return super.setRouteNotFoundErrorParameter(event, parameter);
+        event.rerouteToError(NotFoundException.class);
+        return HttpStatusCode.NOT_FOUND.getCode();
     }
 }
