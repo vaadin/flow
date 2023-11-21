@@ -78,8 +78,8 @@ public class DebugWindowConnectionTest {
 
         Assert.assertFalse(reload.isLiveReload(resource));
         Mockito.verify(resource, times(0)).suspend(-1);
-        Mockito.verify(broadcaster, times(0)).broadcast("{\"command\": \"hello\"}",
-                resource);
+        Mockito.verify(broadcaster, times(0))
+                .broadcast("{\"command\": \"hello\"}", resource);
 
     }
 
@@ -101,8 +101,8 @@ public class DebugWindowConnectionTest {
 
         Assert.assertTrue(reload.isLiveReload(resource));
         Mockito.verify(resource, times(1)).suspend(-1);
-        Mockito.verify(broadcaster, times(1)).broadcast("{\"command\": \"hello\"}",
-                resource);
+        Mockito.verify(broadcaster, times(1))
+                .broadcast("{\"command\": \"hello\"}", resource);
 
     }
 
@@ -113,7 +113,8 @@ public class DebugWindowConnectionTest {
         // mock the request
         AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
         Mockito.when(resource.getRequest()).thenReturn(request);
-        Mockito.when(request.getRemoteAddr()).thenReturn("should trow UnknownHostException");
+        Mockito.when(request.getRemoteAddr())
+                .thenReturn("should trow UnknownHostException");
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
@@ -122,8 +123,8 @@ public class DebugWindowConnectionTest {
 
         Assert.assertFalse(reload.isLiveReload(resource));
         Mockito.verify(resource, times(0)).suspend(-1);
-        Mockito.verify(broadcaster, times(0)).broadcast("{\"command\": \"hello\"}",
-                resource);
+        Mockito.verify(broadcaster, times(0))
+                .broadcast("{\"command\": \"hello\"}", resource);
 
     }
 

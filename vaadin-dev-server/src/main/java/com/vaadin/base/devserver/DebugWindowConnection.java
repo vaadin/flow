@@ -209,7 +209,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
     @Override
     public void onConnect(AtmosphereResource resource) {
 
-
         AtmosphereRequest request = resource.getRequest();
         String remoteAddress = request.getRemoteAddr();
         if (!isNonLocalhostEnabled) {
@@ -219,7 +218,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
                     return;
                 }
             } catch (UnknownHostException e) {
-                getLogger().info("Unable to resolve remote address: '{}', so we are preventing the web socket connection with DebugWindow.",
+                getLogger().info(
+                        "Unable to resolve remote address: '{}', so we are preventing the web socket connection with DebugWindow.",
                         remoteAddress, e);
                 return;
             }
