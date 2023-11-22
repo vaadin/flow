@@ -192,7 +192,7 @@ public interface Style extends Serializable {
      * @return this style instance
      */
     default Style setBorderRadius(String value) {
-        return set(STYLE_BORDER_RADIUS,value);
+        return set(STYLE_BORDER_RADIUS, value);
     }
 
     public enum BoxSizing {
