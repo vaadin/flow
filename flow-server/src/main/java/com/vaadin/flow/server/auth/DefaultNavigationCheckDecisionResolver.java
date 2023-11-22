@@ -56,7 +56,7 @@ import com.vaadin.flow.server.auth.NavigationAccessChecker.NavigationContext;
  * sensible information.
  * <p>
  * </p>
- * To be noted that the above situation never happens if the
+ * It should be noted that the above situation never occurs if the
  * {@link AnnotatedViewAccessChecker} is enabled because it computes only ALLOW
  * or DENY results.
  *
