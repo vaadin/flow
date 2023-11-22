@@ -84,6 +84,10 @@ public class ElementConstants {
      */
     public static final String STYLE_BORDER_BOTTOM = "border-bottom";
     /**
+     * The style property for border-radius.
+     */
+    public static final String STYLE_BORDER_RADIUS = "border-radius";
+    /**
      * The style property for box-sizing.
      */
     public static final String STYLE_BOX_SIZING = "box-sizing";
