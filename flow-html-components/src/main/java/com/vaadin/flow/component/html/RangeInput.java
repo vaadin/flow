@@ -219,7 +219,8 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range#non-standard_attributes">Non-standard
      * Attribute</a>. Since the vertical orientation is not standardized yet,
      * this feature is not guaranteed to work on every browser. We found this
-     * feature to work on Firefox 120+, Chromium 119+ and Edge 119+.
+     * feature to work on Firefox 120+, Chromium 119+, Edge 119+ and Safari
+     * 17.1+.
      * <p>
      * </p>
      * The orient attribute defines the orientation of the range slider. Values
