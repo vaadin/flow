@@ -27,6 +27,7 @@ import com.vaadin.flow.data.value.HasValueChangeMode;
 import com.vaadin.flow.data.value.ValueChangeMode;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Creates a new input element with type "range".
@@ -216,7 +217,10 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * </p>
      * <a href=
      * "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range#non-standard_attributes">Non-standard
-     * Attribute</a>.
+     * Attribute</a>. Since the vertical orientation is not standardized yet,
+     * this feature is not guaranteed to work on every browser. We found this
+     * feature to work on Firefox 120+, Chromium 119+, Edge 119+ and Safari
+     * 17.1+.
      * <p>
      * </p>
      * The orient attribute defines the orientation of the range slider. Values
@@ -228,7 +232,25 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      *            {@link Orientation#HORIZONTAL}.
      */
     public void setOrientation(Orientation orientation) {
+        Objects.requireNonNull(orientation);
+        // Fix support for individual browsers
+        // See
+        // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range#creating_vertical_range_controls
+        // for more details
+
+        // support for Firefox
         set(orientDescriptor, orientation.getValue());
+        if (orientation == Orientation.VERTICAL) {
+            // Support for Chrome and Safari
+            getStyle().set("-webkit-appearance", "slider-vertical");
+            getStyle().set("appearance", "slider-vertical");
+            // Support for Edge
+            getStyle().set("writing-mode", "bt-lr");
+        } else {
+            getStyle().remove("-webkit-appearance");
+            getStyle().remove("appearance");
+            getStyle().remove("writing-mode");
+        }
     }
 
     /**

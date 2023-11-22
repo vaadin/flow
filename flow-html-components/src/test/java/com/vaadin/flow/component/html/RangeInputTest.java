@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.beans.IntrospectionException;
@@ -50,5 +51,29 @@ public class RangeInputTest extends ComponentTest {
     @Override
     public void testHasAriaLabelIsImplemented() {
         super.testHasAriaLabelIsImplemented();
+    }
+
+    @Test
+    public void settingOrientationUpdatesStylesProperly() {
+        final RangeInput rangeInput = new RangeInput();
+        Assert.assertNull(rangeInput.getStyle().get("-webkit-appearance"));
+        Assert.assertNull(rangeInput.getStyle().get("appearance"));
+        Assert.assertNull(rangeInput.getStyle().get("writing-mode"));
+        Assert.assertEquals(RangeInput.Orientation.HORIZONTAL,
+                rangeInput.getOrientation());
+        rangeInput.setOrientation(RangeInput.Orientation.VERTICAL);
+        Assert.assertEquals("slider-vertical",
+                rangeInput.getStyle().get("-webkit-appearance"));
+        Assert.assertEquals("slider-vertical",
+                rangeInput.getStyle().get("appearance"));
+        Assert.assertEquals("bt-lr", rangeInput.getStyle().get("writing-mode"));
+        Assert.assertEquals(RangeInput.Orientation.VERTICAL,
+                rangeInput.getOrientation());
+        rangeInput.setOrientation(RangeInput.Orientation.HORIZONTAL);
+        Assert.assertNull(rangeInput.getStyle().get("-webkit-appearance"));
+        Assert.assertNull(rangeInput.getStyle().get("appearance"));
+        Assert.assertNull(rangeInput.getStyle().get("writing-mode"));
+        Assert.assertEquals(RangeInput.Orientation.HORIZONTAL,
+                rangeInput.getOrientation());
     }
 }
