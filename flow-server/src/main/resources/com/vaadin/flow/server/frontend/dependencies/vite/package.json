@@ -10,7 +10,7 @@
   "license": "Apache-2.0",
   "dependencies": {},
   "devDependencies": {
-    "vite": "5.0.1",
+    "vite": "5.0.2",
     "@vitejs/plugin-react": "4.2.0",
     "@rollup/plugin-replace": "5.0.4",
     "@rollup/pluginutils": "5.0.5",
