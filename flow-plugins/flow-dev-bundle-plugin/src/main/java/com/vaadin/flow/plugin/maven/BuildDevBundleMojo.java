@@ -433,7 +433,7 @@ public class BuildDevBundleMojo extends AbstractMojo
 
     @Override
     public boolean isErrorHandlerRedirectEnabled() {
-        return false;
+        return true;
     }
 
 }

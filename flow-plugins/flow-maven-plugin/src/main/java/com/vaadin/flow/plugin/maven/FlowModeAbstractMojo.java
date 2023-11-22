@@ -226,7 +226,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.SKIP_DEV_BUNDLE_REBUILD, defaultValue = "false")
     private boolean skipDevBundleRebuild;
 
-    @Parameter(property = InitParameters.ERROR_HANDLER_REDIRECT_ENABLED, defaultValue = "false")
+    @Parameter(property = InitParameters.ERROR_HANDLER_REDIRECT_ENABLED, defaultValue = "true")
     private boolean enableErrorHandlerRedirect;
 
     /**

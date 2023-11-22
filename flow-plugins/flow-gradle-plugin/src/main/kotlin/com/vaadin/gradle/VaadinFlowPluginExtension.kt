@@ -276,7 +276,7 @@ public abstract class VaadinFlowPluginExtension {
      * can be rendered for exceptions during RPC request handling, not only limited
      * to exceptions thrown during navigation life-cycle.
      *
-     * @return `true` to enable error view rendering in RPC, `false` by default
+     * @return `true` to enable error view rendering in RPC (default), `false` otherwise
      */
     public abstract val errorHandlerRedirect: Property<Boolean>
 
@@ -421,7 +421,7 @@ internal class PluginEffectiveConfiguration(
         .convention(false)
 
     val isErrorHandlerRedirect: Provider<Boolean> = extension.errorHandlerRedirect
-        .convention(false)
+        .convention(true)
         .overrideWithSystemProperty(InitParameters.ERROR_HANDLER_REDIRECT_ENABLED)
 
     /**

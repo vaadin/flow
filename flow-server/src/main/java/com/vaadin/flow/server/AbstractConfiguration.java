@@ -185,7 +185,7 @@ public interface AbstractConfiguration extends Serializable {
      * @return true if error view should be rendered
      */
     default boolean isErrorRedirectEnabled() {
-        return getBooleanProperty(ERROR_HANDLER_REDIRECT_ENABLED, false);
+        return getBooleanProperty(ERROR_HANDLER_REDIRECT_ENABLED, true);
     }
 
     /**
