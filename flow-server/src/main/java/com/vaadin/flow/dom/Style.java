@@ -182,6 +182,7 @@ public interface Style extends Serializable {
     default Style setBorderBottom(String value) {
         return set(STYLE_BORDER_BOTTOM, value);
     }
+
     /**
      * Sets the <code>border-radius</code> property.
      *
