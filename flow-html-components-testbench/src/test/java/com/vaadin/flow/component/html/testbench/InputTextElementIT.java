@@ -48,4 +48,9 @@ public class InputTextElementIT extends ChromeBrowserTest {
         Assert.assertEquals("", input.getValue());
         Assert.assertEquals("Value is ''", log.getText());
     }
+
+    @Test
+    public void testPlaceholder() {
+        Assert.assertEquals("placeholder", input.getPlaceholder());
+    }
 }

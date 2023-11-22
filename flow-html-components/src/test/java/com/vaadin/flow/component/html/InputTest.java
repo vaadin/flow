@@ -35,7 +35,7 @@ public class InputTest extends ComponentTest {
         addStringProperty("type", "text");
         // Object.class because of generics
         addProperty("value", Object.class, "", "foo", false, false);
-        addOptionalStringProperty("placeholder");
+        addStringProperty("placeholder", "");
     }
 
     @Test

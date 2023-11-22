@@ -183,6 +183,18 @@ public interface Style extends Serializable {
         return set(STYLE_BORDER_BOTTOM, value);
     }
 
+    /**
+     * Sets the <code>border-radius</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setBorderRadius(String value) {
+        return set(STYLE_BORDER_RADIUS, value);
+    }
+
     public enum BoxSizing {
         CONTENT_BOX, BORDER_BOX, INITIAL, INHERIT
     }
