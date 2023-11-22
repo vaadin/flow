@@ -1415,6 +1415,7 @@ export class VaadinDevTools extends LitElement {
         }}
       ></vaadin-dev-tools-component-picker>
       <div
+      style="display: var(--dev-tools-button-display, 'block')"
         class="dev-tools ${this.splashMessage ? 'active' : ''}${this.unreadErrors ? ' error' : ''}"
         @click=${() => this.toggleExpanded()}
       >
