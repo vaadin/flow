@@ -16,6 +16,7 @@ public class InputTextView extends Div {
         input.addValueChangeListener(e -> {
             log.setText("Value is '" + input.getValue() + "'");
         });
+        input.setPlaceholder("placeholder");
         add(log, input);
     }
 }
