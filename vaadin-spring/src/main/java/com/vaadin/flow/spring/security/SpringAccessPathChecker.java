@@ -40,6 +40,15 @@ import com.vaadin.flow.server.auth.AccessPathChecker;
  * configured using
  * {@link NavigationAccessControlConfigurer#withRoutePathAccessChecker()}
  * method.
+ *
+ * <pre>
+ * {@code @Bean
+ * NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
+ *     return new NavigationAccessControlConfigurer()
+ *             .withRoutePathAccessChecker().withLoginView(LoginView.class);
+ * }
+ * }
+ * </pre>
  */
 public class SpringAccessPathChecker implements AccessPathChecker {
 
