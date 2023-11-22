@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html.testbench;
 
+import com.vaadin.testbench.HasPlaceholder;
 import org.openqa.selenium.Keys;
 
 import com.vaadin.testbench.TestBenchElement;
@@ -27,7 +28,8 @@ import com.vaadin.testbench.elementsbase.Element;
  * @since 1.0
  */
 @Element("input")
-public class InputTextElement extends TestBenchElement {
+public class InputTextElement extends TestBenchElement
+        implements HasPlaceholder {
 
     /**
      * Sets the value of the text input to the given value, clearing out any old
@@ -64,5 +66,11 @@ public class InputTextElement extends TestBenchElement {
 
     public String getValue() {
         return getPropertyString("value");
+    }
+
+    @Override
+    public String getPlaceholder() {
+        final String ret = getAttribute("placeholder");
+        return ret == null ? "" : ret;
     }
 }
