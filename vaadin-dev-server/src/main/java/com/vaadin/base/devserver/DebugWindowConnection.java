@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
@@ -44,6 +45,7 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -82,7 +84,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private List<DevToolsMessageHandler> plugins;
 
-    private boolean isNonLocalhostEnabled = false;
+    private String hostsAllowed;
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
@@ -101,8 +103,12 @@ public class DebugWindowConnection implements BrowserLiveReload {
     DebugWindowConnection(ClassLoader classLoader, VaadinContext context) {
         this.classLoader = classLoader;
         this.context = context;
-        this.ideIntegration = new IdeIntegration(
-                ApplicationConfiguration.get(context));
+        ApplicationConfiguration configuration = ApplicationConfiguration
+                .get(context);
+        this.ideIntegration = new IdeIntegration(configuration);
+        this.hostsAllowed = configuration
+                .getStringProperty("devmode.hostsAllowed", null);
+
         this.themeEditorMessageHandler = new ThemeEditorMessageHandler(context);
 
         findPlugins();
@@ -148,14 +154,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
     public void setBackend(Backend backend) {
         assert (backend != null);
         this.backend = backend;
-    }
-
-    public boolean isNonLocalhostEnabled() {
-        return isNonLocalhostEnabled;
-    }
-
-    public void setNonLocalhostEnabled(boolean localhostEnabled) {
-        isNonLocalhostEnabled = localhostEnabled;
     }
 
     /** Implementation of the development tools interface. */
@@ -208,23 +206,38 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     @Override
     public void onConnect(AtmosphereResource resource) {
+        if (isAllowedHost(resource)) {
+            handleConnect(resource);
+        } else {
+            String hostsAllowedDebug = hostsAllowed == null ? "all loopback addresses" : "'"+hostsAllowed+"'";
+            getLogger().info(
+                    "Denying debug connection. Hosts allowed are {} and the remote address is '{}' ",hostsAllowedDebug, resource.getRequest().getRemoteAddr()); 
+            resource.resume();
+        }
+    }
 
+    private boolean isAllowedHost(AtmosphereResource resource) {
         AtmosphereRequest request = resource.getRequest();
         String remoteAddress = request.getRemoteAddr();
-        if (!isNonLocalhostEnabled) {
+        if (hostsAllowed == null) {
+            // Allow only loop back by default
             try {
                 InetAddress inetAddress = InetAddress.getByName(remoteAddress);
-                if (!inetAddress.isLoopbackAddress()) {
-                    return;
-                }
-            } catch (UnknownHostException e) {
+                return inetAddress.isLoopbackAddress();
+            } catch (Exception e) {
                 getLogger().info(
-                        "Unable to resolve remote address: '{}', so we are preventing the web socket connection with DebugWindow.",
+                        "Unable to resolve remote address: '{}', so we are preventing the web socket connection",
                         remoteAddress, e);
-                return;
+                return false;
             }
+        } else {
+            // Allowed hosts set
+            return Pattern.compile(hostsAllowed).matcher(remoteAddress)
+                    .matches();
         }
+    }
 
+    public void handleConnect(AtmosphereResource resource) {
         resource.suspend(-1);
         atmosphereResources.add(new WeakReference<>(resource));
         resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",

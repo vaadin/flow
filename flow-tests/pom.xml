@@ -229,6 +229,7 @@
                             <!-- Allow test clients not on localhost to connect to Vite-->
                             <vaadin.devmode.vite.options>${vaadin.devmode.vite.options}</vaadin.devmode.vite.options>
                             <vaadin.frontend.hotdeploy>${vaadin.frontend.hotdeploy}</vaadin.frontend.hotdeploy>
+                            <vaadin.devmode.hostsAllowed>${vaadin.devmode.hostsAllowed}</vaadin.devmode.hostsAllowed>
                         </systemProperties>
                     </configuration>
                 </plugin>
