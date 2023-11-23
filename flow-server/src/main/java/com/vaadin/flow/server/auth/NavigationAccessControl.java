@@ -35,10 +35,6 @@ import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.WrappedSession;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.AccessCheckResult;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.Decision;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.DecisionResolver;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.NavigationContext;
 
 /**
  * A {@link BeforeEnterListener} implementation that contains logic to perform
@@ -48,8 +44,8 @@ import com.vaadin.flow.server.auth.NavigationAccessChecker.NavigationContext;
  * Access rules are defined by providing one or more
  * {@link NavigationAccessChecker} instances, that are responsible for deciding
  * if a navigation should be allowed or not. The final navigation grant decision
- * is taken by a pluggable {@link DecisionResolver} component, based on the
- * results of all access checkers.
+ * is taken by a pluggable {@link AccessCheckDecisionResolver} component, based
+ * on the results of all access checkers.
  * <p>
  * If access is allowed, the navigation continues to the target component.
  * Otherwise, for not authenticated requests, a redirect is performed to the
@@ -73,8 +69,8 @@ import com.vaadin.flow.server.auth.NavigationAccessChecker.NavigationContext;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @see NavigationAccessChecker
- * @see DecisionResolver
- * @see Decision
+ * @see AccessCheckDecisionResolver
+ * @see AccessCheckDecision
  * @see #setLoginView(String)
  * @see #setLoginView(Class)
  */
@@ -95,7 +91,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
 
     private final List<NavigationAccessChecker> checkerList;
 
-    private final DecisionResolver decisionResolver;
+    private final AccessCheckDecisionResolver decisionResolver;
 
     private Class<? extends Component> loginView;
     private String loginUrl;
@@ -123,7 +119,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
      */
     public NavigationAccessControl(
             Collection<NavigationAccessChecker> checkerList,
-            DecisionResolver decisionResolver) {
+            AccessCheckDecisionResolver decisionResolver) {
         this.decisionResolver = Objects.requireNonNull(decisionResolver,
                 "decision resolver must not be null");
         this.checkerList = List.copyOf(checkerList);
@@ -233,7 +229,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
                 getPrincipal(request), getRolesChecker(request));
         AccessCheckResult result = checkAccess(context,
                 isProductionMode(event));
-        if (result.decision() != Decision.ALLOW) {
+        if (result.decision() != AccessCheckDecision.ALLOW) {
             if (context.getPrincipal() == null) {
                 storeRedirectURL(event, request);
                 if (loginView != null) {
@@ -290,7 +286,8 @@ public class NavigationAccessControl implements BeforeEnterListener {
         getLogger().debug("Decision against {} checker results: {}",
                 results.size(), decision);
 
-        if (decision.decision() == Decision.REJECT && !productionMode) {
+        if (decision.decision() == AccessCheckDecision.REJECT
+                && !productionMode) {
             throw new IllegalStateException(decision.reason());
         }
         if (productionMode) {
