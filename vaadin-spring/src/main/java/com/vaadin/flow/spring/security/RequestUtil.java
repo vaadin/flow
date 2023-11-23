@@ -24,9 +24,11 @@ import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.auth.AccessCheckDecision;
+import com.vaadin.flow.server.auth.AccessCheckResult;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import com.vaadin.flow.server.auth.NavigationAccessChecker;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.spring.SpringServlet;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 
@@ -207,16 +209,15 @@ public class RequestUtil {
             return false;
         }
 
-        NavigationAccessChecker.NavigationContext navigationContext = new NavigationAccessChecker.NavigationContext(
-                router, targetView,
+        NavigationContext navigationContext = new NavigationContext(router,
+                targetView,
                 new Location(path,
                         QueryParameters.full(request.getParameterMap())),
                 target.getRouteParameters(), null, role -> false, false);
 
-        NavigationAccessChecker.AccessCheckResult result = navigationAccessControl
+        AccessCheckResult result = navigationAccessControl
                 .checkAccess(navigationContext, productionMode);
-        boolean isAllowed = result
-                .decision() == NavigationAccessChecker.Decision.ALLOW;
+        boolean isAllowed = result.decision() == AccessCheckDecision.ALLOW;
         if (isAllowed) {
             getLogger().debug("{} refers to a public view", path);
         } else {
