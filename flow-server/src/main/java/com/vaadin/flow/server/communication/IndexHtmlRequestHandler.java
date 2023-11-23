@@ -18,10 +18,13 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
@@ -42,6 +45,7 @@ import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
+import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
@@ -76,6 +80,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
+    public static final String RANDOM_DEV_TOOLS_TOKEN = UUID.randomUUID()
+            .toString();
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -349,13 +355,54 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         maybeBackend.ifPresent(
                 backend -> devToolsConf.put("backend", backend.toString()));
         devToolsConf.put("liveReloadPort", liveReloadPort);
-
+        if (isAllowedDevToolsHost(config, request)) {
+            devToolsConf.put("token", RANDOM_DEV_TOOLS_TOKEN);
+        }
         addScript(indexDocument, String.format("""
                 window.Vaadin.devToolsPlugins = [];
                 window.Vaadin.devToolsConf = %s;
                     """, devToolsConf.toJson()));
 
         indexDocument.body().appendChild(new Element("vaadin-dev-tools"));
+    }
+
+    private boolean isAllowedDevToolsHost(AbstractConfiguration configuration,
+            VaadinRequest request) {
+        String remoteAddress = request.getRemoteAddr();
+        String hostsAllowed = configuration
+                .getStringProperty("devmode.hostsAllowed", null);
+
+        if (!isAllowedDevToolsHost(remoteAddress, hostsAllowed)) {
+            return false;
+        }
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null
+                && !isAllowedDevToolsHost(forwardedFor, hostsAllowed)) {
+            return false;
+        }
+
+        return true;
+
+    }
+
+    private boolean isAllowedDevToolsHost(String remoteAddress,
+            String hostsAllowed) {
+        if (hostsAllowed == null) {
+            // Allow only loop back by default
+            try {
+                InetAddress inetAddress = InetAddress.getByName(remoteAddress);
+                return inetAddress.isLoopbackAddress();
+            } catch (Exception e) {
+                getLogger().debug(
+                        "Unable to resolve remote address: '{}', so we are preventing the web socket connection",
+                        remoteAddress, e);
+                return false;
+            }
+        } else {
+            // Allowed hosts set
+            return Pattern.compile(hostsAllowed).matcher(remoteAddress)
+                    .matches();
+        }
     }
 
     private void addInitialFlow(JsonObject initialJson, Document indexDocument,

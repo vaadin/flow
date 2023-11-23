@@ -16,8 +16,6 @@
 package com.vaadin.base.devserver;
 
 import java.lang.ref.WeakReference;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,26 +26,24 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
-import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
-import org.atmosphere.cpr.AtmosphereRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
+import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
 import com.vaadin.base.devserver.themeeditor.ThemeEditorMessageHandler;
+import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
@@ -84,8 +80,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private List<DevToolsMessageHandler> plugins;
 
-    private String hostsAllowed;
-
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
                 "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener"));
@@ -103,12 +97,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
     DebugWindowConnection(ClassLoader classLoader, VaadinContext context) {
         this.classLoader = classLoader;
         this.context = context;
-        ApplicationConfiguration configuration = ApplicationConfiguration
-                .get(context);
-        this.ideIntegration = new IdeIntegration(configuration);
-        this.hostsAllowed = configuration
-                .getStringProperty("devmode.hostsAllowed", null);
-
+        this.ideIntegration = new IdeIntegration(
+                ApplicationConfiguration.get(context));
         this.themeEditorMessageHandler = new ThemeEditorMessageHandler(context);
 
         findPlugins();
@@ -206,37 +196,13 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     @Override
     public void onConnect(AtmosphereResource resource) {
-        if (isAllowedHost(resource)) {
+        if (IndexHtmlRequestHandler.RANDOM_DEV_TOOLS_TOKEN
+                .equals(resource.getRequest().getParameter("token"))) {
             handleConnect(resource);
         } else {
-            String hostsAllowedDebug = hostsAllowed == null
-                    ? "all loopback addresses"
-                    : "'" + hostsAllowed + "'";
-            getLogger().info(
-                    "Denying debug connection. Hosts allowed are {} and the remote address is '{}' ",
-                    hostsAllowedDebug, resource.getRequest().getRemoteAddr());
+            getLogger().debug(
+                    "Connection denied because of missing or invalid token. The host is probably not on the allow list");
             resource.resume();
-        }
-    }
-
-    private boolean isAllowedHost(AtmosphereResource resource) {
-        AtmosphereRequest request = resource.getRequest();
-        String remoteAddress = request.getRemoteAddr();
-        if (hostsAllowed == null) {
-            // Allow only loop back by default
-            try {
-                InetAddress inetAddress = InetAddress.getByName(remoteAddress);
-                return inetAddress.isLoopbackAddress();
-            } catch (Exception e) {
-                getLogger().info(
-                        "Unable to resolve remote address: '{}', so we are preventing the web socket connection",
-                        remoteAddress, e);
-                return false;
-            }
-        } else {
-            // Allowed hosts set
-            return Pattern.compile(hostsAllowed).matcher(remoteAddress)
-                    .matches();
         }
     }
 

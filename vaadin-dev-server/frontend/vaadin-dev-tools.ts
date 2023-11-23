@@ -99,6 +99,7 @@ type DevToolsConf = {
   url: string;
   backend?: string;
   liveReloadPort: number;
+  token?: string;
 };
 @customElement('vaadin-dev-tools')
 export class VaadinDevTools extends LitElement {
@@ -1026,7 +1027,7 @@ export class VaadinDevTools extends LitElement {
       console.error('The protocol of the url should be http or https for live reload to work.');
       return undefined;
     }
-    return `${connectionBaseUrl.replace(/^http/, 'ws')}?v-r=push&debug_window`;
+    return `${connectionBaseUrl.replace(/^http/, 'ws')}?v-r=push&debug_window&token=${this.conf.token}`;
   }
 
   getSpringBootWebSocketUrl(location: any) {

@@ -95,8 +95,6 @@ public class DebugWindowConnectionTest {
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
 
-        reload.setNonLocalhostEnabled(true);
-
         reload.onConnect(resource);
 
         Assert.assertTrue(reload.isLiveReload(resource));
