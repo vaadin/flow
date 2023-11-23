@@ -209,9 +209,12 @@ public class DebugWindowConnection implements BrowserLiveReload {
         if (isAllowedHost(resource)) {
             handleConnect(resource);
         } else {
-            String hostsAllowedDebug = hostsAllowed == null ? "all loopback addresses" : "'"+hostsAllowed+"'";
+            String hostsAllowedDebug = hostsAllowed == null
+                    ? "all loopback addresses"
+                    : "'" + hostsAllowed + "'";
             getLogger().info(
-                    "Denying debug connection. Hosts allowed are {} and the remote address is '{}' ",hostsAllowedDebug, resource.getRequest().getRemoteAddr()); 
+                    "Denying debug connection. Hosts allowed are {} and the remote address is '{}' ",
+                    hostsAllowedDebug, resource.getRequest().getRemoteAddr());
             resource.resume();
         }
     }
