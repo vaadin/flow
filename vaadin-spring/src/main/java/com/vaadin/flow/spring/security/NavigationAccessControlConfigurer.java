@@ -35,6 +35,53 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 /**
  * Allows to configure the {@link NavigationAccessControl}.
  * <p>
+ * To configure Flow navigation access control, a Spring bean on type
+ * {@link NavigationAccessControlConfigurer} should be defined.
+ * <p>
+ * </p>
+ * In Spring Boot applications, a default
+ * {@link NavigationAccessControlConfigurer} bean is provided. It activates
+ * {@link AnnotatedViewAccessChecker}, but it disables the
+ * {@link NavigationAccessControl}, for backward compatibility.
+ * <p>
+ * </p>
+ * However, if Spring Security is configured extending
+ * {@link VaadinWebSecurity}, the {@link NavigationAccessControl} is enabled
+ * automatically.
+ * <p>
+ * </p>
+ *
+ * Default settings can be overridden by defining a custom
+ * {@link NavigationAccessControlConfigurer} bean.
+ *
+ * <pre>
+ * {@code @Bean
+ * NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
+ *     return new NavigationAccessControlConfigurer()
+ *             .withRoutePathAccessChecker().withLoginView(LoginView.class);
+ * }
+ * }
+ * </pre>
+ *
+ * <p>
+ * </p>
+ * NOTE: if the bean in exposed in a configuration class that extends
+ * {@link VaadinWebSecurity}, the method must be defined {@code static} to
+ * prevent cyclic dependencies errors.
+ *
+ * <pre>
+ * {@code @Bean
+ * class SecurityConfig extends VaadinWebSecurity {
+ *     static NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
+ *         return new NavigationAccessControlConfigurer()
+ *                 .withRoutePathAccessChecker().withLoginView(LoginView.class);
+ *     }
+ * }
+ * }
+ * </pre>
+ *
+ * <p>
+ * </p>
  * {@link NavigationAccessControl} bean can be configured by:
  *
  * <ul>
@@ -44,8 +91,12 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
  * <li>completely disable access control</li>
  * </ul>
  * <p>
+ * </p>
  * The {@link NavigationAccessControl} will automatically be disabled if no
  * navigation access checkers are provided.
+ *
+ * @see NavigationAccessControl
+ * @see VaadinWebSecurity
  */
 public final class NavigationAccessControlConfigurer {
 

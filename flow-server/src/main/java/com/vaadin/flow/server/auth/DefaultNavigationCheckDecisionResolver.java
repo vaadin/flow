@@ -45,6 +45,21 @@ import com.vaadin.flow.server.auth.NavigationAccessChecker.NavigationContext;
  * | ALL NEUTRAL     | DENY     |
  * | ALLOW + DENY    | REJECT   |
  * </pre>
+ *
+ * <p>
+ * </p>
+ * Almost the same rule applies also if the evaluation happens during error
+ * handling phase ({@link NavigationContext#isErrorHandling()} is
+ * {@literal true}), with a single exception: in this case, if all the results
+ * are {@literal NEUTRAL} the access is granted because the target of the
+ * navigation is supposed to be an error handler component and not a view with
+ * sensible information.
+ * <p>
+ * </p>
+ * It should be noted that the above situation never occurs if the
+ * {@link AnnotatedViewAccessChecker} is enabled because it computes only ALLOW
+ * or DENY results.
+ *
  */
 public class DefaultNavigationCheckDecisionResolver
         implements NavigationAccessChecker.DecisionResolver {
