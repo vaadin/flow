@@ -58,11 +58,11 @@ import org.slf4j.LoggerFactory;
  * or DENY results.
  *
  */
-public class DefaultNavigationCheckDecisionResolver
+public class DefaultAccessCheckDecisionResolver
         implements AccessCheckDecisionResolver {
 
     public static final Logger LOGGER = LoggerFactory
-            .getLogger(DefaultNavigationCheckDecisionResolver.class);
+            .getLogger(DefaultAccessCheckDecisionResolver.class);
 
     @Override
     public AccessCheckResult resolve(List<AccessCheckResult> results,

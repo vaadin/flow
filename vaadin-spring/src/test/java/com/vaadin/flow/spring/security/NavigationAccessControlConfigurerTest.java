@@ -27,11 +27,11 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
+import com.vaadin.flow.server.auth.AccessCheckDecisionResolver;
 import com.vaadin.flow.server.auth.AccessCheckResult;
 import com.vaadin.flow.server.auth.AnnotatedViewAccessChecker;
-import com.vaadin.flow.server.auth.DefaultNavigationCheckDecisionResolver;
+import com.vaadin.flow.server.auth.DefaultAccessCheckDecisionResolver;
 import com.vaadin.flow.server.auth.NavigationAccessChecker;
-import com.vaadin.flow.server.auth.AccessCheckDecisionResolver;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.RoutePathAccessChecker;
@@ -63,8 +63,7 @@ class NavigationAccessControlConfigurerTest {
                 registeredCheckers);
         Assertions.assertThat(accessControl.isEnabled()).isTrue();
         Assertions.assertThat(accessControl.decisionResolver)
-                .isExactlyInstanceOf(
-                        DefaultNavigationCheckDecisionResolver.class);
+                .isExactlyInstanceOf(DefaultAccessCheckDecisionResolver.class);
     }
 
     @Test
