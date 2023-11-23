@@ -79,7 +79,7 @@ public class RoutePathAccessCheckerTest {
                 .thenReturn(true);
         AccessCheckResult result = checkAccess(AnonymousAllowedView.class,
                 null);
-        Assert.assertEquals(AccessCheckResult.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.allow(), result);
         Mockito.verify(accessPathChecker).hasAccess(eq("anon"), any(), any());
     }
 
@@ -89,7 +89,7 @@ public class RoutePathAccessCheckerTest {
                 .thenReturn(true);
         AccessCheckResult result = checkAccess(AnonymousAllowedView.class,
                 User.USER_NO_ROLES);
-        Assert.assertEquals(AccessCheckResult.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.allow(), result);
         Mockito.verify(accessPathChecker).hasAccess(eq("anon"), any(), any());
     }
 
@@ -99,7 +99,7 @@ public class RoutePathAccessCheckerTest {
                 .thenReturn(true);
         AccessCheckResult result = checkAccess(PermitAllView.class,
                 User.USER_NO_ROLES);
-        Assert.assertEquals(AccessCheckResult.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.allow(), result);
         Mockito.verify(accessPathChecker).hasAccess(eq("permitall"), any(),
                 any());
     }
@@ -110,7 +110,7 @@ public class RoutePathAccessCheckerTest {
                 accessPathChecker.hasAccess(eq("noannotation"), any(), any()))
                 .thenReturn(true);
         AccessCheckResult result = checkAccess(NoAnnotationView.class, null);
-        Assert.assertEquals(AccessCheckResult.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.allow(), result);
         Mockito.verify(accessPathChecker).hasAccess(eq("noannotation"), any(),
                 any());
         Mockito.verifyNoMoreInteractions(accessPathChecker);
@@ -190,7 +190,7 @@ public class RoutePathAccessCheckerTest {
                 .then(i -> i.getArgument(0, String.class).equals("anon-alias"));
         AccessCheckResult result = checkAccess(AnonymousAllowedView.class,
                 null);
-        Assert.assertEquals(AccessCheckResult.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.allow(), result);
         Mockito.verify(accessPathChecker, Mockito.never()).hasAccess(eq("anon"),
                 any(), any());
         Mockito.verify(accessPathChecker).hasAccess(eq("anon-alias"), any(),
@@ -206,7 +206,7 @@ public class RoutePathAccessCheckerTest {
                         .equals("parent/alias-with-parent"));
         AccessCheckResult result = checkAccess(AnonymousAllowedWithParent.class,
                 null);
-        Assert.assertEquals(AccessCheckResult.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.allow(), result);
         Mockito.verify(accessPathChecker, Mockito.never())
                 .hasAccess(eq("parent/anon-with-parent"), any(), any());
         Mockito.verify(accessPathChecker)
@@ -222,7 +222,7 @@ public class RoutePathAccessCheckerTest {
                         .equals("anon-alias-wildcard/a/b/c"));
         AccessCheckResult result = checkAccess(AnonymousAllowedView.class,
                 null);
-        Assert.assertEquals(AccessCheckResult.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.allow(), result);
         Mockito.verify(accessPathChecker, Mockito.never()).hasAccess(eq("anon"),
                 any(), any());
         Mockito.verify(accessPathChecker)
@@ -240,7 +240,7 @@ public class RoutePathAccessCheckerTest {
                         "anon-alias-template/ID-123/C0/resource/12345"));
         AccessCheckResult result = checkAccess(AnonymousAllowedView.class,
                 null);
-        Assert.assertEquals(AccessCheckResult.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.allow(), result);
         Mockito.verify(accessPathChecker, Mockito.never()).hasAccess(eq("anon"),
                 any(), any());
         Mockito.verify(accessPathChecker).hasAccess(
@@ -334,7 +334,7 @@ public class RoutePathAccessCheckerTest {
                 .thenReturn(true);
         AccessCheckResult result = checkAccess(
                 AnonymousAllowedTemplateView.class, null);
-        Assert.assertEquals(AccessCheckResult.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.allow(), result);
         Mockito.verify(accessPathChecker).hasAccess(
                 eq("anon-template/ID-123/C0/resource/12345"), any(), any());
     }
@@ -347,7 +347,7 @@ public class RoutePathAccessCheckerTest {
                 any(), any())).thenReturn(true);
         AccessCheckResult result = checkAccess(
                 AnonymousAllowedWildcardView.class, null);
-        Assert.assertEquals(AccessCheckResult.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.allow(), result);
         Mockito.verify(accessPathChecker).hasAccess(eq("anon-wildcard/a/b/c"),
                 any(), any());
     }
@@ -361,7 +361,7 @@ public class RoutePathAccessCheckerTest {
                 .thenReturn(true);
         AccessCheckResult result = checkAccess(
                 AnonymousAllowedUrlParameterView.class, null);
-        Assert.assertEquals(AccessCheckResult.ALLOW, result);
+        Assert.assertEquals(AccessCheckResult.allow(), result);
         Mockito.verify(accessPathChecker)
                 .hasAccess(eq("anon-url-parameter/a/b/c/d"), any(), any());
     }
@@ -371,7 +371,7 @@ public class RoutePathAccessCheckerTest {
         eventDataFactory = target -> new Pair<>("some-path",
                 RouteParameters.empty());
         AccessCheckResult result = checkAccess(RouteNotFoundError.class, null);
-        Assert.assertEquals(AccessCheckResult.NEUTRAL, result);
+        Assert.assertEquals(AccessCheckResult.neutral(), result);
         Mockito.verifyNoInteractions(accessPathChecker);
     }
 

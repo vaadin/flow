@@ -29,13 +29,13 @@ public final class AccessCheckResult implements Serializable {
      * A result instance informing that the navigation to the target view is
      * allowed for the current user.
      */
-    public static final AccessCheckResult ALLOW = new AccessCheckResult(
+    private static final AccessCheckResult ALLOW = new AccessCheckResult(
             AccessCheckDecision.ALLOW, null);
     /**
      * A result instance informing that the checker cannot take a decision based
      * on the given navigation information.
      */
-    public static final AccessCheckResult NEUTRAL = new AccessCheckResult(
+    private static final AccessCheckResult NEUTRAL = new AccessCheckResult(
             AccessCheckDecision.NEUTRAL, null);
     private final String reason;
 
@@ -96,6 +96,26 @@ public final class AccessCheckResult implements Serializable {
     public String toString() {
         return "Access decision: " + decision
                 + (reason != null ? (". " + reason) : "");
+    }
+
+    /**
+     * Create a result instance informing that the navigation to the target view
+     * is allowed for the current user.
+     *
+     * @return a {@link AccessCheckDecision#ALLOW} result instance.
+     */
+    public static AccessCheckResult allow() {
+        return AccessCheckResult.ALLOW;
+    }
+
+    /**
+     * Create a result instance informing that the checker cannot take a
+     * decision based on the given navigation information.
+     *
+     * @return a {@link AccessCheckDecision#NEUTRAL} result instance.
+     */
+    public static AccessCheckResult neutral() {
+        return AccessCheckResult.NEUTRAL;
     }
 
     /**

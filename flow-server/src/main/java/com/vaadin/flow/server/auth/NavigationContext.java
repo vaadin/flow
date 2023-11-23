@@ -203,7 +203,7 @@ public final class NavigationContext {
      * @return a {@link AccessCheckDecision#ALLOW} result instance.
      */
     public AccessCheckResult allow() {
-        return AccessCheckResult.ALLOW;
+        return AccessCheckResult.allow();
     }
 
     /**
@@ -213,7 +213,7 @@ public final class NavigationContext {
      * @return a {@link AccessCheckDecision#NEUTRAL} result instance.
      */
     public AccessCheckResult neutral() {
-        return AccessCheckResult.NEUTRAL;
+        return AccessCheckResult.neutral();
     }
 
     /**

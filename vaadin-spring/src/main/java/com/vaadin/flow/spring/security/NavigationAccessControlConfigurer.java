@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.auth.AnnotatedViewAccessChecker;
-import com.vaadin.flow.server.auth.DefaultNavigationCheckDecisionResolver;
+import com.vaadin.flow.server.auth.DefaultAccessCheckDecisionResolver;
 import com.vaadin.flow.server.auth.NavigationAccessChecker;
 import com.vaadin.flow.server.auth.AccessCheckDecisionResolver;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
@@ -106,7 +106,7 @@ public final class NavigationAccessControlConfigurer {
     private boolean enablePathAccessChecker;
     private Class<? extends Component> loginView;
     private String loginViewPath;
-    private AccessCheckDecisionResolver decisionResolver = new DefaultNavigationCheckDecisionResolver();
+    private AccessCheckDecisionResolver decisionResolver = new DefaultAccessCheckDecisionResolver();
     private Predicate<NavigationAccessChecker> accessCheckersFilter;
 
     /**

@@ -62,12 +62,12 @@ public interface NavigationAccessChecker extends Serializable {
      * public AccessCheckResult check(NavigationContext context) {
      *     if (canHandleNavigationRequest(context)) {
      *         if (hasAccess(context)) {
-     *             return AccessCheckResult.ALLOW;
+     *             return AccessCheckResult.allow();
      *         } else {
      *             return AccessCheckResult.deny("Access denied");
      *         }
      *     }
-     *     return AccessCheckResult.NEUTRAL;
+     *     return AccessCheckResult.neutral();
      * }
      * }
      * </pre>
@@ -83,7 +83,7 @@ public interface NavigationAccessChecker extends Serializable {
      * public AccessCheckResult check(NavigationContext context) {
      *     try {
      *         if (hasAccess(context)) {
-     *             return AccessCheckResult.ALLOW;
+     *             return AccessCheckResult.allow();
      *         } else {
      *             return AccessCheckResult.deny("Access denied");
      *         }

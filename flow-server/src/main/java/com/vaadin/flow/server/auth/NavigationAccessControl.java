@@ -103,7 +103,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
      * decision resolver.
      *
      * @see AnnotatedViewAccessChecker
-     * @see DefaultNavigationCheckDecisionResolver
+     * @see DefaultAccessCheckDecisionResolver
      */
     public NavigationAccessControl() {
         this(List.of(new AnnotatedViewAccessChecker()));
@@ -131,11 +131,11 @@ public class NavigationAccessControl implements BeforeEnterListener {
      *
      * @param checkerList
      *            collection of navigation access checker.
-     * @see DefaultNavigationCheckDecisionResolver
+     * @see DefaultAccessCheckDecisionResolver
      */
     protected NavigationAccessControl(
             Collection<NavigationAccessChecker> checkerList) {
-        this(checkerList, new DefaultNavigationCheckDecisionResolver());
+        this(checkerList, new DefaultAccessCheckDecisionResolver());
     }
 
     /**
@@ -277,7 +277,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
         } else if (loginUrl != null && PathUtil.trimPath(loginUrl)
                 .equals(context.getLocation().getPath())) {
             getLogger().debug("Allowing access for login URL {}", loginUrl);
-            return AccessCheckResult.ALLOW;
+            return AccessCheckResult.allow();
         }
 
         List<AccessCheckResult> results = checkerList.stream()

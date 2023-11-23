@@ -64,9 +64,9 @@ public interface AccessCheckDecisionResolver extends Serializable {
      *     int diff = allow - deny;
      *
      *     if (allow == 0 && deny == 0) {
-     *         return AccessCheckResult.NEUTRAL;
+     *         return AccessCheckResult.neutral();
      *     } else if (diff > 0) {
-     *         return AccessCheckResult.ALLOW;
+     *         return AccessCheckResult.allow();
      *     } else if (diff < 0) {
      *         return AccessCheckResult.deny(String
      *                 .format("Allow %d - Deny %d. Deny wins!", allow, deny));
