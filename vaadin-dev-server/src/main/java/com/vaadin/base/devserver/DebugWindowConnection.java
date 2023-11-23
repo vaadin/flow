@@ -201,7 +201,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
             handleConnect(resource);
         } else {
             getLogger().debug(
-                    "Connection denied because of missing or invalid token. The host is probably not on the allow list");
+                    "Connection denied because of a missing or invalid token. The host is probably not on the allow list");
             resource.resume();
         }
     }

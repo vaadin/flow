@@ -19,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
@@ -31,6 +32,7 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -49,7 +51,7 @@ public class DebugWindowConnectionTest {
         // mock the request
         AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
         Mockito.when(resource.getRequest()).thenReturn(request);
-        Mockito.when(request.getRemoteAddr()).thenReturn("127.0.0.1");
+        Mockito.when(request.getParameter("token")).thenReturn(IndexHtmlRequestHandler.RANDOM_DEV_TOOLS_TOKEN);
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
@@ -90,7 +92,7 @@ public class DebugWindowConnectionTest {
         // mock the request
         AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
         Mockito.when(resource.getRequest()).thenReturn(request);
-        Mockito.when(request.getRemoteAddr()).thenReturn("169.0.0.1");
+        Mockito.when(request.getParameter("token")).thenReturn(IndexHtmlRequestHandler.RANDOM_DEV_TOOLS_TOKEN);
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
@@ -111,8 +113,7 @@ public class DebugWindowConnectionTest {
         // mock the request
         AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
         Mockito.when(resource.getRequest()).thenReturn(request);
-        Mockito.when(request.getRemoteAddr())
-                .thenReturn("should trow UnknownHostException");
+        Mockito.when(request.getParameter("token")).thenReturn(IndexHtmlRequestHandler.RANDOM_DEV_TOOLS_TOKEN +  "make the token invalid" );
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
@@ -132,13 +133,13 @@ public class DebugWindowConnectionTest {
         // mock the request
         AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
         Mockito.when(resource1.getRequest()).thenReturn(request);
-        Mockito.when(request.getRemoteAddr()).thenReturn("127.0.0.1");
+        Mockito.when(request.getParameter("token")).thenReturn(IndexHtmlRequestHandler.RANDOM_DEV_TOOLS_TOKEN);
 
         AtmosphereResource resource2 = Mockito.mock(AtmosphereResource.class);
         // mock the request
         AtmosphereRequest request2 = Mockito.mock(AtmosphereRequest.class);
         Mockito.when(resource2.getRequest()).thenReturn(request2);
-        Mockito.when(request2.getRemoteAddr()).thenReturn("127.0.0.1");
+        Mockito.when(request2.getParameter("token")).thenReturn(IndexHtmlRequestHandler.RANDOM_DEV_TOOLS_TOKEN);
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource1.getBroadcaster()).thenReturn(broadcaster);
@@ -204,7 +205,7 @@ public class DebugWindowConnectionTest {
         // mock the request
         AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
         Mockito.when(resource.getRequest()).thenReturn(request);
-        Mockito.when(request.getRemoteAddr()).thenReturn("127.0.0.1");
+        Mockito.when(request.getParameter("token")).thenReturn(IndexHtmlRequestHandler.RANDOM_DEV_TOOLS_TOKEN);
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
