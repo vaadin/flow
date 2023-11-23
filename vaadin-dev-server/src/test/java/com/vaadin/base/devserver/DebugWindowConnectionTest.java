@@ -86,7 +86,7 @@ public class DebugWindowConnectionTest {
     }
 
     @Test
-    public void onconnect_should_prevent_connection_if_no_valid_token() {
+    public void onconnect_should_prevent_connection_if_invalid_token_is_present() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
 
         // mock the request
@@ -106,6 +106,35 @@ public class DebugWindowConnectionTest {
         Mockito.verify(broadcaster, times(0))
                 .broadcast("{\"command\": \"hello\"}", resource);
 
+    }
+
+    @Test
+    public void onconnect_should_prevent_connection_if_no_token_at_all() {
+        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+
+        // mock the request
+        AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
+        Mockito.when(resource.getRequest()).thenReturn(request);
+        Mockito.when(request.getParameter("token")).thenReturn("");
+
+        Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
+        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
+
+        reload.onConnect(resource);
+
+        Assert.assertFalse(reload.isLiveReload(resource));
+        Mockito.verify(resource, times(0)).suspend(-1);
+        Mockito.verify(broadcaster, times(0))
+                .broadcast("{\"command\": \"hello\"}", resource);
+
+        Mockito.when(request.getParameter("token")).thenReturn(null);
+
+        reload.onConnect(resource);
+
+        Assert.assertFalse(reload.isLiveReload(resource));
+        Mockito.verify(resource, times(0)).suspend(-1);
+        Mockito.verify(broadcaster, times(0))
+                .broadcast("{\"command\": \"hello\"}", resource);
     }
 
     @Test
