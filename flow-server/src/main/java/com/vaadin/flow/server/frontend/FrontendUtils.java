@@ -455,7 +455,12 @@ public class FrontendUtils {
             if (config.isProductionMode()) {
                 // In production mode, this is on the class path
                 content = getFileFromClassPath(service, path);
-            } else if (devModeHandler.isPresent()) {
+            } else if (devModeHandler.filter(d -> d.getPort() >= 0)
+                    .isPresent()) {
+                // The DevModeHandler is serving contents only if the port is
+                // equal to or greater than zero. Otherwise, it is just a fake
+                // implementation use to present a waiting page during dev
+                // bundle creation
                 content = getFileFromDevModeHandler(devModeHandler.get(), path);
             } else {
                 // Get directly from the frontend folder in the project
