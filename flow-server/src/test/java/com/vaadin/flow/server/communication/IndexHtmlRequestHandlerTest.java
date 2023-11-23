@@ -70,7 +70,10 @@ import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -694,11 +697,11 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     // Regular expression to match a UUID in the format 8-4-4-4-12
-    private static final String UUID_REGEX = "\"token\":\"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\"";
+    private static final Pattern UUID_PATTERN = Pattern.compile(
+            "\"token\":\"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\"");
 
     private static boolean isTokenPresent(String htmlContent) {
-        Pattern pattern = Pattern.compile(UUID_REGEX);
-        Matcher matcher = pattern.matcher(htmlContent);
+        Matcher matcher = UUID_PATTERN.matcher(htmlContent);
         return matcher.find();
     }
 
