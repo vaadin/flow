@@ -11,7 +11,7 @@
     <name>Flow Push</name>
     <packaging>jar</packaging>
     <properties>
-        <atmosphere.runtime.version>2.4.24.vaadin1</atmosphere.runtime.version>
+        <atmosphere.runtime.version>2.4.24.vaadin2</atmosphere.runtime.version>
     </properties>
 
     <dependencies>
