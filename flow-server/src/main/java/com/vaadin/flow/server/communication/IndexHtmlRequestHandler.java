@@ -376,9 +376,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null
-                && !isAllowedDevToolsHost(forwardedFor, hostsAllowed)) {
-            return false;
+        if (forwardedFor != null) {
+            if (forwardedFor.contains(",")) {
+                // X-Forwarded-For: <client>, <proxy1>, <proxy2>
+                // Elements are comma-separated, with optional whitespace surrounding the commas.
+                forwardedFor = forwardedFor.split(",")[0];
+            }
+            if (!isAllowedDevToolsHost(forwardedFor.trim(), hostsAllowed)) {
+                return false;
+            }
         }
 
         return true;
