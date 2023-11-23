@@ -25,7 +25,7 @@ import com.vaadin.flow.router.AccessDeniedException;
 
 /**
  * Annotation for customizing route specific rerouting of access denied error in
- * {@link ViewAccessChecker}. Annotation is to be used together with
+ * {@link AnnotatedViewAccessChecker}. Annotation is to be used together with
  * {@code @Route}, or if present, together with access annotation listed here:
  * <ul>
  * <li>{@code @AnonymousAllowed}

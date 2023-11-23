@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
  * {@link com.vaadin.flow.router.BeforeEnterListener} to the
  * {@link com.vaadin.flow.component.UI} of interest.
  *
+ * @see AccessPathChecker
+ * @see NavigationAccessControl
  */
 public class RoutePathAccessChecker implements NavigationAccessChecker {
 

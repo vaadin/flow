@@ -18,6 +18,13 @@ import com.vaadin.flow.spring.AuthenticationUtil;
  * A Spring specific navigation access control that falls back to Spring
  * mechanisms for user retrieval and role checking, when the generic mechanisms
  * do not work.
+ * <p>
+ * </p>
+ * In Spring Boot application, a {@link SpringNavigationAccessControl} is
+ * provided by default, but its behavior can be configured by defining a
+ * {@link NavigationAccessControlConfigurer} bean.
+ *
+ * @see NavigationAccessControlConfigurer
  */
 public class SpringNavigationAccessControl extends NavigationAccessControl {
 
