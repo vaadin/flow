@@ -27,7 +27,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 public final class Constants implements Serializable {
 
     // Keep the version number in sync with flow-push/pom.xml
-    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.24.vaadin1";
+    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.24.vaadin2";
 
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
     public static final String SERVLET_PARAMETER_REQUEST_TIMING = "requestTiming";
