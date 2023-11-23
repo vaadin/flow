@@ -379,7 +379,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (forwardedFor != null) {
             if (forwardedFor.contains(",")) {
                 // X-Forwarded-For: <client>, <proxy1>, <proxy2>
-                // Elements are comma-separated, with optional whitespace surrounding the commas.
+                // Elements are comma-separated, with optional whitespace
+                // surrounding the commas.
                 forwardedFor = forwardedFor.split(",")[0];
             }
             if (!isAllowedDevToolsHost(forwardedFor.trim(), hostsAllowed)) {
