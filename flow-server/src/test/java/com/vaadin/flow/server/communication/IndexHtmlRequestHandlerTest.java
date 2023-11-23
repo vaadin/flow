@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -68,9 +70,7 @@ import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -121,8 +121,7 @@ public class IndexHtmlRequestHandlerTest {
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Assert.assertTrue(
                 "Response should have content from the index.html template",
                 indexHtml.contains("index.html template content"));
@@ -171,8 +170,7 @@ public class IndexHtmlRequestHandlerTest {
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Assert.assertTrue("Response should have a language attribute",
                 indexHtml.contains("<html lang"));
     }
@@ -182,8 +180,7 @@ public class IndexHtmlRequestHandlerTest {
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Assert.assertTrue("Response should have correct base href",
                 indexHtml.contains("<base href=\".\""));
     }
@@ -193,8 +190,7 @@ public class IndexHtmlRequestHandlerTest {
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/some/path"), response);
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Assert.assertTrue("Response should have correct base href",
                 indexHtml.contains("<base href=\"./..\""));
     }
@@ -241,25 +237,21 @@ public class IndexHtmlRequestHandlerTest {
                 indexHtmlRequestHandler.canHandleRequest(
                         createVaadinRequest("/documentation/10.0.x1/flow")));
 
-        Assert.assertFalse(
-                "The handler should not handle request with extension",
+        assertFalse("The handler should not handle request with extension",
                 indexHtmlRequestHandler.canHandleRequest(
                         createVaadinRequest("/nested/picture.png")));
-        Assert.assertFalse(
+        assertFalse(
                 "The handler should not handle request with capital extension",
                 indexHtmlRequestHandler.canHandleRequest(
                         createVaadinRequest("/nested/CAPITAL.PNG")));
-        Assert.assertFalse(
-                "The handler should not handle request with extension",
+        assertFalse("The handler should not handle request with extension",
                 indexHtmlRequestHandler
                         .canHandleRequest(createVaadinRequest("/script.js")));
 
-        Assert.assertFalse(
-                "The handler should not handle request with extension",
+        assertFalse("The handler should not handle request with extension",
                 indexHtmlRequestHandler
                         .canHandleRequest(createVaadinRequest("/music.mp3")));
-        Assert.assertFalse(
-                "The handler should not handle request with only extension",
+        assertFalse("The handler should not handle request with only extension",
                 indexHtmlRequestHandler
                         .canHandleRequest(createVaadinRequest("/.htaccess")));
     }
@@ -278,19 +270,19 @@ public class IndexHtmlRequestHandlerTest {
 
     @Test
     public void canHandleRequest_doNotHandle_scriptRequest() {
-        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(
+        assertFalse(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/", "script", "no-cors")));
     }
 
     @Test
     public void canHandleRequest_doNotHandle_imageRequest() {
-        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(
+        assertFalse(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/", "image", "no-cors")));
     }
 
     @Test
     public void canHandleRequest_doNotHandle_vaadinStaticResources() {
-        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(
+        assertFalse(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/VAADIN/foo.js", null, null)));
     }
 
@@ -314,8 +306,7 @@ public class IndexHtmlRequestHandlerTest {
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
         Elements scripts = document.head().getElementsByTag("script");
         int expectedScripts = 2;
@@ -333,8 +324,7 @@ public class IndexHtmlRequestHandlerTest {
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
@@ -357,8 +347,7 @@ public class IndexHtmlRequestHandlerTest {
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
@@ -382,8 +371,7 @@ public class IndexHtmlRequestHandlerTest {
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
@@ -393,7 +381,7 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertEquals("", initialUidlScript.attr("initial"));
         String scriptContent = initialUidlScript.toString();
         Assert.assertTrue(scriptContent.contains("Could not navigate"));
-        Assert.assertFalse("Initial object content should not be escaped",
+        assertFalse("Initial object content should not be escaped",
                 scriptContent.contains("&lt;")
                         || scriptContent.contains("&gt;"));
         Assert.assertNotNull(UI.getCurrent());
@@ -410,8 +398,7 @@ public class IndexHtmlRequestHandlerTest {
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/foo"), response);
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
@@ -474,14 +461,13 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
 
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
         Element initialUidlScript = findScript(scripts,
                 INITIAL_UIDL_SEARCH_STRING);
-        Assert.assertFalse(initialUidlScript.childNode(0).toString()
+        assertFalse(initialUidlScript.childNode(0).toString()
                 .contains("window.Vaadin = {Flow: {\"csrfToken\":"));
         Assert.assertEquals("", initialUidlScript.attr("initial"));
     }
@@ -493,8 +479,7 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
                 response);
 
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
         Assert.assertEquals(0, document.head()
@@ -520,8 +505,7 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
 
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
         // the template used in clientSide mode already has two metas
@@ -541,8 +525,7 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
 
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
         Elements elements = document.head().getElementsByTag("meta");
@@ -620,8 +603,7 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
 
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
         Elements elements = document.head().getElementsByTag("meta");
@@ -678,8 +660,7 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
 
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
         Elements bodyInlineElements = document.body()
@@ -704,11 +685,41 @@ public class IndexHtmlRequestHandlerTest {
                         + "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
                         + "window.Vaadin.registrations.push(" + entries + ");");
 
+        assertTrue(isTokenPresent(indexHtml));
+
         String htmlContent = bodyInlineElements.get(0).childNode(0).outerHtml();
         htmlContent = htmlContent.replace("\r", "");
         htmlContent = htmlContent.replace("\n", " ");
         assertEquals(StringUtil.normaliseWhitespace(expected), htmlContent);
     }
+
+    // Regular expression to match a UUID in the format 8-4-4-4-12
+    private static final String UUID_REGEX = "\"token\":\"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\"";
+
+    private static boolean isTokenPresent(String htmlContent) {
+        Pattern pattern = Pattern.compile(UUID_REGEX);
+        Matcher matcher = pattern.matcher(htmlContent);
+        return matcher.find();
+    }
+
+    // This test output index.html will contain the window.Vaadin.devToolsConf
+    // (in production mode)
+    // Is this ok (or deploymentConfiguration.setProductionMode(true) is not
+    // working properly?)
+    // window.Vaadin.devToolsConf =
+    // {"enable":false,"url":"./nullVAADIN/push","liveReloadPort":35729,"token":"6ac38fcc-a66f-4283-9e46-6d38e1b7260b"};
+    // @Test
+    // public void dev_tools_token_should_not_be_in_production_mode()
+    // throws IOException {
+    // deploymentConfiguration.setProductionMode(true);
+    //
+    // indexHtmlRequestHandler.synchronizedHandleRequest(session,
+    // createVaadinRequest("/"), response);
+    //
+    // String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+    //
+    // assertFalse(isTokenPresent(indexHtml));
+    // }
 
     @Test
     public void should_NOT_export_usage_statistics_in_production_mode()
@@ -718,8 +729,7 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
 
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
         Elements bodyInlineElements = document.body()
@@ -741,8 +751,7 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
 
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
         assertEquals("dark", document.head().parent().attr("theme"));
@@ -806,11 +815,11 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.when(request.getPathInfo()).thenReturn(null);
         Mockito.when(request.getParameter("v-r")).thenReturn("hello-foo-bar");
         Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
-        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
+        assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
 
         Mockito.when(request.getParameter("v-r")).thenReturn("init");
         Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
-        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
+        assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
     }
 
     @Test
@@ -846,7 +855,7 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.when(request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER))
                 .thenReturn("script");
 
-        Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
+        assertFalse(bootstrapHandler.canHandleRequest(request));
     }
 
     @Test
@@ -879,8 +888,7 @@ public class IndexHtmlRequestHandlerTest {
 
     private void assertSpringCsrfTokenIsAvailableAsMetaTagsInDom() {
         try {
-            String indexHtml = responseOutput
-                    .toString(StandardCharsets.UTF_8.name());
+            String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
             Document document = Jsoup.parse(indexHtml);
 
             Elements csrfMetaEelement = document.head()
