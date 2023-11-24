@@ -483,6 +483,7 @@ public class VaadinSessionTest {
         session.valueUnbound(null);
 
         Mockito.verify(session).valueUnbound(null);
+        Mockito.verify(session).getLogger();
         Mockito.verifyNoInteractions(event);
         Mockito.verifyNoMoreInteractions(session);
     }
@@ -538,7 +539,9 @@ public class VaadinSessionTest {
 
         session.checkHasLock();
         configuration.setLockCheckStrategy(LockCheckStrategy.LOG);
+        session.mockLogger.clearLogs();
         session.checkHasLock();
+        Assert.assertEquals("", session.mockLogger.getLogs());
         configuration.setLockCheckStrategy(LockCheckStrategy.ASSERT);
         session.checkHasLock();
     }
