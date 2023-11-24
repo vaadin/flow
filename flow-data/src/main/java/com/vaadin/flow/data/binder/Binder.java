@@ -2588,16 +2588,11 @@ public class Binder<BEAN> implements Serializable {
      *
      */
     protected BinderValidationStatus<BEAN> validate(boolean fireEvent) {
-        if (getBean() == null && !validators.isEmpty()) {
-            throw new IllegalStateException("Cannot validate binder: "
-                    + "bean level validators have been configured "
-                    + "but no bean is currently set");
-        }
         List<BindingValidationStatus<?>> bindingStatuses = validateBindings();
 
         BinderValidationStatus<BEAN> validationStatus;
-        if (validators.isEmpty() || bindingStatuses.stream()
-                .anyMatch(BindingValidationStatus::isError)) {
+        if (validators.isEmpty() || getBean() == null || bindingStatuses
+                .stream().anyMatch(BindingValidationStatus::isError)) {
             validationStatus = new BinderValidationStatus<>(this,
                     bindingStatuses, Collections.emptyList());
         } else {
