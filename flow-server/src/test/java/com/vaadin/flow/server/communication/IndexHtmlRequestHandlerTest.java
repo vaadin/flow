@@ -659,9 +659,11 @@ public class IndexHtmlRequestHandlerTest {
         TestUtil.createStatsJsonStub(projectRootFolder);
         deploymentConfiguration.setProductionMode(false);
         deploymentConfiguration.setProjectFolder(projectRootFolder);
-
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                createVaadinRequest("/"), response);
+        VaadinServletRequest request = createVaadinRequest("/");
+        Mockito.when(request.getHttpServletRequest().getRemoteAddr())
+                .thenReturn("127.0.0.1");
+        indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
+                response);
 
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
