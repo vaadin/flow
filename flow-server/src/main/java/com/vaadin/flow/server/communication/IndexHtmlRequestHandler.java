@@ -366,7 +366,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         indexDocument.body().appendChild(new Element("vaadin-dev-tools"));
     }
 
-    private boolean isAllowedDevToolsHost(AbstractConfiguration configuration,
+    static boolean isAllowedDevToolsHost(AbstractConfiguration configuration,
             VaadinRequest request) {
         String remoteAddress = request.getRemoteAddr();
         String hostsAllowed = configuration
@@ -392,28 +392,32 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     }
 
-    private boolean isAllowedDevToolsHost(String remoteAddress,
+    private static boolean isAllowedDevToolsHost(String remoteAddress,
             String hostsAllowed) {
         if (remoteAddress == null) {
             // No remote address available so we cannot check...
             return false;
         }
-        if (hostsAllowed == null) {
-            // Allow only loop back by default
-            try {
-                InetAddress inetAddress = InetAddress.getByName(remoteAddress);
-                return inetAddress.isLoopbackAddress();
-            } catch (Exception e) {
-                getLogger().debug(
-                        "Unable to resolve remote address: '{}', so we are preventing the web socket connection",
-                        remoteAddress, e);
-                return false;
+        // Always allow localhost
+        try {
+            InetAddress inetAddress = InetAddress.getByName(remoteAddress);
+            if (inetAddress.isLoopbackAddress()) {
+                return true;
             }
-        } else {
+        } catch (Exception e) {
+            getLogger().debug(
+                    "Unable to resolve remote address: '{}', so we are preventing the web socket connection",
+                    remoteAddress, e);
+            return false;
+        }
+
+        if (hostsAllowed != null) {
             // Allowed hosts set
             return Pattern.compile(hostsAllowed).matcher(remoteAddress)
                     .matches();
         }
+
+        return false;
     }
 
     private void addInitialFlow(JsonObject initialJson, Document indexDocument,

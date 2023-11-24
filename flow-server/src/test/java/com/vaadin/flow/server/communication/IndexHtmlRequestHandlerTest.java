@@ -915,4 +915,73 @@ public class IndexHtmlRequestHandlerTest {
             Assert.fail("Unable to parse the index html page");
         }
     }
+
+    private boolean isAllowedDevToolsHost(String hostsAllowedProperty,
+            String remoteAddr) {
+        return isAllowedDevToolsHost(hostsAllowedProperty, remoteAddr, null);
+    }
+
+    private boolean isAllowedDevToolsHost(String hostsAllowedProperty,
+            String remoteAddr, String forwardedForHeader) {
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        Mockito.when(request.getRemoteAddr()).thenReturn(remoteAddr);
+        ApplicationConfiguration configuration = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(
+                configuration.getStringProperty("devmode.hostsAllowed", null))
+                .thenAnswer(q -> {
+                    return hostsAllowedProperty;
+                });
+        Mockito.when(request.getHeader("X-Forwarded-For"))
+                .thenReturn(forwardedForHeader);
+        return IndexHtmlRequestHandler.isAllowedDevToolsHost(configuration,
+                request);
+
+    }
+
+    @Test
+    public void devTools_loopbackAllowedByDefault() {
+        Assert.assertTrue(isAllowedDevToolsHost(null, "127.0.0.1"));
+        Assert.assertTrue(isAllowedDevToolsHost(null, "0:0:0:0:0:0:0:1"));
+        Assert.assertTrue(isAllowedDevToolsHost(null, "::1"));
+    }
+
+    @Test
+    public void devTools_externalOrNoIpDeniedByDefault() {
+        Assert.assertFalse(isAllowedDevToolsHost(null, "192.168.1.1"));
+        Assert.assertFalse(isAllowedDevToolsHost(null, "1.2.3.4"));
+        Assert.assertFalse(isAllowedDevToolsHost(null, null));
+    }
+
+    @Test
+    public void devTools_allowedHostsMatchesIp() {
+        Assert.assertTrue(
+                isAllowedDevToolsHost("192\\.168\\.1\\..*", "192.168.1.1"));
+        Assert.assertTrue(
+                isAllowedDevToolsHost("192\\.168\\.1\\..*", "192.168.1.100"));
+        Assert.assertFalse(
+                isAllowedDevToolsHost("192\\.168\\.1\\..*", "192.168.100.100"));
+
+        // Localhost is always allowed
+        Assert.assertTrue(
+                isAllowedDevToolsHost("192\\.168\\.1\\..*", "127.0.0.1"));
+
+    }
+
+    @Test
+    public void devTools_allowedHostsMatchesIpAndForwardedFor() {
+        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "1.2.3.4"));
+        Assert.assertFalse(
+                isAllowedDevToolsHost(null, "127.0.0.1", "1.2.3.4, 3.4.5.6"));
+        Assert.assertFalse(isAllowedDevToolsHost("1\\.2\\.3\\.4", "5.5.5.5",
+                "1.2.3.4, 3.4.5.6"));
+
+        Assert.assertTrue(
+                isAllowedDevToolsHost("1\\.2\\.3\\.4", "127.0.0.1", "1.2.3.4"));
+        Assert.assertTrue(isAllowedDevToolsHost("1\\.2\\.3\\.4", "127.0.0.1",
+                "1.2.3.4, 3.4.5.6"));
+        Assert.assertTrue(isAllowedDevToolsHost("1\\.2\\.3\\.4", "127.0.0.1",
+                "   1.2.3.4 , 3.4.5.6   "));
+    }
+
 }
