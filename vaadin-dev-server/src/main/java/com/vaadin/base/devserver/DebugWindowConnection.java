@@ -206,7 +206,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         }
     }
 
-    public void handleConnect(AtmosphereResource resource) {
+    private void handleConnect(AtmosphereResource resource) {
         resource.suspend(-1);
         atmosphereResources.add(new WeakReference<>(resource));
         resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",

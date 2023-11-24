@@ -91,8 +91,8 @@ public class IndexHtmlRequestHandlerTest {
     private VaadinContext context;
 
     private String springTokenString;
-    private String springTokenHeaderName = "x-CSRF-TOKEN";
-    private String springTokenParamName = SPRING_CSRF_ATTRIBUTE_IN_SESSION;
+    private final String springTokenHeaderName = "x-CSRF-TOKEN";
+    private final String springTokenParamName = SPRING_CSRF_ATTRIBUTE_IN_SESSION;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
