@@ -39,6 +39,7 @@ public class ServiceInitEvent extends EventObject {
     private List<IndexHtmlRequestListener> addedIndexHtmlRequestListeners = new ArrayList<>();
     private List<DependencyFilter> addedDependencyFilters = new ArrayList<>();
     private List<VaadinRequestInterceptor> addedVaadinRequestInterceptors = new ArrayList<>();
+    private List<VaadinCommandInterceptor> addedVaadinCommandInterceptor = new ArrayList<>();
 
     /**
      * Creates a new service init event for a given {@link VaadinService} and
@@ -108,6 +109,20 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
+     * Adds a new command interceptor that will be used by this service.
+     *
+     * @param vaadinCommandInterceptor
+     *            the interceptor to add, not <code>null</code>
+     */
+    public void addVaadinCommandInterceptor(
+            VaadinCommandInterceptor vaadinCommandInterceptor) {
+        Objects.requireNonNull(vaadinCommandInterceptor,
+                "Command Interceptor cannot be null");
+
+        addedVaadinCommandInterceptor.add(vaadinCommandInterceptor);
+    }
+
+    /**
      * Gets a stream of all custom request handlers that have been added for the
      * service.
      *
@@ -145,6 +160,16 @@ public class ServiceInitEvent extends EventObject {
      */
     public Stream<VaadinRequestInterceptor> getAddedVaadinRequestInterceptor() {
         return addedVaadinRequestInterceptors.stream();
+    }
+
+    /**
+     * Gets a stream of all Vaadin command interceptors that have been added for
+     * the service.
+     *
+     * @return the stream of added command interceptors
+     */
+    public Stream<VaadinCommandInterceptor> getAddedVaadinCommandInterceptor() {
+        return addedVaadinCommandInterceptor.stream();
     }
 
     @Override

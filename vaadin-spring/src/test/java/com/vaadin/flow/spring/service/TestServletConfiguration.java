@@ -15,14 +15,17 @@
  */
 package com.vaadin.flow.spring.service;
 
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinRequestInterceptor;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.Map;
 
 @Configuration
 @ComponentScan
@@ -35,6 +38,12 @@ public class TestServletConfiguration {
         MyRequestInterceptor myFilter() {
             return new MyRequestInterceptor();
         }
+
+        @Bean
+        MyVaadinComandInterceptor myVaadinComandInterceptor() {
+            return new MyVaadinComandInterceptor();
+        }
+
     }
 
     static class MyRequestInterceptor implements VaadinRequestInterceptor {
@@ -56,6 +65,27 @@ public class TestServletConfiguration {
         public void requestEnd(VaadinRequest request, VaadinResponse response,
                 VaadinSession session) {
             request.setAttribute("stopped", "true");
+        }
+    }
+
+    static class MyVaadinComandInterceptor implements VaadinCommandInterceptor {
+
+        @Override
+        public void commandExecutionStart(Map<Object, Object> context,
+                Command command) {
+
+        }
+
+        @Override
+        public void handleException(Map<Object, Object> context,
+                Command command, Exception t) {
+
+        }
+
+        @Override
+        public void commandExecutionEnd(Map<Object, Object> context,
+                Command command) {
+
         }
     }
 }
