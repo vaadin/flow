@@ -27,18 +27,20 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
+import com.vaadin.flow.server.auth.AccessCheckDecisionResolver;
+import com.vaadin.flow.server.auth.AccessCheckResult;
 import com.vaadin.flow.server.auth.AnnotatedViewAccessChecker;
-import com.vaadin.flow.server.auth.DefaultNavigationCheckDecisionResolver;
+import com.vaadin.flow.server.auth.DefaultAccessCheckDecisionResolver;
 import com.vaadin.flow.server.auth.NavigationAccessChecker;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.DecisionResolver;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 
 class NavigationAccessControlConfigurerTest {
 
     NavigationAccessControlConfigurer configurer = new NavigationAccessControlConfigurer();
 
-    BiFunction<List<NavigationAccessChecker>, DecisionResolver, TestNavigationAccessControl> factory = TestNavigationAccessControl::new;
+    BiFunction<List<NavigationAccessChecker>, AccessCheckDecisionResolver, TestNavigationAccessControl> factory = TestNavigationAccessControl::new;
     List<NavigationAccessChecker> registeredCheckers = new ArrayList<>();
     AnnotatedViewAccessChecker viewAccessChecker = new AnnotatedViewAccessChecker(
             new AccessAnnotationChecker());
@@ -61,8 +63,7 @@ class NavigationAccessControlConfigurerTest {
                 registeredCheckers);
         Assertions.assertThat(accessControl.isEnabled()).isTrue();
         Assertions.assertThat(accessControl.decisionResolver)
-                .isExactlyInstanceOf(
-                        DefaultNavigationCheckDecisionResolver.class);
+                .isExactlyInstanceOf(DefaultAccessCheckDecisionResolver.class);
     }
 
     @Test
@@ -75,8 +76,8 @@ class NavigationAccessControlConfigurerTest {
 
     @Test
     void build_customDecisionResolver() {
-        DecisionResolver customResolver = (results, context) -> context
-                .deny("CUSTOM");
+        AccessCheckDecisionResolver customResolver = (results,
+                context) -> context.deny("CUSTOM");
         TestNavigationAccessControl accessControl = configurer
                 .withDecisionResolver(customResolver)
                 .build(factory, registeredCheckers);
@@ -289,11 +290,11 @@ class NavigationAccessControlConfigurerTest {
             extends NavigationAccessControl {
 
         final Collection<NavigationAccessChecker> checkerList;
-        final DecisionResolver decisionResolver;
+        final AccessCheckDecisionResolver decisionResolver;
 
         public TestNavigationAccessControl(
                 Collection<NavigationAccessChecker> checkerList,
-                DecisionResolver decisionResolver) {
+                AccessCheckDecisionResolver decisionResolver) {
             super(checkerList, decisionResolver);
             this.checkerList = checkerList;
             this.decisionResolver = decisionResolver;
