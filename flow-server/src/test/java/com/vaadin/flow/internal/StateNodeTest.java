@@ -569,6 +569,29 @@ public class StateNodeTest {
     }
 
     @Test
+    public void runWhenAttachedNodeDetachedInSameRoundTrip() {
+        StateTree tree = createStateTree();
+        AtomicInteger commandRun = new AtomicInteger(0);
+        StateNode node = createEmptyNode();
+        setParent(node, tree.getRootNode());
+        node.removeFromTree();
+
+        node.runWhenAttached(ui -> {
+            Assert.assertEquals(tree.getUI(), ui);
+            commandRun.incrementAndGet();
+        });
+
+        Assert.assertEquals(0, commandRun.get());
+
+        setParent(node, tree.getRootNode());
+        Assert.assertEquals(1, commandRun.get());
+
+        setParent(node, null);
+        setParent(node, tree.getRootNode());
+        Assert.assertEquals(1, commandRun.get());
+    }
+
+    @Test
     public void requiredFeatures() {
         StateNode stateNode = new StateNode(
                 Arrays.asList(ElementClassList.class, ElementPropertyMap.class),

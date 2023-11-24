@@ -30,6 +30,7 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 
@@ -161,13 +162,13 @@ class SpringAccessPathCheckerTest {
                 throws Exception {
             // @formatter:off
             http.authorizeHttpRequests(cfg -> cfg
-                    .requestMatchers("/").anonymous()
-                    .requestMatchers("/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/guest/**").hasRole("GUEST")
-                    .requestMatchers("/protected/**").authenticated()
-                    .requestMatchers("/anon/**").anonymous()
-                    .requestMatchers("/public/**").permitAll()
-                    .requestMatchers("/forbidden/**").denyAll());
+                    .requestMatchers(new AntPathRequestMatcher("/")).anonymous()
+                    .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
+                    .requestMatchers(new AntPathRequestMatcher("/guest/**")).hasRole("GUEST")
+                    .requestMatchers(new AntPathRequestMatcher("/protected/**")).authenticated()
+                    .requestMatchers(new AntPathRequestMatcher("/anon/**")).anonymous()
+                    .requestMatchers(new AntPathRequestMatcher("/public/**")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/forbidden/**")).denyAll());
            // @formatter:on
             return http.build();
         }
