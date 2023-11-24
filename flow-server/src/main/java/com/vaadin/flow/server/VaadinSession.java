@@ -566,13 +566,15 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            and the session is not locked
      */
     public void checkHasLock(String message) {
-        if (configuration == null) {
-            assert hasLock() : message;
-        } else if (configuration.isProductionMode()) {
-            configuration.getLockCheckStrategy().checkHasLock(this, message);
-        } else if (!hasLock()) {
-            throw new IllegalStateException(message);
+        LockCheckStrategy strategy = configuration == null
+                ? LockCheckStrategy.ASSERT
+                : configuration.isProductionMode()
+                        ? configuration.getLockCheckStrategy()
+                        : LockCheckStrategy.THROW;
+        if (strategy == null) {
+            strategy = LockCheckStrategy.DEFAULT;
         }
+        strategy.checkHasLock(this, message);
     }
 
     /**
