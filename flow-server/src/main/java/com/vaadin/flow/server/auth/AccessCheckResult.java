@@ -23,7 +23,7 @@ import java.util.Objects;
  * A representation of the access check result, potentially providing deny
  * reason.
  */
-public final class AccessCheckResult implements Serializable {
+public class AccessCheckResult implements Serializable {
 
     /**
      * A result instance informing that the navigation to the target view is
@@ -128,7 +128,7 @@ public final class AccessCheckResult implements Serializable {
      * @return a {@link AccessCheckDecision#DENY} result instance.
      */
     public static AccessCheckResult deny(String reason) {
-        return new AccessCheckResult(AccessCheckDecision.DENY, reason);
+        return create(AccessCheckDecision.DENY, reason);
     }
 
     /**
@@ -142,7 +142,22 @@ public final class AccessCheckResult implements Serializable {
      * @return a {@link AccessCheckDecision#REJECT} result instance.
      */
     public static AccessCheckResult reject(String reason) {
-        return new AccessCheckResult(AccessCheckDecision.REJECT, reason);
+        return create(AccessCheckDecision.REJECT, reason);
+    }
+
+    /**
+     * Create a result instance based on a given {@link AccessCheckDecision} and
+     * <code>reason</code> string.
+     *
+     * @param decision
+     *            navigation access control decision.
+     * @param reason
+     *            a message explaining the given decision.
+     * @return a {@link AccessCheckResult} result instance.
+     */
+    public static AccessCheckResult create(AccessCheckDecision decision,
+            String reason) {
+        return new AccessCheckResult(decision, reason);
     }
 
 }
