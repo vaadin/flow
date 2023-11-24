@@ -201,7 +201,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 .equals(resource.getRequest().getParameter("token"))) {
             handleConnect(resource);
         } else {
-            getLogger().debug(
+            getLogger().warn(
                     "Connection denied because of a missing or invalid token. The host is probably not on the allow list");
             try {
                 resource.close();
