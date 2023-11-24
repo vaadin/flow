@@ -255,6 +255,25 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
+    public void checkLockStrategy_defaultsToAssert() {
+        Properties init = new Properties();
+        DefaultDeploymentConfiguration config = createDeploymentConfig(init);
+
+        Assert.assertEquals(LockCheckStrategy.ASSERT,
+                config.getLockCheckStrategy());
+    }
+
+    @Test
+    public void checkLockStrategy_configurableViaPropertyParameter() {
+        Properties init = new Properties();
+        init.put(InitParameters.SERVLET_PARAMETER_LOCK_CHECK_STRATEGY, "throw");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(init);
+
+        Assert.assertEquals(LockCheckStrategy.THROW,
+                config.getLockCheckStrategy());
+    }
+
+    @Test
     public void productionModeTrue_frontendHotdeployTrue_frontendHotdeployReturnsFalse() {
         Properties init = new Properties();
         init.put(InitParameters.FRONTEND_HOTDEPLOY, "true");

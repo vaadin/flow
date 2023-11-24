@@ -566,8 +566,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            and the session is not locked
      */
     public void checkHasLock(String message) {
-        if (configuration == null || configuration.isProductionMode()) {
+        if (configuration == null) {
             assert hasLock() : message;
+        } else if (configuration.isProductionMode()) {
+            configuration.getLockCheckStrategy().checkHasLock(this, message);
         } else if (!hasLock()) {
             throw new IllegalStateException(message);
         }
@@ -921,7 +923,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                         && newState == VaadinSessionState.CLOSED);
     }
 
-    private static Logger getLogger() {
+    Logger getLogger() {
         return LoggerFactory.getLogger(VaadinSession.class.getName());
     }
 
