@@ -18,11 +18,14 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 
+import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
@@ -42,9 +45,11 @@ import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
+import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -76,6 +81,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
+    public static final String RANDOM_DEV_TOOLS_TOKEN = UUID.randomUUID()
+            .toString();
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -349,13 +356,75 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         maybeBackend.ifPresent(
                 backend -> devToolsConf.put("backend", backend.toString()));
         devToolsConf.put("liveReloadPort", liveReloadPort);
-
+        if (isAllowedDevToolsHost(config, request)) {
+            devToolsConf.put("token", RANDOM_DEV_TOOLS_TOKEN);
+        }
         addScript(indexDocument, String.format("""
                 window.Vaadin.devToolsPlugins = [];
                 window.Vaadin.devToolsConf = %s;
                     """, devToolsConf.toJson()));
 
         indexDocument.body().appendChild(new Element("vaadin-dev-tools"));
+    }
+
+    static boolean isAllowedDevToolsHost(AbstractConfiguration configuration,
+            VaadinRequest request) {
+        String remoteAddress = request.getRemoteAddr();
+        String hostsAllowed = configuration.getStringProperty(
+                InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED, null);
+
+        if (!isAllowedDevToolsHost(remoteAddress, hostsAllowed)) {
+            return false;
+        }
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null) {
+            if (forwardedFor.contains(",")) {
+                // X-Forwarded-For: <client>, <proxy1>, <proxy2>
+                // Elements are comma-separated, with optional whitespace
+                // surrounding the commas.
+                forwardedFor = forwardedFor.split(",")[0];
+            }
+            if (!isAllowedDevToolsHost(forwardedFor.trim(), hostsAllowed)) {
+                return false;
+            }
+        }
+
+        return true;
+
+    }
+
+    private static boolean isAllowedDevToolsHost(String remoteAddress,
+            String hostsAllowed) {
+        if (remoteAddress == null) {
+            // No remote address available so we cannot check...
+            return false;
+        }
+        // Always allow localhost
+        try {
+            InetAddress inetAddress = InetAddress.getByName(remoteAddress);
+            if (inetAddress.isLoopbackAddress()) {
+                return true;
+            }
+        } catch (Exception e) {
+            getLogger().debug(
+                    "Unable to resolve remote address: '{}', so we are preventing the web socket connection",
+                    remoteAddress, e);
+            return false;
+        }
+
+        if (hostsAllowed != null) {
+            // Allowed hosts set
+            String[] allowedHosts = hostsAllowed.split(",");
+
+            for (String allowedHost : allowedHosts) {
+                if (FilenameUtils.wildcardMatch(remoteAddress,
+                        allowedHost.trim())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private void addInitialFlow(JsonObject initialJson, Document indexDocument,
