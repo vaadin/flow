@@ -974,12 +974,18 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4", "5.5.5.5",
                 "1.2.3.4, 3.4.5.6"));
 
+        // Local proxy
         Assert.assertTrue(
                 isAllowedDevToolsHost("1.2.3.4", "127.0.0.1", "1.2.3.4"));
         Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1",
                 "1.2.3.4, 3.4.5.6"));
         Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1",
                 "   1.2.3.4 , 3.4.5.6   "));
+
+        // Non local proxy
+
+        Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4, 5.5.5.5", "5.5.5.5",
+                "   1.2.3.4    "));
     }
 
 }
