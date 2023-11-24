@@ -118,9 +118,9 @@ public class VaadinConfigurationProperties {
     private boolean devmodeCaching = true;
 
     /**
-     * Whitelisting to specify the allowed hosts, potentially with wildcards,
-     * which can connect to the dev tools from those IP addresses. Otherwise,
-     * the non-localhost connections will be rejected.
+     * A comma separated list of IP addresses, potentially with wildcards, which
+     * can connect to the dev tools. If not specified, only localhost
+     * connections are allowed.
      */
     private String devmodeHostsAllowed = "";
 
