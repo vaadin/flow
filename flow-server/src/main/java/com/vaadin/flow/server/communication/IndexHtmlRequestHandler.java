@@ -394,6 +394,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private boolean isAllowedDevToolsHost(String remoteAddress,
             String hostsAllowed) {
+        if (remoteAddress == null) {
+            // No remote address available so we cannot check...
+            return false;
+        }
         if (hostsAllowed == null) {
             // Allow only loop back by default
             try {
