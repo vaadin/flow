@@ -102,6 +102,13 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = "devmode.optimizeBundle";
 
     /**
+     * A comma separated list of IP addresses, potentially with wildcards, which
+     * can connect to the dev tools. If not specified, only localhost
+     * connections are allowed.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED = "devmode.hostsAllowed";
+
+    /**
      * Configuration parameter name for enabling pnpm.
      *
      * @since 2.2
