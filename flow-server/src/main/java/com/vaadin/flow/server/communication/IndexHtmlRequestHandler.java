@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
@@ -413,8 +414,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         if (hostsAllowed != null) {
             // Allowed hosts set
-            return Pattern.compile(hostsAllowed).matcher(remoteAddress)
-                    .matches();
+            return FilenameUtils.wildcardMatch(remoteAddress, hostsAllowed);
         }
 
         return false;

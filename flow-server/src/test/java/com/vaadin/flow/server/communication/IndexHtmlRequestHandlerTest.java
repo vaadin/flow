@@ -956,15 +956,15 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void devTools_allowedHostsMatchesIp() {
         Assert.assertTrue(
-                isAllowedDevToolsHost("192\\.168\\.1\\..*", "192.168.1.1"));
+                isAllowedDevToolsHost("192.168.1.*", "192.168.1.1"));
         Assert.assertTrue(
-                isAllowedDevToolsHost("192\\.168\\.1\\..*", "192.168.1.100"));
+                isAllowedDevToolsHost("192.168.1.*", "192.168.1.100"));
         Assert.assertFalse(
-                isAllowedDevToolsHost("192\\.168\\.1\\..*", "192.168.100.100"));
+                isAllowedDevToolsHost("192.168.1.*", "192.168.100.100"));
 
         // Localhost is always allowed
         Assert.assertTrue(
-                isAllowedDevToolsHost("192\\.168\\.1\\..*", "127.0.0.1"));
+                isAllowedDevToolsHost("192.168.1.*", "127.0.0.1"));
 
     }
 
@@ -973,14 +973,14 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "1.2.3.4"));
         Assert.assertFalse(
                 isAllowedDevToolsHost(null, "127.0.0.1", "1.2.3.4, 3.4.5.6"));
-        Assert.assertFalse(isAllowedDevToolsHost("1\\.2\\.3\\.4", "5.5.5.5",
+        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4", "5.5.5.5",
                 "1.2.3.4, 3.4.5.6"));
 
         Assert.assertTrue(
-                isAllowedDevToolsHost("1\\.2\\.3\\.4", "127.0.0.1", "1.2.3.4"));
-        Assert.assertTrue(isAllowedDevToolsHost("1\\.2\\.3\\.4", "127.0.0.1",
+                isAllowedDevToolsHost("1.2.3.4", "127.0.0.1", "1.2.3.4"));
+        Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1",
                 "1.2.3.4, 3.4.5.6"));
-        Assert.assertTrue(isAllowedDevToolsHost("1\\.2\\.3\\.4", "127.0.0.1",
+        Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1",
                 "   1.2.3.4 , 3.4.5.6   "));
     }
 
