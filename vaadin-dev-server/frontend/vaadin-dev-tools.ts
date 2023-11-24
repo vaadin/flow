@@ -900,7 +900,10 @@ export class VaadinDevTools extends LitElement {
   openWebSocketConnection() {
     this.frontendStatus = ConnectionStatus.UNAVAILABLE;
     this.javaStatus = ConnectionStatus.UNAVAILABLE;
-
+    if (!this.conf.token) {
+        console.error("Dev tools functionality denied for this host.");
+        return;
+    }
     const onConnectionError = (msg: string) => this.log(MessageType.ERROR, msg);
     const onReload = () => {
       this.showSplashMessage('Reloading…');
