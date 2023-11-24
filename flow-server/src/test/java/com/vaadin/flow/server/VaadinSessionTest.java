@@ -34,6 +34,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.server.frontend.MockLogger;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpSessionBindingEvent;
@@ -53,6 +54,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+import org.slf4j.Logger;
 
 public class VaadinSessionTest {
 
@@ -65,7 +67,20 @@ public class VaadinSessionTest {
         }
     }
 
-    private VaadinSession session;
+    public static class VaadinSessionWithMockLogger extends VaadinSession {
+        public final MockLogger mockLogger = new MockLogger();
+
+        public VaadinSessionWithMockLogger(VaadinService service) {
+            super(service);
+        }
+
+        @Override
+        Logger getLogger() {
+            return mockLogger;
+        }
+    }
+
+    private VaadinSessionWithMockLogger session;
     private VaadinServlet mockServlet;
     private VaadinServletService mockService;
     private HttpSession mockHttpSession;
@@ -117,7 +132,7 @@ public class VaadinSessionTest {
             }
         };
 
-        session = new VaadinSession(mockService);
+        session = new VaadinSessionWithMockLogger(mockService);
         mockService.storeSession(session, mockWrappedSession);
 
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
@@ -576,6 +591,8 @@ public class VaadinSessionTest {
 
         // this should throw IllegalStateException
         session.checkHasLock();
-        // @todo verify that things were logged
+        Assert.assertEquals(
+                "[Warning] Cannot access state in VaadinSession or UI without locking the session.",
+                session.mockLogger.getLogs().trim());
     }
 }

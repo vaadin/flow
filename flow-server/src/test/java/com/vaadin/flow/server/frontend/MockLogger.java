@@ -19,7 +19,9 @@ package com.vaadin.flow.server.frontend;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 
-public class MockLogger implements Logger {
+import java.io.Serializable;
+
+public class MockLogger implements Logger, Serializable {
 
     StringBuilder logs = new StringBuilder();
 
