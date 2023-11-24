@@ -105,7 +105,7 @@ public class InitParameters implements Serializable {
      * which can connect to the dev tools from those IP addresses. Otherwise,
      * the non-localhost connections will be rejected.
      */
-    public static final String HOSTS_ALLOWED = "devmode.hostsAllowed";
+    public static final String SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED = "devmode.hostsAllowed";
 
     /**
      * Configuration parameter name for enabling pnpm.

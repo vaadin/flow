@@ -371,7 +371,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             VaadinRequest request) {
         String remoteAddress = request.getRemoteAddr();
         String hostsAllowed = configuration
-                .getStringProperty(InitParameters.HOSTS_ALLOWED, null);
+                .getStringProperty(InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED, null);
 
         if (!isAllowedDevToolsHost(remoteAddress, hostsAllowed)) {
             return false;

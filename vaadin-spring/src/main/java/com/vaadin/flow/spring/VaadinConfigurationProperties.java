@@ -117,6 +117,14 @@ public class VaadinConfigurationProperties {
      */
     private boolean devmodeCaching = true;
 
+
+    /**
+     * Whitelisting to specify the allowed hosts, potentially with wildcards,
+     * which can connect to the dev tools from those IP addresses. Otherwise,
+     * the non-localhost connections will be rejected.
+     */
+    private String devmodeHostsAllowed = "";
+
     public static class Frontend {
         /**
          * Whether a frontend development server (Vite) is used in development
@@ -361,5 +369,24 @@ public class VaadinConfigurationProperties {
      */
     public Frontend getFrontend() {
         return frontend;
+    }
+
+    /**
+     * Gets the hosts allowed to connect to the dev mode server.
+     *
+     * @return the hosts allowed to connect to the dev mode server
+     */
+
+    public String getDevmodeHostsAllowed() {
+        return devmodeHostsAllowed;
+    }
+
+    /**
+     * Sets the hosts allowed to connect to the dev mode server.
+     *
+     * @param devmodeHostsAllowed - the hosts allowed to connect to the dev mode server
+     */
+    public void setDevmodeHostsAllowed(String devmodeHostsAllowed) {
+        this.devmodeHostsAllowed = devmodeHostsAllowed;
     }
 }
