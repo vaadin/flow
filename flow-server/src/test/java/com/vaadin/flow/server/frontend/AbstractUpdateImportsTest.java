@@ -499,7 +499,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         expectedImports.addAll(updater.getThemeLines());
         expectedImports.add("window.Vaadin = window.Vaadin || {};");
         expectedImports.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
-        expectedImports.add("window.Vaadin.Flow.resetFocus = " + AbstractUpdateImports.RESET_FOCUS_JS);
+        expectedImports.add("window.Vaadin.Flow.resetFocus = "
+                + AbstractUpdateImports.RESET_FOCUS_JS);
 
         getAnntotationsAsStream(JsModule.class, testClasses)
                 .map(JsModule::value).map(this::updateToImport).sorted()
