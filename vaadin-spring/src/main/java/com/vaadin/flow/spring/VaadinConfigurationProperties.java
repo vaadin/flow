@@ -117,13 +117,6 @@ public class VaadinConfigurationProperties {
      */
     private boolean devmodeCaching = true;
 
-    /**
-     * A comma separated list of IP addresses, potentially with wildcards, which
-     * can connect to the dev tools. If not specified, only localhost
-     * connections are allowed.
-     */
-    private String devmodeHostsAllowed = "";
-
     public static class Frontend {
         /**
          * Whether a frontend development server (Vite) is used in development
@@ -173,6 +166,36 @@ public class VaadinConfigurationProperties {
          */
         public void setEnable(boolean enable) {
             this.enable = enable;
+        }
+
+    }
+
+    public static class Devmode {
+        /**
+         * A comma separated list of IP addresses, potentially with wildcards,
+         * which can connect to the dev tools. If not specified, only localhost
+         * connections are allowed.
+         */
+        private String devmodeHostsAllowed = "";
+
+        /**
+         * Gets the hosts allowed to connect to the dev mode server.
+         *
+         * @return the hosts allowed to connect to the dev mode server
+         */
+
+        public String getDevmodeHostsAllowed() {
+            return devmodeHostsAllowed;
+        }
+
+        /**
+         * Sets the hosts allowed to connect to the dev mode server.
+         *
+         * @param devmodeHostsAllowed
+         *            - the hosts allowed to connect to the dev mode server
+         */
+        public void setDevmodeHostsAllowed(String devmodeHostsAllowed) {
+            this.devmodeHostsAllowed = devmodeHostsAllowed;
         }
 
     }
@@ -368,25 +391,5 @@ public class VaadinConfigurationProperties {
      */
     public Frontend getFrontend() {
         return frontend;
-    }
-
-    /**
-     * Gets the hosts allowed to connect to the dev mode server.
-     *
-     * @return the hosts allowed to connect to the dev mode server
-     */
-
-    public String getDevmodeHostsAllowed() {
-        return devmodeHostsAllowed;
-    }
-
-    /**
-     * Sets the hosts allowed to connect to the dev mode server.
-     *
-     * @param devmodeHostsAllowed
-     *            - the hosts allowed to connect to the dev mode server
-     */
-    public void setDevmodeHostsAllowed(String devmodeHostsAllowed) {
-        this.devmodeHostsAllowed = devmodeHostsAllowed;
     }
 }
