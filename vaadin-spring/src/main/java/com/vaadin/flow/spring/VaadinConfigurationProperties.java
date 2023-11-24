@@ -117,7 +117,6 @@ public class VaadinConfigurationProperties {
      */
     private boolean devmodeCaching = true;
 
-
     /**
      * Whitelisting to specify the allowed hosts, potentially with wildcards,
      * which can connect to the dev tools from those IP addresses. Otherwise,
@@ -384,7 +383,8 @@ public class VaadinConfigurationProperties {
     /**
      * Sets the hosts allowed to connect to the dev mode server.
      *
-     * @param devmodeHostsAllowed - the hosts allowed to connect to the dev mode server
+     * @param devmodeHostsAllowed
+     *            - the hosts allowed to connect to the dev mode server
      */
     public void setDevmodeHostsAllowed(String devmodeHostsAllowed) {
         this.devmodeHostsAllowed = devmodeHostsAllowed;
