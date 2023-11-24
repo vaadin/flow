@@ -23,7 +23,7 @@ import java.util.Objects;
  * A representation of the access check result, potentially providing deny
  * reason.
  */
-public final class AccessCheckResult implements Serializable {
+public class AccessCheckResult implements Serializable {
 
     /**
      * A result instance informing that the navigation to the target view is
@@ -49,7 +49,15 @@ public final class AccessCheckResult implements Serializable {
      * @param reason
      *            a message explaining the reason for that decision.
      */
-    AccessCheckResult(AccessCheckDecision decision, String reason) {
+    public AccessCheckResult(AccessCheckDecision decision, String reason) {
+        if (decision == null) {
+            throw new IllegalArgumentException("Decision must not be null");
+        }
+        if ((decision == AccessCheckDecision.DENY
+                || decision == AccessCheckDecision.REJECT) && reason == null) {
+            throw new IllegalArgumentException(
+                    decision.name() + " requires a not null reason");
+        }
         this.decision = decision;
         this.reason = reason;
     }
@@ -96,6 +104,26 @@ public final class AccessCheckResult implements Serializable {
     public String toString() {
         return "Access decision: " + decision
                 + (reason != null ? (". " + reason) : "");
+    }
+
+    /**
+     * Create a result instance for the provided decision and reason.
+     * <p>
+     * </p>
+     * The {@code reason} cannot be {@literal null} for
+     * {@link AccessCheckDecision#DENY} and {@link AccessCheckDecision#REJECT}.
+     * For {@link AccessCheckDecision#ALLOW} the reason is ignored.
+     *
+     * @param decision
+     *            the decision for this result, never {@literal null}.
+     * @param reason
+     *            a message explaining why the current decision has been taken.
+     *            Useful for debugging purposes.
+     * @return a result instance for given decision and reason.
+     */
+    public static AccessCheckResult create(AccessCheckDecision decision,
+            String reason) {
+        return new AccessCheckResult(decision, reason);
     }
 
     /**
