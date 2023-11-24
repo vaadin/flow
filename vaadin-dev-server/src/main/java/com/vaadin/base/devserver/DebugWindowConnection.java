@@ -15,6 +15,7 @@
  */
 package com.vaadin.base.devserver;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -202,7 +203,12 @@ public class DebugWindowConnection implements BrowserLiveReload {
         } else {
             getLogger().debug(
                     "Connection denied because of a missing or invalid token. The host is probably not on the allow list");
-            resource.resume();
+            try {
+                resource.close();
+            } catch (IOException e) {
+                getLogger().debug(
+                        "Error closing the denied websocket connection", e);
+            }
         }
     }
 
