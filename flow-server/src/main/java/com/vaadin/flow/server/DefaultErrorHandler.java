@@ -91,14 +91,9 @@ public class DefaultErrorHandler implements ErrorHandler {
     public void error(ErrorEvent event) {
         Throwable throwable = findRelevantThrowable(event.getThrowable());
         if (shouldHandle(throwable)) {
-            VaadinService service = VaadinService.getCurrent();
-            if (service != null
-                    && service.getDeploymentConfiguration()
-                            .isErrorRedirectEnabled()
-                    && ErrorHandlerUtil
+            if (ErrorHandlerUtil
                             .handleErrorByRedirectingToErrorView(throwable)) {
                 return;
-
             }
             Marker marker = MarkerFactory.getMarker("INVALID_LOCATION");
             if (throwable instanceof InvalidLocationException) {
