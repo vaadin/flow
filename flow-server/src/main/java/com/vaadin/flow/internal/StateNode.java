@@ -901,9 +901,8 @@ public class StateNode implements Serializable {
      *            the command to run immediately or when the node is attached
      */
     public void runWhenAttached(SerializableConsumer<UI> command) {
-        // Execute immediately only if the node han not been detached
-        // during current roundtrip
-        if (isAttached() && (!wasAttached || !hasBeenDetached)) {
+
+        if (isAttached()) {
             command.accept(getUI());
         } else {
             addAttachListener(new Command() {
