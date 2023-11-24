@@ -92,7 +92,7 @@ public class DefaultErrorHandler implements ErrorHandler {
         Throwable throwable = findRelevantThrowable(event.getThrowable());
         if (shouldHandle(throwable)) {
             if (ErrorHandlerUtil
-                            .handleErrorByRedirectingToErrorView(throwable)) {
+                    .handleErrorByRedirectingToErrorView(throwable)) {
                 return;
             }
             Marker marker = MarkerFactory.getMarker("INVALID_LOCATION");
