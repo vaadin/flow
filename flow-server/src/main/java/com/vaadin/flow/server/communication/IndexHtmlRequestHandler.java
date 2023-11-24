@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
@@ -50,6 +49,7 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -371,7 +371,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             VaadinRequest request) {
         String remoteAddress = request.getRemoteAddr();
         String hostsAllowed = configuration
-                .getStringProperty("devmode.hostsAllowed", null);
+                .getStringProperty(InitParameters.HOSTS_ALLOWED, null);
 
         if (!isAllowedDevToolsHost(remoteAddress, hostsAllowed)) {
             return false;

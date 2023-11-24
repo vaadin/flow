@@ -955,16 +955,14 @@ public class IndexHtmlRequestHandlerTest {
 
     @Test
     public void devTools_allowedHostsMatchesIp() {
-        Assert.assertTrue(
-                isAllowedDevToolsHost("192.168.1.*", "192.168.1.1"));
+        Assert.assertTrue(isAllowedDevToolsHost("192.168.1.*", "192.168.1.1"));
         Assert.assertTrue(
                 isAllowedDevToolsHost("192.168.1.*", "192.168.1.100"));
         Assert.assertFalse(
                 isAllowedDevToolsHost("192.168.1.*", "192.168.100.100"));
 
         // Localhost is always allowed
-        Assert.assertTrue(
-                isAllowedDevToolsHost("192.168.1.*", "127.0.0.1"));
+        Assert.assertTrue(isAllowedDevToolsHost("192.168.1.*", "127.0.0.1"));
 
     }
 
