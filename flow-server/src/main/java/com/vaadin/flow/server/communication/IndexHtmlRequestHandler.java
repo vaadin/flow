@@ -414,7 +414,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         if (hostsAllowed != null) {
             // Allowed hosts set
-            return FilenameUtils.wildcardMatch(remoteAddress, hostsAllowed);
+    String[] allowedHosts = hostsAllowed.split(",");
+
+    for (String allowedHost : allowedHosts) {
+        if (FilenameUtils.wildcardMatch(remoteAddress, allowedHost.trim())) {
+            return true;
+        }
+    }
         }
 
         return false;
