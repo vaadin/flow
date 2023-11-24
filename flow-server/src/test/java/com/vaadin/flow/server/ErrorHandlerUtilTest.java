@@ -143,8 +143,6 @@ public class ErrorHandlerUtilTest {
         Mockito.when(vaadinService.getDeploymentConfiguration())
                 .thenReturn(config);
 
-        Mockito.when(config.isErrorRedirectEnabled()).thenReturn(true);
-
         Mockito.when(vaadinService.accessSession(
                 Mockito.any(VaadinSession.class), Mockito.any(Command.class)))
                 .thenCallRealMethod();
@@ -182,29 +180,9 @@ public class ErrorHandlerUtilTest {
     }
 
     @Test
-    public void featureNotEnabled_nullPointerException_doesNotExecuteErrorView() {
-        registry.setErrorNavigationTargets(
-                Collections.singleton(ErrorView.class));
-        Mockito.when(config.isErrorRedirectEnabled()).thenReturn(false);
-
-        Assert.assertEquals(0, ui.getElement().getChildren().count());
-
-        ui.access(() -> {
-        });
-
-        session.getPendingAccessQueue().forEach(futureAccess -> futureAccess
-                .handleError(new NullPointerException("NPE")));
-
-        Assert.assertFalse(ErrorView.initialized);
-        Assert.assertFalse(ErrorView.setError);
-        Assert.assertEquals(0, ui.getElement().getChildren().count());
-    }
-
-    @Test
     public void illegalArgumentException_doesNotExecuteErrorView() {
         registry.setErrorNavigationTargets(
                 Collections.singleton(ErrorView.class));
-        Mockito.when(config.isErrorRedirectEnabled()).thenReturn(false);
 
         Assert.assertEquals(0, ui.getElement().getChildren().count());
 

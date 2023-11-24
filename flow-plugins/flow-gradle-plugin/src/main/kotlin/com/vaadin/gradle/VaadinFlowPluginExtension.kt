@@ -271,15 +271,6 @@ public abstract class VaadinFlowPluginExtension {
      */
     public abstract val alwaysExecutePrepareFrontend: Property<Boolean>
 
-    /**
-     * If `true` navigation error views implementing `HasErrorParameter`
-     * can be rendered for exceptions during RPC request handling, not only limited
-     * to exceptions thrown during navigation life-cycle.
-     *
-     * @return `true` to enable error view rendering in RPC, `false` by default
-     */
-    public abstract val errorHandlerRedirect: Property<Boolean>
-
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>) {
         block.delegate = classpathFilter
         block.resolveStrategy = Closure.DELEGATE_FIRST
@@ -420,10 +411,6 @@ internal class PluginEffectiveConfiguration(
     val alwaysExecutePrepareFrontend: Property<Boolean> = extension.alwaysExecutePrepareFrontend
         .convention(false)
 
-    val isErrorHandlerRedirect: Provider<Boolean> = extension.errorHandlerRedirect
-        .convention(false)
-        .overrideWithSystemProperty(InitParameters.ERROR_HANDLER_REDIRECT_ENABLED)
-
     /**
      * Finds the value of a boolean property. It searches in gradle and system properties.
      *
@@ -470,7 +457,6 @@ internal class PluginEffectiveConfiguration(
             "processResourcesTaskName=${processResourcesTaskName.get()}, " +
             "skipDevBundleBuild=${skipDevBundleBuild.get()}, " +
             "alwaysExecutePrepareFrontend=${alwaysExecutePrepareFrontend.get()}, " +
-            "isErrorHandlerRedirect=${isErrorHandlerRedirect.get()}, " +
             "frontendHotdeploy=${frontendHotdeploy.get()}" +
             ")"
     companion object {
