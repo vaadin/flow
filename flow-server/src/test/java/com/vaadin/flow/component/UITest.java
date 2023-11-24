@@ -27,9 +27,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.vaadin.flow.server.*;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.After;
@@ -78,15 +80,6 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
-import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.MockVaadinContext;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.frontend.MockLogger;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
@@ -606,6 +599,27 @@ public class UITest {
                 "No UIDetachedException should be logged but got: "
                         + logOutputNoDebug,
                 logOutputNoDebug.contains("UIDetachedException"));
+    }
+
+    @Test
+    public void access_currentUIFilledInErrorHandler() {
+        UI ui = createTestUI();
+        initUI(ui, "", null);
+        final AtomicReference<UI> uiInErrorHandler = new AtomicReference<>();
+        final AtomicBoolean errorHandlerCalled = new AtomicBoolean();
+        ui.getSession().setErrorHandler((ErrorHandler) event -> {
+            errorHandlerCalled.set(true);
+            uiInErrorHandler.set(UI.getCurrent());
+        });
+        ui.access(() -> {
+            throw new RuntimeException("Simulated");
+        });
+
+        // Unlock to run pending access tasks
+        ui.getSession().unlock();
+
+        Assert.assertTrue(errorHandlerCalled.get());
+        Assert.assertEquals(ui, uiInErrorHandler.get());
     }
 
     @Test
