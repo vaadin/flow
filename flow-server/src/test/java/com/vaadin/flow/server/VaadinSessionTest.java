@@ -39,6 +39,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpSessionBindingEvent;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -509,5 +510,72 @@ public class VaadinSessionTest {
         TestComponent testComponent = new TestComponent();
         ui.add(testComponent);
         return testComponent;
+    }
+
+    @Test
+    public void checkHasLock_noCheckInDevMode() {
+        Assume.assumeTrue(session.hasLock());
+        Assume.assumeFalse(session.getConfiguration().isProductionMode());
+        Assert.assertEquals(LockCheckStrategy.ASSERT,
+                session.getConfiguration().getLockCheckStrategy());
+        final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
+                .getConfiguration();
+
+        session.checkHasLock();
+        configuration.setLockCheckStrategy(LockCheckStrategy.LOG);
+        session.checkHasLock();
+        configuration.setLockCheckStrategy(LockCheckStrategy.ASSERT);
+        session.checkHasLock();
+    }
+
+    @Test
+    public void checkHasLock_assert() {
+        final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
+                .getConfiguration();
+        configuration.setProductionMode(true);
+        session.unlock();
+        Assume.assumeFalse(session.hasLock());
+
+        try {
+            // this should throw AssertionError since assertions are enabled
+            // during tests
+            session.checkHasLock();
+            // don't use fail() since it will throw AssertionError
+            throw new RuntimeException("lock check passed");
+        } catch (AssertionError ex) {
+            // okay
+        }
+    }
+
+    @Test
+    public void checkHasLock_throw() {
+        final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
+                .getConfiguration();
+        configuration.setProductionMode(true);
+        configuration.setLockCheckStrategy(LockCheckStrategy.THROW);
+        session.unlock();
+        Assume.assumeFalse(session.hasLock());
+
+        try {
+            // this should throw IllegalStateException
+            session.checkHasLock();
+            Assert.fail("Should have thrown IllegalStateException");
+        } catch (IllegalStateException ex) {
+            // okay
+        }
+    }
+
+    @Test
+    public void checkHasLock_log() {
+        final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
+                .getConfiguration();
+        configuration.setProductionMode(true);
+        configuration.setLockCheckStrategy(LockCheckStrategy.LOG);
+        session.unlock();
+        Assume.assumeFalse(session.hasLock());
+
+        // this should throw IllegalStateException
+        session.checkHasLock();
+        // @todo verify that things were logged
     }
 }
