@@ -153,7 +153,7 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
      * "/" or "/{app-context-root}", so the Spring Security will not intercept
      * and the SavedRequest will be null. In this case, the target redirect url
      * can be extracted from the session. See
-     * {@link ViewAccessChecker#beforeEnter(BeforeEnterEvent)}
+     * {@link NavigationAccessControl#beforeEnter(BeforeEnterEvent)}
      *
      * @param request
      *            the request which caused the successful authentication

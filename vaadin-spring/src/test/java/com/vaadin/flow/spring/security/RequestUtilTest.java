@@ -32,8 +32,8 @@ import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import com.vaadin.flow.server.auth.NavigationAccessChecker;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.spring.MockVaadinContext;
@@ -69,10 +69,7 @@ public class RequestUtilTest {
         accessControl.setEnabled(true);
         // Disable path checker
         Mockito.when(accessPathChecker.check(ArgumentMatchers.any()))
-                .then(i -> i
-                        .getArgument(0,
-                                NavigationAccessChecker.NavigationContext.class)
-                        .neutral());
+                .then(i -> i.getArgument(0, NavigationContext.class).neutral());
     }
 
     @Test
