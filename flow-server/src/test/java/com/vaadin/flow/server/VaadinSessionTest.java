@@ -78,6 +78,10 @@ public class VaadinSessionTest {
         Logger getLogger() {
             return mockLogger;
         }
+
+        @Override
+        protected void checkSetConfiguration() {
+        }
     }
 
     private VaadinSessionWithMockLogger session;
@@ -538,11 +542,15 @@ public class VaadinSessionTest {
                 .getConfiguration();
 
         session.checkHasLock();
+
         configuration.setLockCheckStrategy(LockCheckStrategy.LOG);
+        session.setConfiguration(configuration);
         session.mockLogger.clearLogs();
         session.checkHasLock();
         Assert.assertEquals("", session.mockLogger.getLogs());
+
         configuration.setLockCheckStrategy(LockCheckStrategy.ASSERT);
+        session.setConfiguration(configuration);
         session.checkHasLock();
     }
 
@@ -551,6 +559,7 @@ public class VaadinSessionTest {
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
         configuration.setProductionMode(true);
+        session.setConfiguration(configuration);
         session.unlock();
         Assume.assumeFalse(session.hasLock());
 
@@ -571,6 +580,7 @@ public class VaadinSessionTest {
                 .getConfiguration();
         configuration.setProductionMode(true);
         configuration.setLockCheckStrategy(LockCheckStrategy.THROW);
+        session.setConfiguration(configuration);
         session.unlock();
         Assume.assumeFalse(session.hasLock());
 
@@ -589,6 +599,7 @@ public class VaadinSessionTest {
                 .getConfiguration();
         configuration.setProductionMode(true);
         configuration.setLockCheckStrategy(LockCheckStrategy.LOG);
+        session.setConfiguration(configuration);
         session.unlock();
         Assume.assumeFalse(session.hasLock());
 

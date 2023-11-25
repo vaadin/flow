@@ -112,6 +112,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private transient Lock lock;
 
+    private LockCheckStrategy lockCheckStrategy = LockCheckStrategy.DEFAULT;
+
     /*
      * Pending tasks can't be serialized and the queue should be empty when the
      * session is serialized as long as it doesn't happen while some other
@@ -345,9 +347,20 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         if (configuration == null) {
             throw new IllegalArgumentException("Can not set to null");
         }
+        checkSetConfiguration();
+        this.configuration = configuration;
+
+        lockCheckStrategy = configuration.isProductionMode()
+                ? configuration.getLockCheckStrategy()
+                : LockCheckStrategy.THROW;
+        if (lockCheckStrategy == null) {
+            lockCheckStrategy = LockCheckStrategy.DEFAULT;
+        }
+    }
+
+    protected void checkSetConfiguration() {
         assert this.configuration == null
                 : "Configuration can only be set once";
-        this.configuration = configuration;
     }
 
     /**
@@ -566,15 +579,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            and the session is not locked
      */
     public void checkHasLock(String message) {
-        LockCheckStrategy strategy = configuration == null
-                ? LockCheckStrategy.ASSERT
-                : configuration.isProductionMode()
-                        ? configuration.getLockCheckStrategy()
-                        : LockCheckStrategy.THROW;
-        if (strategy == null) {
-            strategy = LockCheckStrategy.DEFAULT;
-        }
-        strategy.checkHasLock(this, message);
+        lockCheckStrategy.checkHasLock(this, message);
     }
 
     /**
