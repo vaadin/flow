@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>9.1-SNAPSHOT</version>
+        <version>9.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-eager-bootstrap</artifactId>
     <name>Flow eager bootstrap (includes UIDL in first request) test</name>

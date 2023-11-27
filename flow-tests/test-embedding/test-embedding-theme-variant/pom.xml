@@ -20,7 +20,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>test-embedding</artifactId>
-        <version>9.1-SNAPSHOT</version>
+        <version>9.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-embedding-theme-variant</artifactId>
     <name>Flow Embedding, theme variant</name>
