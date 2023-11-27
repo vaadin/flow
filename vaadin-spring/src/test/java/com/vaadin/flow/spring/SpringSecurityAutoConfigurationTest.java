@@ -33,9 +33,12 @@ import org.springframework.context.annotation.Bean;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
+import com.vaadin.flow.server.auth.AccessCheckDecision;
+import com.vaadin.flow.server.auth.AccessCheckResult;
 import com.vaadin.flow.server.auth.AccessPathChecker;
 import com.vaadin.flow.server.auth.NavigationAccessChecker;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
@@ -126,8 +129,8 @@ class SpringSecurityAutoConfigurationTest {
         assertThat(context).hasSingleBean(NavigationAccessControl.class);
         NavigationAccessControl control = context
                 .getBean(NavigationAccessControl.class);
-        NavigationAccessChecker.NavigationContext navigationContext = Mockito
-                .mock(NavigationAccessChecker.NavigationContext.class);
+        NavigationContext navigationContext = Mockito
+                .mock(NavigationContext.class);
         Mockito.when(navigationContext.getNavigationTarget())
                 .thenReturn((Class) Component.class);
         Mockito.when(navigationContext.getLocation())
@@ -137,10 +140,9 @@ class SpringSecurityAutoConfigurationTest {
         Mockito.when(navigationContext.deny(ArgumentMatchers.anyString()))
                 .thenCallRealMethod();
 
-        NavigationAccessChecker.AccessCheckResult result = control
-                .checkAccess(navigationContext, false);
-        assertThat(result.decision())
-                .isEqualTo(NavigationAccessChecker.Decision.DENY);
+        AccessCheckResult result = control.checkAccess(navigationContext,
+                false);
+        assertThat(result.decision()).isEqualTo(AccessCheckDecision.DENY);
         assertThat(result.reason()).isEqualTo("Custom Implementation");
 
         Mockito.verify(navigationContext, Mockito.times(2))

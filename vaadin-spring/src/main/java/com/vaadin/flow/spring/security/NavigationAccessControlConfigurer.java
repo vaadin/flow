@@ -26,9 +26,9 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.auth.AnnotatedViewAccessChecker;
-import com.vaadin.flow.server.auth.DefaultNavigationCheckDecisionResolver;
+import com.vaadin.flow.server.auth.DefaultAccessCheckDecisionResolver;
 import com.vaadin.flow.server.auth.NavigationAccessChecker;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.DecisionResolver;
+import com.vaadin.flow.server.auth.AccessCheckDecisionResolver;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 
@@ -106,7 +106,7 @@ public final class NavigationAccessControlConfigurer {
     private boolean enablePathAccessChecker;
     private Class<? extends Component> loginView;
     private String loginViewPath;
-    private DecisionResolver decisionResolver = new DefaultNavigationCheckDecisionResolver();
+    private AccessCheckDecisionResolver decisionResolver = new DefaultAccessCheckDecisionResolver();
     private Predicate<NavigationAccessChecker> accessCheckersFilter;
 
     /**
@@ -195,18 +195,19 @@ public final class NavigationAccessControlConfigurer {
     }
 
     /**
-     * Sets the {@link DecisionResolver} for the navigation access control.
+     * Sets the {@link AccessCheckDecisionResolver} for the navigation access
+     * control.
      * <p>
-     * The {@link DecisionResolver} is responsible for taking the final decision
-     * on target view access grant, based on the response of the navigation
-     * access checkers.
+     * The {@link AccessCheckDecisionResolver} is responsible for taking the
+     * final decision on target view access grant, based on the response of the
+     * navigation access checkers.
      *
      * @param resolver
      *            the decision resolver to use for navigation access control.
      * @return this instance for further customization.
      */
     public NavigationAccessControlConfigurer withDecisionResolver(
-            DecisionResolver resolver) {
+            AccessCheckDecisionResolver resolver) {
         this.decisionResolver = Objects.requireNonNull(resolver,
                 "Decision resolver must not be null");
         return this;
@@ -264,7 +265,7 @@ public final class NavigationAccessControlConfigurer {
      *            the type of the {@link NavigationAccessControl}
      */
     public <T extends NavigationAccessControl> T build(
-            BiFunction<List<NavigationAccessChecker>, DecisionResolver, T> factory,
+            BiFunction<List<NavigationAccessChecker>, AccessCheckDecisionResolver, T> factory,
             List<NavigationAccessChecker> availableCheckers) {
         Objects.requireNonNull(factory,
                 "navigation access control factory must not be null");

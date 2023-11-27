@@ -92,6 +92,7 @@ interface Message {
   link?: string;
   persistentId?: string;
   dontShowAgain: boolean;
+  dontShowAgainMessage?: string;
   deleted: boolean;
 }
 type DevToolsConf = {
@@ -99,6 +100,7 @@ type DevToolsConf = {
   url: string;
   backend?: string;
   liveReloadPort: number;
+  token?: string;
 };
 @customElement('vaadin-dev-tools')
 export class VaadinDevTools extends LitElement {
@@ -898,7 +900,10 @@ export class VaadinDevTools extends LitElement {
   openWebSocketConnection() {
     this.frontendStatus = ConnectionStatus.UNAVAILABLE;
     this.javaStatus = ConnectionStatus.UNAVAILABLE;
-
+    if (!this.conf.token) {
+        console.error("Dev tools functionality denied for this host.");
+        return;
+    }
     const onConnectionError = (msg: string) => this.log(MessageType.ERROR, msg);
     const onReload = () => {
       this.showSplashMessage('Reloading…');
@@ -1026,7 +1031,7 @@ export class VaadinDevTools extends LitElement {
       console.error('The protocol of the url should be http or https for live reload to work.');
       return undefined;
     }
-    return `${connectionBaseUrl.replace(/^http/, 'ws')}?v-r=push&debug_window`;
+    return `${connectionBaseUrl.replace(/^http/, 'ws')}?v-r=push&debug_window&token=${this.conf.token}`;
   }
 
   getSpringBootWebSocketUrl(location: any) {
@@ -1183,7 +1188,7 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
-  log(type: MessageType, message: string, details?: string, link?: string) {
+  log(type: MessageType, message: string, details?: string, link?: string, dontShowAgainMessage?:string) {
     const id = this.nextMessageId;
     this.nextMessageId += 1;
     this.messages.push({
@@ -1193,6 +1198,7 @@ export class VaadinDevTools extends LitElement {
       details,
       link,
       dontShowAgain: false,
+      dontShowAgainMessage,
       deleted: false
     });
     while (this.messages.length > VaadinDevTools.MAX_LOG_ROWS) {
@@ -1211,7 +1217,7 @@ export class VaadinDevTools extends LitElement {
     });
   }
 
-  showNotification(type: MessageType, message: string, details?: string, link?: string, persistentId?: string) {
+  showNotification(type: MessageType, message: string, details?: string, link?: string, persistentId?: string, dontShowAgainMessage?:string) {
     if (persistentId === undefined || !VaadinDevTools.notificationDismissed(persistentId!)) {
       // Do not open persistent message if another is already visible with the same persistentId
       const matchingVisibleNotifications = this.notifications
@@ -1230,6 +1236,7 @@ export class VaadinDevTools extends LitElement {
         link,
         persistentId,
         dontShowAgain: false,
+        dontShowAgainMessage,
         deleted: false
       });
       // automatically move notification to message tray after a certain amount of time unless it contains a link
@@ -1338,7 +1345,7 @@ export class VaadinDevTools extends LitElement {
                 class="persist ${messageObject.dontShowAgain ? 'on' : 'off'}"
                 @click=${() => this.toggleDontShowAgain(messageObject.id)}
               >
-                Don’t show again
+              ${messageObject.dontShowAgainMessage || 'Don’t show again'}
               </div>`
             : ''}
         </div>

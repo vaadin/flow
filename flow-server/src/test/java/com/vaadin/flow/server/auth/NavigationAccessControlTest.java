@@ -60,8 +60,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.AnonymousAllowedView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.PermitAllView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.TestLoginView;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.Decision;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.NavigationContext;
 
 import static org.mockito.ArgumentMatchers.anyBoolean;
 
@@ -88,8 +86,8 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_principalAndRoleCheckerProvidedToCheckers() {
-        mockCheckerResult(checker2, Decision.ALLOW);
-        mockCheckerResult(checker3, Decision.ALLOW);
+        mockCheckerResult(checker2, AccessCheckDecision.ALLOW);
+        mockCheckerResult(checker3, AccessCheckDecision.ALLOW);
 
         ArgumentCaptor<NavigationContext> captor = ArgumentCaptor
                 .forClass(NavigationContext.class);
@@ -109,27 +107,27 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_anonymous_allCheckersAllowAccess_allowNavigation() {
-        mockCheckerResult(checker1, Decision.ALLOW);
-        mockCheckerResult(checker2, Decision.ALLOW);
-        mockCheckerResult(checker3, Decision.ALLOW);
+        mockCheckerResult(checker1, AccessCheckDecision.ALLOW);
+        mockCheckerResult(checker2, AccessCheckDecision.ALLOW);
+        mockCheckerResult(checker3, AccessCheckDecision.ALLOW);
         TestNavigationResult result = checkAccess(false, false);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
     @Test
     public void beforeEnter_anonymous_allowAndNeutralCheckers_allowNavigation() {
-        mockCheckerResult(checker1, Decision.ALLOW);
-        mockCheckerResult(checker2, Decision.NEUTRAL);
-        mockCheckerResult(checker3, Decision.NEUTRAL);
+        mockCheckerResult(checker1, AccessCheckDecision.ALLOW);
+        mockCheckerResult(checker2, AccessCheckDecision.NEUTRAL);
+        mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
         TestNavigationResult result = checkAccess(false, false);
         Assert.assertTrue(result.wasTargetViewRendered());
     }
 
     @Test
     public void beforeEnter_anonymous_allCheckersDenyAccess_rerouteToNotFound() {
-        mockCheckerResult(checker1, Decision.DENY);
-        mockCheckerResult(checker2, Decision.DENY);
-        mockCheckerResult(checker3, Decision.DENY);
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.DENY);
+        mockCheckerResult(checker3, AccessCheckDecision.DENY);
         TestNavigationResult result = checkAccess(false, false);
         Assert.assertFalse(result.wasTargetViewRendered());
         Assert.assertEquals(NotFoundException.class, result.getRerouteError());
@@ -140,9 +138,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_anonymous_denyAndNeutralCheckers_allowNavigation() {
-        mockCheckerResult(checker1, Decision.DENY);
-        mockCheckerResult(checker2, Decision.NEUTRAL);
-        mockCheckerResult(checker3, Decision.NEUTRAL);
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.NEUTRAL);
+        mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
         TestNavigationResult result = checkAccess(false, false);
         Assert.assertFalse(result.wasTargetViewRendered());
         Assert.assertEquals(NotFoundException.class, result.getRerouteError());
@@ -154,9 +152,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_anonymous_allCheckersNeutral_rerouteToNotFound() {
-        mockCheckerResult(checker1, Decision.NEUTRAL);
-        mockCheckerResult(checker2, Decision.NEUTRAL);
-        mockCheckerResult(checker3, Decision.NEUTRAL);
+        mockCheckerResult(checker1, AccessCheckDecision.NEUTRAL);
+        mockCheckerResult(checker2, AccessCheckDecision.NEUTRAL);
+        mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
         TestNavigationResult result = checkAccess(false, false);
         Assert.assertFalse(result.wasTargetViewRendered());
         Assert.assertEquals(NotFoundException.class, result.getRerouteError());
@@ -167,9 +165,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_developmentMode_anonymous_mixedCheckersConsensus_exceptionThrown() {
-        mockCheckerResult(checker1, Decision.ALLOW);
-        mockCheckerResult(checker2, Decision.NEUTRAL);
-        mockCheckerResult(checker3, Decision.DENY);
+        mockCheckerResult(checker1, AccessCheckDecision.ALLOW);
+        mockCheckerResult(checker2, AccessCheckDecision.NEUTRAL);
+        mockCheckerResult(checker3, AccessCheckDecision.DENY);
 
         IllegalStateException failure = Assert.assertThrows(
                 IllegalStateException.class, () -> checkAccess(false, false));
@@ -185,9 +183,9 @@ public class NavigationAccessControlTest {
 
         // Result order does not matter
         Mockito.reset(checker1, checker2, checker3);
-        mockCheckerResult(checker1, Decision.DENY);
-        mockCheckerResult(checker2, Decision.ALLOW);
-        mockCheckerResult(checker3, Decision.NEUTRAL);
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.ALLOW);
+        mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
         failure = Assert.assertThrows(IllegalStateException.class,
                 () -> checkAccess(false, false));
         Assert.assertTrue(
@@ -203,9 +201,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_productionMode_mixedCheckersConsensus_routeNotFoundWithNoReasonsExposed() {
-        mockCheckerResult(checker1, Decision.ALLOW);
-        mockCheckerResult(checker2, Decision.NEUTRAL);
-        mockCheckerResult(checker3, Decision.DENY);
+        mockCheckerResult(checker1, AccessCheckDecision.ALLOW);
+        mockCheckerResult(checker2, AccessCheckDecision.NEUTRAL);
+        mockCheckerResult(checker3, AccessCheckDecision.DENY);
         TestNavigationResult result = checkAccess(false, true);
         Assert.assertFalse(result.wasTargetViewRendered());
         Assert.assertEquals(NotFoundException.class, result.getRerouteError());
@@ -213,9 +211,9 @@ public class NavigationAccessControlTest {
 
         // Result order does not matter
         Mockito.reset(checker1, checker2, checker3);
-        mockCheckerResult(checker1, Decision.DENY);
-        mockCheckerResult(checker2, Decision.ALLOW);
-        mockCheckerResult(checker3, Decision.NEUTRAL);
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.ALLOW);
+        mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
         result = checkAccess(false, true);
         Assert.assertFalse(result.wasTargetViewRendered());
         Assert.assertEquals(NotFoundException.class, result.getRerouteError());
@@ -224,9 +222,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_productionMode_allCheckersDenyAccess_routeNotFoundWithNoReasonsExposed() {
-        mockCheckerResult(checker1, Decision.DENY);
-        mockCheckerResult(checker2, Decision.DENY);
-        mockCheckerResult(checker3, Decision.DENY);
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.DENY);
+        mockCheckerResult(checker3, AccessCheckDecision.DENY);
         TestNavigationResult result = checkAccess(false, true);
         Assert.assertFalse(result.wasTargetViewRendered());
         Assert.assertEquals(NotFoundException.class, result.getRerouteError());
@@ -235,9 +233,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_productionMode_allCheckersNeutral_routeNotFoundWithNoReasonsExposed() {
-        mockCheckerResult(checker1, Decision.NEUTRAL);
-        mockCheckerResult(checker2, Decision.NEUTRAL);
-        mockCheckerResult(checker3, Decision.NEUTRAL);
+        mockCheckerResult(checker1, AccessCheckDecision.NEUTRAL);
+        mockCheckerResult(checker2, AccessCheckDecision.NEUTRAL);
+        mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
         TestNavigationResult result = checkAccess(false, true);
         Assert.assertFalse(result.wasTargetViewRendered());
         Assert.assertEquals(NotFoundException.class, result.getRerouteError());
@@ -246,9 +244,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_errorHandlingViewReroute_allCheckersNeutral_allowNavigation() {
-        mockCheckerResult(checker1, Decision.NEUTRAL);
-        mockCheckerResult(checker2, Decision.NEUTRAL);
-        mockCheckerResult(checker3, Decision.NEUTRAL);
+        mockCheckerResult(checker1, AccessCheckDecision.NEUTRAL);
+        mockCheckerResult(checker2, AccessCheckDecision.NEUTRAL);
+        mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
         TestNavigationResult result = checkAccess(RouteAccessDeniedError.class,
                 false, false, true);
         Assert.assertTrue(result.wasTargetViewRendered());
@@ -283,9 +281,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_loginView_accessToLoginViewAlwaysAllowed() {
-        mockCheckerResult(checker1, Decision.DENY);
-        mockCheckerResult(checker2, Decision.DENY);
-        mockCheckerResult(checker3, Decision.DENY);
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.DENY);
+        mockCheckerResult(checker3, AccessCheckDecision.DENY);
         accessControl.setLoginView(TestLoginView.class);
         TestNavigationResult result = checkAccess(TestLoginView.class, false,
                 true, false);
@@ -301,9 +299,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_loginUrl_accessToLoginUrlAlwaysAllowed() {
-        mockCheckerResult(checker1, Decision.DENY);
-        mockCheckerResult(checker2, Decision.DENY);
-        mockCheckerResult(checker3, Decision.DENY);
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.DENY);
+        mockCheckerResult(checker3, AccessCheckDecision.DENY);
         accessControl.setLoginView("/login");
         TestNavigationResult result = checkAccess(TestLoginView.class, false,
                 true, false);
@@ -319,9 +317,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_loginView_anonymousUser_accessDenied_forwardToLoginView() {
-        mockCheckerResult(checker1, Decision.DENY);
-        mockCheckerResult(checker2, Decision.DENY);
-        mockCheckerResult(checker3, Decision.DENY);
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.DENY);
+        mockCheckerResult(checker3, AccessCheckDecision.DENY);
         accessControl.setLoginView(TestLoginView.class);
         TestNavigationResult result = checkAccess(false, false);
         Assert.assertFalse(result.wasTargetViewRendered());
@@ -330,9 +328,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_loginUrl_anonymousUser_accessDenied_forwardToLoginUrl() {
-        mockCheckerResult(checker1, Decision.DENY);
-        mockCheckerResult(checker2, Decision.DENY);
-        mockCheckerResult(checker3, Decision.DENY);
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.DENY);
+        mockCheckerResult(checker3, AccessCheckDecision.DENY);
         accessControl.setLoginView("/log-in");
         TestNavigationResult result = checkAccess(false, false);
         Assert.assertFalse(result.wasTargetViewRendered());
@@ -341,9 +339,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_loginView_authenticatedUser_accessDenied() {
-        mockCheckerResult(checker1, Decision.DENY);
-        mockCheckerResult(checker2, Decision.DENY);
-        mockCheckerResult(checker3, Decision.DENY);
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.DENY);
+        mockCheckerResult(checker3, AccessCheckDecision.DENY);
         accessControl.setLoginView(TestLoginView.class);
         TestNavigationResult result = checkAccess(true, false);
         Assert.assertFalse(result.wasTargetViewRendered());
@@ -353,9 +351,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_loginUrl_authenticatedUser_accessDenied() {
-        mockCheckerResult(checker1, Decision.DENY);
-        mockCheckerResult(checker2, Decision.DENY);
-        mockCheckerResult(checker3, Decision.DENY);
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.DENY);
+        mockCheckerResult(checker3, AccessCheckDecision.DENY);
         accessControl.setLoginView("/log-in");
         TestNavigationResult result = checkAccess(true, false);
         Assert.assertFalse(result.wasTargetViewRendered());
@@ -365,9 +363,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_redirectUrlStoredForAnonymousUsers() {
-        mockCheckerResult(checker1, Decision.DENY);
-        mockCheckerResult(checker2, Decision.DENY);
-        mockCheckerResult(checker3, Decision.DENY);
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.DENY);
+        mockCheckerResult(checker3, AccessCheckDecision.DENY);
         accessControl.setLoginView(TestLoginView.class);
 
         TestNavigationResult result = checkAccess(PermitAllView.class, false,
@@ -386,9 +384,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_redirectUrlNotStoredForLoggedInUsers() {
-        mockCheckerResult(checker1, Decision.DENY);
-        mockCheckerResult(checker2, Decision.DENY);
-        mockCheckerResult(checker3, Decision.DENY);
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.DENY);
+        mockCheckerResult(checker3, AccessCheckDecision.DENY);
         accessControl.setLoginView(TestLoginView.class);
 
         TestNavigationResult result = checkAccess(PermitAllView.class, true,
@@ -404,9 +402,9 @@ public class NavigationAccessControlTest {
 
     @Test
     public void beforeEnter_disabledNavigationControl_alwaysPasses_rejectsWhenEnabled() {
-        mockCheckerResult(checker1, Decision.DENY);
-        mockCheckerResult(checker2, Decision.DENY);
-        mockCheckerResult(checker3, Decision.DENY);
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.DENY);
+        mockCheckerResult(checker3, AccessCheckDecision.DENY);
         accessControl.setLoginView(TestLoginView.class);
         accessControl.setEnabled(false);
 
@@ -417,9 +415,9 @@ public class NavigationAccessControlTest {
                 result.wasTargetViewRendered());
 
         Mockito.reset(checker1, checker2, checker3);
-        mockCheckerResult(checker1, Decision.DENY);
-        mockCheckerResult(checker2, Decision.DENY);
-        mockCheckerResult(checker3, Decision.DENY);
+        mockCheckerResult(checker1, AccessCheckDecision.DENY);
+        mockCheckerResult(checker2, AccessCheckDecision.DENY);
+        mockCheckerResult(checker3, AccessCheckDecision.DENY);
         accessControl.setEnabled(true);
         result = checkAccess(PermitAllView.class, false, false, true);
         Assert.assertFalse(
@@ -463,7 +461,7 @@ public class NavigationAccessControlTest {
     }
 
     private void mockCheckerResult(NavigationAccessChecker checker,
-            Decision decision) {
+            AccessCheckDecision decision) {
         String denyReason = accessDeniedReason(checker);
         Mockito.when(checker.check(ArgumentMatchers.any())).then(i -> {
             NavigationContext ctx = i.getArgument(0, NavigationContext.class);

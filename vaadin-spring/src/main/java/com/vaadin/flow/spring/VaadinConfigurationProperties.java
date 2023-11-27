@@ -62,7 +62,8 @@ public class VaadinConfigurationProperties {
     public static List<String> getExcludedUrls(Environment environment) {
         return Binder.get(environment)
                 .bind("vaadin", VaadinConfigurationProperties.class)
-                .map(conf -> conf.getExcludeUrls()).orElse(null);
+                .map(VaadinConfigurationProperties::getExcludeUrls)
+                .orElse(null);
     }
 
     /**
@@ -79,6 +80,12 @@ public class VaadinConfigurationProperties {
      * Whether servlet is loaded on startup.
      */
     private boolean loadOnStartup = true;
+
+    /**
+     * Devmode configuration options.
+     */
+
+    private Devmode devmode = new Devmode();
 
     /**
      * Pnpm configuration options.
@@ -166,6 +173,36 @@ public class VaadinConfigurationProperties {
          */
         public void setEnable(boolean enable) {
             this.enable = enable;
+        }
+
+    }
+
+    public static class Devmode {
+        /**
+         * A comma separated list of IP addresses, potentially with wildcards,
+         * which can connect to the dev tools. If not specified, only localhost
+         * connections are allowed.
+         */
+        private String hostsAllowed = "";
+
+        /**
+         * Gets the hosts allowed to connect to the dev mode server.
+         *
+         * @return the hosts allowed to connect to the dev mode server
+         */
+
+        public String getHostsAllowed() {
+            return hostsAllowed;
+        }
+
+        /**
+         * Sets the hosts allowed to connect to the dev mode server.
+         *
+         * @param hostsAllowed
+         *            - the hosts allowed to connect to the dev mode server
+         */
+        public void setHostsAllowed(String hostsAllowed) {
+            this.hostsAllowed = hostsAllowed;
         }
 
     }
@@ -343,6 +380,15 @@ public class VaadinConfigurationProperties {
      */
     public void setExcludeUrls(List<String> excludeUrls) {
         this.excludeUrls = excludeUrls;
+    }
+
+    /**
+     * Gets the devmode specific configuration.
+     *
+     * @return the devmode configuration
+     */
+    public Devmode getDevmode() {
+        return devmode;
     }
 
     /**
