@@ -31,16 +31,16 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
- * A fake DevModeHandler whose only scope is to eagerly show a "build in
+ * A fake DevModeHandler whose only purpose is to eagerly show a "build in
  * progress" HTML page to the user, during the creation of the development
- * bundle creation.
+ * bundle.
  * <p>
  * </p>
  * The {@link #getPort()} method returns a fixed value of {@literal -1}, meaning
  * that this handler will not start a server listening for incoming requests.
  * <p>
  * </p>
- * Most of the other method should not be invoked, and they will throw an
+ * Most of the other methods should not be invoked, and they may throw an
  * exception if called.
  */
 public final class DevBundleBuildingHandler implements DevModeHandler {

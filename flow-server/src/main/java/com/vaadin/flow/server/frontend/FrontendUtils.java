@@ -470,7 +470,7 @@ public class FrontendUtils {
 
     // The DevModeHandler is serving contents only if the port is
     // equal to or greater than zero. Otherwise, it is just a fake
-    // implementation use to present a waiting page during dev
+    // implementation used to present a waiting page during dev
     // bundle creation
     private static Optional<DevModeHandler> activeDevModeHandler(
             VaadinService service) {
