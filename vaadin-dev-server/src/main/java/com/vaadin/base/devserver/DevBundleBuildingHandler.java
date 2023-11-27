@@ -94,4 +94,15 @@ public final class DevBundleBuildingHandler implements DevModeHandler {
         return AbstractDevServerRunner.handleRequestInternal(request, response,
                 buildCompletedFuture, new AtomicBoolean());
     }
+
+    /**
+     * Waits for the dev bundle to be built.
+     * <p>
+     * Suspends the caller's thread until the dev bundle is created (or failed
+     * to create).
+     */
+    public void waitForDevBundle() {
+        buildCompletedFuture.join();
+    }
+
 }
