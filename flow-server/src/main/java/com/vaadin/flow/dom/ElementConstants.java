@@ -196,6 +196,10 @@ public class ElementConstants {
      */
     public static final String STYLE_TRANSFORM = "transform";
     /**
+     * The style property for transform-origin.
+     */
+    public static final String STYLE_TRANSFORM_ORIGIN = "transform-origin";
+    /**
      * The style property for transition.
      */
     public static final String STYLE_TRANSITION = "transition";

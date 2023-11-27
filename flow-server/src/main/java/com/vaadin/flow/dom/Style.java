@@ -609,6 +609,18 @@ public interface Style extends Serializable {
     }
 
     /**
+     * Sets the <code>transform-origin</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setTransformOrigin(String value) {
+        return set(STYLE_TRANSFORM_ORIGIN, value);
+    }
+
+    /**
      * Sets the <code>transition</code> property.
      *
      * @param value
