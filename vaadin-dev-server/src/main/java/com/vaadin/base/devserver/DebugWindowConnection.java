@@ -15,6 +15,7 @@
  */
 package com.vaadin.base.devserver;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,21 +29,22 @@ import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
-import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
-import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
+import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
 import com.vaadin.base.devserver.themeeditor.ThemeEditorMessageHandler;
+import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
@@ -195,6 +197,22 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     @Override
     public void onConnect(AtmosphereResource resource) {
+        if (IndexHtmlRequestHandler.RANDOM_DEV_TOOLS_TOKEN
+                .equals(resource.getRequest().getParameter("token"))) {
+            handleConnect(resource);
+        } else {
+            getLogger().warn(
+                    "Connection denied because of a missing or invalid token. The host is probably not on the allow list");
+            try {
+                resource.close();
+            } catch (IOException e) {
+                getLogger().debug(
+                        "Error closing the denied websocket connection", e);
+            }
+        }
+    }
+
+    private void handleConnect(AtmosphereResource resource) {
         resource.suspend(-1);
         atmosphereResources.add(new WeakReference<>(resource));
         resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",

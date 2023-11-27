@@ -25,7 +25,6 @@ import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import static com.vaadin.flow.server.InitParameters.ERROR_HANDLER_REDIRECT_ENABLED;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 
 /**
@@ -175,17 +174,6 @@ public interface AbstractConfiguration extends Serializable {
     default boolean isXsrfProtectionEnabled() {
         return !getBooleanProperty(SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
                 false);
-    }
-
-    /**
-     * Return whether {@link DefaultErrorHandler} should use registered
-     * {@link com.vaadin.flow.router.HasErrorParameter} views for error handling
-     * when handler with exact match for exception is registered.
-     *
-     * @return true if error view should be rendered
-     */
-    default boolean isErrorRedirectEnabled() {
-        return getBooleanProperty(ERROR_HANDLER_REDIRECT_ENABLED, false);
     }
 
     /**
