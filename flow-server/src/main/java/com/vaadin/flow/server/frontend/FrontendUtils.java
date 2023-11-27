@@ -450,17 +450,12 @@ public class FrontendUtils {
         InputStream content = null;
 
         try {
-            Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
-                    .getDevModeHandler(service);
+            Optional<DevModeHandler> devModeHandler = activeDevModeHandler(
+                    service);
             if (config.isProductionMode()) {
                 // In production mode, this is on the class path
                 content = getFileFromClassPath(service, path);
-            } else if (devModeHandler.filter(d -> d.getPort() >= 0)
-                    .isPresent()) {
-                // The DevModeHandler is serving contents only if the port is
-                // equal to or greater than zero. Otherwise, it is just a fake
-                // implementation use to present a waiting page during dev
-                // bundle creation
+            } else if (devModeHandler.isPresent()) {
                 content = getFileFromDevModeHandler(devModeHandler.get(), path);
             } else {
                 // Get directly from the frontend folder in the project
@@ -471,6 +466,16 @@ public class FrontendUtils {
         } finally {
             IOUtils.closeQuietly(content);
         }
+    }
+
+    // The DevModeHandler is serving contents only if the port is
+    // equal to or greater than zero. Otherwise, it is just a fake
+    // implementation use to present a waiting page during dev
+    // bundle creation
+    private static Optional<DevModeHandler> activeDevModeHandler(
+            VaadinService service) {
+        return DevModeHandlerManager.getDevModeHandler(service)
+                .filter(d -> d.getPort() >= 0);
     }
 
     private static InputStream getFileFromFrontendDir(
@@ -522,8 +527,7 @@ public class FrontendUtils {
      */
     public static InputStream getFrontendFileFromDevModeHandler(
             VaadinService service, String path) {
-        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
-                .getDevModeHandler(service);
+        Optional<DevModeHandler> devModeHandler = activeDevModeHandler(service);
         if (devModeHandler.isPresent()) {
             try {
                 File frontendFile = resolveFrontendPath(
