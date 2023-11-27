@@ -61,8 +61,8 @@ public class FeatureFlags implements Serializable {
 
     public static final Feature WEB_PUSH = new Feature(
             "Server side WebPush API", "webPush",
-            "https://github.com/vaadin/docs/pull/2442/files", true,
-            "com.vaadin.flow.server.webpush.WebPush");
+            "https://vaadin.com/docs/latest/configuration/setting-up-webpush",
+            true, "com.vaadin.flow.server.webpush.WebPush");
 
     public static final Feature FORM_FILLER_ADDON = new Feature(
             "Form Filler Add-on", "formFillerAddon",
