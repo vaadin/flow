@@ -8,6 +8,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.util.ArrayList;
 import java.util.stream.IntStream;
 
 import org.junit.Assert;
@@ -27,7 +28,12 @@ public class LocaleChangeIT extends ChromeBrowserTest {
     public void setSessionLocale_currentUIInstanceUpdatedUponEachLocaleUpdate() {
         final int openedUI = 3;
 
-        IntStream.range(0, openedUI).forEach(i -> open());
+        IntStream.range(0, openedUI).forEach(i -> {
+            executeScript("window.open('" + getTestURL() + "')");
+            waitForDevServer();
+            driver.switchTo().window(
+                    new ArrayList<>(driver.getWindowHandles()).get(i + 1));
+        });
 
         waitForElementPresent(By.id(CHANGE_LOCALE_BUTTON_ID));
         findElement(By.id(CHANGE_LOCALE_BUTTON_ID)).click();

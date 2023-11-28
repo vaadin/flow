@@ -209,4 +209,10 @@ public class ApplicationConstants implements Serializable {
      */
     public static final String DEVMODE_GIZMO_ENABLED = "devmodeGizmoEnabled";
 
+    /**
+     * The name of the parameter used for notifying the server that user closed
+     * the tab/window or navigated away.
+     */
+    public static final String UNLOAD_BEACON = "UNLOAD";
+
 }
