@@ -59,6 +59,9 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
                     triggerReload();
                     waitForElementVisible(By.id("result"));
 
+                    // print console log to see if there are any errors
+                    getDriver().manage().logs().get("browser").forEach(System.out::println);
+
                     return assertAndGetReloadTimeResult();
                 });
 
