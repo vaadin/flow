@@ -27,7 +27,7 @@ const router = {
     }
 };
 
-/* istanbul ignore next: coverage is calculated in Chrome, this code is for IE */
+// ClickHandler for vaadin-router-go event is copied from vaadin/router click.js
 // @ts-ignore
 function getAnchorOrigin(anchor) {
     // IE11: on HTTP and HTTPS the default port is not included into
@@ -50,9 +50,6 @@ export function fireRouterEvent(type, detail) {
     ));
 }
 
-// The list of checks is not complete:
-//  - SVG support is missing
-//  - the 'rel' attribute is not considered
 // @ts-ignore
 function vaadinRouterGlobalClickHandler(event) {
     // ignore the click if the default action is prevented
@@ -76,7 +73,6 @@ function vaadinRouterGlobalClickHandler(event) {
         ? event.composedPath()
         : (event.path || []);
 
-    // FIXME(web-padawan): `Symbol.iterator` used by webcomponentsjs is broken for arrays
     // example to check: `for...of` loop here throws the "Not yet implemented" error
     for (let i = 0; i < path.length; i++) {
         const target = path[i];
