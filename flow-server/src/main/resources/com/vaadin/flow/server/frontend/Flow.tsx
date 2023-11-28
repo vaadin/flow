@@ -15,7 +15,7 @@
  */
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
 import { useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { NavigateFunction, useLocation, useNavigate } from "react-router-dom";
 
 const flow = new _Flow({
     imports: () => import("Frontend/generated/flow/generated-flow-imports.js")
@@ -134,7 +134,7 @@ function vaadinRouterGlobalClickHandler(event) {
 }
 
 // We can't initiate useNavigate() from outside React component so we store it here for use in the navigateEvent.
-var navigation: NavigateFunction;
+var navigation: NavigateFunction | ((arg0: any, arg1: { replace: boolean; }) => void);
 // @ts-ignore
 function navigateEventHandler(event) {
     if (event && event.preventDefault) {
