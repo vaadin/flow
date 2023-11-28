@@ -571,12 +571,13 @@ public class UI extends Component
                         ErrorHandlingCommand errorHandlingCommand = (ErrorHandlingCommand) command;
                         errorHandlingCommand.handleError(exception);
                     } else if (getSession() != null) {
-                        UI.setCurrent(UI.this);
+                        final Map<Class<?>, CurrentInstance> map = CurrentInstance
+                                .setCurrent(UI.this);
                         try {
                             getSession().getErrorHandler()
                                     .error(new ErrorEvent(exception));
                         } finally {
-                            UI.setCurrent(null);
+                            CurrentInstance.restoreInstances(map);
                         }
                     } else {
                         /*
