@@ -83,13 +83,14 @@ public class VaadinServletService extends VaadinService {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
 
-        if (getDeploymentConfiguration()
-                .getMode() == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
+        Mode mode = getDeploymentConfiguration().getMode();
+        if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
+                || mode == Mode.DEVELOPMENT_BUNDLE) {
             Optional<DevModeHandler> handlerManager = DevModeHandlerManager
                     .getDevModeHandler(this);
             if (handlerManager.isPresent()) {
                 handlers.add(handlerManager.get());
-            } else {
+            } else if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
                 getLogger()
                         .warn("no DevModeHandlerManager implementation found "
                                 + "but dev server enabled. Include the "

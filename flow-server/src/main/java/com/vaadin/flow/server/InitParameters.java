@@ -64,7 +64,6 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
     public static final String NODE_VERSION = "node.version";
     public static final String NODE_DOWNLOAD_ROOT = "node.download.root";
-    public static final String ERROR_HANDLER_REDIRECT_ENABLED = "enableErrorHandlerRedirect";
 
     /**
      * Configuration name for the parameter that determines whether Brotli
@@ -100,6 +99,13 @@ public class InitParameters implements Serializable {
      * disabled, all classes on the classpath are scanned.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = "devmode.optimizeBundle";
+
+    /**
+     * A comma separated list of IP addresses, potentially with wildcards, which
+     * can connect to the dev tools. If not specified, only localhost
+     * connections are allowed.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED = "devmode.hostsAllowed";
 
     /**
      * Configuration parameter name for enabling pnpm.

@@ -26,15 +26,62 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.auth.AnnotatedViewAccessChecker;
-import com.vaadin.flow.server.auth.DefaultNavigationCheckDecisionResolver;
+import com.vaadin.flow.server.auth.DefaultAccessCheckDecisionResolver;
 import com.vaadin.flow.server.auth.NavigationAccessChecker;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.DecisionResolver;
+import com.vaadin.flow.server.auth.AccessCheckDecisionResolver;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 
 /**
  * Allows to configure the {@link NavigationAccessControl}.
  * <p>
+ * To configure Flow navigation access control, a Spring bean on type
+ * {@link NavigationAccessControlConfigurer} should be defined.
+ * <p>
+ * </p>
+ * In Spring Boot applications, a default
+ * {@link NavigationAccessControlConfigurer} bean is provided. It activates
+ * {@link AnnotatedViewAccessChecker}, but it disables the
+ * {@link NavigationAccessControl}, for backward compatibility.
+ * <p>
+ * </p>
+ * However, if Spring Security is configured extending
+ * {@link VaadinWebSecurity}, the {@link NavigationAccessControl} is enabled
+ * automatically.
+ * <p>
+ * </p>
+ *
+ * Default settings can be overridden by defining a custom
+ * {@link NavigationAccessControlConfigurer} bean.
+ *
+ * <pre>
+ * {@code @Bean
+ * NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
+ *     return new NavigationAccessControlConfigurer()
+ *             .withRoutePathAccessChecker().withLoginView(LoginView.class);
+ * }
+ * }
+ * </pre>
+ *
+ * <p>
+ * </p>
+ * NOTE: if the bean in exposed in a configuration class that extends
+ * {@link VaadinWebSecurity}, the method must be defined {@code static} to
+ * prevent cyclic dependencies errors.
+ *
+ * <pre>
+ * {@code @Bean
+ * class SecurityConfig extends VaadinWebSecurity {
+ *     static NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
+ *         return new NavigationAccessControlConfigurer()
+ *                 .withRoutePathAccessChecker().withLoginView(LoginView.class);
+ *     }
+ * }
+ * }
+ * </pre>
+ *
+ * <p>
+ * </p>
  * {@link NavigationAccessControl} bean can be configured by:
  *
  * <ul>
@@ -44,8 +91,12 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
  * <li>completely disable access control</li>
  * </ul>
  * <p>
+ * </p>
  * The {@link NavigationAccessControl} will automatically be disabled if no
  * navigation access checkers are provided.
+ *
+ * @see NavigationAccessControl
+ * @see VaadinWebSecurity
  */
 public final class NavigationAccessControlConfigurer {
 
@@ -55,7 +106,7 @@ public final class NavigationAccessControlConfigurer {
     private boolean enablePathAccessChecker;
     private Class<? extends Component> loginView;
     private String loginViewPath;
-    private DecisionResolver decisionResolver = new DefaultNavigationCheckDecisionResolver();
+    private AccessCheckDecisionResolver decisionResolver = new DefaultAccessCheckDecisionResolver();
     private Predicate<NavigationAccessChecker> accessCheckersFilter;
 
     /**
@@ -144,18 +195,19 @@ public final class NavigationAccessControlConfigurer {
     }
 
     /**
-     * Sets the {@link DecisionResolver} for the navigation access control.
+     * Sets the {@link AccessCheckDecisionResolver} for the navigation access
+     * control.
      * <p>
-     * The {@link DecisionResolver} is responsible for taking the final decision
-     * on target view access grant, based on the response of the navigation
-     * access checkers.
+     * The {@link AccessCheckDecisionResolver} is responsible for taking the
+     * final decision on target view access grant, based on the response of the
+     * navigation access checkers.
      *
      * @param resolver
      *            the decision resolver to use for navigation access control.
      * @return this instance for further customization.
      */
     public NavigationAccessControlConfigurer withDecisionResolver(
-            DecisionResolver resolver) {
+            AccessCheckDecisionResolver resolver) {
         this.decisionResolver = Objects.requireNonNull(resolver,
                 "Decision resolver must not be null");
         return this;
@@ -213,7 +265,7 @@ public final class NavigationAccessControlConfigurer {
      *            the type of the {@link NavigationAccessControl}
      */
     public <T extends NavigationAccessControl> T build(
-            BiFunction<List<NavigationAccessChecker>, DecisionResolver, T> factory,
+            BiFunction<List<NavigationAccessChecker>, AccessCheckDecisionResolver, T> factory,
             List<NavigationAccessChecker> availableCheckers) {
         Objects.requireNonNull(factory,
                 "navigation access control factory must not be null");

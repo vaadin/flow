@@ -136,7 +136,7 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
         MockHttpServletRequest loginRequest = RequestUtilTest
                 .createRequest("/login");
         HttpSession session = loginRequest.getSession();
-        // Simulate ViewAccessChecker
+        // Simulate NavigationAccessControl
         session.setAttribute(
                 NavigationAccessControl.SESSION_STORED_REDIRECT_ABSOLUTE,
                 "http://localhost/last-route");
@@ -159,7 +159,7 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 .createRequest("/a-previous-saved-url");
         HttpSession session = firstRequest.getSession();
         cache.saveRequest(firstRequest, new MockHttpServletResponse());
-        // Simulate ViewAccessChecker
+        // Simulate NavigationAccessControl
         session.setAttribute(
                 NavigationAccessControl.SESSION_STORED_REDIRECT_ABSOLUTE,
                 "http://localhost/last-route");
