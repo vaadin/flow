@@ -50,6 +50,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.base.devserver.DevBundleBuildingHandler;
 import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.base.devserver.stats.StatisticsSender;
@@ -315,8 +316,8 @@ public class DevModeInitializer implements Serializable {
         int port = Integer
                 .parseInt(config.getStringProperty("devServerPort", "0"));
         if (mode == Mode.DEVELOPMENT_BUNDLE) {
-            nodeTasksFuture.join();
-            return null;
+            // Shows a "build in progress" page during dev bundle creation
+            return new DevBundleBuildingHandler(nodeTasksFuture);
         } else {
             ViteHandler handler = new ViteHandler(devServerLookup, port,
                     options.getNpmFolder(), nodeTasksFuture);
