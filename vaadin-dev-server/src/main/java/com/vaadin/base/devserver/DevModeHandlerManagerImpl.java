@@ -98,6 +98,8 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             DevModeHandler devModeHandler = getDevModeHandler();
             if (devModeHandler instanceof AbstractDevServerRunner) {
                 ((AbstractDevServerRunner) devModeHandler).waitForDevServer();
+            } else if (devModeHandler instanceof DevBundleBuildingHandler devBundleBuilder) {
+                devBundleBuilder.waitForDevBundle();
             }
 
             ApplicationConfiguration config = ApplicationConfiguration

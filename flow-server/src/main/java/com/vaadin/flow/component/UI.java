@@ -571,8 +571,14 @@ public class UI extends Component
                         ErrorHandlingCommand errorHandlingCommand = (ErrorHandlingCommand) command;
                         errorHandlingCommand.handleError(exception);
                     } else if (getSession() != null) {
-                        getSession().getErrorHandler()
-                                .error(new ErrorEvent(exception));
+                        final Map<Class<?>, CurrentInstance> map = CurrentInstance
+                                .setCurrent(UI.this);
+                        try {
+                            getSession().getErrorHandler()
+                                    .error(new ErrorEvent(exception));
+                        } finally {
+                            CurrentInstance.restoreInstances(map);
+                        }
                     } else {
                         /*
                          * The session has expired after `ui.access` was called.
