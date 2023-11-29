@@ -450,8 +450,8 @@ public class FrontendUtils {
         InputStream content = null;
 
         try {
-            Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
-                    .getDevModeHandler(service);
+            Optional<DevModeHandler> devModeHandler = activeDevModeHandler(
+                    service);
             if (config.isProductionMode()) {
                 // In production mode, this is on the class path
                 content = getFileFromClassPath(service, path);
@@ -466,6 +466,16 @@ public class FrontendUtils {
         } finally {
             IOUtils.closeQuietly(content);
         }
+    }
+
+    // The DevModeHandler is serving contents only if the port is
+    // equal to or greater than zero. Otherwise, it is just a fake
+    // implementation used to present a waiting page during dev
+    // bundle creation
+    private static Optional<DevModeHandler> activeDevModeHandler(
+            VaadinService service) {
+        return DevModeHandlerManager.getDevModeHandler(service)
+                .filter(d -> d.getPort() >= 0);
     }
 
     private static InputStream getFileFromFrontendDir(
@@ -517,8 +527,7 @@ public class FrontendUtils {
      */
     public static InputStream getFrontendFileFromDevModeHandler(
             VaadinService service, String path) {
-        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
-                .getDevModeHandler(service);
+        Optional<DevModeHandler> devModeHandler = activeDevModeHandler(service);
         if (devModeHandler.isPresent()) {
             try {
                 File frontendFile = resolveFrontendPath(
