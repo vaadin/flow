@@ -73,6 +73,8 @@ import jakarta.servlet.http.HttpSessionBindingListener;
 public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private static final String SESSION_NOT_LOCKED_MESSAGE = "Cannot access state in VaadinSession or UI without locking the session.";
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(VaadinSession.class.getName());
 
     volatile boolean sessionClosedExplicitly = false;
 
@@ -353,9 +355,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         lockCheckStrategy = configuration.isProductionMode()
                 ? configuration.getLockCheckStrategy()
                 : LockCheckStrategy.THROW;
-        if (lockCheckStrategy == null) {
-            lockCheckStrategy = LockCheckStrategy.DEFAULT;
-        }
+        assert lockCheckStrategy != null;
     }
 
     protected void checkSetConfiguration() {
@@ -933,7 +933,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     Logger getLogger() {
-        return LoggerFactory.getLogger(VaadinSession.class.getName());
+        return LOGGER;
     }
 
     /**
