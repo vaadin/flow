@@ -166,7 +166,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-html-components-testbench</artifactId>
-            <version>${component.version}</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

@@ -31,9 +31,10 @@ Run `npm run debug` then point your browser to http://localhost:9000/__intern/ t
 ## Flow Express Build mode
 
 Since Vaadin 24.0, the Flow application can be run in so called Express 
-Build mode, where the frontend files are pre-compiled and bundled into {project.root}/src/main/dev-bundle directory. To make your changes in `flow-client` module be included into the Flow test modules, you have to delete this directory, so the Flow will re-compile the bundle and take into account your changes in `flow-client`:
-   - remove dev-bundle in the current folder: `rm -rf src/main/dev-bundle`
-   - remove dev-bundle in the sub-folders: find . -type d -name dev-bundle -delete
+Build mode, where the frontend files are pre-compiled and bundled into {project.root}/src/main/bundles directory.
+To make your changes in `flow-client` module be included into the Flow test modules, you have to delete this directory, so the Flow will re-compile the bundle and take into account your changes in `flow-client`:
+   - remove dev-bundle in the current folder: `rm -rf src/main/bundles`
+   - remove dev-bundle in the sub-folders: `find . -type d -wholename "*/src/main/bundles" -exec rm -r {} +`
 
 ## Debugging
 
@@ -57,6 +58,6 @@ In short debugging is building flow client JS in pretty/detailed mode and then a
    - you shall add the `flow-client` dependency if it is not present.
      - For example, your project may use Vaadin `24.2.0`, but you rebuild the flow client at version `24.2-SNAPSHOT`. 
 In this case, you should probably add the `flow-client` dependency to overwrite the version the project is bringing in. 
-   - Delete the dev-bundle (`src/main/dev-bundle`) directory to be sure the project will not use a previously bundled version of the client
+   - Delete the dev-bundle (`src/main/bundles`) directory to be sure the project will not use a previously bundled version of the client
    - clean the application project (`mvn vaadin:clean-frontend` or `mvn:flow-clean-frontend`) is also recommanded
 to be sure that you are using the rebuilt version of the Flow client.
