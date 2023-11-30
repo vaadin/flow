@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2023 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,21 +23,31 @@ import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.ShortcutsWithValueChangeModeView", layout = ViewTestLayout.class)
-public class ShortcutsWithValueChangeModeView extends Div
+@Route(value = "com.vaadin.flow.uitest.ui.ShadowRootShortcutsWithValueChangeModeView", layout = ViewTestLayout.class)
+public class ShadowRootShortcutsWithValueChangeModeView extends Div
         implements AfterNavigationObserver {
 
     private final Input input;
 
-    public ShortcutsWithValueChangeModeView() {
+    public ShadowRootShortcutsWithValueChangeModeView() {
+        setId("test-element");
+
+        ShadowRoot shadowRoot = getElement().attachShadow();
+        Element shadowDiv = ElementFactory.createDiv();
+        shadowDiv.setText("Div inside shadow DOM");
+        shadowDiv.setAttribute("id", "shadow-div");
 
         input = new Input();
         input.setId("input");
+        shadowDiv.appendChild(input.getElement());
 
         NativeButton button = new NativeButton("Report value");
         button.setId("button");
@@ -59,7 +69,9 @@ public class ShortcutsWithValueChangeModeView extends Div
                 .setResetFocusOnActiveElement(true);
         button.addClickListener(e -> value.setText(input.getValue()));
 
-        add(input, button, value);
+        shadowRoot.appendChild(shadowDiv);
+        shadowRoot.appendChild(button.getElement());
+        shadowRoot.appendChild(value.getElement());
     }
 
     @Override

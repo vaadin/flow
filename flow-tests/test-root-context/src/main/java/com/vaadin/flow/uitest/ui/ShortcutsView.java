@@ -173,10 +173,11 @@ public class ShortcutsView extends Div {
 
         NativeButton clickButton2 = new NativeButton("CB2",
                 event -> actual.setValue("click: " + clickInput2.getValue()));
-        clickButton2.addClickShortcut(Key.ENTER).listenOn(wrapper2)
-                // this matches the default of other shortcuts but changes
-                // the default of the click shortcut
-                .setBrowserDefaultAllowed(false);
+        ShortcutRegistration reg = clickButton2.addClickShortcut(Key.ENTER)
+                .listenOn(wrapper2);
+        // this matches the default of other shortcuts but changes
+        // the default of the click shortcut
+        reg.setBrowserDefaultAllowed(false);
 
         wrapper1.add(clickInput1, clickButton1);
         wrapper2.add(clickInput2, clickButton2);
@@ -210,16 +211,30 @@ public class ShortcutsView extends Div {
         clickInput6.setType("text");
         clickInput6.setId("click-input-6");
 
+        final Input clickInput7 = new Input();
+        clickInput7.setType("text");
+        clickInput7.setId("click-input-7");
+
         NativeButton clickButton4 = new NativeButton("CB4",
                 event -> actual.setValue("click4: " + clickInput5.getValue()
                         + "," + clickInput6.getValue()));
         clickButton4.addClickShortcut(Key.ENTER)
                 .listenOn(clickInput5, clickInput6)
-                // this matches the default of other shortcuts but changes
-                // the default of the click shortcut
-                .setBrowserDefaultAllowed(false);
+                // sets setResetFocusOnActiveElement
+                // to true and this will cause input value change being
+                // triggered no matter what
+                // setBrowserDefaultAllowed is.
+                .resetFocusOnActiveElement().setBrowserDefaultAllowed(false);
 
-        wrapper4.add(clickInput5, clickInput6, clickButton4);
+        NativeButton clickButton5 = new NativeButton("CB5",
+                event -> actual.setValue("click5: " + clickInput7.getValue()));
+        reg = clickButton5.addClickShortcut(Key.ENTER).listenOn(clickInput7);
+        // this matches the default of other shortcuts but changes
+        // the default of the click shortcut
+        reg.setBrowserDefaultAllowed(false);
+
+        wrapper4.add(clickInput5, clickInput6, clickInput7, clickButton4,
+                clickButton5);
         add(wrapper4);
 
         // removingShortcutCleansJavascriptEventSettingsItUsed

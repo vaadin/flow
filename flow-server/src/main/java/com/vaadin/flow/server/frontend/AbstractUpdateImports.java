@@ -80,6 +80,10 @@ abstract class AbstractUpdateImports implements Runnable {
     private static final String THEMABLE_MIXIN_IMPORT = "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';";
     private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT + "%n"
             + "registerStyles('%s', $css_%1$d%s);";
+    static final String RESET_FOCUS_JS = "() => {"
+            + " let ae=document.activeElement;"
+            + " while(ae&&ae.shadowRoot) ae = ae.shadowRoot.activeElement;"
+            + " return !ae || ae.blur() || ae.focus() || true;" + "}";
 
     private static final String IMPORT_TEMPLATE = "import '%s';";
 
@@ -121,6 +125,9 @@ abstract class AbstractUpdateImports implements Runnable {
         lines.addAll(getExportLines());
         lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
+        lines.add("window.Vaadin = window.Vaadin || {};");
+        lines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
+        lines.add("window.Vaadin.Flow.resetFocus = " + RESET_FOCUS_JS);
         if (!productionMode && useLegacyV14Bootstrap) {
             // This is only needed for v14bootstrap mode
             lines.add(TaskGenerateBootstrap.DEV_TOOLS_IMPORT);

@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
 
 import com.vaadin.flow.component.html.testbench.InputTextElement;
@@ -65,6 +66,17 @@ public class ShortcutsWithValueChangeModeIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void onChangeValueChange_shortcutExecution_resetFocusOnActiveElement_valueSentToServer() {
+        open(ValueChangeMode.ON_CHANGE.name());
+
+        InputTextElement input = $(InputTextElement.class).id("input");
+        input.focus();
+        input.sendKeys(text);
+
+        doTriggerShortcut(true, Keys.CONTROL, Keys.ENTER);
+    }
+
+    @Test
     public void onBlurValueChange_shortcutExecution_valueNotSentToServer() {
         assertValueCommittedOnShortcutExecution(ValueChangeMode.ON_BLUR, false);
         // trigger blur event and check value
@@ -85,7 +97,11 @@ public class ShortcutsWithValueChangeModeIT extends ChromeBrowserTest {
     }
 
     private void triggerShortcut(boolean expectValue) {
-        sendKeys(Keys.CONTROL, Keys.ALT, "s");
+        doTriggerShortcut(expectValue, Keys.CONTROL, Keys.ALT, "s");
+    }
+
+    private void doTriggerShortcut(boolean expectValue, CharSequence... keys) {
+        sendKeys(driver, keys);
 
         String paragraphText = $(ParagraphElement.class).id("value").getText();
 
@@ -100,7 +116,7 @@ public class ShortcutsWithValueChangeModeIT extends ChromeBrowserTest {
         }
     }
 
-    private void sendKeys(CharSequence... keys) {
+    public static void sendKeys(WebDriver driver, CharSequence... keys) {
         Actions actions = new Actions(driver);
         for (CharSequence keySeq : keys) {
             if (modifiers.contains(keySeq)) {
@@ -113,10 +129,10 @@ public class ShortcutsWithValueChangeModeIT extends ChromeBrowserTest {
         // Implementation that worked for driver < 75.beta:
         // new Actions(driver).sendKeys(keys).build().perform();
         // if keys are not reset, alt will remain down and start flip-flopping
-        resetKeys();
+        resetKeys(driver);
     }
 
-    private void resetKeys() {
+    public static void resetKeys(WebDriver driver) {
         Actions actions = new Actions(driver);
         modifiers.forEach(actions::keyUp);
         actions.build().perform();
