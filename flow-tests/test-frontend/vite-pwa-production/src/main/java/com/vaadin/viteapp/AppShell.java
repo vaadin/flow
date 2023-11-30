@@ -23,8 +23,7 @@ import com.vaadin.flow.theme.Theme;
 
 @Theme("my-theme")
 @PWA(name = "My PWA app", shortName = "app")
-public class AppShell extends Div
-        implements RouterLayout, AppShellConfigurator {
+public class AppShell implements AppShellConfigurator {
     public AppShell() {
     }
 }

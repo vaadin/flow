@@ -21,8 +21,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.PWA;
 
 @PWA(name = "PWA app", shortName = "app", offline = false)
-public class AppShell extends Div
-        implements RouterLayout, AppShellConfigurator {
+public class AppShell implements AppShellConfigurator {
     public AppShell() {
     }
 }
