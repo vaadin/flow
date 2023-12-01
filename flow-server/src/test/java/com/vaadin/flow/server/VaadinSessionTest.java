@@ -537,7 +537,7 @@ public class VaadinSessionTest {
         Assume.assumeTrue(session.hasLock());
         Assume.assumeFalse(session.getConfiguration().isProductionMode());
         Assert.assertEquals(SessionLockCheckStrategy.ASSERT, session
-                .getConfiguration().getProductionSessionLockCheckStrategy());
+                .getConfiguration().getSessionLockCheckStrategy());
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
 

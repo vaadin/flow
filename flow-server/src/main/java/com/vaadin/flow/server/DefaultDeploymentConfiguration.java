@@ -57,7 +57,7 @@ public class DefaultDeploymentConfiguration
             + "and \"automatic\". The default of \"disabled\" will be used.";
 
     public static final String WARNING_SESSION_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED = "WARNING: "
-            + InitParameters.SERVLET_PARAMETER_PRODUCTION_SESSION_LOCK_CHECK_STRATEGY
+            + InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY
             + " has been set to an unrecognized value.\n"
             + "The permitted values are "
             + Arrays.stream(SessionLockCheckStrategy.values())
@@ -106,7 +106,7 @@ public class DefaultDeploymentConfiguration
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
     private boolean frontendHotdeploy;
-    private SessionLockCheckStrategy productionSessionLockCheckStrategy;
+    private SessionLockCheckStrategy sessionLockCheckStrategy;
 
     private static AtomicBoolean logging = new AtomicBoolean(true);
     private List<String> warnings = new ArrayList<>();
@@ -143,7 +143,7 @@ public class DefaultDeploymentConfiguration
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
         checkFrontendHotdeploy();
-        checkProductionSessionLockCheckStrategy();
+        checkSessionLockCheckStrategy();
 
         if (log) {
             logMessages();
@@ -277,8 +277,8 @@ public class DefaultDeploymentConfiguration
     }
 
     @Override
-    public SessionLockCheckStrategy getProductionSessionLockCheckStrategy() {
-        return productionSessionLockCheckStrategy;
+    public SessionLockCheckStrategy getSessionLockCheckStrategy() {
+        return sessionLockCheckStrategy;
     }
 
     /**
@@ -400,17 +400,17 @@ public class DefaultDeploymentConfiguration
         }
     }
 
-    private void checkProductionSessionLockCheckStrategy() {
+    private void checkSessionLockCheckStrategy() {
         try {
-            productionSessionLockCheckStrategy = getApplicationOrSystemProperty(
-                    InitParameters.SERVLET_PARAMETER_PRODUCTION_SESSION_LOCK_CHECK_STRATEGY,
+            sessionLockCheckStrategy = getApplicationOrSystemProperty(
+                    InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY,
                     SessionLockCheckStrategy.ASSERT,
                     stringStrategy -> Enum.valueOf(
                             SessionLockCheckStrategy.class,
                             stringStrategy.toUpperCase()));
         } catch (IllegalArgumentException e) {
             warnings.add(WARNING_SESSION_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED);
-            productionSessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
+            sessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
         }
     }
 

@@ -143,7 +143,7 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
-        public SessionLockCheckStrategy getProductionSessionLockCheckStrategy() {
+        public SessionLockCheckStrategy getSessionLockCheckStrategy() {
             return SessionLockCheckStrategy.ASSERT;
         }
     }

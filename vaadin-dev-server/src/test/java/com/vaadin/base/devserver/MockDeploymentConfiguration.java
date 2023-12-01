@@ -199,7 +199,7 @@ public class MockDeploymentConfiguration
     }
 
     @Override
-    public SessionLockCheckStrategy getProductionSessionLockCheckStrategy() {
+    public SessionLockCheckStrategy getSessionLockCheckStrategy() {
         return sessionLockCheckStrategy;
     }
 

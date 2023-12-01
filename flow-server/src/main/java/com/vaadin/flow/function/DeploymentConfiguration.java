@@ -324,5 +324,5 @@ public interface DeploymentConfiguration
      *
      * @return the lock checking strategy, never null.
      */
-    SessionLockCheckStrategy getProductionSessionLockCheckStrategy();
+    SessionLockCheckStrategy getSessionLockCheckStrategy();
 }
