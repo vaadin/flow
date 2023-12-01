@@ -56,7 +56,9 @@ public class DefaultDeploymentConfiguration
             + "The permitted values are \"disabled\", \"manual\",\n"
             + "and \"automatic\". The default of \"disabled\" will be used.";
 
-    public static final String WARNING_SESSION_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED = "WARNING: lockCheckStrategy has been set to an unrecognized value.\n"
+    public static final String WARNING_SESSION_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED = "WARNING: "
+            + InitParameters.SERVLET_PARAMETER_PRODUCTION_SESSION_LOCK_CHECK_STRATEGY
+            + " has been set to an unrecognized value.\n"
             + "The permitted values are "
             + Arrays.stream(SessionLockCheckStrategy.values())
                     .map(it -> "\"" + it.name().toLowerCase() + "\"")
