@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.LockCheckStrategy;
+import com.vaadin.flow.server.SessionLockCheckStrategy;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -324,5 +324,5 @@ public interface DeploymentConfiguration
      *
      * @return the lock checking strategy, never null.
      */
-    LockCheckStrategy getLockCheckStrategy();
+    SessionLockCheckStrategy getProductionSessionLockCheckStrategy();
 }

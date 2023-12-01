@@ -281,8 +281,8 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
-    public LockCheckStrategy getLockCheckStrategy() {
-        return LockCheckStrategy.ASSERT;
+    public SessionLockCheckStrategy getProductionSessionLockCheckStrategy() {
+        return SessionLockCheckStrategy.ASSERT;
     }
 
     /**

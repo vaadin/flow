@@ -17,6 +17,7 @@
 package com.vaadin.flow.server;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,9 +56,14 @@ public class DefaultDeploymentConfiguration
             + "The permitted values are \"disabled\", \"manual\",\n"
             + "and \"automatic\". The default of \"disabled\" will be used.";
 
-    public static final String WARNING_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED = "WARNING: lockCheckStrategy has been set to an unrecognized value.\n"
-            + "The permitted values are \"assert\", \"log\",\n"
-            + "and \"throw\". The default of \"assert\" will be used.";
+    public static final String WARNING_SESSION_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED = "WARNING: lockCheckStrategy has been set to an unrecognized value.\n"
+            + "The permitted values are "
+            + Arrays.stream(SessionLockCheckStrategy.values())
+                    .map(it -> "\"" + it.name().toLowerCase() + "\"")
+                    .collect(Collectors.joining(", "))
+            + ".\nThe default of \""
+            + SessionLockCheckStrategy.ASSERT.name().toLowerCase()
+            + "\" will be used.";
 
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
@@ -98,7 +104,7 @@ public class DefaultDeploymentConfiguration
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
     private boolean frontendHotdeploy;
-    private LockCheckStrategy lockCheckStrategy;
+    private SessionLockCheckStrategy productionSessionLockCheckStrategy;
 
     private static AtomicBoolean logging = new AtomicBoolean(true);
     private List<String> warnings = new ArrayList<>();
@@ -135,7 +141,7 @@ public class DefaultDeploymentConfiguration
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
         checkFrontendHotdeploy();
-        checkLockCheckStrategy();
+        checkProductionSessionLockCheckStrategy();
 
         if (log) {
             logMessages();
@@ -269,8 +275,8 @@ public class DefaultDeploymentConfiguration
     }
 
     @Override
-    public LockCheckStrategy getLockCheckStrategy() {
-        return lockCheckStrategy;
+    public SessionLockCheckStrategy getProductionSessionLockCheckStrategy() {
+        return productionSessionLockCheckStrategy;
     }
 
     /**
@@ -392,16 +398,17 @@ public class DefaultDeploymentConfiguration
         }
     }
 
-    private void checkLockCheckStrategy() {
+    private void checkProductionSessionLockCheckStrategy() {
         try {
-            lockCheckStrategy = getApplicationOrSystemProperty(
-                    InitParameters.SERVLET_PARAMETER_LOCK_CHECK_STRATEGY,
-                    LockCheckStrategy.ASSERT,
-                    stringStrategy -> Enum.valueOf(LockCheckStrategy.class,
+            productionSessionLockCheckStrategy = getApplicationOrSystemProperty(
+                    InitParameters.SERVLET_PARAMETER_PRODUCTION_SESSION_LOCK_CHECK_STRATEGY,
+                    SessionLockCheckStrategy.ASSERT,
+                    stringStrategy -> Enum.valueOf(
+                            SessionLockCheckStrategy.class,
                             stringStrategy.toUpperCase()));
         } catch (IllegalArgumentException e) {
-            warnings.add(WARNING_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED);
-            lockCheckStrategy = LockCheckStrategy.ASSERT;
+            warnings.add(WARNING_SESSION_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED);
+            productionSessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
         }
     }
 

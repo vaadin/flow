@@ -1,9 +1,9 @@
 package com.vaadin.flow.server;
 
 /**
- * The strategy for session lock checking in production mode.
+ * Available strategies for session lock checking.
  */
-public enum LockCheckStrategy {
+public enum SessionLockCheckStrategy {
     /**
      * The default strategy, runs Java `assert` statement. Does nothing when
      * assertions are disabled (the default for JVM).

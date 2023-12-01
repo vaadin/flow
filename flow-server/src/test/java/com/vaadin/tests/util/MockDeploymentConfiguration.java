@@ -8,7 +8,7 @@ import java.util.Properties;
 import java.util.function.Function;
 
 import com.vaadin.flow.server.AbstractDeploymentConfiguration;
-import com.vaadin.flow.server.LockCheckStrategy;
+import com.vaadin.flow.server.SessionLockCheckStrategy;
 import com.vaadin.flow.shared.communication.PushMode;
 
 public class MockDeploymentConfiguration
@@ -32,7 +32,7 @@ public class MockDeploymentConfiguration
     private boolean eagerServerLoad = false;
     private boolean devModeLiveReloadEnabled = false;
     private boolean devToolsEnabled = true;
-    private LockCheckStrategy lockCheckStrategy = LockCheckStrategy.ASSERT;
+    private SessionLockCheckStrategy sessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
 
     private File projectFolder = null;
 
@@ -211,11 +211,12 @@ public class MockDeploymentConfiguration
     }
 
     @Override
-    public LockCheckStrategy getLockCheckStrategy() {
-        return lockCheckStrategy;
+    public SessionLockCheckStrategy getProductionSessionLockCheckStrategy() {
+        return sessionLockCheckStrategy;
     }
 
-    public void setLockCheckStrategy(LockCheckStrategy lockCheckStrategy) {
-        this.lockCheckStrategy = lockCheckStrategy;
+    public void setLockCheckStrategy(
+            SessionLockCheckStrategy sessionLockCheckStrategy) {
+        this.sessionLockCheckStrategy = sessionLockCheckStrategy;
     }
 }
