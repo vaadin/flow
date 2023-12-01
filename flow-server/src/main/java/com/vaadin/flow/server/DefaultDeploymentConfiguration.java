@@ -396,12 +396,12 @@ public class DefaultDeploymentConfiguration
         try {
             lockCheckStrategy = getApplicationOrSystemProperty(
                     InitParameters.SERVLET_PARAMETER_LOCK_CHECK_STRATEGY,
-                    LockCheckStrategy.DEFAULT,
+                    LockCheckStrategy.ASSERT,
                     stringStrategy -> Enum.valueOf(LockCheckStrategy.class,
                             stringStrategy.toUpperCase()));
         } catch (IllegalArgumentException e) {
             warnings.add(WARNING_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED);
-            lockCheckStrategy = LockCheckStrategy.DEFAULT;
+            lockCheckStrategy = LockCheckStrategy.ASSERT;
         }
     }
 

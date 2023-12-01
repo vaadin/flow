@@ -32,7 +32,7 @@ public class MockDeploymentConfiguration
     private boolean eagerServerLoad = false;
     private boolean devModeLiveReloadEnabled = false;
     private boolean devToolsEnabled = true;
-    private LockCheckStrategy lockCheckStrategy = LockCheckStrategy.DEFAULT;
+    private LockCheckStrategy lockCheckStrategy = LockCheckStrategy.ASSERT;
 
     private File projectFolder = null;
 

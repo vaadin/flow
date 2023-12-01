@@ -144,7 +144,7 @@ public class AbstractDeploymentConfigurationTest {
 
         @Override
         public LockCheckStrategy getLockCheckStrategy() {
-            return LockCheckStrategy.DEFAULT;
+            return LockCheckStrategy.ASSERT;
         }
     }
 }

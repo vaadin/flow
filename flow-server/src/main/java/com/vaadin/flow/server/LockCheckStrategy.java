@@ -39,8 +39,6 @@ public enum LockCheckStrategy {
         }
     };
 
-    public static final LockCheckStrategy DEFAULT = ASSERT;
-
     /**
      * Potentially checks whether this session is currently locked by the
      * current thread

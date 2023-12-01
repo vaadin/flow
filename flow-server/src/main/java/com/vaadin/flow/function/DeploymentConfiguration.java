@@ -319,7 +319,7 @@ public interface DeploymentConfiguration
     boolean isDevToolsEnabled();
 
     /**
-     * Returns the strategy for session lock checking in production mode.
+     * Returns the strategy for Vaadin session lock checking in production mode.
      * Ignored in development mode.
      *
      * @return the lock checking strategy, never null.

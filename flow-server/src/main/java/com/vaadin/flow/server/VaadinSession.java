@@ -114,7 +114,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private transient Lock lock;
 
-    private LockCheckStrategy lockCheckStrategy = LockCheckStrategy.DEFAULT;
+    private LockCheckStrategy lockCheckStrategy = LockCheckStrategy.ASSERT;
 
     /*
      * Pending tasks can't be serialized and the queue should be empty when the

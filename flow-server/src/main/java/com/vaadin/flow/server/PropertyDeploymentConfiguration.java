@@ -282,7 +282,7 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public LockCheckStrategy getLockCheckStrategy() {
-        return LockCheckStrategy.DEFAULT;
+        return LockCheckStrategy.ASSERT;
     }
 
     /**
