@@ -20,6 +20,4 @@ import com.vaadin.flow.server.PWA;
 
 @PWA(name = "My PWA app", shortName = "app", offlinePath = "offline.html")
 public class AppShell implements AppShellConfigurator {
-    public AppShell() {
-    }
 }
