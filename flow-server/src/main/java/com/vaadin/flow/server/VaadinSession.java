@@ -570,9 +570,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * current thread, and fails with the given message if not.
      * <p>
      * When production mode is enabled, the check is done according to the
-     * {@link InitParameters#SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY
-     * lock check strategy}. By default, the check is only done if assertions
-     * are also enabled: this is done to avoid the small performance impact of
+     * {@link InitParameters#SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY lock
+     * check strategy}. By default, the check is only done if assertions are
+     * also enabled: this is done to avoid the small performance impact of
      * continuously checking the lock status.
      * <p>
      * The check is always done when production mode is not enabled, using the
@@ -591,9 +591,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * current thread, and fails with a standard error message if not.
      * <p>
      * When production mode is enabled, the check is done according to the
-     * {@link InitParameters#SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY
-     * lock check strategy}. By default, the check is only done if assertions
-     * are also enabled: this is done to avoid the small performance impact of
+     * {@link InitParameters#SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY lock
+     * check strategy}. By default, the check is only done if assertions are
+     * also enabled: this is done to avoid the small performance impact of
      * continuously checking the lock status.
      * <p>
      * The check is always done when production mode is not enabled, using the

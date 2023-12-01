@@ -536,8 +536,8 @@ public class VaadinSessionTest {
     public void checkHasLock_noCheckInDevMode() {
         Assume.assumeTrue(session.hasLock());
         Assume.assumeFalse(session.getConfiguration().isProductionMode());
-        Assert.assertEquals(SessionLockCheckStrategy.ASSERT, session
-                .getConfiguration().getSessionLockCheckStrategy());
+        Assert.assertEquals(SessionLockCheckStrategy.ASSERT,
+                session.getConfiguration().getSessionLockCheckStrategy());
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
 

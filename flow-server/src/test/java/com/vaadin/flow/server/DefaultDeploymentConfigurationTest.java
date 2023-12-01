@@ -266,8 +266,7 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void checkLockStrategy_configurableViaPropertyParameter() {
         Properties init = new Properties();
-        init.put(
-                InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY,
+        init.put(InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY,
                 "throw");
         DefaultDeploymentConfiguration config = createDeploymentConfig(init);
 
