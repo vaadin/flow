@@ -55,6 +55,10 @@ public class DefaultDeploymentConfiguration
             + "The permitted values are \"disabled\", \"manual\",\n"
             + "and \"automatic\". The default of \"disabled\" will be used.";
 
+    public static final String WARNING_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED = "WARNING: lockCheckStrategy has been set to an unrecognized value.\n"
+            + "The permitted values are \"assert\", \"log\",\n"
+            + "and \"throw\". The default of \"assert\" will be used.";
+
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
@@ -94,6 +98,7 @@ public class DefaultDeploymentConfiguration
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
     private boolean frontendHotdeploy;
+    private LockCheckStrategy lockCheckStrategy;
 
     private static AtomicBoolean logging = new AtomicBoolean(true);
     private List<String> warnings = new ArrayList<>();
@@ -130,6 +135,7 @@ public class DefaultDeploymentConfiguration
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
         checkFrontendHotdeploy();
+        checkLockCheckStrategy();
 
         if (log) {
             logMessages();
@@ -262,6 +268,11 @@ public class DefaultDeploymentConfiguration
         return frontendHotdeploy;
     }
 
+    @Override
+    public LockCheckStrategy getLockCheckStrategy() {
+        return lockCheckStrategy;
+    }
+
     /**
      * Log a warning if Vaadin is not running in production mode.
      */
@@ -378,6 +389,19 @@ public class DefaultDeploymentConfiguration
         } catch (IllegalArgumentException e) {
             warnings.add(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
+        }
+    }
+
+    private void checkLockCheckStrategy() {
+        try {
+            lockCheckStrategy = getApplicationOrSystemProperty(
+                    InitParameters.SERVLET_PARAMETER_LOCK_CHECK_STRATEGY,
+                    LockCheckStrategy.DEFAULT,
+                    stringStrategy -> Enum.valueOf(LockCheckStrategy.class,
+                            stringStrategy.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            warnings.add(WARNING_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED);
+            lockCheckStrategy = LockCheckStrategy.DEFAULT;
         }
     }
 
