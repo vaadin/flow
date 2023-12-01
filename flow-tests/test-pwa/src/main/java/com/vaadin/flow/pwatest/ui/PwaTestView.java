@@ -18,6 +18,6 @@ package com.vaadin.flow.pwatest.ui;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 
-@Route(value = "", layout = ParentLayout.class)
+@Route(value = "")
 public class PwaTestView extends Div {
 }

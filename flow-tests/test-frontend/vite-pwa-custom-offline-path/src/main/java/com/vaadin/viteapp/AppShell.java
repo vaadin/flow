@@ -15,14 +15,9 @@
  */
 package com.vaadin.viteapp;
 
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.PWA;
 
 @PWA(name = "My PWA app", shortName = "app", offlinePath = "offline.html")
-public class AppShell extends Div
-        implements RouterLayout, AppShellConfigurator {
-    public AppShell() {
-    }
+public class AppShell implements AppShellConfigurator {
 }

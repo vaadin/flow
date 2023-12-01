@@ -18,6 +18,6 @@ package com.vaadin.flow.pwatest;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 
-@Route(value = "", layout = AppShell.class)
+@Route(value = "")
 public class MainView extends Div {
 }
