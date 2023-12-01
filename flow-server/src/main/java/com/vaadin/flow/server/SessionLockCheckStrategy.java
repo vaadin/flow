@@ -22,7 +22,8 @@ public enum SessionLockCheckStrategy {
         @Override
         public void checkHasLock(VaadinSession session, String message) {
             if (!session.hasLock()) {
-                session.getLogger().warn(message);
+                session.getLogger().warn(message,
+                        new IllegalStateException(message));
             }
         }
     },
