@@ -536,20 +536,20 @@ public class VaadinSessionTest {
     public void checkHasLock_noCheckInDevMode() {
         Assume.assumeTrue(session.hasLock());
         Assume.assumeFalse(session.getConfiguration().isProductionMode());
-        Assert.assertEquals(LockCheckStrategy.ASSERT,
-                session.getConfiguration().getLockCheckStrategy());
+        Assert.assertEquals(SessionLockCheckStrategy.ASSERT,
+                session.getConfiguration().getSessionLockCheckStrategy());
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
 
         session.checkHasLock();
 
-        configuration.setLockCheckStrategy(LockCheckStrategy.LOG);
+        configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
         session.setConfiguration(configuration);
         session.mockLogger.clearLogs();
         session.checkHasLock();
         Assert.assertEquals("", session.mockLogger.getLogs());
 
-        configuration.setLockCheckStrategy(LockCheckStrategy.ASSERT);
+        configuration.setLockCheckStrategy(SessionLockCheckStrategy.ASSERT);
         session.setConfiguration(configuration);
         session.checkHasLock();
     }
@@ -579,7 +579,7 @@ public class VaadinSessionTest {
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
         configuration.setProductionMode(true);
-        configuration.setLockCheckStrategy(LockCheckStrategy.THROW);
+        configuration.setLockCheckStrategy(SessionLockCheckStrategy.THROW);
         session.setConfiguration(configuration);
         session.unlock();
         Assume.assumeFalse(session.hasLock());
@@ -598,7 +598,7 @@ public class VaadinSessionTest {
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
         configuration.setProductionMode(true);
-        configuration.setLockCheckStrategy(LockCheckStrategy.LOG);
+        configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
         session.setConfiguration(configuration);
         session.unlock();
         Assume.assumeFalse(session.hasLock());

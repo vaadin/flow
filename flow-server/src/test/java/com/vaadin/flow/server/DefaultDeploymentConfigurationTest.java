@@ -259,18 +259,19 @@ public class DefaultDeploymentConfigurationTest {
         Properties init = new Properties();
         DefaultDeploymentConfiguration config = createDeploymentConfig(init);
 
-        Assert.assertEquals(LockCheckStrategy.ASSERT,
-                config.getLockCheckStrategy());
+        Assert.assertEquals(SessionLockCheckStrategy.ASSERT,
+                config.getSessionLockCheckStrategy());
     }
 
     @Test
     public void checkLockStrategy_configurableViaPropertyParameter() {
         Properties init = new Properties();
-        init.put(InitParameters.SERVLET_PARAMETER_LOCK_CHECK_STRATEGY, "throw");
+        init.put(InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY,
+                "throw");
         DefaultDeploymentConfiguration config = createDeploymentConfig(init);
 
-        Assert.assertEquals(LockCheckStrategy.THROW,
-                config.getLockCheckStrategy());
+        Assert.assertEquals(SessionLockCheckStrategy.THROW,
+                config.getSessionLockCheckStrategy());
     }
 
     @Test
