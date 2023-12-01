@@ -136,6 +136,16 @@ public class CleanFrontendMojoTest {
     }
 
     @Test
+    public void should_removeOldDevBundle() throws MojoFailureException {
+        final File devBundleDir = new File(projectBase, "src/main/dev-bundle/");
+        Assert.assertTrue("Failed to create 'dev-bundle' folder",
+                devBundleDir.mkdirs());
+        mojo.execute();
+        Assert.assertFalse("Bundle directory was not removed.",
+                devBundleDir.exists());
+    }
+
+    @Test
     public void should_removeFrontendGeneratedFolder()
             throws MojoFailureException, IOException {
         Assert.assertTrue("Failed to create 'frontend/generated'",
