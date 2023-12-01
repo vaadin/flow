@@ -73,6 +73,8 @@ import jakarta.servlet.http.HttpSessionBindingListener;
 public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private static final String SESSION_NOT_LOCKED_MESSAGE = "Cannot access state in VaadinSession or UI without locking the session.";
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(VaadinSession.class.getName());
 
     volatile boolean sessionClosedExplicitly = false;
 
@@ -111,6 +113,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private transient VaadinService service;
 
     private transient Lock lock;
+
+    private LockCheckStrategy lockCheckStrategy = LockCheckStrategy.DEFAULT;
 
     /*
      * Pending tasks can't be serialized and the queue should be empty when the
@@ -345,9 +349,18 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         if (configuration == null) {
             throw new IllegalArgumentException("Can not set to null");
         }
+        checkSetConfiguration();
+        this.configuration = configuration;
+
+        lockCheckStrategy = configuration.isProductionMode()
+                ? configuration.getLockCheckStrategy()
+                : LockCheckStrategy.THROW;
+        assert lockCheckStrategy != null;
+    }
+
+    protected void checkSetConfiguration() {
         assert this.configuration == null
                 : "Configuration can only be set once";
-        this.configuration = configuration;
     }
 
     /**
@@ -556,8 +569,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Potentially checks whether this session is currently locked by the
      * current thread, and fails with the given message if not.
      * <p>
-     * When production mode is enabled, the check is only done if assertions are
-     * also enabled. This is done to avoid the small performance impact of
+     * When production mode is enabled, the check is done according to the
+     * {@link InitParameters#SERVLET_PARAMETER_LOCK_CHECK_STRATEGY lock check
+     * strategy}. By default, the check is only done if assertions are also
+     * enabled: this is done to avoid the small performance impact of
      * continuously checking the lock status. The check is always done when
      * production mode is not enabled.
      *
@@ -566,11 +581,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            and the session is not locked
      */
     public void checkHasLock(String message) {
-        if (configuration == null || configuration.isProductionMode()) {
-            assert hasLock() : message;
-        } else if (!hasLock()) {
-            throw new IllegalStateException(message);
-        }
+        lockCheckStrategy.checkHasLock(this, message);
     }
 
     /**
@@ -921,8 +932,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                         && newState == VaadinSessionState.CLOSED);
     }
 
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(VaadinSession.class.getName());
+    Logger getLogger() {
+        return LOGGER;
     }
 
     /**

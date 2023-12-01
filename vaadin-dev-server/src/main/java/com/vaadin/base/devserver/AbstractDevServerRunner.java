@@ -636,6 +636,13 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
+        return handleRequestInternal(request, response, devServerStartFuture,
+                isDevServerFailedToStart);
+    }
+
+    static boolean handleRequestInternal(VaadinRequest request,
+            VaadinResponse response, CompletableFuture<?> devServerStartFuture,
+            AtomicBoolean isDevServerFailedToStart) throws IOException {
         if (devServerStartFuture.isDone()) {
             // The server has started, check for any exceptions in the startup
             // process
@@ -778,7 +785,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         return true;
     }
 
-    private RuntimeException getCause(Throwable exception) {
+    private static RuntimeException getCause(Throwable exception) {
         if (exception instanceof CompletionException) {
             return getCause(exception.getCause());
         } else if (exception instanceof RuntimeException) {

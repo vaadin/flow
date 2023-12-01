@@ -55,6 +55,7 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT = "webComponentDisconnect";
     public static final String SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS = "closeIdleSessions";
     public static final String SERVLET_PARAMETER_PUSH_MODE = "pushMode";
+    public static final String SERVLET_PARAMETER_LOCK_CHECK_STRATEGY = "lockCheckStrategy";
     public static final String SERVLET_PARAMETER_PUSH_SERVLET_MAPPING = "pushServletMapping";
     public static final String SERVLET_PARAMETER_SYNC_ID_CHECK = "syncIdCheck";
     public static final String SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS = "sendUrlsAsParameters";
@@ -64,7 +65,6 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
     public static final String NODE_VERSION = "node.version";
     public static final String NODE_DOWNLOAD_ROOT = "node.download.root";
-    public static final String ERROR_HANDLER_REDIRECT_ENABLED = "enableErrorHandlerRedirect";
 
     /**
      * Configuration name for the parameter that determines whether Brotli
@@ -100,6 +100,13 @@ public class InitParameters implements Serializable {
      * disabled, all classes on the classpath are scanned.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = "devmode.optimizeBundle";
+
+    /**
+     * A comma separated list of IP addresses, potentially with wildcards, which
+     * can connect to the dev tools. If not specified, only localhost
+     * connections are allowed.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED = "devmode.hostsAllowed";
 
     /**
      * Configuration parameter name for enabling pnpm.

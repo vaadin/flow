@@ -174,14 +174,6 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
-    public boolean isErrorRedirectEnabled() {
-        if (isOwnProperty(InitParameters.ERROR_HANDLER_REDIRECT_ENABLED)) {
-            return super.isErrorRedirectEnabled();
-        }
-        return parentConfig.isErrorRedirectEnabled();
-    }
-
-    @Override
     public boolean isUsageStatisticsEnabled() {
         return !isProductionMode() && getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_DEVMODE_STATISTICS, true);
@@ -286,6 +278,11 @@ public class PropertyDeploymentConfiguration
     public boolean isDevToolsEnabled() {
         return !isProductionMode() && getBooleanProperty(
                 SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS, true);
+    }
+
+    @Override
+    public LockCheckStrategy getLockCheckStrategy() {
+        return LockCheckStrategy.DEFAULT;
     }
 
     /**

@@ -19,7 +19,7 @@
     <parent>
         <artifactId>test-express-build</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.3-SNAPSHOT</version>
+        <version>24.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -132,7 +132,7 @@
                             </includes>
                         </fileset>
                         <fileset>
-                            <directory>${project.basedir}/src/main/dev-bundle</directory>
+                            <directory>${project.basedir}/src/main/bundles</directory>
                             <includes>
                                 <include>**</include>
                             </includes>

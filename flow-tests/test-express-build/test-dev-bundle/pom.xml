@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>test-express-build</artifactId>
-        <version>24.3-SNAPSHOT</version>
+        <version>24.4-SNAPSHOT</version>
     </parent>
     <artifactId>test-dev-bundle</artifactId>
     <packaging>jar</packaging>
@@ -102,7 +102,7 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>${project.basedir}/src/main/dev-bundle</directory>
+                            <directory>${project.basedir}/src/main/bundles</directory>
                             <directory>${project.basedir}/frontend/generated</directory>
                         </fileset>
                     </filesets>
