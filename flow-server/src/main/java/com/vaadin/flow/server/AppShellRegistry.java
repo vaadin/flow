@@ -64,7 +64,7 @@ public class AppShellRegistry implements Serializable {
     private static final String ERROR_MULTIPLE_ANNOTATION = "%n%s is not a repeatable annotation type.%n";
 
     private static final String ERROR_EXTENDS_COMPONENT = "%nApp shell class is not allowed to extend Vaadin Component: %s. "
-            + "App shells are intended for page configuration and are instantiated before the UI is created.%n";
+            + "App shells are only intended for page configuration and are instantiated before the UI is created.%n";
 
     // There must be no more than one of the following elements per document
     private static final String[] UNIQUE_ELEMENTS = { "meta[name=viewport]",
