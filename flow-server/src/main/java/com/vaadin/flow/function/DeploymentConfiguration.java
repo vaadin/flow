@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.LockCheckStrategy;
+import com.vaadin.flow.server.SessionLockCheckStrategy;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -319,10 +319,10 @@ public interface DeploymentConfiguration
     boolean isDevToolsEnabled();
 
     /**
-     * Returns the strategy for session lock checking in production mode.
+     * Returns the strategy for Vaadin session lock checking in production mode.
      * Ignored in development mode.
      *
      * @return the lock checking strategy, never null.
      */
-    LockCheckStrategy getLockCheckStrategy();
+    SessionLockCheckStrategy getSessionLockCheckStrategy();
 }

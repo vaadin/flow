@@ -114,7 +114,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private transient Lock lock;
 
-    private LockCheckStrategy lockCheckStrategy = LockCheckStrategy.DEFAULT;
+    private SessionLockCheckStrategy sessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
 
     /*
      * Pending tasks can't be serialized and the queue should be empty when the
@@ -352,10 +352,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         checkSetConfiguration();
         this.configuration = configuration;
 
-        lockCheckStrategy = configuration.isProductionMode()
-                ? configuration.getLockCheckStrategy()
-                : LockCheckStrategy.THROW;
-        assert lockCheckStrategy != null;
+        sessionLockCheckStrategy = configuration.isProductionMode()
+                ? configuration.getSessionLockCheckStrategy()
+                : SessionLockCheckStrategy.THROW;
+        assert sessionLockCheckStrategy != null;
     }
 
     protected void checkSetConfiguration() {
@@ -570,28 +570,34 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * current thread, and fails with the given message if not.
      * <p>
      * When production mode is enabled, the check is done according to the
-     * {@link InitParameters#SERVLET_PARAMETER_LOCK_CHECK_STRATEGY lock check
-     * strategy}. By default, the check is only done if assertions are also
-     * enabled: this is done to avoid the small performance impact of
-     * continuously checking the lock status. The check is always done when
-     * production mode is not enabled.
+     * {@link InitParameters#SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY lock
+     * check strategy}. By default, the check is only done if assertions are
+     * also enabled: this is done to avoid the small performance impact of
+     * continuously checking the lock status.
+     * <p>
+     * The check is always done when production mode is not enabled, using the
+     * {@link SessionLockCheckStrategy#THROW} strategy.
      *
      * @param message
      *            the error message to include when failing if the check is done
      *            and the session is not locked
      */
     public void checkHasLock(String message) {
-        lockCheckStrategy.checkHasLock(this, message);
+        sessionLockCheckStrategy.checkHasLock(this, message);
     }
 
     /**
      * Potentially checks whether this session is currently locked by the
      * current thread, and fails with a standard error message if not.
      * <p>
-     * When production mode is enabled, the check is only done if assertions are
-     * also enabled. This is done to avoid the small performance impact of
-     * continuously checking the lock status. The check is always done when
-     * production mode is not enabled.
+     * When production mode is enabled, the check is done according to the
+     * {@link InitParameters#SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY lock
+     * check strategy}. By default, the check is only done if assertions are
+     * also enabled: this is done to avoid the small performance impact of
+     * continuously checking the lock status.
+     * <p>
+     * The check is always done when production mode is not enabled, using the
+     * {@link SessionLockCheckStrategy#THROW} strategy.
      */
     public void checkHasLock() {
         checkHasLock(SESSION_NOT_LOCKED_MESSAGE);
