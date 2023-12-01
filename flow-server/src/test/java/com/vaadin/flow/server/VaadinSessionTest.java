@@ -72,6 +72,7 @@ public class VaadinSessionTest {
 
         public VaadinSessionWithMockLogger(VaadinService service) {
             super(service);
+            mockLogger.includeStackTrace = true;
         }
 
         @Override
@@ -603,10 +604,13 @@ public class VaadinSessionTest {
         session.unlock();
         Assume.assumeFalse(session.hasLock());
 
-        // this should throw IllegalStateException
+        // this should log a warning message into the logger, including the
+        // stacktrace.
         session.checkHasLock();
-        Assert.assertEquals(
-                "[Warning] Cannot access state in VaadinSession or UI without locking the session.",
-                session.mockLogger.getLogs().trim());
+        Assert.assertTrue(session.mockLogger.getLogs().trim(),
+                session.mockLogger.getLogs().contains(
+                        "[Warning] Cannot access state in VaadinSession or UI without locking the session.\n"
+                                + "java.lang.IllegalStateException: Cannot access state in VaadinSession or UI without locking the session.\n"
+                                + "\tat com.vaadin.flow.server.SessionLockCheckStrategy$2.checkHasLock(SessionLockCheckStrategy.java:"));
     }
 }

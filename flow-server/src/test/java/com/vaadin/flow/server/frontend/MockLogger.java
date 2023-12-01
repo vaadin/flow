@@ -16,14 +16,18 @@
 
 package com.vaadin.flow.server.frontend;
 
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.StringWriter;
 
 public class MockLogger implements Logger, Serializable {
 
     StringBuilder logs = new StringBuilder();
+    public boolean includeStackTrace = false;
 
     public static String TRACE = "[Trace] ";
     public static String DEBUG = "[Debug] ";
@@ -33,6 +37,13 @@ public class MockLogger implements Logger, Serializable {
 
     public String getLogs() {
         return logs.toString().replaceAll("\r", "");
+    }
+
+    private void append(Throwable throwable) {
+        if (throwable != null && includeStackTrace) {
+            throwable.printStackTrace(
+                    new PrintWriter(new StringBuilderWriter(logs)));
+        }
     }
 
     public void clearLogs() {
@@ -85,6 +96,7 @@ public class MockLogger implements Logger, Serializable {
     @Override
     public void trace(String s, Throwable throwable) {
         logs.append(TRACE).append(s).append("\n");
+        append(throwable);
     }
 
     @Override
@@ -156,6 +168,7 @@ public class MockLogger implements Logger, Serializable {
     @Override
     public void debug(String s, Throwable throwable) {
         logs.append(DEBUG).append(s).append("\n");
+        append(throwable);
     }
 
     @Override
@@ -227,6 +240,7 @@ public class MockLogger implements Logger, Serializable {
     @Override
     public void info(String s, Throwable throwable) {
         logs.append(INFO).append(s).append("\n");
+        append(throwable);
     }
 
     @Override
@@ -298,6 +312,7 @@ public class MockLogger implements Logger, Serializable {
     @Override
     public void warn(String s, Throwable throwable) {
         logs.append(WARN).append(s).append("\n");
+        append(throwable);
     }
 
     @Override
@@ -369,6 +384,7 @@ public class MockLogger implements Logger, Serializable {
     @Override
     public void error(String s, Throwable throwable) {
         logs.append(ERROR).append(s).append("\n");
+        append(throwable);
     }
 
     @Override
