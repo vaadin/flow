@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -64,6 +65,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
@@ -585,13 +587,18 @@ public abstract class VaadinWebSecurity {
      *         configuration.
      * @deprecated ViewAccessChecker is not used anymore by VaadinWebSecurity,
      *             and has been replaced by {@link NavigationAccessControl}.
-     *             Calling this method will throw an exception.
+     *             Calling this method will get a stub implementation that
+     *             delegates to the {@link NavigationAccessControl} instance.
      */
     @Deprecated(forRemoval = true, since = "24.3")
     protected ViewAccessChecker getViewAccessChecker() {
-        throw new UnsupportedOperationException(
+        LoggerFactory.getLogger(getClass()).warn(
                 "ViewAccessChecker is not used anymore by VaadinWebSecurity "
-                        + "and has been replaced by NavigationAccessControl");
+                        + "and has been replaced by NavigationAccessControl. "
+                        + "'VaadinWebSecurity.getViewAccessChecker()' returns a stub instance that "
+                        + "delegates calls to NavigationAccessControl. "
+                        + "Usages of 'getViewAccessChecker()' should be replaced by calls to 'getNavigationAccessControl()'.");
+        return new DeprecateViewAccessCheckerDelegator(accessControl);
     }
 
     /**
@@ -678,4 +685,36 @@ public abstract class VaadinWebSecurity {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
         }
     }
+
+    private static class DeprecateViewAccessCheckerDelegator
+            extends ViewAccessChecker {
+
+        private final NavigationAccessControl accessControl;
+
+        public DeprecateViewAccessCheckerDelegator(
+                NavigationAccessControl acc) {
+            this.accessControl = acc;
+        }
+
+        @Override
+        public void enable() {
+            accessControl.setEnabled(true);
+        }
+
+        @Override
+        public void setLoginView(Class<? extends Component> loginView) {
+            accessControl.setLoginView(loginView);
+        }
+
+        @Override
+        public void setLoginView(String loginUrl) {
+            accessControl.setLoginView(loginUrl);
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+            accessControl.beforeEnter(beforeEnterEvent);
+        }
+    }
+
 }
