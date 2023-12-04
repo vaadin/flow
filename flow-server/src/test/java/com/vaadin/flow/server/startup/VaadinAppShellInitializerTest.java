@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
+import com.vaadin.flow.component.Tag;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.After;
@@ -172,6 +173,11 @@ public class VaadinAppShellInitializerTest {
     @Viewport("my-viewport")
     @BodySize(height = "my-height", width = "my-width")
     public static class AppShellWithPWA implements AppShellConfigurator {
+    }
+
+    @Tag("div")
+    public static class AppShellExtendingComponent extends Component
+            implements AppShellConfigurator {
     }
 
     @Rule
@@ -437,6 +443,13 @@ public class VaadinAppShellInitializerTest {
         assertFalse(arg.getValue()
                 .contains("We changed the way you configure PWAs"));
         assertTrue(arg.getValue().contains("@Viewport"));
+    }
+
+    @Test(expected = InvalidApplicationConfigurationException.class)
+    public void should_throwException_when_appShellExtendsComponent()
+            throws Exception {
+        classes.add(AppShellExtendingComponent.class);
+        initializer.process(classes, servletContext);
     }
 
     private VaadinServletRequest createVaadinRequest(String pathInfo) {

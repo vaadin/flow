@@ -57,17 +57,17 @@ public class PwaTestIT extends ChromeDeviceTest {
                 .findElements(By.name("apple-mobile-web-app-capable")).size());
 
         // test theme color
-        Assert.assertEquals(
-                1, head
-                        .findElements(By
-                                .xpath("//meta[@name='theme-color'][@content='"
-                                        + ParentLayout.THEME_COLOR + "']"))
+        Assert.assertEquals(1,
+                head.findElements(
+                        By.xpath("//meta[@name='theme-color'][@content='"
+                                + AppShell.THEME_COLOR + "']"))
                         .size());
 
         // test theme color for apple mobile
-        Assert.assertEquals(1, head.findElements(
-                By.xpath("//meta[@name='apple-mobile-web-app-status-bar-style']"
-                        + "[@content='" + ParentLayout.THEME_COLOR + "']"))
+        Assert.assertEquals(1, head
+                .findElements(By.xpath(
+                        "//meta[@name='apple-mobile-web-app-status-bar-style']"
+                                + "[@content='" + AppShell.THEME_COLOR + "']"))
                 .size());
         // icons test
         checkIcons(head.findElements(By.xpath("//link[@rel='shortcut icon']")),
@@ -94,12 +94,12 @@ public class PwaTestIT extends ChromeDeviceTest {
             href = getRootURL() + '/' + href;
         }
         JsonObject manifest = readJsonFromUrl(href);
-        Assert.assertEquals(ParentLayout.PWA_NAME, manifest.getString("name"));
-        Assert.assertEquals(ParentLayout.PWA_SHORT_NAME,
+        Assert.assertEquals(AppShell.PWA_NAME, manifest.getString("name"));
+        Assert.assertEquals(AppShell.PWA_SHORT_NAME,
                 manifest.getString("short_name"));
-        Assert.assertEquals(ParentLayout.BG_COLOR,
+        Assert.assertEquals(AppShell.BG_COLOR,
                 manifest.getString("background_color"));
-        Assert.assertEquals(ParentLayout.THEME_COLOR,
+        Assert.assertEquals(AppShell.THEME_COLOR,
                 manifest.getString("theme_color"));
 
         // test service worker initialization
@@ -200,9 +200,9 @@ public class PwaTestIT extends ChromeDeviceTest {
             WebElement head = findElement(By.tagName("head"));
             waitForElementPresent(By.tagName("title"));
             WebElement title = head.findElement(By.tagName("title"));
-            Assert.assertEquals(ParentLayout.PWA_NAME,
+            Assert.assertEquals(AppShell.PWA_NAME,
                     executeScript("return arguments[0].textContent", title));
-            Assert.assertEquals(ParentLayout.PWA_NAME,
+            Assert.assertEquals(AppShell.PWA_NAME,
                     executeScript("return document.title;"));
 
             // Assert default offline.html page contents
@@ -211,7 +211,7 @@ public class PwaTestIT extends ChromeDeviceTest {
                     body.findElements(By.id("outlet")).isEmpty());
 
             WebElement offline = body.findElement(By.id("offline"));
-            Assert.assertEquals(ParentLayout.PWA_NAME,
+            Assert.assertEquals(AppShell.PWA_NAME,
                     offline.findElement(By.tagName("h1")).getText());
             WebElement message = offline.findElement(By.className("message"));
             Assert.assertTrue("Should have “offline” in message",

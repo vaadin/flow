@@ -126,12 +126,24 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
     }
 
     /**
-     * Try removing the application bundles folder if it exists.
+     * Try removing the application bundles folder and old bundle folder, if
+     * they exist.
      * <p>
      * Log a warning if there was an issue removing the folder.
      */
     private void removeDevBundle() {
-        File bundleDir = new File(npmFolder(), Constants.BUNDLE_LOCATION);
+        removeDevBundle(Constants.BUNDLE_LOCATION);
+        // old bundle folder
+        removeDevBundle("src/main/dev-bundle/");
+    }
+
+    /**
+     * Try removing the given application bundle folder if it exists.
+     * <p>
+     * Log a warning if there was an issue removing the folder.
+     */
+    private void removeDevBundle(String bundleLocation) {
+        File bundleDir = new File(npmFolder(), bundleLocation);
         try {
             if (bundleDir.exists()) {
                 FileUtils.deleteDirectory(bundleDir);

@@ -280,6 +280,11 @@ public class PropertyDeploymentConfiguration
                 SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS, true);
     }
 
+    @Override
+    public SessionLockCheckStrategy getSessionLockCheckStrategy() {
+        return SessionLockCheckStrategy.ASSERT;
+    }
+
     /**
      * Checks whether the given {@code property} is the property explicitly set
      * in this deployment configuration (not in it's parent config).
