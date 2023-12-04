@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.naming.SizeLimitExceededException;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedWriter;
