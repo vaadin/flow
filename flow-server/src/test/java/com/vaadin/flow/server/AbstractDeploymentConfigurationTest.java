@@ -142,5 +142,9 @@ public class AbstractDeploymentConfigurationTest {
             return DefaultDeploymentConfiguration.DEFAULT_SEND_URLS_AS_PARAMETERS;
         }
 
+        @Override
+        public SessionLockCheckStrategy getSessionLockCheckStrategy() {
+            return SessionLockCheckStrategy.ASSERT;
+        }
     }
 }

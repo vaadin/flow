@@ -43,7 +43,9 @@ import com.vaadin.flow.server.AppShellSettings;
  * <p>
  * There is a single application shell for the entire Vaadin application, and
  * there can only be one class implementing {@link AppShellConfigurator} per
- * Application.
+ * Application. Also, app shell class is not allowed to extend Vaadin Component,
+ * since app shells are only intended for page configuration and are
+ * instantiated before the UI is created.
  * </p>
  *
  * <p>
