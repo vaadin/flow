@@ -130,13 +130,22 @@ function vaadinRouterGlobalClickHandler(event) {
 }
 
 // We can't initiate useNavigate() from outside React component so we store it here for use in the navigateEvent.
-var navigation: NavigateFunction | ((arg0: any, arg1: { replace: boolean; }) => void);
+let navigation: NavigateFunction | ((arg0: any, arg1: { replace: boolean; }) => void);
+let mountedContainer: Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>> | undefined = undefined;
+
 // @ts-ignore
 function navigateEventHandler(event) {
     if (event && event.preventDefault) {
         event.preventDefault();
     }
-    navigation(event.detail.pathname, { replace: false })
+
+    if (mountedContainer?.onBeforeLeave) {
+        mountedContainer?.onBeforeLeave({pathname: event.detail.pathname, search: event.detail.search}, {
+            prevent() {},
+        }, router);
+    } else {
+        navigation(event.detail.pathname, {replace: false})
+    }
 }
 
 export default function Flow() {
@@ -147,9 +156,7 @@ export default function Flow() {
     useEffect(() => {
         window.document.addEventListener('click', vaadinRouterGlobalClickHandler);
         window.addEventListener('vaadin-router-go', navigateEventHandler);
-        const route = flow.serverSideRoutes[0];
-        let mountedContainer: Awaited<ReturnType<typeof route["action"]>> | undefined = undefined;
-        route.action({pathname, search}).then((container) => {
+        flow.serverSideRoutes[0].action({pathname, search}).then((container) => {
             const outlet = ref.current?.parentNode;
             if (outlet && outlet !== container.parentNode) {
                 outlet.insertBefore(container, ref.current);
