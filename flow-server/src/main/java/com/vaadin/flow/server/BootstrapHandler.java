@@ -1542,8 +1542,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
     }
 
+    @Deprecated
     protected static String getPushScript(BootstrapContext context) {
         VaadinRequest request = context.getRequest();
+        return getPushScript(request);
+    }
+    
+    protected static String getPushScript(VaadinRequest request) {
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getBuildHash();
         // Load client-side dependencies for push support

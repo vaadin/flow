@@ -353,6 +353,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         devToolsConf.put("enable", config.isDevModeLiveReloadEnabled());
         devToolsConf.put("url",
                 BootstrapHandlerHelper.getPushURL(session, request));
+        devToolsConf.put("pushScriptUrl", getPushScript(request));
         maybeBackend.ifPresent(
                 backend -> devToolsConf.put("backend", backend.toString()));
         devToolsConf.put("liveReloadPort", liveReloadPort);
