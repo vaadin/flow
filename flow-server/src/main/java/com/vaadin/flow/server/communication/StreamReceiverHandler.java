@@ -37,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.NoInputStreamException;
@@ -294,12 +293,6 @@ public class StreamReceiverHandler implements Serializable {
                 throw new UploadException("Warning: file upload ignored for "
                         + node.getId() + " because the component was disabled");
             }
-            if (isMimeTypeOrFileExtensionDisallowedByAcceptProperty(node,
-                    mimeType, filename)) {
-                throw new UploadException("Warning: file upload ignored for "
-                        + node.getId() + " because the mime type " + mimeType
-                        + " is not allowed by the accept property");
-            }
         } finally {
             session.unlock();
         }
@@ -319,44 +312,6 @@ public class StreamReceiverHandler implements Serializable {
                 session.unlock();
             }
         }
-    }
-
-    private boolean isMimeTypeOrFileExtensionDisallowedByAcceptProperty(
-            StateNode stateNode, String mimeType,
-            String filenameWithExtension) {
-        if (stateNode == null) {
-            return false;
-        }
-        Element element;
-        try {
-            element = Element.get(stateNode);
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-        String accept = element.getProperty("accept");
-        if (accept == null || accept.trim().isEmpty()) {
-            return false;
-        }
-        for (String acceptValue : accept.split(",")) {
-            String trimmedAcceptValue = acceptValue.trim();
-            if (trimmedAcceptValue.equals("*/*")) {
-                return false;
-            }
-            if (trimmedAcceptValue.endsWith("/*")) {
-                if (mimeType.startsWith(trimmedAcceptValue.substring(0,
-                        trimmedAcceptValue.length() - 1))) {
-                    return false;
-                }
-            }
-            if (trimmedAcceptValue.equals(mimeType)) {
-                return false;
-            }
-            if (filenameWithExtension != null
-                    && trimmedAcceptValue.startsWith(".")) {
-                return !filenameWithExtension.endsWith(trimmedAcceptValue);
-            }
-        }
-        return true;
     }
 
     /**
