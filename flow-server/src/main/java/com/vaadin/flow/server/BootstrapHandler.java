@@ -926,7 +926,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 throw new BootstrapException("Unable to append bundle", e);
             }
 
-            if (context.getPushMode().isEnabled()) {
+            if (context.getPushMode().isEnabled() || !context.isProductionMode()) {
                 head.appendChild(
                         createJavaScriptElement(getPushScript(context)));
             }
