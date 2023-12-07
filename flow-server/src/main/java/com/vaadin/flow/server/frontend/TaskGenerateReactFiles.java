@@ -18,10 +18,16 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
+import org.apache.commons.io.Charsets;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -79,6 +85,24 @@ public class TaskGenerateReactFiles implements FallibleCommand {
 
             if (!routesTsx.exists()) {
                 writeFile(routesTsx, getFileContent("routes.tsx"));
+            } else {
+                String routesContent = FileUtils.readFileToString(routesTsx,
+                        UTF_8);
+                Pattern serverImport = Pattern.compile(
+                        "import[\\s\\S]?\\{[\\s\\S]?serverSideRoutes[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow\\1;");
+                if (!serverImport.matcher(routesContent).matches()) {
+                    Logger logger = LoggerFactory
+                            .getLogger(TaskGenerateReactFiles.class);
+                    logger.error(
+                            "The server route definition is missing from the {} file",
+                            routesTsx.getPath());
+                    logger.error(
+                            "To have working Flow routes add the import 'import "
+                                    + "{serverSideRoutes} from \"Frontend/generated/flow/Flow\";' "
+                                    + "and the route '...serverSideRoutes' into the routes.");
+                    throw new ExecutionFailedException(
+                            "Faulty configuration of serverSideRoutes");
+                }
             }
             writeFile(flowTsx, getFileContent("Flow.tsx"));
         } catch (IOException e) {
