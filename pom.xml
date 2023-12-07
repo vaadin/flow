@@ -105,8 +105,8 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.3.2</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>9.2.0.beta1</testbench.version>
-        <jetty.version>12.0.3</jetty.version>
+        <testbench.version>9.2.0.rc1</testbench.version>
+        <jetty.version>12.0.4</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.5.0</build-helper-maven-plugin.version>
         <maven.version>3.9.6</maven.version>
@@ -267,7 +267,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>5.7.0</version>
+                <version>5.8.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
@@ -347,7 +347,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.6.2</version>
+                <version>3.6.3</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
