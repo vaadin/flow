@@ -79,6 +79,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                 "flow/Flow.tsx");
         File routesTsx = new File(frontendDirectory, "routes.tsx");
         try {
+            writeFile(flowTsx, getFileContent("Flow.tsx"));
             if (!appTsx.exists()) {
                 writeFile(appTsx, getFileContent("App.tsx"));
             }
@@ -104,7 +105,6 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                             "Faulty configuration of serverSideRoutes");
                 }
             }
-            writeFile(flowTsx, getFileContent("Flow.tsx"));
         } catch (IOException e) {
             throw new ExecutionFailedException("Failed to read file content",
                     e);
