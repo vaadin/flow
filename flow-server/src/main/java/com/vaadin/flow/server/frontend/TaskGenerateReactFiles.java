@@ -67,23 +67,17 @@ public class TaskGenerateReactFiles implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        File appTsx = new File(
-                new File(frontendDirectory, FrontendUtils.GENERATED),
-                "flow/App.tsx");
+        File appTsx = new File(frontendDirectory, "App.tsx");
         File flowTsx = new File(
                 new File(frontendDirectory, FrontendUtils.GENERATED),
                 "flow/Flow.tsx");
-        File routesTsx = new File(
-                new File(frontendDirectory, FrontendUtils.GENERATED),
-                "flow/routes.tsx");
+        File routesTsx = new File(frontendDirectory, "routes.tsx");
         try {
-            if (!Path.of(frontendDirectory.getPath(), "App.tsx").toFile()
-                    .exists()) {
+            if (!appTsx.exists()) {
                 writeFile(appTsx, getFileContent("App.tsx"));
             }
 
-            if (!Path.of(frontendDirectory.getPath(), "routes.tsx").toFile()
-                    .exists()) {
+            if (!routesTsx.exists()) {
                 writeFile(routesTsx, getFileContent("routes.tsx"));
             }
             writeFile(flowTsx, getFileContent("Flow.tsx"));
