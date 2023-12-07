@@ -167,6 +167,8 @@ public class StateNode implements Serializable {
     private boolean hasBeenAttached;
     private boolean hasBeenDetached;
 
+    private boolean detaching;
+
     private boolean isInactiveSelf;
 
     private boolean isInitialChanges = true;
@@ -342,7 +344,12 @@ public class StateNode implements Serializable {
         for (StateNode node : nodes) {
             if (node.hasBeenAttached) {
                 node.hasBeenDetached = true;
-                node.fireDetachListeners();
+                detaching = true;
+                try {
+                    node.fireDetachListeners();
+                } finally {
+                    detaching = false;
+                }
             }
         }
     }
@@ -902,7 +909,7 @@ public class StateNode implements Serializable {
      */
     public void runWhenAttached(SerializableConsumer<UI> command) {
 
-        if (isAttached()) {
+        if (isAttached() && !detaching) {
             command.accept(getUI());
         } else {
             addAttachListener(new Command() {
