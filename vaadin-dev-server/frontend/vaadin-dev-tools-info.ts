@@ -4,7 +4,7 @@ import { copy } from './copy-to-clipboard.js';
 
 import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { ConnectionStatus } from './connection';
+import { ConnectionStatus } from './websocket-connection.js';
 
 import { MessageType, VaadinDevTools } from './vaadin-dev-tools.js';
 

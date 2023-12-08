@@ -5,7 +5,7 @@ export enum ConnectionStatus {
   ERROR = 'error'
 }
 
-export class Connection extends Object {
+export class WebSocketConnection extends Object {
   static HEARTBEAT_INTERVAL = 180000;
 
   status: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
@@ -30,7 +30,7 @@ export class Connection extends Object {
       if (this.webSocket && self.status !== ConnectionStatus.ERROR && this.status !== ConnectionStatus.UNAVAILABLE) {
         this.webSocket.send('');
       }
-    }, Connection.HEARTBEAT_INTERVAL);
+    }, WebSocketConnection.HEARTBEAT_INTERVAL);
   }
 
   onHandshake() {

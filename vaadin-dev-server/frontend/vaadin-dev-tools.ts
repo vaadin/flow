@@ -1,17 +1,17 @@
+import { Overlay, OverlayOutsideClickEvent } from '@vaadin/overlay';
 import 'construct-style-sheets-polyfill';
 import { css, html, LitElement, nothing, PropertyValueMap, render, TemplateResult } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { Overlay, OverlayOutsideClickEvent } from '@vaadin/overlay';
 import { ComponentPicker } from './component-picker';
 import { ComponentReference, deepContains } from './component-util';
+import { handleLicenseMessage, licenseCheckFailed, licenseInit, Product } from './License';
+import { popupStyles } from './styles';
 import './theme-editor/editor';
 import { ThemeEditorState } from './theme-editor/model';
-import { handleLicenseMessage, licenseCheckFailed, licenseInit, Product } from './License';
-import { Connection, ConnectionStatus } from './connection';
-import { popupStyles } from './styles';
-import './vaadin-dev-tools-log';
 import './vaadin-dev-tools-info';
+import './vaadin-dev-tools-log';
+import { ConnectionStatus, WebSocketConnection } from './websocket-connection';
 
 /**
  * Plugin API for the dev tools window.
@@ -868,8 +868,8 @@ export class VaadinDevTools extends LitElement {
   @state()
   themeEditorState: ThemeEditorState = ThemeEditorState.disabled;
 
-  private javaConnection?: Connection;
-  private frontendConnection?: Connection;
+  private javaConnection?: WebSocketConnection;
+  private frontendConnection?: WebSocketConnection;
 
   private nextMessageId: number = 1;
 
@@ -924,7 +924,7 @@ export class VaadinDevTools extends LitElement {
       }
     };
 
-    const frontendConnection = new Connection(this.getDedicatedWebSocketUrl());
+    const frontendConnection = new WebSocketConnection(this.getDedicatedWebSocketUrl());
     frontendConnection.onHandshake = () => {
       this.log(MessageType.LOG, 'Vaadin development mode initialized');
       if (!VaadinDevTools.isActive) {
@@ -941,9 +941,9 @@ export class VaadinDevTools extends LitElement {
     frontendConnection.onMessage = (message: any) => this.handleFrontendMessage(message);
     this.frontendConnection = frontendConnection;
 
-    let javaConnection: Connection;
+    let javaConnection: WebSocketConnection;
     if (this.conf.backend === VaadinDevTools.SPRING_BOOT_DEVTOOLS) {
-      javaConnection = new Connection(this.getSpringBootWebSocketUrl(window.location));
+      javaConnection = new WebSocketConnection(this.getSpringBootWebSocketUrl(window.location));
       javaConnection.onHandshake = () => {
         if (!VaadinDevTools.isActive) {
           javaConnection.setActive(false);
@@ -954,7 +954,7 @@ export class VaadinDevTools extends LitElement {
     } else if (this.conf.backend === VaadinDevTools.JREBEL || this.conf.backend === VaadinDevTools.HOTSWAP_AGENT) {
       javaConnection = frontendConnection;
     } else {
-      javaConnection = new Connection(undefined);
+      javaConnection = new WebSocketConnection(undefined);
     }
     const prevOnStatusChange = javaConnection.onStatusChange;
     javaConnection.onStatusChange = (status) => {

@@ -16,7 +16,7 @@ import {
 import { detectElementDisplayName, detectTheme } from './detector';
 import { ThemePropertyValueChangeEvent } from './components/editors/base-property-editor';
 import { themePreview } from './preview';
-import { Connection } from '../connection';
+import { WebSocketConnection } from '../websocket-connection';
 import { ThemeEditorApi } from './api';
 import { ThemeEditorHistory, ThemeEditorHistoryActions } from './history';
 import { ScopeChangeEvent } from './components/scope-selector';
@@ -47,7 +47,7 @@ export class ThemeEditor extends LitElement {
   @property({})
   public pickerProvider!: PickerProvider;
   @property({})
-  public connection!: Connection;
+  public connection!: WebSocketConnection;
   private api!: ThemeEditorApi;
   private history!: ThemeEditorHistory;
   @state()
