@@ -1,14 +1,8 @@
-export enum ConnectionStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  UNAVAILABLE = 'unavailable',
-  ERROR = 'error'
-}
+import { Connection, ConnectionStatus } from './connection';
 
-export class WebSocketConnection extends Object {
+export class WebSocketConnection extends Connection {
   static HEARTBEAT_INTERVAL = 180000;
 
-  status: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
   webSocket?: WebSocket;
 
   constructor(url?: string) {
@@ -33,23 +27,11 @@ export class WebSocketConnection extends Object {
     }, WebSocketConnection.HEARTBEAT_INTERVAL);
   }
 
-  onHandshake() {
-    // Intentionally empty
-  }
-
   onReload() {
     // Intentionally empty
   }
 
   onUpdate(_path: string, _content: string) {
-    // Intentionally empty
-  }
-
-  onConnectionError(_: string) {
-    // Intentionally empty
-  }
-
-  onStatusChange(_: ConnectionStatus) {
     // Intentionally empty
   }
 
@@ -96,21 +78,6 @@ export class WebSocketConnection extends Object {
       this.onConnectionError(`Error in WebSocket connection to ${this.webSocket.url}`);
     } else {
       this.onConnectionError(msg);
-    }
-  }
-
-  setActive(yes: boolean) {
-    if (!yes && this.status === ConnectionStatus.ACTIVE) {
-      this.setStatus(ConnectionStatus.INACTIVE);
-    } else if (yes && this.status === ConnectionStatus.INACTIVE) {
-      this.setStatus(ConnectionStatus.ACTIVE);
-    }
-  }
-
-  setStatus(status: ConnectionStatus) {
-    if (this.status !== status) {
-      this.status = status;
-      this.onStatusChange(status);
     }
   }
 
