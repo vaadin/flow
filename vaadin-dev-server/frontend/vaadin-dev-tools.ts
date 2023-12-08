@@ -7,7 +7,7 @@ import { ComponentPicker } from './component-picker';
 import { ComponentReference, deepContains } from './component-util';
 import './theme-editor/editor';
 import { ThemeEditorState } from './theme-editor/model';
-import { licenseCheckFailed, licenseInit, Product } from './License';
+import { handleLicenseMessage, licenseCheckFailed, licenseInit, Product } from './License';
 import { Connection, ConnectionStatus } from './connection';
 import { popupStyles } from './styles';
 import './vaadin-dev-tools-log';
@@ -893,7 +893,7 @@ export class VaadinDevTools extends LitElement {
     }
 
     if (this.frontendConnection) {
-      this.frontendConnection.sendTelemetry(data);
+      this.frontendConnection.send('reportTelemetry', { browserData: data });
     }
   }
 
@@ -901,8 +901,8 @@ export class VaadinDevTools extends LitElement {
     this.frontendStatus = ConnectionStatus.UNAVAILABLE;
     this.javaStatus = ConnectionStatus.UNAVAILABLE;
     if (!this.conf.token) {
-        console.error("Dev tools functionality denied for this host.");
-        return;
+      console.error('Dev tools functionality denied for this host.');
+      return;
     }
     const onConnectionError = (msg: string) => this.log(MessageType.ERROR, msg);
     const onReload = () => {
@@ -996,9 +996,9 @@ export class VaadinDevTools extends LitElement {
       }
     }
 
-    if (message?.command === 'featureFlags') {
+    if (message.command === 'featureFlags') {
       this.features = message.data.features as Feature[];
-    } else if (message?.command === 'themeEditorState') {
+    } else if (message.command === 'themeEditorState') {
       const isFlowApp = !!(window as any).Vaadin.Flow;
       this.themeEditorState = message.data;
       if (isFlowApp && this.themeEditorState !== ThemeEditorState.disabled) {
@@ -1009,6 +1009,7 @@ export class VaadinDevTools extends LitElement {
         });
         this.requestUpdate();
       }
+    } else if (handleLicenseMessage(message)) {
     } else {
       this.unhandledMessages.push(message);
     }
@@ -1182,13 +1183,13 @@ export class VaadinDevTools extends LitElement {
 
   checkLicense(productInfo: Product) {
     if (this.frontendConnection) {
-      this.frontendConnection.sendLicenseCheck(productInfo);
+      this.frontendConnection.send('checkLicense', productInfo);
     } else {
       licenseCheckFailed({ message: 'Internal error: no connection', product: productInfo });
     }
   }
 
-  log(type: MessageType, message: string, details?: string, link?: string, dontShowAgainMessage?:string) {
+  log(type: MessageType, message: string, details?: string, link?: string, dontShowAgainMessage?: string) {
     const id = this.nextMessageId;
     this.nextMessageId += 1;
     this.messages.push({
@@ -1217,7 +1218,14 @@ export class VaadinDevTools extends LitElement {
     });
   }
 
-  showNotification(type: MessageType, message: string, details?: string, link?: string, persistentId?: string, dontShowAgainMessage?:string) {
+  showNotification(
+    type: MessageType,
+    message: string,
+    details?: string,
+    link?: string,
+    persistentId?: string,
+    dontShowAgainMessage?: string
+  ) {
     if (persistentId === undefined || !VaadinDevTools.notificationDismissed(persistentId!)) {
       // Do not open persistent message if another is already visible with the same persistentId
       const matchingVisibleNotifications = this.notifications
@@ -1345,7 +1353,7 @@ export class VaadinDevTools extends LitElement {
                 class="persist ${messageObject.dontShowAgain ? 'on' : 'off'}"
                 @click=${() => this.toggleDontShowAgain(messageObject.id)}
               >
-              ${messageObject.dontShowAgainMessage || 'Don’t show again'}
+                ${messageObject.dontShowAgainMessage || 'Don’t show again'}
               </div>`
             : ''}
         </div>
@@ -1422,7 +1430,7 @@ export class VaadinDevTools extends LitElement {
         }}
       ></vaadin-dev-tools-component-picker>
       <div
-      style="display: var(--dev-tools-button-display, 'block')"
+        style="display: var(--dev-tools-button-display, 'block')"
         class="dev-tools ${this.splashMessage ? 'active' : ''}${this.unreadErrors ? ' error' : ''}"
         @click=${() => this.toggleExpanded()}
       >
@@ -1565,9 +1573,9 @@ export class VaadinDevTools extends LitElement {
                 const serializableComponentRef: ComponentReference = { nodeId: component.nodeId, uiId: component.uiId };
                 const locationType = (this.renderRoot.querySelector('#locationType') as HTMLSelectElement).value;
                 if (locationType === 'create') {
-                  this.frontendConnection!.sendShowComponentCreateLocation(serializableComponentRef);
+                  this.frontendConnection!.send('showComponentCreateLocation', serializableComponentRef);
                 } else {
-                  this.frontendConnection!.sendShowComponentAttachLocation(serializableComponentRef);
+                  this.frontendConnection!.send('showComponentAttachLocation', serializableComponentRef);
                 }
               }
             });
@@ -1623,7 +1631,7 @@ export class VaadinDevTools extends LitElement {
   toggleFeatureFlag(e: Event, feature: Feature) {
     const enabled = (e.target! as HTMLInputElement).checked;
     if (this.frontendConnection) {
-      this.frontendConnection.setFeature(feature.id, enabled);
+      this.frontendConnection.send('setFeature', { featureId: feature.id, enabled });
       this.showNotification(
         MessageType.INFORMATION,
         `“${feature.title}” ${enabled ? 'enabled' : 'disabled'}`,
