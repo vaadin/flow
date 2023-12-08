@@ -16,6 +16,7 @@
 package com.vaadin.base.devserver;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,10 +27,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +47,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
@@ -67,7 +71,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
     private VaadinContext context;
 
     private final ConcurrentLinkedQueue<WeakReference<AtmosphereResource>> atmosphereResources = new ConcurrentLinkedQueue<>();
-
+    private final ConcurrentHashMap<AtmosphereResource, FragmentedMessage> fragmentedMessages = new ConcurrentHashMap<>();
     private Backend backend = null;
 
     private static final EnumMap<Backend, List<String>> IDENTIFIER_CLASSES = new EnumMap<>(
@@ -261,6 +265,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
                     "Push connection {} is not a live-reload connection or already closed",
                     uuid);
         }
+        fragmentedMessages.remove(resource);
     }
 
     @Override
@@ -376,6 +381,24 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(DebugWindowConnection.class.getName());
+    }
+
+    @Override
+    public FragmentedMessage getOrCreateFragmentedMessage(
+            AtmosphereRequest request, Reader reader) throws IOException {
+        return fragmentedMessages.computeIfAbsent(request.resource(), res -> {
+            try {
+                return new FragmentedMessage(reader);
+            } catch (IOException e) {
+                getLogger().error("Error creating message fragment", e);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void clearFragmentedMessage(AtmosphereRequest request) {
+        fragmentedMessages.remove(request.resource());
     }
 
 }

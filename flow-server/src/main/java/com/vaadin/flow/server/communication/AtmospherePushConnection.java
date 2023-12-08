@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.BroadcastFilterAdapter;
@@ -47,7 +48,8 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class AtmospherePushConnection implements PushConnection {
+public class AtmospherePushConnection
+        implements PushConnection, FragmentedMessageHolder {
 
     private UI ui;
     private transient State state = State.DISCONNECTED;
@@ -60,7 +62,7 @@ public class AtmospherePushConnection implements PushConnection {
     /**
      * Represents a message that can arrive as multiple fragments.
      */
-    protected static class FragmentedMessage implements Serializable {
+    public static class FragmentedMessage implements Serializable {
         private final StringBuilder message = new StringBuilder();
         private final int messageLength;
 
@@ -233,8 +235,12 @@ public class AtmospherePushConnection implements PushConnection {
      * received message, returns a {@link Reader} yielding the complete message.
      * Otherwise, returns null.
      *
+     * @param request
+     *            The atmosphere request with data
      * @param reader
-     *            A Reader from which to read the (partial) message
+     *            The request body reader
+     * @param holder
+     *            A holder for a previously received partial message
      * @return A Reader yielding a complete message or null if the message is
      *         not yet complete.
      * @throws IOException
@@ -242,22 +248,20 @@ public class AtmospherePushConnection implements PushConnection {
      * @return a Reader yielding the complete message, or {@code null} if the
      *         received message was a partial message
      */
-    protected Reader receiveMessage(Reader reader) throws IOException {
+    protected static Reader receiveMessage(AtmosphereRequest request,
+            Reader reader, FragmentedMessageHolder holder) throws IOException {
 
+        AtmosphereResource resource = request.resource();
         if (resource == null || resource.transport() != TRANSPORT.WEBSOCKET) {
             return reader;
         }
 
-        if (incomingMessage == null) {
-            // No existing partially received message
-            incomingMessage = new FragmentedMessage(reader);
-        }
-
-        if (incomingMessage.append(reader)) {
-            // Message is complete
-            Reader completeReader = incomingMessage.getReader();
-            incomingMessage = null;
-            return completeReader;
+        FragmentedMessage msg = holder.getOrCreateFragmentedMessage(request,
+                reader);
+        if (msg.append(reader)) {
+            Reader messageReader = msg.getReader();
+            holder.clearFragmentedMessage(request);
+            return messageReader;
         } else {
             // Only received a partial message
             return null;
@@ -391,6 +395,20 @@ public class AtmospherePushConnection implements PushConnection {
             state = State.DISCONNECTED;
         }
 
+    }
+
+    @Override
+    public FragmentedMessage getOrCreateFragmentedMessage(
+            AtmosphereRequest request, Reader reader) throws IOException {
+        if (incomingMessage == null) {
+            incomingMessage = new FragmentedMessage(reader);
+        }
+        return incomingMessage;
+    }
+
+    @Override
+    public void clearFragmentedMessage(AtmosphereRequest request) {
+        incomingMessage = null;
     }
 
     /**
