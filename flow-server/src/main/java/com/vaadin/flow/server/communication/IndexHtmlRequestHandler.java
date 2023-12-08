@@ -49,6 +49,7 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
@@ -60,6 +61,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -318,6 +320,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         indexDocument.head().insertChildren(0, elm);
     }
 
+    private static void addScriptSrc(Document indexDocument, String scriptUrl) {
+        Element elm = new Element(SCRIPT);
+        elm.attr(SCRIPT_INITIAL, "");
+        elm.attr("src", scriptUrl);
+        indexDocument.head().appendChild(elm);
+    }
+
     private void storeAppShellTitleToUI(Document indexDocument) {
         if (UI.getCurrent() != null) {
             Element elm = indexDocument.head().selectFirst("title");
@@ -365,6 +374,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     """, devToolsConf.toJson()));
 
         indexDocument.body().appendChild(new Element("vaadin-dev-tools"));
+
+        String pushUrl = BootstrapHandlerHelper.getServiceUrl(request) + "/"
+                + ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
+        addScriptSrc(indexDocument, pushUrl);
     }
 
     static boolean isAllowedDevToolsHost(AbstractConfiguration configuration,
