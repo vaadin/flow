@@ -18,10 +18,16 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
+import org.apache.commons.io.Charsets;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -54,6 +60,26 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class TaskGenerateReactFiles implements FallibleCommand {
 
     private final File frontendDirectory;
+    protected static String NO_IMPORT = """
+            Faulty configuration of serverSideRoutes.
+            The server route definition is missing from the '%1$s' file
+
+            To have working Flow routes add the following to the '%1$s' file:
+            - import line 'import {serverSideRoutes} from 'Frontend/generated/flow/Flow';'
+            - route '...serverSideRoutes' into the routes definition
+            Hybrid example with client main layout wrapper:
+
+                export const routes = [
+                  {
+                    element: <MainLayout />,
+                    handle: { title: 'Main' },
+                    children: [
+                      { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World' } },
+                      ...serverSideRoutes
+                    ],
+                  },
+                ] as RouteObject[];
+            """;
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
@@ -73,14 +99,23 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                 "flow/Flow.tsx");
         File routesTsx = new File(frontendDirectory, "routes.tsx");
         try {
+            writeFile(flowTsx, getFileContent("Flow.tsx"));
             if (!appTsx.exists()) {
                 writeFile(appTsx, getFileContent("App.tsx"));
             }
 
             if (!routesTsx.exists()) {
                 writeFile(routesTsx, getFileContent("routes.tsx"));
+            } else {
+                String routesContent = FileUtils.readFileToString(routesTsx,
+                        UTF_8);
+                Pattern serverImport = Pattern.compile(
+                        "import[\\s\\S]?\\{[\\s\\S]?serverSideRoutes[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow\\1;");
+                if (!serverImport.matcher(routesContent).find()) {
+                    throw new ExecutionFailedException(
+                            String.format(NO_IMPORT, routesTsx.getPath()));
+                }
             }
-            writeFile(flowTsx, getFileContent("Flow.tsx"));
         } catch (IOException e) {
             throw new ExecutionFailedException("Failed to read file content",
                     e);
