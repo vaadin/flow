@@ -64,7 +64,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             Faulty configuration of serverSideRoutes.
             The server route definition is missing from the '%s' file
 
-            To have working Flow routes add the import 'import "{serverSideRoutes} from \\"Frontend/generated/flow/Flow\\";'
+            To have working Flow routes add the import 'import {serverSideRoutes} from \\"Frontend/generated/flow/Flow\\";'
             and add the route '...serverSideRoutes' into the routes definition.
             """;
 
