@@ -103,8 +103,7 @@ public class TaskGenerateReactFilesTest {
     }
 
     @Test
-    public void routesMissingImport_expectionThrown()
-            throws IOException, ExecutionFailedException {
+    public void routesMissingImport_expectionThrown() throws IOException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
