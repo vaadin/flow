@@ -222,7 +222,7 @@ export class ThemeEditor extends LitElement {
           this.handleUndo();
         }
       }
-    }
+    };
 
     // When the theme is updated due to HMR, remove optimistic updates from
     // theme preview. Also refresh the base theme as default property values may
@@ -233,8 +233,14 @@ export class ThemeEditor extends LitElement {
     });
 
     document.addEventListener('keydown', this.undoRedoListener);
+  }
 
+  activate() {
     this.dispatchEvent(new CustomEvent('before-open'));
+  }
+
+  deactivate() {
+    this.dispatchEvent(new CustomEvent('after-close'));
   }
 
   protected update(changedProperties: PropertyValues) {
@@ -260,8 +266,6 @@ export class ThemeEditor extends LitElement {
     componentOverlayManager.reset();
 
     document.removeEventListener('keydown', this.undoRedoListener);
-
-    this.dispatchEvent(new CustomEvent('after-close'));
   }
 
   render() {
