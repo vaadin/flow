@@ -1,6 +1,3 @@
-import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product } from './License';
-import { ComponentReference } from './component-util';
-
 export enum ConnectionStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
@@ -86,12 +83,6 @@ export class Connection extends Object {
       if (this.status === ConnectionStatus.ACTIVE) {
         this.onUpdate(json.path, json.content);
       }
-    } else if (json.command === 'license-check-ok') {
-      licenseCheckOk(json.data);
-    } else if (json.command === 'license-check-failed') {
-      licenseCheckFailed(json.data);
-    } else if (json.command === 'license-check-nokey') {
-      licenseCheckNoKey(json.data);
     } else {
       this.onMessage(json);
     }
@@ -133,25 +124,5 @@ export class Connection extends Object {
     } else {
       this.webSocket.send(message);
     }
-  }
-
-  setFeature(featureId: string, enabled: boolean) {
-    this.send('setFeature', { featureId, enabled });
-  }
-
-  sendTelemetry(browserData: any) {
-    this.send('reportTelemetry', { browserData });
-  }
-
-  sendLicenseCheck(product: Product) {
-    this.send('checkLicense', product);
-  }
-
-  sendShowComponentCreateLocation(component: ComponentReference) {
-    this.send('showComponentCreateLocation', component);
-  }
-
-  sendShowComponentAttachLocation(component: ComponentReference) {
-    this.send('showComponentAttachLocation', component);
   }
 }

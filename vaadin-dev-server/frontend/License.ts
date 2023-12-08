@@ -1,3 +1,5 @@
+import { ServerMessage } from "./vaadin-dev-tools";
+
 const noLicenseFallbackTimeout = 1000;
 
 export interface Product {
@@ -137,6 +139,21 @@ export const licenseCheckNoKey = (data: ProductAndMessage) => {
     });
   }
 };
+
+export const handleLicenseMessage = (message:ServerMessage):boolean =>{
+if (message.command === 'license-check-ok') {
+    licenseCheckOk(message.data);
+    return true;
+  } else if (message.command === 'license-check-failed') {
+    licenseCheckFailed(message.data);
+    return true;
+  } else if (message.command === 'license-check-nokey') {
+    licenseCheckNoKey(message.data);
+    return true;
+  }
+
+  return false;
+}
 
 export const licenseInit = () => {
   // Process already registered elements
