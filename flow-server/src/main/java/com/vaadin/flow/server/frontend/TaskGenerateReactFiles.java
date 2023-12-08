@@ -68,7 +68,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             - import line 'import {serverSideRoutes} from 'Frontend/generated/flow/Flow';'
             - route '...serverSideRoutes' into the routes definition
             Hybrid example with client main layout wrapper:
-            
+
                 export const routes = [
                   {
                     element: <MainLayout />,
