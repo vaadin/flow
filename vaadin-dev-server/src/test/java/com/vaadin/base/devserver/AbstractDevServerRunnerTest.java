@@ -100,6 +100,7 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
     @Test
     public void shouldPassEncodedUrlToDevServer() throws Exception {
         handler = new DummyRunner();
+        waitForDevServer();
         DevModeHandler devServer = Mockito.spy(handler);
 
         HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
