@@ -60,6 +60,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class TaskGenerateReactFiles implements FallibleCommand {
 
     private final File frontendDirectory;
+    protected static String NO_IMPORT = """
+            Faulty configuration of serverSideRoutes.
+            The server route definition is missing from the '%s' file
+
+            To have working Flow routes add the import 'import "{serverSideRoutes} from \\"Frontend/generated/flow/Flow\\";'
+            and add the route '...serverSideRoutes' into the routes definition.
+            """;
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
@@ -91,18 +98,9 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                         UTF_8);
                 Pattern serverImport = Pattern.compile(
                         "import[\\s\\S]?\\{[\\s\\S]?serverSideRoutes[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow\\1;");
-                if (!serverImport.matcher(routesContent).matches()) {
-                    Logger logger = LoggerFactory
-                            .getLogger(TaskGenerateReactFiles.class);
-                    logger.error(
-                            "The server route definition is missing from the {} file",
-                            routesTsx.getPath());
-                    logger.error(
-                            "To have working Flow routes add the import 'import "
-                                    + "{serverSideRoutes} from \"Frontend/generated/flow/Flow\";' "
-                                    + "and the route '...serverSideRoutes' into the routes.");
+                if (!serverImport.matcher(routesContent).find()) {
                     throw new ExecutionFailedException(
-                            "Faulty configuration of serverSideRoutes");
+                            String.format(NO_IMPORT, routesTsx.getPath()));
                 }
             }
         } catch (IOException e) {
