@@ -62,10 +62,23 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     private final File frontendDirectory;
     protected static String NO_IMPORT = """
             Faulty configuration of serverSideRoutes.
-            The server route definition is missing from the '%s' file
+            The server route definition is missing from the '%1$s' file
 
-            To have working Flow routes add the import 'import {serverSideRoutes} from \\"Frontend/generated/flow/Flow\\";'
-            and add the route '...serverSideRoutes' into the routes definition.
+            To have working Flow routes add the following to the '%1$s' file:
+            - import line 'import {serverSideRoutes} from 'Frontend/generated/flow/Flow';'
+            - route '...serverSideRoutes' into the routes definition
+            Hybrid example with client main layout wrapper:
+            
+                export const routes = [
+                  {
+                    element: <MainLayout />,
+                    handle: { title: 'Main' },
+                    children: [
+                      { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World' } },
+                      ...serverSideRoutes
+                    ],
+                  },
+                ] as RouteObject[];
             """;
 
     /**
