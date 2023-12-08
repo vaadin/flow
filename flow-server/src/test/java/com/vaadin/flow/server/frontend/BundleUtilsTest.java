@@ -23,6 +23,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
 public class BundleUtilsTest {
@@ -80,6 +81,19 @@ public class BundleUtilsTest {
         Assert.assertTrue(
                 bundleImports.contains("@foo/bar/theme/lumo/file.js"));
         Assert.assertTrue(bundleImports.contains("@foo/bar/src/file.js"));
+    }
+
+    @Test
+    public void themeVariantsFromJarHandled() {
+        mockStatsJson("Frontend/generated/jar-resources/theme/lumo/file.js",
+                "Frontend/generated/jar-resources/theme/material/file.js");
+        Set<String> bundleImports = BundleUtils.loadBundleImports();
+
+        Assert.assertTrue(bundleImports.contains(
+                "Frontend/generated/jar-resources/theme/lumo/file.js"));
+        Assert.assertTrue(bundleImports.contains(
+                "Frontend/generated/jar-resources/theme/material/file.js"));
+        Assert.assertTrue(bundleImports.contains("./src/file.js"));
     }
 
     private void mockStatsJson(String... imports) {
