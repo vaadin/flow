@@ -1601,12 +1601,13 @@ export class VaadinDevTools extends LitElement {
     </div>`;
   }
 
-  disableJavaLiveReload() {
-    this.javaConnection?.setActive(false);
-  }
-
-  enableJavaLiveReload() {
-    this.javaConnection?.setActive(true);
+  setJavaLiveReloadActive(active: boolean) {
+    // Java reload either goes through the direct connection to live reload, or then through the shared websocket connection
+    if (this.javaConnection) {
+      this.javaConnection.setActive(active);
+    } else {
+      this.frontendConnection?.setActive(active);
+    }
   }
 
   renderThemeEditor() {
@@ -1615,8 +1616,8 @@ export class VaadinDevTools extends LitElement {
       .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
       .connection=${this.frontendConnection}
-      @before-open=${this.disableJavaLiveReload}
-      @after-close=${this.enableJavaLiveReload}
+      @before-open=${() => this.setJavaLiveReloadActive(false)}
+      @after-close=${() => this.setJavaLiveReloadActive(true)}
     ></vaadin-dev-tools-theme-editor>`;
   }
 
