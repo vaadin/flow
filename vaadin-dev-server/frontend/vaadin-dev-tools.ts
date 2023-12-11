@@ -1,17 +1,19 @@
+import { Overlay, OverlayOutsideClickEvent } from '@vaadin/overlay';
 import 'construct-style-sheets-polyfill';
-import { css, html, LitElement, nothing, PropertyValueMap, render, TemplateResult } from 'lit';
+import { LitElement, PropertyValueMap, TemplateResult, css, html, nothing, render } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { Overlay, OverlayOutsideClickEvent } from '@vaadin/overlay';
+import { Product, handleLicenseMessage, licenseCheckFailed, licenseInit } from './License';
 import { ComponentPicker } from './component-picker';
 import { ComponentReference, deepContains } from './component-util';
+import { ConnectionStatus } from './connection';
+import { LiveReloadConnection } from './live-reload-connection';
+import { popupStyles } from './styles';
 import './theme-editor/editor';
 import { ThemeEditorState } from './theme-editor/model';
-import { handleLicenseMessage, licenseCheckFailed, licenseInit, Product } from './License';
-import { Connection, ConnectionStatus } from './connection';
-import { popupStyles } from './styles';
-import './vaadin-dev-tools-log';
 import './vaadin-dev-tools-info';
+import './vaadin-dev-tools-log';
+import { WebSocketConnection } from './websocket-connection';
 
 /**
  * Plugin API for the dev tools window.
@@ -868,8 +870,8 @@ export class VaadinDevTools extends LitElement {
   @state()
   themeEditorState: ThemeEditorState = ThemeEditorState.disabled;
 
-  private javaConnection?: Connection;
-  private frontendConnection?: Connection;
+  private javaConnection?: LiveReloadConnection;
+  private frontendConnection?: WebSocketConnection;
 
   private nextMessageId: number = 1;
 
@@ -924,7 +926,7 @@ export class VaadinDevTools extends LitElement {
       }
     };
 
-    const frontendConnection = new Connection(this.getDedicatedWebSocketUrl());
+    const frontendConnection = new WebSocketConnection(this.getDedicatedWebSocketUrl());
     frontendConnection.onHandshake = () => {
       this.log(MessageType.LOG, 'Vaadin development mode initialized');
       if (!VaadinDevTools.isActive) {
@@ -941,37 +943,27 @@ export class VaadinDevTools extends LitElement {
     frontendConnection.onMessage = (message: any) => this.handleFrontendMessage(message);
     this.frontendConnection = frontendConnection;
 
-    let javaConnection: Connection;
     if (this.conf.backend === VaadinDevTools.SPRING_BOOT_DEVTOOLS) {
-      javaConnection = new Connection(this.getSpringBootWebSocketUrl(window.location));
-      javaConnection.onHandshake = () => {
+      this.javaConnection = new LiveReloadConnection(this.getSpringBootWebSocketUrl(window.location));
+      this.javaConnection.onHandshake = () => {
         if (!VaadinDevTools.isActive) {
-          javaConnection.setActive(false);
+          this.javaConnection!.setActive(false);
         }
       };
-      javaConnection.onReload = onReload;
-      javaConnection.onConnectionError = onConnectionError;
-    } else if (this.conf.backend === VaadinDevTools.JREBEL || this.conf.backend === VaadinDevTools.HOTSWAP_AGENT) {
-      javaConnection = frontendConnection;
-    } else {
-      javaConnection = new Connection(undefined);
+      this.javaConnection.onReload = onReload;
+      this.javaConnection.onConnectionError = onConnectionError;
+      this.javaConnection.onStatusChange = (status) => {
+        this.javaStatus = status;
+      };
+      this.javaConnection.onHandshake = () => {
+        if (this.conf.backend) {
+          this.log(
+            MessageType.INFORMATION,
+            `Java live reload available: ${VaadinDevTools.BACKEND_DISPLAY_NAME[this.conf.backend]}`
+          );
+        }
+      };
     }
-    const prevOnStatusChange = javaConnection.onStatusChange;
-    javaConnection.onStatusChange = (status) => {
-      prevOnStatusChange(status);
-      this.javaStatus = status;
-    };
-    const prevOnHandshake = javaConnection.onHandshake;
-    javaConnection.onHandshake = () => {
-      prevOnHandshake();
-      if (this.conf.backend) {
-        this.log(
-          MessageType.INFORMATION,
-          `Java live reload available: ${VaadinDevTools.BACKEND_DISPLAY_NAME[this.conf.backend]}`
-        );
-      }
-    };
-    this.javaConnection = javaConnection;
 
     if (!this.conf.backend) {
       this.showNotification(
@@ -1609,12 +1601,13 @@ export class VaadinDevTools extends LitElement {
     </div>`;
   }
 
-  disableJavaLiveReload() {
-    this.javaConnection?.setActive(false);
-  }
-
-  enableJavaLiveReload() {
-    this.javaConnection?.setActive(true);
+  setJavaLiveReloadActive(active: boolean) {
+    // Java reload either goes through the direct connection to live reload, or then through the shared websocket connection
+    if (this.javaConnection) {
+      this.javaConnection.setActive(active);
+    } else {
+      this.frontendConnection?.setActive(active);
+    }
   }
 
   renderThemeEditor() {
@@ -1623,8 +1616,8 @@ export class VaadinDevTools extends LitElement {
       .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
       .connection=${this.frontendConnection}
-      @before-open=${this.disableJavaLiveReload}
-      @after-close=${this.enableJavaLiveReload}
+      @before-open=${() => this.setJavaLiveReloadActive(false)}
+      @after-close=${() => this.setJavaLiveReloadActive(true)}
     ></vaadin-dev-tools-theme-editor>`;
   }
 
