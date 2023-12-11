@@ -1,9 +1,9 @@
 package com.vaadin.flow.server;
 
 /**
- * The strategy for session lock checking in production mode.
+ * Available strategies for session lock checking.
  */
-public enum LockCheckStrategy {
+public enum SessionLockCheckStrategy {
     /**
      * The default strategy, runs Java `assert` statement. Does nothing when
      * assertions are disabled (the default for JVM).
@@ -22,7 +22,8 @@ public enum LockCheckStrategy {
         @Override
         public void checkHasLock(VaadinSession session, String message) {
             if (!session.hasLock()) {
-                session.getLogger().warn(message);
+                session.getLogger().warn(message,
+                        new IllegalStateException(message));
             }
         }
     },
@@ -38,8 +39,6 @@ public enum LockCheckStrategy {
             }
         }
     };
-
-    public static final LockCheckStrategy DEFAULT = ASSERT;
 
     /**
      * Potentially checks whether this session is currently locked by the

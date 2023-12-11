@@ -61,6 +61,7 @@ public open class VaadinCleanTask : DefaultTask() {
                 config.frontendDirectory.get().resolve("generated").absolutePath,
                 "${project.projectDir}/node_modules",
                 "${project.projectDir}/${Constants.BUNDLE_LOCATION}",
+                "${project.projectDir}/src/main/dev-bundle/",
                 "${project.projectDir}/package-lock.json",
                 "${project.projectDir}/webpack.generated.js",
                 "${project.projectDir}/vite.generated.js",

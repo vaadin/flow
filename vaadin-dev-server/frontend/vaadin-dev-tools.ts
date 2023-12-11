@@ -1,17 +1,19 @@
+import { Overlay, OverlayOutsideClickEvent } from '@vaadin/overlay';
 import 'construct-style-sheets-polyfill';
-import { css, html, LitElement, nothing, PropertyValueMap, render, TemplateResult } from 'lit';
+import { LitElement, PropertyValueMap, TemplateResult, css, html, nothing, render } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { Overlay, OverlayOutsideClickEvent } from '@vaadin/overlay';
+import { Product, handleLicenseMessage, licenseCheckFailed, licenseInit } from './License';
 import { ComponentPicker } from './component-picker';
 import { ComponentReference, deepContains } from './component-util';
+import { ConnectionStatus } from './connection';
+import { LiveReloadConnection } from './live-reload-connection';
+import { popupStyles } from './styles';
 import './theme-editor/editor';
 import { ThemeEditorState } from './theme-editor/model';
-import { licenseCheckFailed, licenseInit, Product } from './License';
-import { Connection, ConnectionStatus } from './connection';
-import { popupStyles } from './styles';
-import './vaadin-dev-tools-log';
 import './vaadin-dev-tools-info';
+import './vaadin-dev-tools-log';
+import { WebSocketConnection } from './websocket-connection';
 
 /**
  * Plugin API for the dev tools window.
@@ -868,8 +870,8 @@ export class VaadinDevTools extends LitElement {
   @state()
   themeEditorState: ThemeEditorState = ThemeEditorState.disabled;
 
-  private javaConnection?: Connection;
-  private frontendConnection?: Connection;
+  private javaConnection?: LiveReloadConnection;
+  private frontendConnection?: WebSocketConnection;
 
   private nextMessageId: number = 1;
 
@@ -893,7 +895,7 @@ export class VaadinDevTools extends LitElement {
     }
 
     if (this.frontendConnection) {
-      this.frontendConnection.sendTelemetry(data);
+      this.frontendConnection.send('reportTelemetry', { browserData: data });
     }
   }
 
@@ -901,8 +903,8 @@ export class VaadinDevTools extends LitElement {
     this.frontendStatus = ConnectionStatus.UNAVAILABLE;
     this.javaStatus = ConnectionStatus.UNAVAILABLE;
     if (!this.conf.token) {
-        console.error("Dev tools functionality denied for this host.");
-        return;
+      console.error('Dev tools functionality denied for this host.');
+      return;
     }
     const onConnectionError = (msg: string) => this.log(MessageType.ERROR, msg);
     const onReload = () => {
@@ -924,7 +926,7 @@ export class VaadinDevTools extends LitElement {
       }
     };
 
-    const frontendConnection = new Connection(this.getDedicatedWebSocketUrl());
+    const frontendConnection = new WebSocketConnection(this.getDedicatedWebSocketUrl());
     frontendConnection.onHandshake = () => {
       this.log(MessageType.LOG, 'Vaadin development mode initialized');
       if (!VaadinDevTools.isActive) {
@@ -941,37 +943,27 @@ export class VaadinDevTools extends LitElement {
     frontendConnection.onMessage = (message: any) => this.handleFrontendMessage(message);
     this.frontendConnection = frontendConnection;
 
-    let javaConnection: Connection;
     if (this.conf.backend === VaadinDevTools.SPRING_BOOT_DEVTOOLS) {
-      javaConnection = new Connection(this.getSpringBootWebSocketUrl(window.location));
-      javaConnection.onHandshake = () => {
+      this.javaConnection = new LiveReloadConnection(this.getSpringBootWebSocketUrl(window.location));
+      this.javaConnection.onHandshake = () => {
         if (!VaadinDevTools.isActive) {
-          javaConnection.setActive(false);
+          this.javaConnection!.setActive(false);
         }
       };
-      javaConnection.onReload = onReload;
-      javaConnection.onConnectionError = onConnectionError;
-    } else if (this.conf.backend === VaadinDevTools.JREBEL || this.conf.backend === VaadinDevTools.HOTSWAP_AGENT) {
-      javaConnection = frontendConnection;
-    } else {
-      javaConnection = new Connection(undefined);
+      this.javaConnection.onReload = onReload;
+      this.javaConnection.onConnectionError = onConnectionError;
+      this.javaConnection.onStatusChange = (status) => {
+        this.javaStatus = status;
+      };
+      this.javaConnection.onHandshake = () => {
+        if (this.conf.backend) {
+          this.log(
+            MessageType.INFORMATION,
+            `Java live reload available: ${VaadinDevTools.BACKEND_DISPLAY_NAME[this.conf.backend]}`
+          );
+        }
+      };
     }
-    const prevOnStatusChange = javaConnection.onStatusChange;
-    javaConnection.onStatusChange = (status) => {
-      prevOnStatusChange(status);
-      this.javaStatus = status;
-    };
-    const prevOnHandshake = javaConnection.onHandshake;
-    javaConnection.onHandshake = () => {
-      prevOnHandshake();
-      if (this.conf.backend) {
-        this.log(
-          MessageType.INFORMATION,
-          `Java live reload available: ${VaadinDevTools.BACKEND_DISPLAY_NAME[this.conf.backend]}`
-        );
-      }
-    };
-    this.javaConnection = javaConnection;
 
     if (!this.conf.backend) {
       this.showNotification(
@@ -996,9 +988,9 @@ export class VaadinDevTools extends LitElement {
       }
     }
 
-    if (message?.command === 'featureFlags') {
+    if (message.command === 'featureFlags') {
       this.features = message.data.features as Feature[];
-    } else if (message?.command === 'themeEditorState') {
+    } else if (message.command === 'themeEditorState') {
       const isFlowApp = !!(window as any).Vaadin.Flow;
       this.themeEditorState = message.data;
       if (isFlowApp && this.themeEditorState !== ThemeEditorState.disabled) {
@@ -1009,6 +1001,7 @@ export class VaadinDevTools extends LitElement {
         });
         this.requestUpdate();
       }
+    } else if (handleLicenseMessage(message)) {
     } else {
       this.unhandledMessages.push(message);
     }
@@ -1182,13 +1175,13 @@ export class VaadinDevTools extends LitElement {
 
   checkLicense(productInfo: Product) {
     if (this.frontendConnection) {
-      this.frontendConnection.sendLicenseCheck(productInfo);
+      this.frontendConnection.send('checkLicense', productInfo);
     } else {
       licenseCheckFailed({ message: 'Internal error: no connection', product: productInfo });
     }
   }
 
-  log(type: MessageType, message: string, details?: string, link?: string, dontShowAgainMessage?:string) {
+  log(type: MessageType, message: string, details?: string, link?: string, dontShowAgainMessage?: string) {
     const id = this.nextMessageId;
     this.nextMessageId += 1;
     this.messages.push({
@@ -1217,7 +1210,14 @@ export class VaadinDevTools extends LitElement {
     });
   }
 
-  showNotification(type: MessageType, message: string, details?: string, link?: string, persistentId?: string, dontShowAgainMessage?:string) {
+  showNotification(
+    type: MessageType,
+    message: string,
+    details?: string,
+    link?: string,
+    persistentId?: string,
+    dontShowAgainMessage?: string
+  ) {
     if (persistentId === undefined || !VaadinDevTools.notificationDismissed(persistentId!)) {
       // Do not open persistent message if another is already visible with the same persistentId
       const matchingVisibleNotifications = this.notifications
@@ -1345,7 +1345,7 @@ export class VaadinDevTools extends LitElement {
                 class="persist ${messageObject.dontShowAgain ? 'on' : 'off'}"
                 @click=${() => this.toggleDontShowAgain(messageObject.id)}
               >
-              ${messageObject.dontShowAgainMessage || 'Don’t show again'}
+                ${messageObject.dontShowAgainMessage || 'Don’t show again'}
               </div>`
             : ''}
         </div>
@@ -1422,7 +1422,7 @@ export class VaadinDevTools extends LitElement {
         }}
       ></vaadin-dev-tools-component-picker>
       <div
-      style="display: var(--dev-tools-button-display, 'block')"
+        style="display: var(--dev-tools-button-display, 'block')"
         class="dev-tools ${this.splashMessage ? 'active' : ''}${this.unreadErrors ? ' error' : ''}"
         @click=${() => this.toggleExpanded()}
       >
@@ -1565,9 +1565,9 @@ export class VaadinDevTools extends LitElement {
                 const serializableComponentRef: ComponentReference = { nodeId: component.nodeId, uiId: component.uiId };
                 const locationType = (this.renderRoot.querySelector('#locationType') as HTMLSelectElement).value;
                 if (locationType === 'create') {
-                  this.frontendConnection!.sendShowComponentCreateLocation(serializableComponentRef);
+                  this.frontendConnection!.send('showComponentCreateLocation', serializableComponentRef);
                 } else {
-                  this.frontendConnection!.sendShowComponentAttachLocation(serializableComponentRef);
+                  this.frontendConnection!.send('showComponentAttachLocation', serializableComponentRef);
                 }
               }
             });
@@ -1601,12 +1601,13 @@ export class VaadinDevTools extends LitElement {
     </div>`;
   }
 
-  disableJavaLiveReload() {
-    this.javaConnection?.setActive(false);
-  }
-
-  enableJavaLiveReload() {
-    this.javaConnection?.setActive(true);
+  setJavaLiveReloadActive(active: boolean) {
+    // Java reload either goes through the direct connection to live reload, or then through the shared websocket connection
+    if (this.javaConnection) {
+      this.javaConnection.setActive(active);
+    } else {
+      this.frontendConnection?.setActive(active);
+    }
   }
 
   renderThemeEditor() {
@@ -1615,15 +1616,15 @@ export class VaadinDevTools extends LitElement {
       .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
       .connection=${this.frontendConnection}
-      @before-open=${this.disableJavaLiveReload}
-      @after-close=${this.enableJavaLiveReload}
+      @before-open=${() => this.setJavaLiveReloadActive(false)}
+      @after-close=${() => this.setJavaLiveReloadActive(true)}
     ></vaadin-dev-tools-theme-editor>`;
   }
 
   toggleFeatureFlag(e: Event, feature: Feature) {
     const enabled = (e.target! as HTMLInputElement).checked;
     if (this.frontendConnection) {
-      this.frontendConnection.setFeature(feature.id, enabled);
+      this.frontendConnection.send('setFeature', { featureId: feature.id, enabled });
       this.showNotification(
         MessageType.INFORMATION,
         `“${feature.title}” ${enabled ? 'enabled' : 'disabled'}`,

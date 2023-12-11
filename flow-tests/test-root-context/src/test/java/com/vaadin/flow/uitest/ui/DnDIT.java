@@ -44,6 +44,17 @@ public class DnDIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void testUndefinedEffectElement_allLanesGetDropTargetClass() {
+        open();
+
+        TestBenchElement boxElement = getBoxElement("no-effect");
+        checkDragOverClassName(boxElement, getLaneElement("no-effect"));
+        checkDragOverClassName(boxElement, getLaneElement("COPY"));
+        checkDragOverClassName(boxElement, getLaneElement("MOVE"));
+        checkDragOverClassName(boxElement, getLaneElement("LINK"));
+    }
+
+    @Test
     public void testCopyEffectElement_droppedToDeactivatedLane_noDrop() {
         open();
         TestBenchElement boxElement = getBoxElement("COPY");
@@ -149,6 +160,12 @@ public class DnDIT extends ChromeBrowserTest {
 
     private TestBenchElement getBoxElement(String effectAllowed) {
         return $(TestBenchElement.class).id("box-" + effectAllowed);
+    }
+
+    private void checkDragOverClassName(TestBenchElement dragged,
+            TestBenchElement target) {
+        dragElementOver(dragged, target);
+        Assert.assertTrue(target.hasClassName("v-drag-over-target"));
     }
 
 }

@@ -72,6 +72,7 @@ public class VaadinSessionTest {
 
         public VaadinSessionWithMockLogger(VaadinService service) {
             super(service);
+            mockLogger.includeStackTrace = true;
         }
 
         @Override
@@ -536,20 +537,20 @@ public class VaadinSessionTest {
     public void checkHasLock_noCheckInDevMode() {
         Assume.assumeTrue(session.hasLock());
         Assume.assumeFalse(session.getConfiguration().isProductionMode());
-        Assert.assertEquals(LockCheckStrategy.ASSERT,
-                session.getConfiguration().getLockCheckStrategy());
+        Assert.assertEquals(SessionLockCheckStrategy.ASSERT,
+                session.getConfiguration().getSessionLockCheckStrategy());
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
 
         session.checkHasLock();
 
-        configuration.setLockCheckStrategy(LockCheckStrategy.LOG);
+        configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
         session.setConfiguration(configuration);
         session.mockLogger.clearLogs();
         session.checkHasLock();
         Assert.assertEquals("", session.mockLogger.getLogs());
 
-        configuration.setLockCheckStrategy(LockCheckStrategy.ASSERT);
+        configuration.setLockCheckStrategy(SessionLockCheckStrategy.ASSERT);
         session.setConfiguration(configuration);
         session.checkHasLock();
     }
@@ -579,7 +580,7 @@ public class VaadinSessionTest {
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
         configuration.setProductionMode(true);
-        configuration.setLockCheckStrategy(LockCheckStrategy.THROW);
+        configuration.setLockCheckStrategy(SessionLockCheckStrategy.THROW);
         session.setConfiguration(configuration);
         session.unlock();
         Assume.assumeFalse(session.hasLock());
@@ -598,15 +599,18 @@ public class VaadinSessionTest {
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
         configuration.setProductionMode(true);
-        configuration.setLockCheckStrategy(LockCheckStrategy.LOG);
+        configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
         session.setConfiguration(configuration);
         session.unlock();
         Assume.assumeFalse(session.hasLock());
 
-        // this should throw IllegalStateException
+        // this should log a warning message into the logger, including the
+        // stacktrace.
         session.checkHasLock();
-        Assert.assertEquals(
-                "[Warning] Cannot access state in VaadinSession or UI without locking the session.",
-                session.mockLogger.getLogs().trim());
+        Assert.assertTrue(session.mockLogger.getLogs().trim(),
+                session.mockLogger.getLogs().contains(
+                        "[Warning] Cannot access state in VaadinSession or UI without locking the session.\n"
+                                + "java.lang.IllegalStateException: Cannot access state in VaadinSession or UI without locking the session.\n"
+                                + "\tat com.vaadin.flow.server.SessionLockCheckStrategy$2.checkHasLock(SessionLockCheckStrategy.java:"));
     }
 }
