@@ -50,7 +50,6 @@ describe('theme-editor', () => {
     };
     const pickerProvider: PickerProvider = () => pickerMock as any;
     const editor = (await fixture(html` <vaadin-dev-tools-theme-editor
-      .expanded=${true}
       .pickerProvider=${pickerProvider}
       .connection=${connectionMock}
     ></vaadin-dev-tools-theme-editor>`)) as ThemeEditor;
@@ -621,7 +620,8 @@ describe('theme-editor', () => {
     it('should remove highlight when editor is closed', async () => {
       await pickComponent();
 
-      editor.expanded = false;
+      expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.true;
+      editor.removeCurrentSelectedElementHighlight();
       await elementUpdated(editor);
       expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.false;
     });
@@ -629,9 +629,11 @@ describe('theme-editor', () => {
     it('should restore highlight when editor is opened again', async () => {
       await pickComponent();
 
-      editor.expanded = false;
+      expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.true;
+      editor.removeCurrentSelectedElementHighlight();
       await elementUpdated(editor);
-      editor.expanded = true;
+      expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.false;
+      editor.highlightCurrentSelectedElement();
       await elementUpdated(editor);
       expect(testElement.classList.contains('vaadin-theme-editor-highlight')).to.be.true;
     });

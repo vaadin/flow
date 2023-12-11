@@ -153,13 +153,13 @@ describe('component overlay manager', () => {
     it(`Expanding editor must show/hide the overlay for the ${componentDefinition.name}`, async () => {
       const component = await createComponent(componentDefinition.name);
       await pickComponent(component!);
-      editor.expanded = false;
+      editor.removeCurrentSelectedElementHighlight()
       await elementUpdated(editor);
       const overlay = document.getElementsByTagName(componentDefinition.overlayTagName).item(0);
       //waiting overlay to be hidden.
       const openedAttribute = overlay!.hasAttribute('opened');
       expect(openedAttribute).to.be.false;
-      editor.expanded = true;
+      editor.highlightCurrentSelectedElement()
       await elementUpdated(editor);
       await aTimeout(100);
       expect(overlay!.hasAttribute('opened')).to.be.true;

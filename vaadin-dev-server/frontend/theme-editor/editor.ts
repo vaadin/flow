@@ -41,8 +41,6 @@ injectGlobalCss(css`
 @customElement('vaadin-dev-tools-theme-editor')
 export class ThemeEditor extends LitElement {
   @property({})
-  public expanded: boolean = false;
-  @property({})
   public themeEditorState: ThemeEditorState = ThemeEditorState.enabled;
   @property({})
   public pickerProvider!: PickerProvider;
@@ -245,17 +243,16 @@ export class ThemeEditor extends LitElement {
 
   protected update(changedProperties: PropertyValues) {
     super.update(changedProperties);
+  }
 
-    // Remove or restore selected element highlight when expanded state changes
-    if (changedProperties.has('expanded')) {
-      if (this.expanded) {
-        this.highlightElement(this.context?.component.element);
-        componentOverlayManager.showOverlay();
-      } else {
-        componentOverlayManager.hideOverlay();
-        this.removeElementHighlight(this.context?.component.element);
-      }
-    }
+  highlightCurrentSelectedElement() {
+    this.highlightElement(this.context?.component.element);
+    componentOverlayManager.showOverlay();
+  }
+
+  removeCurrentSelectedElementHighlight() {
+    componentOverlayManager.hideOverlay();
+    this.removeElementHighlight(this.context?.component.element);
   }
 
   disconnectedCallback() {

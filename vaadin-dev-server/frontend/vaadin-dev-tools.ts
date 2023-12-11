@@ -10,6 +10,7 @@ import { ConnectionStatus } from './connection';
 import { LiveReloadConnection } from './live-reload-connection';
 import { popupStyles } from './styles';
 import './theme-editor/editor';
+import { ThemeEditor } from './theme-editor/editor';
 import { ThemeEditorState } from './theme-editor/model';
 import './vaadin-dev-tools-info';
 import './vaadin-dev-tools-log';
@@ -861,6 +862,9 @@ export class VaadinDevTools extends LitElement {
   @query('.window')
   private root!: HTMLElement;
 
+  @query('vaadin-dev-tools-theme-editor')
+  private themeEditor!: ThemeEditor;
+
   @query('vaadin-dev-tools-component-picker')
   private componentPicker!: ComponentPicker;
 
@@ -1148,7 +1152,11 @@ export class VaadinDevTools extends LitElement {
     this.notifications.slice().forEach((notification) => this.dismissNotification(notification.id));
     this.expanded = !this.expanded;
     if (this.expanded) {
+      this.themeEditor.highlightCurrentSelectedElement();
       this.root.focus();
+    }
+    else {
+      this.themeEditor.removeCurrentSelectedElementHighlight();
     }
   }
 
@@ -1417,7 +1425,10 @@ export class VaadinDevTools extends LitElement {
         @component-picker-opened=${() => {
           this.componentPickActive = true;
         }}
-        @component-picker-closed=${() => {
+        @component-picker-closed=${(e: CustomEvent) => {
+          if (!e.detail.selectedComponent) {
+            this.themeEditor.highlightCurrentSelectedElement();
+          }
           this.componentPickActive = false;
         }}
       ></vaadin-dev-tools-component-picker>
@@ -1612,7 +1623,6 @@ export class VaadinDevTools extends LitElement {
 
   renderThemeEditor() {
     return html` <vaadin-dev-tools-theme-editor
-      .expanded=${this.expanded}
       .themeEditorState=${this.themeEditorState}
       .pickerProvider=${() => this.componentPicker}
       .connection=${this.frontendConnection}

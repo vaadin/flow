@@ -110,9 +110,9 @@ export class ComponentPicker extends LitElement {
     this.dispatchEvent(new CustomEvent('component-picker-opened', {}));
   }
 
-  close() {
+  close(component?: ComponentReference) {
     this.active = false;
-    this.dispatchEvent(new CustomEvent('component-picker-closed', {}));
+    this.dispatchEvent(new CustomEvent('component-picker-closed',  {detail:{selectedComponent: component}}));
   }
 
   update(changedProperties: PropertyValues): void {
@@ -194,7 +194,7 @@ export class ComponentPicker extends LitElement {
         console.error('Pick callback failed', error);
       }
     }
-    this.close();
+    this.close(component);
   }
 
   highlight(componentRef: ComponentReference | undefined) {
