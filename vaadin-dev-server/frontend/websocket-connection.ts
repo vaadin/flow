@@ -14,7 +14,6 @@ export class WebSocketConnection extends Connection {
     const config = {
       transport: 'websocket',
       url,
-      //fallbackTransport: 'long-polling',
       contentType: 'application/json; charset=UTF-8',
       reconnectInterval: 5000,
       timeout: -1,
