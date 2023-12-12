@@ -3,28 +3,38 @@ import { Connection, ConnectionStatus } from './connection';
 export class WebSocketConnection extends Connection {
   static HEARTBEAT_INTERVAL = 180000;
 
-  webSocket?: WebSocket;
+  socket?: any;
 
-  constructor(url?: string) {
+  constructor(url: string) {
     super();
-
-    if (url) {
-      this.webSocket = new WebSocket(url);
-      this.webSocket.onmessage = (msg) => this.handleMessage(msg);
-      this.webSocket.onerror = (err) => this.handleError(err);
-      this.webSocket.onclose = (_) => {
-        if (this.status !== ConnectionStatus.ERROR) {
-          this.setStatus(ConnectionStatus.UNAVAILABLE);
-        }
-        this.webSocket = undefined;
-      };
+    if (!url) {
+        return;
     }
 
-    setInterval(() => {
-      if (this.webSocket && self.status !== ConnectionStatus.ERROR && this.status !== ConnectionStatus.UNAVAILABLE) {
-        this.webSocket.send('');
+    const config = {
+      transport: 'websocket',
+      url,
+      contentType: 'application/json; charset=UTF-8',
+      reconnectInterval: 5000,
+      timeout: -1,
+      maxReconnectOnClose: 10000000,
+      trackMessageLength: true,
+      enableProtocol: true,
+      handleOnlineOffline: false,
+      executeCallbackBeforeReconnect: true,
+      messageDelimiter: '|',
+      onMessage: (response: any) => {
+        const message = { data: response.responseBody };
+        this.handleMessage(message);
+      },
+      onError: (response: any) => {
+        this.handleError(response);
       }
-    }, WebSocketConnection.HEARTBEAT_INTERVAL);
+    };
+
+    waitForPush().then((atmosphere) => {
+      this.socket = atmosphere.subscribe(config);
+    });
   }
 
   onReload() {
@@ -35,18 +45,10 @@ export class WebSocketConnection extends Connection {
     // Intentionally empty
   }
 
-  onMessage(message: any) {
-    // eslint-disable-next-line no-console
-    console.error('Unknown message received from the live reload server:', message);
-  }
+  onMessage(_message: any) {}
 
   handleMessage(msg: any) {
     let json;
-
-    if (msg.data === 'X') {
-      // Atmosphere heartbeat message, should be ignored
-      return;
-    }
 
     try {
       json = JSON.parse(msg.data);
@@ -74,22 +76,35 @@ export class WebSocketConnection extends Connection {
     // eslint-disable-next-line no-console
     console.error(msg);
     this.setStatus(ConnectionStatus.ERROR);
-    if (msg instanceof Event && this.webSocket) {
-      this.onConnectionError(`Error in WebSocket connection to ${this.webSocket.url}`);
-    } else {
-      this.onConnectionError(msg);
-    }
+    this.onConnectionError(msg);
   }
 
   public send(command: string, data: any) {
-    const message = JSON.stringify({ command, data });
-    if (!this.webSocket) {
-      // eslint-disable-next-line no-console
-      console.error(`Unable to send message ${command}. No websocket is available`);
-    } else if (this.webSocket.readyState !== WebSocket.OPEN) {
-      this.webSocket.addEventListener('open', () => this.webSocket!.send(message));
-    } else {
-      this.webSocket.send(message);
+    if (!this.socket) {
+      waitFor(
+        () => this.socket,
+        (_atmosphere) => this.send(command, data)
+      );
+      return;
     }
+
+    const message = JSON.stringify({ command, data });
+    this.socket.push(message);
   }
+}
+
+function waitFor<T>(check: () => T | undefined, callback: (value: T) => void) {
+  const value = check();
+  if (value) {
+    callback(value);
+  } else {
+    setTimeout(() => waitFor(check, callback), 50);
+  }
+}
+
+function waitForPush(): Promise<any> {
+  // Wait for window.vaadinPush.atmosphere to be defined and return it
+  return new Promise<any>((resolve, _reject) => {
+    waitFor(() => (window as any)?.vaadinPush?.atmosphere, resolve);
+  });
 }

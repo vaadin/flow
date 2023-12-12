@@ -1024,7 +1024,7 @@ export class VaadinDevTools extends LitElement {
       console.error('The protocol of the url should be http or https for live reload to work.');
       return undefined;
     }
-    return `${connectionBaseUrl.replace(/^http/, 'ws')}?v-r=push&debug_window&token=${this.conf.token}`;
+    return `${connectionBaseUrl}?v-r=push&debug_window&token=${this.conf.token}`;
   }
 
   getSpringBootWebSocketUrl(location: any) {
