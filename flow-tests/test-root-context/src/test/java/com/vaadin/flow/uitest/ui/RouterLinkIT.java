@@ -49,7 +49,7 @@ public class RouterLinkIT extends ChromeBrowserTest {
 
         verifySamePage();
 
-        clickLink("http://example.net/");
+        clickLink("https://example.net/");
 
         String currentUrl = getDriver().getCurrentUrl();
 
