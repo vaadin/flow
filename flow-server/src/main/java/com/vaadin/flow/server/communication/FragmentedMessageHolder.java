@@ -1,7 +1,5 @@
 package com.vaadin.flow.server.communication;
 
-import java.io.IOException;
-import java.io.Reader;
 import java.io.Serializable;
 
 import org.atmosphere.cpr.AtmosphereResource;
@@ -14,13 +12,11 @@ public interface FragmentedMessageHolder extends Serializable {
      * Gets the partial message that is currently being received, if any.
      *
      * @param resource
-     *            the resource to get the partial message for
-     * @param reader
-     *            the request body reader
+     *            the resource to get the partial message forder
      * @return the fragmented message being received or a new empty instance
      */
     public FragmentedMessage getOrCreateFragmentedMessage(
-            AtmosphereResource resource, Reader reader) throws IOException;
+            AtmosphereResource resource);
 
     /**
      * Clears the partial message that is currently being received. Should be

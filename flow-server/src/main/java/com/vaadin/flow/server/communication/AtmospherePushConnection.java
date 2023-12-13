@@ -62,23 +62,17 @@ public class AtmospherePushConnection
      * Represents a message that can arrive as multiple fragments.
      */
     public static class FragmentedMessage implements Serializable {
+
         private final StringBuilder message = new StringBuilder();
-        private int messageLength;
+        private int messageLength = -1;
 
         /**
          * Creates a message by reading from the given reader.
          * <p>
          * Immediately reads the length of the message (up until
          * {@value PushConstants#MESSAGE_DELIMITER}) from the reader.
-         *
-         * @param reader
-         *            the reader to read the message from
-         * @throws IOException
-         *             if an exception occurred while reading from the reader or
-         *             if unexpected data was read
          */
-        public FragmentedMessage(Reader reader) throws IOException {
-            readMessageLength(reader);
+        public FragmentedMessage() {
         }
 
         private void readMessageLength(Reader reader) throws IOException {
@@ -108,6 +102,10 @@ public class AtmospherePushConnection
          *             if an IO error occurred
          */
         public boolean append(Reader reader) throws IOException {
+            if (messageLength == -1) {
+                readMessageLength(reader);
+            }
+
             char[] buffer = new char[PushConstants.WEBSOCKET_BUFFER_SIZE];
             int read;
             while ((read = reader.read(buffer)) != -1) {
@@ -258,8 +256,7 @@ public class AtmospherePushConnection
             return reader;
         }
 
-        FragmentedMessage msg = holder.getOrCreateFragmentedMessage(resource,
-                reader);
+        FragmentedMessage msg = holder.getOrCreateFragmentedMessage(resource);
         if (msg.append(reader)) {
             Reader messageReader = msg.getReader();
             holder.clearFragmentedMessage(resource);
@@ -401,9 +398,9 @@ public class AtmospherePushConnection
 
     @Override
     public FragmentedMessage getOrCreateFragmentedMessage(
-            AtmosphereResource resource, Reader reader) throws IOException {
+            AtmosphereResource resource) {
         if (incomingMessage == null) {
-            incomingMessage = new FragmentedMessage(reader);
+            incomingMessage = new FragmentedMessage();
         }
         return incomingMessage;
     }
