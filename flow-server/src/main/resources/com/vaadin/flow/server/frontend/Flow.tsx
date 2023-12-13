@@ -15,7 +15,8 @@
  */
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
 import { useEffect, useRef } from "react";
-import { NavigateFunction, useLocation, useNavigate } from "react-router-dom";
+import { matchPath, matchRoutes, NavigateFunction, useLocation, useNavigate } from "react-router-dom";
+import { routes } from "Frontend/routes.js";
 
 const flow = new _Flow({
     imports: () => import("Frontend/generated/flow/generated-flow-imports.js")
@@ -138,13 +139,41 @@ function navigateEventHandler(event) {
     if (event && event.preventDefault) {
         event.preventDefault();
     }
+    if(matchPath(event.detail.pathname, window.location.pathname)) {
+        return;
+    }
+    // @ts-ignore
+    let matched = matchRoutes(routes, event.detail.pathname);
 
-    if (mountedContainer?.onBeforeLeave) {
-        mountedContainer?.onBeforeLeave({pathname: event.detail.pathname, search: event.detail.search}, {
-            prevent() {},
-        }, router);
+    if(matched?.length == 1 && matched[0].route.path === "/*") {
+        if (mountedContainer?.onBeforeEnter) {
+            mountedContainer.onBeforeEnter(
+                {
+                    pathname: event.detail.pathname,
+                    search: event.detail.search
+                },
+                {
+                    prevent() {
+                    },
+                    // @ts-ignore
+                    redirect: (path) => {
+                        // window.history.pushState({}, "", path);
+                        navigation(path, {replace: false});
+                    }
+                },
+                router,
+            );
+        }
     } else {
-        navigation(event.detail.pathname, {replace: false})
+        if (mountedContainer?.onBeforeLeave) {
+            mountedContainer?.onBeforeLeave({pathname: event.detail.pathname, search: event.detail.search}, {
+                prevent() {},
+            }, router);
+        } else {
+            mountedContainer?.parentNode?.removeChild(mountedContainer);
+            mountedContainer = undefined;
+            navigation(event.detail.pathname, {replace: false});
+        }
     }
 }
 
@@ -174,13 +203,6 @@ export default function Flow() {
             }
         });
         return () => {
-            if (mountedContainer?.onBeforeLeave) {
-                mountedContainer?.onBeforeLeave({pathname, search}, {
-                    prevent() {},
-                }, router);
-            }
-            mountedContainer?.parentNode?.removeChild(mountedContainer);
-            mountedContainer = undefined;
             window.document.removeEventListener('click', vaadinRouterGlobalClickHandler);
             window.removeEventListener('vaadin-router-go', navigateEventHandler);
         };

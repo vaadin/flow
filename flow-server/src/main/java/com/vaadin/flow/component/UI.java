@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.internal.AllowInert;
 import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
@@ -1866,7 +1867,11 @@ public class UI extends Component
         } catch (Exception exception) {
             handleExceptionNavigation(location, exception);
         } finally {
-            getInternals().clearLastHandledNavigation();
+            if (!FeatureFlags
+                    .get(getInternals().getSession().getService().getContext())
+                    .isEnabled(FeatureFlags.REACT_ROUTER)) {
+                getInternals().clearLastHandledNavigation();
+            }
         }
     }
 

@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
@@ -270,6 +271,13 @@ public abstract class AbstractNavigationStateRenderer
             }
 
             ui.getInternals().setLastHandledNavigation(event.getLocation());
+        } else if (FeatureFlags.get(event.getUI().getInternals().getSession()
+                .getService().getContext())
+                .isEnabled(FeatureFlags.REACT_ROUTER)) {
+
+            if (shouldPushHistoryState(event)) {
+                pushHistoryState(event);
+            }
         }
     }
 
@@ -280,7 +288,13 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     protected boolean shouldPushHistoryState(NavigationEvent event) {
-        return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger());
+        return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger())
+                || (FeatureFlags
+                        .get(event.getUI().getInternals().getSession()
+                                .getService().getContext())
+                        .isEnabled(FeatureFlags.REACT_ROUTER)
+                        && NavigationTrigger.CLIENT_SIDE
+                                .equals(event.getTrigger()));
     }
 
     private boolean isRouterLinkNotFoundNavigationError(
