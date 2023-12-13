@@ -63,7 +63,7 @@ public class AtmospherePushConnection
      */
     public static class FragmentedMessage implements Serializable {
         private final StringBuilder message = new StringBuilder();
-        private final int messageLength;
+        private int messageLength;
 
         /**
          * Creates a message by reading from the given reader.
@@ -78,6 +78,10 @@ public class AtmospherePushConnection
          *             if unexpected data was read
          */
         public FragmentedMessage(Reader reader) throws IOException {
+            readMessageLength(reader);
+        }
+
+        private void readMessageLength(Reader reader) throws IOException {
             // Messages are prefixed by the total message length plus a
             // delimiter
             String length = "";
