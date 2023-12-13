@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -385,14 +386,21 @@ public class DebugWindowConnection implements BrowserLiveReload {
     @Override
     public FragmentedMessage getOrCreateFragmentedMessage(
             AtmosphereResource resource, Reader reader) throws IOException {
-        return fragmentedMessages.computeIfAbsent(resource, res -> {
-            try {
-                return new FragmentedMessage(reader);
-            } catch (IOException e) {
-                getLogger().error("Error creating message fragment", e);
-                return null;
-            }
-        });
+        AtomicReference<IOException> exceptionHolder = new AtomicReference<>();
+
+        FragmentedMessage message = fragmentedMessages.computeIfAbsent(resource,
+                res -> {
+                    try {
+                        return new FragmentedMessage(reader);
+                    } catch (IOException e) {
+                        exceptionHolder.set(e);
+                        return null;
+                    }
+                });
+        if (message == null) {
+            throw exceptionHolder.get();
+        }
+        return message;
     }
 
     @Override

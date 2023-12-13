@@ -17,7 +17,7 @@ public interface FragmentedMessageHolder extends Serializable {
      *            the resource to get the partial message for
      * @param reader
      *            the request body reader
-     * @return the partial message or null
+     * @return the fragmented message being received or a new empty instance
      */
     public FragmentedMessage getOrCreateFragmentedMessage(
             AtmosphereResource resource, Reader reader) throws IOException;
