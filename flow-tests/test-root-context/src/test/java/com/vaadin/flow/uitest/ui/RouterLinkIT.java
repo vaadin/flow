@@ -56,7 +56,7 @@ public class RouterLinkIT extends ChromeBrowserTest {
         // Chrome changes url to whatever it can, removing www part, forcing
         // https.
         Assert.assertTrue("Invalid URL: " + currentUrl,
-                currentUrl.equals("http://example.net/"));
+                currentUrl.equals("https://example.net/"));
     }
 
     @Test
