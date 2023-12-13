@@ -32,7 +32,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -385,8 +384,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     @Override
     public FragmentedMessage getOrCreateFragmentedMessage(
-            AtmosphereRequest request, Reader reader) throws IOException {
-        return fragmentedMessages.computeIfAbsent(request.resource(), res -> {
+            AtmosphereResource resource, Reader reader) throws IOException {
+        return fragmentedMessages.computeIfAbsent(resource, res -> {
             try {
                 return new FragmentedMessage(reader);
             } catch (IOException e) {
@@ -397,8 +396,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
     }
 
     @Override
-    public void clearFragmentedMessage(AtmosphereRequest request) {
-        fragmentedMessages.remove(request.resource());
+    public void clearFragmentedMessage(AtmosphereResource resource) {
+        fragmentedMessages.remove(resource);
     }
 
 }

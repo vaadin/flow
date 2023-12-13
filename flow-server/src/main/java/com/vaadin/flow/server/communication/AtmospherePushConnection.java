@@ -25,7 +25,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.BroadcastFilterAdapter;
@@ -235,8 +234,8 @@ public class AtmospherePushConnection
      * received message, returns a {@link Reader} yielding the complete message.
      * Otherwise, returns null.
      *
-     * @param request
-     *            The atmosphere request with data
+     * @param resource
+     *            The atmosphere resource with data
      * @param reader
      *            The request body reader
      * @param holder
@@ -248,19 +247,18 @@ public class AtmospherePushConnection
      * @return a Reader yielding the complete message, or {@code null} if the
      *         received message was a partial message
      */
-    protected static Reader receiveMessage(AtmosphereRequest request,
+    protected static Reader receiveMessage(AtmosphereResource resource,
             Reader reader, FragmentedMessageHolder holder) throws IOException {
 
-        AtmosphereResource resource = request.resource();
         if (resource == null || resource.transport() != TRANSPORT.WEBSOCKET) {
             return reader;
         }
 
-        FragmentedMessage msg = holder.getOrCreateFragmentedMessage(request,
+        FragmentedMessage msg = holder.getOrCreateFragmentedMessage(resource,
                 reader);
         if (msg.append(reader)) {
             Reader messageReader = msg.getReader();
-            holder.clearFragmentedMessage(request);
+            holder.clearFragmentedMessage(resource);
             return messageReader;
         } else {
             // Only received a partial message
@@ -399,7 +397,7 @@ public class AtmospherePushConnection
 
     @Override
     public FragmentedMessage getOrCreateFragmentedMessage(
-            AtmosphereRequest request, Reader reader) throws IOException {
+            AtmosphereResource resource, Reader reader) throws IOException {
         if (incomingMessage == null) {
             incomingMessage = new FragmentedMessage(reader);
         }
@@ -407,7 +405,7 @@ public class AtmospherePushConnection
     }
 
     @Override
-    public void clearFragmentedMessage(AtmosphereRequest request) {
+    public void clearFragmentedMessage(AtmosphereResource resource) {
         incomingMessage = null;
     }
 

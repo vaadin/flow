@@ -150,7 +150,7 @@ public class PushHandler {
                 + "connection is kept open or if the UI has a "
                 + "connection of unexpected type.";
 
-        Reader reader = AtmospherePushConnection.receiveMessage(req,
+        Reader reader = AtmospherePushConnection.receiveMessage(resource,
                 req.getReader(), connection);
         if (reader == null) {
             // The whole message was not yet received
@@ -632,7 +632,8 @@ public class PushHandler {
                         "Received message for debug window but there is no debug window connection available");
                 return;
             }
-            Reader reader = AtmospherePushConnection.receiveMessage(request,
+            AtmosphereResource resource = request.resource();
+            Reader reader = AtmospherePushConnection.receiveMessage(resource,
                     request.getReader(), liveReload.get());
             if (reader == null) {
                 // The whole message was not yet received
@@ -640,7 +641,7 @@ public class PushHandler {
             }
 
             String msg = IOUtils.toString(reader);
-            liveReload.get().onMessage(request.resource(), msg);
+            liveReload.get().onMessage(resource, msg);
         } catch (IOException e) {
             getLogger().error(
                     "Unable to read contents of debug connection message", e);
