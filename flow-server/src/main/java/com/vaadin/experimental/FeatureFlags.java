@@ -70,7 +70,8 @@ public class FeatureFlags implements Serializable {
             "com.vaadin.flow.ai.formfiller.FormFiller");
 
     public static final Feature REACT_ROUTER = new Feature(
-            "React router support", "reactRouter", "", true, null);
+            "React router support", "reactRouter",
+            "https://vaadin.com/docs/latest/integrations/hilla", true, null);
 
     private List<Feature> features = new ArrayList<>();
 
