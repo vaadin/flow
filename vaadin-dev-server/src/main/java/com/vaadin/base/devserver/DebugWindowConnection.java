@@ -255,7 +255,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
             plugin.handleDisconnect(getDevToolsInterface(resource));
         }
         if (!resources.keySet()
-                .removeIf(resourceRef -> resourceRef.refersTo(resource))) {
+                .removeIf(resourceRef -> resource.equals(resourceRef.get()))) {
             String uuid = resource.uuid();
             getLogger().warn(
                     "Push connection {} is not a live-reload connection or already closed",
@@ -391,7 +391,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
     private WeakReference<AtmosphereResource> getRef(
             AtmosphereResource resource) {
         return resources.keySet().stream()
-                .filter(resourceRef -> resourceRef.refersTo(resource))
+                .filter(resourceRef -> resource.equals(resourceRef.get())))
                 .findFirst().orElse(null);
     }
 
