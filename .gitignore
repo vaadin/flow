@@ -75,6 +75,8 @@ flow-tests/test-express-build/test-parent-theme-express-build/src/main/bundles
 flow-tests/test-express-build/test-embedding-express-build/src/main/bundles
 flow-tests/test-express-build/test-prod-bundle/src/main/bundles
 
+.flow-node-tasks.lock
+
 # Exclude generated vaadin dev tools frontend
 vaadin-dev-server/src/main/resources/META-INF/frontend
 vaadin-dev-server/src/main/resources/META-INF/metadata
