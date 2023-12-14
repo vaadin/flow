@@ -27,7 +27,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,8 +67,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
     private final ClassLoader classLoader;
     private VaadinContext context;
 
-    private final ConcurrentLinkedQueue<WeakReference<AtmosphereResource>> atmosphereResources = new ConcurrentLinkedQueue<>();
-    private final ConcurrentHashMap<AtmosphereResource, FragmentedMessage> fragmentedMessages = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<WeakReference<AtmosphereResource>, FragmentedMessage> resources = new ConcurrentHashMap<>();
     private Backend backend = null;
 
     private static final EnumMap<Backend, List<String>> IDENTIFIER_CLASSES = new EnumMap<>(
@@ -216,7 +214,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private void handleConnect(AtmosphereResource resource) {
         resource.suspend(-1);
-        atmosphereResources.add(new WeakReference<>(resource));
+        resources.put(new WeakReference<>(resource), new FragmentedMessage());
         resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
                 resource);
 
@@ -256,24 +254,22 @@ public class DebugWindowConnection implements BrowserLiveReload {
         for (DevToolsMessageHandler plugin : plugins) {
             plugin.handleDisconnect(getDevToolsInterface(resource));
         }
-        if (!atmosphereResources
+        if (!resources.keySet()
                 .removeIf(resourceRef -> resource.equals(resourceRef.get()))) {
             String uuid = resource.uuid();
             getLogger().warn(
                     "Push connection {} is not a live-reload connection or already closed",
                     uuid);
         }
-        fragmentedMessages.remove(resource);
     }
 
     @Override
     public boolean isLiveReload(AtmosphereResource resource) {
-        return atmosphereResources.stream()
-                .anyMatch(resourceRef -> resource.equals(resourceRef.get()));
+        return getRef(resource) != null;
     }
 
     private void send(JsonObject msg) {
-        atmosphereResources.forEach(resourceRef -> {
+        resources.keySet().forEach(resourceRef -> {
             AtmosphereResource resource = resourceRef.get();
             if (resource != null) {
                 resource.getBroadcaster().broadcast(msg.toJson(), resource);
@@ -384,13 +380,19 @@ public class DebugWindowConnection implements BrowserLiveReload {
     @Override
     public FragmentedMessage getOrCreateFragmentedMessage(
             AtmosphereResource resource) {
-        return fragmentedMessages.computeIfAbsent(resource,
-                res -> new FragmentedMessage());
+        return resources.get(getRef(resource));
+    }
+
+    private WeakReference<AtmosphereResource> getRef(
+            AtmosphereResource resource) {
+        return resources.keySet().stream()
+                .filter(resourceRef -> resource.equals(resourceRef.get()))
+                .findFirst().orElse(null);
     }
 
     @Override
     public void clearFragmentedMessage(AtmosphereResource resource) {
-        fragmentedMessages.remove(resource);
+        resources.put(getRef(resource), new FragmentedMessage());
     }
 
 }
