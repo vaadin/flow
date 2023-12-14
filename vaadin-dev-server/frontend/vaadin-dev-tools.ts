@@ -1050,7 +1050,7 @@ export class VaadinDevTools extends LitElement {
     super.connectedCallback();
     this.catchErrors();
 
-    this.conf = (window.Vaadin as any).devToolsConf;
+    this.conf = (window.Vaadin as any).devToolsConf || {};
     // when focus or clicking anywhere, move the splash message to the message tray
     this.disableEventListener = (_: any) => this.demoteSplashMessage();
     document.body.addEventListener('focus', this.disableEventListener);
