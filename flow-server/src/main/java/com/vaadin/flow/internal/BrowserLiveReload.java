@@ -17,6 +17,8 @@ package com.vaadin.flow.internal;
 
 import org.atmosphere.cpr.AtmosphereResource;
 
+import com.vaadin.flow.server.communication.FragmentedMessageHolder;
+
 /**
  * Provides a way to reload browser tabs via web socket connection passed as a
  * {@link AtmosphereResource}.
@@ -26,7 +28,7 @@ import org.atmosphere.cpr.AtmosphereResource;
  * @author Vaadin Ltd
  *
  */
-public interface BrowserLiveReload {
+public interface BrowserLiveReload extends FragmentedMessageHolder {
 
     /**
      * Live reload enabling technology detected.
