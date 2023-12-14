@@ -255,7 +255,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
             plugin.handleDisconnect(getDevToolsInterface(resource));
         }
         if (!resources.keySet()
-                .removeIf(resourceRef -> resource.equals(resourceRef.get()))) {
+                .removeIf(resourceRef -> resourceRef.refersTo(resource))) {
             String uuid = resource.uuid();
             getLogger().warn(
                     "Push connection {} is not a live-reload connection or already closed",
