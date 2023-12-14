@@ -1867,11 +1867,13 @@ public class UI extends Component
         } catch (Exception exception) {
             handleExceptionNavigation(location, exception);
         } finally {
-            if (!FeatureFlags
-                    .get(getInternals().getSession().getService().getContext())
-                    .isEnabled(FeatureFlags.REACT_ROUTER)) {
+            // if (!FeatureFlags
+            // .get(getInternals().getSession().getService().getContext())
+            // .isEnabled(FeatureFlags.REACT_ROUTER)) {
+            if(getInternals().getContinueNavigationAction() != null) {
                 getInternals().clearLastHandledNavigation();
             }
+            // }
         }
     }
 
