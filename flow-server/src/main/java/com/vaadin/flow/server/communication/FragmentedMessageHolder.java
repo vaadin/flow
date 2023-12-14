@@ -12,7 +12,7 @@ public interface FragmentedMessageHolder extends Serializable {
      * Gets the partial message that is currently being received, if any.
      *
      * @param resource
-     *            the resource to get the partial message forder
+     *            the resource to get the partial message from
      * @return the fragmented message being received or a new empty instance
      */
     public FragmentedMessage getOrCreateFragmentedMessage(
