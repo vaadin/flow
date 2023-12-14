@@ -380,19 +380,31 @@ public class DebugWindowConnection implements BrowserLiveReload {
     @Override
     public FragmentedMessage getOrCreateFragmentedMessage(
             AtmosphereResource resource) {
-        return resources.get(getRef(resource));
+        WeakReference<AtmosphereResource> ref = getRef(resource);
+        if (ref == null) {
+            throw new IllegalStateException(
+                    "Tried to create a fragmented message for a non-existing resource");
+        }
+        return resources.get(ref);
     }
 
     private WeakReference<AtmosphereResource> getRef(
             AtmosphereResource resource) {
         return resources.keySet().stream()
-                .filter(resourceRef -> resource.equals(resourceRef.get()))
+                .filter(resourceRef -> resourceRef.refersTo(resource))
                 .findFirst().orElse(null);
     }
 
     @Override
     public void clearFragmentedMessage(AtmosphereResource resource) {
-        resources.put(getRef(resource), new FragmentedMessage());
+        WeakReference<AtmosphereResource> ref = getRef(resource);
+        if (ref == null) {
+            getLogger().debug(
+                    "Tried to clear the fragmented message for a non-existing resource: {}",
+                    resource);
+            return;
+        }
+        resources.put(ref, new FragmentedMessage());
     }
 
 }
