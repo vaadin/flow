@@ -391,7 +391,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
     private WeakReference<AtmosphereResource> getRef(
             AtmosphereResource resource) {
         return resources.keySet().stream()
-                .filter(resourceRef -> resource.equals(resourceRef.get())))
+                .filter(resourceRef -> resource.equals(resourceRef.get()))
                 .findFirst().orElse(null);
     }
 
