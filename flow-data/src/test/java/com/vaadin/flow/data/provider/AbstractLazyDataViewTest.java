@@ -329,6 +329,28 @@ public class AbstractLazyDataViewTest {
     }
 
     @Test
+    public void getItemIndex_withoutItemIndexProvider_throwUnsupportedOperationException() {
+        Assert.assertThrows(UnsupportedOperationException.class,
+                () -> dataView.getItemIndex("bar"));
+    }
+
+    @Test
+    public void getItemIndex_itemPresentedInDataSet_indexFound() {
+        dataView.setItemIndexProvider(
+                (item, query) -> "bar".equals(item) ? 1 : null);
+        Assert.assertEquals("Wrong index returned for item", Integer.valueOf(1),
+                dataView.getItemIndex("bar"));
+    }
+
+    @Test
+    public void getItemIndex_itemNotPresentedInDataSet_indexNotFound() {
+        dataView.setItemIndexProvider(
+                (item, query) -> "bar".equals(item) ? 1 : null);
+        Assert.assertNull("Wrong index returned for item",
+                dataView.getItemIndex("notPresent"));
+    }
+
+    @Test
     public void refreshItem_itemPresentInDataSet_refreshesItem() {
         Item item1 = new Item(0L, "value1");
         Item item2 = new Item(1L, "value2");

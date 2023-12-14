@@ -86,6 +86,12 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return getItems().skip(index).findFirst().orElse(null);
     }
 
+    @Override
+    public Integer getItemIndex(T item) {
+        int index = getItemIndex(item, getItems());
+        return index >= 0 ? index : null;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public Stream<T> getItems() {
@@ -318,10 +324,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         }
         //@formatter:on
         return index.get();
-    }
-
-    private int getItemIndex(T item) {
-        return getItemIndex(item, getItems());
     }
 
     private void removeItemIfPresent(T item, ListDataProvider<T> dataProvider) {

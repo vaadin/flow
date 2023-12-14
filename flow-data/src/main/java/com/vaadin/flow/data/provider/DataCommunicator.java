@@ -138,6 +138,8 @@ public class DataCommunicator<T> implements Serializable {
     private transient Executor executor = null;
     private transient CompletableFuture<Activation> future;
 
+    private ItemIndexProvider<T, ?> itemIndexProvider;
+
     /**
      * In-memory data provider with no items.
      * <p>
@@ -903,6 +905,27 @@ public class DataCommunicator<T> implements Serializable {
      */
     public void setFetchEnabled(boolean fetchEnabled) {
         this.fetchEnabled = fetchEnabled;
+    }
+
+    /**
+     * Gets the item index provider for this data communicator.
+     *
+     * @return the item index provider. May be null.
+     */
+    public ItemIndexProvider<T, ?> getItemIndexProvider() {
+        return this.itemIndexProvider;
+    }
+
+    /**
+     * Sets the item index provider for this data communicator. The provider is
+     * used to fetch the index of an item on demand.
+     *
+     * @param itemIndexProvider
+     *            the item index provider
+     */
+    public void setItemIndexProvider(
+            ItemIndexProvider<T, ?> itemIndexProvider) {
+        this.itemIndexProvider = itemIndexProvider;
     }
 
     /**

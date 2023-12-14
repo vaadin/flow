@@ -27,6 +27,7 @@ import com.vaadin.flow.data.provider.HasDataView;
 import com.vaadin.flow.data.provider.IdentifierProvider;
 import com.vaadin.flow.data.provider.InMemoryDataProvider;
 import com.vaadin.flow.data.provider.ItemCountChangeEvent;
+import com.vaadin.flow.data.provider.ItemIndexProvider;
 import com.vaadin.flow.data.provider.LazyDataView;
 import com.vaadin.flow.data.provider.ListDataView;
 import com.vaadin.flow.data.provider.SortDirection;
@@ -83,6 +84,12 @@ public class HasHierarchicalDataProviderTest {
 
         @Override
         public void setItemCountUnknown() {
+
+        }
+
+        @Override
+        public void setItemIndexProvider(
+                ItemIndexProvider<String, ?> itemIndexProvider) {
 
         }
 
@@ -203,6 +210,11 @@ public class HasHierarchicalDataProviderTest {
         @Override
         public String getItem(int index) {
             return null;
+        }
+
+        @Override
+        public Integer getItemIndex(String item) {
+            return 0;
         }
 
         @Override

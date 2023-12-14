@@ -126,6 +126,11 @@ public class AbstractDataViewTest {
         public Item getItem(int index) {
             return null;
         }
+
+        @Override
+        public Integer getItemIndex(Item item) {
+            return 0;
+        }
     }
 
     static class CustomIdentityItemDataProvider extends ListDataProvider<Item> {

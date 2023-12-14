@@ -46,6 +46,16 @@ public interface DataView<T> extends Serializable {
     T getItem(int index);
 
     /**
+     * Gets the index of the given item from the data available to the
+     * component. Data is filtered and sorted the same way as in the component.
+     *
+     * @param item
+     *            item to get index for
+     * @return index of the item or null if the item is not found
+     */
+    Integer getItemIndex(T item);
+
+    /**
      * Get the full data available to the component. Data is filtered and sorted
      * the same way as in the component.
      *

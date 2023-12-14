@@ -81,18 +81,33 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
         return getDataCommunicator().getItem(index);
     }
 
+    /**
+     * Gets the index of the given item by the item index provider set with
+     * {@link #setItemIndexProvider(ItemIndexProvider)}.
+     *
+     * @param item
+     *            item to get index for
+     * @return index of the item or null if the item is not found
+     * @throws UnsupportedOperationException
+     *             if the item index provider is not set with
+     *             {@link #setItemIndexProvider(ItemIndexProvider)}
+     */
+    @Override
+    public Integer getItemIndex(T item) {
+        if (getDataCommunicator().getItemIndexProvider() == null) {
+            throw new UnsupportedOperationException(
+                    "getItemIndex method in the LazyDataView requires a callback to fetch the index. Set it with setItemIndexProvider.");
+        }
+        return getDataCommunicator().getItemIndexProvider().apply(item,
+                getQueryForAllItems());
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public Stream<T> getItems() {
         DataCommunicator<T> verifiedDataCommunicator = getDataCommunicator();
-        if (verifiedDataCommunicator.isDefinedSize()) {
-            return verifiedDataCommunicator.getDataProvider()
-                    .fetch(verifiedDataCommunicator.buildQuery(0,
-                            verifiedDataCommunicator.getItemCount()));
-        } else {
-            return verifiedDataCommunicator.getDataProvider().fetch(
-                    verifiedDataCommunicator.buildQuery(0, Integer.MAX_VALUE));
-        }
+        return verifiedDataCommunicator.getDataProvider()
+                .fetch(getQueryForAllItems());
     }
 
     @Override
@@ -131,4 +146,18 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
         getDataCommunicator().setDefinedSize(false);
     }
 
+    @Override
+    public void setItemIndexProvider(
+            ItemIndexProvider<T, ?> itemIndexProvider) {
+        getDataCommunicator().setItemIndexProvider(itemIndexProvider);
+    }
+
+    private Query getQueryForAllItems() {
+        DataCommunicator<T> verifiedDataCommunicator = getDataCommunicator();
+        if (verifiedDataCommunicator.isDefinedSize()) {
+            return verifiedDataCommunicator.buildQuery(0,
+                    verifiedDataCommunicator.getItemCount());
+        }
+        return verifiedDataCommunicator.buildQuery(0, Integer.MAX_VALUE);
+    }
 }
