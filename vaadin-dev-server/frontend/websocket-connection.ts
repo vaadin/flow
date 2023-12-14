@@ -1,5 +1,7 @@
 import { Connection, ConnectionStatus } from './connection';
 
+const WEBSOCKET_FRAGMENT_SIZE = 16384; // This is PushConstants.WEBSOCKET_FRAGMENT_SIZE
+
 export class WebSocketConnection extends Connection {
   static HEARTBEAT_INTERVAL = 180000;
 
@@ -8,7 +10,7 @@ export class WebSocketConnection extends Connection {
   constructor(url: string) {
     super();
     if (!url) {
-        return;
+      return;
     }
 
     const config = {
@@ -89,7 +91,13 @@ export class WebSocketConnection extends Connection {
     }
 
     const message = JSON.stringify({ command, data });
-    this.socket.push(message);
+    const payload = message.length + '|' + message;
+
+    let remaining = payload;
+    while (remaining.length) {
+      this.socket.push(remaining.substring(0, WEBSOCKET_FRAGMENT_SIZE));
+      remaining = remaining.substring(WEBSOCKET_FRAGMENT_SIZE);
+    }
   }
 }
 

@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,6 +44,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
@@ -66,8 +67,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
     private final ClassLoader classLoader;
     private VaadinContext context;
 
-    private final ConcurrentLinkedQueue<WeakReference<AtmosphereResource>> atmosphereResources = new ConcurrentLinkedQueue<>();
-
+    private final ConcurrentHashMap<WeakReference<AtmosphereResource>, FragmentedMessage> resources = new ConcurrentHashMap<>();
     private Backend backend = null;
 
     private static final EnumMap<Backend, List<String>> IDENTIFIER_CLASSES = new EnumMap<>(
@@ -214,7 +214,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private void handleConnect(AtmosphereResource resource) {
         resource.suspend(-1);
-        atmosphereResources.add(new WeakReference<>(resource));
+        resources.put(new WeakReference<>(resource), new FragmentedMessage());
         resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
                 resource);
 
@@ -254,7 +254,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         for (DevToolsMessageHandler plugin : plugins) {
             plugin.handleDisconnect(getDevToolsInterface(resource));
         }
-        if (!atmosphereResources
+        if (!resources.keySet()
                 .removeIf(resourceRef -> resource.equals(resourceRef.get()))) {
             String uuid = resource.uuid();
             getLogger().warn(
@@ -265,12 +265,11 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     @Override
     public boolean isLiveReload(AtmosphereResource resource) {
-        return atmosphereResources.stream()
-                .anyMatch(resourceRef -> resource.equals(resourceRef.get()));
+        return getRef(resource) != null;
     }
 
     private void send(JsonObject msg) {
-        atmosphereResources.forEach(resourceRef -> {
+        resources.keySet().forEach(resourceRef -> {
             AtmosphereResource resource = resourceRef.get();
             if (resource != null) {
                 resource.getBroadcaster().broadcast(msg.toJson(), resource);
@@ -376,6 +375,36 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(DebugWindowConnection.class.getName());
+    }
+
+    @Override
+    public FragmentedMessage getOrCreateFragmentedMessage(
+            AtmosphereResource resource) {
+        WeakReference<AtmosphereResource> ref = getRef(resource);
+        if (ref == null) {
+            throw new IllegalStateException(
+                    "Tried to create a fragmented message for a non-existing resource");
+        }
+        return resources.get(ref);
+    }
+
+    private WeakReference<AtmosphereResource> getRef(
+            AtmosphereResource resource) {
+        return resources.keySet().stream()
+                .filter(resourceRef -> resource.equals(resourceRef.get()))
+                .findFirst().orElse(null);
+    }
+
+    @Override
+    public void clearFragmentedMessage(AtmosphereResource resource) {
+        WeakReference<AtmosphereResource> ref = getRef(resource);
+        if (ref == null) {
+            getLogger().debug(
+                    "Tried to clear the fragmented message for a non-existing resource: {}",
+                    resource);
+            return;
+        }
+        resources.put(ref, new FragmentedMessage());
     }
 
 }
