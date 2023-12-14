@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.internal.AllowInert;
@@ -1867,13 +1868,30 @@ public class UI extends Component
         } catch (Exception exception) {
             handleExceptionNavigation(location, exception);
         } finally {
-            // if (!FeatureFlags
-            // .get(getInternals().getSession().getService().getContext())
-            // .isEnabled(FeatureFlags.REACT_ROUTER)) {
-            if(getInternals().getContinueNavigationAction() != null) {
+            FeatureFlags featureFlags;
+            try {
+                featureFlags = FeatureFlags.get(
+                        getInternals().getSession().getService().getContext());
+            } catch (NullPointerException npe) {
+                featureFlags = new FeatureFlags(null) {
+                    @Override
+                    public boolean isEnabled(Feature feature) {
+                        return false;
+                    }
+
+                    @Override
+                    public void loadProperties() {
+                        // NO-OP
+                    }
+                };
+            }
+            if (featureFlags.isEnabled(FeatureFlags.REACT_ROUTER)
+                    && getInternals().getContinueNavigationAction() != null) {
+                getInternals().clearLastHandledNavigation();
+            } else {
                 getInternals().clearLastHandledNavigation();
             }
-            // }
+
         }
     }
 

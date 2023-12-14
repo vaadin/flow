@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -271,14 +272,35 @@ public abstract class AbstractNavigationStateRenderer
             }
 
             ui.getInternals().setLastHandledNavigation(event.getLocation());
-        } else if (FeatureFlags.get(event.getUI().getInternals().getSession()
-                .getService().getContext())
+        } else if (getFeatureFlags(event)
                 .isEnabled(FeatureFlags.REACT_ROUTER)) {
 
             if (shouldPushHistoryState(event)) {
                 pushHistoryState(event);
             }
         }
+    }
+
+    private FeatureFlags getFeatureFlags(NavigationEvent event) {
+
+        FeatureFlags featureFlags;
+        try {
+            featureFlags = FeatureFlags.get(event.getUI().getInternals()
+                    .getSession().getService().getContext());
+        } catch (NullPointerException npe) {
+            featureFlags = new FeatureFlags(null) {
+                @Override
+                public boolean isEnabled(Feature feature) {
+                    return false;
+                }
+
+                @Override
+                public void loadProperties() {
+                    // NO-OP
+                }
+            };
+        }
+        return featureFlags;
     }
 
     protected void pushHistoryState(NavigationEvent event) {
