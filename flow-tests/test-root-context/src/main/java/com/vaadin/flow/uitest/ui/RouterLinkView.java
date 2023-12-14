@@ -78,7 +78,7 @@ public class RouterLinkView extends AbstractDivView {
                 createRouterLink("/foo/bar"), new Element("p"),
                 // external
                 ElementFactory.createDiv("external"),
-                createRouterLink("http://example.net/"));
+                createRouterLink("https://example.net/"));
     }
 
     private Element createRouterLink(String target) {
