@@ -65,6 +65,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
 
         // simulate expired session by invalidating current session
         session.invalidate();
+        waitForWebComponentsBootstrap();
 
         // init request to resynchronize expired session and recreate components
         clickButton();
