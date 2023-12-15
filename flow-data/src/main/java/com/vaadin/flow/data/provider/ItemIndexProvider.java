@@ -20,6 +20,16 @@ import com.vaadin.flow.function.SerializableBiFunction;
 
 /**
  * A callback interface that is used to provide the index of an item.
+ * <p>
+ * Callback gives the target item and the query as parameters to fetch the
+ * index. The index is the index of the item in the filtered and sorted data
+ * set. If the item is not found, null is expected as a return value.
+ * <p>
+ * There will be inconsistent index if the data set for the returned index is
+ * different from the component's data set. Changing the data set of either side
+ * during this call may cause inconsistent index as a result.
+ * <p>
+ * Item index provider is only relevant with lazy data view implementations.
  *
  * @param <T>
  *            the type of the item
