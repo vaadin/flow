@@ -106,12 +106,11 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
                 || NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
             return true;
         } else {
-            return super.shouldPushHistoryState(event) || (FeatureFlags
-                    .get(event.getUI().getInternals().getSession().getService()
-                            .getContext())
-                    .isEnabled(FeatureFlags.REACT_ROUTER)
-                    && NavigationTrigger.CLIENT_SIDE
-                            .equals(event.getTrigger()));
+            return super.shouldPushHistoryState(event)
+                    || (event.getUI().getInternals().getSession()
+                            .getConfiguration().isReactRouterEnabled()
+                            && NavigationTrigger.CLIENT_SIDE
+                                    .equals(event.getTrigger()));
         }
     }
 

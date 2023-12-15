@@ -272,35 +272,12 @@ public abstract class AbstractNavigationStateRenderer
             }
 
             ui.getInternals().setLastHandledNavigation(event.getLocation());
-        } else if (getFeatureFlags(event)
-                .isEnabled(FeatureFlags.REACT_ROUTER)) {
-
+        } else if (ui.getInternals().getSession().getConfiguration()
+                .isReactRouterEnabled()) {
             if (shouldPushHistoryState(event)) {
                 pushHistoryState(event);
             }
         }
-    }
-
-    private FeatureFlags getFeatureFlags(NavigationEvent event) {
-
-        FeatureFlags featureFlags;
-        try {
-            featureFlags = FeatureFlags.get(event.getUI().getInternals()
-                    .getSession().getService().getContext());
-        } catch (NullPointerException npe) {
-            featureFlags = new FeatureFlags(null) {
-                @Override
-                public boolean isEnabled(Feature feature) {
-                    return false;
-                }
-
-                @Override
-                public void loadProperties() {
-                    // NO-OP
-                }
-            };
-        }
-        return featureFlags;
     }
 
     protected void pushHistoryState(NavigationEvent event) {

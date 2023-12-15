@@ -1868,24 +1868,8 @@ public class UI extends Component
         } catch (Exception exception) {
             handleExceptionNavigation(location, exception);
         } finally {
-            FeatureFlags featureFlags;
-            try {
-                featureFlags = FeatureFlags.get(
-                        getInternals().getSession().getService().getContext());
-            } catch (NullPointerException npe) {
-                featureFlags = new FeatureFlags(null) {
-                    @Override
-                    public boolean isEnabled(Feature feature) {
-                        return false;
-                    }
-
-                    @Override
-                    public void loadProperties() {
-                        // NO-OP
-                    }
-                };
-            }
-            if (featureFlags.isEnabled(FeatureFlags.REACT_ROUTER)
+            if (getInternals().getSession().getConfiguration()
+                    .isReactRouterEnabled()
                     && getInternals().getContinueNavigationAction() != null) {
                 getInternals().clearLastHandledNavigation();
             } else {

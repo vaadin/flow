@@ -325,4 +325,15 @@ public interface DeploymentConfiguration
      * @return the lock checking strategy, never null.
      */
     SessionLockCheckStrategy getSessionLockCheckStrategy();
+
+    /**
+     * Check if the React Router is enabled for the project instead of Vaadin
+     * router.
+     *
+     * @return {@code true} if React Router is used
+     */
+    default boolean isReactRouterEnabled() {
+        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_INITIAL_UIDL,
+                false);
+    }
 }
