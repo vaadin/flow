@@ -9,7 +9,7 @@
     "prettier": "prettier --write frontend"
   },
   "devDependencies": {
-    "@koa/cors": "^4.0.0",
+    "@koa/cors": "^5.0.0",
     "@open-wc/dev-server-hmr": "^0.1.2-next.0",
     "@open-wc/testing": "^3.1.7",
     "@rollup/plugin-typescript": "^11.1.1",
