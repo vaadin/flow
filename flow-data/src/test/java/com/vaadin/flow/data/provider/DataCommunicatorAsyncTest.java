@@ -17,10 +17,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -253,8 +255,10 @@ public class DataCommunicatorAsyncTest {
         private static VaadinSession findOrcreateSession() {
             VaadinSession session = VaadinSession.getCurrent();
             if (session == null) {
+                DeploymentConfiguration config = Mockito
+                        .mock(DeploymentConfiguration.class);
                 session = new AlwaysLockedVaadinSession(
-                        new VaadinServletService(new VaadinServlet(), null));
+                        new VaadinServletService(new VaadinServlet(), config));
                 VaadinSession.setCurrent(session);
             }
             return session;
