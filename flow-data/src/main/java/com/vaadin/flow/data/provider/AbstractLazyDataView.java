@@ -100,7 +100,8 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
             throw new UnsupportedOperationException(
                     "getItemIndex method in the LazyDataView requires a callback to fetch the index. Set it with setItemIndexProvider.");
         }
-        return getItemIndexProvider().apply(item, getQueryForAllItems());
+        return getItemIndexProvider().apply(item,
+                getFilteredQueryForAllItems());
     }
 
     @SuppressWarnings("unchecked")
@@ -173,4 +174,18 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
         }
         return verifiedDataCommunicator.buildQuery(0, Integer.MAX_VALUE);
     }
+
+    private Query getFilteredQueryForAllItems() {
+        Query baseQuery = getQueryForAllItems();
+        if (DataProviderWrapper.class.isAssignableFrom(
+                dataCommunicator.getDataProvider().getClass())) {
+            DataProviderWrapper<T, ?, ?> wrapper = (DataProviderWrapper<T, ?, ?>) dataCommunicator
+                    .getDataProvider();
+            return new Query(baseQuery.getOffset(), baseQuery.getLimit(),
+                    baseQuery.getSortOrders(), baseQuery.getInMemorySorting(),
+                    wrapper.getFilter(baseQuery));
+        }
+        return baseQuery;
+    }
+
 }
