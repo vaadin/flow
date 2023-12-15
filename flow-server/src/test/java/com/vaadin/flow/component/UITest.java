@@ -230,18 +230,19 @@ public class UITest {
             public VaadinContext getContext() {
                 return new MockVaadinContext();
             }
+
+            @Override
+            public DeploymentConfiguration getDeploymentConfiguration() {
+                DeploymentConfiguration config = Mockito
+                        .mock(DeploymentConfiguration.class);
+                Mockito.when(config.isProductionMode()).thenReturn(false);
+                return config;
+            }
         };
         service.setCurrentInstances(request, response);
 
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(config.isProductionMode()).thenReturn(false);
-
         session.lock();
-        session.setConfiguration(config);
-
         ui.getInternals().setSession(session);
 
         RouteConfiguration routeConfiguration = RouteConfiguration

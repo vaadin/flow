@@ -23,9 +23,8 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
-
-import static org.mockito.Mockito.withSettings;
 
 public class SerializationTest {
 
@@ -64,8 +63,6 @@ public class SerializationTest {
         // should be called by Flow internally as soon as the session has
         // been created.
         session.refreshTransients(null, vaadinService);
-        session.setConfiguration(Mockito.mock(DeploymentConfiguration.class,
-                Mockito.withSettings().serializable()));
         MockUI ui = new MockUI(session);
         ui.doInit(null, 42);
         session.addUI(ui);
@@ -131,8 +128,6 @@ public class SerializationTest {
         // should be called by Flow internally as soon as the session has
         // been created.
         session.refreshTransients(null, vaadinService);
-        session.setConfiguration(Mockito.mock(DeploymentConfiguration.class,
-                withSettings().serializable()));
         MockUI ui = new MockUI(session);
         ui.doInit(null, 42);
         session.addUI(ui);
@@ -223,6 +218,13 @@ public class SerializationTest {
             this.vaadinContext = Mockito.mock(VaadinContext.class);
             this.productionMode = productionMode;
             this.serialize = serialize;
+        }
+
+        @Override
+        public DeploymentConfiguration getDeploymentConfiguration() {
+            MockDeploymentConfiguration config = new MockDeploymentConfiguration();
+            config.setProductionMode(productionMode);
+            return config;
         }
 
         @Override

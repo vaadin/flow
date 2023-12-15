@@ -71,9 +71,7 @@ public class LocationObserverTest {
             MockVaadinServletService service = new MockVaadinServletService();
             service.setRouter(router);
 
-            VaadinSession session = new AlwaysLockedVaadinSession(service);
-            session.setConfiguration(service.getDeploymentConfiguration());
-            return session;
+            return new AlwaysLockedVaadinSession(service);
         }
 
         @Override

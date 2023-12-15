@@ -10,7 +10,6 @@ import java.util.Properties;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -52,9 +51,6 @@ public class CustomUIClassLoaderTest {
      */
     @Test
     public void testWithDefaultClassLoader() throws Exception {
-        VaadinSession application = createStubApplication();
-        application.setConfiguration(createConfigurationMock());
-
         Class<? extends UI> uiClass = BootstrapHandler
                 .getUIClass(createRequestMock(getClass().getClassLoader()));
 
@@ -112,14 +108,5 @@ public class CustomUIClassLoaderTest {
         assertEquals(MyUI.class.getName(),
                 loggingClassLoader.requestedClasses.get(0));
 
-    }
-
-    private VaadinSession createStubApplication() {
-        return new AlwaysLockedVaadinSession(new MockVaadinServletService()) {
-            @Override
-            public DeploymentConfiguration getConfiguration() {
-                return createConfigurationMock();
-            }
-        };
     }
 }

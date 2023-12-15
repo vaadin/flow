@@ -68,7 +68,6 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
 import elemental.json.Json;
@@ -287,7 +286,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a UI that contain a window name ROOT.123
         MockUI ui1 = new MockUI(session);
@@ -356,7 +354,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a UI that contain a window name ROOT.123
         MockUI ui = new MockUI(session);
@@ -409,7 +406,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedView
         NavigationStateRenderer renderer = new NavigationStateRenderer(
@@ -456,7 +452,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedNestedView
         Router router = session.getService().getRouter();
@@ -510,7 +505,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedView
         NavigationStateRenderer renderer = new NavigationStateRenderer(
@@ -582,7 +576,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to RegularView
         new NavigationStateBuilder(router).withTarget(RegularView.class)

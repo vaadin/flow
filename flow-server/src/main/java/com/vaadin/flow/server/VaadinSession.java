@@ -79,11 +79,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     volatile boolean sessionClosedExplicitly = false;
 
     /**
-     * Configuration for the session.
-     */
-    private DeploymentConfiguration configuration;
-
-    /**
      * Default locale of the session.
      */
     private Locale locale = Locale.getDefault();
@@ -145,6 +140,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public VaadinSession(VaadinService service) {
         this.service = service;
+
+        if (service != null) {
+            sessionLockCheckStrategy = getConfiguration().isProductionMode()
+                    ? getConfiguration().getSessionLockCheckStrategy()
+                    : SessionLockCheckStrategy.THROW;
+            assert sessionLockCheckStrategy != null;
+        }
+
         resourceRegistry = createStreamResourceRegistry();
     }
 
@@ -344,33 +347,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         lock = service.getSessionLock(session);
     }
 
-    public void setConfiguration(DeploymentConfiguration configuration) {
-        checkHasLock();
-        if (configuration == null) {
-            throw new IllegalArgumentException("Can not set to null");
-        }
-        checkSetConfiguration();
-        this.configuration = configuration;
-
-        sessionLockCheckStrategy = configuration.isProductionMode()
-                ? configuration.getSessionLockCheckStrategy()
-                : SessionLockCheckStrategy.THROW;
-        assert sessionLockCheckStrategy != null;
-    }
-
-    protected void checkSetConfiguration() {
-        assert this.configuration == null
-                : "Configuration can only be set once";
-    }
-
     /**
-     * Gets the configuration for this session.
+     * Gets the deployment configuration. Delegates the call to
+     * {@link VaadinService#getDeploymentConfiguration()}
      *
      * @return the deployment configuration
      */
     public DeploymentConfiguration getConfiguration() {
-        checkHasLock();
-        return configuration;
+        return service.getDeploymentConfiguration();
     }
 
     /**
@@ -1117,6 +1101,12 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             VaadinService vaadinService) {
         session = wrappedSession;
         service = vaadinService;
+
+        sessionLockCheckStrategy = getConfiguration().isProductionMode()
+                ? getConfiguration().getSessionLockCheckStrategy()
+                : SessionLockCheckStrategy.THROW;
+        assert sessionLockCheckStrategy != null;
+
         refreshLock();
     }
 
