@@ -205,7 +205,7 @@ public class NodeUpdaterTest {
                 "7.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("10.3.3", packageJson
+        Assert.assertEquals("10.3.10", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("glob"));
     }
 
