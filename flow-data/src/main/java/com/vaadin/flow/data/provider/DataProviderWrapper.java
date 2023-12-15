@@ -59,7 +59,7 @@ public abstract class DataProviderWrapper<T, F, M>
      *
      * @return the wrapped data provider
      */
-    public DataProvider<T, M> getWrappedDataProvider() {
+    DataProvider<T, M> getWrappedDataProvider() {
         return dataProvider;
     }
 
