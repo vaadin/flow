@@ -71,7 +71,7 @@ public abstract class AbstractDataView<T> implements DataView<T> {
          * the data provider.
          */
         if (isDataProviderInitialized(dataProviderType)) {
-            verifyDataProviderType(dataProviderType);
+            verifyDataProviderType(dataProviderSupplier.get());
         }
     }
 
@@ -112,6 +112,32 @@ public abstract class AbstractDataView<T> implements DataView<T> {
                     supportedDataProviderType.getSimpleName(),
                     dataProviderType.getSuperclass().getSimpleName());
             throw new IllegalStateException(message);
+        }
+    }
+
+    /**
+     * Verifies an obtained {@link DataProvider} type is appropriate for current
+     * Data View type. If the data provider is a wrapper, then the wrapped data
+     * provider is verified too.
+     *
+     * @param dataProvider
+     *            data provider to be verified
+     * @throws IllegalStateException
+     *             if data provider type is incompatible with data view type
+     */
+    protected final void verifyDataProviderType(
+            DataProvider<T, ?> dataProvider) {
+        try {
+            verifyDataProviderType(dataProvider.getClass());
+        } catch (IllegalStateException e) {
+            if (DataProviderWrapper.class
+                    .isAssignableFrom(dataProvider.getClass())) {
+                verifyDataProviderType(
+                        ((DataProviderWrapper<T, ?, ?>) dataProvider)
+                                .getWrappedDataProvider());
+            } else {
+                throw e;
+            }
         }
     }
 
