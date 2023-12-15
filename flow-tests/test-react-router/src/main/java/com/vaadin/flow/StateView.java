@@ -16,14 +16,13 @@ public class StateView extends Div {
     protected static String ENABLED_SPAN = "enabled";
     protected static String REACT_SPAN = "react_added";
 
-    public void StateView()  {
+    public void StateView() {
     }
 
     @Override
-    protected void onAttach(AttachEvent attachEvent)  {
-        Span enabled = new Span("React enabled: " +
-                getUI().get().getSession().getConfiguration()
-                        .isReactRouterEnabled());
+    protected void onAttach(AttachEvent attachEvent) {
+        Span enabled = new Span("React enabled: " + getUI().get().getSession()
+                .getConfiguration().isReactRouterEnabled());
         enabled.setId(ENABLED_SPAN);
 
         File baseDir = new File(System.getProperty("user.dir", "."));

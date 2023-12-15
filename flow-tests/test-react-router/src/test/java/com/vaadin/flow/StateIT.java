@@ -14,12 +14,16 @@ public class StateIT extends ChromeBrowserTest {
 
         waitForDevServer();
 
-        SpanElement reactEnabled = $(SpanElement.class).id(StateView.ENABLED_SPAN);
-        Assert.assertEquals("React not enabled", "React enabled: true", reactEnabled.getText());
+        SpanElement reactEnabled = $(SpanElement.class)
+                .id(StateView.ENABLED_SPAN);
+        Assert.assertEquals("React not enabled", "React enabled: true",
+                reactEnabled.getText());
 
-        SpanElement reactInPackage = $(SpanElement.class).id(StateView.REACT_SPAN);
+        SpanElement reactInPackage = $(SpanElement.class)
+                .id(StateView.REACT_SPAN);
 
-        Assert.assertEquals("No react found in package.json", "React found: true", reactInPackage.getText());
+        Assert.assertEquals("No react found in package.json",
+                "React found: true", reactInPackage.getText());
     }
 
 }
