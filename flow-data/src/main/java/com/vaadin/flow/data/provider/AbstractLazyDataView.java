@@ -19,6 +19,7 @@ package com.vaadin.flow.data.provider;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.function.SerializableConsumer;
 
 /**
@@ -92,14 +93,14 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
      *             if the item index provider is not set with
      *             {@link #setItemIndexProvider(ItemIndexProvider)}
      */
+    @SuppressWarnings("unchecked")
     @Override
     public Integer getItemIndex(T item) {
-        if (getDataCommunicator().getItemIndexProvider() == null) {
+        if (getItemIndexProvider() == null) {
             throw new UnsupportedOperationException(
                     "getItemIndex method in the LazyDataView requires a callback to fetch the index. Set it with setItemIndexProvider.");
         }
-        return getDataCommunicator().getItemIndexProvider().apply(item,
-                getQueryForAllItems());
+        return getItemIndexProvider().apply(item, getQueryForAllItems());
     }
 
     @SuppressWarnings("unchecked")
@@ -149,7 +150,19 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
     @Override
     public void setItemIndexProvider(
             ItemIndexProvider<T, ?> itemIndexProvider) {
-        getDataCommunicator().setItemIndexProvider(itemIndexProvider);
+        ComponentUtil.setData(component, ItemIndexProvider.class,
+                itemIndexProvider);
+    }
+
+    /**
+     * Gets the item index provider for this data view's component.
+     *
+     * @return the item index provider. May be null.
+     */
+    @SuppressWarnings("unchecked")
+    protected ItemIndexProvider<T, ?> getItemIndexProvider() {
+        return (ItemIndexProvider<T, ?>) ComponentUtil.getData(component,
+                ItemIndexProvider.class);
     }
 
     private Query getQueryForAllItems() {
