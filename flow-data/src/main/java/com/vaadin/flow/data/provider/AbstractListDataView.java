@@ -203,7 +203,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     protected ListDataProvider<T> getDataProvider() {
         final DataProvider<T, ?> dataProvider = dataProviderSupplier.get();
         Objects.requireNonNull(dataProvider, "DataProvider cannot be null");
-        verifyDataProviderType(dataProvider.getClass());
+        verifyDataProviderType(dataProvider);
         return (ListDataProvider<T>) dataProvider;
     }
 
