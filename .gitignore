@@ -91,6 +91,8 @@ flow-tests/test-root-context/src/main/bundles/
 flow-tests/test-theme-no-polymer/src/main/bundles/
 flow-tests/test-themes/src/main/bundles/
 
+.flow-node-tasks.lock
+
 # Exclude generated vaadin dev tools frontend
 vaadin-dev-server/src/main/resources/META-INF/frontend
 vaadin-dev-server/src/main/resources/META-INF/metadata
