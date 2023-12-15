@@ -56,7 +56,7 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
      * @return the data communicator
      */
     protected DataCommunicator<T> getDataCommunicator() {
-        verifyDataProviderType(dataCommunicator.getDataProvider().getClass());
+        verifyDataProviderType(dataCommunicator.getDataProvider());
         return dataCommunicator;
     }
 

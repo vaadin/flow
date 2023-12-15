@@ -54,6 +54,15 @@ public abstract class DataProviderWrapper<T, F, M>
                 "The wrapped data provider cannot be null.");
     }
 
+    /**
+     * Gets wrapped data provider.
+     *
+     * @return the wrapped data provider
+     */
+    DataProvider<T, M> getWrappedDataProvider() {
+        return dataProvider;
+    }
+
     @Override
     public boolean isInMemory() {
         return dataProvider.isInMemory();
