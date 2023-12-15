@@ -35,6 +35,7 @@ import com.vaadin.flow.function.SerializableBiFunction;
  *            the type of the item
  * @param <F>
  *            the type of the query filter
+ * @since @since 24.4
  */
 @FunctionalInterface
 public interface ItemIndexProvider<T, F>
