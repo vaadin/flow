@@ -124,7 +124,6 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     private void validateEmbeddedComponent(TestBenchElement themedComponent,
             String target) {
         String imageUrl = themedComponent.getCssValue("background-image");
-        System.out.println("================================= " + imageUrl);
 
         Assert.assertTrue(target + " didn't contain the background image",
                 imageUrl.contains("VAADIN/themes/embedded-theme/img/bg.jpg"));
