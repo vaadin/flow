@@ -333,7 +333,6 @@ public interface DeploymentConfiguration
      * @return {@code true} if React Router is used
      */
     default boolean isReactRouterEnabled() {
-        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_INITIAL_UIDL,
-                false);
+        return getBooleanProperty(InitParameters.REACT_ROUTER_ENABLED, false);
     }
 }
