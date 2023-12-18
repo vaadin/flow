@@ -15,7 +15,6 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <maven.failsafe.plugin.version>3.0.0-M1</maven.failsafe.plugin.version>
         <component.version>23.3-SNAPSHOT</component.version>
     </properties>
 
@@ -35,6 +34,13 @@
                 <version>${spring.boot.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-testbench-bom</artifactId>
+                <version>${testbench.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
