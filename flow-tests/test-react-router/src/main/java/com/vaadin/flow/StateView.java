@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
@@ -13,6 +15,7 @@ import com.vaadin.flow.router.Route;
 
 @Route("com.vaadin.flow.StateView")
 public class StateView extends Div {
+    private static final Logger log = LoggerFactory.getLogger(StateView.class);
     protected static String ENABLED_SPAN = "enabled";
     protected static String REACT_SPAN = "react_added";
 
@@ -30,7 +33,9 @@ public class StateView extends Div {
         try {
             packageJson = FileUtils.readFileToString(
                     new File(baseDir, "package.json"), StandardCharsets.UTF_8);
+            log.info("Read package.json from {}", baseDir.getPath());
         } catch (IOException e) {
+            log.error("Could not read package.json", e);
             packageJson = "";
         }
 
