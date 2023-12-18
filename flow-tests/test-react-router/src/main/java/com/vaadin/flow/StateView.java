@@ -28,7 +28,8 @@ public class StateView extends Div {
                 .getConfiguration().isReactRouterEnabled());
         enabled.setId(ENABLED_SPAN);
 
-        File baseDir = new File(System.getProperty("user.dir", "."));
+        File baseDir = attachEvent.getSession().getConfiguration()
+                .getProjectFolder();
         String packageJson = null;
         try {
             packageJson = FileUtils.readFileToString(
