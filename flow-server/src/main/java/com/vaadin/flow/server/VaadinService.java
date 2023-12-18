@@ -333,8 +333,8 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new StreamRequestHandler());
         handlers.add(new PwaHandler(() -> getPwaRegistry()));
 
-        handlers.add(new WebComponentProvider());
         handlers.add(new WebComponentBootstrapHandler());
+        handlers.add(new WebComponentProvider());
 
         return handlers;
     }
