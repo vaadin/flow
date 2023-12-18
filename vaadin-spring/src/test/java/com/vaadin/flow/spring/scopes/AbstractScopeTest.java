@@ -29,6 +29,7 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -48,10 +49,19 @@ public abstract class AbstractScopeTest {
 
     public static class TestSession extends SpringVaadinSession {
 
+        private DeploymentConfiguration configuration;
+
         public TestSession() {
             super(Mockito.mock(VaadinService.class));
         }
 
+        @Override
+        public DeploymentConfiguration getConfiguration() {
+            if (configuration == null) {
+                configuration = Mockito.mock(DeploymentConfiguration.class);
+            }
+            return configuration;
+        }
     }
 
     @After
