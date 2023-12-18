@@ -81,6 +81,11 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return false;
         }
 
+        if (WebComponentBootstrapHandler.PATH_PATTERN.matcher(pathInfo)
+                .find()) {
+            return false;
+        }
+
         return true;
     }
 
@@ -186,6 +191,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     protected String generateNPMResponse(String tagName, VaadinRequest request,
             VaadinResponse response) {
         // get the running script
+        boolean productionMode = request.getService()
+                .getDeploymentConfiguration().isProductionMode();
         return getThisScript(tagName) + "var scriptUri = thisScript.src;"
                 + "var index = scriptUri.lastIndexOf('" + WEB_COMPONENT_PATH
                 + "');" + "var context = scriptUri.substring(0, index+"
@@ -194,23 +201,49 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 + "var bootstrapAddress=context+'web-component-bootstrap.js';"
                 // add the request address as a url parameter (used to get
                 // service url)
-                + bootstrapNpm();
+                + bootstrapNpm(productionMode);
     }
 
-    protected String bootstrapNpm() {
-        return "var bootstrapped = false;\n"
+    protected String bootstrapNpm(boolean productionMode) {
+
+        String bootstrapJS = "var bootstrapped = false;\n"
                 + "bootstrapAddress+='?url='+bootstrapAddress;"
                 // check if a script with the bootstrap source already exits
                 + "var scripts = document.getElementsByTagName('script');"
                 + "for (var ii = 0; ii < scripts.length; ii++){"
-                + "  if (scripts[ii].src === bootstrapAddress){"
+                + "  if (scripts[ii].getAttribute('data-src') === bootstrapAddress){"
                 + "    bootstrapped=true; break;" + "  }" + "}"
                 // if no bootstrap -> bootstrap
                 + "if (!bootstrapped){"
                 + "  var uiScript = document.createElement('script');"
                 + "  uiScript.setAttribute('type','text/javascript');"
-                + "  uiScript.setAttribute('src', bootstrapAddress);"
-                + "  document.head.appendChild(uiScript);" + "}";
+                + "  uiScript.setAttribute('data-src', bootstrapAddress);"
+                + "  document.head.appendChild(uiScript);";
+        if (productionMode) {
+            bootstrapJS += "  uiScript.setAttribute('src', bootstrapAddress);";
+        } else {
+            // With dev-bundle we need to wait the bundle is created before
+            // downloading the resource by adding the script source
+            bootstrapJS += """
+                        const bootstrapSrc = bootstrapAddress;
+                        const delay = 200;
+                        const poll = async () => {
+                          try {
+                            const response = await fetch(bootstrapSrc, { method: 'HEAD', headers: { 'X-DevModePoll': 'true' } });
+                            if (response.headers.has('X-DevModePending')) {
+                              setTimeout(poll, delay);
+                            } else {
+                              uiScript.setAttribute('src', bootstrapSrc);
+                            }
+                          } catch (e) {
+                            setTimeout(poll, delay);
+                          }
+                        };
+                        poll();
+                    """;
+        }
+        bootstrapJS += "}";
+        return bootstrapJS;
     }
 
     private boolean hasWebComponentConfigurations(VaadinRequest request) {
