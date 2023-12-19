@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -498,7 +499,15 @@ public class VaadinSessionTest {
     public static class TestVaadinSession extends VaadinSession {
 
         public TestVaadinSession() {
-            super(null);
+            super(new MockVaadinServletService());
+            try {
+                Field serviceField = getClass().getSuperclass()
+                        .getDeclaredField("service");
+                serviceField.setAccessible(true);
+                serviceField.set(this, null);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

@@ -139,14 +139,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            the Vaadin service for the new session
      */
     public VaadinSession(VaadinService service) {
+        Objects.requireNonNull(service, "VaadinService can not be null.");
         this.service = service;
 
-        if (service != null) {
-            sessionLockCheckStrategy = getConfiguration().isProductionMode()
-                    ? getConfiguration().getSessionLockCheckStrategy()
-                    : SessionLockCheckStrategy.THROW;
-            assert sessionLockCheckStrategy != null;
-        }
+        refreshSessionLockCheckStrategy();
 
         resourceRegistry = createStreamResourceRegistry();
     }
@@ -345,6 +341,16 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 : "Cannot change the lock from one instance to another";
         assert hasLock(service, session);
         lock = service.getSessionLock(session);
+    }
+
+    /**
+     * Updates the session lock check strategy.
+     */
+    private void refreshSessionLockCheckStrategy() {
+        sessionLockCheckStrategy = getConfiguration().isProductionMode()
+                ? getConfiguration().getSessionLockCheckStrategy()
+                : SessionLockCheckStrategy.THROW;
+        assert sessionLockCheckStrategy != null;
     }
 
     /**
@@ -1102,11 +1108,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         session = wrappedSession;
         service = vaadinService;
 
-        sessionLockCheckStrategy = getConfiguration().isProductionMode()
-                ? getConfiguration().getSessionLockCheckStrategy()
-                : SessionLockCheckStrategy.THROW;
-        assert sessionLockCheckStrategy != null;
-
+        refreshSessionLockCheckStrategy();
         refreshLock();
     }
 

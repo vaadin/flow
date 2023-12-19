@@ -107,8 +107,6 @@ public class InvalidUrlTest {
         ui.doInit(request, 0);
         ui.getRouter().initializeUI(ui, UITest.requestToLocation(request));
 
-        session.unlock();
-
         if (statusCodeCaptor != null) {
             Mockito.verify(response).setStatus(statusCodeCaptor.capture());
         }
