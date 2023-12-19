@@ -285,41 +285,4 @@ public class HierarchicalCommunicatorDataTest {
         });
     }
 
-    // public static class MockUI extends UI {
-    //
-    // public MockUI() {
-    // this(findOrCreateSession());
-    // }
-    //
-    // public MockUI(VaadinSession session) {
-    // getInternals().setSession(session);
-    // setCurrent(this);
-    // }
-    //
-    // @Override
-    // protected void init(VaadinRequest request) {
-    // // Do nothing
-    // }
-    //
-    // private static VaadinSession findOrCreateSession() {
-    // VaadinSession session = VaadinSession.getCurrent();
-    // if (session == null) {
-    // session = new DataCommunicatorTest.AlwaysLockedVaadinSession(
-    // null);
-    // VaadinSession.setCurrent(session);
-    // }
-    // return session;
-    // }
-    // }
-    //
-    // public static class AlwaysLockedVaadinSession
-    // extends DataCommunicatorTest.MockVaadinSession {
-    //
-    // public AlwaysLockedVaadinSession(VaadinService service) {
-    // super(service);
-    // lock();
-    // }
-    //
-    // }
-
 }
